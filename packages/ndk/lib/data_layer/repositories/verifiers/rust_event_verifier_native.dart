@@ -39,8 +39,9 @@ class RustEventVerifier implements EventVerifier {
 
     // Allocate arrays for tags
     final tagsLengths = calloc<Uint32>(tagsCount == 0 ? 1 : tagsCount);
-    final tagsData =
-        calloc<Pointer<Utf8>>(totalStrings == 0 ? 1 : totalStrings);
+    final tagsData = calloc<Pointer<Utf8>>(
+      totalStrings == 0 ? 1 : totalStrings,
+    );
 
     try {
       // Fill tag data

@@ -14,7 +14,7 @@ class RelayJitBroadcastOutboxStrategy {
   static Future broadcast({
     required Nip01Event eventToPublish,
     required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-        connectedRelays,
+    connectedRelays,
     required CacheManager cacheManager,
     required RelayManager relayManager,
     required List<String> bootstrapRelays,
@@ -27,8 +27,10 @@ class RelayJitBroadcastOutboxStrategy {
     List<String> writeRelaysUrls;
 
     if (nip65Data == null) {
-      Logger.log.w(() =>
-          "broadcast - could not find nip65 data for ${eventToPublish.pubKey}, using DEFAULT_BOOTSTRAP_RELAYS for now. \nPlease ensure nip65Data exists to use outbox model => UserRelayLists usecase");
+      Logger.log.w(
+        () =>
+            "broadcast - could not find nip65 data for ${eventToPublish.pubKey}, using DEFAULT_BOOTSTRAP_RELAYS for now. \nPlease ensure nip65Data exists to use outbox model => UserRelayLists usecase",
+      );
 
       writeRelaysUrls = bootstrapRelays;
     } else {
@@ -44,9 +46,7 @@ class RelayJitBroadcastOutboxStrategy {
     final uniqueRelayUrls = writeRelaysUrls.toSet().toList();
 
     // function to send message to relay
-    void sendToRelay({
-      required RelayConnectivity relay,
-    }) {
+    void sendToRelay({required RelayConnectivity relay}) {
       final myClientMsg = ClientMsg(
         ClientMsgType.kEvent,
         event: eventToPublish,
@@ -94,8 +94,9 @@ class RelayJitBroadcastOutboxStrategy {
         }
 
         try {
-          final relay = relayManager.connectedRelays
-              .firstWhere((element) => element.url == relayUrl);
+          final relay = relayManager.connectedRelays.firstWhere(
+            (element) => element.url == relayUrl,
+          );
           sendToRelay(relay: relay);
         } catch (e) {
           relayManager.failBroadcast(

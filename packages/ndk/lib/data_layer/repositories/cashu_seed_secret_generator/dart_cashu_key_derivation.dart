@@ -43,14 +43,21 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
     // Choose derivation method based on keyset version
     if (keysetId.startsWith('00')) {
       return _deriveDeprecatedWithSeed(
-          seed: seedBytes, keysetId: keysetId, counter: counter);
+        seed: seedBytes,
+        keysetId: keysetId,
+        counter: counter,
+      );
     } else if (keysetId.startsWith('01')) {
       return _deriveModernWithSeed(
-          seed: seedBytes, keysetId: keysetId, counter: counter);
+        seed: seedBytes,
+        keysetId: keysetId,
+        counter: counter,
+      );
     }
 
     throw Exception(
-        'Unrecognized keyset ID version ${keysetId.substring(0, 2)}');
+      'Unrecognized keyset ID version ${keysetId.substring(0, 2)}',
+    );
   }
 
   /// Modern derivation method with explicit seed parameter

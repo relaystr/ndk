@@ -18,16 +18,20 @@ class CacheWrite {
     required bool writeToCache,
     required Stream<Nip01Event> inputStream,
   }) {
-    inputStream.listen((event) async {
-      Logger.log.t(() => "⛁ got event from network $event ");
+    inputStream.listen(
+      (event) async {
+        Logger.log.t(() => "⛁ got event from network $event ");
 
-      if (writeToCache) {
-        await cacheManager.saveEvent(event);
-      }
-    }, onDone: () {
-      //? cannot be implemented as stack insert when the stream closes, because it would screw up subscriptions.
-    }, onError: (error) {
-      Logger.log.e(() => "⛔ $error ");
-    });
+        if (writeToCache) {
+          await cacheManager.saveEvent(event);
+        }
+      },
+      onDone: () {
+        //? cannot be implemented as stack insert when the stream closes, because it would screw up subscriptions.
+      },
+      onError: (error) {
+        Logger.log.e(() => "⛔ $error ");
+      },
+    );
   }
 }

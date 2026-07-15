@@ -32,8 +32,9 @@ Set<int> chooseFragments(int seqNum, int seqLen, int checksum) {
   if (seqNum <= seqLen) {
     return {seqNum - 1};
   } else {
-    Uint8List seed =
-        Uint8List.fromList(intToBytes(seqNum) + intToBytes(checksum));
+    Uint8List seed = Uint8List.fromList(
+      intToBytes(seqNum) + intToBytes(checksum),
+    );
     Xoshiro256 rng = Xoshiro256.fromBytes(seed);
     int degree = chooseDegree(seqLen, rng);
     List<int> indexes = List<int>.generate(seqLen, (i) => i);

@@ -59,8 +59,12 @@ class NdkCliApp {
       if (accountsStore.records.isNotEmpty) {
         await restoreAccountsIntoNdk(ndk: ndk, store: accountsStore);
       }
-      return await command.run(globalOptions.commandArgs.sublist(1), ndk,
-          walletsRepo, accountsStore);
+      return await command.run(
+        globalOptions.commandArgs.sublist(1),
+        ndk,
+        walletsRepo,
+        accountsStore,
+      );
     } finally {
       // Swallow cleanup errors so a failing exit code reflects the actual
       // command result, not post-run teardown noise (cashu wallet disposal
@@ -107,9 +111,7 @@ class NdkCliApp {
   }
 
   Future<WalletsRepo> _createWalletsRepo() {
-    return SembastWalletsRepo.create(
-      filename: 'wallets_db.db',
-    );
+    return SembastWalletsRepo.create(filename: 'wallets_db.db');
   }
 
   Future<SembastCacheManager> _createCache() {
@@ -122,7 +124,10 @@ class NdkCliApp {
   }
 
   Ndk _createNdk(
-      WalletsRepo walletsRepo, SembastCacheManager cache, LogLevel logLevel) {
+    WalletsRepo walletsRepo,
+    SembastCacheManager cache,
+    LogLevel logLevel,
+  ) {
     Logger.setLogLevel(logLevel);
     return Ndk(
       NdkConfig(
@@ -170,11 +175,13 @@ class NdkCliApp {
     for (final value in remaining) {
       if (value == '--version' || value == '-V') {
         return _GlobalCliOptions(
-            error: '--version must be provided before the command name.');
+          error: '--version must be provided before the command name.',
+        );
       }
       if (value == '-v' || value == '-vv' || value == '-vvv') {
         return _GlobalCliOptions(
-            error: '$value must be provided before the command name.');
+          error: '$value must be provided before the command name.',
+        );
       }
     }
 

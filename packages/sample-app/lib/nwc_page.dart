@@ -35,24 +35,24 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
       TextEditingController(); // For paying invoices
   NwcConnection? connection;
   KeyPair?
-      nwcAppKey; // Our app's NWC keypair, should be generated once and reused.
+  nwcAppKey; // Our app's NWC keypair, should be generated once and reused.
   GetBalanceResponse? balance;
 
   // State variables to hold context from the NIP-47 auth initiation
   String?
-      _pendingDiscoveryRelayUrl; // The relay specified in the nostr+walletauth URI's 'relay=' param,
+  _pendingDiscoveryRelayUrl; // The relay specified in the nostr+walletauth URI's 'relay=' param,
   // where we expect the kind 13194 event to be.
   String?
-      _pendingAppPubkeyForAuth; // Our app's pubkey that was sent in the nostr+walletauth URI's 'pubkey=' param
+  _pendingAppPubkeyForAuth; // Our app's pubkey that was sent in the nostr+walletauth URI's 'pubkey=' param
   // and expected in the 'p' tag of the kind 13194 event.
   MakeInvoiceResponse?
-      makeInvoice; // Will store result of normal or hold invoice creation
+  makeInvoice; // Will store result of normal or hold invoice creation
   PayInvoiceResponse? payInvoice;
 
   // MakeInvoiceResponse? makeHoldInvoiceResponse; // Removed, merged into makeInvoice
   String? holdInvoicePreimage;
   String?
-      holdInvoicePaymentHash; // Still needed to identify the hold invoice for notifications/settle/cancel
+  holdInvoicePaymentHash; // Still needed to identify the hold invoice for notifications/settle/cancel
   bool isHoldInvoice = false; // For the checkbox
   bool _currentInvoiceWasHold =
       false; // To track if the current 'makeInvoice' is a hold type
@@ -182,8 +182,10 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                'NIP-47 callback received. Fetching wallet connection info from $discoveryRelay...')),
+          content: Text(
+            'NIP-47 callback received. Fetching wallet connection info from $discoveryRelay...',
+          ),
+        ),
       );
 
       try {
@@ -202,10 +204,12 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
 
         if (nwcAppKey == null || nwcAppKey!.privateKey == null) {
           print(
-              'NIP-47 Error: nwcAppKey or its private key is null. Cannot construct NWC URI.');
+            'NIP-47 Error: nwcAppKey or its private key is null. Cannot construct NWC URI.',
+          );
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text('Error: App NWC key not fully initialized.')),
+              content: Text('Error: App NWC key not fully initialized.'),
+            ),
           );
           return;
         }
@@ -225,9 +229,11 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
         Nip01Event? foundWalletAuthEvent = await stream.first;
 
         print(
-            'Successfully fetched and validated NWC Info Event (Kind ${NwcKind.INFO.value}):');
+          'Successfully fetched and validated NWC Info Event (Kind ${NwcKind.INFO.value}):',
+        );
         print(
-            '  Author (Wallet NWC Service Pubkey): ${foundWalletAuthEvent.pubKey}');
+          '  Author (Wallet NWC Service Pubkey): ${foundWalletAuthEvent.pubKey}',
+        );
 
         // Construct the NWC URI as per user's explicit instructions:
         // walletPubKey is the author of the 13194 event
@@ -243,7 +249,8 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
             'nostr+walletconnect://$walletNwcServicePubkey?relay=${Uri.encodeComponent(nwcRelayForConnectionUri)}&secret=$appNwcPrivateKeyForSecret';
 
         print(
-            'Constructed NWC connection URI (as per explicit instructions): $constructedNwcUri');
+          'Constructed NWC connection URI (as per explicit instructions): $constructedNwcUri',
+        );
 
         setState(() {
           uri.text = constructedNwcUri;
@@ -263,18 +270,23 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
           balance = null;
           _resetInvoiceStates();
           // If make_hold_invoice is not permitted, ensure isHoldInvoice is false.
-          if (!(connection!.info?.methods
-                  .contains(NwcMethod.MAKE_HOLD_INVOICE.name) ??
+          if (!(connection!.info?.methods.contains(
+                NwcMethod.MAKE_HOLD_INVOICE.name,
+              ) ??
               false)) {
             isHoldInvoice = false;
           }
         });
         print(
-            'Successfully connected to NWC wallet: $walletNwcServicePubkey via $nwcRelayForConnectionUri');
+          'Successfully connected to NWC wallet: $walletNwcServicePubkey via $nwcRelayForConnectionUri',
+        );
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(
+          SnackBar(
+            content: Text(
               // Try using 'alias' as per potential GetInfoResponse field, fallback to pubkey
-              'NWC Connected to: ${connection?.info?.alias ?? walletNwcServicePubkey.substring(0, 10)}...')),
+              'NWC Connected to: ${connection?.info?.alias ?? walletNwcServicePubkey.substring(0, 10)}...',
+            ),
+          ),
         );
       } catch (e) {
         print('Error during NIP-47 callback processing: $e');
@@ -284,7 +296,8 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
       }
     } else {
       print(
-          'Received unhandled protocol URL or missing pending NIP-47 auth state: $url');
+        'Received unhandled protocol URL or missing pending NIP-47 auth state: $url',
+      );
     }
   }
 
@@ -298,7 +311,8 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
             // Always generate a new nwcAppKey for NIP-47 auth when this button is pressed.
             nwcAppKey = Bip340.generatePrivateKey();
             print(
-                "Generated new, fresh nwcAppKey for NIP-47 auth: ${nwcAppKey!.publicKey}");
+              "Generated new, fresh nwcAppKey for NIP-47 auth: ${nwcAppKey!.publicKey}",
+            );
             // No need to call setState here as nwcAppKey is used immediately for URI construction.
 
             // This is the URI the button currently attempts to launch.
@@ -323,18 +337,19 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
             // Construct the URI that will be launched.
             // The host is our app's pubkey.
             final Uri launchUri = Uri(
-                scheme: 'nostr+walletauth',
-                host: nwcAppKey!.publicKey, // Our app's pubkey
-                queryParameters: {
-                  'relay':
-                      discoveryRelay, // Relay for discovering the kind 13194 event
-                  'name': appName,
-                  'request_methods': methods,
-                  'icon': appIcon,
-                  'return_to': returnTo,
-                  // NIP-47 also suggests a 'pubkey' param for the app's pubkey, but host is also used.
-                  // Let's ensure our _pendingAppPubkeyForAuth is nwcAppKey!.publicKey
-                });
+              scheme: 'nostr+walletauth',
+              host: nwcAppKey!.publicKey, // Our app's pubkey
+              queryParameters: {
+                'relay':
+                    discoveryRelay, // Relay for discovering the kind 13194 event
+                'name': appName,
+                'request_methods': methods,
+                'icon': appIcon,
+                'return_to': returnTo,
+                // NIP-47 also suggests a 'pubkey' param for the app's pubkey, but host is also used.
+                // Let's ensure our _pendingAppPubkeyForAuth is nwcAppKey!.publicKey
+              },
+            );
 
             // Store the context needed for when onProtocolUrlReceived is called.
             _pendingDiscoveryRelayUrl = discoveryRelay;
@@ -342,16 +357,19 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
                 .publicKey; // This is the pubkey our app uses for this auth flow.
 
             print(
-                "Attempting to launch NIP-47 Auth URI: ${launchUri.toString()}");
+              "Attempting to launch NIP-47 Auth URI: ${launchUri.toString()}",
+            );
             print(
-                "  _pendingDiscoveryRelayUrl set to: $_pendingDiscoveryRelayUrl");
+              "  _pendingDiscoveryRelayUrl set to: $_pendingDiscoveryRelayUrl",
+            );
             print(
-                "  _pendingAppPubkeyForAuth set to: $_pendingAppPubkeyForAuth");
+              "  _pendingAppPubkeyForAuth set to: $_pendingAppPubkeyForAuth",
+            );
 
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                  content:
-                      Text('Redirecting to wallet for NWC authorization...')),
+                content: Text('Redirecting to wallet for NWC authorization...'),
+              ),
             );
             try {
               await launchUrl(launchUri, mode: LaunchMode.externalApplication);
@@ -369,7 +387,8 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
         ),
       );
     }
-    widgets.add(Container(
+    widgets.add(
+      Container(
         padding: const EdgeInsets.all(20),
         width: 400,
         child: Row(
@@ -383,39 +402,46 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
                 },
                 decoration: InputDecoration(
                   prefixIcon: IconButton(
-                      onPressed: () {
-                        Clipboard.getData(Clipboard.kTextPlain)
-                            .then((clipboardData) {
-                          if (clipboardData != null &&
-                              clipboardData.text != null) {
-                            setState(() {
-                              uri.text = clipboardData.text!;
-                            });
-                          }
-                        });
-                      },
-                      icon: const Icon(Icons.paste)),
+                    onPressed: () {
+                      Clipboard.getData(Clipboard.kTextPlain).then((
+                        clipboardData,
+                      ) {
+                        if (clipboardData != null &&
+                            clipboardData.text != null) {
+                          setState(() {
+                            uri.text = clipboardData.text!;
+                          });
+                        }
+                      });
+                    },
+                    icon: const Icon(Icons.paste),
+                  ),
                   hintText: "nostr+wallet://... url",
                   hintStyle: const TextStyle(color: Colors.grey),
                 ),
                 style: const TextStyle(fontSize: 14),
               ),
-            )
+            ),
           ],
-        )));
+        ),
+      ),
+    );
     widgets.add(
       FilledButton(
         onPressed: uri.text.isNotEmpty
             ? () async {
                 _resetInvoiceStates(); // Reset states before new connection
-                NwcConnection? newConnection =
-                    await ndk.nwc.connect(uri.text, doGetInfoMethod: true);
+                NwcConnection? newConnection = await ndk.nwc.connect(
+                  uri.text,
+                  doGetInfoMethod: true,
+                );
                 setState(() {
                   connection = newConnection;
                   balance = null;
                   // If make_hold_invoice is not permitted, ensure isHoldInvoice is false.
-                  if (!(connection?.info?.methods
-                          .contains(NwcMethod.MAKE_HOLD_INVOICE.name) ??
+                  if (!(connection?.info?.methods.contains(
+                        NwcMethod.MAKE_HOLD_INVOICE.name,
+                      ) ??
                       false)) {
                     isHoldInvoice = false;
                   }
@@ -425,13 +451,13 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
         child: const Text('Connect and get info'),
       ),
     );
-    widgets.add(connection != null && connection!.info != null
-        ? Text("Methods ${connection!.info!.methods}")
-        : Container());
+    widgets.add(
+      connection != null && connection!.info != null
+          ? Text("Methods ${connection!.info!.methods}")
+          : Container(),
+    );
 
-    widgets.add(const SizedBox(
-      height: 20,
-    ));
+    widgets.add(const SizedBox(height: 20));
     widgets.add(
       FilledButton(
         onPressed: connection != null
@@ -445,28 +471,37 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
         child: const Text('Get Balance'),
       ),
     );
-    widgets.add(connection != null && balance != null
-        ? Text("Balance ${balance!.balanceSats} sats")
-        : Container());
+    widgets.add(
+      connection != null && balance != null
+          ? Text("Balance ${balance!.balanceSats} sats")
+          : Container(),
+    );
 
     widgets.add(
-        const Divider(height: 40, thickness: 1, indent: 20, endIndent: 20));
+      const Divider(height: 40, thickness: 1, indent: 20, endIndent: 20),
+    );
 
     // Determine if the "Make Invoice" button should be enabled
-    bool canSubmitMakeInvoice = connection != null &&
+    bool canSubmitMakeInvoice =
+        connection != null &&
         amount.text.isNotEmpty &&
         (int.tryParse(amount.text) ?? 0) > 0 &&
         (isHoldInvoice
-            ? connection!.info!.methods
-                .contains(NwcMethod.MAKE_HOLD_INVOICE.name)
+            ? connection!.info!.methods.contains(
+                NwcMethod.MAKE_HOLD_INVOICE.name,
+              )
             : connection!.info!.methods.contains(NwcMethod.MAKE_INVOICE.name));
 
     // --- Make Invoice Section ---
-    widgets.add(const Padding(
-      padding: EdgeInsets.symmetric(vertical: 16.0),
-      child: Text("Make Invoice",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-    ));
+    widgets.add(
+      const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.0),
+        child: Text(
+          "Make Invoice",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
     widgets.add(
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -508,10 +543,12 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
                 title: const Text("Hold Invoice"),
                 value: isHoldInvoice,
                 // Disable checkbox if connection is null, info is null, or method is not permitted
-                onChanged: (connection != null &&
+                onChanged:
+                    (connection != null &&
                         connection!.info != null &&
-                        connection!.info!.methods
-                            .contains(NwcMethod.MAKE_HOLD_INVOICE.name))
+                        connection!.info!.methods.contains(
+                          NwcMethod.MAKE_HOLD_INVOICE.name,
+                        ))
                     ? (bool? value) {
                         setState(() {
                           isHoldInvoice = value ?? false;
@@ -544,14 +581,16 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
 
                           final random = Random.secure();
                           final preimageBytes = Uint8List.fromList(
-                              List<int>.generate(
-                                  32, (_) => random.nextInt(256)));
+                            List<int>.generate(32, (_) => random.nextInt(256)),
+                          );
                           final preimageHex = convert.hex.encode(preimageBytes);
 
-                          final paymentHashBytes =
-                              crypto.sha256.convert(preimageBytes).bytes;
-                          final paymentHashHex =
-                              convert.hex.encode(paymentHashBytes);
+                          final paymentHashBytes = crypto.sha256
+                              .convert(preimageBytes)
+                              .bytes;
+                          final paymentHashHex = convert.hex.encode(
+                            paymentHashBytes,
+                          );
 
                           setState(() {
                             holdInvoicePreimage = preimageHex;
@@ -562,12 +601,13 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
 
                           try {
                             final response = await ndk.nwc.makeHoldInvoice(
-                                connection!,
-                                amountSats: sats,
-                                description: description.text.isNotEmpty
-                                    ? description.text
-                                    : null, // Pass null if empty
-                                paymentHash: paymentHashHex);
+                              connection!,
+                              amountSats: sats,
+                              description: description.text.isNotEmpty
+                                  ? description.text
+                                  : null, // Pass null if empty
+                              paymentHash: paymentHashHex,
+                            );
                             setState(() {
                               makeInvoice =
                                   response; // Store in the unified makeInvoice
@@ -605,7 +645,8 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
                                 regularInvoiceStatusMessage =
                                     "Regular invoice created. Waiting for payment...";
                                 _listenForRegularInvoicePayment(
-                                    response.paymentHash);
+                                  response.paymentHash,
+                                );
                               } else if (response.errorCode != null) {
                                 regularInvoiceStatusMessage =
                                     "Error creating regular invoice: ${response.errorMessage}";
@@ -621,8 +662,9 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
                         }
                       }
                     : null,
-                child:
-                    Text(isHoldInvoice ? 'Make Hold Invoice' : 'Make Invoice'),
+                child: Text(
+                  isHoldInvoice ? 'Make Hold Invoice' : 'Make Invoice',
+                ),
               ),
             ),
           ],
@@ -634,8 +676,9 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
     if (makeInvoice != null && makeInvoice!.errorCode == null) {
       widgets.add(SelectableText("Invoice: ${makeInvoice!.invoice}"));
       if (_currentInvoiceWasHold) {
-        widgets
-            .add(SelectableText("Payment Hash: ${makeInvoice!.paymentHash}"));
+        widgets.add(
+          SelectableText("Payment Hash: ${makeInvoice!.paymentHash}"),
+        );
       }
       if (makeInvoice!.invoice.isNotEmpty) {
         widgets.add(
@@ -643,16 +686,19 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
             padding: const EdgeInsets.all(8.0),
             child: GestureDetector(
               onTap: () async {
-                final Uri launchUri =
-                    Uri.parse('lightning:${makeInvoice!.invoice}');
+                final Uri launchUri = Uri.parse(
+                  'lightning:${makeInvoice!.invoice}',
+                );
                 if (await canLaunchUrl(launchUri)) {
                   await launchUrl(launchUri);
                 } else {
                   // Optionally, show a message if no app can handle the URI
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content: Text(
-                            'Could not launch Lightning invoice. No app found to handle it.')),
+                      content: Text(
+                        'Could not launch Lightning invoice. No app found to handle it.',
+                      ),
+                    ),
                   );
                   print('Could not launch $launchUri');
                 }
@@ -671,8 +717,12 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
       // If there was an error creating the invoice (and it's not a hold-specific status message already handled)
       if (!_currentInvoiceWasHold) {
         // Only show generic error if not a hold invoice with its own status
-        widgets.add(Text("Error creating invoice: ${makeInvoice!.errorMessage}",
-            style: const TextStyle(color: Colors.red)));
+        widgets.add(
+          Text(
+            "Error creating invoice: ${makeInvoice!.errorMessage}",
+            style: const TextStyle(color: Colors.red),
+          ),
+        );
       }
     }
 
@@ -681,14 +731,20 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
         makeInvoice != null &&
         makeInvoice!.errorCode == null) {
       if (regularInvoiceStatusMessage != null) {
-        widgets.add(Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Text(regularInvoiceStatusMessage!,
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Text(
+              regularInvoiceStatusMessage!,
               style: isRegularInvoicePaid
                   ? const TextStyle(
-                      color: Colors.green, fontWeight: FontWeight.bold)
-                  : null),
-        ));
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    )
+                  : null,
+            ),
+          ),
+        );
       }
     }
 
@@ -696,153 +752,185 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
     // are now part of the "Make Invoice" section's output, below the QR code.
     if (_currentInvoiceWasHold) {
       if (holdInvoiceStatusMessage != null) {
-        widgets.add(Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Text(holdInvoiceStatusMessage!),
-        ));
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Text(holdInvoiceStatusMessage!),
+          ),
+        );
       }
 
       if (isHoldInvoiceAccepted) {
-        widgets.add(const Text("Hold invoice accepted!",
-            style:
-                TextStyle(color: Colors.green, fontWeight: FontWeight.bold)));
-        widgets.add(Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FilledButton(
-              onPressed: (connection != null &&
-                      holdInvoicePreimage != null &&
-                      !isSettlingOrCancelling())
-                  ? () async {
-                      setState(() {
-                        holdInvoiceStatusMessage = "Settling hold invoice...";
-                        settleHoldInvoiceResponse = null;
-                        cancelHoldInvoiceResponse = null;
-                      });
-                      try {
-                        final response = await ndk.nwc.settleHoldInvoice(
-                            connection!,
-                            preimage: holdInvoicePreimage!);
+        widgets.add(
+          const Text(
+            "Hold invoice accepted!",
+            style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+          ),
+        );
+        widgets.add(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FilledButton(
+                onPressed:
+                    (connection != null &&
+                        holdInvoicePreimage != null &&
+                        !isSettlingOrCancelling())
+                    ? () async {
                         setState(() {
-                          settleHoldInvoiceResponse = response;
-                          if (response.errorCode == null) {
-                            holdInvoiceStatusMessage =
-                                "Hold invoice settled successfully. Preimage: $holdInvoicePreimage";
-                          } else {
-                            holdInvoiceStatusMessage =
-                                "Error settling invoice: ${response.errorMessage}";
-                          }
+                          holdInvoiceStatusMessage = "Settling hold invoice...";
+                          settleHoldInvoiceResponse = null;
+                          cancelHoldInvoiceResponse = null;
                         });
-                      } catch (e) {
+                        try {
+                          final response = await ndk.nwc.settleHoldInvoice(
+                            connection!,
+                            preimage: holdInvoicePreimage!,
+                          );
+                          setState(() {
+                            settleHoldInvoiceResponse = response;
+                            if (response.errorCode == null) {
+                              holdInvoiceStatusMessage =
+                                  "Hold invoice settled successfully. Preimage: $holdInvoicePreimage";
+                            } else {
+                              holdInvoiceStatusMessage =
+                                  "Error settling invoice: ${response.errorMessage}";
+                            }
+                          });
+                        } catch (e) {
+                          setState(() {
+                            holdInvoiceStatusMessage =
+                                "Exception settling invoice: $e";
+                          });
+                        }
+                      }
+                    : null,
+                child: const Text("Settle Invoice"),
+              ),
+              const SizedBox(width: 20),
+              FilledButton(
+                onPressed:
+                    (connection != null &&
+                        holdInvoicePaymentHash != null &&
+                        !isSettlingOrCancelling())
+                    ? () async {
                         setState(() {
                           holdInvoiceStatusMessage =
-                              "Exception settling invoice: $e";
+                              "Cancelling hold invoice...";
+                          settleHoldInvoiceResponse = null;
+                          cancelHoldInvoiceResponse = null;
                         });
-                      }
-                    }
-                  : null,
-              child: const Text("Settle Invoice"),
-            ),
-            const SizedBox(width: 20),
-            FilledButton(
-              onPressed: (connection != null &&
-                      holdInvoicePaymentHash != null &&
-                      !isSettlingOrCancelling())
-                  ? () async {
-                      setState(() {
-                        holdInvoiceStatusMessage = "Cancelling hold invoice...";
-                        settleHoldInvoiceResponse = null;
-                        cancelHoldInvoiceResponse = null;
-                      });
-                      try {
-                        final response = await ndk.nwc.cancelHoldInvoice(
+                        try {
+                          final response = await ndk.nwc.cancelHoldInvoice(
                             connection!,
-                            paymentHash: holdInvoicePaymentHash!);
-                        setState(() {
-                          cancelHoldInvoiceResponse = response;
-                          if (response.errorCode == null) {
+                            paymentHash: holdInvoicePaymentHash!,
+                          );
+                          setState(() {
+                            cancelHoldInvoiceResponse = response;
+                            if (response.errorCode == null) {
+                              holdInvoiceStatusMessage =
+                                  "Hold invoice cancelled successfully.";
+                            } else {
+                              holdInvoiceStatusMessage =
+                                  "Error cancelling invoice: ${response.errorMessage}";
+                            }
+                          });
+                        } catch (e) {
+                          setState(() {
                             holdInvoiceStatusMessage =
-                                "Hold invoice cancelled successfully.";
-                          } else {
-                            holdInvoiceStatusMessage =
-                                "Error cancelling invoice: ${response.errorMessage}";
-                          }
-                        });
-                      } catch (e) {
-                        setState(() {
-                          holdInvoiceStatusMessage =
-                              "Exception cancelling invoice: $e";
-                        });
+                                "Exception cancelling invoice: $e";
+                          });
+                        }
                       }
-                    }
-                  : null,
-              child: const Text("Cancel Invoice"),
-            ),
-          ],
-        ));
+                    : null,
+                child: const Text("Cancel Invoice"),
+              ),
+            ],
+          ),
+        );
       }
 
       if (settleHoldInvoiceResponse != null) {
-        widgets.add(Text(settleHoldInvoiceResponse!.errorCode == null
-            ? "Settle successful! Preimage: $holdInvoicePreimage"
-            : "Settle failed: ${settleHoldInvoiceResponse!.errorMessage}"));
+        widgets.add(
+          Text(
+            settleHoldInvoiceResponse!.errorCode == null
+                ? "Settle successful! Preimage: $holdInvoicePreimage"
+                : "Settle failed: ${settleHoldInvoiceResponse!.errorMessage}",
+          ),
+        );
       }
       if (cancelHoldInvoiceResponse != null) {
-        widgets.add(Text(cancelHoldInvoiceResponse!.errorCode == null
-            ? "Cancel successful!"
-            : "Cancel failed: ${cancelHoldInvoiceResponse!.errorMessage}"));
+        widgets.add(
+          Text(
+            cancelHoldInvoiceResponse!.errorCode == null
+                ? "Cancel successful!"
+                : "Cancel failed: ${cancelHoldInvoiceResponse!.errorMessage}",
+          ),
+        );
       }
     }
 
     widgets.add(
-        const Divider(height: 40, thickness: 1, indent: 20, endIndent: 20));
+      const Divider(height: 40, thickness: 1, indent: 20, endIndent: 20),
+    );
 
     // --- Pay Invoice Section ---
-    widgets.add(const Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.0), // Reduced top padding
-      child: Text("Pay Invoice",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-    ));
+    widgets.add(
+      const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8.0), // Reduced top padding
+        child: Text(
+          "Pay Invoice",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
 
-    bool canPayInvoice = connection != null &&
+    bool canPayInvoice =
+        connection != null &&
         connection!.info!.methods.contains(NwcMethod.PAY_INVOICE.name) &&
         invoice.text != '';
 
-    widgets.add(Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Column(
-        children: [
-          SizedBox(
-            width: 300, // Centered invoice input field
-            child: TextField(
-              controller: invoice,
-              textAlign: TextAlign.center,
-              decoration: const InputDecoration(
-                hintText: "Invoice to pay (bolt11)",
-                hintStyle: TextStyle(color: Colors.grey),
+    widgets.add(
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          children: [
+            SizedBox(
+              width: 300, // Centered invoice input field
+              child: TextField(
+                controller: invoice,
+                textAlign: TextAlign.center,
+                decoration: const InputDecoration(
+                  hintText: "Invoice to pay (bolt11)",
+                  hintStyle: TextStyle(color: Colors.grey),
+                ),
+                style: const TextStyle(fontSize: 14),
               ),
-              style: const TextStyle(fontSize: 14),
             ),
-          ),
-          const SizedBox(height: 10),
-          FilledButton(
-            onPressed: canPayInvoice
-                ? () async {
-                    final p = await ndk.nwc
-                        .payInvoice(connection!, invoice: invoice.text);
-                    setState(() {
-                      payInvoice = p;
-                    });
-                  }
-                : null,
-            child: const Text('Pay Invoice'),
-          ),
-        ],
+            const SizedBox(height: 10),
+            FilledButton(
+              onPressed: canPayInvoice
+                  ? () async {
+                      final p = await ndk.nwc.payInvoice(
+                        connection!,
+                        invoice: invoice.text,
+                      );
+                      setState(() {
+                        payInvoice = p;
+                      });
+                    }
+                  : null,
+              child: const Text('Pay Invoice'),
+            ),
+          ],
+        ),
       ),
-    ));
-    widgets.add(payInvoice != null
-        ? SelectableText("Payment Preimage: ${payInvoice!.preimage}")
-        : Container());
+    );
+    widgets.add(
+      payInvoice != null
+          ? SelectableText("Payment Preimage: ${payInvoice!.preimage}")
+          : Container(),
+    );
 
     widgets.add(const Divider(height: 40, thickness: 2));
     widgets.add(
@@ -869,7 +957,9 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: SingleChildScrollView(
         child: Column(
-            mainAxisAlignment: MainAxisAlignment.start, children: widgets),
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: widgets,
+        ),
       ),
     );
   }
@@ -896,44 +986,49 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
     // Use makeInvoice.expiresAt as it now holds the response for both normal and hold invoices
     final duration = makeInvoice?.expiresAt != null
         ? (makeInvoice!.expiresAt! -
-            DateTime.now().millisecondsSinceEpoch ~/ 1000)
+              DateTime.now().millisecondsSinceEpoch ~/ 1000)
         : 300; // Default timeout if expiresAt is not available
 
     holdInvoiceStateSubscription = stream
         .timeout(
-            Duration(seconds: duration.toInt() > 0 ? duration.toInt() : 300))
-        .listen((notification) {
-      if (notification.notificationType ==
-              NwcNotification.kHoldInvoiceAccepted &&
-          notification.paymentHash == expectedPaymentHash) {
-        setState(() {
-          isHoldInvoiceAccepted = true;
-          holdInvoiceStatusMessage = "Hold invoice accepted by wallet!";
-        });
-        holdInvoiceStateSubscription?.cancel();
-      }
-    }, onError: (error) {
-      if (mounted) {
-        setState(() {
-          if (error is TimeoutException) {
-            holdInvoiceStatusMessage =
-                "Timed out waiting for hold invoice acceptance.";
-          } else {
-            holdInvoiceStatusMessage =
-                "Error listening for hold invoice acceptance: $error";
-          }
-        });
-      }
-    }, onDone: () {
-      if (mounted &&
-          !isHoldInvoiceAccepted &&
-          settleHoldInvoiceResponse == null &&
-          cancelHoldInvoiceResponse == null) {
-        // setState(() {
-        //   holdInvoiceStatusMessage = "Notification stream closed without acceptance.";
-        // });
-      }
-    });
+          Duration(seconds: duration.toInt() > 0 ? duration.toInt() : 300),
+        )
+        .listen(
+          (notification) {
+            if (notification.notificationType ==
+                    NwcNotification.kHoldInvoiceAccepted &&
+                notification.paymentHash == expectedPaymentHash) {
+              setState(() {
+                isHoldInvoiceAccepted = true;
+                holdInvoiceStatusMessage = "Hold invoice accepted by wallet!";
+              });
+              holdInvoiceStateSubscription?.cancel();
+            }
+          },
+          onError: (error) {
+            if (mounted) {
+              setState(() {
+                if (error is TimeoutException) {
+                  holdInvoiceStatusMessage =
+                      "Timed out waiting for hold invoice acceptance.";
+                } else {
+                  holdInvoiceStatusMessage =
+                      "Error listening for hold invoice acceptance: $error";
+                }
+              });
+            }
+          },
+          onDone: () {
+            if (mounted &&
+                !isHoldInvoiceAccepted &&
+                settleHoldInvoiceResponse == null &&
+                cancelHoldInvoiceResponse == null) {
+              // setState(() {
+              //   holdInvoiceStatusMessage = "Notification stream closed without acceptance.";
+              // });
+            }
+          },
+        );
   }
 
   void _listenForRegularInvoicePayment(String expectedPaymentHash) {
@@ -952,43 +1047,49 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
 
     final duration = makeInvoice?.expiresAt != null
         ? (makeInvoice!.expiresAt! -
-            DateTime.now().millisecondsSinceEpoch ~/ 1000)
+              DateTime.now().millisecondsSinceEpoch ~/ 1000)
         : 300; // Default timeout
 
     regularInvoicePaymentSubscription = stream
         .timeout(
-            Duration(seconds: duration.toInt() > 0 ? duration.toInt() : 300))
-        .listen((notification) {
-      if (notification.notificationType == NwcNotification.kPaymentReceived &&
-          notification.paymentHash == expectedPaymentHash) {
-        if (mounted) {
-          setState(() {
-            isRegularInvoicePaid = true;
-            regularInvoiceStatusMessage =
-                "Invoice PAID! Preimage: ${notification.preimage}";
-          });
-        }
-        regularInvoicePaymentSubscription?.cancel();
-      }
-      // We might also want to listen for kPaymentFailed if the NWC provider sends such for incoming payments that fail.
-      // Or, more commonly, the invoice just expires.
-    }, onError: (error) {
-      if (mounted) {
-        setState(() {
-          if (error is TimeoutException) {
-            regularInvoiceStatusMessage =
-                "Timed out waiting for invoice payment.";
-          } else {
-            regularInvoiceStatusMessage =
-                "Error listening for invoice payment: $error";
-          }
-        });
-      }
-    }, onDone: () {
-      if (mounted && !isRegularInvoicePaid) {
-        // If stream closes and invoice not paid, could update status.
-        // For now, timeout handles expiration.
-      }
-    });
+          Duration(seconds: duration.toInt() > 0 ? duration.toInt() : 300),
+        )
+        .listen(
+          (notification) {
+            if (notification.notificationType ==
+                    NwcNotification.kPaymentReceived &&
+                notification.paymentHash == expectedPaymentHash) {
+              if (mounted) {
+                setState(() {
+                  isRegularInvoicePaid = true;
+                  regularInvoiceStatusMessage =
+                      "Invoice PAID! Preimage: ${notification.preimage}";
+                });
+              }
+              regularInvoicePaymentSubscription?.cancel();
+            }
+            // We might also want to listen for kPaymentFailed if the NWC provider sends such for incoming payments that fail.
+            // Or, more commonly, the invoice just expires.
+          },
+          onError: (error) {
+            if (mounted) {
+              setState(() {
+                if (error is TimeoutException) {
+                  regularInvoiceStatusMessage =
+                      "Timed out waiting for invoice payment.";
+                } else {
+                  regularInvoiceStatusMessage =
+                      "Error listening for invoice payment: $error";
+                }
+              });
+            }
+          },
+          onDone: () {
+            if (mounted && !isRegularInvoicePaid) {
+              // If stream closes and invoice not paid, could update status.
+              // For now, timeout handles expiration.
+            }
+          },
+        );
   }
 }

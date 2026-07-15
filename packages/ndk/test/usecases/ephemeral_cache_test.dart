@@ -28,8 +28,7 @@ void main() {
   const ephemeralKind = 21133; // NIP-46 request
 
   group('ephemeral cache policy', () {
-    test(
-        'inbound ephemeral event via subscription is NOT written to cache '
+    test('inbound ephemeral event via subscription is NOT written to cache '
         'even when cacheWrite is true', () async {
       final mockRelay = MockRelay(name: 'ephemeral-cache-test');
       await mockRelay.startServer();
@@ -91,10 +90,9 @@ void main() {
         privateKey: authorKey.privateKey!,
       );
 
-      await broadcasterNdk.broadcast.broadcast(
-        nostrEvent: signedEvent,
-        specificRelays: [mockRelay.url],
-      ).broadcastDoneFuture;
+      await broadcasterNdk.broadcast
+          .broadcast(nostrEvent: signedEvent, specificRelays: [mockRelay.url])
+          .broadcastDoneFuture;
 
       await completer.future.timeout(const Duration(seconds: 5));
 
@@ -119,8 +117,7 @@ void main() {
       await broadcasterNdk.destroy();
     });
 
-    test(
-        'locally-stored ephemeral event IS returned by a query '
+    test('locally-stored ephemeral event IS returned by a query '
         '(cache read stays enabled)', () async {
       final mockRelay = MockRelay(name: 'ephemeral-read-test');
       await mockRelay.startServer();
@@ -152,10 +149,7 @@ void main() {
       // The relay has no matching stored events (ephemerals are not stored by
       // relays), so the only possible source is the cache.
       final response = ndk.requests.query(
-        filter: Filter(
-          kinds: [ephemeralKind],
-          authors: [authorKey.publicKey],
-        ),
+        filter: Filter(kinds: [ephemeralKind], authors: [authorKey.publicKey]),
         cacheRead: true,
         cacheWrite: false,
         explicitRelays: [mockRelay.url],
@@ -168,7 +162,8 @@ void main() {
       expect(
         results.map((e) => e.id),
         contains(ephemeralEvent.id),
-        reason: 'Cache read must stay enabled for ephemeral kinds so that '
+        reason:
+            'Cache read must stay enabled for ephemeral kinds so that '
             'locally-stored events (broadcasts, pending deliveries) remain '
             'discoverable by queries.',
       );
@@ -176,8 +171,7 @@ void main() {
       await ndk.destroy();
     });
 
-    test(
-        'broadcasting an ephemeral event purges it from cache once delivery '
+    test('broadcasting an ephemeral event purges it from cache once delivery '
         'is terminal (ephemeral cache is transient)', () async {
       final mockRelay = MockRelay(name: 'ephemeral-broadcast-test');
       await mockRelay.startServer();
@@ -236,8 +230,7 @@ void main() {
       await ndk.destroy();
     });
 
-    test(
-        'non-ephemeral events ARE cached normally on inbound query '
+    test('non-ephemeral events ARE cached normally on inbound query '
         '(regression guard)', () async {
       final key = Bip340.generatePrivateKey();
 
@@ -250,9 +243,7 @@ void main() {
       );
 
       final mockRelay = MockRelay(name: 'non-ephemeral-test');
-      await mockRelay.startServer(textNotes: {
-        key: textNote,
-      });
+      await mockRelay.startServer(textNotes: {key: textNote});
       addTearDown(() => mockRelay.stopServer());
 
       final cache = MemCacheManager();
@@ -289,8 +280,7 @@ void main() {
       await ndk.destroy();
     });
 
-    test(
-        'mixed ephemeral + non-ephemeral kinds: only ephemeral skipped '
+    test('mixed ephemeral + non-ephemeral kinds: only ephemeral skipped '
         '(per-event filtering)', () async {
       final key = Bip340.generatePrivateKey();
 
@@ -356,10 +346,9 @@ void main() {
         ),
         privateKey: key.privateKey!,
       );
-      await broadcasterNdk.broadcast.broadcast(
-        nostrEvent: textNote,
-        specificRelays: [mockRelay.url],
-      ).broadcastDoneFuture;
+      await broadcasterNdk.broadcast
+          .broadcast(nostrEvent: textNote, specificRelays: [mockRelay.url])
+          .broadcastDoneFuture;
 
       await textNoteReceived.future.timeout(const Duration(seconds: 5));
 
@@ -373,10 +362,12 @@ void main() {
         ),
         privateKey: key.privateKey!,
       );
-      await broadcasterNdk.broadcast.broadcast(
-        nostrEvent: ephemeralEvent,
-        specificRelays: [mockRelay.url],
-      ).broadcastDoneFuture;
+      await broadcasterNdk.broadcast
+          .broadcast(
+            nostrEvent: ephemeralEvent,
+            specificRelays: [mockRelay.url],
+          )
+          .broadcastDoneFuture;
 
       await ephemeralReceived.future.timeout(const Duration(seconds: 5));
 

@@ -23,17 +23,21 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
 
   static const relays = ["ws://localhost:10547"];
 
-  final ndkBip340 = Ndk(NdkConfig(
-    eventVerifier: MyVerifiers.bip340Verifier,
-    cache: MemCacheManager(),
-    bootstrapRelays: relays,
-  ));
+  final ndkBip340 = Ndk(
+    NdkConfig(
+      eventVerifier: MyVerifiers.bip340Verifier,
+      cache: MemCacheManager(),
+      bootstrapRelays: relays,
+    ),
+  );
 
-  final ndkRust = Ndk(NdkConfig(
-    eventVerifier: MyVerifiers.rustVerifier,
-    cache: MemCacheManager(),
-    bootstrapRelays: relays,
-  ));
+  final ndkRust = Ndk(
+    NdkConfig(
+      eventVerifier: MyVerifiers.rustVerifier,
+      cache: MemCacheManager(),
+      bootstrapRelays: relays,
+    ),
+  );
 
   Future<void> _runBip340Query() async {
     setState(() {
@@ -70,10 +74,7 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
   _runQuery(Ndk ndk) async {
     final query = ndk.requests.query(
       filters: [
-        Filter(
-          kinds: [1],
-          limit: _eventCount,
-        )
+        Filter(kinds: [1], limit: _eventCount),
       ],
       cacheRead: false,
       cacheWrite: false,
@@ -94,9 +95,7 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Query Performance'),
-      ),
+      appBar: AppBar(title: const Text('Query Performance')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

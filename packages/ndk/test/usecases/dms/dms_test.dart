@@ -76,10 +76,8 @@ void main() async {
     test('requires a logged-in account to send', () async {
       ndk.accounts.logout();
       expect(
-        () => ndk.dms.sendMessage(
-          recipientPubKey: bob.publicKey,
-          content: 'hi',
-        ),
+        () =>
+            ndk.dms.sendMessage(recipientPubKey: bob.publicKey, content: 'hi'),
         throwsA(isA<Exception>()),
       );
     });
@@ -87,10 +85,7 @@ void main() async {
     test('sendMessage throws when sender has no DM relays', () async {
       // Alice logged in but has no kind 10050 anywhere
       await expectLater(
-        ndk.dms.sendMessage(
-          recipientPubKey: bob.publicKey,
-          content: 'hi',
-        ),
+        ndk.dms.sendMessage(recipientPubKey: bob.publicKey, content: 'hi'),
         throwsA(isA<Exception>()),
       );
     });
@@ -99,112 +94,113 @@ void main() async {
       await publishDmRelayList(alice, urls: [relay.url]);
 
       expect(
-        ndk.dms.sendMessage(
-          recipientPubKey: bob.publicKey,
-          content: 'hi',
-        ),
+        ndk.dms.sendMessage(recipientPubKey: bob.publicKey, content: 'hi'),
         throwsA(isA<Exception>()),
       );
     });
 
-    test('sendMessage broadcasts a wrapped copy to each side\'s DM relays',
-        () async {
-      await publishDmRelayList(alice, urls: [relay.url]);
-      await publishDmRelayList(bob, urls: [relay.url]);
+    test(
+      'sendMessage broadcasts a wrapped copy to each side\'s DM relays',
+      () async {
+        await publishDmRelayList(alice, urls: [relay.url]);
+        await publishDmRelayList(bob, urls: [relay.url]);
 
-      await ndk.dms.sendMessage(
-        recipientPubKey: bob.publicKey,
-        content: 'hello bob',
-      );
+        await ndk.dms.sendMessage(
+          recipientPubKey: bob.publicKey,
+          content: 'hello bob',
+        );
 
-      // The mock relay should have received two distinct gift wrap events
-      // (one for the recipient, one for the sender).
-      final giftWraps = relay.receivedEvents
-          .where((e) => e.kind == GiftWrap.kGiftWrapEventkind)
-          .toList();
-      expect(giftWraps.length, greaterThanOrEqualTo(2));
+        // The mock relay should have received two distinct gift wrap events
+        // (one for the recipient, one for the sender).
+        final giftWraps = relay.receivedEvents
+            .where((e) => e.kind == GiftWrap.kGiftWrapEventkind)
+            .toList();
+        expect(giftWraps.length, greaterThanOrEqualTo(2));
 
-      final recipients = giftWraps.map((e) => e.pTags).expand((p) => p).toSet();
-      expect(recipients, containsAll([alice.publicKey, bob.publicKey]));
-    });
+        final recipients = giftWraps
+            .map((e) => e.pTags)
+            .expand((p) => p)
+            .toSet();
+        expect(recipients, containsAll([alice.publicKey, bob.publicKey]));
+      },
+    );
 
-    test('sendMessage with additional tags keeps the p tag on the rumor',
-        () async {
-      await publishDmRelayList(alice, urls: [relay.url]);
-      await publishDmRelayList(bob, urls: [relay.url]);
+    test(
+      'sendMessage with additional tags keeps the p tag on the rumor',
+      () async {
+        await publishDmRelayList(alice, urls: [relay.url]);
+        await publishDmRelayList(bob, urls: [relay.url]);
 
-      await ndk.dms.sendMessage(
-        recipientPubKey: bob.publicKey,
-        content: 'with subject',
-        additionalTags: const [
-          ['subject', 'greeting'],
-        ],
-      );
+        await ndk.dms.sendMessage(
+          recipientPubKey: bob.publicKey,
+          content: 'with subject',
+          additionalTags: const [
+            ['subject', 'greeting'],
+          ],
+        );
 
-      // Login as bob and load the conversation to verify the rumor carries the
-      // extra tag through the gift wrap.
-      ndk.accounts.logout();
-      ndk.accounts.loginPrivateKey(
-        pubkey: bob.publicKey,
-        privkey: bob.privateKey!,
-      );
-      await publishDmRelayList(bob, urls: [relay.url]);
+        // Login as bob and load the conversation to verify the rumor carries the
+        // extra tag through the gift wrap.
+        ndk.accounts.logout();
+        ndk.accounts.loginPrivateKey(
+          pubkey: bob.publicKey,
+          privkey: bob.privateKey!,
+        );
+        await publishDmRelayList(bob, urls: [relay.url]);
 
-      final conversations = await ndk.dms.loadConversations(
-        timeout: const Duration(seconds: 10),
-      );
-      expect(conversations, isNotEmpty);
+        final conversations = await ndk.dms.loadConversations(
+          timeout: const Duration(seconds: 10),
+        );
+        expect(conversations, isNotEmpty);
 
-      final aliceConv = conversations.firstWhere(
-        (c) => c.peerPubKey == alice.publicKey,
-      );
-      expect(aliceConv.messages, isNotEmpty);
-      final rumor = aliceConv.messages.first.rumor;
-      expect(
-        rumor.tags.any(
-            (t) => t.length >= 2 && t[0] == 'subject' && t[1] == 'greeting'),
-        isTrue,
-      );
-    });
+        final aliceConv = conversations.firstWhere(
+          (c) => c.peerPubKey == alice.publicKey,
+        );
+        expect(aliceConv.messages, isNotEmpty);
+        final rumor = aliceConv.messages.first.rumor;
+        expect(
+          rumor.tags.any(
+            (t) => t.length >= 2 && t[0] == 'subject' && t[1] == 'greeting',
+          ),
+          isTrue,
+        );
+      },
+    );
 
-    test('sender view keeps outgoing DMs with additional p tags for mentions',
-        () async {
-      await publishDmRelayList(alice, urls: [relay.url]);
-      await publishDmRelayList(bob, urls: [relay.url]);
+    test(
+      'sender view keeps outgoing DMs with additional p tags for mentions',
+      () async {
+        await publishDmRelayList(alice, urls: [relay.url]);
+        await publishDmRelayList(bob, urls: [relay.url]);
 
-      final mention = Bip340.generatePrivateKey();
-      await ndk.dms.sendMessage(
-        recipientPubKey: bob.publicKey,
-        content: 'hello with mention',
-        additionalTags: [
-          ['p', mention.publicKey],
-        ],
-      );
+        final mention = Bip340.generatePrivateKey();
+        await ndk.dms.sendMessage(
+          recipientPubKey: bob.publicKey,
+          content: 'hello with mention',
+          additionalTags: [
+            ['p', mention.publicKey],
+          ],
+        );
 
-      final messages = await ndk.dms.loadConversation(
-        peerPubKey: bob.publicKey,
-        timeout: const Duration(seconds: 10),
-      );
+        final messages = await ndk.dms.loadConversation(
+          peerPubKey: bob.publicKey,
+          timeout: const Duration(seconds: 10),
+        );
 
-      expect(messages, isNotEmpty);
-      expect(messages.single.content, 'hello with mention');
-      expect(messages.single.isOutgoing, isTrue);
-      expect(messages.single.peerPubKey, bob.publicKey);
-    });
+        expect(messages, isNotEmpty);
+        expect(messages.single.content, 'hello with mention');
+        expect(messages.single.isOutgoing, isTrue);
+        expect(messages.single.peerPubKey, bob.publicKey);
+      },
+    );
 
     test('loadConversations throws when not logged in', () async {
       ndk.accounts.logout();
-      expect(
-        ndk.dms.loadConversations(),
-        throwsA(isA<Exception>()),
-      );
+      expect(ndk.dms.loadConversations(), throwsA(isA<Exception>()));
     });
 
     test('loadConversations throws when user has no DM relays', () async {
-      await expectLater(
-        ndk.dms.loadConversations(),
-        throwsA(isA<Exception>()),
-      );
+      await expectLater(ndk.dms.loadConversations(), throwsA(isA<Exception>()));
     });
 
     test('loadConversations returns empty when no messages exist', () async {
@@ -227,57 +223,58 @@ void main() async {
     });
 
     test(
-        'send then load round-trip groups messages by peer and marks direction',
-        () async {
-      await publishDmRelayList(alice, urls: [relay.url]);
-      await publishDmRelayList(bob, urls: [relay.url]);
+      'send then load round-trip groups messages by peer and marks direction',
+      () async {
+        await publishDmRelayList(alice, urls: [relay.url]);
+        await publishDmRelayList(bob, urls: [relay.url]);
 
-      // Alice sends two messages to bob. createdAt is second-precision, so we
-      // wait > 1s between sends to guarantee a strict ordering.
-      await ndk.dms.sendMessage(
-        recipientPubKey: bob.publicKey,
-        content: 'message 1',
-      );
-      await Future.delayed(const Duration(seconds: 2));
-      await ndk.dms.sendMessage(
-        recipientPubKey: bob.publicKey,
-        content: 'message 2',
-      );
+        // Alice sends two messages to bob. createdAt is second-precision, so we
+        // wait > 1s between sends to guarantee a strict ordering.
+        await ndk.dms.sendMessage(
+          recipientPubKey: bob.publicKey,
+          content: 'message 1',
+        );
+        await Future.delayed(const Duration(seconds: 2));
+        await ndk.dms.sendMessage(
+          recipientPubKey: bob.publicKey,
+          content: 'message 2',
+        );
 
-      // Alice can load her own conversations from her DM relays
-      final aliceConversations = await ndk.dms.loadConversations(
-        timeout: const Duration(seconds: 10),
-      );
-      expect(aliceConversations.length, 1);
-      final aliceConv = aliceConversations.first;
-      expect(aliceConv.peerPubKey, bob.publicKey);
-      expect(aliceConv.messages.length, 2);
-      // Alice authored these, so they are outgoing for her.
-      for (final m in aliceConv.messages) {
-        expect(m.isOutgoing, isTrue);
-      }
-      // messages are sorted ascending by createdAt; second message is newest
-      expect(aliceConv.latestMessage.content, 'message 2');
+        // Alice can load her own conversations from her DM relays
+        final aliceConversations = await ndk.dms.loadConversations(
+          timeout: const Duration(seconds: 10),
+        );
+        expect(aliceConversations.length, 1);
+        final aliceConv = aliceConversations.first;
+        expect(aliceConv.peerPubKey, bob.publicKey);
+        expect(aliceConv.messages.length, 2);
+        // Alice authored these, so they are outgoing for her.
+        for (final m in aliceConv.messages) {
+          expect(m.isOutgoing, isTrue);
+        }
+        // messages are sorted ascending by createdAt; second message is newest
+        expect(aliceConv.latestMessage.content, 'message 2');
 
-      // Bob logs in and sees the conversation as incoming.
-      ndk.accounts.logout();
-      ndk.accounts.loginPrivateKey(
-        pubkey: bob.publicKey,
-        privkey: bob.privateKey!,
-      );
+        // Bob logs in and sees the conversation as incoming.
+        ndk.accounts.logout();
+        ndk.accounts.loginPrivateKey(
+          pubkey: bob.publicKey,
+          privkey: bob.privateKey!,
+        );
 
-      final bobConversation = await ndk.dms.loadConversation(
-        peerPubKey: alice.publicKey,
-        timeout: const Duration(seconds: 10),
-      );
-      expect(bobConversation.length, 2);
-      for (final m in bobConversation) {
-        expect(m.isOutgoing, isFalse);
-        expect(m.peerPubKey, alice.publicKey);
-      }
-      final contents = bobConversation.map((m) => m.content).toSet();
-      expect(contents, containsAll(['message 1', 'message 2']));
-    });
+        final bobConversation = await ndk.dms.loadConversation(
+          peerPubKey: alice.publicKey,
+          timeout: const Duration(seconds: 10),
+        );
+        expect(bobConversation.length, 2);
+        for (final m in bobConversation) {
+          expect(m.isOutgoing, isFalse);
+          expect(m.peerPubKey, alice.publicKey);
+        }
+        final contents = bobConversation.map((m) => m.content).toSet();
+        expect(contents, containsAll(['message 1', 'message 2']));
+      },
+    );
 
     test('conversations are sorted by latest message descending', () async {
       await publishDmRelayList(alice, urls: [relay.url]);
@@ -320,9 +317,7 @@ void main() async {
         recipientPubKey: bob.publicKey,
         content: 'cached msg',
       );
-      await ndk.dms.loadConversations(
-        timeout: const Duration(seconds: 10),
-      );
+      await ndk.dms.loadConversations(timeout: const Duration(seconds: 10));
 
       snapshot = await ndk.dms.loadConversationsSnapshot();
       // After a network load, the gift wraps are cached and decryptable via
@@ -359,9 +354,7 @@ void main() async {
         recipientPubkey: alice.publicKey,
       );
 
-      final parsed = await ndk.dms.parseWrappedMessage(
-        wrappedEvent: wrap,
-      );
+      final parsed = await ndk.dms.parseWrappedMessage(wrappedEvent: wrap);
       expect(parsed, isNull);
     });
 
@@ -383,40 +376,38 @@ void main() async {
         recipientPubkey: alice.publicKey,
       );
 
-      final parsed = await ndk.dms.parseWrappedMessage(
-        wrappedEvent: wrap,
-      );
+      final parsed = await ndk.dms.parseWrappedMessage(wrappedEvent: wrap);
       expect(parsed, isNotNull);
       expect(parsed!.content, 'hi alice');
       expect(parsed.peerPubKey, bob.publicKey);
       expect(parsed.isOutgoing, isFalse);
     });
 
-    test('parseWrappedMessage resolves outgoing direction for author',
-        () async {
-      await publishDmRelayList(alice, urls: [relay.url]);
-      await publishDmRelayList(bob, urls: [relay.url]);
+    test(
+      'parseWrappedMessage resolves outgoing direction for author',
+      () async {
+        await publishDmRelayList(alice, urls: [relay.url]);
+        await publishDmRelayList(bob, urls: [relay.url]);
 
-      // Alice authors a DM rumor and wraps it for herself (sender copy).
-      final rumor = await ndk.giftWrap.createRumor(
-        content: 'self copy',
-        kind: Dms.kMessageKind,
-        tags: [
-          ['p', bob.publicKey],
-        ],
-      );
-      final wrap = await ndk.giftWrap.toGiftWrap(
-        rumor: rumor,
-        recipientPubkey: alice.publicKey,
-      );
+        // Alice authors a DM rumor and wraps it for herself (sender copy).
+        final rumor = await ndk.giftWrap.createRumor(
+          content: 'self copy',
+          kind: Dms.kMessageKind,
+          tags: [
+            ['p', bob.publicKey],
+          ],
+        );
+        final wrap = await ndk.giftWrap.toGiftWrap(
+          rumor: rumor,
+          recipientPubkey: alice.publicKey,
+        );
 
-      final parsed = await ndk.dms.parseWrappedMessage(
-        wrappedEvent: wrap,
-      );
-      expect(parsed, isNotNull);
-      expect(parsed!.isOutgoing, isTrue);
-      expect(parsed.peerPubKey, bob.publicKey);
-    });
+        final parsed = await ndk.dms.parseWrappedMessage(wrappedEvent: wrap);
+        expect(parsed, isNotNull);
+        expect(parsed!.isOutgoing, isTrue);
+        expect(parsed.peerPubKey, bob.publicKey);
+      },
+    );
 
     test('kMessageKind is the NIP-17 text message kind (14)', () {
       expect(Dms.kMessageKind, 14);

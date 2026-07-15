@@ -21,14 +21,18 @@ void main() async {
 
     // Use a prebuilt ndk usecase (contact list in this case)
     final response = await ndk.follows.getContactList(
-        '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d');
+      '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d',
+    );
 
     // read entity
     print("CONTACTS:");
     print(response?.contacts.length ?? "no contacts");
 
     expect(response, isNotNull, reason: 'response is Null');
-    expect(response!.contacts.length, greaterThan(0),
-        reason: 'contact list is empty');
+    expect(
+      response!.contacts.length,
+      greaterThan(0),
+      reason: 'contact list is empty',
+    );
   });
 }

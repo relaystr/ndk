@@ -43,8 +43,9 @@ void main() async {
     test('state updates are received', () async {
       final completer = Completer<Map<String, RelayConnectivity>>();
 
-      final subscription =
-          ndk.connectivity.relayConnectivityChanges.listen((event) {
+      final subscription = ndk.connectivity.relayConnectivityChanges.listen((
+        event,
+      ) {
         // When we detect a change where one relay is disconnected, complete the completer
         if (event[relay0.url]?.isConnected == true &&
             event[relay1.url]?.isConnected == true) {
@@ -52,11 +53,12 @@ void main() async {
         }
       });
 
-      ndk.requests.query(filters: [
-        Filter(kinds: [1])
-      ], explicitRelays: [
-        relay1.url
-      ]);
+      ndk.requests.query(
+        filters: [
+          Filter(kinds: [1]),
+        ],
+        explicitRelays: [relay1.url],
+      );
 
       // Wait for the disconnection event with a timeout
       final result = await completer.future.timeout(
@@ -72,36 +74,25 @@ void main() async {
     });
 
     test('try reconnect', () async {
-      ndk.requests.query(filters: [
-        Filter(kinds: [1])
-      ], explicitRelays: [
-        relay1.url
-      ]);
-
-      await _waitForRelayConnectionState(
-        ndk,
-        relay1.url,
-        true,
+      ndk.requests.query(
+        filters: [
+          Filter(kinds: [1]),
+        ],
+        explicitRelays: [relay1.url],
       );
+
+      await _waitForRelayConnectionState(ndk, relay1.url, true);
       expect(ndk.relays.globalState.relays[relay0.url]?.isConnected, true);
       expect(ndk.relays.globalState.relays[relay1.url]?.isConnected, true);
 
       await ndk.relays.resetTransport(relay1.url);
 
-      await _waitForRelayConnectionState(
-        ndk,
-        relay1.url,
-        false,
-      );
+      await _waitForRelayConnectionState(ndk, relay1.url, false);
       expect(ndk.relays.globalState.relays[relay0.url]?.isConnected, true);
       expect(ndk.relays.globalState.relays[relay1.url]?.isConnected, false);
 
       await ndk.connectivity.tryReconnect();
-      await _waitForRelayConnectionState(
-        ndk,
-        relay1.url,
-        true,
-      );
+      await _waitForRelayConnectionState(ndk, relay1.url, true);
       expect(ndk.relays.globalState.relays[relay0.url]?.isConnected, true);
       expect(ndk.relays.globalState.relays[relay1.url]?.isConnected, true);
     });

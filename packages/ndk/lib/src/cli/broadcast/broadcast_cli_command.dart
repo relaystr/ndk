@@ -73,7 +73,8 @@ Output control:
     final eventSigner = _resolveSigner(ndk, parsed, event);
     if (eventSigner == null) {
       stderr.writeln(
-          'Event is unsigned and no signer available. Pass --privkey or run "ndk accounts login".');
+        'Event is unsigned and no signer available. Pass --privkey or run "ndk accounts login".',
+      );
       return 2;
     }
 
@@ -88,7 +89,8 @@ Output control:
     }
 
     stdout.writeln(
-        'Broadcasting event ${event.id} to ${parsed.relays.length} relay(s)...');
+      'Broadcasting event ${event.id} to ${parsed.relays.length} relay(s)...',
+    );
     final response = ndk.broadcast.broadcast(
       nostrEvent: event,
       specificRelays: parsed.relays,
@@ -105,11 +107,13 @@ Output control:
           ? 'OK'
           : (r.okReceived ? 'REJECTED' : 'NO-RESPONSE');
       stdout.writeln(
-          '  ${r.relayUrl}: $status ${r.msg.isEmpty ? "" : '(${r.msg})'}');
+        '  ${r.relayUrl}: $status ${r.msg.isEmpty ? "" : '(${r.msg})'}',
+      );
       if (r.broadcastSuccessful) okCount++;
     }
     stdout.writeln(
-        'Done: $okCount/${results.length} relay(s) accepted the event.');
+      'Done: $okCount/${results.length} relay(s) accepted the event.',
+    );
     return okCount == 0 ? 1 : 0;
   }
 
@@ -118,7 +122,8 @@ Output control:
       final decoded = jsonDecode(parsed.eventJson!);
       if (decoded is! Map) {
         throw ArgumentError(
-            'Event JSON must decode to an object, got ${decoded.runtimeType}');
+          'Event JSON must decode to an object, got ${decoded.runtimeType}',
+        );
       }
       return Nip01EventModel.fromJson(decoded.cast<String, dynamic>());
     }
@@ -132,7 +137,8 @@ Output control:
           : null;
       if (pubKey == null || pubKey.isEmpty) {
         throw ArgumentError(
-            'Inline build requires --pubkey, an active account, or --privkey.');
+          'Inline build requires --pubkey, an active account, or --privkey.',
+        );
       }
       return Nip01Event(
         pubKey: pubKey,
@@ -143,7 +149,8 @@ Output control:
     }
 
     throw ArgumentError(
-        'No event source. Use --event, --file, --stdin, or --kind + --content.');
+      'No event source. Use --event, --file, --stdin, or --kind + --content.',
+    );
   }
 
   _SignerResolution? _resolveSigner(
@@ -175,8 +182,9 @@ Output control:
     final hex = _resolvePrivateKey(value);
     if (hex == null) return null;
     return Bip340EventSigner(
-        privateKey: hex,
-        publicKey: Bip340EventSignerFactory().derivePublicKey(hex));
+      privateKey: hex,
+      publicKey: Bip340EventSignerFactory().derivePublicKey(hex),
+    );
   }
 
   String? _resolvePrivateKey(String value) {
@@ -327,7 +335,8 @@ Output control:
         final d = double.tryParse(v);
         if (d == null || d <= 0 || d > 1) {
           return _BroadcastArgs(
-              error: 'Invalid --consider-done "$v" (must be 0 < x <= 1)');
+            error: 'Invalid --consider-done "$v" (must be 0 < x <= 1)',
+          );
         }
         result.considerDonePercent = d;
         continue;

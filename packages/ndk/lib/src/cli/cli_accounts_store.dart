@@ -31,11 +31,11 @@ class CliAccountRecord {
       type == CliAccountType.privateKey || type == CliAccountType.bunker;
 
   Map<String, dynamic> toJson() => {
-        'pubkey': pubkey,
-        'type': type.name,
-        if (privkey != null) 'privkey': privkey,
-        if (bunker != null) 'bunker': bunker,
-      };
+    'pubkey': pubkey,
+    'type': type.name,
+    if (privkey != null) 'privkey': privkey,
+    if (bunker != null) 'bunker': bunker,
+  };
 
   factory CliAccountRecord.fromJson(Map<String, dynamic> json) {
     final type = CliAccountType.values.firstWhere(
@@ -70,7 +70,8 @@ class CliAccountsStore {
   static String defaultPath() {
     final fromEnv = Platform.environment['NDK_ACCOUNTS_FILE'];
     if (fromEnv != null && fromEnv.isNotEmpty) return fromEnv;
-    final home = Platform.environment['HOME'] ??
+    final home =
+        Platform.environment['HOME'] ??
         Platform.environment['USERPROFILE'] ??
         '.';
     return p.join(home, _defaultDirName, _defaultFileName);
@@ -87,8 +88,9 @@ class CliAccountsStore {
         final data = jsonDecode(raw) as Map<String, dynamic>;
         final list = data['accounts'] as List? ?? const [];
         for (final item in list) {
-          store._records
-              .add(CliAccountRecord.fromJson(item as Map<String, dynamic>));
+          store._records.add(
+            CliAccountRecord.fromJson(item as Map<String, dynamic>),
+          );
         }
         store.defaultPubkey = data['defaultPubkey'] as String?;
       } catch (e) {
@@ -168,7 +170,8 @@ class CliAccountsStore {
     }
     if (!alreadyExisted) {
       stderr.writeln(
-          'warning: wrote plaintext signing material to ${_file.path} (mode 600).');
+        'warning: wrote plaintext signing material to ${_file.path} (mode 600).',
+      );
       stderr.writeln('         Do not commit or share this file.');
     }
   }

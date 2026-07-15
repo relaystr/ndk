@@ -35,20 +35,23 @@ class LnurlWalletProvider implements WalletProvider {
     final identifier = metadata['identifier'] as String?;
     if (identifier == null || identifier.isEmpty) {
       throw ArgumentError(
-          'LnurlWallet requires metadata["identifier"] in user@domain.com format');
+        'LnurlWallet requires metadata["identifier"] in user@domain.com format',
+      );
     }
 
     // Validate identifier format (user@domain.com)
     if (!_isValidIdentifier(identifier)) {
       throw ArgumentError(
-          'LnurlWallet identifier must be in user@domain.com format');
+        'LnurlWallet identifier must be in user@domain.com format',
+      );
     }
 
     // Resolve to LNURL endpoint
     final lnurlPayUrl = Lnurl.getLud16LinkFromLud16(identifier);
     if (lnurlPayUrl == null) {
       throw ArgumentError(
-          'Could not resolve LNURL endpoint from identifier: $identifier');
+        'Could not resolve LNURL endpoint from identifier: $identifier',
+      );
     }
 
     return LnurlWallet(
@@ -107,11 +110,15 @@ class LnurlWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<PayInvoiceResponse> send(Wallet wallet, String invoice,
-      {Duration? timeout}) async {
+  Future<PayInvoiceResponse> send(
+    Wallet wallet,
+    String invoice, {
+    Duration? timeout,
+  }) async {
     // LNURL wallet is receive-only, cannot pay invoices
     throw UnsupportedError(
-        'LNURL wallet is receive-only and cannot pay invoices');
+      'LNURL wallet is receive-only and cannot pay invoices',
+    );
   }
 
   @override
@@ -123,8 +130,9 @@ class LnurlWalletProvider implements WalletProvider {
     final cached = _metadataCache[lnurlWallet.identifier];
     if (cached != null && !cached.isExpired) {
       metadata = cached.response;
-      Logger.log
-          .d(() => 'Using cached LNURL metadata for ${lnurlWallet.identifier}');
+      Logger.log.d(
+        () => 'Using cached LNURL metadata for ${lnurlWallet.identifier}',
+      );
     } else {
       metadata = await _fetchAndCacheMetadata(lnurlWallet);
     }
@@ -134,12 +142,14 @@ class LnurlWalletProvider implements WalletProvider {
     if (metadata.minSendable != null &&
         amountMillisats < metadata.minSendable!) {
       throw ArgumentError(
-          'Amount $amountSats sats is below minimum ${metadata.minSendable! ~/ 1000} sats');
+        'Amount $amountSats sats is below minimum ${metadata.minSendable! ~/ 1000} sats',
+      );
     }
     if (metadata.maxSendable != null &&
         amountMillisats > metadata.maxSendable!) {
       throw ArgumentError(
-          'Amount $amountSats sats exceeds maximum ${metadata.maxSendable! ~/ 1000} sats');
+        'Amount $amountSats sats exceeds maximum ${metadata.maxSendable! ~/ 1000} sats',
+      );
     }
 
     // Generate invoice via callback
@@ -189,7 +199,8 @@ class LnurlWalletProvider implements WalletProvider {
     final response = await _lnurlUseCase.getLnurlResponse(wallet.lnurlPayUrl);
     if (response == null) {
       throw Exception(
-          'Failed to fetch LNURL metadata from ${wallet.lnurlPayUrl}');
+        'Failed to fetch LNURL metadata from ${wallet.lnurlPayUrl}',
+      );
     }
 
     // Cache the metadata
@@ -211,10 +222,7 @@ class _CachedMetadata {
   final LnurlResponse response;
   final DateTime fetchedAt;
 
-  _CachedMetadata({
-    required this.response,
-    required this.fetchedAt,
-  });
+  _CachedMetadata({required this.response, required this.fetchedAt});
 
   /// Check if cache is expired (10 minutes)
   bool get isExpired {

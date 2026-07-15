@@ -80,12 +80,15 @@ class RequestState {
       timeoutDuration = request.timeoutDuration;
       _startTimeout(timeoutDuration!);
     }
-    _streamSubscription = controller.listen((e) {}, onDone: () {
-      if (_timeout != null) {
-        _timeout!.cancel();
-      }
-      _streamSubscription.cancel();
-    });
+    _streamSubscription = controller.listen(
+      (e) {},
+      onDone: () {
+        if (_timeout != null) {
+          _timeout!.cancel();
+        }
+        _streamSubscription.cancel();
+      },
+    );
   }
 
   void _startTimeout(Duration duration) {
@@ -121,8 +124,9 @@ class RequestState {
       !requests.values.any((element) => !element.receivedEOSE);
 
   /// checks if all requests finished (received EOSE or CLOSED)
-  bool get didAllRequestsFinish => requests.values
-      .every((element) => element.receivedEOSE || element.receivedClosed);
+  bool get didAllRequestsFinish => requests.values.every(
+    (element) => element.receivedEOSE || element.receivedClosed,
+  );
 
   /// Adds single relay request to the state
   void addRequest(String url, List<Filter> filters) {

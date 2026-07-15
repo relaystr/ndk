@@ -45,4 +45,5 @@ class WebsocketDSClient {
     return state is Disconnected ? state.reason : null;
   }
 }
+
 // coverage:ignore-end

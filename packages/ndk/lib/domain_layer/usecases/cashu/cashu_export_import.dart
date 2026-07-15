@@ -40,9 +40,9 @@ class CashuStateExportImport {
     required CashuCacheDecorator cacheManagerCashu,
     required WalletsRepo walletsRepo,
     required CashuSeed cashuSeed,
-  })  : _cacheManagerCashu = cacheManagerCashu,
-        _walletsRepo = walletsRepo,
-        _cashuSeed = cashuSeed;
+  }) : _cacheManagerCashu = cacheManagerCashu,
+       _walletsRepo = walletsRepo,
+       _cashuSeed = cashuSeed;
 
   /// Export all cashu state as a JSON-serializable map.
   ///
@@ -78,9 +78,11 @@ class CashuStateExportImport {
           state: state,
         );
         for (final proof in proofs) {
-          proofsJson.add(proof.toJson()
-            ..['mintUrl'] = mintUrl
-            ..['state'] = state.value);
+          proofsJson.add(
+            proof.toJson()
+              ..['mintUrl'] = mintUrl
+              ..['state'] = state.value,
+          );
         }
       }
     }
@@ -113,8 +115,10 @@ class CashuStateExportImport {
       try {
         export['seedPhrase'] = _cashuSeed.getSeedPhrase().sentence;
       } catch (_) {
-        Logger.log.w(() =>
-            'Cashu export: no seed phrase set, exporting without it. The export will not be restorable on a new device.');
+        Logger.log.w(
+          () =>
+              'Cashu export: no seed phrase set, exporting without it. The export will not be restorable on a new device.',
+        );
       }
     }
 
@@ -122,8 +126,9 @@ class CashuStateExportImport {
       final transactions = await _walletsRepo.getTransactions(
         walletType: WalletType.CASHU,
       );
-      export['transactions'] =
-          transactions.map(WalletTransactionModel.toJson).toList();
+      export['transactions'] = transactions
+          .map(WalletTransactionModel.toJson)
+          .toList();
     }
 
     return export;
@@ -164,12 +169,14 @@ class CashuStateExportImport {
     final type = json['type'];
     if (type != exportType) {
       throw ArgumentError(
-          'Not a cashu state export: expected type "$exportType", got "$type"');
+        'Not a cashu state export: expected type "$exportType", got "$type"',
+      );
     }
     final version = json['version'];
     if (version is! int || version > exportVersion) {
       throw ArgumentError(
-          'Unsupported cashu state export version: $version (this build supports up to $exportVersion)');
+        'Unsupported cashu state export version: $version (this build supports up to $exportVersion)',
+      );
     }
 
     // Phase 2: Parse all data into memory structures (no mutations yet)
@@ -205,8 +212,9 @@ class CashuStateExportImport {
           amount: map['amount'] as int,
           secret: map['secret'] as String,
           unblindedSig: map['C'] as String,
-          state:
-              CashuProofState.fromValue(map['state'] as String? ?? 'UNSPENT'),
+          state: CashuProofState.fromValue(
+            map['state'] as String? ?? 'UNSPENT',
+          ),
         ),
       );
     }
@@ -224,7 +232,8 @@ class CashuStateExportImport {
       final transactionsJson = (json['transactions'] as List?) ?? const [];
       parsedTransactions = transactionsJson
           .map(
-              (t) => WalletTransactionModel.fromJson(t as Map<String, dynamic>))
+            (t) => WalletTransactionModel.fromJson(t as Map<String, dynamic>),
+          )
           .toList();
     }
 
@@ -260,10 +269,14 @@ class CashuStateExportImport {
       await _walletsRepo.saveTransactions(parsedTransactions);
     }
 
-    final totalRestoredProofs =
-        proofsByMint.values.fold<int>(0, (sum, list) => sum + list.length);
-    Logger.log.i(() =>
-        'Cashu state export imported: $totalRestoredProofs proofs, ${parsedKeysets.length} keysets, ${parsedMintInfos.length} mint infos, ${parsedTransactions.length} transactions');
+    final totalRestoredProofs = proofsByMint.values.fold<int>(
+      0,
+      (sum, list) => sum + list.length,
+    );
+    Logger.log.i(
+      () =>
+          'Cashu state export imported: $totalRestoredProofs proofs, ${parsedKeysets.length} keysets, ${parsedMintInfos.length} mint infos, ${parsedTransactions.length} transactions',
+    );
 
     return CashuStateImportResult(
       seedPhrase: restoredSeedPhrase,

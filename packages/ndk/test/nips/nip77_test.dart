@@ -103,8 +103,9 @@ void main() {
     });
 
     test('bytesToHex converts correctly', () {
-      final hex =
-          NegentropyEncoder.bytesToHex(Uint8List.fromList([1, 2, 3, 4, 5]));
+      final hex = NegentropyEncoder.bytesToHex(
+        Uint8List.fromList([1, 2, 3, 4, 5]),
+      );
       expect(hex, equals('0102030405'));
     });
 
@@ -128,8 +129,9 @@ void main() {
     test('encodes and decodes with prefix', () {
       final prefix = Uint8List.fromList([1, 2, 3, 4]);
       final encoded = NegentropyEncoder.encodeBound(5678, prefix);
-      final (ts, decodedPrefix, consumed) =
-          NegentropyEncoder.decodeBound(encoded);
+      final (ts, decodedPrefix, consumed) = NegentropyEncoder.decodeBound(
+        encoded,
+      );
       expect(ts, equals(5678));
       expect(decodedPrefix, equals(prefix));
       expect(consumed, equals(encoded.length));
@@ -151,14 +153,18 @@ void main() {
     test('creates initial message with version byte', () {
       final items = <NegentropyItem>[];
       final msg = NegentropyEncoder.createInitialMessage(
-          items, NegentropyEncoder.idSize);
+        items,
+        NegentropyEncoder.idSize,
+      );
       expect(msg[0], equals(NegentropyEncoder.protocolVersion));
     });
 
     test('creates initial message for empty items with fingerprint mode', () {
       final items = <NegentropyItem>[];
       final msg = NegentropyEncoder.createInitialMessage(
-          items, NegentropyEncoder.idSize);
+        items,
+        NegentropyEncoder.idSize,
+      );
       // Should have: version(1) + bound + mode(1) + fingerprint(16)
       expect(msg.length, greaterThanOrEqualTo(1 + 16));
       // Should use fingerprint mode, not skip
@@ -174,7 +180,9 @@ void main() {
         ),
       ];
       final msg = NegentropyEncoder.createInitialMessage(
-          items, NegentropyEncoder.idSize);
+        items,
+        NegentropyEncoder.idSize,
+      );
       expect(msg[0], equals(NegentropyEncoder.protocolVersion));
       expect(msg.length, greaterThan(1));
     });
@@ -193,7 +201,9 @@ void main() {
         ),
       ];
       final msg = NegentropyEncoder.createInitialMessage(
-          items, NegentropyEncoder.idSize);
+        items,
+        NegentropyEncoder.idSize,
+      );
       expect(msg[0], equals(NegentropyEncoder.protocolVersion));
       // Should contain fingerprint (16 bytes) plus overhead
       expect(msg.length, greaterThanOrEqualTo(1 + 16));
@@ -219,7 +229,9 @@ void main() {
       ];
       // createInitialMessage sorts internally
       final msg = NegentropyEncoder.createInitialMessage(
-          items, NegentropyEncoder.idSize);
+        items,
+        NegentropyEncoder.idSize,
+      );
       expect(msg[0], equals(NegentropyEncoder.protocolVersion));
     });
   });
@@ -243,9 +255,13 @@ void main() {
       ];
 
       final relayMsg = NegentropyEncoder.createInitialMessage(
-          relayItems, NegentropyEncoder.idSize);
-      final (response, needIds, haveIds) =
-          NegentropyEncoder.reconcile(relayMsg, localItems);
+        relayItems,
+        NegentropyEncoder.idSize,
+      );
+      final (response, needIds, haveIds) = NegentropyEncoder.reconcile(
+        relayMsg,
+        localItems,
+      );
 
       // When fingerprints match, no IDs needed
       expect(needIds, isEmpty);
@@ -259,9 +275,7 @@ void main() {
           'fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210';
 
       // Local has only id1
-      final localItems = [
-        NegentropyItem.fromHex(timestamp: 1000, idHex: id1),
-      ];
+      final localItems = [NegentropyItem.fromHex(timestamp: 1000, idHex: id1)];
 
       // Relay has both
       final relayItems = [
@@ -270,7 +284,9 @@ void main() {
       ];
 
       final relayMsg = NegentropyEncoder.createInitialMessage(
-          relayItems, NegentropyEncoder.idSize);
+        relayItems,
+        NegentropyEncoder.idSize,
+      );
       NegentropyEncoder.reconcile(relayMsg, localItems);
 
       // Fingerprints won't match, but full reconciliation needs multiple rounds
@@ -290,9 +306,13 @@ void main() {
       ];
 
       final relayMsg = NegentropyEncoder.createInitialMessage(
-          relayItems, NegentropyEncoder.idSize);
-      final (response, needIds, haveIds) =
-          NegentropyEncoder.reconcile(relayMsg, localItems);
+        relayItems,
+        NegentropyEncoder.idSize,
+      );
+      final (response, needIds, haveIds) = NegentropyEncoder.reconcile(
+        relayMsg,
+        localItems,
+      );
 
       // Should produce a valid response
       expect(response[0], equals(NegentropyEncoder.protocolVersion));
@@ -310,9 +330,13 @@ void main() {
       final relayItems = <NegentropyItem>[];
 
       final relayMsg = NegentropyEncoder.createInitialMessage(
-          relayItems, NegentropyEncoder.idSize);
-      final (response, needIds, haveIds) =
-          NegentropyEncoder.reconcile(relayMsg, localItems);
+        relayItems,
+        NegentropyEncoder.idSize,
+      );
+      final (response, needIds, haveIds) = NegentropyEncoder.reconcile(
+        relayMsg,
+        localItems,
+      );
 
       // Should produce a valid response
       expect(response[0], equals(NegentropyEncoder.protocolVersion));
@@ -407,8 +431,9 @@ void main() {
     });
 
     test('bytesToHex always lowercase', () {
-      final hex =
-          NegentropyEncoder.bytesToHex(Uint8List.fromList([0xAB, 0xCD, 0xEF]));
+      final hex = NegentropyEncoder.bytesToHex(
+        Uint8List.fromList([0xAB, 0xCD, 0xEF]),
+      );
       expect(hex, equals('abcdef'));
     });
 

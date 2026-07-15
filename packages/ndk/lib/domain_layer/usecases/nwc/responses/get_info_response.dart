@@ -15,16 +15,17 @@ class GetInfoResponse extends NwcResponse {
   final List<String> methods;
   final List<String> notifications;
 
-  GetInfoResponse(
-      {required super.resultType,
-      required this.alias,
-      required this.color,
-      required this.pubkey,
-      required this.network,
-      required this.blockHeight,
-      required this.blockHash,
-      required this.methods,
-      required this.notifications});
+  GetInfoResponse({
+    required super.resultType,
+    required this.alias,
+    required this.color,
+    required this.pubkey,
+    required this.network,
+    required this.blockHeight,
+    required this.blockHash,
+    required this.methods,
+    required this.notifications,
+  });
 
   factory GetInfoResponse.deserialize(Map<String, dynamic> input) {
     if (!input.containsKey('result')) {
@@ -35,22 +36,24 @@ class GetInfoResponse extends NwcResponse {
     final methodsList = (result["methods"] as List?) ?? const [];
     final notificationsList = (result["notifications"] as List?) ?? const [];
 
-    List<String> methods =
-        methodsList.map((method) => method.toString()).toList();
+    List<String> methods = methodsList
+        .map((method) => method.toString())
+        .toList();
 
     List<String> notifications = notificationsList
         .map((notification) => notification.toString())
         .toList();
 
     return GetInfoResponse(
-        resultType: (input['result_type'] as String?) ?? '',
-        alias: (result['alias'] as String?) ?? '',
-        color: result['color'] as String?,
-        pubkey: result['pubkey'] as String?,
-        network: BitcoinNetwork.fromPlaintext(result['network'] as String?),
-        blockHeight: result['block_height'] as int?,
-        blockHash: result['block_hash'] as String?,
-        methods: methods,
-        notifications: notifications);
+      resultType: (input['result_type'] as String?) ?? '',
+      alias: (result['alias'] as String?) ?? '',
+      color: result['color'] as String?,
+      pubkey: result['pubkey'] as String?,
+      network: BitcoinNetwork.fromPlaintext(result['network'] as String?),
+      blockHeight: result['block_height'] as int?,
+      blockHash: result['block_hash'] as String?,
+      methods: methods,
+      notifications: notifications,
+    );
   }
 }

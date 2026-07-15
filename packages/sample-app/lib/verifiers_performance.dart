@@ -160,9 +160,7 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Verifiers Performance'),
-      ),
+      appBar: AppBar(title: const Text('Verifiers Performance')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -192,8 +190,9 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed:
-                  hasPubkey && !_isGenerating ? _handleGenerateEvents : null,
+              onPressed: hasPubkey && !_isGenerating
+                  ? _handleGenerateEvents
+                  : null,
               child: _isGenerating
                   ? const SizedBox(
                       height: 20,

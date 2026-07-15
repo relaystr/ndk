@@ -11,8 +11,7 @@ void main() {
   EventSigner eventSignerFactory({
     String? privateKey,
     required String publicKey,
-  }) =>
-      Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
+  }) => Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
 
   group('Nip51 Relay Sets', () {
     test('fromEvent public', () async {
@@ -29,8 +28,10 @@ void main() {
         ],
       );
       final nip51RelaySet = await Nip51Set.fromEvent(event, null);
-      expect(['wss://example.com', 'wss://example.org'],
-          nip51RelaySet!.publicRelays);
+      expect([
+        'wss://example.com',
+        'wss://example.org',
+      ], nip51RelaySet!.publicRelays);
 
       Nip01Event toEvent = await nip51RelaySet.toEvent(null);
       event.tags.removeLast();
@@ -48,11 +49,12 @@ void main() {
       );
 
       Nip51Set relaySet = Nip51Set(
-          pubKey: key1.publicKey,
-          kind: Nip51List.kRelaySet,
-          name: "test",
-          createdAt: Helpers.now,
-          elements: []);
+        pubKey: key1.publicKey,
+        kind: Nip51List.kRelaySet,
+        name: "test",
+        createdAt: Helpers.now,
+        elements: [],
+      );
       relaySet.privateRelays = ['wss://example.com', 'wss://example.org'];
       Nip01Event event = await relaySet.toEvent(signer);
       Nip51Set? from = await Nip51Set.fromEvent(event, signer);
@@ -74,8 +76,10 @@ void main() {
         ],
       );
       final nip51RelayList = await Nip51List.fromEvent(event, null);
-      expect(['wss://example.com', 'wss://example.org'],
-          nip51RelayList.publicRelays);
+      expect([
+        'wss://example.com',
+        'wss://example.org',
+      ], nip51RelayList.publicRelays);
 
       Nip01Event toEvent = await nip51RelayList.toEvent(null);
       event.tags.removeLast();
@@ -93,10 +97,11 @@ void main() {
       );
 
       Nip51List relayList = Nip51List(
-          pubKey: key1.publicKey,
-          kind: Nip51List.kSearchRelays,
-          createdAt: Helpers.now,
-          elements: []);
+        pubKey: key1.publicKey,
+        kind: Nip51List.kSearchRelays,
+        createdAt: Helpers.now,
+        elements: [],
+      );
       relayList.privateRelays = ['wss://example.com', 'wss://example.org'];
       Nip01Event event = await relayList.toEvent(signer);
       Nip51List? from = await Nip51List.fromEvent(event, signer);

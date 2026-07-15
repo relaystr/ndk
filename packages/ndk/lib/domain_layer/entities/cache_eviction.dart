@@ -74,19 +74,19 @@ class EvictionPolicy {
   });
 
   const EvictionPolicy.safeSweep()
-      : sweepExpired = true,
-        sweepDeleted = true,
-        sweepSuperseded = true,
-        sweepDeliveredEphemeral = true,
-        sweepCompletedDeliveries = true,
-        completedDeliveryRetention = const Duration(hours: 8),
-        sweepTerminalFailedDeliveries = false,
-        terminalFailedDeliveryRetention = const Duration(hours: 24),
-        kindCaps = const {},
-        protectedKinds = kDefaultProtectedKinds,
-        protectedEventIds = const {},
-        protectedPubKeys = const {},
-        protectedCoordinates = const {};
+    : sweepExpired = true,
+      sweepDeleted = true,
+      sweepSuperseded = true,
+      sweepDeliveredEphemeral = true,
+      sweepCompletedDeliveries = true,
+      completedDeliveryRetention = const Duration(hours: 8),
+      sweepTerminalFailedDeliveries = false,
+      terminalFailedDeliveryRetention = const Duration(hours: 24),
+      kindCaps = const {},
+      protectedKinds = kDefaultProtectedKinds,
+      protectedEventIds = const {},
+      protectedPubKeys = const {},
+      protectedCoordinates = const {};
 
   static const Set<int> kDefaultProtectedKinds = {
     Metadata.kKind,
@@ -178,7 +178,8 @@ class EvictionResult {
       keptProtected: keptProtected ?? this.keptProtected,
       removedCompletedDeliveries:
           removedCompletedDeliveries ?? this.removedCompletedDeliveries,
-      removedTerminalFailedDeliveries: removedTerminalFailedDeliveries ??
+      removedTerminalFailedDeliveries:
+          removedTerminalFailedDeliveries ??
           this.removedTerminalFailedDeliveries,
     );
   }

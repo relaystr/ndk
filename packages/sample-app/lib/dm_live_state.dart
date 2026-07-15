@@ -17,9 +17,7 @@ class DmLiveState extends ChangeNotifier {
 
   int _eventVersion = 0;
 
-  DmLiveState({
-    required this.ndk,
-  });
+  DmLiveState({required this.ndk});
 
   int get unreadCount =>
       _unreadRumorIdsByPeer.values.fold(0, (sum, ids) => sum + ids.length);
@@ -82,42 +80,36 @@ class DmLiveState extends ChangeNotifier {
       explicitRelays: dmRelays,
       cacheRead: false,
       cacheWrite: true,
-      filter: Filter(
-        kinds: [GiftWrap.kGiftWrapEventkind],
-        pTags: [pubKey],
-      ),
+      filter: Filter(kinds: [GiftWrap.kGiftWrapEventkind], pTags: [pubKey]),
     );
 
     _activeRequestId = response.requestId;
-    _dmSubscription = response.stream.listen(
-      (wrappedEvent) async {
-        try {
-          final message = await ndk.dms.parseWrappedMessage(
-            wrappedEvent: wrappedEvent,
-          );
-          if (message == null) {
-            return;
-          }
-
-          final isNewMessage = _seenRumorIds.add(message.id);
-          if (!isNewMessage) {
-            return;
-          }
-
-          if (!message.isOutgoing) {
-            _unreadRumorIdsByPeer
-                .putIfAbsent(message.peerPubKey, () => <String>{})
-                .add(message.id);
-            _latestUnreadCreatedAtByPeer[message.peerPubKey] =
-                message.createdAt;
-          }
-          _eventVersion++;
-          notifyListeners();
-        } catch (_) {
-          // Ignore malformed or undecryptable incoming gift wraps.
+    _dmSubscription = response.stream.listen((wrappedEvent) async {
+      try {
+        final message = await ndk.dms.parseWrappedMessage(
+          wrappedEvent: wrappedEvent,
+        );
+        if (message == null) {
+          return;
         }
-      },
-    );
+
+        final isNewMessage = _seenRumorIds.add(message.id);
+        if (!isNewMessage) {
+          return;
+        }
+
+        if (!message.isOutgoing) {
+          _unreadRumorIdsByPeer
+              .putIfAbsent(message.peerPubKey, () => <String>{})
+              .add(message.id);
+          _latestUnreadCreatedAtByPeer[message.peerPubKey] = message.createdAt;
+        }
+        _eventVersion++;
+        notifyListeners();
+      } catch (_) {
+        // Ignore malformed or undecryptable incoming gift wraps.
+      }
+    });
   }
 
   void clearUnread() {

@@ -162,10 +162,7 @@ void main() {
       final testOutput = _TestLogOutput(testOutputs);
 
       // Create logger with outputs in constructor
-      final logger = NdkLogger(
-        level: LogLevel.info,
-        outputs: [testOutput],
-      );
+      final logger = NdkLogger(level: LogLevel.info, outputs: [testOutput]);
 
       // Log a message
       logger.i(() => 'Test message');
@@ -176,37 +173,40 @@ void main() {
       expect(testOutputs.first.level, LogLevel.info);
 
       // Test with null outputs (should default to empty list)
-      final loggerWithoutOutputs = NdkLogger(
-        level: LogLevel.debug,
-      );
+      final loggerWithoutOutputs = NdkLogger(level: LogLevel.debug);
 
       // Should not throw when logging without outputs
       expect(
-          () => loggerWithoutOutputs.d(() => 'Debug message'), returnsNormally);
+        () => loggerWithoutOutputs.d(() => 'Debug message'),
+        returnsNormally,
+      );
     });
 
     test('Logger lazy closure is only evaluated when enabled', () {
       var evaluated = false;
       final testOutputs = <LogEvent>[];
       final testOutput = _TestLogOutput(testOutputs);
-      final logger = NdkLogger(
-        level: LogLevel.info,
-        outputs: [testOutput],
-      );
+      final logger = NdkLogger(level: LogLevel.info, outputs: [testOutput]);
 
       logger.d(() {
         evaluated = true;
         return 'Should not log';
       });
-      expect(evaluated, false,
-          reason: 'Closure should not be evaluated when level is filtered');
+      expect(
+        evaluated,
+        false,
+        reason: 'Closure should not be evaluated when level is filtered',
+      );
 
       logger.i(() {
         evaluated = true;
         return 'Should log';
       });
-      expect(evaluated, true,
-          reason: 'Closure should be evaluated when level is enabled');
+      expect(
+        evaluated,
+        true,
+        reason: 'Closure should be evaluated when level is enabled',
+      );
       expect(testOutputs.length, 1);
       expect(testOutputs.first.message, 'Should log');
       expect(testOutputs.first.level, LogLevel.info);

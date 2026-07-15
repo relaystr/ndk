@@ -94,30 +94,33 @@ void main() {
       expect(
         chunkedHash,
         equals(
-            'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'),
+          'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+        ),
       );
     });
 
-    test('should compute correct hash for file with specific byte patterns',
-        () async {
-      // Create test file with repeating pattern
-      final pattern = [0xFF, 0x00, 0xAA, 0x55];
-      final testBytes = Uint8List(1000);
-      for (var i = 0; i < testBytes.length; i++) {
-        testBytes[i] = pattern[i % pattern.length];
-      }
-      final testFile = File('${tempDir.path}/test_pattern.bin');
-      await testFile.writeAsBytes(testBytes);
+    test(
+      'should compute correct hash for file with specific byte patterns',
+      () async {
+        // Create test file with repeating pattern
+        final pattern = [0xFF, 0x00, 0xAA, 0x55];
+        final testBytes = Uint8List(1000);
+        for (var i = 0; i < testBytes.length; i++) {
+          testBytes[i] = pattern[i % pattern.length];
+        }
+        final testFile = File('${tempDir.path}/test_pattern.bin');
+        await testFile.writeAsBytes(testBytes);
 
-      // Compute hash using FileIO method (chunked)
-      final chunkedHash = await computeFinalHash(testFile.path);
+        // Compute hash using FileIO method (chunked)
+        final chunkedHash = await computeFinalHash(testFile.path);
 
-      // Compute hash using traditional in-memory method
-      final inMemoryHash = sha256.convert(testBytes).toString();
+        // Compute hash using traditional in-memory method
+        final inMemoryHash = sha256.convert(testBytes).toString();
 
-      // Both methods should produce the same hash
-      expect(chunkedHash, equals(inMemoryHash));
-    });
+        // Both methods should produce the same hash
+        expect(chunkedHash, equals(inMemoryHash));
+      },
+    );
 
     test('should handle multi-MB files efficiently', () async {
       // Create a 5MB test file

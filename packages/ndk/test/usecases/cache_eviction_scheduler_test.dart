@@ -72,9 +72,7 @@ void main() {
 }
 
 class _RecordingMemCacheManager extends MemCacheManager {
-  _RecordingMemCacheManager({
-    this.onEvict,
-  });
+  _RecordingMemCacheManager({this.onEvict});
 
   int evictCallCount = 0;
   final Future<void> Function()? onEvict;

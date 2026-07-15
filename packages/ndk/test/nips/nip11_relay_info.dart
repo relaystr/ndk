@@ -13,17 +13,17 @@ void main() {
       data["payments_url"] = "https://my-relay/payments";
       data["fees"] = {
         "admission": [
-          {"amount": 1000000, "unit": "msats"}
+          {"amount": 1000000, "unit": "msats"},
         ],
         "subscription": [
-          {"amount": 5000000, "unit": "msats", "period": 2592000}
+          {"amount": 5000000, "unit": "msats", "period": 2592000},
         ],
         "publication": [
           {
             "kinds": [4],
             "amount": 100,
-            "unit": "msats"
-          }
+            "unit": "msats",
+          },
         ],
       };
       data['icon'] = "https://bla.com/favicon.ico";

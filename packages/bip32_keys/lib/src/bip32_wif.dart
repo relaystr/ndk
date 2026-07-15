@@ -59,6 +59,7 @@ WIF decode(String string, [int? version]) {
 }
 
 String encode(WIF wif) {
-  return bs58check
-      .encode(encodeRaw(wif.version, wif.privateKey, wif.compressed));
+  return bs58check.encode(
+    encodeRaw(wif.version, wif.privateKey, wif.compressed),
+  );
 }

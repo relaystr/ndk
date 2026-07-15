@@ -22,7 +22,7 @@ void main() {
           'custom_field': 'custom_value',
         },
         'tags': [
-          ['i', 'github:alice', 'proof']
+          ['i', 'github:alice', 'proof'],
         ],
         'refreshedTimestamp': 1234567890,
         'sources': ['relay1', 'relay2'],
@@ -64,7 +64,7 @@ void main() {
         updatedAt: 1234567890,
         refreshedTimestamp: 9876543210,
         tags: [
-          ['i', 'github:alice', 'proof']
+          ['i', 'github:alice', 'proof'],
         ],
         content: {'custom_field': 'custom_value'},
       );
@@ -98,7 +98,7 @@ void main() {
         updatedAt: 1234567890,
         refreshedTimestamp: 9876543210,
         tags: [
-          ['i', 'github:alice', 'proof']
+          ['i', 'github:alice', 'proof'],
         ],
         content: {'custom_field': 'custom_value'},
       );
@@ -157,24 +157,27 @@ void main() {
     test('cleanNip05', () {
       expect(Metadata(nip05: '_@example.com').cleanNip05, '@example.com');
       expect(
-          Metadata(nip05: 'John@EXAMPLE.COM').cleanNip05, 'john@example.com');
+        Metadata(nip05: 'John@EXAMPLE.COM').cleanNip05,
+        'john@example.com',
+      );
       expect(Metadata(nip05: null).cleanNip05, null);
     });
 
     test('getName', () {
       expect(
-          Metadata(displayName: 'John Doe', name: 'John', pubKey: 'testPubKey')
-              .getName(),
-          'John Doe');
+        Metadata(
+          displayName: 'John Doe',
+          name: 'John',
+          pubKey: 'testPubKey',
+        ).getName(),
+        'John Doe',
+      );
       expect(Metadata(name: 'John', pubKey: 'testPubKey').getName(), 'John');
       expect(Metadata(pubKey: 'testPubKey').getName(), 'testPubKey');
     });
 
     test('matchesSearch', () {
-      final metadata = Metadata(
-        displayName: 'John Doe',
-        name: 'JohnnyD',
-      );
+      final metadata = Metadata(displayName: 'John Doe', name: 'JohnnyD');
 
       expect(metadata.matchesSearch('John'), true);
       expect(metadata.matchesSearch('Doe'), true);
@@ -347,13 +350,16 @@ void main() {
     });
 
     test('modifying known fields keeps custom fields intact', () {
-      final metadata = Metadata.fromEvent(Nip01Event(
-        pubKey: 'testPubKey',
-        content: '{"name":"John","custom_field":"custom_value","another":456}',
-        kind: Metadata.kKind,
-        tags: [],
-        createdAt: 1234567890,
-      ));
+      final metadata = Metadata.fromEvent(
+        Nip01Event(
+          pubKey: 'testPubKey',
+          content:
+              '{"name":"John","custom_field":"custom_value","another":456}',
+          kind: Metadata.kKind,
+          tags: [],
+          createdAt: 1234567890,
+        ),
+      );
 
       // Modify a known field
       metadata.name = 'Jane';
@@ -497,7 +503,7 @@ void main() {
       pubKey: keypair.publicKey,
       kind: 0,
       tags: [
-        ["i", "badge"]
+        ["i", "badge"],
       ],
       content: '{"name":"Alice","badges":["A","B"]}',
     );

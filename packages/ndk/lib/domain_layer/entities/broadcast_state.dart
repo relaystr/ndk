@@ -97,20 +97,20 @@ class BroadcastState {
   bool _timeoutStarted = false;
 
   /// creates a new [BroadcastState] instance
-  BroadcastState({
-    required this.timeout,
-    this.considerDonePercent = 1,
-  }) {
-    _networkSubscription = networkController.stream.listen((response) {
-      // got a response from a relay
-      broadcasts[response.relayUrl] = response;
-      // send state update
-      _stateUpdatesController.add(this);
-      // check if all relays responded
-      _checkBroadcastDone();
-    }, onDone: () {
-      _checkBroadcastDone();
-    });
+  BroadcastState({required this.timeout, this.considerDonePercent = 1}) {
+    _networkSubscription = networkController.stream.listen(
+      (response) {
+        // got a response from a relay
+        broadcasts[response.relayUrl] = response;
+        // send state update
+        _stateUpdatesController.add(this);
+        // check if all relays responded
+        _checkBroadcastDone();
+      },
+      onDone: () {
+        _checkBroadcastDone();
+      },
+    );
   }
 
   /// Starts the timeout timer. Call this after signing is complete.

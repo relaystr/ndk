@@ -6,7 +6,10 @@ import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 
 CashuStateExportImport _export(
-    CacheManager cache, MemWalletsRepo wallets, CashuSeed seed) {
+  CacheManager cache,
+  MemWalletsRepo wallets,
+  CashuSeed seed,
+) {
   return CashuStateExportImport(
     cacheManagerCashu: CashuCacheDecorator(cacheManager: cache),
     walletsRepo: wallets,
@@ -15,13 +18,13 @@ CashuStateExportImport _export(
 }
 
 CahsuKeyset _keyset(String mintUrl) => CahsuKeyset(
-      id: 'keyset1',
-      mintUrl: mintUrl,
-      unit: 'sat',
-      active: true,
-      inputFeePPK: 0,
-      mintKeyPairs: {CahsuMintKeyPair(amount: 1, pubkey: 'abc')},
-    );
+  id: 'keyset1',
+  mintUrl: mintUrl,
+  unit: 'sat',
+  active: true,
+  inputFeePPK: 0,
+  mintKeyPairs: {CahsuMintKeyPair(amount: 1, pubkey: 'abc')},
+);
 
 void main() {
   const mintUrl = 'https://mint.test';
@@ -56,8 +59,11 @@ void main() {
       counter: 42,
     );
 
-    final exported = await _export(srcCache, srcWallets, seed)
-        .exportToMap(includeSeedPhrase: true);
+    final exported = await _export(
+      srcCache,
+      srcWallets,
+      seed,
+    ).exportToMap(includeSeedPhrase: true);
 
     expect(exported['type'], equals(CashuStateExportImport.exportType));
     expect(exported['seedPhrase'], equals(seed.getSeedPhrase().sentence));
@@ -69,15 +75,20 @@ void main() {
     final dstWallets = MemWalletsRepo();
     final dstSeed = CashuSeed();
 
-    final result =
-        await _export(dstCache, dstWallets, dstSeed).importFromMap(exported);
+    final result = await _export(
+      dstCache,
+      dstWallets,
+      dstSeed,
+    ).importFromMap(exported);
 
     expect(result.restoredProofs, equals(2));
     expect(result.restoredKeysets, equals(1));
     expect(result.seedPhrase, equals(seed.getSeedPhrase().sentence));
     // seed was loaded into the destination seed instance
-    expect(dstSeed.getSeedPhrase().sentence,
-        equals(seed.getSeedPhrase().sentence));
+    expect(
+      dstSeed.getSeedPhrase().sentence,
+      equals(seed.getSeedPhrase().sentence),
+    );
 
     final restoredProofs = await dstCache.getProofs(mintUrl: mintUrl);
     expect(restoredProofs.length, equals(2));
@@ -120,13 +131,18 @@ void main() {
     final jsonString = await _export(cache, wallets, seed).exportToJsonString();
 
     final dstCache = MemCacheManager();
-    final result = await _export(dstCache, MemWalletsRepo(), CashuSeed())
-        .importFromJsonString(jsonString);
+    final result = await _export(
+      dstCache,
+      MemWalletsRepo(),
+      CashuSeed(),
+    ).importFromJsonString(jsonString);
 
     expect(result.restoredProofs, equals(2));
     expect((await dstCache.getProofs(mintUrl: mintUrl)).length, equals(2));
-    expect((await dstCache.getKeysets(mintUrl: mintUrl)).first.id,
-        equals('keyset1'));
+    expect(
+      (await dstCache.getKeysets(mintUrl: mintUrl)).first.id,
+      equals('keyset1'),
+    );
 
     // check that the secret amount and unblinded sig round-tripped correctly (they are the most sensitive fields to get wrong in the serialization)
     final restoredProof = (await dstCache.getProofs(mintUrl: mintUrl)).first;

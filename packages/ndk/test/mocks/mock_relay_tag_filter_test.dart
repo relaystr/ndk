@@ -51,10 +51,7 @@ void main() {
       port: 4081,
       relayName: 'p-tag-filter-test-relay',
       events: [matchingEvent, nonMatchingEvent],
-      filter: Filter(
-        kinds: [Nip01Event.kTextNodeKind],
-        pTags: [taggedPubkey],
-      ),
+      filter: Filter(kinds: [Nip01Event.kTextNodeKind], pTags: [taggedPubkey]),
     );
 
     expect(
@@ -80,10 +77,7 @@ void main() {
       port: 4082,
       relayName: 'e-tag-filter-test-relay',
       events: [matchingEvent, nonMatchingEvent],
-      filter: Filter(
-        kinds: [Nip01Event.kTextNodeKind],
-        eTags: [taggedEventId],
-      ),
+      filter: Filter(kinds: [Nip01Event.kTextNodeKind], eTags: [taggedEventId]),
     );
 
     expect(
@@ -191,10 +185,9 @@ Future<List<Nip01Event>> _queryRelay({
   addTearDown(writer.destroy);
 
   for (final event in events) {
-    await writer.broadcast.broadcast(
-      nostrEvent: event,
-      specificRelays: [relay.url],
-    ).broadcastDoneFuture;
+    await writer.broadcast
+        .broadcast(nostrEvent: event, specificRelays: [relay.url])
+        .broadcastDoneFuture;
   }
 
   final reader = Ndk(

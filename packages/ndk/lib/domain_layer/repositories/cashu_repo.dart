@@ -16,9 +16,7 @@ abstract class CashuRepo {
     required List<CashuBlindedMessage> outputs,
   });
 
-  Future<List<CahsuKeysetResponse>> getKeysets({
-    required String mintUrl,
-  });
+  Future<List<CahsuKeysetResponse>> getKeysets({required String mintUrl});
 
   Future<List<CahsuKeysResponse>> getKeys({
     required String mintUrl,
@@ -82,9 +80,7 @@ abstract class CashuRepo {
     required String method,
   });
 
-  Future<CashuMintInfo> getMintInfo({
-    required String mintUrl,
-  });
+  Future<CashuMintInfo> getMintInfo({required String mintUrl});
 
   Future<List<CashuTokenStateResponse>> checkTokenState({
     required List<String> proofPubkeys,

@@ -22,10 +22,14 @@ void _runUserRelayListTests(CacheManager Function() getCacheManager) {
     expect(loaded.createdAt, equals(userRelayList.createdAt));
     expect(loaded.relays.length, equals(3));
     expect(
-        loaded.relays['wss://relay1.com'], equals(ReadWriteMarker.readWrite));
+      loaded.relays['wss://relay1.com'],
+      equals(ReadWriteMarker.readWrite),
+    );
     expect(loaded.relays['wss://relay2.com'], equals(ReadWriteMarker.readOnly));
     expect(
-        loaded.relays['wss://relay3.com'], equals(ReadWriteMarker.writeOnly));
+      loaded.relays['wss://relay3.com'],
+      equals(ReadWriteMarker.writeOnly),
+    );
   });
 
   test('saveUserRelayLists batch operation', () async {
@@ -92,7 +96,9 @@ void _runUserRelayListTests(CacheManager Function() getCacheManager) {
 
     for (final userRelayList in userRelayLists) {
       expect(
-          await cacheManager.loadUserRelayList(userRelayList.pubKey), isNull);
+        await cacheManager.loadUserRelayList(userRelayList.pubKey),
+        isNull,
+      );
     }
   });
 
@@ -118,10 +124,7 @@ void _runUserRelayListTests(CacheManager Function() getCacheManager) {
       loaded.relays['wss://relay1.com'],
       equals(ReadWriteMarker.readWrite),
     );
-    expect(
-      loaded.relays['wss://relay2.com'],
-      equals(ReadWriteMarker.readOnly),
-    );
+    expect(loaded.relays['wss://relay2.com'], equals(ReadWriteMarker.readOnly));
   });
 
   test('kind 10002 takes precedence over kind 3 relay projection', () async {
@@ -136,9 +139,7 @@ void _runUserRelayListTests(CacheManager Function() getCacheManager) {
     final kind10002 = Nip65(
       pubKey: 'relay_precedence_pubkey',
       createdAt: 2000,
-      relays: {
-        'wss://preferred-relay.com': ReadWriteMarker.writeOnly,
-      },
+      relays: {'wss://preferred-relay.com': ReadWriteMarker.writeOnly},
     ).toEvent();
 
     await cacheManager.saveEvents([kind3, kind10002]);
@@ -147,10 +148,7 @@ void _runUserRelayListTests(CacheManager Function() getCacheManager) {
       'relay_precedence_pubkey',
     );
     expect(loaded, isNotNull);
-    expect(
-      loaded!.relays.keys,
-      equals(['wss://preferred-relay.com']),
-    );
+    expect(loaded!.relays.keys, equals(['wss://preferred-relay.com']));
     expect(
       loaded.relays['wss://preferred-relay.com'],
       equals(ReadWriteMarker.writeOnly),

@@ -8,8 +8,9 @@ Future<void> main() async {
   print('🚀 SembastCacheManager Example\n');
 
   // 1. Create a temporary database
-  final tempDir =
-      await Directory.systemTemp.createTemp('sembast_cache_example_');
+  final tempDir = await Directory.systemTemp.createTemp(
+    'sembast_cache_example_',
+  );
   final dbPath = '${tempDir.path}/cache.db';
   print('📁 Database path: $dbPath');
 
@@ -32,7 +33,7 @@ Future<void> main() async {
       tags: [
         ['p', 'npub1other123456789'],
         ['t', 'nostr'],
-        ['t', 'bitcoin']
+        ['t', 'bitcoin'],
       ],
       content:
           'Hello Nostr! This is my first cached event using SembastCacheManager 🎉',
@@ -94,16 +95,20 @@ Future<void> main() async {
 
     final loadedMetadata = await cacheManager.loadMetadata(metadata.pubKey);
     print(
-        '✅ Metadata loaded: ${loadedMetadata?.displayName} (@${loadedMetadata?.name})');
+      '✅ Metadata loaded: ${loadedMetadata?.displayName} (@${loadedMetadata?.name})',
+    );
 
-    final loadedContactList =
-        await cacheManager.loadContactList(contactList.pubKey);
+    final loadedContactList = await cacheManager.loadContactList(
+      contactList.pubKey,
+    );
     print(
-        '✅ Contact list loaded: ${loadedContactList?.contacts.length} contacts');
+      '✅ Contact list loaded: ${loadedContactList?.contacts.length} contacts',
+    );
 
     final loadedNip05 = await cacheManager.loadNip05(pubKey: nip05.pubKey);
     print(
-        '✅ NIP-05 loaded: ${loadedNip05?.nip05} (valid: ${loadedNip05?.valid})\n');
+      '✅ NIP-05 loaded: ${loadedNip05?.nip05} (valid: ${loadedNip05?.valid})\n',
+    );
 
     // 7. Demonstrate search functionality
     print('🔍 Demonstrating search functionality...');
@@ -113,9 +118,11 @@ Future<void> main() async {
     print('✅ Found ${eventsByContent.length} events containing "Nostr"');
 
     // Search events by tags
-    final eventsByTag = await cacheManager.searchEvents(tags: {
-      't': ['bitcoin']
-    });
+    final eventsByTag = await cacheManager.searchEvents(
+      tags: {
+        't': ['bitcoin'],
+      },
+    );
     print('✅ Found ${eventsByTag.length} events with #bitcoin tag');
 
     // Search metadata
@@ -130,7 +137,7 @@ Future<void> main() async {
         pubKey: 'npub1user222333444',
         kind: 1,
         tags: [
-          ['t', 'nostr']
+          ['t', 'nostr'],
         ],
         content: 'Another event for batch demo',
       ),
@@ -138,7 +145,7 @@ Future<void> main() async {
         pubKey: 'npub1user555666777',
         kind: 1,
         tags: [
-          ['t', 'bitcoin']
+          ['t', 'bitcoin'],
         ],
         content: 'Yet another event for batch demo',
       ),
@@ -159,7 +166,8 @@ Future<void> main() async {
 
     print('🎉 Example completed successfully!');
     print(
-        '💡 The cache persists data between runs - try running this example again!');
+      '💡 The cache persists data between runs - try running this example again!',
+    );
   } catch (error) {
     print('❌ Error: $error');
   } finally {

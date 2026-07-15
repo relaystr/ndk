@@ -12,7 +12,7 @@ void main() {
         "supported_nips": [1, 2, 3],
         "software": "relay-software",
         "version": "1.0.0",
-        "icon": "https://example.com/icon.png"
+        "icon": "https://example.com/icon.png",
       };
       final relayInfo = RelayInfo.fromJson(json, "https://example.com");
 

@@ -29,29 +29,27 @@ class UserRelayList {
 
   static UserRelayList fromNip65(Nip65 nip65) {
     return UserRelayList(
-        pubKey: nip65.pubKey,
-        relays: {
-          for (var entry in nip65.relays.entries) entry.key: entry.value
-        },
-        createdAt: nip65.createdAt,
-        refreshedTimestamp: DateTime.now().millisecondsSinceEpoch ~/ 1000);
+      pubKey: nip65.pubKey,
+      relays: {for (var entry in nip65.relays.entries) entry.key: entry.value},
+      createdAt: nip65.createdAt,
+      refreshedTimestamp: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
   }
 
   Nip65 toNip65() {
     return Nip65(
       pubKey: pubKey,
-      relays: {
-        for (final entry in relays.entries) entry.key: entry.value,
-      },
+      relays: {for (final entry in relays.entries) entry.key: entry.value},
       createdAt: createdAt,
     );
   }
 
   static UserRelayList fromNip02EventContent(Nip01Event event) {
     return UserRelayList(
-        pubKey: event.pubKey,
-        relays: ContactList.relaysFromContent(event),
-        createdAt: event.createdAt,
-        refreshedTimestamp: DateTime.now().millisecondsSinceEpoch ~/ 1000);
+      pubKey: event.pubKey,
+      relays: ContactList.relaysFromContent(event),
+      createdAt: event.createdAt,
+      refreshedTimestamp: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
   }
 }

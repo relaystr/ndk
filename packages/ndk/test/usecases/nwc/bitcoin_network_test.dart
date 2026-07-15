@@ -8,7 +8,9 @@ void main() {
       expect(BitcoinNetwork.fromPlaintext('testnet'), BitcoinNetwork.testnet);
       expect(BitcoinNetwork.fromPlaintext('signet'), BitcoinNetwork.signet);
       expect(
-          BitcoinNetwork.fromPlaintext('mutinynet'), BitcoinNetwork.mutinynet);
+        BitcoinNetwork.fromPlaintext('mutinynet'),
+        BitcoinNetwork.mutinynet,
+      );
       expect(BitcoinNetwork.fromPlaintext('regtest'), BitcoinNetwork.regtest);
     });
 

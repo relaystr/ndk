@@ -16,9 +16,9 @@ class BlossomUserServerList {
     required Requests requests,
     required Broadcast broadcast,
     required Accounts accounts,
-  })  : _accounts = accounts,
-        _broadcast = broadcast,
-        _requests = requests;
+  }) : _accounts = accounts,
+       _broadcast = broadcast,
+       _requests = requests;
 
   /// Get user server list \
   /// returns list of server urls \
@@ -29,10 +29,7 @@ class BlossomUserServerList {
     final rsp = _requests.query(
       timeout: Duration(seconds: 5),
       filters: [
-        Filter(
-          authors: pubkeys,
-          kinds: [Blossom.kBlossomUserServerList],
-        )
+        Filter(authors: pubkeys, kinds: [Blossom.kBlossomUserServerList]),
       ],
     );
 

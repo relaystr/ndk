@@ -125,7 +125,7 @@ void main() {
         // Test tags filter (p tag)
         final eventsByPTag = await cacheManager.loadEvents(
           tags: {
-            'p': ['target_pubkey']
+            'p': ['target_pubkey'],
           },
         );
         expect(eventsByPTag.length, equals(1));
@@ -717,8 +717,9 @@ void main() {
   runCacheManagerTestSuite(
     name: 'SembastCacheManager (Shared Suite)',
     createCacheManager: () async {
-      sharedTempDir =
-          await Directory.systemTemp.createTemp('sembast_shared_test');
+      sharedTempDir = await Directory.systemTemp.createTemp(
+        'sembast_shared_test',
+      );
       return SembastCacheManager.create(databasePath: sharedTempDir.path);
     },
     cleanUp: (cacheManager) async {

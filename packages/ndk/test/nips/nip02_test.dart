@@ -22,12 +22,7 @@ void main() {
         ],
       );
       final nip02 = ContactList.fromEvent(event);
-      expect(nip02.contacts, [
-        'contact1',
-        'contact2',
-        'contact3',
-        'contact4',
-      ]);
+      expect(nip02.contacts, ['contact1', 'contact2', 'contact3', 'contact4']);
       expect(ContactList.relaysFromContent(event), {
         "wss://nos.lol": ReadWriteMarker.readWrite,
         "wss://relay.damus.io": ReadWriteMarker.readWrite,
@@ -35,21 +30,21 @@ void main() {
     });
 
     test('toEvent', () {
-      final nip02 = ContactList(pubKey: 'pubkey123', contacts: [
-        'contact1',
-        'contact2',
-        'contact3',
-      ]);
+      final nip02 = ContactList(
+        pubKey: 'pubkey123',
+        contacts: ['contact1', 'contact2', 'contact3'],
+      );
       final myEvent = nip02.toEvent();
       expect(myEvent.pubKey, equals('pubkey123'));
       expect(myEvent.kind, equals(ContactList.kKind));
       expect(
-          myEvent.tags,
-          equals([
-            ['p', 'contact1', '', ''],
-            ['p', 'contact2', '', ''],
-            ['p', 'contact3', '', ''],
-          ]));
+        myEvent.tags,
+        equals([
+          ['p', 'contact1', '', ''],
+          ['p', 'contact2', '', ''],
+          ['p', 'contact3', '', ''],
+        ]),
+      );
       expect(myEvent.content, equals(''));
       expect(myEvent.createdAt, equals(nip02.createdAt));
     });

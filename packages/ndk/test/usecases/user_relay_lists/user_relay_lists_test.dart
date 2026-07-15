@@ -12,18 +12,20 @@ void main() async {
     KeyPair key0 = Bip340.generatePrivateKey();
 
     final UserRelayList cache0 = UserRelayList(
-        pubKey: key0.publicKey,
-        relays: {},
-        createdAt: 50,
-        refreshedTimestamp: 0);
+      pubKey: key0.publicKey,
+      relays: {},
+      createdAt: 50,
+      refreshedTimestamp: 0,
+    );
 
     KeyPair key1 = Bip340.generatePrivateKey();
 
     final UserRelayList cache1 = UserRelayList(
-        pubKey: key1.publicKey,
-        relays: {},
-        createdAt: 100,
-        refreshedTimestamp: 0);
+      pubKey: key1.publicKey,
+      relays: {},
+      createdAt: 100,
+      refreshedTimestamp: 0,
+    );
 
     KeyPair key3 = Bip340.generatePrivateKey();
 
@@ -76,15 +78,20 @@ void main() async {
       final nip65 = Nip65.fromEvent(event);
       final userRelayList = UserRelayList.fromNip65(nip65);
 
-      expect(userRelayList.readUrls.toList(),
-          ['wss://relay.read', 'wss://relay.readwrite']);
-      expect(userRelayList.writeUrls.toList(),
-          ['wss://relay.write', 'wss://relay.readwrite']);
+      expect(userRelayList.readUrls.toList(), [
+        'wss://relay.read',
+        'wss://relay.readwrite',
+      ]);
+      expect(userRelayList.writeUrls.toList(), [
+        'wss://relay.write',
+        'wss://relay.readwrite',
+      ]);
     });
 
     test('getSingleUserRelayList - cache', () async {
-      final rcv =
-          await ndk.userRelayLists.getSingleUserRelayList(key0.publicKey);
+      final rcv = await ndk.userRelayLists.getSingleUserRelayList(
+        key0.publicKey,
+      );
 
       // cache
       expect(rcv, equals(cache0));
@@ -112,36 +119,48 @@ void main() async {
     });
 
     test('broadcastAdd/RemoveNip65Relay', () async {
-      ndk.accounts
-          .loginPrivateKey(pubkey: key3.publicKey, privkey: key3.privateKey!);
+      ndk.accounts.loginPrivateKey(
+        pubkey: key3.publicKey,
+        privkey: key3.privateKey!,
+      );
       final r1 = "wss://bla1.com";
       // add
       await ndk.userRelayLists.broadcastAddNip65Relay(
-          relayUrl: r1,
-          marker: ReadWriteMarker.readWrite,
-          broadcastRelays: [relay0.url]);
+        relayUrl: r1,
+        marker: ReadWriteMarker.readWrite,
+        broadcastRelays: [relay0.url],
+      );
 
-      UserRelayList? list = await ndk.userRelayLists
-          .getSingleUserRelayList(key3.publicKey, forceRefresh: true);
+      UserRelayList? list = await ndk.userRelayLists.getSingleUserRelayList(
+        key3.publicKey,
+        forceRefresh: true,
+      );
       expect(list!.relays.keys.contains(r1), true);
       expect(list.relays[r1], ReadWriteMarker.readWrite);
 
       // update marker
       await ndk.userRelayLists.broadcastUpdateNip65RelayMarker(
-          relayUrl: r1,
-          marker: ReadWriteMarker.readOnly,
-          broadcastRelays: [relay0.url]);
+        relayUrl: r1,
+        marker: ReadWriteMarker.readOnly,
+        broadcastRelays: [relay0.url],
+      );
 
-      list = await ndk.userRelayLists
-          .getSingleUserRelayList(key3.publicKey, forceRefresh: true);
+      list = await ndk.userRelayLists.getSingleUserRelayList(
+        key3.publicKey,
+        forceRefresh: true,
+      );
       expect(list!.relays[r1], ReadWriteMarker.readOnly);
 
       // remove
       await ndk.userRelayLists.broadcastRemoveNip65Relay(
-          relayUrl: r1, broadcastRelays: [relay0.url]);
+        relayUrl: r1,
+        broadcastRelays: [relay0.url],
+      );
 
-      list = await ndk.userRelayLists
-          .getSingleUserRelayList(key3.publicKey, forceRefresh: true);
+      list = await ndk.userRelayLists.getSingleUserRelayList(
+        key3.publicKey,
+        forceRefresh: true,
+      );
       expect(list!.relays.containsKey(r1), false);
     });
   });

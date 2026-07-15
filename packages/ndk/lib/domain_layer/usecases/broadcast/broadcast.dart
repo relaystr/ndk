@@ -24,10 +24,10 @@ class Broadcast {
     required Accounts accounts,
     required CacheManager cacheManager,
     required PendingBroadcastDelivery pendingDelivery,
-  })  : _sender = broadcastSender,
-        _accounts = accounts,
-        _cacheManager = cacheManager,
-        _pendingDelivery = pendingDelivery;
+  }) : _sender = broadcastSender,
+       _accounts = accounts,
+       _cacheManager = cacheManager,
+       _pendingDelivery = pendingDelivery;
 
   /// [throws] if the default signer and the custom signer are null \
   /// [returns] the signer that is not null, if both are provided returns [customSigner]
@@ -54,8 +54,9 @@ class Broadcast {
     bool? saveToCache,
   }) {
     // prep for pending delivery enrollment
-    final cleanedSpecificRelays =
-        specificRelays != null ? cleanRelayUrls(specificRelays.toList()) : null;
+    final cleanedSpecificRelays = specificRelays != null
+        ? cleanRelayUrls(specificRelays.toList())
+        : null;
     final signer = nostrEvent.sig == null
         ? _checkSinger(customSigner: customSigner)
         : null;
@@ -145,13 +146,8 @@ class Broadcast {
   }
 
   /// Convenience alias for app UIs that want items still pending broadcast.
-  Future<List<EventDeliverySnapshot>> loadPendingDeliveries({
-    int? limit,
-  }) {
-    return loadDeliveries(
-      pendingOnly: true,
-      limit: limit,
-    );
+  Future<List<EventDeliverySnapshot>> loadPendingDeliveries({int? limit}) {
+    return loadDeliveries(pendingOnly: true, limit: limit);
   }
 
   Future<EventDeliverySnapshot> _loadSnapshotForRecord(
@@ -185,13 +181,14 @@ class Broadcast {
   }) {
     final signer = _checkSinger();
     Nip01Event event = Nip01Event(
-        pubKey: signer.getPublicKey(),
-        kind: Reaction.kKind,
-        tags: [
-          ["e", eventId]
-        ],
-        content: reaction,
-        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
+      pubKey: signer.getPublicKey(),
+      kind: Reaction.kKind,
+      tags: [
+        ["e", eventId],
+      ],
+      content: reaction,
+      createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
     return broadcast(nostrEvent: event, specificRelays: customRelays);
   }
 
@@ -257,7 +254,8 @@ class Broadcast {
         allEventsAndAllVersions.isEmpty &&
         allEventIds.isEmpty) {
       throw ArgumentError(
-          "At least one event or eventId must be provided for deletion.");
+        "At least one event or eventId must be provided for deletion.",
+      );
     }
 
     // Build tags
@@ -295,11 +293,12 @@ class Broadcast {
     }
 
     Nip01Event deletionEvent = Nip01Event(
-        pubKey: mySigner.getPublicKey(),
-        kind: Deletion.kKind,
-        tags: tags,
-        content: reason,
-        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
+      pubKey: mySigner.getPublicKey(),
+      kind: Deletion.kKind,
+      tags: tags,
+      content: reason,
+      createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
 
     // Remove events from cache
     if (idsToRemoveFromCache.isNotEmpty) {
@@ -314,7 +313,7 @@ class Broadcast {
         kinds: [e.kind],
         tags: dTag != null
             ? {
-                'd': [dTag]
+                'd': [dTag],
               }
             : null,
       );

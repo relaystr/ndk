@@ -92,9 +92,11 @@ abstract class CacheManager {
 
   /// Persist one plaintext sidecar for an encrypted event.
   Future<void> saveDecryptedEventPayloadRecord(
-      DecryptedEventPayloadRecord record);
+    DecryptedEventPayloadRecord record,
+  );
   Future<void> saveDecryptedEventPayloadRecords(
-      List<DecryptedEventPayloadRecord> records);
+    List<DecryptedEventPayloadRecord> records,
+  );
   Future<DecryptedEventPayloadRecord?> loadDecryptedEventPayloadRecord({
     required String eventId,
     required String viewerPubKey,
@@ -244,9 +246,7 @@ abstract class CacheManager {
   Future<void> saveKeyset(CahsuKeyset keyset);
 
   /// get all keysets if no mintUrl is provided \
-  Future<List<CahsuKeyset>> getKeysets({
-    String? mintUrl,
-  });
+  Future<List<CahsuKeyset>> getKeysets({String? mintUrl});
 
   Future<void> saveProofs({
     required List<CashuProof> proofs,
@@ -264,18 +264,12 @@ abstract class CacheManager {
     required String mintUrl,
   });
 
-  Future<void> saveMintInfo({
-    required CashuMintInfo mintInfo,
-  });
+  Future<void> saveMintInfo({required CashuMintInfo mintInfo});
 
-  Future<void> removeMintInfo({
-    required String mintUrl,
-  });
+  Future<void> removeMintInfo({required String mintUrl});
 
   /// return all if no mintUrls are provided
-  Future<List<CashuMintInfo>?> getMintInfos({
-    List<String>? mintUrls,
-  });
+  Future<List<CashuMintInfo>?> getMintInfos({List<String>? mintUrls});
 
   Future<int> getCashuSecretCounter({
     required String mintUrl,
@@ -296,26 +290,32 @@ abstract class CacheManager {
 
   /// Save multiple filter fetched range records
   Future<void> saveFilterFetchedRangeRecords(
-      List<FilterFetchedRangeRecord> records);
+    List<FilterFetchedRangeRecord> records,
+  );
 
   /// Load all fetched range records for a filter hash
   Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecords(
-      String filterHash);
+    String filterHash,
+  );
 
   /// Load all fetched range records for a filter hash and relay
   Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelay(
-      String filterHash, String relayUrl);
+    String filterHash,
+    String relayUrl,
+  );
 
   /// Load all fetched range records for a relay (all filters)
   Future<List<FilterFetchedRangeRecord>>
-      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl);
+  loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl);
 
   /// Remove all fetched range records for a filter hash
   Future<void> removeFilterFetchedRangeRecords(String filterHash);
 
   /// Remove fetched range records for a specific filter hash and relay
   Future<void> removeFilterFetchedRangeRecordsByFilterAndRelay(
-      String filterHash, String relayUrl);
+    String filterHash,
+    String relayUrl,
+  );
 
   /// Remove all fetched range records for a relay
   Future<void> removeFilterFetchedRangeRecordsByRelay(String relayUrl);

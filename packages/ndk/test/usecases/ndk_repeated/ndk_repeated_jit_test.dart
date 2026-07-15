@@ -25,11 +25,12 @@ void main() async {
 
     Nip01Event textNote(KeyPair key2) {
       return Nip01Event(
-          kind: Nip01Event.kTextNodeKind,
-          pubKey: key2.publicKey,
-          content: "some note from key ${keyNames[key2]}",
-          tags: [],
-          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
+        kind: Nip01Event.kTextNodeKind,
+        pubKey: key2.publicKey,
+        content: "some note from key ${keyNames[key2]}",
+        tags: [],
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
     }
 
     Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
@@ -45,30 +46,32 @@ void main() async {
     final myRelayUrls = [relay1.url, relay2.url, relay3.url, relay4.url];
 
     final myFilters = [
+      Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]),
       Filter(
         kinds: [Nip01Event.kTextNodeKind],
-        authors: [key1.publicKey],
+        authors: [key1.publicKey, key2.publicKey],
       ),
       Filter(
-          kinds: [Nip01Event.kTextNodeKind],
-          authors: [key1.publicKey, key2.publicKey]),
+        kinds: [Nip01Event.kTextNodeKind],
+        authors: [key4.publicKey, key3.publicKey],
+      ),
       Filter(
-          kinds: [Nip01Event.kTextNodeKind],
-          authors: [key4.publicKey, key3.publicKey]),
+        kinds: [Nip01Event.kTextNodeKind],
+        authors: [key4.publicKey, key2.publicKey],
+      ),
       Filter(
-          kinds: [Nip01Event.kTextNodeKind],
-          authors: [key4.publicKey, key2.publicKey]),
+        kinds: [Nip01Event.kTextNodeKind],
+        authors: [key1.publicKey, key2.publicKey, key3.publicKey],
+      ),
       Filter(
-          kinds: [Nip01Event.kTextNodeKind],
-          authors: [key1.publicKey, key2.publicKey, key3.publicKey]),
-      Filter(kinds: [
-        Nip01Event.kTextNodeKind
-      ], authors: [
-        key1.publicKey,
-        key2.publicKey,
-        key3.publicKey,
-        key4.publicKey
-      ]),
+        kinds: [Nip01Event.kTextNodeKind],
+        authors: [
+          key1.publicKey,
+          key2.publicKey,
+          key3.publicKey,
+          key4.publicKey,
+        ],
+      ),
     ];
 
     setUp(() async {
@@ -94,8 +97,10 @@ void main() async {
           bootstrapRelays: myRelayUrls,
         ),
       );
-      ndkJit.accounts
-          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+      ndkJit.accounts.loginPrivateKey(
+        pubkey: key1.publicKey,
+        privkey: key1.privateKey!,
+      );
 
       await testNdk(
         myNdk: ndkJit,

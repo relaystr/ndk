@@ -1,9 +1,6 @@
 import 'dart:typed_data';
 
-enum Flag {
-  none,
-  requireMinimalEncoding,
-}
+enum Flag { none, requireMinimalEncoding }
 
 class CBORTag {
   static const int majorUnsignedInteger = 0;
@@ -75,15 +72,18 @@ class CBOREncoder {
     if (length >= 5 && length <= 8) {
       encodeTagAndAdditional(tag, CBORTag.minorLength8);
       _buffer.add(
-          Uint8List(8)..buffer.asByteData().setUint64(0, value, Endian.big));
+        Uint8List(8)..buffer.asByteData().setUint64(0, value, Endian.big),
+      );
     } else if (length == 3 || length == 4) {
       encodeTagAndAdditional(tag, CBORTag.minorLength4);
       _buffer.add(
-          Uint8List(4)..buffer.asByteData().setUint32(0, value, Endian.big));
+        Uint8List(4)..buffer.asByteData().setUint32(0, value, Endian.big),
+      );
     } else if (length == 2) {
       encodeTagAndAdditional(tag, CBORTag.minorLength2);
       _buffer.add(
-          Uint8List(2)..buffer.asByteData().setUint16(0, value, Endian.big));
+        Uint8List(2)..buffer.asByteData().setUint16(0, value, Endian.big),
+      );
     } else if (length == 1) {
       encodeTagAndAdditional(tag, CBORTag.minorLength1);
       _buffer.addByte(value);
@@ -91,7 +91,8 @@ class CBOREncoder {
       encodeTagAndAdditional(tag, value);
     } else {
       throw Exception(
-          "Unsupported byte length of $length for value in encodeTagAndValue()");
+        "Unsupported byte length of $length for value in encodeTagAndValue()",
+      );
     }
 
     return 1 + length;
@@ -111,7 +112,9 @@ class CBOREncoder {
 
   int encodeBool(bool value) {
     return encodeTagAndValue(
-        CBORTag.majorSimple, value ? CBORTag.minorTrue : CBORTag.minorFalse);
+      CBORTag.majorSimple,
+      value ? CBORTag.minorTrue : CBORTag.minorFalse,
+    );
   }
 
   int encodeBytes(Uint8List value) {
@@ -122,12 +125,16 @@ class CBOREncoder {
 
   int encodeEncodedBytesPrefix(int value) {
     return encodeTagAndValue(
-        CBORTag.majorSemantic, CBORTag.minorCborEncodedData);
+      CBORTag.majorSemantic,
+      CBORTag.minorCborEncodedData,
+    );
   }
 
   int encodeEncodedBytes(Uint8List value) {
-    int length =
-        encodeTagAndValue(CBORTag.majorSemantic, CBORTag.minorCborEncodedData);
+    int length = encodeTagAndValue(
+      CBORTag.majorSemantic,
+      CBORTag.minorCborEncodedData,
+    );
     return length + encodeBytes(value);
   }
 
@@ -197,8 +204,11 @@ class CBORDecoder {
       throw Exception("Not enough input");
     }
 
-    ByteData byteData =
-        ByteData.sublistView(_buffer, _position, _position + bytesToRead);
+    ByteData byteData = ByteData.sublistView(
+      _buffer,
+      _position,
+      _position + bytesToRead,
+    );
     _position += bytesToRead;
 
     switch (bytesToRead) {
@@ -271,8 +281,11 @@ class CBORDecoder {
       throw Exception("Not enough input");
     }
 
-    Uint8List value =
-        Uint8List.sublistView(_buffer, _position, _position + byteLength);
+    Uint8List value = Uint8List.sublistView(
+      _buffer,
+      _position,
+      _position + byteLength,
+    );
     _position += byteLength;
     return (value, sizeLength + byteLength);
   }
@@ -312,8 +325,11 @@ class CBORDecoder {
       throw Exception("Not enough input");
     }
 
-    Uint8List utf8Bytes =
-        Uint8List.sublistView(_buffer, _position, _position + byteLength);
+    Uint8List utf8Bytes = Uint8List.sublistView(
+      _buffer,
+      _position,
+      _position + byteLength,
+    );
     _position += byteLength;
     String value = String.fromCharCodes(utf8Bytes);
     return (value, sizeLength + byteLength);

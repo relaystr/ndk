@@ -46,10 +46,10 @@ class PendingBroadcastDelivery {
     required BroadcastSender broadcastSender,
     required Accounts accounts,
     Duration signAttemptTimeout = defaultSignAttemptTimeout,
-  })  : _cacheManager = cacheManager,
-        _sender = broadcastSender,
-        _accounts = accounts,
-        _signAttemptTimeout = signAttemptTimeout;
+  }) : _cacheManager = cacheManager,
+       _sender = broadcastSender,
+       _accounts = accounts,
+       _signAttemptTimeout = signAttemptTimeout;
 
   /// Starts periodic due-retry processing.
   ///
@@ -107,9 +107,7 @@ class PendingBroadcastDelivery {
     if (_stopped) {
       return;
     }
-    await _retryDueSigning(
-      reconnectRelay: reconnectRelay,
-    );
+    await _retryDueSigning(reconnectRelay: reconnectRelay);
 
     if (_stopped) {
       return;
@@ -124,10 +122,7 @@ class PendingBroadcastDelivery {
         return;
       }
       if (connectedRelayUrlSet.contains(relayUrl)) {
-        await flushForRelay(
-          relayUrl,
-          onlyDue: true,
-        );
+        await flushForRelay(relayUrl, onlyDue: true);
         continue;
       }
 
@@ -136,10 +131,7 @@ class PendingBroadcastDelivery {
         continue;
       }
 
-      await flushForRelay(
-        relayUrl,
-        onlyDue: true,
-      );
+      await flushForRelay(relayUrl, onlyDue: true);
     }
   }
 
@@ -218,7 +210,8 @@ class PendingBroadcastDelivery {
       EventDeliveryRecord(
         eventId: event.id,
         status: existing?.status ?? EventDeliveryStatus.pending,
-        signingState: existing?.signingState ??
+        signingState:
+            existing?.signingState ??
             (requiresInteractiveSigning
                 ? EventSigningState.pending
                 : EventSigningState.notNeeded),
@@ -236,8 +229,9 @@ class PendingBroadcastDelivery {
       ),
     );
 
-    final existingTargets =
-        await _cacheManager.loadRelayDeliveryTargets(eventId: event.id);
+    final existingTargets = await _cacheManager.loadRelayDeliveryTargets(
+      eventId: event.id,
+    );
     final existingByRelay = {
       for (final target in existingTargets) target.relayUrl: target,
     };
@@ -262,16 +256,19 @@ class PendingBroadcastDelivery {
     if (_stopped) {
       return;
     }
-    Logger.log.d(() =>
-        'persist broadcast result ${event.id} -> ${responses.map((r) => r.relayUrl).toList()}');
+    Logger.log.d(
+      () =>
+          'persist broadcast result ${event.id} -> ${responses.map((r) => r.relayUrl).toList()}',
+    );
 
     final existing = await _cacheManager.loadEventDeliveryRecord(event.id);
     if (existing == null) {
       return;
     }
 
-    final existingTargets =
-        await _cacheManager.loadRelayDeliveryTargets(eventId: event.id);
+    final existingTargets = await _cacheManager.loadRelayDeliveryTargets(
+      eventId: event.id,
+    );
     final targetsByRelay = {
       for (final target in existingTargets) target.relayUrl: target,
     };
@@ -289,12 +286,12 @@ class PendingBroadcastDelivery {
       final nextState = policy.resolveNextState(response);
       final nextRetryAt = policy.shouldRetryState(nextState)
           ? attemptTimestamp +
-              policy
-                  .retryDelayFor(
-                    state: nextState,
-                    attemptCount: current.attemptCount + 1,
-                  )
-                  .inSeconds
+                policy
+                    .retryDelayFor(
+                      state: nextState,
+                      attemptCount: current.attemptCount + 1,
+                    )
+                    .inSeconds
           : null;
 
       updatedTargets.add(
@@ -337,14 +334,15 @@ class PendingBroadcastDelivery {
       await _cacheManager.saveRelayDeliveryTargets(updatedTargets);
     }
 
-    final allTargets =
-        await _cacheManager.loadRelayDeliveryTargets(eventId: event.id);
+    final allTargets = await _cacheManager.loadRelayDeliveryTargets(
+      eventId: event.id,
+    );
     final deliveryStatus = _resolveDeliveryStatus(existing, allTargets);
     final completionTimestamp =
         deliveryStatus == EventDeliveryStatus.delivered ||
-                deliveryStatus == EventDeliveryStatus.failed
-            ? Nip01Event.secondsSinceEpoch()
-            : null;
+            deliveryStatus == EventDeliveryStatus.failed
+        ? Nip01Event.secondsSinceEpoch()
+        : null;
 
     await _cacheManager.saveEventDeliveryRecord(
       existing.copyWith(
@@ -354,13 +352,14 @@ class PendingBroadcastDelivery {
       ),
     );
     await _purgeEphemeralIfResolved(
-        event.id, deliveryStatus, event.kind, allTargets);
+      event.id,
+      deliveryStatus,
+      event.kind,
+      allTargets,
+    );
   }
 
-  Future<void> flushForRelay(
-    String relayUrl, {
-    bool onlyDue = false,
-  }) async {
+  Future<void> flushForRelay(String relayUrl, {bool onlyDue = false}) async {
     if (_stopped) {
       return;
     }
@@ -390,8 +389,10 @@ class PendingBroadcastDelivery {
 
         return target.nextRetryAt == null || target.nextRetryAt! <= now;
       }).toList();
-      Logger.log.d(() =>
-          'flush pending delivery for $relayUrl${onlyDue ? " (due only)" : ""} -> ${targets.map((t) => t.eventId).toList()}');
+      Logger.log.d(
+        () =>
+            'flush pending delivery for $relayUrl${onlyDue ? " (due only)" : ""} -> ${targets.map((t) => t.eventId).toList()}',
+      );
 
       for (final target in targets) {
         if (_stopped) {
@@ -401,8 +402,9 @@ class PendingBroadcastDelivery {
           continue;
         }
 
-        final deliveryRecord =
-            await _cacheManager.loadEventDeliveryRecord(target.eventId);
+        final deliveryRecord = await _cacheManager.loadEventDeliveryRecord(
+          target.eventId,
+        );
         if (deliveryRecord == null) {
           await _cacheManager.removeRelayDeliveryTarget(
             eventId: target.eventId,
@@ -426,23 +428,22 @@ class PendingBroadcastDelivery {
 
         if (_isExpiredEvent(event)) {
           Logger.log.d(
-              () => 'drop expired pending delivery ${event.id} for $relayUrl');
+            () => 'drop expired pending delivery ${event.id} for $relayUrl',
+          );
           await _discardEventDelivery(event.id);
           continue;
         }
 
         if (await _isObsoleteReplaceableOrAddressableEvent(event)) {
           Logger.log.d(
-              () => 'drop obsolete pending delivery ${event.id} for $relayUrl');
+            () => 'drop obsolete pending delivery ${event.id} for $relayUrl',
+          );
           await _discardEventDelivery(event.id);
           continue;
         }
 
         if (deliveryRecord.requiresInteractiveSigning && event.sig == null) {
-          final signed = await _ensureEventSigned(
-            deliveryRecord,
-            event: event,
-          );
+          final signed = await _ensureEventSigned(deliveryRecord, event: event);
           if (!signed) {
             continue;
           }
@@ -460,15 +461,16 @@ class PendingBroadcastDelivery {
 
         if (target.state == RelayDeliveryState.attempting &&
             policy.retainsOnlyLatest) {
-          Logger.log.d(() =>
-              'skip retry for in-flight replaceable delivery ${event.id} on $relayUrl');
+          Logger.log.d(
+            () =>
+                'skip retry for in-flight replaceable delivery ${event.id} on $relayUrl',
+          );
           continue;
         }
 
-        await _sender.broadcast(
-          nostrEvent: event,
-          specificRelays: [relayUrl],
-        ).broadcastDoneFuture;
+        await _sender
+            .broadcast(nostrEvent: event, specificRelays: [relayUrl])
+            .broadcastDoneFuture;
       }
     } finally {
       _flushInProgress.remove(relayUrl);
@@ -490,7 +492,8 @@ class PendingBroadcastDelivery {
   }
 
   Future<bool> _isObsoleteReplaceableOrAddressableEvent(
-      Nip01Event event) async {
+    Nip01Event event,
+  ) async {
     // Replaceable/addressable retries should follow the currently visible cache
     // winner, not historical offline versions that were later superseded.
     final policy = DeliveryPolicy.forEvent(event);
@@ -570,10 +573,7 @@ class PendingBroadcastDelivery {
         continue;
       }
 
-      final event = await _loadRecoverableEvent(
-        record.eventId,
-        record: record,
-      );
+      final event = await _loadRecoverableEvent(record.eventId, record: record);
       if (event == null) {
         await _discardEventDelivery(record.eventId);
         continue;
@@ -691,10 +691,10 @@ class PendingBroadcastDelivery {
           nextSignRetryAt: waitingForApproval
               ? null
               : Nip01Event.secondsSinceEpoch() +
-                  _signRetryDelayFor(
-                    attemptCount: attemptingRecord.signAttemptCount,
-                    requiresSignerNetwork: signer.requiresSignerNetwork,
-                  ).inSeconds,
+                    _signRetryDelayFor(
+                      attemptCount: attemptingRecord.signAttemptCount,
+                      requiresSignerNetwork: signer.requiresSignerNetwork,
+                    ).inSeconds,
           lastSignError: waitingForApproval
               ? 'Waiting for signer approval'
               : 'Timed out waiting for signer',
@@ -722,25 +722,30 @@ class PendingBroadcastDelivery {
     required Future<Nip01Event> future,
   }) {
     unawaited(
-      future.then((signedEvent) async {
-        await _handleSignSuccess(
-          attemptId: attemptId,
-          record: record,
-          event: event,
-          signedEvent: signedEvent,
-        );
-      }, onError: (Object error, StackTrace stackTrace) async {
-        await _handleSignFailure(
-          attemptId: attemptId,
-          record: record,
-          event: event,
-          signer: _resolveSignerForEvent(event),
-          error: error,
-          stackTrace: stackTrace,
-        );
-      }).whenComplete(() {
-        _clearActiveSignAttempt(event.id, attemptId: attemptId);
-      }),
+      future
+          .then(
+            (signedEvent) async {
+              await _handleSignSuccess(
+                attemptId: attemptId,
+                record: record,
+                event: event,
+                signedEvent: signedEvent,
+              );
+            },
+            onError: (Object error, StackTrace stackTrace) async {
+              await _handleSignFailure(
+                attemptId: attemptId,
+                record: record,
+                event: event,
+                signer: _resolveSignerForEvent(event),
+                error: error,
+                stackTrace: stackTrace,
+              );
+            },
+          )
+          .whenComplete(() {
+            _clearActiveSignAttempt(event.id, attemptId: attemptId);
+          }),
     );
   }
 
@@ -801,10 +806,10 @@ class PendingBroadcastDelivery {
     final now = Nip01Event.secondsSinceEpoch();
     final nextRetryAt = outcome == EventSigningState.transientFailure
         ? now +
-            _signRetryDelayFor(
-              attemptCount: record.signAttemptCount,
-              requiresSignerNetwork: signer?.requiresSignerNetwork ?? false,
-            ).inSeconds
+              _signRetryDelayFor(
+                attemptCount: record.signAttemptCount,
+                requiresSignerNetwork: signer?.requiresSignerNetwork ?? false,
+              ).inSeconds
         : null;
 
     await _saveSigningOutcome(
@@ -909,14 +914,16 @@ class PendingBroadcastDelivery {
       return;
     }
 
-    final targets =
-        await _cacheManager.loadRelayDeliveryTargets(eventId: eventId);
-    final targetRelayUrls = targets
-        .where((target) => connectedRelayUrls.contains(target.relayUrl))
-        .map((target) => target.relayUrl)
-        .toSet()
-        .toList()
-      ..sort();
+    final targets = await _cacheManager.loadRelayDeliveryTargets(
+      eventId: eventId,
+    );
+    final targetRelayUrls =
+        targets
+            .where((target) => connectedRelayUrls.contains(target.relayUrl))
+            .map((target) => target.relayUrl)
+            .toSet()
+            .toList()
+          ..sort();
 
     for (final relayUrl in targetRelayUrls) {
       await flushForRelay(relayUrl);
@@ -937,8 +944,9 @@ class PendingBroadcastDelivery {
   }
 
   Future<void> _saveSigningOutcome(EventDeliveryRecord record) async {
-    final targets =
-        await _cacheManager.loadRelayDeliveryTargets(eventId: record.eventId);
+    final targets = await _cacheManager.loadRelayDeliveryTargets(
+      eventId: record.eventId,
+    );
     final resolvedStatus = _resolveDeliveryStatus(record, targets);
     final now = Nip01Event.secondsSinceEpoch();
     await _cacheManager.saveEventDeliveryRecord(
@@ -968,7 +976,8 @@ class PendingBroadcastDelivery {
     int? kind,
     List<RelayDeliveryTarget> targets,
   ) async {
-    final isResolved = status == EventDeliveryStatus.delivered ||
+    final isResolved =
+        status == EventDeliveryStatus.delivered ||
         status == EventDeliveryStatus.failed ||
         (status == EventDeliveryStatus.partiallyDelivered &&
             targets.isNotEmpty &&
@@ -1055,8 +1064,7 @@ class PendingBroadcastDelivery {
         EventSigningState.pending => EventDeliveryStatus.pending,
         EventSigningState.notNeeded => EventDeliveryStatus.pending,
         EventSigningState.attempting ||
-        EventSigningState.transientFailure =>
-          EventDeliveryStatus.inProgress,
+        EventSigningState.transientFailure => EventDeliveryStatus.inProgress,
         EventSigningState.signed => EventDeliveryStatus.inProgress,
       };
     }
@@ -1074,8 +1082,9 @@ class PendingBroadcastDelivery {
       return EventDeliveryStatus.needsAction;
     }
 
-    final ackedCount =
-        targets.where((t) => t.state == RelayDeliveryState.acked).length;
+    final ackedCount = targets
+        .where((t) => t.state == RelayDeliveryState.acked)
+        .length;
     final permanentFailureCount = targets
         .where((t) => t.state == RelayDeliveryState.permanentFailure)
         .length;

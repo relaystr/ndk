@@ -96,28 +96,30 @@ void main() {
       expect(stored.plaintextContent, isNull);
     });
 
-    test('coalesces concurrent decrypts for the same event and viewer',
-        () async {
-      var decryptCalls = 0;
+    test(
+      'coalesces concurrent decrypts for the same event and viewer',
+      () async {
+        var decryptCalls = 0;
 
-      final futures = List.generate(
-        2,
-        (_) => usecase.loadOrDecrypt(
-          event: event,
-          viewerPubKey: 'viewer-pubkey',
-          scheme: DecryptedPayloadScheme.nip44,
-          decrypt: () async {
-            decryptCalls += 1;
-            await Future<void>.delayed(const Duration(milliseconds: 50));
-            return 'shared plaintext';
-          },
-        ),
-      );
+        final futures = List.generate(
+          2,
+          (_) => usecase.loadOrDecrypt(
+            event: event,
+            viewerPubKey: 'viewer-pubkey',
+            scheme: DecryptedPayloadScheme.nip44,
+            decrypt: () async {
+              decryptCalls += 1;
+              await Future<void>.delayed(const Duration(milliseconds: 50));
+              return 'shared plaintext';
+            },
+          ),
+        );
 
-      final results = await Future.wait(futures);
+        final results = await Future.wait(futures);
 
-      expect(results, ['shared plaintext', 'shared plaintext']);
-      expect(decryptCalls, 1);
-    });
+        expect(results, ['shared plaintext', 'shared plaintext']);
+        expect(decryptCalls, 1);
+      },
+    );
   });
 }

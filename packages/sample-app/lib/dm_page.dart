@@ -97,10 +97,7 @@ class _DmInboxPageState extends State<DmInboxPage> {
         _loading = false;
       });
       unawaited(
-        _loadPeerMetadatas(
-          conversations,
-          loadGeneration: loadGeneration,
-        ),
+        _loadPeerMetadatas(conversations, loadGeneration: loadGeneration),
       );
     } catch (e) {
       if (!mounted || loadGeneration != _loadGeneration) return;
@@ -167,10 +164,7 @@ class _DmInboxPageState extends State<DmInboxPage> {
     }
 
     setState(() {
-      _peerMetadatas = {
-        ..._peerMetadatas,
-        metadata.pubKey: metadata,
-      };
+      _peerMetadatas = {..._peerMetadatas, metadata.pubKey: metadata};
     });
   }
 
@@ -240,8 +234,9 @@ class _DmInboxPageState extends State<DmInboxPage> {
             separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
               final conversation = _conversations[index];
-              final unreadCount =
-                  dmLiveState.unreadCountForPeer(conversation.peerPubKey);
+              final unreadCount = dmLiveState.unreadCountForPeer(
+                conversation.peerPubKey,
+              );
               return Card(
                 clipBehavior: Clip.antiAlias,
                 child: ListTile(
@@ -309,10 +304,7 @@ class _DmInboxPageState extends State<DmInboxPage> {
 class DmConversationPage extends StatefulWidget {
   final String peerPubKey;
 
-  const DmConversationPage({
-    super.key,
-    required this.peerPubKey,
-  });
+  const DmConversationPage({super.key, required this.peerPubKey});
 
   @override
   State<DmConversationPage> createState() => _DmConversationPageState();
@@ -525,9 +517,7 @@ class _DmConversationPageState extends State<DmConversationPage> {
           ),
         Expanded(
           child: _messages.isEmpty
-              ? const Center(
-                  child: Text('No conversation loaded yet.'),
-                )
+              ? const Center(child: Text('No conversation loaded yet.'))
               : ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: _messages.length,
@@ -543,9 +533,9 @@ class _DmConversationPageState extends State<DmConversationPage> {
                         child: Card(
                           color: message.isOutgoing
                               ? Theme.of(context).colorScheme.primaryContainer
-                              : Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerHighest,
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHighest,
                           child: Padding(
                             padding: const EdgeInsets.all(12),
                             child: IntrinsicWidth(
@@ -602,8 +592,9 @@ class _DmConversationPageState extends State<DmConversationPage> {
               textInputAction: TextInputAction.send,
               onSubmitted: (_) => _sendInlineMessage(),
               decoration: InputDecoration(
-                hintText:
-                    myPubKey == null ? 'Log in to send a message' : 'Message',
+                hintText: myPubKey == null
+                    ? 'Log in to send a message'
+                    : 'Message',
                 border: const OutlineInputBorder(),
               ),
             ),
@@ -651,10 +642,7 @@ class _DmConversationPageState extends State<DmConversationPage> {
 class DmComposePage extends StatefulWidget {
   final String? initialRecipientPubKey;
 
-  const DmComposePage({
-    super.key,
-    this.initialRecipientPubKey,
-  });
+  const DmComposePage({super.key, this.initialRecipientPubKey});
 
   @override
   State<DmComposePage> createState() => _DmComposePageState();
@@ -697,10 +685,7 @@ class _DmComposePageState extends State<DmComposePage> {
     });
 
     try {
-      await ndk.dms.sendMessage(
-        recipientPubKey: recipient,
-        content: content,
-      );
+      await ndk.dms.sendMessage(recipientPubKey: recipient, content: content);
       if (!mounted) return;
       context.go('/dm/conversation/$recipient');
     } catch (e) {
@@ -722,9 +707,7 @@ class _DmComposePageState extends State<DmComposePage> {
     final myPubKey = ndk.accounts.getPublicKey();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Compose DM'),
-      ),
+      appBar: AppBar(title: const Text('Compose DM')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -792,9 +775,7 @@ String _shorten(String value) {
 class _ConversationUnreadBadge extends StatelessWidget {
   final int count;
 
-  const _ConversationUnreadBadge({
-    required this.count,
-  });
+  const _ConversationUnreadBadge({required this.count});
 
   @override
   Widget build(BuildContext context) {
@@ -802,10 +783,7 @@ class _ConversationUnreadBadge extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 3,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.error,
             borderRadius: BorderRadius.circular(999),
@@ -813,9 +791,9 @@ class _ConversationUnreadBadge extends StatelessWidget {
           child: Text(
             count > 99 ? '99+' : '$count',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onError,
-                  fontWeight: FontWeight.w700,
-                ),
+              color: Theme.of(context).colorScheme.onError,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
         const SizedBox(width: 8),

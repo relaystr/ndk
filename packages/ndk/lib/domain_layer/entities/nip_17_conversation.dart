@@ -8,10 +8,7 @@ class Nip17Conversation {
   final String peerPubKey;
   final List<Nip17Message> messages;
 
-  const Nip17Conversation({
-    required this.peerPubKey,
-    required this.messages,
-  });
+  const Nip17Conversation({required this.peerPubKey, required this.messages});
 
   /// Most recent message in the conversation.
   Nip17Message get latestMessage => messages.last;

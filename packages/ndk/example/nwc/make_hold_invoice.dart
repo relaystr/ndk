@@ -24,10 +24,12 @@ void main() async {
 
   // Generate a random 32-byte preimage
   final random = Random.secure();
-  final preimageBytes =
-      Uint8List.fromList(List<int>.generate(32, (_) => random.nextInt(256)));
-  final preimageHex =
-      hex.encode(preimageBytes); // Optional: hex encode for printing
+  final preimageBytes = Uint8List.fromList(
+    List<int>.generate(32, (_) => random.nextInt(256)),
+  );
+  final preimageHex = hex.encode(
+    preimageBytes,
+  ); // Optional: hex encode for printing
 
   // Calculate the payment hash (SHA256 of the preimage)
   final paymentHashBytes = sha256.convert(preimageBytes).bytes;
@@ -39,14 +41,19 @@ void main() async {
   try {
     // 1. Create the hold invoice
     print("Creating hold invoice...");
-    final makeResponse = await ndk.nwc.makeHoldInvoice(connection,
-        amountSats: amount, description: description, paymentHash: paymentHash);
+    final makeResponse = await ndk.nwc.makeHoldInvoice(
+      connection,
+      amountSats: amount,
+      description: description,
+      paymentHash: paymentHash,
+    );
 
     if (makeResponse.errorCode == null) {
       // Check if errorCode is null for success
       final invoice = makeResponse.invoice;
       print(
-          "Hold invoice created successfully. Invoice: $invoice Payment Hash: ${makeResponse.paymentHash}");
+        "Hold invoice created successfully. Invoice: $invoice Payment Hash: ${makeResponse.paymentHash}",
+      );
 
       // if (invoice.isNotEmpty) {
       // print("\nScan QR Code to pay/hold:");
@@ -61,19 +68,23 @@ void main() async {
       //   print("\nOr copy Bolt11 invoice:\n$invoice\n");
       // }
 
-      final duration = makeResponse.expiresAt! -
+      final duration =
+          makeResponse.expiresAt! -
           DateTime.now().millisecondsSinceEpoch ~/ 1000;
       print(
-          "Waiting for hold invoice acceptance notification (max $duration seconds)...");
+        "Waiting for hold invoice acceptance notification (max $duration seconds)...",
+      );
       try {
-        final acceptedNotification =
-            await connection.holdInvoiceStateStream.firstWhere((notification) {
-          return notification.notificationType ==
-              NwcNotification.kHoldInvoiceAccepted;
-        }).timeout(Duration(seconds: duration.toInt()));
+        final acceptedNotification = await connection.holdInvoiceStateStream
+            .firstWhere((notification) {
+              return notification.notificationType ==
+                  NwcNotification.kHoldInvoiceAccepted;
+            })
+            .timeout(Duration(seconds: duration.toInt()));
 
         print(
-            "Hold invoice accepted by wallet! (Notification: ${acceptedNotification.notificationType}, Settle deadline: ${acceptedNotification.settleDeadline})");
+          "Hold invoice accepted by wallet! (Notification: ${acceptedNotification.notificationType}, Settle deadline: ${acceptedNotification.settleDeadline})",
+        );
 
         // 3. Ask user whether to settle or cancel
         print("Settle this accepted invoice? (Y/N)");
@@ -82,42 +93,51 @@ void main() async {
         if (input == 'n') {
           // 4a. Cancel the hold invoice
           print("Canceling hold invoice with payment hash: $paymentHash...");
-          final cancelResponse = await ndk.nwc
-              .cancelHoldInvoice(connection, paymentHash: paymentHash);
+          final cancelResponse = await ndk.nwc.cancelHoldInvoice(
+            connection,
+            paymentHash: paymentHash,
+          );
 
           if (cancelResponse.errorCode == null) {
             // Check if errorCode is null for success
             print("Hold invoice canceled successfully.");
           } else {
             print(
-                "Failed to cancel hold invoice. Error: ${cancelResponse.errorMessage} (Code: ${cancelResponse.errorCode})");
+              "Failed to cancel hold invoice. Error: ${cancelResponse.errorMessage} (Code: ${cancelResponse.errorCode})",
+            );
           }
         } else if (input == 'y') {
           // 4b. Settle the hold invoice using the preimage
           print("Settling hold invoice with preimage: $preimageHex...");
-          final settleResponse = await ndk.nwc
-              .settleHoldInvoice(connection, preimage: preimageHex);
+          final settleResponse = await ndk.nwc.settleHoldInvoice(
+            connection,
+            preimage: preimageHex,
+          );
 
           if (settleResponse.errorCode == null) {
             print(
-                "Hold invoice settled successfully. Preimage used: $preimageHex");
+              "Hold invoice settled successfully. Preimage used: $preimageHex",
+            );
           } else {
             print(
-                "Failed to settle hold invoice. Error: ${settleResponse.errorMessage} (Code: ${settleResponse.errorCode})");
+              "Failed to settle hold invoice. Error: ${settleResponse.errorMessage} (Code: ${settleResponse.errorCode})",
+            );
           }
         } else {
           print("Invalid input. Not settling or canceling.");
         }
       } on TimeoutException {
         print(
-            "Timed out waiting for hold invoice acceptance notification. The invoice might not be held by the wallet.");
+          "Timed out waiting for hold invoice acceptance notification. The invoice might not be held by the wallet.",
+        );
         // Optionally, try to cancel here as a fallback?
       } catch (e) {
         print("Error waiting for notification: $e");
       }
     } else {
       print(
-          "Failed to create hold invoice. Error: ${makeResponse.errorMessage} (Code: ${makeResponse.errorCode})");
+        "Failed to create hold invoice. Error: ${makeResponse.errorMessage} (Code: ${makeResponse.errorCode})",
+      );
     }
   } catch (e) {
     print("An error occurred: $e");

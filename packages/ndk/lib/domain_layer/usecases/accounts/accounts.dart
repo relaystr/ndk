@@ -34,10 +34,10 @@ class Accounts {
       throw Exception("Cannot login, pubkey already logged in");
     }
     addAccount(
-        pubkey: pubkey,
-        type: AccountType.privateKey,
-        signer:
-            eventSignerFactory.create(privateKey: privkey, publicKey: pubkey));
+      pubkey: pubkey,
+      type: AccountType.privateKey,
+      signer: eventSignerFactory.create(privateKey: privkey, publicKey: pubkey),
+    );
     _loggedPubkey = pubkey;
     _notifyAuthStateChange();
   }
@@ -53,9 +53,10 @@ class Accounts {
       throw Exception("Cannot login, pubkey already logged in");
     }
     addAccount(
-        pubkey: pubkey,
-        type: AccountType.publicKey,
-        signer: eventSignerFactory.create(privateKey: null, publicKey: pubkey));
+      pubkey: pubkey,
+      type: AccountType.publicKey,
+      signer: eventSignerFactory.create(privateKey: null, publicKey: pubkey),
+    );
     _loggedPubkey = pubkey;
     _notifyAuthStateChange();
   }
@@ -67,7 +68,10 @@ class Accounts {
       throw Exception("Cannot login, pubkey already logged in");
     }
     addAccount(
-        pubkey: pubkey, type: AccountType.externalSigner, signer: signer);
+      pubkey: pubkey,
+      type: AccountType.externalSigner,
+      signer: signer,
+    );
     _loggedPubkey = pubkey;
     _notifyAuthStateChange();
   }
@@ -139,10 +143,11 @@ class Accounts {
   }
 
   /// adds an Account
-  void addAccount(
-      {required String pubkey,
-      required AccountType type,
-      required EventSigner signer}) {
+  void addAccount({
+    required String pubkey,
+    required AccountType type,
+    required EventSigner signer,
+  }) {
     accounts[pubkey] = Account(type: type, pubkey: pubkey, signer: signer);
   }
 

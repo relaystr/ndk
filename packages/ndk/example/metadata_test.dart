@@ -21,7 +21,8 @@ void main() async {
 
     // Use a prebuilt ndk usecase (metadata in this case)
     final Metadata? response = await ndk.metadata.loadMetadata(
-        '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d');
+      '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d',
+    );
 
     // read entity
     print("METADATA:");

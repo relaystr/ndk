@@ -27,18 +27,9 @@ enum ErrorCode {
     'RESTRICTED',
     'This public key is not allowed to do this operation.',
   ),
-  unauthorized(
-    'UNAUTHORIZED',
-    'This public key has no wallet connected.',
-  ),
-  internal(
-    'INTERNAL',
-    'An internal error.',
-  ),
-  other(
-    'OTHER',
-    'Other error.',
-  );
+  unauthorized('UNAUTHORIZED', 'This public key has no wallet connected.'),
+  internal('INTERNAL', 'An internal error.'),
+  other('OTHER', 'Other error.');
 
   final String value;
   final String message;

@@ -39,20 +39,20 @@ class SembastCacheManager extends CacheManager {
 
   late final sembast.StoreRef<String, Map<String, Object?>> _eventsStore;
   late final sembast.StoreRef<String, Map<String, Object?>>
-      _eventCacheStateStore;
+  _eventCacheStateStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _eventSourceStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _eventDeliveryStore;
   late final sembast.StoreRef<String, Map<String, Object?>>
-      _relayDeliveryTargetStore;
+  _relayDeliveryTargetStore;
   late final sembast.StoreRef<String, Map<String, Object?>>
-      _decryptedEventPayloadStore;
+  _decryptedEventPayloadStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _metadataStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _contactListStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _relayListStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _nip05Store;
   late final sembast.StoreRef<String, Map<String, Object?>> _relaySetStore;
   late final sembast.StoreRef<String, Map<String, Object?>>
-      _filterFetchedRangeStore;
+  _filterFetchedRangeStore;
 
   late final sembast.StoreRef<String, Map<String, Object?>> _keysetStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _proofStore;
@@ -61,15 +61,19 @@ class SembastCacheManager extends CacheManager {
 
   SembastCacheManager(this._database) {
     _eventsStore = sembast.stringMapStoreFactory.store('events');
-    _eventCacheStateStore =
-        sembast.stringMapStoreFactory.store('event_cache_state');
+    _eventCacheStateStore = sembast.stringMapStoreFactory.store(
+      'event_cache_state',
+    );
     _eventSourceStore = sembast.stringMapStoreFactory.store('event_sources');
-    _eventDeliveryStore =
-        sembast.stringMapStoreFactory.store('event_delivery_records');
-    _relayDeliveryTargetStore =
-        sembast.stringMapStoreFactory.store('relay_delivery_targets');
-    _decryptedEventPayloadStore =
-        sembast.stringMapStoreFactory.store('decrypted_event_payloads');
+    _eventDeliveryStore = sembast.stringMapStoreFactory.store(
+      'event_delivery_records',
+    );
+    _relayDeliveryTargetStore = sembast.stringMapStoreFactory.store(
+      'relay_delivery_targets',
+    );
+    _decryptedEventPayloadStore = sembast.stringMapStoreFactory.store(
+      'decrypted_event_payloads',
+    );
     _metadataStore = sembast.stringMapStoreFactory.store('metadata');
     _contactListStore = sembast.stringMapStoreFactory.store('contact_lists');
     _relayListStore = sembast.stringMapStoreFactory.store('relay_lists');
@@ -78,10 +82,12 @@ class SembastCacheManager extends CacheManager {
     _keysetStore = sembast.stringMapStoreFactory.store('keysets');
     _proofStore = sembast.stringMapStoreFactory.store('proofs');
     _mintInfoStore = sembast.stringMapStoreFactory.store('mint_infos');
-    _secretCounterStore =
-        sembast.stringMapStoreFactory.store('secret_counters');
-    _filterFetchedRangeStore =
-        sembast.stringMapStoreFactory.store('filter_fetched_ranges');
+    _secretCounterStore = sembast.stringMapStoreFactory.store(
+      'secret_counters',
+    );
+    _filterFetchedRangeStore = sembast.stringMapStoreFactory.store(
+      'filter_fetched_ranges',
+    );
   }
 
   @override
@@ -127,10 +133,7 @@ class SembastCacheManager extends CacheManager {
     for (final relayUrl in relayUrls) {
       await _eventSourceStore.record(_eventSourceKey(eventId, relayUrl)).put(
         _database,
-        {
-          'eventId': eventId,
-          'relayUrl': relayUrl,
-        },
+        {'eventId': eventId, 'relayUrl': relayUrl},
       );
     }
   }
@@ -139,15 +142,12 @@ class SembastCacheManager extends CacheManager {
   Future<List<String>> loadEventSources(String eventId) async {
     final records = await _eventSourceStore.find(
       _database,
-      finder: sembast.Finder(
-        filter: sembast.Filter.equals('eventId', eventId),
-      ),
+      finder: sembast.Finder(filter: sembast.Filter.equals('eventId', eventId)),
     );
 
-    final sources = records
-        .map((record) => record.value['relayUrl'] as String)
-        .toList()
-      ..sort();
+    final sources =
+        records.map((record) => record.value['relayUrl'] as String).toList()
+          ..sort();
     return sources;
   }
 
@@ -155,9 +155,7 @@ class SembastCacheManager extends CacheManager {
   Future<void> removeEventSources(String eventId) async {
     await _eventSourceStore.delete(
       _database,
-      finder: sembast.Finder(
-        filter: sembast.Filter.equals('eventId', eventId),
-      ),
+      finder: sembast.Finder(filter: sembast.Filter.equals('eventId', eventId)),
     );
   }
 
@@ -170,7 +168,8 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<void> saveEventDeliveryRecords(
-      List<EventDeliveryRecord> records) async {
+    List<EventDeliveryRecord> records,
+  ) async {
     final keys = records.map((record) => record.eventId).toList();
     final values = records
         .map((record) => record.toJson().cast<String, Object?>())
@@ -191,8 +190,9 @@ class SembastCacheManager extends CacheManager {
     int? limit,
   }) async {
     final finder = sembast.Finder(
-      filter:
-          status != null ? sembast.Filter.equals('status', status.name) : null,
+      filter: status != null
+          ? sembast.Filter.equals('status', status.name)
+          : null,
       sortOrders: [sembast.SortOrder('createdAt')],
       limit: limit,
     );
@@ -221,7 +221,8 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<void> saveRelayDeliveryTargets(
-      List<RelayDeliveryTarget> targets) async {
+    List<RelayDeliveryTarget> targets,
+  ) async {
     final keys = targets.map((target) => target.key).toList();
     final values = targets
         .map((target) => target.toJson().cast<String, Object?>())
@@ -261,7 +262,8 @@ class SembastCacheManager extends CacheManager {
     }
     if (excludeAcked) {
       filters.add(
-          sembast.Filter.notEquals('state', RelayDeliveryState.acked.name));
+        sembast.Filter.notEquals('state', RelayDeliveryState.acked.name),
+      );
     }
 
     final finder = sembast.Finder(
@@ -273,8 +275,10 @@ class SembastCacheManager extends CacheManager {
       ],
       limit: limit,
     );
-    final records =
-        await _relayDeliveryTargetStore.find(_database, finder: finder);
+    final records = await _relayDeliveryTargetStore.find(
+      _database,
+      finder: finder,
+    );
     return records
         .map((record) => RelayDeliveryTarget.fromJson(record.value))
         .toList();
@@ -294,9 +298,7 @@ class SembastCacheManager extends CacheManager {
   Future<void> removeRelayDeliveryTargets(String eventId) async {
     await _relayDeliveryTargetStore.delete(
       _database,
-      finder: sembast.Finder(
-        filter: sembast.Filter.equals('eventId', eventId),
-      ),
+      finder: sembast.Finder(filter: sembast.Filter.equals('eventId', eventId)),
     );
   }
 
@@ -307,7 +309,8 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<void> saveDecryptedEventPayloadRecord(
-      DecryptedEventPayloadRecord record) async {
+    DecryptedEventPayloadRecord record,
+  ) async {
     await _decryptedEventPayloadStore
         .record(record.key)
         .put(_database, record.toJson().cast<String, Object?>());
@@ -315,7 +318,8 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<void> saveDecryptedEventPayloadRecords(
-      List<DecryptedEventPayloadRecord> records) async {
+    List<DecryptedEventPayloadRecord> records,
+  ) async {
     final keys = records.map((record) => record.key).toList();
     final values = records
         .map((record) => record.toJson().cast<String, Object?>())
@@ -359,8 +363,10 @@ class SembastCacheManager extends CacheManager {
       limit: limit,
     );
 
-    final records =
-        await _decryptedEventPayloadStore.find(_database, finder: finder);
+    final records = await _decryptedEventPayloadStore.find(
+      _database,
+      finder: finder,
+    );
     return records
         .map((record) => DecryptedEventPayloadRecord.fromJson(record.value))
         .toList();
@@ -380,9 +386,7 @@ class SembastCacheManager extends CacheManager {
   Future<void> removeDecryptedEventPayloadRecords(String eventId) async {
     await _decryptedEventPayloadStore.delete(
       _database,
-      finder: sembast.Finder(
-        filter: sembast.Filter.equals('eventId', eventId),
-      ),
+      finder: sembast.Finder(filter: sembast.Filter.equals('eventId', eventId)),
     );
   }
 
@@ -450,10 +454,10 @@ class SembastCacheManager extends CacheManager {
     }
 
     return plan.toResult().copyWith(
-          removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
-          removedTerminalFailedDeliveries:
-              deliverySweep.removedTerminalFailedDeliveries,
-        );
+      removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
+      removedTerminalFailedDeliveries:
+          deliverySweep.removedTerminalFailedDeliveries,
+    );
   }
 
   @override
@@ -658,9 +662,7 @@ class SembastCacheManager extends CacheManager {
   Future<void> removeAllEventsByPubKey(String pubKey) async {
     final events = await _eventsStore.find(
       _database,
-      finder: sembast.Finder(
-        filter: sembast.Filter.equals('pubkey', pubKey),
-      ),
+      finder: sembast.Finder(filter: sembast.Filter.equals('pubkey', pubKey)),
     );
 
     final finder = sembast.Finder(
@@ -668,7 +670,8 @@ class SembastCacheManager extends CacheManager {
     );
     await _eventsStore.delete(_database, finder: finder);
     await _removeEventSidecarsByIds(
-        events.map((record) => record.key).toList());
+      events.map((record) => record.key).toList(),
+    );
     await _contactListStore.record(pubKey).delete(_database);
     await _metadataStore.record(pubKey).delete(_database);
     await _refreshUserRelayListProjection(pubKey);
@@ -950,7 +953,8 @@ class SembastCacheManager extends CacheManager {
   }
 
   Future<List<Nip01Event>> _applyEventVisibilityRules(
-      List<Nip01Event> events) async {
+    List<Nip01Event> events,
+  ) async {
     final visible = <Nip01Event>[];
     final replaceableWinners = <String, Nip01Event>{};
     final now = Nip01Event.secondsSinceEpoch();
@@ -1003,9 +1007,7 @@ class SembastCacheManager extends CacheManager {
   Future<List<Nip01Event>> _loadDeletionEvents() async {
     final records = await _eventsStore.find(
       _database,
-      finder: sembast.Finder(
-        filter: sembast.Filter.equals('kind', 5),
-      ),
+      finder: sembast.Finder(filter: sembast.Filter.equals('kind', 5)),
     );
 
     return records
@@ -1067,14 +1069,14 @@ class SembastCacheManager extends CacheManager {
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
     final events = await loadEvents(kinds: [Metadata.kKind]);
     final normalizedSearch = search.trim().toLowerCase();
-    final matches =
-        events.map((event) => Metadata.fromEvent(event)).where((metadata) {
+    final matches = events.map((event) => Metadata.fromEvent(event)).where((
+      metadata,
+    ) {
       if (normalizedSearch.isEmpty) return true;
       return metadata.matchesSearch(normalizedSearch) ||
           (metadata.about?.toLowerCase().contains(normalizedSearch) ?? false) ||
           (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
-    }).toList()
-          ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
+    }).toList()..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
     return matches.take(limit);
   }
 
@@ -1099,12 +1101,11 @@ class SembastCacheManager extends CacheManager {
       );
       await _eventCacheStateStore.delete(
         _database,
-        finder: sembast.Finder(
-          filter: sembast.Filter.equals('pubKey', pubKey),
-        ),
+        finder: sembast.Finder(filter: sembast.Filter.equals('pubKey', pubKey)),
       );
-      final stateRecords =
-          EventCacheStateRecord.buildForEvents(rawPubKeyEvents);
+      final stateRecords = EventCacheStateRecord.buildForEvents(
+        rawPubKeyEvents,
+      );
       if (stateRecords.isNotEmpty) {
         await _eventCacheStateStore
             .records(stateRecords.map((record) => record.eventId).toList())
@@ -1135,7 +1136,9 @@ class SembastCacheManager extends CacheManager {
       if (contactListEvent == null) {
         await _contactListStore.record(pubKey).delete(_database);
       } else {
-        await _contactListStore.record(pubKey).put(
+        await _contactListStore
+            .record(pubKey)
+            .put(
               _database,
               ContactList.fromEvent(contactListEvent).toJsonForStorage(),
             );
@@ -1170,19 +1173,25 @@ class SembastCacheManager extends CacheManager {
     }
 
     if (latestNip65 != null) {
-      await _relayListStore.record(pubKey).put(
+      await _relayListStore
+          .record(pubKey)
+          .put(
             _database,
-            UserRelayList.fromNip65(Nip65.fromEvent(latestNip65))
-                .toJsonForStorage(),
+            UserRelayList.fromNip65(
+              Nip65.fromEvent(latestNip65),
+            ).toJsonForStorage(),
           );
       return;
     }
 
     if (latestContactListWithRelays != null) {
-      await _relayListStore.record(pubKey).put(
+      await _relayListStore
+          .record(pubKey)
+          .put(
             _database,
-            UserRelayList.fromNip02EventContent(latestContactListWithRelays)
-                .toJsonForStorage(),
+            UserRelayList.fromNip02EventContent(
+              latestContactListWithRelays,
+            ).toJsonForStorage(),
           );
       return;
     }
@@ -1196,7 +1205,8 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<void> saveFilterFetchedRangeRecord(
-      FilterFetchedRangeRecord record) async {
+    FilterFetchedRangeRecord record,
+  ) async {
     await _filterFetchedRangeStore
         .record(record.key)
         .put(_database, record.toJson());
@@ -1204,7 +1214,8 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<void> saveFilterFetchedRangeRecords(
-      List<FilterFetchedRangeRecord> records) async {
+    List<FilterFetchedRangeRecord> records,
+  ) async {
     final keys = records.map((r) => r.key).toList();
     final values = records.map((r) => r.toJson()).toList();
     await _filterFetchedRangeStore.records(keys).put(_database, values);
@@ -1212,12 +1223,15 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecords(
-      String filterHash) async {
+    String filterHash,
+  ) async {
     final finder = sembast.Finder(
       filter: sembast.Filter.equals('filterHash', filterHash),
     );
-    final records =
-        await _filterFetchedRangeStore.find(_database, finder: finder);
+    final records = await _filterFetchedRangeStore.find(
+      _database,
+      finder: finder,
+    );
     return records
         .map((r) => FilterFetchedRangeRecord.fromJson(r.value))
         .toList();
@@ -1225,15 +1239,19 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelay(
-      String filterHash, String relayUrl) async {
+    String filterHash,
+    String relayUrl,
+  ) async {
     final finder = sembast.Finder(
       filter: sembast.Filter.and([
         sembast.Filter.equals('filterHash', filterHash),
         sembast.Filter.equals('relayUrl', relayUrl),
       ]),
     );
-    final records =
-        await _filterFetchedRangeStore.find(_database, finder: finder);
+    final records = await _filterFetchedRangeStore.find(
+      _database,
+      finder: finder,
+    );
     return records
         .map((r) => FilterFetchedRangeRecord.fromJson(r.value))
         .toList();
@@ -1241,12 +1259,14 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<List<FilterFetchedRangeRecord>>
-      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
+  loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
     final finder = sembast.Finder(
       filter: sembast.Filter.equals('relayUrl', relayUrl),
     );
-    final records =
-        await _filterFetchedRangeStore.find(_database, finder: finder);
+    final records = await _filterFetchedRangeStore.find(
+      _database,
+      finder: finder,
+    );
     return records
         .map((r) => FilterFetchedRangeRecord.fromJson(r.value))
         .toList();
@@ -1262,7 +1282,9 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<void> removeFilterFetchedRangeRecordsByFilterAndRelay(
-      String filterHash, String relayUrl) async {
+    String filterHash,
+    String relayUrl,
+  ) async {
     final finder = sembast.Finder(
       filter: sembast.Filter.and([
         sembast.Filter.equals('filterHash', filterHash),
@@ -1421,8 +1443,9 @@ class SembastCacheManager extends CacheManager {
     // Remove existing mint info with the same URL
     final allRecords = await _mintInfoStore.find(_database);
     for (final record in allRecords) {
-      final existingMintInfo =
-          CashuMintInfoExtension.fromJsonStorage(record.value);
+      final existingMintInfo = CashuMintInfoExtension.fromJsonStorage(
+        record.value,
+      );
       if (existingMintInfo.urls.contains(mintInfo.urls.first)) {
         await _mintInfoStore.record(record.key).delete(_database);
       }
@@ -1435,16 +1458,16 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
-  Future<void> removeMintInfo({
-    required String mintUrl,
-  }) async {
+  Future<void> removeMintInfo({required String mintUrl}) async {
     // Find and delete all records that contain this mintUrl
     final allRecords = await _mintInfoStore.find(_database);
     for (final record in allRecords) {
-      final existingMintInfo =
-          CashuMintInfoExtension.fromJsonStorage(record.value);
-      if (existingMintInfo.urls
-          .any((url) => existingMintInfo.isMintUrl(mintUrl))) {
+      final existingMintInfo = CashuMintInfoExtension.fromJsonStorage(
+        record.value,
+      );
+      if (existingMintInfo.urls.any(
+        (url) => existingMintInfo.isMintUrl(mintUrl),
+      )) {
         await _mintInfoStore.record(record.key).delete(_database);
       }
     }

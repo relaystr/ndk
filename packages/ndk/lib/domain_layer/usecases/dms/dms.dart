@@ -38,12 +38,12 @@ class Dms {
     required GiftWrap giftWrap,
     required UserRelayLists userRelayLists,
     required CacheManager cacheManager,
-  })  : _accounts = accounts,
-        _requests = requests,
-        _broadcast = broadcast,
-        _giftWrap = giftWrap,
-        _userRelayLists = userRelayLists,
-        _cacheManager = cacheManager;
+  }) : _accounts = accounts,
+       _requests = requests,
+       _broadcast = broadcast,
+       _giftWrap = giftWrap,
+       _userRelayLists = userRelayLists,
+       _cacheManager = cacheManager;
 
   /// Sends a direct message to [recipientPubKey].
   ///
@@ -71,9 +71,7 @@ class Dms {
       forceRefresh: true,
     );
     if (recipientDmRelays == null || recipientDmRelays.isEmpty) {
-      throw Exception(
-        'Recipient has no NIP-17 DM relays (kind 10050).',
-      );
+      throw Exception('Recipient has no NIP-17 DM relays (kind 10050).');
     }
 
     final rumor = await _giftWrap.createRumor(
@@ -190,9 +188,7 @@ class Dms {
     );
 
     if (dmRelays == null || dmRelays.isEmpty) {
-      throw Exception(
-        'Logged in user has no NIP-17 DM relays (kind 10050).',
-      );
+      throw Exception('Logged in user has no NIP-17 DM relays (kind 10050).');
     }
 
     final response = _requests.query(
@@ -201,10 +197,7 @@ class Dms {
       cacheRead: !forceRefresh,
       cacheWrite: true,
       timeout: timeout,
-      filter: Filter(
-        kinds: [GiftWrap.kGiftWrapEventkind],
-        pTags: [myPubKey],
-      ),
+      filter: Filter(kinds: [GiftWrap.kGiftWrapEventkind], pTags: [myPubKey]),
     );
 
     return response.future;
@@ -274,8 +267,7 @@ class Dms {
         peerPubKey: entry.key,
         messages: List.unmodifiable(peerMessages),
       );
-    }).toList()
-      ..sort((a, b) => b.latestCreatedAt.compareTo(a.latestCreatedAt));
+    }).toList()..sort((a, b) => b.latestCreatedAt.compareTo(a.latestCreatedAt));
 
     return conversations;
   }
@@ -306,10 +298,7 @@ class Dms {
       );
       final rumor = cacheOnly
           ? cachedRumor
-          : cachedRumor ??
-              await _giftWrap.fromGiftWrap(
-                giftWrap: wrappedEvent,
-              );
+          : cachedRumor ?? await _giftWrap.fromGiftWrap(giftWrap: wrappedEvent);
       if (rumor == null) {
         return null;
       }
@@ -392,9 +381,7 @@ class Dms {
     }
 
     final workerCount = concurrency < items.length ? concurrency : items.length;
-    await Future.wait(
-      List.generate(workerCount, (_) => worker()),
-    );
+    await Future.wait(List.generate(workerCount, (_) => worker()));
 
     return results.cast<R>();
   }

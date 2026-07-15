@@ -36,10 +36,8 @@ class QsRustEventSigner implements EventSigner {
   /// Creates a [QsRustEventSigner] from an existing [QsKeypair].
   ///
   /// Use [QsRustEventSigner.generate] to create a new keypair first.
-  QsRustEventSigner({
-    required QsKeypair keypair,
-    this.level = 2,
-  }) : _keypair = keypair;
+  QsRustEventSigner({required QsKeypair keypair, this.level = 2})
+    : _keypair = keypair;
 
   @override
   bool get requiresInteractiveSigning => false;
@@ -73,16 +71,19 @@ class QsRustEventSigner implements EventSigner {
 
       if (result != 1) {
         throw StateError(
-            'Failed to generate Dilithium keypair at level $level');
+          'Failed to generate Dilithium keypair at level $level',
+        );
       }
 
       final pkLen = outPk.ref.len;
-      final publicKeyBytes =
-          Uint8List.fromList(outPk.ref.data.asTypedList(pkLen));
+      final publicKeyBytes = Uint8List.fromList(
+        outPk.ref.data.asTypedList(pkLen),
+      );
 
       final skLen = outSk.ref.len;
-      final keypairBytes =
-          Uint8List.fromList(outSk.ref.data.asTypedList(skLen));
+      final keypairBytes = Uint8List.fromList(
+        outSk.ref.data.asTypedList(skLen),
+      );
 
       rust_lib.qsFreeBuffer(outPk.ref);
       rust_lib.qsFreeBuffer(outSk.ref);
@@ -160,14 +161,16 @@ class QsRustEventSigner implements EventSigner {
   @Deprecated('Use nip44 decrypt instead. Deprecated by nostr spec. (nip04)')
   Future<String?> decrypt(String msg, String destPubKey) {
     throw UnimplementedError(
-        'NIP-04 decrypt is not supported by QsRustEventSigner');
+      'NIP-04 decrypt is not supported by QsRustEventSigner',
+    );
   }
 
   @override
   @Deprecated('Use nip44 encrypt instead. Deprecated by nostr spec. (nip04)')
   Future<String?> encrypt(String msg, String destPubKey) {
     throw UnimplementedError(
-        'NIP-04 encrypt is not supported by QsRustEventSigner');
+      'NIP-04 encrypt is not supported by QsRustEventSigner',
+    );
   }
 
   @override
@@ -176,7 +179,8 @@ class QsRustEventSigner implements EventSigner {
     required String recipientPubKey,
   }) {
     throw UnimplementedError(
-        'NIP-44 encrypt is not supported by QsRustEventSigner');
+      'NIP-44 encrypt is not supported by QsRustEventSigner',
+    );
   }
 
   @override
@@ -185,7 +189,8 @@ class QsRustEventSigner implements EventSigner {
     required String senderPubKey,
   }) {
     throw UnimplementedError(
-        'NIP-44 decrypt is not supported by QsRustEventSigner');
+      'NIP-44 decrypt is not supported by QsRustEventSigner',
+    );
   }
 
   @override

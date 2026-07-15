@@ -1,7 +1,9 @@
 part of 'cache_manager_test_suite.dart';
 
-void _runEventTests(CacheManager Function() getCacheManager,
-    LocalEventSignerFactory eventSignerFactory) {
+void _runEventTests(
+  CacheManager Function() getCacheManager,
+  LocalEventSignerFactory eventSignerFactory,
+) {
   test('saveEvent and loadEvent', () async {
     final cacheManager = getCacheManager();
     final event = Nip01Event(
@@ -157,7 +159,7 @@ void _runEventTests(CacheManager Function() getCacheManager,
 
     final loadedEvents = await cacheManager.loadEvents(
       tags: {
-        'p': ['target_pubkey_ptag']
+        'p': ['target_pubkey_ptag'],
       },
     );
 
@@ -269,18 +271,27 @@ void _runEventTests(CacheManager Function() getCacheManager,
     final key2 = Bip340.generatePrivateKey();
     final key3 = Bip340.generatePrivateKey();
     final signer1 = eventSignerFactory.create(
-        privateKey: key1.privateKey, publicKey: key1.publicKey);
+      privateKey: key1.privateKey,
+      publicKey: key1.publicKey,
+    );
     final signer2 = eventSignerFactory.create(
-        privateKey: key2.privateKey, publicKey: key2.publicKey);
+      privateKey: key2.privateKey,
+      publicKey: key2.publicKey,
+    );
     final signer3 = eventSignerFactory.create(
-        privateKey: key3.privateKey, publicKey: key3.publicKey);
+      privateKey: key3.privateKey,
+      publicKey: key3.publicKey,
+    );
 
-    final event1 = await signer1.sign(Nip01Event(
-        pubKey: key1.publicKey, kind: 1, tags: [], content: 'Event 1'));
-    final event2 = await signer2.sign(Nip01Event(
-        pubKey: key2.publicKey, kind: 1, tags: [], content: 'Event 2'));
-    final event3 = await signer3.sign(Nip01Event(
-        pubKey: key3.publicKey, kind: 1, tags: [], content: 'Event 3'));
+    final event1 = await signer1.sign(
+      Nip01Event(pubKey: key1.publicKey, kind: 1, tags: [], content: 'Event 1'),
+    );
+    final event2 = await signer2.sign(
+      Nip01Event(pubKey: key2.publicKey, kind: 1, tags: [], content: 'Event 2'),
+    );
+    final event3 = await signer3.sign(
+      Nip01Event(pubKey: key3.publicKey, kind: 1, tags: [], content: 'Event 3'),
+    );
 
     await cacheManager.saveEvents([event1, event2, event3]);
     expect(await cacheManager.loadEvent(event1.id), isNotNull);
@@ -331,10 +342,7 @@ void _runEventTests(CacheManager Function() getCacheManager,
 
     await cacheManager.saveEvents(events);
 
-    await cacheManager.removeEvents(
-      pubKeys: ['author_filter_1'],
-      kinds: [1],
-    );
+    await cacheManager.removeEvents(pubKeys: ['author_filter_1'], kinds: [1]);
 
     expect(await cacheManager.loadEvent(events[0].id), isNull);
     expect(await cacheManager.loadEvent(events[3].id), isNull);
@@ -417,7 +425,7 @@ void _runEventTests(CacheManager Function() getCacheManager,
         pubKey: 'tag_filter_author',
         kind: 1,
         tags: [
-          ['p', 'target_pubkey_1']
+          ['p', 'target_pubkey_1'],
         ],
         content: 'Event 1 with p tag',
         createdAt: 1000,
@@ -426,7 +434,7 @@ void _runEventTests(CacheManager Function() getCacheManager,
         pubKey: 'tag_filter_author',
         kind: 1,
         tags: [
-          ['p', 'target_pubkey_2']
+          ['p', 'target_pubkey_2'],
         ],
         content: 'Event 2 with different p tag',
         createdAt: 2000,
@@ -435,7 +443,7 @@ void _runEventTests(CacheManager Function() getCacheManager,
         pubKey: 'tag_filter_author',
         kind: 1,
         tags: [
-          ['e', 'some_event_id']
+          ['e', 'some_event_id'],
         ],
         content: 'Event 3 with e tag',
         createdAt: 3000,
@@ -453,7 +461,7 @@ void _runEventTests(CacheManager Function() getCacheManager,
 
     await cacheManager.removeEvents(
       tags: {
-        'p': ['target_pubkey_1']
+        'p': ['target_pubkey_1'],
       },
     );
 
@@ -469,23 +477,26 @@ void _runEventTests(CacheManager Function() getCacheManager,
 
     final events = [
       Nip01Event(
-          pubKey: 'pubkey_remove_all_1',
-          kind: 1,
-          tags: [],
-          content: 'Event 1',
-          createdAt: 1234567890),
+        pubKey: 'pubkey_remove_all_1',
+        kind: 1,
+        tags: [],
+        content: 'Event 1',
+        createdAt: 1234567890,
+      ),
       Nip01Event(
-          pubKey: 'pubkey_remove_all_1',
-          kind: 2,
-          tags: [],
-          content: 'Event 2',
-          createdAt: 1234567891),
+        pubKey: 'pubkey_remove_all_1',
+        kind: 2,
+        tags: [],
+        content: 'Event 2',
+        createdAt: 1234567891,
+      ),
       Nip01Event(
-          pubKey: 'pubkey_remove_all_2',
-          kind: 1,
-          tags: [],
-          content: 'Event 3',
-          createdAt: 1234567892),
+        pubKey: 'pubkey_remove_all_2',
+        kind: 1,
+        tags: [],
+        content: 'Event 3',
+        createdAt: 1234567892,
+      ),
     ];
 
     await cacheManager.saveEvents(events);
@@ -500,17 +511,19 @@ void _runEventTests(CacheManager Function() getCacheManager,
     final cacheManager = getCacheManager();
     final events = [
       Nip01Event(
-          pubKey: 'pubkey_clear_1',
-          kind: 1,
-          tags: [],
-          content: 'Event 1',
-          createdAt: 1234567890),
+        pubKey: 'pubkey_clear_1',
+        kind: 1,
+        tags: [],
+        content: 'Event 1',
+        createdAt: 1234567890,
+      ),
       Nip01Event(
-          pubKey: 'pubkey_clear_2',
-          kind: 1,
-          tags: [],
-          content: 'Event 2',
-          createdAt: 1234567891),
+        pubKey: 'pubkey_clear_2',
+        kind: 1,
+        tags: [],
+        content: 'Event 2',
+        createdAt: 1234567891,
+      ),
     ];
 
     await cacheManager.saveEvents(events);
@@ -546,62 +559,64 @@ void _runEventTests(CacheManager Function() getCacheManager,
     expect(loaded.tTags, contains('nostr'));
   });
 
-  test('replaceable events keep only the current winner in query results',
-      () async {
-    final cacheManager = getCacheManager();
-    await cacheManager.removeAllEvents();
+  test(
+    'replaceable events keep only the current winner in query results',
+    () async {
+      final cacheManager = getCacheManager();
+      await cacheManager.removeAllEvents();
 
-    const kind = 30023;
-    const pubKey = 'replaceable_author';
-    const dTag = 'article-1';
+      const kind = 30023;
+      const pubKey = 'replaceable_author';
+      const dTag = 'article-1';
 
-    final version1 = Nip01Event(
-      id: 'bbbb',
-      pubKey: pubKey,
-      kind: kind,
-      tags: const [
-        ['d', dTag]
-      ],
-      content: 'version 1',
-      createdAt: 1000,
-    );
+      final version1 = Nip01Event(
+        id: 'bbbb',
+        pubKey: pubKey,
+        kind: kind,
+        tags: const [
+          ['d', dTag],
+        ],
+        content: 'version 1',
+        createdAt: 1000,
+      );
 
-    final version2 = Nip01Event(
-      id: 'cccc',
-      pubKey: pubKey,
-      kind: kind,
-      tags: const [
-        ['d', dTag]
-      ],
-      content: 'version 2',
-      createdAt: 2000,
-    );
+      final version2 = Nip01Event(
+        id: 'cccc',
+        pubKey: pubKey,
+        kind: kind,
+        tags: const [
+          ['d', dTag],
+        ],
+        content: 'version 2',
+        createdAt: 2000,
+      );
 
-    final version3 = Nip01Event(
-      id: 'aaaa',
-      pubKey: pubKey,
-      kind: kind,
-      tags: const [
-        ['d', dTag]
-      ],
-      content: 'version 3',
-      createdAt: 2000,
-    );
+      final version3 = Nip01Event(
+        id: 'aaaa',
+        pubKey: pubKey,
+        kind: kind,
+        tags: const [
+          ['d', dTag],
+        ],
+        content: 'version 3',
+        createdAt: 2000,
+      );
 
-    await cacheManager.saveEvents([version1, version2, version3]);
+      await cacheManager.saveEvents([version1, version2, version3]);
 
-    final loadedEvents = await cacheManager.loadEvents(
-      pubKeys: const [pubKey],
-      kinds: const [kind],
-      tags: const {
-        'd': [dTag]
-      },
-    );
+      final loadedEvents = await cacheManager.loadEvents(
+        pubKeys: const [pubKey],
+        kinds: const [kind],
+        tags: const {
+          'd': [dTag],
+        },
+      );
 
-    expect(loadedEvents.length, equals(1));
-    expect(loadedEvents.first.id, equals('aaaa'));
-    expect(loadedEvents.first.content, equals('version 3'));
-  });
+      expect(loadedEvents.length, equals(1));
+      expect(loadedEvents.first.id, equals('aaaa'));
+      expect(loadedEvents.first.content, equals('version 3'));
+    },
+  );
 
   test('non-replaceable events do not compete with each other', () async {
     final cacheManager = getCacheManager();
@@ -656,7 +671,7 @@ void _runEventTests(CacheManager Function() getCacheManager,
       pubKey: 'author-a',
       kind: 5,
       tags: const [
-        ['e', 'target-event']
+        ['e', 'target-event'],
       ],
       content: 'delete target-event',
       createdAt: 2000,
@@ -679,7 +694,7 @@ void _runEventTests(CacheManager Function() getCacheManager,
       pubKey: 'author-a',
       kind: 5,
       tags: const [
-        ['e', 'target-late']
+        ['e', 'target-late'],
       ],
       content: 'delete target-late',
       createdAt: 2000,
@@ -720,7 +735,7 @@ void _runEventTests(CacheManager Function() getCacheManager,
       pubKey: 'author-a',
       kind: 5,
       tags: const [
-        ['e', 'shared-id']
+        ['e', 'shared-id'],
       ],
       content: 'attempted delete',
       createdAt: 2000,
@@ -735,76 +750,80 @@ void _runEventTests(CacheManager Function() getCacheManager,
   });
 
   test(
-      'expired events are filtered from normal reads but remain loadable by id',
-      () async {
-    final cacheManager = getCacheManager();
-    await cacheManager.removeAllEvents();
+    'expired events are filtered from normal reads but remain loadable by id',
+    () async {
+      final cacheManager = getCacheManager();
+      await cacheManager.removeAllEvents();
 
-    final expiredEvent = Nip01Event(
-      id: 'expired-event',
-      pubKey: 'expired-author',
-      kind: 1,
-      tags: const [
-        ['expiration', '1']
-      ],
-      content: 'expired',
-      createdAt: 1000,
-    );
+      final expiredEvent = Nip01Event(
+        id: 'expired-event',
+        pubKey: 'expired-author',
+        kind: 1,
+        tags: const [
+          ['expiration', '1'],
+        ],
+        content: 'expired',
+        createdAt: 1000,
+      );
 
-    await cacheManager.saveEvent(expiredEvent);
+      await cacheManager.saveEvent(expiredEvent);
 
-    final queryResults = await cacheManager.loadEvents(ids: ['expired-event']);
-    final directLookup = await cacheManager.loadEvent('expired-event');
+      final queryResults = await cacheManager.loadEvents(
+        ids: ['expired-event'],
+      );
+      final directLookup = await cacheManager.loadEvent('expired-event');
 
-    expect(queryResults, isEmpty);
-    expect(directLookup, isNotNull);
-  });
+      expect(queryResults, isEmpty);
+      expect(directLookup, isNotNull);
+    },
+  );
 
-  test('adding the same event source provenance from multiple relays merges',
-      () async {
-    final cacheManager = getCacheManager();
+  test(
+    'adding the same event source provenance from multiple relays merges',
+    () async {
+      final cacheManager = getCacheManager();
 
-    await cacheManager.addEventSource(
-      eventId: 'relay-merge-event',
-      relayUrl: 'wss://relay-one.example',
-    );
-    await cacheManager.addEventSource(
-      eventId: 'relay-merge-event',
-      relayUrl: 'wss://relay-two.example',
-    );
+      await cacheManager.addEventSource(
+        eventId: 'relay-merge-event',
+        relayUrl: 'wss://relay-one.example',
+      );
+      await cacheManager.addEventSource(
+        eventId: 'relay-merge-event',
+        relayUrl: 'wss://relay-two.example',
+      );
 
-    final sources = await cacheManager.loadEventSources('relay-merge-event');
+      final sources = await cacheManager.loadEventSources('relay-merge-event');
 
-    expect(
-      sources.toSet(),
-      {
+      expect(sources.toSet(), {
         'wss://relay-one.example',
         'wss://relay-two.example',
-      },
-    );
-  });
+      });
+    },
+  );
 
-  test('addEventSource and loadEventSources dedupe and preserve all sources',
-      () async {
-    final cacheManager = getCacheManager();
+  test(
+    'addEventSource and loadEventSources dedupe and preserve all sources',
+    () async {
+      final cacheManager = getCacheManager();
 
-    await cacheManager.addEventSource(
-      eventId: 'source-event',
-      relayUrl: 'wss://relay-b.example',
-    );
-    await cacheManager.addEventSource(
-      eventId: 'source-event',
-      relayUrl: 'wss://relay-a.example',
-    );
-    await cacheManager.addEventSource(
-      eventId: 'source-event',
-      relayUrl: 'wss://relay-b.example',
-    );
+      await cacheManager.addEventSource(
+        eventId: 'source-event',
+        relayUrl: 'wss://relay-b.example',
+      );
+      await cacheManager.addEventSource(
+        eventId: 'source-event',
+        relayUrl: 'wss://relay-a.example',
+      );
+      await cacheManager.addEventSource(
+        eventId: 'source-event',
+        relayUrl: 'wss://relay-b.example',
+      );
 
-    final sources = await cacheManager.loadEventSources('source-event');
+      final sources = await cacheManager.loadEventSources('source-event');
 
-    expect(sources, ['wss://relay-a.example', 'wss://relay-b.example']);
-  });
+      expect(sources, ['wss://relay-a.example', 'wss://relay-b.example']);
+    },
+  );
 
   test('removeEventSources clears provenance for an event', () async {
     final cacheManager = getCacheManager();
@@ -824,23 +843,25 @@ void _runEventTests(CacheManager Function() getCacheManager,
     expect(await cacheManager.loadEventSources('source-event-remove'), isEmpty);
   });
 
-  test('saveEventDeliveryRecord and loadEventDeliveryRecord roundtrip',
-      () async {
-    final cacheManager = getCacheManager();
+  test(
+    'saveEventDeliveryRecord and loadEventDeliveryRecord roundtrip',
+    () async {
+      final cacheManager = getCacheManager();
 
-    const record = EventDeliveryRecord(
-      eventId: 'delivery-event-1',
-      status: EventDeliveryStatus.partiallyDelivered,
-      createdAt: 1000,
-      updatedAt: 2000,
-    );
+      const record = EventDeliveryRecord(
+        eventId: 'delivery-event-1',
+        status: EventDeliveryStatus.partiallyDelivered,
+        createdAt: 1000,
+        updatedAt: 2000,
+      );
 
-    await cacheManager.saveEventDeliveryRecord(record);
-    final loaded = await cacheManager.loadEventDeliveryRecord(record.eventId);
+      await cacheManager.saveEventDeliveryRecord(record);
+      final loaded = await cacheManager.loadEventDeliveryRecord(record.eventId);
 
-    expect(loaded, isNotNull);
-    expect(loaded!.toJson(), equals(record.toJson()));
-  });
+      expect(loaded, isNotNull);
+      expect(loaded!.toJson(), equals(record.toJson()));
+    },
+  );
 
   test('loadEventDeliveryRecords filters by status', () async {
     final cacheManager = getCacheManager();
@@ -873,35 +894,40 @@ void _runEventTests(CacheManager Function() getCacheManager,
     expect(inProgress.map((record) => record.eventId), ['delivery-pending']);
   });
 
-  test('removeEventDeliveryRecord and removeAllEventDeliveryRecords work',
-      () async {
-    final cacheManager = getCacheManager();
-    await cacheManager.removeAllEventDeliveryRecords();
+  test(
+    'removeEventDeliveryRecord and removeAllEventDeliveryRecords work',
+    () async {
+      final cacheManager = getCacheManager();
+      await cacheManager.removeAllEventDeliveryRecords();
 
-    const recordA = EventDeliveryRecord(
-      eventId: 'delivery-remove-a',
-      createdAt: 1000,
-      updatedAt: 1000,
-    );
-    const recordB = EventDeliveryRecord(
-      eventId: 'delivery-remove-b',
-      createdAt: 1001,
-      updatedAt: 1001,
-    );
+      const recordA = EventDeliveryRecord(
+        eventId: 'delivery-remove-a',
+        createdAt: 1000,
+        updatedAt: 1000,
+      );
+      const recordB = EventDeliveryRecord(
+        eventId: 'delivery-remove-b',
+        createdAt: 1001,
+        updatedAt: 1001,
+      );
 
-    await cacheManager.saveEventDeliveryRecords([recordA, recordB]);
-    await cacheManager.removeEventDeliveryRecord(recordA.eventId);
+      await cacheManager.saveEventDeliveryRecords([recordA, recordB]);
+      await cacheManager.removeEventDeliveryRecord(recordA.eventId);
 
-    expect(await cacheManager.loadEventDeliveryRecord(recordA.eventId), isNull);
-    expect(
-      await cacheManager.loadEventDeliveryRecord(recordB.eventId),
-      isNotNull,
-    );
+      expect(
+        await cacheManager.loadEventDeliveryRecord(recordA.eventId),
+        isNull,
+      );
+      expect(
+        await cacheManager.loadEventDeliveryRecord(recordB.eventId),
+        isNotNull,
+      );
 
-    await cacheManager.removeAllEventDeliveryRecords();
+      await cacheManager.removeAllEventDeliveryRecords();
 
-    expect(await cacheManager.loadEventDeliveryRecords(), isEmpty);
-  });
+      expect(await cacheManager.loadEventDeliveryRecords(), isEmpty);
+    },
+  );
 
   test('relay delivery targets roundtrip and query independently', () async {
     final cacheManager = getCacheManager();
@@ -944,127 +970,144 @@ void _runEventTests(CacheManager Function() getCacheManager,
       'wss://relay-a.example',
       'wss://relay-b.example',
     });
-    expect(
-        nonAcked.map((record) => record.relayUrl), ['wss://relay-b.example']);
-  });
-
-  test('independent relay target updates for same event do not overwrite',
-      () async {
-    final cacheManager = getCacheManager();
-    await cacheManager.removeAllRelayDeliveryTargets();
-
-    await cacheManager.saveRelayDeliveryTarget(const RelayDeliveryTarget(
-      eventId: 'race-safe-event',
-      relayUrl: 'wss://relay-a.example',
-      reason: RelayDeliveryReason.authorWrite,
-      state: RelayDeliveryState.acked,
-    ));
-    await cacheManager.saveRelayDeliveryTarget(const RelayDeliveryTarget(
-      eventId: 'race-safe-event',
-      relayUrl: 'wss://relay-b.example',
-      reason: RelayDeliveryReason.explicit,
-      state: RelayDeliveryState.transientFailure,
-      attemptCount: 1,
-    ));
-
-    final loaded = await cacheManager.loadRelayDeliveryTargets(
-      eventId: 'race-safe-event',
-    );
-
-    expect(loaded.length, 2);
-    expect(loaded.map((record) => record.relayUrl).toSet(), {
-      'wss://relay-a.example',
+    expect(nonAcked.map((record) => record.relayUrl), [
       'wss://relay-b.example',
-    });
-  });
-
-  test('removeRelayDeliveryTarget and removeRelayDeliveryTargets work',
-      () async {
-    final cacheManager = getCacheManager();
-    await cacheManager.removeAllRelayDeliveryTargets();
-
-    await cacheManager.saveRelayDeliveryTargets(const [
-      RelayDeliveryTarget(
-        eventId: 'target-remove-event',
-        relayUrl: 'wss://relay-a.example',
-        reason: RelayDeliveryReason.authorWrite,
-      ),
-      RelayDeliveryTarget(
-        eventId: 'target-remove-event',
-        relayUrl: 'wss://relay-b.example',
-        reason: RelayDeliveryReason.explicit,
-      ),
-      RelayDeliveryTarget(
-        eventId: 'other-target-remove-event',
-        relayUrl: 'wss://relay-c.example',
-        reason: RelayDeliveryReason.hint,
-      ),
     ]);
+  });
 
-    await cacheManager.removeRelayDeliveryTarget(
-      eventId: 'target-remove-event',
-      relayUrl: 'wss://relay-a.example',
-    );
+  test(
+    'independent relay target updates for same event do not overwrite',
+    () async {
+      final cacheManager = getCacheManager();
+      await cacheManager.removeAllRelayDeliveryTargets();
 
-    expect(
-      await cacheManager.loadRelayDeliveryTarget(
+      await cacheManager.saveRelayDeliveryTarget(
+        const RelayDeliveryTarget(
+          eventId: 'race-safe-event',
+          relayUrl: 'wss://relay-a.example',
+          reason: RelayDeliveryReason.authorWrite,
+          state: RelayDeliveryState.acked,
+        ),
+      );
+      await cacheManager.saveRelayDeliveryTarget(
+        const RelayDeliveryTarget(
+          eventId: 'race-safe-event',
+          relayUrl: 'wss://relay-b.example',
+          reason: RelayDeliveryReason.explicit,
+          state: RelayDeliveryState.transientFailure,
+          attemptCount: 1,
+        ),
+      );
+
+      final loaded = await cacheManager.loadRelayDeliveryTargets(
+        eventId: 'race-safe-event',
+      );
+
+      expect(loaded.length, 2);
+      expect(loaded.map((record) => record.relayUrl).toSet(), {
+        'wss://relay-a.example',
+        'wss://relay-b.example',
+      });
+    },
+  );
+
+  test(
+    'removeRelayDeliveryTarget and removeRelayDeliveryTargets work',
+    () async {
+      final cacheManager = getCacheManager();
+      await cacheManager.removeAllRelayDeliveryTargets();
+
+      await cacheManager.saveRelayDeliveryTargets(const [
+        RelayDeliveryTarget(
+          eventId: 'target-remove-event',
+          relayUrl: 'wss://relay-a.example',
+          reason: RelayDeliveryReason.authorWrite,
+        ),
+        RelayDeliveryTarget(
+          eventId: 'target-remove-event',
+          relayUrl: 'wss://relay-b.example',
+          reason: RelayDeliveryReason.explicit,
+        ),
+        RelayDeliveryTarget(
+          eventId: 'other-target-remove-event',
+          relayUrl: 'wss://relay-c.example',
+          reason: RelayDeliveryReason.hint,
+        ),
+      ]);
+
+      await cacheManager.removeRelayDeliveryTarget(
         eventId: 'target-remove-event',
         relayUrl: 'wss://relay-a.example',
-      ),
-      isNull,
-    );
+      );
 
-    await cacheManager.removeRelayDeliveryTargets('target-remove-event');
+      expect(
+        await cacheManager.loadRelayDeliveryTarget(
+          eventId: 'target-remove-event',
+          relayUrl: 'wss://relay-a.example',
+        ),
+        isNull,
+      );
 
-    expect(
-      await cacheManager.loadRelayDeliveryTargets(
-        eventId: 'target-remove-event',
-      ),
-      isEmpty,
-    );
-    expect(
-      await cacheManager.loadRelayDeliveryTargets(
-        eventId: 'other-target-remove-event',
-      ),
-      isNotEmpty,
-    );
-  });
+      await cacheManager.removeRelayDeliveryTargets('target-remove-event');
 
-  test('removing an event also removes its provenance and delivery state',
-      () async {
-    final cacheManager = getCacheManager();
+      expect(
+        await cacheManager.loadRelayDeliveryTargets(
+          eventId: 'target-remove-event',
+        ),
+        isEmpty,
+      );
+      expect(
+        await cacheManager.loadRelayDeliveryTargets(
+          eventId: 'other-target-remove-event',
+        ),
+        isNotEmpty,
+      );
+    },
+  );
 
-    final event = Nip01Event(
-      id: 'event-with-associated-state',
-      pubKey: 'author-associated',
-      kind: 1,
-      tags: const [],
-      content: 'hello',
-      createdAt: 1000,
-    );
+  test(
+    'removing an event also removes its provenance and delivery state',
+    () async {
+      final cacheManager = getCacheManager();
 
-    await cacheManager.saveEvent(event);
-    await cacheManager.addEventSources(
-      eventId: event.id,
-      relayUrls: const ['wss://relay-a.example', 'wss://relay-b.example'],
-    );
-    await cacheManager.saveEventDeliveryRecord(const EventDeliveryRecord(
-      eventId: 'event-with-associated-state',
-      createdAt: 1000,
-      updatedAt: 1001,
-    ));
-    await cacheManager.saveRelayDeliveryTarget(const RelayDeliveryTarget(
-      eventId: 'event-with-associated-state',
-      relayUrl: 'wss://relay-a.example',
-      reason: RelayDeliveryReason.authorWrite,
-    ));
+      final event = Nip01Event(
+        id: 'event-with-associated-state',
+        pubKey: 'author-associated',
+        kind: 1,
+        tags: const [],
+        content: 'hello',
+        createdAt: 1000,
+      );
 
-    await cacheManager.removeEvent(event.id);
+      await cacheManager.saveEvent(event);
+      await cacheManager.addEventSources(
+        eventId: event.id,
+        relayUrls: const ['wss://relay-a.example', 'wss://relay-b.example'],
+      );
+      await cacheManager.saveEventDeliveryRecord(
+        const EventDeliveryRecord(
+          eventId: 'event-with-associated-state',
+          createdAt: 1000,
+          updatedAt: 1001,
+        ),
+      );
+      await cacheManager.saveRelayDeliveryTarget(
+        const RelayDeliveryTarget(
+          eventId: 'event-with-associated-state',
+          relayUrl: 'wss://relay-a.example',
+          reason: RelayDeliveryReason.authorWrite,
+        ),
+      );
 
-    expect(await cacheManager.loadEvent(event.id), isNull);
-    expect(await cacheManager.loadEventSources(event.id), isEmpty);
-    expect(await cacheManager.loadEventDeliveryRecord(event.id), isNull);
-    expect(await cacheManager.loadRelayDeliveryTargets(eventId: event.id),
-        isEmpty);
-  });
+      await cacheManager.removeEvent(event.id);
+
+      expect(await cacheManager.loadEvent(event.id), isNull);
+      expect(await cacheManager.loadEventSources(event.id), isEmpty);
+      expect(await cacheManager.loadEventDeliveryRecord(event.id), isNull);
+      expect(
+        await cacheManager.loadRelayDeliveryTargets(eventId: event.id),
+        isEmpty,
+      );
+    },
+  );
 }

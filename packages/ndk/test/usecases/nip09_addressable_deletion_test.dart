@@ -83,26 +83,28 @@ void main() {
       );
     });
 
-    test('state-record path sweeps an addressable event deleted by coordinate',
-        () {
-      final target = addressableEvent(createdAt: 1700000000);
-      final deletion = coordinateDeletion(createdAt: 1700000001);
-      final stateRecords = EventCacheStateRecord.buildForEvents([
-        target,
-        deletion,
-      ], now: 1700000100);
+    test(
+      'state-record path sweeps an addressable event deleted by coordinate',
+      () {
+        final target = addressableEvent(createdAt: 1700000000);
+        final deletion = coordinateDeletion(createdAt: 1700000001);
+        final stateRecords = EventCacheStateRecord.buildForEvents([
+          target,
+          deletion,
+        ], now: 1700000100);
 
-      final plan = EventEvictionPlanner.planFromStateRecords(
-        stateRecords: stateRecords,
-        lockedEventIds: const {},
-        deliveredEventIds: const {},
-        policy: const EvictionPolicy(),
-        now: 1700000100,
-      );
+        final plan = EventEvictionPlanner.planFromStateRecords(
+          stateRecords: stateRecords,
+          lockedEventIds: const {},
+          deliveredEventIds: const {},
+          policy: const EvictionPolicy(),
+          now: 1700000100,
+        );
 
-      expect(plan.eventIdsToRemove, contains(target.id));
-      expect(plan.removedDeleted, 1);
-    });
+        expect(plan.eventIdsToRemove, contains(target.id));
+        expect(plan.removedDeleted, 1);
+      },
+    );
   });
 
   group('MemCacheManager addressable (a-tag) deletion visibility', () {
@@ -124,29 +126,36 @@ void main() {
       );
     });
 
-    test('eviction uses derived state to sweep obsolete replaceable versions',
-        () async {
-      final cache = MemCacheManager();
-      final oldVersion = addressableEvent(
-        createdAt: 1700000000,
-        content: 'old version',
-      );
-      final newVersion = addressableEvent(
-        createdAt: 1700000001,
-        content: 'new version',
-      );
+    test(
+      'eviction uses derived state to sweep obsolete replaceable versions',
+      () async {
+        final cache = MemCacheManager();
+        final oldVersion = addressableEvent(
+          createdAt: 1700000000,
+          content: 'old version',
+        );
+        final newVersion = addressableEvent(
+          createdAt: 1700000001,
+          content: 'new version',
+        );
 
-      await cache.saveEvents([oldVersion, newVersion]);
+        await cache.saveEvents([oldVersion, newVersion]);
 
-      final result =
-          await cache.evict(const EvictionPolicy(sweepSuperseded: true));
+        final result = await cache.evict(
+          const EvictionPolicy(sweepSuperseded: true),
+        );
 
-      expect(result.removedSuperseded, 1);
-      final remaining =
-          await cache.loadEvents(pubKeys: [author], kinds: [addressableKind]);
-      expect(remaining.map((event) => event.id), contains(newVersion.id));
-      expect(
-          remaining.map((event) => event.id), isNot(contains(oldVersion.id)));
-    });
+        expect(result.removedSuperseded, 1);
+        final remaining = await cache.loadEvents(
+          pubKeys: [author],
+          kinds: [addressableKind],
+        );
+        expect(remaining.map((event) => event.id), contains(newVersion.id));
+        expect(
+          remaining.map((event) => event.id),
+          isNot(contains(oldVersion.id)),
+        );
+      },
+    );
   });
 }

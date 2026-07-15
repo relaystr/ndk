@@ -8,11 +8,9 @@ class MockSlowSigner implements EventSigner {
   final EventSigner _innerSigner;
   final Duration _delay;
 
-  MockSlowSigner({
-    required EventSigner innerSigner,
-    required Duration delay,
-  })  : _innerSigner = innerSigner,
-        _delay = delay;
+  MockSlowSigner({required EventSigner innerSigner, required Duration delay})
+    : _innerSigner = innerSigner,
+      _delay = delay;
 
   @override
   bool get requiresInteractiveSigning =>

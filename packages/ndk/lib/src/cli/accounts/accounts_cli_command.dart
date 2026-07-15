@@ -81,8 +81,9 @@ Environment:
     CliAccountsStore store,
   ) async {
     if (args.isEmpty || _isHelp(args.first)) {
-      stdout
-          .writeln('Usage: ndk accounts login <nsec|npub|bunker|generate> ...');
+      stdout.writeln(
+        'Usage: ndk accounts login <nsec|npub|bunker|generate> ...',
+      );
       return 0;
     }
     final kind = args.first.toLowerCase();
@@ -103,7 +104,10 @@ Environment:
   }
 
   Future<int> _loginNsec(
-      List<String> args, Ndk ndk, CliAccountsStore store) async {
+    List<String> args,
+    Ndk ndk,
+    CliAccountsStore store,
+  ) async {
     if (args.isEmpty) {
       stderr.writeln('Usage: ndk accounts login nsec <hex|nsec>');
       return 2;
@@ -119,12 +123,10 @@ Environment:
       return 1;
     }
     _doLogin(
-        ndk,
-        pubkey,
-        () => ndk.accounts.loginPrivateKey(
-              pubkey: pubkey,
-              privkey: privkey,
-            ));
+      ndk,
+      pubkey,
+      () => ndk.accounts.loginPrivateKey(pubkey: pubkey, privkey: privkey),
+    );
     store.upsert(
       CliAccountRecord(
         pubkey: pubkey,
@@ -137,7 +139,10 @@ Environment:
   }
 
   Future<int> _loginNpub(
-      List<String> args, Ndk ndk, CliAccountsStore store) async {
+    List<String> args,
+    Ndk ndk,
+    CliAccountsStore store,
+  ) async {
     if (args.isEmpty) {
       stderr.writeln('Usage: ndk accounts login npub <hex|npub>');
       return 2;
@@ -166,7 +171,8 @@ Environment:
     }
     final bunkerUrl = args.first;
     stdout.writeln(
-        'Connecting to bunker... (auth URL will be printed if the bunker requires it)');
+      'Connecting to bunker... (auth URL will be printed if the bunker requires it)',
+    );
     final connection = await ndk.accounts.loginWithBunkerUrl(
       bunkerUrl: bunkerUrl,
       bunkers: ndk.bunkers,
@@ -196,10 +202,15 @@ Environment:
   }
 
   Future<int> _loginGenerate(
-      List<String> args, Ndk ndk, CliAccountsStore store) async {
-    final (privkey, pubkey) =
-        (ndk.accounts.eventSignerFactory as Bip340EventSignerFactory)
-            .generateKeyPair();
+    List<String> args,
+    Ndk ndk,
+    CliAccountsStore store,
+  ) async {
+    final (
+      privkey,
+      pubkey,
+    ) = (ndk.accounts.eventSignerFactory as Bip340EventSignerFactory)
+        .generateKeyPair();
     ndk.accounts.loginPrivateKey(pubkey: pubkey, privkey: privkey);
     store.upsert(
       CliAccountRecord(
@@ -213,7 +224,8 @@ Environment:
     stdout.writeln('  npub: ${Nip19.encodePubKey(pubkey)}');
     stdout.writeln('  nsec: ${Nip19.encodePrivateKey(privkey)}');
     stdout.writeln(
-        '  (nsec has been stored in plaintext at ${CliAccountsStore.defaultPath()})');
+      '  (nsec has been stored in plaintext at ${CliAccountsStore.defaultPath()})',
+    );
     return await _persistAndAnnounce(store, pubkey, 'private-key (generated)');
   }
 
@@ -253,7 +265,8 @@ Environment:
   int _handleList(CliAccountsStore store) {
     if (store.records.isEmpty) {
       stdout.writeln(
-          'No persisted accounts. Use "ndk accounts login ..." to add one.');
+        'No persisted accounts. Use "ndk accounts login ..." to add one.',
+      );
       return 0;
     }
     stdout.writeln('Accounts (${store.records.length}):');
@@ -271,7 +284,10 @@ Environment:
   }
 
   Future<int> _handleSwitch(
-      List<String> args, Ndk ndk, CliAccountsStore store) async {
+    List<String> args,
+    Ndk ndk,
+    CliAccountsStore store,
+  ) async {
     if (args.isEmpty) {
       stderr.writeln('Usage: ndk accounts switch <pubkey|npub>');
       return 2;
@@ -304,7 +320,8 @@ Environment:
     stdout.writeln('  npub: ${Nip19.encodePubKey(pubkey)}');
     stdout.writeln('  hex:  $pubkey');
     stdout.writeln(
-        '  type: ${record?.type.name ?? account?.type.name ?? 'unknown'}');
+      '  type: ${record?.type.name ?? account?.type.name ?? 'unknown'}',
+    );
     stdout.writeln('  canSign: ${ndk.accounts.canSign}');
     return 0;
   }

@@ -108,10 +108,11 @@ Options:
       final phase = progress.phase.name;
       final pct = progress.percentage.toStringAsFixed(1);
       stdout.writeln(
-          '  [$phase] ${progress.currentServer.isEmpty ? "-" : progress.currentServer} '
-                  '$pct% '
-                  '${progress.mirrorsTotal > 0 ? "(${progress.mirrorsCompleted}/${progress.mirrorsTotal} mirrors)" : ""}'
-              .trimRight());
+        '  [$phase] ${progress.currentServer.isEmpty ? "-" : progress.currentServer} '
+                '$pct% '
+                '${progress.mirrorsTotal > 0 ? "(${progress.mirrorsCompleted}/${progress.mirrorsTotal} mirrors)" : ""}'
+            .trimRight(),
+      );
       if (progress.completedUploads.isNotEmpty) {
         finalResults = progress.completedUploads;
       }
@@ -168,8 +169,10 @@ Options:
     );
     for (final r in results) {
       final status = r.success ? 'OK' : 'FAILED';
-      stdout.writeln('  ${r.serverUrl}: $status'
-          '${r.error == null ? "" : " (${r.error})"}');
+      stdout.writeln(
+        '  ${r.serverUrl}: $status'
+        '${r.error == null ? "" : " (${r.error})"}',
+      );
     }
     return results.every((r) => r.success) ? 0 : 1;
   }
@@ -182,7 +185,8 @@ Options:
       stderr.writeln(parsed.error);
       return 2;
     }
-    final pubkey = parsed.pubkey ??
+    final pubkey =
+        parsed.pubkey ??
         (parsed.positional.isNotEmpty
             ? _resolvePubkey(parsed.positional[0])
             : null) ??
@@ -205,10 +209,12 @@ Options:
       return 0;
     }
     for (final b in blobs) {
-      stdout.writeln('  sha256=${b.sha256} '
-          'size=${_humanSize(b.size ?? 0)} '
-          'type=${b.type ?? "?"} '
-          'uploaded=${b.uploaded.toIso8601String()}');
+      stdout.writeln(
+        '  sha256=${b.sha256} '
+        'size=${_humanSize(b.size ?? 0)} '
+        'type=${b.type ?? "?"} '
+        'uploaded=${b.uploaded.toIso8601String()}',
+      );
       stdout.writeln('    url=${b.url}');
     }
     stdout.writeln('Total: ${blobs.length} blob(s).');
@@ -228,8 +234,9 @@ Options:
       return 2;
     }
     final source = Uri.parse(parsed.positional[0]);
-    stdout
-        .writeln('Mirroring $source -> ${parsed.servers.length} server(s) ...');
+    stdout.writeln(
+      'Mirroring $source -> ${parsed.servers.length} server(s) ...',
+    );
     final results = await ndk.blossom.mirrorToServers(
       blossomUrl: source,
       targetServerUrls: parsed.servers,
@@ -296,8 +303,10 @@ Options:
       return 2;
     }
 
-    stdout.writeln('Fetching blossom server list for '
-        '${Nip19.encodePubKey(pubkey)} ...');
+    stdout.writeln(
+      'Fetching blossom server list for '
+      '${Nip19.encodePubKey(pubkey)} ...',
+    );
     final servers = await ndk.blossomUserServerList.getUserServerList(
       pubkeys: [pubkey],
     );
@@ -346,13 +355,17 @@ Options:
     for (final r in results) {
       if (r.success && r.descriptor != null) {
         final d = r.descriptor!;
-        stdout.writeln('  ${r.serverUrl}: OK '
-            'sha256=${d.sha256} '
-            'size=${_humanSize(d.size ?? 0)} '
-            'type=${d.type ?? "?"}');
+        stdout.writeln(
+          '  ${r.serverUrl}: OK '
+          'sha256=${d.sha256} '
+          'size=${_humanSize(d.size ?? 0)} '
+          'type=${d.type ?? "?"}',
+        );
       } else {
-        stdout.writeln('  ${r.serverUrl}: FAILED '
-            '${r.error == null ? "" : "(${r.error})"}');
+        stdout.writeln(
+          '  ${r.serverUrl}: FAILED '
+          '${r.error == null ? "" : "(${r.error})"}',
+        );
       }
     }
   }
@@ -496,8 +509,10 @@ Options:
 
     if (result.positional.length < requirePositional) {
       return _BlossomArgs(
-          error: 'Expected $requirePositional positional argument(s), '
-              'got ${result.positional.length}.');
+        error:
+            'Expected $requirePositional positional argument(s), '
+            'got ${result.positional.length}.',
+      );
     }
     return result;
   }

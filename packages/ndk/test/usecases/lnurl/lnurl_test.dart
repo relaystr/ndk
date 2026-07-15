@@ -38,8 +38,9 @@ void main() {
       };
 
       // Mock the client.get method
-      when(client.get(Uri.parse(link), headers: {"Accept": "application/json"}))
-          .thenAnswer((_) async => http.Response(jsonEncode(response), 200));
+      when(
+        client.get(Uri.parse(link), headers: {"Accept": "application/json"}),
+      ).thenAnswer((_) async => http.Response(jsonEncode(response), 200));
 
       var lnurlResponse = await lnurl.getLnurlResponse(link);
       expect(lnurlResponse, isNotNull);
@@ -52,8 +53,9 @@ void main() {
       final Lnurl lnurl = Lnurl(transport: transport);
 
       final link = 'https://invalid.com';
-      when(client.get(Uri.parse(link), headers: {"Accept": "application/json"}))
-          .thenAnswer((_) async => http.Response('not found', 404));
+      when(
+        client.get(Uri.parse(link), headers: {"Accept": "application/json"}),
+      ).thenAnswer((_) async => http.Response('not found', 404));
 
       var lnurlResponse = await lnurl.getLnurlResponse(link);
       expect(lnurlResponse, isNull);
@@ -61,7 +63,8 @@ void main() {
 
     test('getAmountFromBolt11 returns correct amount for valid input', () {
       final amount = Lnurl.getAmountFromBolt11(
-          'lnbc15u1p3xnhl2pp5jptserfk3zk4qy42tlucycrfwxhydvlemu9pqr93tuzlv9cc7g3sdqsvfhkcap3xyhx7un8cqzpgxqzjcsp5f8c52y2stc300gl6s4xswtjpc37hrnnr3c9wvtgjfuvqmpm35evq9qyyssqy4lgd8tj637qcjp05rdpxxykjenthxftej7a2zzmwrmrl70fyj9hvj0rewhzj7jfyuwkwcg9g2jpwtk3wkjtwnkdks84hsnu8xps5vsq4gj5hs'); // Replace with a valid Bolt11 string
+        'lnbc15u1p3xnhl2pp5jptserfk3zk4qy42tlucycrfwxhydvlemu9pqr93tuzlv9cc7g3sdqsvfhkcap3xyhx7un8cqzpgxqzjcsp5f8c52y2stc300gl6s4xswtjpc37hrnnr3c9wvtgjfuvqmpm35evq9qyyssqy4lgd8tj637qcjp05rdpxxykjenthxftej7a2zzmwrmrl70fyj9hvj0rewhzj7jfyuwkwcg9g2jpwtk3wkjtwnkdks84hsnu8xps5vsq4gj5hs',
+      ); // Replace with a valid Bolt11 string
       expect(amount, 1500); // Replace with the expected amount
     });
 

@@ -37,8 +37,9 @@ void main() {
           content: 'Hello Nostr!',
           createdAt: 1234567890,
         );
-        final event = eventInit
-            .copyWith(sources: ['wss://nos.lol/', 'wss://relay.damus.io/']);
+        final event = eventInit.copyWith(
+          sources: ['wss://nos.lol/', 'wss://relay.damus.io/'],
+        );
 
         final eventModel = Nip01EventModel.fromEntity(event);
 
@@ -158,8 +159,9 @@ void main() {
           content: '{}',
           createdAt: 1234567890,
         );
-        final eventWithSources =
-            event.copyWith(sources: ['wss://relay.example.com']);
+        final eventWithSources = event.copyWith(
+          sources: ['wss://relay.example.com'],
+        );
 
         final eventModel = Nip01EventModel.fromEntity(eventWithSources);
 
@@ -188,8 +190,11 @@ void main() {
           );
 
           final eventModel = Nip01EventModel.fromEntity(event);
-          expect(eventModel.naddr, isNotNull,
-              reason: 'Kind $kind should be addressable');
+          expect(
+            eventModel.naddr,
+            isNotNull,
+            reason: 'Kind $kind should be addressable',
+          );
         }
       });
 
@@ -206,8 +211,11 @@ void main() {
           );
 
           final eventModel = Nip01EventModel.fromEntity(event);
-          expect(eventModel.naddr, isNotNull,
-              reason: 'Kind $kind should be addressable');
+          expect(
+            eventModel.naddr,
+            isNotNull,
+            reason: 'Kind $kind should be addressable',
+          );
         }
       });
 
@@ -223,8 +231,11 @@ void main() {
             content: '',
           );
           final eventModel = Nip01EventModel.fromEntity(event);
-          expect(eventModel.naddr, isNull,
-              reason: 'Kind $kind should not be addressable');
+          expect(
+            eventModel.naddr,
+            isNull,
+            reason: 'Kind $kind should not be addressable',
+          );
         }
       });
     });

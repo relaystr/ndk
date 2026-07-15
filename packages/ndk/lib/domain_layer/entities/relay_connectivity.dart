@@ -29,8 +29,11 @@ class RelayConnectivity<T> {
     Function? onError,
     void Function()? onDone,
   }) {
-    _streamSubscription =
-        relayTransport!.listen(onData, onDone: onDone, onError: onError);
+    _streamSubscription = relayTransport!.listen(
+      onData,
+      onDone: onDone,
+      onError: onError,
+    );
   }
 
   /// cancels stream subscription and closes relay transport
@@ -45,10 +48,12 @@ class RelayConnectivity<T> {
       await streamSubscription.cancel();
     }
     if (transport != null) {
-      await transport.close().timeout(const Duration(seconds: 3),
-          onTimeout: () {
-        Logger.log.w(() => "timeout while trying to close socket $url");
-      });
+      await transport.close().timeout(
+        const Duration(seconds: 3),
+        onTimeout: () {
+          Logger.log.w(() => "timeout while trying to close socket $url");
+        },
+      );
     }
   }
 

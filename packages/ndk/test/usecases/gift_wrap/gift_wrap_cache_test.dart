@@ -95,31 +95,29 @@ void main() {
       Nip01Event wrap,
       Nip01Event seal,
       String viewer,
-    ) =>
-        DecryptedEventPayloadRecord(
-          eventId: wrap.id,
-          viewerPubKey: viewer,
-          scheme: DecryptedPayloadScheme.giftWrap,
-          status: DecryptedPayloadStatus.ready,
-          plaintextContent: Nip01EventModel.fromEntity(seal).toJsonString(),
-          createdAt: now(),
-          updatedAt: now(),
-        );
+    ) => DecryptedEventPayloadRecord(
+      eventId: wrap.id,
+      viewerPubKey: viewer,
+      scheme: DecryptedPayloadScheme.giftWrap,
+      status: DecryptedPayloadStatus.ready,
+      plaintextContent: Nip01EventModel.fromEntity(seal).toJsonString(),
+      createdAt: now(),
+      updatedAt: now(),
+    );
 
     DecryptedEventPayloadRecord rumorSidecar(
       Nip01Event seal,
       Nip01Event rumor,
       String viewer,
-    ) =>
-        DecryptedEventPayloadRecord(
-          eventId: seal.id,
-          viewerPubKey: viewer,
-          scheme: DecryptedPayloadScheme.seal,
-          status: DecryptedPayloadStatus.ready,
-          plaintextContent: Nip01EventModel.fromEntity(rumor).toJsonString(),
-          createdAt: now(),
-          updatedAt: now(),
-        );
+    ) => DecryptedEventPayloadRecord(
+      eventId: seal.id,
+      viewerPubKey: viewer,
+      scheme: DecryptedPayloadScheme.seal,
+      status: DecryptedPayloadStatus.ready,
+      plaintextContent: Nip01EventModel.fromEntity(rumor).toJsonString(),
+      createdAt: now(),
+      updatedAt: now(),
+    );
 
     test('throws when event is not a gift wrap kind', () async {
       final notAWrap = Nip01Event(
@@ -137,23 +135,27 @@ void main() {
     test('returns null when no seal sidecar is cached', () async {
       final artifacts = await buildArtifacts();
       // cache is empty -> nothing to read
-      final result =
-          await giftWrap.tryFromGiftWrapFromCache(giftWrap: artifacts.giftWrap);
-      expect(result, isNull);
-    });
-
-    test('returns null when seal sidecar exists but rumor sidecar is missing',
-        () async {
-      final artifacts = await buildArtifacts();
-      // store only the seal plaintext
-      await cache.saveDecryptedEventPayloadRecord(
-        sealSidecar(artifacts.giftWrap, artifacts.seal, alice.publicKey),
+      final result = await giftWrap.tryFromGiftWrapFromCache(
+        giftWrap: artifacts.giftWrap,
       );
-
-      final result =
-          await giftWrap.tryFromGiftWrapFromCache(giftWrap: artifacts.giftWrap);
       expect(result, isNull);
     });
+
+    test(
+      'returns null when seal sidecar exists but rumor sidecar is missing',
+      () async {
+        final artifacts = await buildArtifacts();
+        // store only the seal plaintext
+        await cache.saveDecryptedEventPayloadRecord(
+          sealSidecar(artifacts.giftWrap, artifacts.seal, alice.publicKey),
+        );
+
+        final result = await giftWrap.tryFromGiftWrapFromCache(
+          giftWrap: artifacts.giftWrap,
+        );
+        expect(result, isNull);
+      },
+    );
 
     test('returns the cached rumor when both sidecars are present', () async {
       final artifacts = await buildArtifacts(content: 'cached body');
@@ -171,8 +173,9 @@ void main() {
         rumorSidecar(artifacts.seal, rumor, alice.publicKey),
       );
 
-      final result =
-          await giftWrap.tryFromGiftWrapFromCache(giftWrap: artifacts.giftWrap);
+      final result = await giftWrap.tryFromGiftWrapFromCache(
+        giftWrap: artifacts.giftWrap,
+      );
       expect(result, isNotNull);
       expect(result!.content, 'cached body');
       expect(result.kind, 1);
@@ -204,42 +207,45 @@ void main() {
 
       expect(
         () => strictGiftWrap.tryFromGiftWrapFromCache(
-            giftWrap: artifacts.giftWrap),
+          giftWrap: artifacts.giftWrap,
+        ),
         throwsA(isA<Exception>()),
       );
     });
 
-    test('skips signature verification when verifySignature is false',
-        () async {
-      final artifacts = await buildArtifacts(content: 'skip verify');
-      final rumor = await giftWrap.createRumor(
-        customPubkey: bob.publicKey,
-        content: 'skip verify',
-        kind: 1,
-        tags: const [],
-      );
-      await cache.saveDecryptedEventPayloadRecord(
-        sealSidecar(artifacts.giftWrap, artifacts.seal, alice.publicKey),
-      );
-      await cache.saveDecryptedEventPayloadRecord(
-        rumorSidecar(artifacts.seal, rumor, alice.publicKey),
-      );
+    test(
+      'skips signature verification when verifySignature is false',
+      () async {
+        final artifacts = await buildArtifacts(content: 'skip verify');
+        final rumor = await giftWrap.createRumor(
+          customPubkey: bob.publicKey,
+          content: 'skip verify',
+          kind: 1,
+          tags: const [],
+        );
+        await cache.saveDecryptedEventPayloadRecord(
+          sealSidecar(artifacts.giftWrap, artifacts.seal, alice.publicKey),
+        );
+        await cache.saveDecryptedEventPayloadRecord(
+          rumorSidecar(artifacts.seal, rumor, alice.publicKey),
+        );
 
-      // Verifier rejects everything, but verification is bypassed.
-      final lenientGiftWrap = GiftWrap(
-        accounts: ndk.accounts,
-        eventVerifier: MockEventVerifier(result: false),
-        eventSignerFactory: ndk.config.eventSignerFactory,
-        decryptedEventPayloads: ndk.decryptedEventPayloads,
-      );
+        // Verifier rejects everything, but verification is bypassed.
+        final lenientGiftWrap = GiftWrap(
+          accounts: ndk.accounts,
+          eventVerifier: MockEventVerifier(result: false),
+          eventSignerFactory: ndk.config.eventSignerFactory,
+          decryptedEventPayloads: ndk.decryptedEventPayloads,
+        );
 
-      final result = await lenientGiftWrap.tryFromGiftWrapFromCache(
-        giftWrap: artifacts.giftWrap,
-        verifySignature: false,
-      );
-      expect(result, isNotNull);
-      expect(result!.content, 'skip verify');
-    });
+        final result = await lenientGiftWrap.tryFromGiftWrapFromCache(
+          giftWrap: artifacts.giftWrap,
+          verifySignature: false,
+        );
+        expect(result, isNotNull);
+        expect(result!.content, 'skip verify');
+      },
+    );
 
     test('uses the custom signer pubkey as the cache viewer', () async {
       final artifacts = await buildArtifacts(content: 'custom viewer');
@@ -306,8 +312,9 @@ void main() {
         rumorSidecar(artifacts.seal, rumor, bob.publicKey),
       );
 
-      final result =
-          await giftWrap.tryFromGiftWrapFromCache(giftWrap: artifacts.giftWrap);
+      final result = await giftWrap.tryFromGiftWrapFromCache(
+        giftWrap: artifacts.giftWrap,
+      );
       expect(result, isNull);
     });
 
@@ -353,7 +360,9 @@ void main() {
       );
       expect(rec, isNotNull);
       expect(
-          jsonDecode(rec!.plaintextContent!)['kind'], GiftWrap.kSealEventKind);
+        jsonDecode(rec!.plaintextContent!)['kind'],
+        GiftWrap.kSealEventKind,
+      );
     });
   });
 }

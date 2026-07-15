@@ -171,10 +171,7 @@ void _runMetadataTests(CacheManager Function() getCacheManager) {
 
   test('metadata with empty tags and content', () async {
     final cacheManager = getCacheManager();
-    final metadata = Metadata(
-      pubKey: 'metadata_empty_tags',
-      name: 'Test User',
-    );
+    final metadata = Metadata(pubKey: 'metadata_empty_tags', name: 'Test User');
 
     await cacheManager.saveMetadata(metadata);
     final loaded = await cacheManager.loadMetadata('metadata_empty_tags');

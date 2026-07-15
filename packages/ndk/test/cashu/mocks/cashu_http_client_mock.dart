@@ -26,10 +26,10 @@ class MockCashuHttpClient extends http.BaseClient {
                 "unit": "sat",
                 "min_amount": 1,
                 "max_amount": 500000,
-                "description": true
-              }
+                "description": true,
+              },
             ],
-            "disabled": false
+            "disabled": false,
           },
           "5": {
             "methods": [
@@ -37,10 +37,10 @@ class MockCashuHttpClient extends http.BaseClient {
                 "method": "bolt11",
                 "unit": "sat",
                 "min_amount": 1,
-                "max_amount": 500000
-              }
+                "max_amount": 500000,
+              },
             ],
-            "disabled": false
+            "disabled": false,
           },
           "7": {"supported": true},
           "8": {"supported": true},
@@ -52,7 +52,7 @@ class MockCashuHttpClient extends http.BaseClient {
           "15": {
             "methods": [
               {"method": "bolt11", "unit": "sat"},
-            ]
+            ],
           },
           "17": {
             "supported": [
@@ -62,23 +62,23 @@ class MockCashuHttpClient extends http.BaseClient {
                 "commands": [
                   "bolt11_mint_quote",
                   "bolt11_melt_quote",
-                  "proof_state"
-                ]
-              }
-            ]
+                  "proof_state",
+                ],
+              },
+            ],
           },
           "19": {
             "ttl": 60,
             "cached_endpoints": [
               {"method": "POST", "path": "/v1/mint/bolt11"},
               {"method": "POST", "path": "/v1/melt/bolt11"},
-              {"method": "POST", "path": "/v1/swap"}
-            ]
+              {"method": "POST", "path": "/v1/swap"},
+            ],
           },
-          "20": {"supported": true}
+          "20": {"supported": true},
         },
         "motd": "Hello world",
-        "time": 1757162808
+        "time": 1757162808,
       }),
       200,
       headers: {'content-type': 'application/json'},
@@ -92,9 +92,9 @@ class MockCashuHttpClient extends http.BaseClient {
             "id": "00c726786980c4d9",
             "unit": "sat",
             "active": true,
-            "input_fee_ppk": 0
-          }
-        ]
+            "input_fee_ppk": 0,
+          },
+        ],
       }),
       200,
       headers: {'content-type': 'application/json'},
@@ -171,10 +171,10 @@ class MockCashuHttpClient extends http.BaseClient {
               "8192":
                   "02e47c542ba5c3664a839e6c5e3968b69916ae9e9387b8eaf973897f4f4ff9de72",
               "8388608":
-                  "02c7690d8e9032602cb29f4b0123bf8131dd58f42c0d4f457491b33594181a87c7"
-            }
-          }
-        ]
+                  "02c7690d8e9032602cb29f4b0123bf8131dd58f42c0d4f457491b33594181a87c7",
+            },
+          },
+        ],
       }),
       200,
       headers: {'content-type': 'application/json'},
@@ -250,10 +250,10 @@ class MockCashuHttpClient extends http.BaseClient {
               "8192":
                   "02e47c542ba5c3664a839e6c5e3968b69916ae9e9387b8eaf973897f4f4ff9de72",
               "8388608":
-                  "02c7690d8e9032602cb29f4b0123bf8131dd58f42c0d4f457491b33594181a87c7"
-            }
-          }
-        ]
+                  "02c7690d8e9032602cb29f4b0123bf8131dd58f42c0d4f457491b33594181a87c7",
+            },
+          },
+        ],
       }),
       200,
       headers: {'content-type': 'application/json'},
@@ -267,59 +267,52 @@ class MockCashuHttpClient extends http.BaseClient {
         "amount": 5,
         "unit": "sat",
         "state": "UNPAID",
-        "expiry": now + 60
+        "expiry": now + 60,
       }),
       200,
       headers: {'content-type': 'application/json'},
     );
 
-    _responses[
-            'GET:/v1/mint/quote/bolt11/d00e6cbc-04c9-4661-8909-e47c19612bf0'] =
+    _responses['GET:/v1/mint/quote/bolt11/d00e6cbc-04c9-4661-8909-e47c19612bf0'] =
         http.Response(
-      jsonEncode({
-        "quote": "d00e6cbc-04c9-4661-8909-e47c19612bf0",
-        "request":
-            "lnbc50p1p5tctmqdqqpp5y7jyyyq3ezyu3p4c9dh6qpnjj6znuzrz35ernjjpkmw6lz7y2mxqsp59g4z52329g4z52329g4z52329g4z52329g4z52329g4z52329g4q9qrsgqcqzysl62hzvm9s5nf53gk22v5nqwf9nuy2uh32wn9rfx6grkjh6vr5jmy09mra5cna504azyhkd2ehdel9sm7fm72ns6ws2fk4m8cwc99hdgptq8hv4",
-        "amount": 5,
-        "unit": "sat",
-        "state": "PAID",
-        "expiry": now + 60
-      }),
-      200,
-      headers: {'content-type': 'application/json'},
-    );
+          jsonEncode({
+            "quote": "d00e6cbc-04c9-4661-8909-e47c19612bf0",
+            "request":
+                "lnbc50p1p5tctmqdqqpp5y7jyyyq3ezyu3p4c9dh6qpnjj6znuzrz35ernjjpkmw6lz7y2mxqsp59g4z52329g4z52329g4z52329g4z52329g4z52329g4z52329g4q9qrsgqcqzysl62hzvm9s5nf53gk22v5nqwf9nuy2uh32wn9rfx6grkjh6vr5jmy09mra5cna504azyhkd2ehdel9sm7fm72ns6ws2fk4m8cwc99hdgptq8hv4",
+            "amount": 5,
+            "unit": "sat",
+            "state": "PAID",
+            "expiry": now + 60,
+          }),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
     _responses['POST:/v1/mint/bolt11'] = http.Response(
-      jsonEncode(
-        {"signatures": []},
-      ),
+      jsonEncode({"signatures": []}),
       200,
       headers: {'content-type': 'application/json'},
     );
 
     _responses['POST:/v1/melt/quote/bolt11'] = http.Response(
-      jsonEncode(
-        {
-          "quote": "ff477714-ae17-4b3a-88f1-d5be3a18bc01",
-          "amount": 1,
-          "fee_reserve": 2,
-          "paid": false,
-          "state": "UNPAID",
-          "expiry": now + 60,
-          "request": "lnbc1...",
-          "unit": "sat"
-        },
-      ),
+      jsonEncode({
+        "quote": "ff477714-ae17-4b3a-88f1-d5be3a18bc01",
+        "amount": 1,
+        "fee_reserve": 2,
+        "paid": false,
+        "state": "UNPAID",
+        "expiry": now + 60,
+        "request": "lnbc1...",
+        "unit": "sat",
+      }),
       200,
       headers: {'content-type': 'application/json'},
     );
 
     _responses['POST:/v1/melt/bolt11'] = http.Response(
-      jsonEncode(
-        {
-          "payment_preimage": "mock_preimage_1234567890abcdef",
-          "state": "PAID",
-        },
-      ),
+      jsonEncode({
+        "payment_preimage": "mock_preimage_1234567890abcdef",
+        "state": "PAID",
+      }),
       200,
       headers: {'content-type': 'application/json'},
     );
@@ -358,7 +351,8 @@ class MockCashuHttpClient extends http.BaseClient {
     // default 404
     return http.StreamedResponse(
       Stream.value(
-          utf8.encode(jsonEncode({'error': 'Not found, method: $key'}))),
+        utf8.encode(jsonEncode({'error': 'Not found, method: $key'})),
+      ),
       404,
       headers: {'content-type': 'application/json'},
     );

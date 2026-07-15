@@ -25,10 +25,7 @@ void main() {
         state: CashuProofState.unspend,
       );
 
-      final List<CashuProof> proofs = [
-        proof1,
-        proof2,
-      ];
+      final List<CashuProof> proofs = [proof1, proof2];
 
       await cacheManager.saveProofs(proofs: proofs, mintUrl: "testmint");
 

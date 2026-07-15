@@ -9,17 +9,16 @@ class ZapRequest extends Nip01Event {
   /// [event] the nip01 event \
   /// returns the zap request \
   /// kind is set to [kZapRequestKind]
-  ZapRequest.nip01Event({
-    required Nip01Event event,
-  }) : super(
-          pubKey: event.pubKey,
-          tags: event.tags,
-          content: event.content,
-          id: event.id,
-          sig: event.sig,
-          kind: kZapRequestKind,
-          validSig: event.validSig,
-        );
+  ZapRequest.nip01Event({required Nip01Event event})
+    : super(
+        pubKey: event.pubKey,
+        tags: event.tags,
+        content: event.content,
+        id: event.id,
+        sig: event.sig,
+        kind: kZapRequestKind,
+        validSig: event.validSig,
+      );
 
   /// Zap Request
   ZapRequest._({
@@ -28,10 +27,7 @@ class ZapRequest extends Nip01Event {
     required super.content,
     required super.id,
     super.sig,
-  }) : super(
-          kind: kZapRequestKind,
-          validSig: null,
-        );
+  }) : super(kind: kZapRequestKind, validSig: null);
 
   /// creates a zap request \
   /// [pubKey] the pubkey of the zap requester \

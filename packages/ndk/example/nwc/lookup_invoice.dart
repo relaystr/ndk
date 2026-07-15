@@ -16,8 +16,10 @@ void main() async {
   // use an INVOICE env var or replace with your bolt11 invoice
   final hash = Platform.environment['HASH']!;
 
-  final invoiceResponse =
-      await ndk.nwc.lookupInvoice(connection, paymentHash: hash);
+  final invoiceResponse = await ndk.nwc.lookupInvoice(
+    connection,
+    paymentHash: hash,
+  );
 
   print("invoice response: $invoiceResponse");
 

@@ -17,14 +17,8 @@ import 'widgets_demo_page.dart';
 final appRouter = GoRouter(
   initialLocation: '/home',
   routes: [
-    GoRoute(
-      path: '/',
-      redirect: (_, __) => '/home',
-    ),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => const HomePage(),
-    ),
+    GoRoute(path: '/', redirect: (_, __) => '/home'),
+    GoRoute(path: '/home', builder: (context, state) => const HomePage()),
     GoRoute(
       path: '/accounts',
       builder: (context, state) => Scaffold(
@@ -57,23 +51,18 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/wallets',
-      builder: (context, state) => WalletsPage(
-        initialUrl: state.extra as String?,
-      ),
+      builder: (context, state) =>
+          WalletsPage(initialUrl: state.extra as String?),
     ),
     GoRoute(
       path: '/widgets',
       builder: (context, state) => const WidgetsDemoPage(),
     ),
-    GoRoute(
-      path: '/dm',
-      builder: (context, state) => const DmInboxPage(),
-    ),
+    GoRoute(path: '/dm', builder: (context, state) => const DmInboxPage()),
     GoRoute(
       path: '/dm/conversation/:pubkey',
-      builder: (context, state) => DmConversationPage(
-        peerPubKey: state.pathParameters['pubkey']!,
-      ),
+      builder: (context, state) =>
+          DmConversationPage(peerPubKey: state.pathParameters['pubkey']!),
     ),
     GoRoute(
       path: '/dm/compose',
@@ -82,10 +71,7 @@ final appRouter = GoRouter(
             state.extra as String? ?? state.uri.queryParameters['recipient'],
       ),
     ),
-    GoRoute(
-      path: '/follows',
-      builder: (context, state) => const FollowsPage(),
-    ),
+    GoRoute(path: '/follows', builder: (context, state) => const FollowsPage()),
     GoRoute(
       path: '/quantum',
       builder: (context, state) => const QuantumSecurePage(),

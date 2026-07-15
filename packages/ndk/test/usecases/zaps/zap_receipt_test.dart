@@ -35,14 +35,14 @@ void main() {
             'pubKey': 'testSender',
             'tags': [
               ['lnurl', 'testLnurl'],
-              ['amount', '1000']
-            ]
-          })
+              ['amount', '1000'],
+            ],
+          }),
         ],
         ['p', 'testRecipient'],
         ['e', 'testEventId'],
         ['anon', 'testAnon'],
-        ['P', 'testSender']
+        ['P', 'testSender'],
       ]);
       when(mockEvent.createdAt).thenReturn(1234567890);
 
@@ -86,17 +86,20 @@ void main() {
             'content': '',
             'tags': [
               ['lnurl', 'testLnurl'],
-            ]
-          })
-        ]
+            ],
+          }),
+        ],
       ]);
 
       final zapReceipt = ZapReceipt.fromEvent(mockEvent);
 
       expect(
-          zapReceipt.isValid(
-              nostrPubKey: 'testPubKey', recipientLnurl: 'testLnurl'),
-          isTrue);
+        zapReceipt.isValid(
+          nostrPubKey: 'testPubKey',
+          recipientLnurl: 'testLnurl',
+        ),
+        isTrue,
+      );
     });
 
     test('isValid returns false for invalid pubKey', () {
@@ -116,17 +119,20 @@ void main() {
             'content': '',
             'tags': [
               ['lnurl', 'testLnurl'],
-              ['amount', '1500000']
-            ]
-          })
-        ]
+              ['amount', '1500000'],
+            ],
+          }),
+        ],
       ]);
 
       final zapReceipt = ZapReceipt.fromEvent(mockEvent);
       expect(
-          zapReceipt.isValid(
-              nostrPubKey: 'testPubKey', recipientLnurl: 'testLnurl'),
-          isFalse);
+        zapReceipt.isValid(
+          nostrPubKey: 'testPubKey',
+          recipientLnurl: 'testLnurl',
+        ),
+        isFalse,
+      );
     });
 
     test('isValid returns false for mismatched amount', () {
@@ -146,17 +152,20 @@ void main() {
             'content': '',
             'tags': [
               ['lnurl', 'testLnurl'],
-              ['amount', '2000000']
-            ]
-          })
-        ]
+              ['amount', '2000000'],
+            ],
+          }),
+        ],
       ]);
 
       final zapReceipt = ZapReceipt.fromEvent(mockEvent);
       expect(
-          zapReceipt.isValid(
-              nostrPubKey: 'testPubKey', recipientLnurl: 'testLnurl'),
-          isFalse);
+        zapReceipt.isValid(
+          nostrPubKey: 'testPubKey',
+          recipientLnurl: 'testLnurl',
+        ),
+        isFalse,
+      );
     });
 
     test('isValid returns false for mismatched lnurl', () {
@@ -176,18 +185,21 @@ void main() {
             'content': '',
             'tags': [
               ['lnurl', 'wrongLnurl'],
-              ['amount', '1500000']
-            ]
-          })
-        ]
+              ['amount', '1500000'],
+            ],
+          }),
+        ],
       ]);
 
       final zapReceipt = ZapReceipt.fromEvent(mockEvent);
 
       expect(
-          zapReceipt.isValid(
-              nostrPubKey: 'testPubKey', recipientLnurl: 'testLnurl'),
-          isFalse);
+        zapReceipt.isValid(
+          nostrPubKey: 'testPubKey',
+          recipientLnurl: 'testLnurl',
+        ),
+        isFalse,
+      );
     });
   });
 }

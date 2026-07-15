@@ -7,10 +7,7 @@ import 'package:test/test.dart';
 void main() {
   group('EventKindClassification', () {
     test('detects singleton replaceable kinds', () {
-      expect(
-        EventKindClassification.isReplaceableKind(Metadata.kKind),
-        isTrue,
-      );
+      expect(EventKindClassification.isReplaceableKind(Metadata.kKind), isTrue);
       expect(
         EventKindClassification.isReplaceableKind(ContactList.kKind),
         isTrue,

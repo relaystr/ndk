@@ -313,7 +313,7 @@ class GiftWrap {
     }
 
     final tags = <List<String>>[
-      ['p', recipientPublicKey]
+      ['p', recipientPublicKey],
     ];
 
     // Add any additional tags if provided
@@ -321,7 +321,8 @@ class GiftWrap {
       tags.addAll(additionalTags);
     }
 
-    final giftWrapCreatedAt = createdAt ??
+    final giftWrapCreatedAt =
+        createdAt ??
         (randomizeCreatedAtBefore != null
             ? _randomCreatedAtBefore(randomizeCreatedAtBefore)
             : sealEvent.createdAt);

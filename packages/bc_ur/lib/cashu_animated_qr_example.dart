@@ -113,21 +113,25 @@ void multiPartExample() {
     if (i % 2 == 0 || decoder.isComplete()) {
       // Show progress every 2 parts
       print(
-          '  Scanned part ${i + 1}/${parts.length} - ${(progress * 100).toStringAsFixed(1)}% complete');
+        '  Scanned part ${i + 1}/${parts.length} - ${(progress * 100).toStringAsFixed(1)}% complete',
+      );
     }
     if (decoder.isComplete()) break;
   }
 
   // Decode the complete token
   if (decoder.isComplete()) {
-    final decodedToken =
-        CashuTokenUrEncoder.decodeFromMultiPartDecoder(decoder);
+    final decodedToken = CashuTokenUrEncoder.decodeFromMultiPartDecoder(
+      decoder,
+    );
     if (decodedToken != null) {
       print('\nSuccessfully decoded complete token:');
       print('  Mint: ${decodedToken.mintUrl}');
       print('  Total proofs: ${decodedToken.proofs.length}');
-      final totalAmount =
-          decodedToken.proofs.fold(0, (sum, p) => sum + p.amount);
+      final totalAmount = decodedToken.proofs.fold(
+        0,
+        (sum, p) => sum + p.amount,
+      );
       print('  Total amount: $totalAmount ${decodedToken.unit}');
       print('  Memo: ${decodedToken.memo}');
     }

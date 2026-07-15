@@ -43,7 +43,8 @@ Future<void> main() async {
   final cacheManager = kIsWeb
       ? await DriftCacheManager.create()
       : await SembastCacheManager.create(
-          databasePath: (await getApplicationDocumentsDirectory()).path);
+          databasePath: (await getApplicationDocumentsDirectory()).path,
+        );
 
   // Load the cashu seed phrase from secure storage, generating a fresh one on
   // first run. Never hardcode this — it controls cashu funds.
@@ -56,9 +57,7 @@ Future<void> main() async {
       cache: cacheManager,
       walletsRepo: FlutterSecureStorageWalletsRepo(),
       logLevel: Logger.logLevels.info,
-      cashuUserSeedphrase: CashuUserSeedphrase(
-        seedPhrase: cashuSeedPhrase,
-      ),
+      cashuUserSeedphrase: CashuUserSeedphrase(seedPhrase: cashuSeedPhrase),
     ),
   );
   final _ = dmLiveState;
@@ -135,10 +134,7 @@ class _MyAppState extends State<MyApp> with ProtocolListener {
         routerConfig: appRouter,
         builder: (context, child) => Stack(
           children: [
-            SafeArea(
-              top: false,
-              child: child ?? const SizedBox.shrink(),
-            ),
+            SafeArea(top: false, child: child ?? const SizedBox.shrink()),
             NPendingRequests(ndkFlutter: ndkFlutter),
           ],
         ),

@@ -106,10 +106,7 @@ class _NwcQrScannerDialogState extends State<_NwcQrScannerDialog> {
                   Expanded(
                     child: Text(
                       l10n.scanNwcQrCodeTitle,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
                       textAlign: TextAlign.center,
                     ),
                   ),

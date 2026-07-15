@@ -44,9 +44,9 @@ class RelaySetsEngine implements NetworkEngine {
     required CacheManager cacheManager,
     required List<String>? bootstrapRelays,
     GlobalState? globalState,
-  })  : _cacheManager = cacheManager,
-        _relayManager = relayManager,
-        _bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS {
+  }) : _cacheManager = cacheManager,
+       _relayManager = relayManager,
+       _bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS {
     _globalState = globalState ?? GlobalState();
   }
 
@@ -54,8 +54,9 @@ class RelaySetsEngine implements NetworkEngine {
 
   Future<bool> doRelayRequest(String id, RelayRequestState request) async {
     if (_globalState.blockedRelays.contains(request.url)) {
-      Logger.log.w(() =>
-          "COULD NOT SEND REQUEST TO ${request.url} since relay is blocked");
+      Logger.log.w(
+        () => "COULD NOT SEND REQUEST TO ${request.url} since relay is blocked",
+      );
       return false;
     }
 
@@ -72,22 +73,22 @@ class RelaySetsEngine implements NetworkEngine {
         try {
           await _relayManager.sendOrThrow(
             relay,
-            ClientMsg(
-              ClientMsgType.kReq,
-              id: id,
-              filters: request.filters,
-            ),
+            ClientMsg(ClientMsgType.kReq, id: id, filters: request.filters),
           );
         } catch (e) {
-          Logger.log
-              .e(() => "COULD NOT SEND REQUEST TO ${request.url}:", error: e);
+          Logger.log.e(
+            () => "COULD NOT SEND REQUEST TO ${request.url}:",
+            error: e,
+          );
           return false;
         }
       }
       return true;
     } else {
-      Logger.log.e(() =>
-          "COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
+      Logger.log.e(
+        () =>
+            "COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open",
+      );
       return false;
     }
   }
@@ -127,8 +128,10 @@ class RelaySetsEngine implements NetworkEngine {
 
     if (connected) {
       if (await _shouldSkipObsoleteReplaceableBroadcast(nostrEvent)) {
-        Logger.log.d(() =>
-            'skip obsolete specific-relay broadcast ${nostrEvent.id} for $relayUrl');
+        Logger.log.d(
+          () =>
+              'skip obsolete specific-relay broadcast ${nostrEvent.id} for $relayUrl',
+        );
         _relayManager.failBroadcast(
           nostrEvent.id,
           relayUrl,
@@ -141,21 +144,19 @@ class RelaySetsEngine implements NetworkEngine {
       if (relayConnectivity != null) {
         await _relayManager.sendOrThrow(
           relayConnectivity,
-          ClientMsg(
-            ClientMsgType.kEvent,
-            event: nostrEvent,
-          ),
+          ClientMsg(ClientMsgType.kEvent, event: nostrEvent),
         );
         return;
       }
     }
     _relayManager.failBroadcast(
-        nostrEvent.id, relayUrl, "Could not connect to relay $relayUrl $error");
+      nostrEvent.id,
+      relayUrl,
+      "Could not connect to relay $relayUrl $error",
+    );
   }
 
-  Future<bool> _shouldSkipObsoleteReplaceableBroadcast(
-    Nip01Event event,
-  ) async {
+  Future<bool> _shouldSkipObsoleteReplaceableBroadcast(Nip01Event event) async {
     if (!EventKindClassification.isReplaceableKind(event.kind)) {
       return false;
     }
@@ -166,10 +167,10 @@ class RelaySetsEngine implements NetworkEngine {
       kinds: [event.kind],
       tags:
           EventKindClassification.isAddressableKind(event.kind) && dTag != null
-              ? {
-                  'd': [dTag],
-                }
-              : null,
+          ? {
+              'd': [dTag],
+            }
+          : null,
       limit: 1,
     );
 
@@ -180,8 +181,10 @@ class RelaySetsEngine implements NetworkEngine {
     return visibleEvents.single.id != event.id;
   }
 
-  Future<void> doNostrRequestWithRelaySet(RequestState state,
-      {bool splitRequestsByPubKeyMappings = true}) async {
+  Future<void> doNostrRequestWithRelaySet(
+    RequestState state, {
+    bool splitRequestsByPubKeyMappings = true,
+  }) async {
     if (state.unresolvedFilters.isEmpty || state.request.relaySet == null) {
       return;
     }
@@ -190,11 +193,13 @@ class RelaySetsEngine implements NetworkEngine {
       if (splitRequestsByPubKeyMappings) {
         relaySet.splitIntoRequests(filter, state);
         print(
-            "request for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds} made requests to ${state.requests.length} relays");
+          "request for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds} made requests to ${state.requests.length} relays",
+        );
 
         if (state.requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
           print(
-              "making fallback requests to ${_bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}");
+            "making fallback requests to ${_bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}",
+          );
           for (final url in _bootstrapRelays) {
             state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
           }
@@ -212,7 +217,9 @@ class RelaySetsEngine implements NetworkEngine {
         state.request.authenticateAs!.isNotEmpty) {
       for (final relayUrl in state.requests.keys) {
         _relayManager.authenticateIfNeeded(
-            relayUrl, state.request.authenticateAs!);
+          relayUrl,
+          state.request.authenticateAs!,
+        );
       }
     }
 
@@ -257,7 +264,9 @@ class RelaySetsEngine implements NetworkEngine {
         state.request.authenticateAs!.isNotEmpty) {
       for (final relayUrl in state.requests.keys) {
         _relayManager.authenticateIfNeeded(
-            relayUrl, state.request.authenticateAs!);
+          relayUrl,
+          state.request.authenticateAs!,
+        );
       }
     }
 
@@ -282,18 +291,16 @@ class RelaySetsEngine implements NetworkEngine {
     bool closeOnEOSE = true,
   }) async {
     String id = Helpers.getRandomString(10);
-    RequestState state = RequestState(closeOnEOSE
-        ? NdkRequest.query(
-            id,
-            name: name,
-            filters: [filter],
-            timeoutDuration: timeout,
-          )
-        : NdkRequest.subscription(
-            id,
-            name: name,
-            filters: [],
-          ));
+    RequestState state = RequestState(
+      closeOnEOSE
+          ? NdkRequest.query(
+              id,
+              name: name,
+              filters: [filter],
+              timeoutDuration: timeout,
+            )
+          : NdkRequest.subscription(id, name: name, filters: []),
+    );
 
     for (var url in urls) {
       state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
@@ -343,9 +350,13 @@ class RelaySetsEngine implements NetworkEngine {
       // =====================================================================================
       if (specificRelays != null) {
         if (specificRelays.isNotEmpty) {
-          await Future.wait(specificRelays.map((relayUrl) =>
-              // broadcast async
-              doRelayBroadcast(relayUrl, workingEvent)));
+          await Future.wait(
+            specificRelays.map(
+              (relayUrl) =>
+                  // broadcast async
+                  doRelayBroadcast(relayUrl, workingEvent),
+            ),
+          );
         }
       } else {
         // =====================================================================================
@@ -357,20 +368,25 @@ class RelaySetsEngine implements NetworkEngine {
           cacheManager: _cacheManager,
         ));
         // make a copy of the keys since connectRelay may mutate the underlying map
-        List<String> writeRelaysUrls =
-            _relayManager.globalState.relays.keys.toList();
+        List<String> writeRelaysUrls = _relayManager.globalState.relays.keys
+            .toList();
         if (nip65List.isNotEmpty) {
           writeRelaysUrls = nip65List.first.relays.entries
               .where((element) => element.value.isWrite)
               .map((e) => e.key)
               .toList();
         } else {
-          Logger.log.w(() =>
-              "could not find user relay list from nip65, using default bootstrap relays");
+          Logger.log.w(
+            () =>
+                "could not find user relay list from nip65, using default bootstrap relays",
+          );
         }
 
-        await Future.wait(writeRelaysUrls
-            .map((relayUrl) => doRelayBroadcast(relayUrl, workingEvent)));
+        await Future.wait(
+          writeRelaysUrls.map(
+            (relayUrl) => doRelayBroadcast(relayUrl, workingEvent),
+          ),
+        );
 
         // =====================================================================================
         // other inbox
@@ -393,14 +409,19 @@ class RelaySetsEngine implements NetworkEngine {
             // cut list of at a certain threshold
             final maxList = completeList.sublist(
               0,
-              min(completeList.length,
-                  BroadcastDefaults.MAX_INBOX_RELAYS_TO_BROADCAST),
+              min(
+                completeList.length,
+                BroadcastDefaults.MAX_INBOX_RELAYS_TO_BROADCAST,
+              ),
             );
             myWriteRelayUrlsOthers.addAll(maxList);
           }
 
-          await Future.wait(myWriteRelayUrlsOthers
-              .map((relayUrl) => doRelayBroadcast(relayUrl, workingEvent)));
+          await Future.wait(
+            myWriteRelayUrlsOthers.map(
+              (relayUrl) => doRelayBroadcast(relayUrl, workingEvent),
+            ),
+          );
         }
       }
       broadcastState.closeIfNoRelays();
@@ -410,10 +431,12 @@ class RelaySetsEngine implements NetworkEngine {
 
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
-      broadcastDoneStream: broadcastState.stateUpdates
-          .map((state) => state.broadcasts.values.toList()),
-      broadcastDoneFuture: broadcastState.publishDoneFuture
-          .then((state) => state.broadcasts.values.toList()),
+      broadcastDoneStream: broadcastState.stateUpdates.map(
+        (state) => state.broadcasts.values.toList(),
+      ),
+      broadcastDoneFuture: broadcastState.publishDoneFuture.then(
+        (state) => state.broadcasts.values.toList(),
+      ),
     );
   }
 }

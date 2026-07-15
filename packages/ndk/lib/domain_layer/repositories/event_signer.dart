@@ -10,10 +10,7 @@ abstract class LocalEventSignerFactory {
   ///
   /// If [publicKey] is null, implementations MUST derive it from [privateKey].
   /// At least one of [privateKey] or [publicKey] must be provided!
-  EventSigner create({
-    String? privateKey,
-    String? publicKey,
-  });
+  EventSigner create({String? privateKey, String? publicKey});
 
   /// Derives a public key from a private key.
   /// Implementations MUST provide the derivation logic.

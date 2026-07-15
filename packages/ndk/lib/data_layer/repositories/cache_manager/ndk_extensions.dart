@@ -53,14 +53,17 @@ extension ContactListExtension on ContactList {
       contacts: List<String>.from(json['contacts'] as List),
     );
 
-    contactList.contactRelays =
-        List<String>.from(json['contactRelays'] as List);
+    contactList.contactRelays = List<String>.from(
+      json['contactRelays'] as List,
+    );
     contactList.petnames = List<String>.from(json['petnames'] as List);
     contactList.followedTags = List<String>.from(json['followedTags'] as List);
-    contactList.followedCommunities =
-        List<String>.from(json['followedCommunities'] as List);
-    contactList.followedEvents =
-        List<String>.from(json['followedEvents'] as List);
+    contactList.followedCommunities = List<String>.from(
+      json['followedCommunities'] as List,
+    );
+    contactList.followedEvents = List<String>.from(
+      json['followedEvents'] as List,
+    );
     contactList.createdAt = json['createdAt'] as int;
     contactList.loadedTimestamp = json['loadedTimestamp'] as int?;
     contactList.sources = List<String>.from(json['sources'] as List);
@@ -103,8 +106,9 @@ extension MetadataExtension on Metadata {
     // Create a mutable copy of content if it exists
     Map<String, dynamic>? contentCopy;
     if (json['content'] != null) {
-      contentCopy =
-          Map<String, dynamic>.from(json['content'] as Map<String, dynamic>);
+      contentCopy = Map<String, dynamic>.from(
+        json['content'] as Map<String, dynamic>,
+      );
     }
 
     final metadata = Metadata(
@@ -165,14 +169,17 @@ extension RelaySetExtension on RelaySet {
       'pubKey': pubKey,
       'relayMinCountPerPubkey': relayMinCountPerPubkey,
       'direction': direction.index,
-      'relaysMap': relaysMap.map((key, value) => MapEntry(
-          key, value.map((mapping) => mapping.toJsonForStorage()).toList())),
+      'relaysMap': relaysMap.map(
+        (key, value) => MapEntry(
+          key,
+          value.map((mapping) => mapping.toJsonForStorage()).toList(),
+        ),
+      ),
       'fallbackToBootstrapRelays': fallbackToBootstrapRelays,
       'notCoveredPubkeys': notCoveredPubkeys
-          .map((pubkey) => {
-                'pubKey': pubkey.pubKey,
-                'coverage': pubkey.coverage,
-              })
+          .map(
+            (pubkey) => {'pubKey': pubkey.pubKey, 'coverage': pubkey.coverage},
+          )
           .toList(),
     };
   }
@@ -192,10 +199,12 @@ extension RelaySetExtension on RelaySet {
     // Reconstruct notCoveredPubkeys
     final notCoveredJson = json['notCoveredPubkeys'] as List? ?? [];
     final notCoveredPubkeys = notCoveredJson
-        .map((item) => NotCoveredPubKey(
-              item['pubKey'] as String,
-              item['coverage'] as int,
-            ))
+        .map(
+          (item) => NotCoveredPubKey(
+            item['pubKey'] as String,
+            item['coverage'] as int,
+          ),
+        )
         .toList();
 
     return RelaySet(
@@ -214,17 +223,15 @@ extension RelaySetExtension on RelaySet {
 // Extension for PubkeyMapping to add JSON serialization support
 extension PubkeyMappingExtension on PubkeyMapping {
   Map<String, Object?> toJsonForStorage() {
-    return {
-      'pubKey': pubKey,
-      'rwMarker': rwMarker.toJsonForStorage(),
-    };
+    return {'pubKey': pubKey, 'rwMarker': rwMarker.toJsonForStorage()};
   }
 
   static PubkeyMapping fromJsonStorage(Map<String, Object?> json) {
     return PubkeyMapping(
       pubKey: json['pubKey'] as String,
       rwMarker: ReadWriteMarkerExtension.fromJsonStorage(
-          json['rwMarker'] as Map<String, Object?>),
+        json['rwMarker'] as Map<String, Object?>,
+      ),
     );
   }
 }
@@ -232,10 +239,7 @@ extension PubkeyMappingExtension on PubkeyMapping {
 // Extension for ReadWriteMarker to add JSON serialization support
 extension ReadWriteMarkerExtension on ReadWriteMarker {
   Map<String, Object?> toJsonForStorage() {
-    return {
-      'read': isRead,
-      'write': isWrite,
-    };
+    return {'read': isRead, 'write': isWrite};
   }
 
   static ReadWriteMarker fromJsonStorage(Map<String, Object?> json) {
@@ -253,8 +257,9 @@ extension UserRelayListExtension on UserRelayList {
       'pubKey': pubKey,
       'createdAt': createdAt,
       'refreshedTimestamp': refreshedTimestamp,
-      'relays':
-          relays.map((key, value) => MapEntry(key, value.toJsonForStorage())),
+      'relays': relays.map(
+        (key, value) => MapEntry(key, value.toJsonForStorage()),
+      ),
     };
   }
 
@@ -265,7 +270,8 @@ extension UserRelayListExtension on UserRelayList {
 
     relaysJson.forEach((key, value) {
       relays[key] = ReadWriteMarkerExtension.fromJsonStorage(
-          value as Map<String, Object?>);
+        value as Map<String, Object?>,
+      );
     });
 
     return UserRelayList(
@@ -301,10 +307,12 @@ extension CahsuKeysetExtension on CahsuKeyset {
       active: json['active'] as bool,
       inputFeePPK: json['inputFeePPK'] as int,
       mintKeyPairs: (json['mintKeyPairs'] as List<dynamic>)
-          .map((e) => CahsuMintKeyPair(
-                amount: e['amount'] as int,
-                pubkey: e['pubkey'] as String,
-              ))
+          .map(
+            (e) => CahsuMintKeyPair(
+              amount: e['amount'] as int,
+              pubkey: e['pubkey'] as String,
+            ),
+          )
           .toSet(),
       fetchedAt: json['fetchedAt'] as int?,
     );
@@ -366,8 +374,9 @@ extension CashuMintInfoExtension on CashuMintInfo {
           if (v is List) {
             return; // skip non-spec compliant entries
           }
-          parsedNuts[key] =
-              CashuMintNut.fromJson((v ?? {}) as Map<String, dynamic>);
+          parsedNuts[key] = CashuMintNut.fromJson(
+            (v ?? {}) as Map<String, dynamic>,
+          );
         } catch (e) {
           // skip entries that fail to parse
         }

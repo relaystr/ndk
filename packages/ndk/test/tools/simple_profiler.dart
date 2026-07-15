@@ -5,8 +5,8 @@ class SimpleProfiler {
   DateTime _lastCheckpoint;
 
   SimpleProfiler(this.name)
-      : startTime = DateTime.now(),
-        _lastCheckpoint = DateTime.now() {
+    : startTime = DateTime.now(),
+      _lastCheckpoint = DateTime.now() {
     // ignore: avoid_print
     print('Starting $name at $startTime');
   }
@@ -17,9 +17,11 @@ class SimpleProfiler {
     final checkpointDuration = now.difference(_lastCheckpoint);
 
     // ignore: avoid_print
-    print('$name - $description:'
-        '\n\tTotal: ${totalDuration.inMilliseconds}ms'
-        '\n\tSince last checkpoint: ${checkpointDuration.inMilliseconds}ms');
+    print(
+      '$name - $description:'
+      '\n\tTotal: ${totalDuration.inMilliseconds}ms'
+      '\n\tSince last checkpoint: ${checkpointDuration.inMilliseconds}ms',
+    );
 
     _lastCheckpoint = now;
   }
@@ -30,9 +32,11 @@ class SimpleProfiler {
     final checkpointDuration = now.difference(_lastCheckpoint);
 
     // ignore: avoid_print
-    print('Ended $name:'
-        '\n\tTotal time: ${totalDuration.inMilliseconds}ms'
-        '\n\tSince last checkpoint: ${checkpointDuration.inMilliseconds}ms');
+    print(
+      'Ended $name:'
+      '\n\tTotal time: ${totalDuration.inMilliseconds}ms'
+      '\n\tSince last checkpoint: ${checkpointDuration.inMilliseconds}ms',
+    );
   }
 }
 

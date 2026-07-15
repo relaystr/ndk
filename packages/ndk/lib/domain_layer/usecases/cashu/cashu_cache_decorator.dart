@@ -12,16 +12,12 @@ class CashuCacheDecorator implements CacheManager {
   final MutexSimple _mutex;
   final CacheManager _delegate;
 
-  CashuCacheDecorator({
-    required CacheManager cacheManager,
-    MutexSimple? mutex,
-  })  : _delegate = cacheManager,
-        _mutex = mutex ?? MutexSimple();
+  CashuCacheDecorator({required CacheManager cacheManager, MutexSimple? mutex})
+    : _delegate = cacheManager,
+      _mutex = mutex ?? MutexSimple();
 
   @override
-  Future<List<CashuMintInfo>?> getMintInfos({
-    List<String>? mintUrls,
-  }) async {
+  Future<List<CashuMintInfo>?> getMintInfos({List<String>? mintUrls}) async {
     return await _mutex.synchronized(() async {
       return await _delegate.getMintInfos(mintUrls: mintUrls);
     });
@@ -63,9 +59,7 @@ class CashuCacheDecorator implements CacheManager {
   }
 
   @override
-  Future<List<CahsuKeyset>> getKeysets({
-    String? mintUrl,
-  }) {
+  Future<List<CahsuKeyset>> getKeysets({String? mintUrl}) {
     return _mutex.synchronized(() async {
       return await _delegate.getKeysets(mintUrl: mintUrl);
     });
@@ -79,18 +73,14 @@ class CashuCacheDecorator implements CacheManager {
   }
 
   @override
-  Future<void> saveMintInfo({
-    required CashuMintInfo mintInfo,
-  }) async {
+  Future<void> saveMintInfo({required CashuMintInfo mintInfo}) async {
     await _mutex.synchronized(() async {
       await _delegate.saveMintInfo(mintInfo: mintInfo);
     });
   }
 
   @override
-  Future<void> removeMintInfo({
-    required String mintUrl,
-  }) async {
+  Future<void> removeMintInfo({required String mintUrl}) async {
     await _mutex.synchronized(() async {
       await _delegate.removeMintInfo(mintUrl: mintUrl);
     });
@@ -209,7 +199,8 @@ class CashuCacheDecorator implements CacheManager {
   @override
   dynamic noSuchMethod(Invocation invocation) {
     throw UnimplementedError(
-        'CashuCacheDecorator does not implement ${invocation.memberName}. Add an explicit delegate method.');
+      'CashuCacheDecorator does not implement ${invocation.memberName}. Add an explicit delegate method.',
+    );
   }
 
   Future<T> runInTransaction<T>(Future<T> Function() action) async {

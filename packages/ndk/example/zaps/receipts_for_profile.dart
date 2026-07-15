@@ -40,7 +40,8 @@ void main() async {
     }
     final paidAtFormatted = _formatPaidAt(receipt.paidAt);
     print(
-        "$paidAtFormatted ${sender != null ? "from $sender " : ""} ${receipt.amountSats} sats ${receipt.comment}");
+      "$paidAtFormatted ${sender != null ? "from $sender " : ""} ${receipt.amountSats} sats ${receipt.comment}",
+    );
     profileSum += receipt.amountSats ?? 0;
   }
   print("${profileReceipts.length} receipts, total of $profileSum sats");

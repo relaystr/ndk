@@ -17,7 +17,8 @@ class ReqCliCommand implements CliCommand {
   String get description => 'Query relays for events';
 
   @override
-  String get usage => 'ndk req [options] <relay1> [relay2 ...]\n'
+  String get usage =>
+      'ndk req [options] <relay1> [relay2 ...]\n'
       'Options:\n'
       '  -k, --kind <kind>          Event kind (repeatable)\n'
       '  -a, --author <hex|npub>    Author pubkey (repeatable)\n'
@@ -464,13 +465,7 @@ class ReqCliCommand implements CliCommand {
     if (durMatch != null) {
       final amount = int.parse(durMatch.group(1)!);
       final unit = durMatch.group(2)!;
-      final mult = {
-        's': 1,
-        'm': 60,
-        'h': 3600,
-        'd': 86400,
-        'w': 604800,
-      }[unit]!;
+      final mult = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400, 'w': 604800}[unit]!;
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       final delta = amount * mult;
       return upperBound ? now + delta : now - delta;
@@ -503,8 +498,10 @@ class ReqCliCommand implements CliCommand {
   }
 
   String _eventSummary(Nip01Event event) {
-    final created = DateTime.fromMillisecondsSinceEpoch(event.createdAt * 1000,
-        isUtc: true);
+    final created = DateTime.fromMillisecondsSinceEpoch(
+      event.createdAt * 1000,
+      isUtc: true,
+    );
     final preview = event.content.length > 80
         ? '${event.content.substring(0, 77)}...'
         : event.content;

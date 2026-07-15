@@ -22,8 +22,10 @@ void _runRelaySetTests(CacheManager Function() getCacheManager) {
     );
 
     await cacheManager.saveRelaySet(relaySet);
-    final loaded =
-        await cacheManager.loadRelaySet('test_set', 'relay_set_pubkey_1');
+    final loaded = await cacheManager.loadRelaySet(
+      'test_set',
+      'relay_set_pubkey_1',
+    );
 
     expect(loaded, isNotNull);
     expect(loaded!.name, equals(relaySet.name));

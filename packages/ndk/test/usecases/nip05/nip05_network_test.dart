@@ -42,13 +42,18 @@ void main() {
       );
 
       expect(nip05Usecase.check(nip05: '', pubkey: ''), throwsException);
-      expect(nip05Usecase.check(nip05: 'test@example.com', pubkey: ''),
-          throwsException);
       expect(
-          nip05Usecase.check(nip05: '', pubkey: 'testPubkey'), throwsException);
+        nip05Usecase.check(nip05: 'test@example.com', pubkey: ''),
+        throwsException,
+      );
       expect(
-          nip05Usecase.check(nip05: 'test@example.com', pubkey: 'testPubkey'),
-          isA<Future<Nip05>>());
+        nip05Usecase.check(nip05: '', pubkey: 'testPubkey'),
+        throwsException,
+      );
+      expect(
+        nip05Usecase.check(nip05: 'test@example.com', pubkey: 'testPubkey'),
+        isA<Future<Nip05>>(),
+      );
     });
     test('returns Nip05 if the http call completes successfully', () async {
       final client = MockClient(requestHandler);
@@ -64,9 +69,12 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 10));
 
       expect(
-          await nip05Usecase.check(
-              nip05: 'username@example.com', pubkey: 'pubkey'),
-          isA<Nip05>());
+        await nip05Usecase.check(
+          nip05: 'username@example.com',
+          pubkey: 'pubkey',
+        ),
+        isA<Nip05>(),
+      );
     });
 
     test('return false if the http call completes with an error', () async {
@@ -81,7 +89,9 @@ void main() {
       );
 
       var result = await nip05Usecase.check(
-          nip05: 'username@url.test', pubkey: 'pubkey');
+        nip05: 'username@url.test',
+        pubkey: 'pubkey',
+      );
 
       expect(result.valid, false);
     });
@@ -97,7 +107,9 @@ void main() {
       );
 
       var result = await nip05Usecase.check(
-          nip05: 'username@url.test', pubkey: 'non-existing-pubkey');
+        nip05: 'username@url.test',
+        pubkey: 'non-existing-pubkey',
+      );
 
       expect(result.valid, false);
     });
@@ -114,7 +126,9 @@ void main() {
       );
 
       var result = await nip05Usecase.check(
-          nip05: 'username@url.test', pubkey: 'pubkey');
+        nip05: 'username@url.test',
+        pubkey: 'pubkey',
+      );
 
       expect(result.valid, true);
     });
@@ -131,7 +145,9 @@ void main() {
       );
 
       var result = await nip05Usecase.check(
-          nip05: 'domain@domain.test', pubkey: 'pubkey');
+        nip05: 'domain@domain.test',
+        pubkey: 'pubkey',
+      );
 
       expect(result.valid, true);
     });
@@ -147,14 +163,22 @@ void main() {
         nip05Repository: nip05Repos,
       );
 
-      final check1 =
-          nip05Usecase.check(nip05: 'username@url.test', pubkey: 'pubkey');
+      final check1 = nip05Usecase.check(
+        nip05: 'username@url.test',
+        pubkey: 'pubkey',
+      );
       final check2 = nip05Usecase.check(
-          nip05: 'somethingDiffrent@url.test', pubkey: 'pubkey');
-      final check3 =
-          nip05Usecase.check(nip05: 'username@url.test', pubkey: 'pubkey');
-      final check4 =
-          nip05Usecase.check(nip05: 'username@url.test', pubkey: 'pubkey');
+        nip05: 'somethingDiffrent@url.test',
+        pubkey: 'pubkey',
+      );
+      final check3 = nip05Usecase.check(
+        nip05: 'username@url.test',
+        pubkey: 'pubkey',
+      );
+      final check4 = nip05Usecase.check(
+        nip05: 'username@url.test',
+        pubkey: 'pubkey',
+      );
 
       final results = await Future.wait([check1, check2, check3, check4]);
 
@@ -163,70 +187,92 @@ void main() {
       expect(results.first.hashCode, equals(results.last.hashCode));
     });
 
-    test('returns true when updatedAt is older than the given duration',
-        () async {
-      final client = MockClient(requestHandler);
+    test(
+      'returns true when updatedAt is older than the given duration',
+      () async {
+        final client = MockClient(requestHandler);
 
-      final cache = MemCacheManager();
-      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
-      // Create a Nip05 object with an old updatedAt timestamp
-      final oldTimestamp = (DateTime.now()
-              .subtract(Duration(seconds: NIP_05_VALID_DURATION.inSeconds - 1))
-              .millisecondsSinceEpoch ~/
-          1000);
+        final cache = MemCacheManager();
+        final nip05Repos = Nip05HttpRepositoryImpl(
+          httpDS: HttpRequestDS(client),
+        );
+        // Create a Nip05 object with an old updatedAt timestamp
+        final oldTimestamp =
+            (DateTime.now()
+                .subtract(
+                  Duration(seconds: NIP_05_VALID_DURATION.inSeconds - 1),
+                )
+                .millisecondsSinceEpoch ~/
+            1000);
 
-      final oldNip05 = Nip05(
-        pubKey: 'test_pubkey',
-        nip05: 'test_nip05',
-        valid: true,
-        networkFetchTime: oldTimestamp,
-      );
-
-      await cache.saveNip05(oldNip05);
-
-      Nip05Usecase nip05Usecase = Nip05Usecase(
-        database: cache,
-        nip05Repository: nip05Repos,
-      );
-
-      final result =
-          await nip05Usecase.check(nip05: 'test_nip05', pubkey: 'test_pubkey');
-
-      expect(result.valid,
-          true); // Should return true since the object is older than 5 days
-    });
-
-    test('returns false when updatedAt is more recent than the given duration',
-        () async {
-      final client = MockClient(requestHandler);
-
-      final cache = MemCacheManager();
-      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
-      Nip05Usecase nip05Usecase = Nip05Usecase(
-        database: cache,
-        nip05Repository: nip05Repos,
-      );
-
-      // Create a Nip05 object with a recent updatedAt timestamp
-      final recentTimestamp = (DateTime.now()
-              .subtract(
-                  Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 200))
-              .millisecondsSinceEpoch ~/
-          1000);
-      final oldNip05 = Nip05(
+        final oldNip05 = Nip05(
           pubKey: 'test_pubkey',
           nip05: 'test_nip05',
           valid: true,
-          networkFetchTime: recentTimestamp);
+          networkFetchTime: oldTimestamp,
+        );
 
-      await cache.saveNip05(oldNip05);
+        await cache.saveNip05(oldNip05);
 
-      // Test with a duration of 5 days
-      final result =
-          await nip05Usecase.check(nip05: 'test_nip05', pubkey: 'test_pubkey');
-      expect(result.valid,
-          false); // Should return false since the object is more recent than 5 days
-    });
+        Nip05Usecase nip05Usecase = Nip05Usecase(
+          database: cache,
+          nip05Repository: nip05Repos,
+        );
+
+        final result = await nip05Usecase.check(
+          nip05: 'test_nip05',
+          pubkey: 'test_pubkey',
+        );
+
+        expect(
+          result.valid,
+          true,
+        ); // Should return true since the object is older than 5 days
+      },
+    );
+
+    test(
+      'returns false when updatedAt is more recent than the given duration',
+      () async {
+        final client = MockClient(requestHandler);
+
+        final cache = MemCacheManager();
+        final nip05Repos = Nip05HttpRepositoryImpl(
+          httpDS: HttpRequestDS(client),
+        );
+        Nip05Usecase nip05Usecase = Nip05Usecase(
+          database: cache,
+          nip05Repository: nip05Repos,
+        );
+
+        // Create a Nip05 object with a recent updatedAt timestamp
+        final recentTimestamp =
+            (DateTime.now()
+                .subtract(
+                  Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 200),
+                )
+                .millisecondsSinceEpoch ~/
+            1000);
+        final oldNip05 = Nip05(
+          pubKey: 'test_pubkey',
+          nip05: 'test_nip05',
+          valid: true,
+          networkFetchTime: recentTimestamp,
+        );
+
+        await cache.saveNip05(oldNip05);
+
+        // Test with a duration of 5 days
+        final result = await nip05Usecase.check(
+          nip05: 'test_nip05',
+          pubkey: 'test_pubkey',
+        );
+        expect(
+          result.valid,
+          false,
+        ); // Should return false since the object is more recent than 5 days
+      },
+    );
 
     test('returns false when updatedAt is exactly the duration ago', () async {
       final client = MockClient(requestHandler);
@@ -239,7 +285,8 @@ void main() {
       );
 
       // Create a Nip05 object with an updatedAt timestamp exactly equal to the duration
-      final exactTimestamp = (DateTime.now()
+      final exactTimestamp =
+          (DateTime.now()
               .subtract(Duration(seconds: NIP_05_VALID_DURATION.inSeconds))
               .millisecondsSinceEpoch ~/
           1000);
@@ -252,11 +299,15 @@ void main() {
 
       await cache.saveNip05(oldNip05);
 
-      final result =
-          await nip05Usecase.check(nip05: 'test_nip05', pubkey: 'test_pubkey');
+      final result = await nip05Usecase.check(
+        nip05: 'test_nip05',
+        pubkey: 'test_pubkey',
+      );
 
-      expect(result.valid,
-          false); // Should return false since it's exactly at the limit
+      expect(
+        result.valid,
+        false,
+      ); // Should return false since it's exactly at the limit
     });
 
     test('test if data is saved even when network fails', () async {
@@ -270,7 +321,9 @@ void main() {
       );
 
       await nip05Usecase.check(
-          nip05: 'test_nip05_cache', pubkey: 'test_pubkey_cache');
+        nip05: 'test_nip05_cache',
+        pubkey: 'test_pubkey_cache',
+      );
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
@@ -292,7 +345,9 @@ void main() {
       );
 
       final result = await nip05Usecase.check(
-          nip05: 'username@example.com', pubkey: 'pubkey');
+        nip05: 'username@example.com',
+        pubkey: 'pubkey',
+      );
 
       expect(result.relays, equals(['relay1', 'relay2']));
     });
@@ -316,27 +371,31 @@ void main() {
       expect(found.data.relays, equals(['relay1', 'relay2']));
     });
 
-    test('resolve() returns Nip05NotFound when user is absent from nostr.json',
-        () async {
-      // Server replies 200 with an empty `names` map: the file exists but
-      // the requested user is not in it.
-      Future<http.Response> notFoundHandler(http.Request request) async {
-        return http.Response('{"names": {}}', 200);
-      }
+    test(
+      'resolve() returns Nip05NotFound when user is absent from nostr.json',
+      () async {
+        // Server replies 200 with an empty `names` map: the file exists but
+        // the requested user is not in it.
+        Future<http.Response> notFoundHandler(http.Request request) async {
+          return http.Response('{"names": {}}', 200);
+        }
 
-      final client = MockClient(notFoundHandler);
+        final client = MockClient(notFoundHandler);
 
-      final cache = MemCacheManager();
-      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
-      Nip05Usecase nip05Usecase = Nip05Usecase(
-        database: cache,
-        nip05Repository: nip05Repos,
-      );
+        final cache = MemCacheManager();
+        final nip05Repos = Nip05HttpRepositoryImpl(
+          httpDS: HttpRequestDS(client),
+        );
+        Nip05Usecase nip05Usecase = Nip05Usecase(
+          database: cache,
+          nip05Repository: nip05Repos,
+        );
 
-      final result = await nip05Usecase.resolve('ghost@example.com');
+        final result = await nip05Usecase.resolve('ghost@example.com');
 
-      expect(result, isA<Nip05NotFound>());
-    });
+        expect(result, isA<Nip05NotFound>());
+      },
+    );
 
     test('resolve() returns Nip05NotFound on HTTP 404', () async {
       Future<http.Response> notFoundHandler(http.Request request) async {
@@ -437,9 +496,11 @@ void main() {
       );
 
       // Save an expired nip05 in cache
-      final expiredTimestamp = (DateTime.now()
+      final expiredTimestamp =
+          (DateTime.now()
               .subtract(
-                  Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 100))
+                Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 100),
+              )
               .millisecondsSinceEpoch ~/
           1000);
       final expiredNip05 = Nip05(

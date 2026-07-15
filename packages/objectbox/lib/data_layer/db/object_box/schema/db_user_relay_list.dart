@@ -48,14 +48,19 @@ class DbUserRelayList {
 
   // Helper method to encode relays map to JSON string
   static String _encodeRelays(Map<String, ReadWriteMarker> relays) {
-    return json
-        .encode(relays.map((key, value) => MapEntry(key, value.toString())));
+    return json.encode(
+      relays.map((key, value) => MapEntry(key, value.toString())),
+    );
   }
 
   // Helper method to decode JSON string to relays map
   static Map<String, ReadWriteMarker> _decodeRelays(String relaysJson) {
     Map<String, dynamic> decodedMap = json.decode(relaysJson);
-    return decodedMap.map((key, value) => MapEntry(
-        key, ReadWriteMarker.values.firstWhere((e) => e.toString() == value)));
+    return decodedMap.map(
+      (key, value) => MapEntry(
+        key,
+        ReadWriteMarker.values.firstWhere((e) => e.toString() == value),
+      ),
+    );
   }
 }

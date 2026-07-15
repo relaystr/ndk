@@ -49,39 +49,40 @@ void _runEvictionTests(CacheManager Function() getCacheManager) {
     expect(await cacheManager.loadEvent(expiredEvent.id), isNotNull);
   });
 
-  test('evict removes superseded replaceable events but keeps latest',
-      () async {
-    final cacheManager = getCacheManager();
-    final older = Nip01Event(
-      pubKey: 'evict_replaceable_pubkey',
-      kind: Metadata.kKind,
-      tags: [],
-      content: '{"name":"old"}',
-      createdAt: 100,
-    );
-    final newer = Nip01Event(
-      pubKey: 'evict_replaceable_pubkey',
-      kind: Metadata.kKind,
-      tags: [],
-      content: '{"name":"new"}',
-      createdAt: 200,
-    );
+  test(
+    'evict removes superseded replaceable events but keeps latest',
+    () async {
+      final cacheManager = getCacheManager();
+      final older = Nip01Event(
+        pubKey: 'evict_replaceable_pubkey',
+        kind: Metadata.kKind,
+        tags: [],
+        content: '{"name":"old"}',
+        createdAt: 100,
+      );
+      final newer = Nip01Event(
+        pubKey: 'evict_replaceable_pubkey',
+        kind: Metadata.kKind,
+        tags: [],
+        content: '{"name":"new"}',
+        createdAt: 200,
+      );
 
-    await cacheManager.saveEvents([older, newer]);
-    final result = await cacheManager.evict(const EvictionPolicy.safeSweep());
+      await cacheManager.saveEvents([older, newer]);
+      final result = await cacheManager.evict(const EvictionPolicy.safeSweep());
 
-    expect(result.removedSuperseded, equals(1));
-    expect(await cacheManager.loadEvent(older.id), isNull);
-    expect(await cacheManager.loadEvent(newer.id), isNotNull);
-    expect(
+      expect(result.removedSuperseded, equals(1));
+      expect(await cacheManager.loadEvent(older.id), isNull);
+      expect(await cacheManager.loadEvent(newer.id), isNotNull);
+      expect(
         (await cacheManager.loadEvents(
           pubKeys: ['evict_replaceable_pubkey'],
           kinds: [Metadata.kKind],
-        ))
-            .single
-            .content,
-        contains('new'));
-  });
+        )).single.content,
+        contains('new'),
+      );
+    },
+  );
 
   test('evict removes author-deleted events and their sidecars', () async {
     final cacheManager = getCacheManager();
@@ -168,130 +169,138 @@ void _runEvictionTests(CacheManager Function() getCacheManager) {
     expect(await cacheManager.loadEvent(newer.id), isNotNull);
   });
 
-  test('evict keeps protected pubkeys even when a kind cap would remove them',
-      () async {
-    final cacheManager = getCacheManager();
-    final protected = Nip01Event(
-      pubKey: 'protected_author',
-      kind: 1,
-      tags: const [],
-      content: 'protected',
-      createdAt: 100,
-    );
-    final unprotected = Nip01Event(
-      pubKey: 'unprotected_author',
-      kind: 1,
-      tags: const [],
-      content: 'unprotected',
-      createdAt: 200,
-    );
+  test(
+    'evict keeps protected pubkeys even when a kind cap would remove them',
+    () async {
+      final cacheManager = getCacheManager();
+      final protected = Nip01Event(
+        pubKey: 'protected_author',
+        kind: 1,
+        tags: const [],
+        content: 'protected',
+        createdAt: 100,
+      );
+      final unprotected = Nip01Event(
+        pubKey: 'unprotected_author',
+        kind: 1,
+        tags: const [],
+        content: 'unprotected',
+        createdAt: 200,
+      );
 
-    await cacheManager.saveEvents([protected, unprotected]);
-    final result = await cacheManager.evict(
-      const EvictionPolicy(
-        kindCaps: {1: 0},
-        protectedKinds: {},
-        protectedPubKeys: {'protected_author'},
-      ),
-    );
+      await cacheManager.saveEvents([protected, unprotected]);
+      final result = await cacheManager.evict(
+        const EvictionPolicy(
+          kindCaps: {1: 0},
+          protectedKinds: {},
+          protectedPubKeys: {'protected_author'},
+        ),
+      );
 
-    expect(result.keptProtected, equals(1));
-    expect(result.removedByKindCap, equals(1));
-    expect(await cacheManager.loadEvent(protected.id), isNotNull);
-    expect(await cacheManager.loadEvent(unprotected.id), isNull);
-  });
+      expect(result.keptProtected, equals(1));
+      expect(result.removedByKindCap, equals(1));
+      expect(await cacheManager.loadEvent(protected.id), isNotNull);
+      expect(await cacheManager.loadEvent(unprotected.id), isNull);
+    },
+  );
 
-  test('evict keeps default protected kinds even when capped to zero',
-      () async {
-    final cacheManager = getCacheManager();
-    final metadata = Nip01Event(
-      pubKey: 'protected_kind_author',
-      kind: Metadata.kKind,
-      tags: const [],
-      content: '{"name":"still here"}',
-      createdAt: 100,
-    );
+  test(
+    'evict keeps default protected kinds even when capped to zero',
+    () async {
+      final cacheManager = getCacheManager();
+      final metadata = Nip01Event(
+        pubKey: 'protected_kind_author',
+        kind: Metadata.kKind,
+        tags: const [],
+        content: '{"name":"still here"}',
+        createdAt: 100,
+      );
 
-    await cacheManager.saveEvent(metadata);
-    final result = await cacheManager.evict(
-      const EvictionPolicy(kindCaps: {Metadata.kKind: 0}),
-    );
+      await cacheManager.saveEvent(metadata);
+      final result = await cacheManager.evict(
+        const EvictionPolicy(kindCaps: {Metadata.kKind: 0}),
+      );
 
-    expect(result.keptProtected, equals(1));
-    expect(result.removedEvents, equals(0));
-    expect(await cacheManager.loadEvent(metadata.id), isNotNull);
-  });
+      expect(result.keptProtected, equals(1));
+      expect(result.removedEvents, equals(0));
+      expect(await cacheManager.loadEvent(metadata.id), isNotNull);
+    },
+  );
 
-  test('evict sweeps aged delivered delivery records but keeps the event',
-      () async {
-    final cacheManager = getCacheManager();
-    final now = Nip01Event.secondsSinceEpoch();
-    final event = Nip01Event(
-      pubKey: 'evict_delivered_pubkey',
-      kind: 1,
-      tags: const [],
-      content: 'delivered note',
-      createdAt: now - 100000,
-    );
-
-    await cacheManager.saveEvent(event);
-    await cacheManager.saveEventDeliveryRecord(
-      EventDeliveryRecord(
-        eventId: event.id,
-        status: EventDeliveryStatus.delivered,
+  test(
+    'evict sweeps aged delivered delivery records but keeps the event',
+    () async {
+      final cacheManager = getCacheManager();
+      final now = Nip01Event.secondsSinceEpoch();
+      final event = Nip01Event(
+        pubKey: 'evict_delivered_pubkey',
+        kind: 1,
+        tags: const [],
+        content: 'delivered note',
         createdAt: now - 100000,
-        updatedAt: now - 100000,
-        completedAt: now - (9 * 3600), // 9h ago, past the 8h retention
-      ),
-    );
-    await cacheManager.saveRelayDeliveryTarget(
-      RelayDeliveryTarget(
-        eventId: event.id,
-        relayUrl: 'wss://relay.example',
-        reason: RelayDeliveryReason.authorWrite,
-        state: RelayDeliveryState.acked,
-      ),
-    );
+      );
 
-    final result = await cacheManager.evict(const EvictionPolicy.safeSweep());
+      await cacheManager.saveEvent(event);
+      await cacheManager.saveEventDeliveryRecord(
+        EventDeliveryRecord(
+          eventId: event.id,
+          status: EventDeliveryStatus.delivered,
+          createdAt: now - 100000,
+          updatedAt: now - 100000,
+          completedAt: now - (9 * 3600), // 9h ago, past the 8h retention
+        ),
+      );
+      await cacheManager.saveRelayDeliveryTarget(
+        RelayDeliveryTarget(
+          eventId: event.id,
+          relayUrl: 'wss://relay.example',
+          reason: RelayDeliveryReason.authorWrite,
+          state: RelayDeliveryState.acked,
+        ),
+      );
 
-    expect(result.removedCompletedDeliveries, equals(1));
-    expect(await cacheManager.loadEventDeliveryRecord(event.id), isNull);
-    expect(
-      await cacheManager.loadRelayDeliveryTargets(eventId: event.id),
-      isEmpty,
-    );
-    expect(await cacheManager.loadEvent(event.id), isNotNull);
-  });
+      final result = await cacheManager.evict(const EvictionPolicy.safeSweep());
 
-  test('evict keeps delivered delivery records still within retention',
-      () async {
-    final cacheManager = getCacheManager();
-    final now = Nip01Event.secondsSinceEpoch();
-    final event = Nip01Event(
-      pubKey: 'evict_delivered_recent_pubkey',
-      kind: 1,
-      tags: const [],
-      content: 'recent delivered note',
-      createdAt: now - 100,
-    );
+      expect(result.removedCompletedDeliveries, equals(1));
+      expect(await cacheManager.loadEventDeliveryRecord(event.id), isNull);
+      expect(
+        await cacheManager.loadRelayDeliveryTargets(eventId: event.id),
+        isEmpty,
+      );
+      expect(await cacheManager.loadEvent(event.id), isNotNull);
+    },
+  );
 
-    await cacheManager.saveEvent(event);
-    await cacheManager.saveEventDeliveryRecord(
-      EventDeliveryRecord(
-        eventId: event.id,
-        status: EventDeliveryStatus.delivered,
+  test(
+    'evict keeps delivered delivery records still within retention',
+    () async {
+      final cacheManager = getCacheManager();
+      final now = Nip01Event.secondsSinceEpoch();
+      final event = Nip01Event(
+        pubKey: 'evict_delivered_recent_pubkey',
+        kind: 1,
+        tags: const [],
+        content: 'recent delivered note',
         createdAt: now - 100,
-        updatedAt: now - 100,
-        completedAt: now - 3600, // 1h ago, within the 8h retention
-      ),
-    );
+      );
 
-    final result = await cacheManager.evict(const EvictionPolicy.safeSweep());
+      await cacheManager.saveEvent(event);
+      await cacheManager.saveEventDeliveryRecord(
+        EventDeliveryRecord(
+          eventId: event.id,
+          status: EventDeliveryStatus.delivered,
+          createdAt: now - 100,
+          updatedAt: now - 100,
+          completedAt: now - 3600, // 1h ago, within the 8h retention
+        ),
+      );
 
-    expect(result.removedCompletedDeliveries, equals(0));
-    expect(await cacheManager.loadEventDeliveryRecord(event.id), isNotNull);
-  });
+      final result = await cacheManager.evict(const EvictionPolicy.safeSweep());
+
+      expect(result.removedCompletedDeliveries, equals(0));
+      expect(await cacheManager.loadEventDeliveryRecord(event.id), isNotNull);
+    },
+  );
 
   test('evict keeps terminally failed delivery records by default', () async {
     final cacheManager = getCacheManager();
@@ -320,33 +329,35 @@ void _runEvictionTests(CacheManager Function() getCacheManager) {
     expect(await cacheManager.loadEventDeliveryRecord(event.id), isNotNull);
   });
 
-  test('evict sweeps aged terminally failed delivery records when enabled',
-      () async {
-    final cacheManager = getCacheManager();
-    final now = Nip01Event.secondsSinceEpoch();
-    final event = Nip01Event(
-      pubKey: 'evict_failed_enabled_pubkey',
-      kind: 1,
-      tags: const [],
-      content: 'failed note',
-      createdAt: now - 100000,
-    );
-
-    await cacheManager.saveEvent(event);
-    await cacheManager.saveEventDeliveryRecord(
-      EventDeliveryRecord(
-        eventId: event.id,
-        status: EventDeliveryStatus.failed,
+  test(
+    'evict sweeps aged terminally failed delivery records when enabled',
+    () async {
+      final cacheManager = getCacheManager();
+      final now = Nip01Event.secondsSinceEpoch();
+      final event = Nip01Event(
+        pubKey: 'evict_failed_enabled_pubkey',
+        kind: 1,
+        tags: const [],
+        content: 'failed note',
         createdAt: now - 100000,
-        updatedAt: now - (48 * 3600), // 48h ago, past the 24h retention
-      ),
-    );
+      );
 
-    final result = await cacheManager.evict(
-      const EvictionPolicy(sweepTerminalFailedDeliveries: true),
-    );
+      await cacheManager.saveEvent(event);
+      await cacheManager.saveEventDeliveryRecord(
+        EventDeliveryRecord(
+          eventId: event.id,
+          status: EventDeliveryStatus.failed,
+          createdAt: now - 100000,
+          updatedAt: now - (48 * 3600), // 48h ago, past the 24h retention
+        ),
+      );
 
-    expect(result.removedTerminalFailedDeliveries, equals(1));
-    expect(await cacheManager.loadEventDeliveryRecord(event.id), isNull);
-  });
+      final result = await cacheManager.evict(
+        const EvictionPolicy(sweepTerminalFailedDeliveries: true),
+      );
+
+      expect(result.removedTerminalFailedDeliveries, equals(1));
+      expect(await cacheManager.loadEventDeliveryRecord(event.id), isNull);
+    },
+  );
 }

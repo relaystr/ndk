@@ -12,20 +12,19 @@ void main() {
       final key = Bip340.generatePrivateKey();
 
       // Create a mock relay that responds quickly
-      final relay = MockRelay(
-        name: "relay duplicate test",
-        explicitPort: 5105,
-      );
+      final relay = MockRelay(name: "relay duplicate test", explicitPort: 5105);
 
       await relay.startServer();
 
-      final ndk = Ndk(NdkConfig(
-        eventVerifier: MockEventVerifier(),
-        cache: MemCacheManager(),
-        bootstrapRelays: [relay.url],
-        // Short query timeout - if bug exists, duplicate will wait this long
-        defaultQueryTimeout: const Duration(seconds: 5),
-      ));
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: MockEventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: [relay.url],
+          // Short query timeout - if bug exists, duplicate will wait this long
+          defaultQueryTimeout: const Duration(seconds: 5),
+        ),
+      );
 
       final current = ndk.relays.getRelayConnectivity(relay.url);
       if (current?.isConnected != true) {
@@ -54,7 +53,8 @@ void main() {
       expect(
         stopwatch.elapsedMilliseconds,
         lessThan(2000),
-        reason: 'Both requests should complete quickly when relay responds. '
+        reason:
+            'Both requests should complete quickly when relay responds. '
             'Elapsed: ${stopwatch.elapsedMilliseconds}ms. '
             'If this fails, the duplicate request timeout fix is needed.',
       );

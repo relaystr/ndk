@@ -8,11 +8,9 @@ class Search {
   final CacheManager _cacheManager;
   final Requests _requests;
 
-  Search({
-    required CacheManager cacheManager,
-    required Requests requests,
-  })  : _cacheManager = cacheManager,
-        _requests = requests;
+  Search({required CacheManager cacheManager, required Requests requests})
+    : _cacheManager = cacheManager,
+      _requests = requests;
 
   /// Search for metadata \
   /// [query] can be pubkey, name, nip05

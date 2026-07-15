@@ -33,8 +33,9 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     );
 
     await cacheManager.saveNip05(nip05);
-    final loaded =
-        await cacheManager.loadNip05(identifier: 'testuser@example.com');
+    final loaded = await cacheManager.loadNip05(
+      identifier: 'testuser@example.com',
+    );
 
     expect(loaded, isNotNull);
     expect(loaded!.pubKey, equals(nip05.pubKey));

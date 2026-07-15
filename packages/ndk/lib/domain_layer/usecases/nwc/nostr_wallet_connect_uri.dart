@@ -53,13 +53,12 @@ class NostrWalletConnectUri extends Equatable {
     required String relay,
     required String secret,
     String? lud16,
-  }) =>
-      NostrWalletConnectUri(
-        walletPubkey: walletPubkey,
-        relays: [relay],
-        secret: secret,
-        lud16: lud16,
-      );
+  }) => NostrWalletConnectUri(
+    walletPubkey: walletPubkey,
+    relays: [relay],
+    secret: secret,
+    lud16: lud16,
+  );
 
   /// Legacy getter for backward compatibility
   @Deprecated('Use relays list instead')
@@ -76,7 +75,8 @@ class NostrWalletConnectUri extends Equatable {
         secret == null ||
         parsedUri.scheme != 'nostr+walletconnect') {
       throw Exception(
-          "Required fields (scheme, pubkey, secret) are missing or incorrect in the connection URI.");
+        "Required fields (scheme, pubkey, secret) are missing or incorrect in the connection URI.",
+      );
     }
 
     // Parse relays - support both single relay and comma-separated relays
@@ -175,9 +175,5 @@ class NostrWalletConnectUri extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-        walletPubkey,
-        relays,
-        secret,
-      ];
+  List<Object?> get props => [walletPubkey, relays, secret];
 }

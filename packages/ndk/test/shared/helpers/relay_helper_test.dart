@@ -5,8 +5,10 @@ void main() {
   group('cleanRelayUrl', () {
     group('valid URLs', () {
       test('accepts valid wss URL with port + path', () {
-        expect(cleanRelayUrl('wss://relay.damus.io:5000/abc/aa.co.mm'),
-            'wss://relay.damus.io:5000/abc/aa.co.mm');
+        expect(
+          cleanRelayUrl('wss://relay.damus.io:5000/abc/aa.co.mm'),
+          'wss://relay.damus.io:5000/abc/aa.co.mm',
+        );
       });
 
       test('accepts valid wss URL', () {
@@ -18,13 +20,17 @@ void main() {
       });
 
       test('accepts URL with port', () {
-        expect(cleanRelayUrl('wss://relay.example.com:8080'),
-            'wss://relay.example.com:8080');
+        expect(
+          cleanRelayUrl('wss://relay.example.com:8080'),
+          'wss://relay.example.com:8080',
+        );
       });
 
       test('accepts URL with subdomain', () {
-        expect(cleanRelayUrl('wss://nostr.relay.example.com'),
-            'wss://nostr.relay.example.com');
+        expect(
+          cleanRelayUrl('wss://nostr.relay.example.com'),
+          'wss://nostr.relay.example.com',
+        );
       });
 
       test('accepts IP address', () {
@@ -33,7 +39,9 @@ void main() {
 
       test('accepts IP address with port', () {
         expect(
-            cleanRelayUrl('wss://192.168.1.1:8080'), 'wss://192.168.1.1:8080');
+          cleanRelayUrl('wss://192.168.1.1:8080'),
+          'wss://192.168.1.1:8080',
+        );
       });
 
       test('accepts localhost', () {
@@ -52,12 +60,16 @@ void main() {
 
       test('trims whitespace', () {
         expect(
-            cleanRelayUrl('  wss://relay.damus.io  '), 'wss://relay.damus.io');
+          cleanRelayUrl('  wss://relay.damus.io  '),
+          'wss://relay.damus.io',
+        );
       });
 
       test('decodes percent-encoded URL', () {
-        expect(cleanRelayUrl('wss://relay.example%2Ecom'),
-            'wss://relay.example.com');
+        expect(
+          cleanRelayUrl('wss://relay.example%2Ecom'),
+          'wss://relay.example.com',
+        );
       });
 
       test('fixes triple slash URL', () {
@@ -114,36 +126,22 @@ void main() {
     });
 
     test('filters out invalid URLs', () {
-      final urls = [
-        'wss://relay.damus.io',
-        'invalid-url',
-        'wss://nos.lol',
-      ];
+      final urls = ['wss://relay.damus.io', 'invalid-url', 'wss://nos.lol'];
       expect(cleanRelayUrls(urls), ['wss://relay.damus.io', 'wss://nos.lol']);
     });
 
     test('cleans valid URLs', () {
-      final urls = [
-        'wss://relay.damus.io/',
-        '  wss://nos.lol  ',
-      ];
+      final urls = ['wss://relay.damus.io/', '  wss://nos.lol  '];
       expect(cleanRelayUrls(urls), ['wss://relay.damus.io', 'wss://nos.lol']);
     });
 
     test('returns empty list when all URLs are invalid', () {
-      final urls = [
-        'invalid',
-        'http://example.com',
-        '',
-      ];
+      final urls = ['invalid', 'http://example.com', ''];
       expect(cleanRelayUrls(urls), []);
     });
 
     test('fixes triple slash URLs in list', () {
-      final urls = [
-        'wss:///relay.damus.io',
-        'wss://nos.lol',
-      ];
+      final urls = ['wss:///relay.damus.io', 'wss://nos.lol'];
       expect(cleanRelayUrls(urls), ['wss://relay.damus.io', 'wss://nos.lol']);
     });
 
@@ -153,8 +151,11 @@ void main() {
         'wss://nos.lol:443',
         'WS://LOCALHOST:80',
       ];
-      expect(cleanRelayUrls(urls),
-          ['wss://relay.damus.io', 'wss://nos.lol', 'ws://localhost']);
+      expect(cleanRelayUrls(urls), [
+        'wss://relay.damus.io',
+        'wss://nos.lol',
+        'ws://localhost',
+      ]);
     });
   });
 

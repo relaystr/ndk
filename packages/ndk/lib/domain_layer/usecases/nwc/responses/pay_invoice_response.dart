@@ -10,8 +10,11 @@ class PayInvoiceResponse extends NwcResponse {
   /// The fees paid for the invoice (in MSATs).
   final int feesPaid;
 
-  PayInvoiceResponse(
-      {this.preimage, required super.resultType, required this.feesPaid});
+  PayInvoiceResponse({
+    this.preimage,
+    required super.resultType,
+    required this.feesPaid,
+  });
 
   factory PayInvoiceResponse.deserialize(Map<String, dynamic> input) {
     if (!input.containsKey('result')) {
@@ -23,8 +26,9 @@ class PayInvoiceResponse extends NwcResponse {
     return PayInvoiceResponse(
       preimage: result['preimage'] as String?,
       resultType: input['result_type'] as String,
-      feesPaid:
-          result.containsKey('fees_paid') ? result['fees_paid'] as int : 0,
+      feesPaid: result.containsKey('fees_paid')
+          ? result['fees_paid'] as int
+          : 0,
     );
   }
 }

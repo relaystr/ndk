@@ -18,7 +18,7 @@ class RelayJitBroadcastOtherReadStrategy {
   static Future broadcast({
     required Nip01Event eventToPublish,
     required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-        connectedRelays,
+    connectedRelays,
     required CacheManager cacheManager,
     required RelayManager relayManager,
     required List<String> pubkeysOfInbox,
@@ -52,9 +52,7 @@ class RelayJitBroadcastOtherReadStrategy {
     final uniqueRelayUrls = myWriteRelayUrls.toSet().toList();
 
     // function to send message to relay
-    void sendToRelay({
-      required RelayConnectivity relay,
-    }) {
+    void sendToRelay({required RelayConnectivity relay}) {
       final myClientMsg = ClientMsg(
         ClientMsgType.kEvent,
         event: eventToPublish,
@@ -102,8 +100,9 @@ class RelayJitBroadcastOtherReadStrategy {
         }
 
         try {
-          final relay = relayManager.connectedRelays
-              .firstWhere((element) => element.url == relayUrl);
+          final relay = relayManager.connectedRelays.firstWhere(
+            (element) => element.url == relayUrl,
+          );
           sendToRelay(relay: relay);
         } catch (e) {
           relayManager.failBroadcast(

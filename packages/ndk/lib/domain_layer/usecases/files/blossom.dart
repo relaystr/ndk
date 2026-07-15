@@ -38,10 +38,10 @@ class Blossom {
     required BlossomRepository blossomRepository,
     required Accounts accounts,
     required LocalEventSignerFactory eventSignerFactory,
-  })  : _accounts = accounts,
-        _userServerList = blossomUserServerList,
-        _blossomImpl = blossomRepository,
-        _eventSignerFactory = eventSignerFactory;
+  }) : _accounts = accounts,
+       _userServerList = blossomUserServerList,
+       _blossomImpl = blossomRepository,
+       _eventSignerFactory = eventSignerFactory;
 
   /// Gets the signer to use for blossom operations
   /// Priority: customSigner > logged in account signer > temporary signer
@@ -100,8 +100,9 @@ class Blossom {
 
     final signedAuthorization = await signer.sign(myAuthorization);
 
-    serverUrls ??= await _userServerList
-        .getUserServerList(pubkeys: [signer.getPublicKey()]);
+    serverUrls ??= await _userServerList.getUserServerList(
+      pubkeys: [signer.getPublicKey()],
+    );
 
     if (serverUrls == null) {
       throw Exception("User has no server list");
@@ -187,8 +188,9 @@ class Blossom {
 
     final signedAuthorization = await signer.sign(myAuthorization);
 
-    serverUrls ??= await _userServerList
-        .getUserServerList(pubkeys: [signer.getPublicKey()]);
+    serverUrls ??= await _userServerList.getUserServerList(
+      pubkeys: [signer.getPublicKey()],
+    );
 
     if (serverUrls == null) {
       throw Exception("User has no server list");
@@ -296,11 +298,13 @@ class Blossom {
     if (serverUrls == null) {
       if (pubkeyToFetchUserServerList == null) {
         throw Exception(
-            "pubkeyToFetchUserServerList is null and serverUrls is null");
+          "pubkeyToFetchUserServerList is null and serverUrls is null",
+        );
       }
 
-      serverUrls ??= await _userServerList
-          .getUserServerList(pubkeys: [pubkeyToFetchUserServerList]);
+      serverUrls ??= await _userServerList.getUserServerList(
+        pubkeys: [pubkeyToFetchUserServerList],
+      );
     }
 
     if (serverUrls == null) {
@@ -353,11 +357,13 @@ class Blossom {
     if (serverUrls == null) {
       if (pubkeyToFetchUserServerList == null) {
         throw Exception(
-            "pubkeyToFetchUserServerList is null and serverUrls is null");
+          "pubkeyToFetchUserServerList is null and serverUrls is null",
+        );
       }
 
-      serverUrls ??= await _userServerList
-          .getUserServerList(pubkeys: [pubkeyToFetchUserServerList]);
+      serverUrls ??= await _userServerList.getUserServerList(
+        pubkeys: [pubkeyToFetchUserServerList],
+      );
     }
 
     if (serverUrls == null) {
@@ -410,11 +416,13 @@ class Blossom {
     if (serverUrls == null) {
       if (pubkeyToFetchUserServerList == null) {
         throw Exception(
-            "pubkeyToFetchUserServerList is null and serverUrls is null");
+          "pubkeyToFetchUserServerList is null and serverUrls is null",
+        );
       }
 
-      serverUrls ??= await _userServerList
-          .getUserServerList(pubkeys: [pubkeyToFetchUserServerList]);
+      serverUrls ??= await _userServerList.getUserServerList(
+        pubkeys: [pubkeyToFetchUserServerList],
+      );
     }
 
     if (serverUrls == null) {
@@ -466,8 +474,9 @@ class Blossom {
         throw "pubkeyToFetchUserServerList is null and serverUrls is null";
       }
 
-      serverUrls ??= await _userServerList
-          .getUserServerList(pubkeys: [pubkeyToFetchUserServerList]);
+      serverUrls ??= await _userServerList.getUserServerList(
+        pubkeys: [pubkeyToFetchUserServerList],
+      );
     }
 
     if (serverUrls == null) {
@@ -560,8 +569,9 @@ class Blossom {
     final signedAuthorization = await signer.sign(myAuthorization);
 
     /// fetch user server list from nostr
-    serverUrls ??= await _userServerList
-        .getUserServerList(pubkeys: [signer.getPublicKey()]);
+    serverUrls ??= await _userServerList.getUserServerList(
+      pubkeys: [signer.getPublicKey()],
+    );
 
     if (serverUrls == null) {
       throw Exception("User has no server list");
@@ -574,9 +584,7 @@ class Blossom {
   }
 
   /// Directly downloads a blob from the url, without blossom
-  Future<BlobResponse> directDownload({
-    required Uri url,
-  }) {
+  Future<BlobResponse> directDownload({required Uri url}) {
     return _blossomImpl.directDownload(url: url);
   }
 

@@ -12,16 +12,17 @@ class CashuTokenEventContent {
   });
 
   /// extracts data from plain lists
-  factory CashuTokenEventContent.fromJson(
-    Map<String, dynamic> jsonList,
-  ) {
+  factory CashuTokenEventContent.fromJson(Map<String, dynamic> jsonList) {
     return CashuTokenEventContent(
       mintUrl: jsonList['mint'] as String,
       proofs: (jsonList['proofs'] as List<dynamic>)
-          .map((proofJson) =>
-              CashuProof.fromJson(proofJson as Map<String, dynamic>))
+          .map(
+            (proofJson) =>
+                CashuProof.fromJson(proofJson as Map<String, dynamic>),
+          )
           .toList(),
-      deletedIds: (jsonList['del'] as List<dynamic>?)
+      deletedIds:
+          (jsonList['del'] as List<dynamic>?)
               ?.map((id) => id as String)
               .toList() ??
           [],

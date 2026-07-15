@@ -39,8 +39,11 @@ class WebSocketNostrTransport implements NostrTransport {
   ///
   /// Returns a StreamSubscription that can be used to control the subscription.
   @override
-  StreamSubscription listen(void Function(dynamic p1) onData,
-      {Function? onError, void Function()? onDone}) {
+  StreamSubscription listen(
+    void Function(dynamic p1) onData, {
+    Function? onError,
+    void Function()? onDone,
+  }) {
     return _websocketDS.listen(onData, onError: onError, onDone: onDone);
   }
 

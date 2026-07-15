@@ -39,15 +39,16 @@ class Nip01EventModel extends Nip01Event {
     List<String>? sources,
   }) {
     return Nip01EventModel(
-        id: id ?? this.id,
-        pubKey: pubKey ?? this.pubKey,
-        createdAt: createdAt ?? this.createdAt,
-        kind: kind ?? this.kind,
-        tags: tags ?? this.tags,
-        content: content ?? this.content,
-        sig: sig ?? this.sig,
-        validSig: validSig ?? this.validSig,
-        sources: sources ?? this.sources);
+      id: id ?? this.id,
+      pubKey: pubKey ?? this.pubKey,
+      createdAt: createdAt ?? this.createdAt,
+      kind: kind ?? this.kind,
+      tags: tags ?? this.tags,
+      content: content ?? this.content,
+      sig: sig ?? this.sig,
+      validSig: validSig ?? this.validSig,
+      sources: sources ?? this.sources,
+    );
   }
 
   /**
@@ -101,7 +102,7 @@ class Nip01EventModel extends Nip01Event {
       'kind': kind,
       'tags': tags,
       'content': content,
-      'sig': sig
+      'sig': sig,
     };
   }
 

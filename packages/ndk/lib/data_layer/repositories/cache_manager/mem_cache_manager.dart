@@ -260,14 +260,14 @@ class MemCacheManager implements CacheManager {
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
     final events = await loadEvents(kinds: [Metadata.kKind]);
     final normalizedSearch = search.trim().toLowerCase();
-    final matches =
-        events.map((event) => Metadata.fromEvent(event)).where((metadata) {
+    final matches = events.map((event) => Metadata.fromEvent(event)).where((
+      metadata,
+    ) {
       if (normalizedSearch.isEmpty) return true;
       return metadata.matchesSearch(normalizedSearch) ||
           (metadata.about?.toLowerCase().contains(normalizedSearch) ?? false) ||
           (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
-    }).toList()
-          ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
+    }).toList()..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
     return matches.take(limit);
   }
 
@@ -321,11 +321,12 @@ class MemCacheManager implements CacheManager {
   @override
   Future<List<String>> loadEventSources(String eventId) async {
     final prefix = '$eventId|';
-    final result = eventSources.entries
-        .where((entry) => entry.key.startsWith(prefix))
-        .map((entry) => entry.value)
-        .toList()
-      ..sort();
+    final result =
+        eventSources.entries
+            .where((entry) => entry.key.startsWith(prefix))
+            .map((entry) => entry.value)
+            .toList()
+          ..sort();
     return result;
   }
 
@@ -342,7 +343,8 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> saveEventDeliveryRecords(
-      List<EventDeliveryRecord> records) async {
+    List<EventDeliveryRecord> records,
+  ) async {
     for (final record in records) {
       eventDeliveryRecords[record.eventId] = record;
     }
@@ -360,8 +362,7 @@ class MemCacheManager implements CacheManager {
   }) async {
     var records = eventDeliveryRecords.values.where((record) {
       return status == null || record.status == status;
-    }).toList()
-      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    }).toList()..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     if (limit != null && limit < records.length) {
       records = records.take(limit).toList();
@@ -387,7 +388,8 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> saveRelayDeliveryTargets(
-      List<RelayDeliveryTarget> targets) async {
+    List<RelayDeliveryTarget> targets,
+  ) async {
     for (final target in targets) {
       relayDeliveryTargets[target.key] = target;
     }
@@ -409,29 +411,29 @@ class MemCacheManager implements CacheManager {
     bool excludeAcked = false,
     int? limit,
   }) async {
-    var records = relayDeliveryTargets.values.where((target) {
-      if (eventId != null && target.eventId != eventId) {
-        return false;
-      }
-      if (relayUrl != null && target.relayUrl != relayUrl) {
-        return false;
-      }
-      if (state != null && target.state != state) {
-        return false;
-      }
-      if (excludeAcked && target.state == RelayDeliveryState.acked) {
-        return false;
-      }
-      return true;
-    }).toList()
-      ..sort((a, b) {
-        final retryA = a.nextRetryAt ?? 0;
-        final retryB = b.nextRetryAt ?? 0;
-        if (retryA != retryB) {
-          return retryA.compareTo(retryB);
-        }
-        return a.key.compareTo(b.key);
-      });
+    var records =
+        relayDeliveryTargets.values.where((target) {
+          if (eventId != null && target.eventId != eventId) {
+            return false;
+          }
+          if (relayUrl != null && target.relayUrl != relayUrl) {
+            return false;
+          }
+          if (state != null && target.state != state) {
+            return false;
+          }
+          if (excludeAcked && target.state == RelayDeliveryState.acked) {
+            return false;
+          }
+          return true;
+        }).toList()..sort((a, b) {
+          final retryA = a.nextRetryAt ?? 0;
+          final retryB = b.nextRetryAt ?? 0;
+          if (retryA != retryB) {
+            return retryA.compareTo(retryB);
+          }
+          return a.key.compareTo(b.key);
+        });
 
     if (limit != null && limit < records.length) {
       records = records.take(limit).toList();
@@ -461,13 +463,15 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> saveDecryptedEventPayloadRecord(
-      DecryptedEventPayloadRecord record) async {
+    DecryptedEventPayloadRecord record,
+  ) async {
     decryptedEventPayloadRecords[record.key] = record;
   }
 
   @override
   Future<void> saveDecryptedEventPayloadRecords(
-      List<DecryptedEventPayloadRecord> records) async {
+    List<DecryptedEventPayloadRecord> records,
+  ) async {
     for (final record in records) {
       decryptedEventPayloadRecords[record.key] = record;
     }
@@ -521,8 +525,9 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> removeDecryptedEventPayloadRecords(String eventId) async {
     final prefix = '$eventId|';
-    decryptedEventPayloadRecords
-        .removeWhere((key, value) => key.startsWith(prefix));
+    decryptedEventPayloadRecords.removeWhere(
+      (key, value) => key.startsWith(prefix),
+    );
   }
 
   @override
@@ -572,15 +577,16 @@ class MemCacheManager implements CacheManager {
     );
     for (final eventId in deliverySweep.deliveryEventIdsToRemove) {
       eventDeliveryRecords.remove(eventId);
-      relayDeliveryTargets
-          .removeWhere((key, target) => target.eventId == eventId);
+      relayDeliveryTargets.removeWhere(
+        (key, target) => target.eventId == eventId,
+      );
     }
 
     return plan.toResult().copyWith(
-          removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
-          removedTerminalFailedDeliveries:
-              deliverySweep.removedTerminalFailedDeliveries,
-        );
+      removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
+      removedTerminalFailedDeliveries:
+          deliverySweep.removedTerminalFailedDeliveries,
+    );
   }
 
   @override
@@ -665,9 +671,11 @@ class MemCacheManager implements CacheManager {
             return true;
           }
 
-          return tagValues.any((value) =>
-              eventTagValues.contains(value) ||
-              eventTagValues.contains(value.toLowerCase()));
+          return tagValues.any(
+            (value) =>
+                eventTagValues.contains(value) ||
+                eventTagValues.contains(value.toLowerCase()),
+          );
         });
         if (!matchesTags) {
           continue;
@@ -749,8 +757,9 @@ class MemCacheManager implements CacheManager {
       until: until,
       applyVisibilityRules: false,
     );
-    final eventIdsToRemove =
-        rawEventsToRemove.map((event) => event.id).toList();
+    final eventIdsToRemove = rawEventsToRemove
+        .map((event) => event.id)
+        .toList();
     final eventIdSet = eventIdsToRemove.toSet();
     events.removeWhere((key, value) => eventIdSet.contains(key));
     _removeEventSidecarsByIds(eventIdsToRemove);
@@ -815,13 +824,15 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> saveFilterFetchedRangeRecord(
-      FilterFetchedRangeRecord record) async {
+    FilterFetchedRangeRecord record,
+  ) async {
     filterFetchedRangeRecords[record.key] = record;
   }
 
   @override
   Future<void> saveFilterFetchedRangeRecords(
-      List<FilterFetchedRangeRecord> records) async {
+    List<FilterFetchedRangeRecord> records,
+  ) async {
     for (final record in records) {
       filterFetchedRangeRecords[record.key] = record;
     }
@@ -845,16 +856,20 @@ class MemCacheManager implements CacheManager {
   }) async {
     if (cashuProofs.containsKey(mintUrl)) {
       return cashuProofs[mintUrl]!
-          .where((proof) =>
-              proof.state == state &&
-              (keysetId == null || proof.keysetId == keysetId))
+          .where(
+            (proof) =>
+                proof.state == state &&
+                (keysetId == null || proof.keysetId == keysetId),
+          )
           .toList();
     } else {
       return cashuProofs.values
           .expand((proofs) => proofs)
-          .where((proof) =>
-              proof.state == state &&
-              (keysetId == null || proof.keysetId == keysetId))
+          .where(
+            (proof) =>
+                proof.state == state &&
+                (keysetId == null || proof.keysetId == keysetId),
+          )
           .toList();
     }
   }
@@ -873,8 +888,10 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<void> removeProofs(
-      {required List<CashuProof> proofs, required String mintUrl}) {
+  Future<void> removeProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  }) {
     if (cashuProofs.containsKey(mintUrl)) {
       final existingProofs = cashuProofs[mintUrl]!;
       for (final proof in proofs) {
@@ -891,35 +908,28 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<List<CashuMintInfo>?> getMintInfos({
-    List<String>? mintUrls,
-  }) {
+  Future<List<CashuMintInfo>?> getMintInfos({List<String>? mintUrls}) {
     if (mintUrls == null) {
       return Future.value(cashuMintInfos.toList());
     } else {
       final result = cashuMintInfos
-          .where(
-            (info) => mintUrls.any((url) => info.isMintUrl(url)),
-          )
+          .where((info) => mintUrls.any((url) => info.isMintUrl(url)))
           .toList();
       return Future.value(result.isNotEmpty ? result : null);
     }
   }
 
   @override
-  Future<void> saveMintInfo({
-    required CashuMintInfo mintInfo,
-  }) {
-    cashuMintInfos
-        .removeWhere((info) => info.urls.any((url) => mintInfo.isMintUrl(url)));
+  Future<void> saveMintInfo({required CashuMintInfo mintInfo}) {
+    cashuMintInfos.removeWhere(
+      (info) => info.urls.any((url) => mintInfo.isMintUrl(url)),
+    );
     cashuMintInfos.add(mintInfo);
     return Future.value();
   }
 
   @override
-  Future<void> removeMintInfo({
-    required String mintUrl,
-  }) {
+  Future<void> removeMintInfo({required String mintUrl}) {
     cashuMintInfos.removeWhere(
       (info) => info.urls.any((url) => info.isMintUrl(mintUrl)),
     );
@@ -949,7 +959,8 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecords(
-      String filterHash) async {
+    String filterHash,
+  ) async {
     return filterFetchedRangeRecords.values
         .where((r) => r.filterHash == filterHash)
         .toList();
@@ -957,7 +968,9 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelay(
-      String filterHash, String relayUrl) async {
+    String filterHash,
+    String relayUrl,
+  ) async {
     return filterFetchedRangeRecords.values
         .where((r) => r.filterHash == filterHash && r.relayUrl == relayUrl)
         .toList();
@@ -965,7 +978,7 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<List<FilterFetchedRangeRecord>>
-      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
+  loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
     return filterFetchedRangeRecords.values
         .where((r) => r.relayUrl == relayUrl)
         .toList();
@@ -973,21 +986,27 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> removeFilterFetchedRangeRecords(String filterHash) async {
-    filterFetchedRangeRecords
-        .removeWhere((key, value) => value.filterHash == filterHash);
+    filterFetchedRangeRecords.removeWhere(
+      (key, value) => value.filterHash == filterHash,
+    );
   }
 
   @override
   Future<void> removeFilterFetchedRangeRecordsByFilterAndRelay(
-      String filterHash, String relayUrl) async {
-    filterFetchedRangeRecords.removeWhere((key, value) =>
-        value.filterHash == filterHash && value.relayUrl == relayUrl);
+    String filterHash,
+    String relayUrl,
+  ) async {
+    filterFetchedRangeRecords.removeWhere(
+      (key, value) =>
+          value.filterHash == filterHash && value.relayUrl == relayUrl,
+    );
   }
 
   @override
   Future<void> removeFilterFetchedRangeRecordsByRelay(String relayUrl) async {
-    filterFetchedRangeRecords
-        .removeWhere((key, value) => value.relayUrl == relayUrl);
+    filterFetchedRangeRecords.removeWhere(
+      (key, value) => value.relayUrl == relayUrl,
+    );
   }
 
   @override
@@ -1144,8 +1163,9 @@ class MemCacheManager implements CacheManager {
     }
 
     if (latestContactListWithRelays != null) {
-      userRelayLists[pubKey] =
-          UserRelayList.fromNip02EventContent(latestContactListWithRelays);
+      userRelayLists[pubKey] = UserRelayList.fromNip02EventContent(
+        latestContactListWithRelays,
+      );
       return;
     }
 

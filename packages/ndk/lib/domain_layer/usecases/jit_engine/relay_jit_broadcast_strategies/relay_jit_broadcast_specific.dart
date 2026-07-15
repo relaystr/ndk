@@ -14,7 +14,7 @@ class RelayJitBroadcastSpecificRelaysStrategy {
     required Nip01Event eventToPublish,
     required CacheManager cacheManager,
     required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-        connectedRelays,
+    connectedRelays,
     required RelayManager relayManager,
     required List<String> specificRelays,
   }) async {
@@ -22,9 +22,7 @@ class RelayJitBroadcastSpecificRelaysStrategy {
     final uniqueRelayUrls = specificRelays.toSet().toList();
 
     // function to send message to relay
-    void sendToRelay({
-      required RelayConnectivity relay,
-    }) {
+    void sendToRelay({required RelayConnectivity relay}) {
       final myClientMsg = ClientMsg(
         ClientMsgType.kEvent,
         event: eventToPublish,
@@ -73,8 +71,7 @@ class RelayJitBroadcastSpecificRelaysStrategy {
           dirtyUrl: relayUrl,
           connectionSource: ConnectionSource.broadcastSpecific,
           connectTimeout: 1,
-        ))
-            .first;
+        )).first;
         if (!success) {
           relayManager.failBroadcast(
             eventToPublish.id,
@@ -95,8 +92,9 @@ class RelayJitBroadcastSpecificRelaysStrategy {
           return;
         }
         try {
-          final relay = relayManager.connectedRelays
-              .firstWhere((element) => element.url == relayUrl);
+          final relay = relayManager.connectedRelays.firstWhere(
+            (element) => element.url == relayUrl,
+          );
           sendToRelay(relay: relay);
         } catch (e) {
           relayManager.failBroadcast(
@@ -132,10 +130,10 @@ class RelayJitBroadcastSpecificRelaysStrategy {
       kinds: [event.kind],
       tags:
           EventKindClassification.isAddressableKind(event.kind) && dTag != null
-              ? {
-                  'd': [dTag],
-                }
-              : null,
+          ? {
+              'd': [dTag],
+            }
+          : null,
       limit: 1,
     );
 

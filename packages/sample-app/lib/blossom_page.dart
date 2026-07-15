@@ -10,10 +10,7 @@ import 'package:ndk_demo/l10n/app_localizations_context.dart';
 class BlossomMediaPage extends StatefulWidget {
   final Ndk ndk;
 
-  const BlossomMediaPage({
-    super.key,
-    required this.ndk,
-  });
+  const BlossomMediaPage({super.key, required this.ndk});
 
   @override
   State<BlossomMediaPage> createState() => _BlossomMediaPageState();
@@ -68,7 +65,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
         serverUrls: [
           // 'https://blossom.f7z.io',
           "https://nostr.download",
-          "https://cdn.hzrd149.com"
+          "https://cdn.hzrd149.com",
         ],
         useAuth: false,
       );
@@ -100,7 +97,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
         serverUrls: [
           'https://blossom.f7z.io',
           "https://nostr.download",
-          "https://cdn.hzrd149.com"
+          "https://cdn.hzrd149.com",
         ],
         useAuth: false,
       );
@@ -222,8 +219,9 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
       );
 
       setState(() {
-        _downloadedFilePath =
-            kIsWeb ? context.l10n.blossomDownloadedToBrowser : outputPath;
+        _downloadedFilePath = kIsWeb
+            ? context.l10n.blossomDownloadedToBrowser
+            : outputPath;
       });
     } catch (e) {
       setState(() {
@@ -240,9 +238,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.blossomPageTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.blossomPageTitle)),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -255,14 +251,18 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: [
-                      Text(l10n.blossomImageDemoTitle,
-                          style: Theme.of(context).textTheme.titleLarge),
+                      Text(
+                        l10n.blossomImageDemoTitle,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
                       const SizedBox(height: 16),
                       if (_isLoadingImage)
                         const Center(child: CircularProgressIndicator())
                       else if (_imageError.isNotEmpty)
-                        Text(l10n.errorLabel(_imageError),
-                            style: const TextStyle(color: Colors.red))
+                        Text(
+                          l10n.errorLabel(_imageError),
+                          style: const TextStyle(color: Colors.red),
+                        )
                       else if (_blobResponse != null)
                         Column(
                           children: [
@@ -272,11 +272,15 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                             ),
                             const SizedBox(height: 16),
                             if (_blobResponse?.mimeType != null)
-                              Text(l10n
-                                  .blossomMimeType(_blobResponse!.mimeType!)),
+                              Text(
+                                l10n.blossomMimeType(_blobResponse!.mimeType!),
+                              ),
                             if (_blobResponse?.contentLength != null)
-                              Text(l10n.blossomFileSizeBytes(
-                                  _blobResponse!.contentLength.toString())),
+                              Text(
+                                l10n.blossomFileSizeBytes(
+                                  _blobResponse!.contentLength.toString(),
+                                ),
+                              ),
                           ],
                         )
                       else
@@ -312,22 +316,24 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: [
-                      Text(l10n.blossomVideoDemoTitle,
-                          style: Theme.of(context).textTheme.titleLarge),
+                      Text(
+                        l10n.blossomVideoDemoTitle,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
                       const SizedBox(height: 16),
                       if (_isLoadingVideo)
                         const Center(child: CircularProgressIndicator())
                       else if (_videoError.isNotEmpty)
-                        Text(l10n.errorLabel(_videoError),
-                            style: const TextStyle(color: Colors.red))
+                        Text(
+                          l10n.errorLabel(_videoError),
+                          style: const TextStyle(color: Colors.red),
+                        )
                       else if (_videoUrl != null)
                         Column(
                           children: [
                             AspectRatio(
                               aspectRatio: 16 / 9,
-                              child: Video(
-                                controller: _videoController,
-                              ),
+                              child: Video(controller: _videoController),
                             ),
                             const SizedBox(height: 16),
                             Row(
@@ -366,8 +372,9 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton(
-                            onPressed:
-                                _isLoadingVideo ? null : _checkAndInitVideo,
+                            onPressed: _isLoadingVideo
+                                ? null
+                                : _checkAndInitVideo,
                             child: Text(l10n.blossomLoadVideo),
                           ),
                           ElevatedButton(
@@ -395,8 +402,10 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(l10n.blossomUploadTitle,
-                          style: Theme.of(context).textTheme.titleLarge),
+                      Text(
+                        l10n.blossomUploadTitle,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         l10n.blossomUploadDescription,
@@ -406,25 +415,39 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                       if (_isUploading) ...[
                         LinearProgressIndicator(value: _uploadProgress),
                         const SizedBox(height: 8),
-                        Text(l10n.blossomUploadingProgress(
-                            (_uploadProgress * 100).toStringAsFixed(1))),
+                        Text(
+                          l10n.blossomUploadingProgress(
+                            (_uploadProgress * 100).toStringAsFixed(1),
+                          ),
+                        ),
                       ] else if (_uploadError.isNotEmpty)
-                        Text(l10n.errorLabel(_uploadError),
-                            style: const TextStyle(color: Colors.red))
+                        Text(
+                          l10n.errorLabel(_uploadError),
+                          style: const TextStyle(color: Colors.red),
+                        )
                       else if (_uploadedSha256 != null) ...[
-                        Text(l10n.blossomUploadSuccess,
-                            style: TextStyle(
-                                color: Colors.green,
-                                fontWeight: FontWeight.bold)),
+                        Text(
+                          l10n.blossomUploadSuccess,
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 8),
-                        Text(l10n.blossomSha256(_uploadedSha256!),
-                            style: const TextStyle(
-                                fontSize: 12, fontFamily: 'monospace')),
+                        Text(
+                          l10n.blossomSha256(_uploadedSha256!),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontFamily: 'monospace',
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text(l10n.blossomUrl(_uploadedUrl!),
-                            style: const TextStyle(fontSize: 12),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis),
+                        Text(
+                          l10n.blossomUrl(_uploadedUrl!),
+                          style: const TextStyle(fontSize: 12),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ] else
                         Text(l10n.blossomNoUploadedFileYet),
                       const SizedBox(height: 16),
@@ -463,8 +486,10 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(l10n.blossomDownloadTitle,
-                          style: Theme.of(context).textTheme.titleLarge),
+                      Text(
+                        l10n.blossomDownloadTitle,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         l10n.blossomDownloadDescription,
@@ -474,18 +499,25 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                       if (_isDownloading)
                         const Center(child: CircularProgressIndicator())
                       else if (_downloadError.isNotEmpty)
-                        Text(l10n.errorLabel(_downloadError),
-                            style: const TextStyle(color: Colors.red))
+                        Text(
+                          l10n.errorLabel(_downloadError),
+                          style: const TextStyle(color: Colors.red),
+                        )
                       else if (_downloadedFilePath != null) ...[
-                        Text(l10n.downloadSuccess,
-                            style: TextStyle(
-                                color: Colors.green,
-                                fontWeight: FontWeight.bold)),
+                        Text(
+                          l10n.downloadSuccess,
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 8),
-                        Text(l10n.blossomSavedTo(_downloadedFilePath!),
-                            style: const TextStyle(fontSize: 12),
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis),
+                        Text(
+                          l10n.blossomSavedTo(_downloadedFilePath!),
+                          style: const TextStyle(fontSize: 12),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ] else
                         Text(l10n.blossomNoDownloadedFileYet),
                       const SizedBox(height: 16),

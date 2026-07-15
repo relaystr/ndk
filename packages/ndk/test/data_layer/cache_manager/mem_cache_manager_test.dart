@@ -6,8 +6,14 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk_cache_manager_test_suite/ndk_cache_manager_test_suite.dart';
 
 // This will generate mock classes for our entities
-@GenerateMocks(
-    [UserRelayList, RelaySet, ContactList, Metadata, Nip01Event, Nip05])
+@GenerateMocks([
+  UserRelayList,
+  RelaySet,
+  ContactList,
+  Metadata,
+  Nip01Event,
+  Nip05,
+])
 import 'mem_cache_manager_test.mocks.dart';
 
 void main() {
@@ -45,8 +51,10 @@ void main() {
       when(mockUserRelayList1.pubKey).thenReturn('testPubKey1');
       when(mockUserRelayList2.pubKey).thenReturn('testPubKey2');
 
-      await cacheManager
-          .saveUserRelayLists([mockUserRelayList1, mockUserRelayList2]);
+      await cacheManager.saveUserRelayLists([
+        mockUserRelayList1,
+        mockUserRelayList2,
+      ]);
       await cacheManager.removeAllUserRelayLists();
 
       expect(await cacheManager.loadUserRelayList('testPubKey1'), isNull);
@@ -207,8 +215,9 @@ void main() {
       final mockRelaySet = MockRelaySet();
       when(mockRelaySet.name).thenReturn('testName');
       when(mockRelaySet.pubKey).thenReturn('testPubKey');
-      when(mockRelaySet.id)
-          .thenReturn(RelaySet.buildId('testName', 'testPubKey'));
+      when(
+        mockRelaySet.id,
+      ).thenReturn(RelaySet.buildId('testName', 'testPubKey'));
 
       await cacheManager.saveRelaySet(mockRelaySet);
       final result = await cacheManager.loadRelaySet('testName', 'testPubKey');
@@ -220,8 +229,9 @@ void main() {
       final mockRelaySet = MockRelaySet();
       when(mockRelaySet.name).thenReturn('testName');
       when(mockRelaySet.pubKey).thenReturn('testPubKey');
-      when(mockRelaySet.id)
-          .thenReturn(RelaySet.buildId('testName', 'testPubKey'));
+      when(
+        mockRelaySet.id,
+      ).thenReturn(RelaySet.buildId('testName', 'testPubKey'));
 
       await cacheManager.saveRelaySet(mockRelaySet);
       await cacheManager.removeRelaySet('testName', 'testPubKey');
@@ -235,21 +245,27 @@ void main() {
       final mockRelaySet2 = MockRelaySet();
       when(mockRelaySet1.name).thenReturn('testName1');
       when(mockRelaySet1.pubKey).thenReturn('testPubKey1');
-      when(mockRelaySet1.id)
-          .thenReturn(RelaySet.buildId('testName1', 'testPubKey1'));
+      when(
+        mockRelaySet1.id,
+      ).thenReturn(RelaySet.buildId('testName1', 'testPubKey1'));
       when(mockRelaySet2.name).thenReturn('testName2');
       when(mockRelaySet2.pubKey).thenReturn('testPubKey2');
-      when(mockRelaySet2.id)
-          .thenReturn(RelaySet.buildId('testName2', 'testPubKey2'));
+      when(
+        mockRelaySet2.id,
+      ).thenReturn(RelaySet.buildId('testName2', 'testPubKey2'));
 
       await cacheManager.saveRelaySet(mockRelaySet1);
       await cacheManager.saveRelaySet(mockRelaySet2);
       await cacheManager.removeAllRelaySets();
 
       expect(
-          await cacheManager.loadRelaySet('testName1', 'testPubKey1'), isNull);
+        await cacheManager.loadRelaySet('testName1', 'testPubKey1'),
+        isNull,
+      );
       expect(
-          await cacheManager.loadRelaySet('testName2', 'testPubKey2'), isNull);
+        await cacheManager.loadRelaySet('testName2', 'testPubKey2'),
+        isNull,
+      );
     });
   });
 
@@ -361,8 +377,11 @@ void main() {
       );
 
       await cacheManager.saveMetadatas([metadata1, metadata2]);
-      final results = await cacheManager
-          .loadMetadatas(['testPubKey1', 'testPubKey2', 'nonExistentKey']);
+      final results = await cacheManager.loadMetadatas([
+        'testPubKey1',
+        'testPubKey2',
+        'nonExistentKey',
+      ]);
 
       // Results should preserve position correspondence with input
       expect(results.length, equals(3));

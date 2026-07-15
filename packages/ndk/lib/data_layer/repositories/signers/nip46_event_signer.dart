@@ -99,10 +99,12 @@ class Nip46EventSigner with ConcurrencyLimiterMixin implements EventSigner {
       _notifyPendingRequestsChange();
 
       if (response["error"] != null && response["result"] != "auth_url") {
-        entry.completer.completeError(SignerRequestRejectedException(
-          requestId: response["id"],
-          originalMessage: response["error"],
-        ));
+        entry.completer.completeError(
+          SignerRequestRejectedException(
+            requestId: response["id"],
+            originalMessage: response["error"],
+          ),
+        );
       } else {
         entry.completer.complete(response["result"]);
       }
@@ -110,8 +112,9 @@ class Nip46EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   }
 
   void _notifyPendingRequestsChange() {
-    _pendingRequestsController
-        .add(_pendingRequests.values.map((e) => e.request).toList());
+    _pendingRequestsController.add(
+      _pendingRequests.values.map((e) => e.request).toList(),
+    );
   }
 
   Future<String> remoteRequest({
@@ -281,10 +284,7 @@ class Nip46EventSigner with ConcurrencyLimiterMixin implements EventSigner {
       params: [jsonEncode(eventMap)],
     );
 
-    final signedEventJson = await remoteRequest(
-      request: request,
-      event: event,
-    );
+    final signedEventJson = await remoteRequest(request: request, event: event);
 
     final signedEvent = Nip01EventModel.fromJson(jsonDecode(signedEventJson));
 

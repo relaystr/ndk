@@ -60,15 +60,13 @@ void main() {
       expect(myEvent.pubKey, equals(pubKey));
       expect(myEvent.kind, equals(Nip65.kKind));
       expect(
-          myEvent.tags,
-          equals([
-            [
-              'r',
-              'wss://example.com',
-            ],
-            ['r', 'wss://example.org', 'read'],
-            ['r', 'wss://example.net', 'write'],
-          ]));
+        myEvent.tags,
+        equals([
+          ['r', 'wss://example.com'],
+          ['r', 'wss://example.org', 'read'],
+          ['r', 'wss://example.net', 'write'],
+        ]),
+      );
       expect(myEvent.content, equals(''));
       expect(myEvent.createdAt, equals(nip65.createdAt));
     });
@@ -76,10 +74,14 @@ void main() {
 
   group('ReadWriteMarker', () {
     test('from', () {
-      expect(ReadWriteMarker.from(read: true, write: true),
-          ReadWriteMarker.readWrite);
-      expect(() => ReadWriteMarker.from(read: false, write: false),
-          throwsException);
+      expect(
+        ReadWriteMarker.from(read: true, write: true),
+        ReadWriteMarker.readWrite,
+      );
+      expect(
+        () => ReadWriteMarker.from(read: false, write: false),
+        throwsException,
+      );
     });
 
     test('isRead', () {

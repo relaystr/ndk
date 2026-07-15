@@ -25,23 +25,25 @@ void main() {
       expect(policy.retainsOnlyLatest, isTrue);
     });
 
-    test('uses latest-state-only policy for regular replaceable events too',
-        () {
-      final event = Nip01Event(
-        id: 'replaceable-2',
-        pubKey: 'pubkey',
-        createdAt: 1700000000,
-        kind: 10002,
-        tags: const [],
-        content: 'relay list',
-        sig: 'sig',
-      );
+    test(
+      'uses latest-state-only policy for regular replaceable events too',
+      () {
+        final event = Nip01Event(
+          id: 'replaceable-2',
+          pubKey: 'pubkey',
+          createdAt: 1700000000,
+          kind: 10002,
+          tags: const [],
+          content: 'relay list',
+          sig: 'sig',
+        );
 
-      final policy = DeliveryPolicy.forEvent(event);
+        final policy = DeliveryPolicy.forEvent(event);
 
-      expect(policy.kind, DeliveryPolicyKind.latestStateOnly);
-      expect(policy.retainsOnlyLatest, isTrue);
-    });
+        expect(policy.kind, DeliveryPolicyKind.latestStateOnly);
+        expect(policy.retainsOnlyLatest, isTrue);
+      },
+    );
 
     test('uses do-not-retry policy for ephemeral events', () {
       final event = Nip01Event(

@@ -71,20 +71,18 @@ void main() {
 
       final Stream<CashuWalletTransaction> response = ndk.cashu.retrieveFunds(
         draftTransaction: CashuWalletTransaction(
-            id: 'test0',
-            walletId: '',
-            changeAmount: 5,
-            unit: 'sat',
-            walletType: WalletType.CASHU,
-            state: WalletTransactionState.draft,
-            mintUrl: devMintUrl,
-            qoute: null),
+          id: 'test0',
+          walletId: '',
+          changeAmount: 5,
+          unit: 'sat',
+          walletType: WalletType.CASHU,
+          state: WalletTransactionState.draft,
+          mintUrl: devMintUrl,
+          qoute: null,
+        ),
       );
 
-      expect(
-        response,
-        emitsError(isA<Exception>()),
-      );
+      expect(response, emitsError(isA<Exception>()));
     });
 
     test('fund - retriveFunds exceptions', () async {
@@ -101,56 +99,45 @@ void main() {
         qoute: null,
       );
 
-      final Stream<CashuWalletTransaction> responseNoQuote =
-          ndk.cashu.retrieveFunds(
-        draftTransaction: baseDraftTransaction,
-      );
+      final Stream<CashuWalletTransaction> responseNoQuote = ndk.cashu
+          .retrieveFunds(draftTransaction: baseDraftTransaction);
 
-      final Stream<CashuWalletTransaction> responseNoMethod =
-          ndk.cashu.retrieveFunds(
-        draftTransaction: baseDraftTransaction.copyWith(
-          qoute: CashuQuote(
-            quoteId: "quoteId",
-            request: "request",
-            amount: 5,
-            unit: 'sat',
-            state: CashuQuoteState.paid,
-            expiry: 0,
-            mintUrl: devMintUrl,
-            quoteKey: CashuKeypair.generateCashuKeyPair(),
-          ),
-        ),
-      );
+      final Stream<CashuWalletTransaction> responseNoMethod = ndk.cashu
+          .retrieveFunds(
+            draftTransaction: baseDraftTransaction.copyWith(
+              qoute: CashuQuote(
+                quoteId: "quoteId",
+                request: "request",
+                amount: 5,
+                unit: 'sat',
+                state: CashuQuoteState.paid,
+                expiry: 0,
+                mintUrl: devMintUrl,
+                quoteKey: CashuKeypair.generateCashuKeyPair(),
+              ),
+            ),
+          );
 
-      final Stream<CashuWalletTransaction> responseNoKeysets =
-          ndk.cashu.retrieveFunds(
-        draftTransaction: baseDraftTransaction.copyWith(
-          method: "sat",
-          qoute: CashuQuote(
-            quoteId: "quoteId",
-            request: "request",
-            amount: 5,
-            unit: 'sat',
-            state: CashuQuoteState.paid,
-            expiry: 0,
-            mintUrl: devMintUrl,
-            quoteKey: CashuKeypair.generateCashuKeyPair(),
-          ),
-        ),
-      );
+      final Stream<CashuWalletTransaction> responseNoKeysets = ndk.cashu
+          .retrieveFunds(
+            draftTransaction: baseDraftTransaction.copyWith(
+              method: "sat",
+              qoute: CashuQuote(
+                quoteId: "quoteId",
+                request: "request",
+                amount: 5,
+                unit: 'sat',
+                state: CashuQuoteState.paid,
+                expiry: 0,
+                mintUrl: devMintUrl,
+                quoteKey: CashuKeypair.generateCashuKeyPair(),
+              ),
+            ),
+          );
 
-      expect(
-        responseNoQuote,
-        emitsError(isA<Exception>()),
-      );
-      expect(
-        responseNoMethod,
-        emitsError(isA<Exception>()),
-      );
-      expect(
-        responseNoKeysets,
-        emitsError(isA<Exception>()),
-      );
+      expect(responseNoQuote, emitsError(isA<Exception>()));
+      expect(responseNoMethod, emitsError(isA<Exception>()));
+      expect(responseNoKeysets, emitsError(isA<Exception>()));
     });
   });
 
@@ -201,44 +188,47 @@ void main() {
       final myHttpMock = MockCashuHttpClient();
 
       myHttpMock.setCustomResponse(
-          "POST",
-          "/v1/mint/quote/bolt11",
-          http.Response(
-            jsonEncode({
-              "quote": "d00e6cbc-04c9-4661-8909-e47c19612bf0",
-              "request":
-                  "lnbc50p1p5tctmqdqqpp5y7jyyyq3ezyu3p4c9dh6qpnjj6znuzrz35ernjjpkmw6lz7y2mxqsp59g4z52329g4z52329g4z52329g4z52329g4z52329g4z52329g4q9qrsgqcqzysl62hzvm9s5nf53gk22v5nqwf9nuy2uh32wn9rfx6grkjh6vr5jmy09mra5cna504azyhkd2ehdel9sm7fm72ns6ws2fk4m8cwc99hdgptq8hv4",
-              "amount": 5,
-              "unit": "sat",
-              "state": "UNPAID",
-              "expiry": 1757106960
-            }),
-            200,
-            headers: {'content-type': 'application/json'},
-          ));
+        "POST",
+        "/v1/mint/quote/bolt11",
+        http.Response(
+          jsonEncode({
+            "quote": "d00e6cbc-04c9-4661-8909-e47c19612bf0",
+            "request":
+                "lnbc50p1p5tctmqdqqpp5y7jyyyq3ezyu3p4c9dh6qpnjj6znuzrz35ernjjpkmw6lz7y2mxqsp59g4z52329g4z52329g4z52329g4z52329g4z52329g4z52329g4q9qrsgqcqzysl62hzvm9s5nf53gk22v5nqwf9nuy2uh32wn9rfx6grkjh6vr5jmy09mra5cna504azyhkd2ehdel9sm7fm72ns6ws2fk4m8cwc99hdgptq8hv4",
+            "amount": 5,
+            "unit": "sat",
+            "state": "UNPAID",
+            "expiry": 1757106960,
+          }),
+          200,
+          headers: {'content-type': 'application/json'},
+        ),
+      );
 
       myHttpMock.setCustomResponse(
-          "GET",
-          "/v1/mint/quote/bolt11/d00e6cbc-04c9-4661-8909-e47c19612bf0",
-          http.Response(
-            jsonEncode({
-              "quote": "d00e6cbc-04c9-4661-8909-e47c19612bf0",
-              "request":
-                  "lnbc50p1p5tctmqdqqpp5y7jyyyq3ezyu3p4c9dh6qpnjj6znuzrz35ernjjpkmw6lz7y2mxqsp59g4z52329g4z52329g4z52329g4z52329g4z52329g4z52329g4q9qrsgqcqzysl62hzvm9s5nf53gk22v5nqwf9nuy2uh32wn9rfx6grkjh6vr5jmy09mra5cna504azyhkd2ehdel9sm7fm72ns6ws2fk4m8cwc99hdgptq8hv4",
-              "amount": 5,
-              "unit": "sat",
-              "state": "UNPAID",
-              "expiry": 1757106960
-            }),
-            200,
-            headers: {'content-type': 'application/json'},
-          ));
+        "GET",
+        "/v1/mint/quote/bolt11/d00e6cbc-04c9-4661-8909-e47c19612bf0",
+        http.Response(
+          jsonEncode({
+            "quote": "d00e6cbc-04c9-4661-8909-e47c19612bf0",
+            "request":
+                "lnbc50p1p5tctmqdqqpp5y7jyyyq3ezyu3p4c9dh6qpnjj6znuzrz35ernjjpkmw6lz7y2mxqsp59g4z52329g4z52329g4z52329g4z52329g4z52329g4z52329g4q9qrsgqcqzysl62hzvm9s5nf53gk22v5nqwf9nuy2uh32wn9rfx6grkjh6vr5jmy09mra5cna504azyhkd2ehdel9sm7fm72ns6ws2fk4m8cwc99hdgptq8hv4",
+            "amount": 5,
+            "unit": "sat",
+            "state": "UNPAID",
+            "expiry": 1757106960,
+          }),
+          200,
+          headers: {'content-type': 'application/json'},
+        ),
+      );
 
       final cashu = CashuTestTools.mockHttpCashu(
         customMockClient: myHttpMock,
         seedPhrase: CashuUserSeedphrase(
-            seedPhrase:
-                "reduce invest lunch step couch traffic measure civil want steel trip jar"),
+          seedPhrase:
+              "reduce invest lunch step couch traffic measure civil want steel trip jar",
+        ),
       );
 
       final draftTransaction = await cashu.initiateFund(
@@ -248,22 +238,30 @@ void main() {
         method: "bolt11",
       );
 
-      final transactionStream =
-          cashu.retrieveFunds(draftTransaction: draftTransaction);
+      final transactionStream = cashu.retrieveFunds(
+        draftTransaction: draftTransaction,
+      );
 
       await expectLater(
         transactionStream,
         emitsInOrder([
-          isA<CashuWalletTransaction>()
-              .having((t) => t.state, 'state', WalletTransactionState.pending),
-          isA<CashuWalletTransaction>()
-              .having((t) => t.state, 'state', WalletTransactionState.failed),
+          isA<CashuWalletTransaction>().having(
+            (t) => t.state,
+            'state',
+            WalletTransactionState.pending,
+          ),
+          isA<CashuWalletTransaction>().having(
+            (t) => t.state,
+            'state',
+            WalletTransactionState.failed,
+          ),
         ]),
       );
       // check balance
       final allBalances = await cashu.getBalances();
-      final balanceForMint =
-          allBalances.where((element) => element.mintUrl == mockMintUrl);
+      final balanceForMint = allBalances.where(
+        (element) => element.mintUrl == mockMintUrl,
+      );
       expect(balanceForMint.length, 1);
       final balance = balanceForMint.first.balances[fundUnit];
 
@@ -280,8 +278,9 @@ void main() {
       final cashu = CashuTestTools.mockHttpCashu(
         customMockClient: myHttpMock,
         seedPhrase: CashuUserSeedphrase(
-            seedPhrase:
-                "reduce invest lunch step couch traffic measure civil want steel trip jar"),
+          seedPhrase:
+              "reduce invest lunch step couch traffic measure civil want steel trip jar",
+        ),
       );
 
       final draftTransaction = await cashu.initiateFund(
@@ -291,22 +290,27 @@ void main() {
         method: "bolt11",
       );
 
-      final transactionStream =
-          cashu.retrieveFunds(draftTransaction: draftTransaction);
+      final transactionStream = cashu.retrieveFunds(
+        draftTransaction: draftTransaction,
+      );
 
       await expectLater(
         transactionStream,
         emitsInOrder([
-          isA<CashuWalletTransaction>()
-              .having((t) => t.state, 'state', WalletTransactionState.pending),
+          isA<CashuWalletTransaction>().having(
+            (t) => t.state,
+            'state',
+            WalletTransactionState.pending,
+          ),
           emitsError(isA<Exception>()),
         ]),
       );
 
       //check balance
       final allBalances = await cashu.getBalances();
-      final balanceForMint =
-          allBalances.where((element) => element.mintUrl == mockMintUrl);
+      final balanceForMint = allBalances.where(
+        (element) => element.mintUrl == mockMintUrl,
+      );
       expect(balanceForMint.length, 1);
       final balance = balanceForMint.first.balances[fundUnit];
 
@@ -326,14 +330,18 @@ void main() {
         unit: fundUnit,
         method: "bolt11",
       );
-      final transactionStream =
-          ndk.cashu.retrieveFunds(draftTransaction: draftTransaction);
+      final transactionStream = ndk.cashu.retrieveFunds(
+        draftTransaction: draftTransaction,
+      );
 
       await expectLater(
         transactionStream,
         emitsInOrder([
-          isA<CashuWalletTransaction>()
-              .having((t) => t.state, 'state', WalletTransactionState.pending),
+          isA<CashuWalletTransaction>().having(
+            (t) => t.state,
+            'state',
+            WalletTransactionState.pending,
+          ),
           isA<CashuWalletTransaction>()
               .having((t) => t.state, 'state', WalletTransactionState.completed)
               .having((t) => t.transactionDate!, 'transactionDate', isA<int>()),
@@ -341,8 +349,9 @@ void main() {
       );
       // check balance
       final allBalances = await ndk.cashu.getBalances();
-      final balanceForMint =
-          allBalances.where((element) => element.mintUrl == devMintUrl);
+      final balanceForMint = allBalances.where(
+        (element) => element.mintUrl == devMintUrl,
+      );
       expect(balanceForMint.length, 1);
       final balance = balanceForMint.first.balances[fundUnit];
 
@@ -363,14 +372,18 @@ void main() {
         unit: fundUnit,
         method: "bolt11",
       );
-      final transactionStream =
-          ndk.cashu.retrieveFunds(draftTransaction: draftTransaction);
+      final transactionStream = ndk.cashu.retrieveFunds(
+        draftTransaction: draftTransaction,
+      );
 
       await expectLater(
         transactionStream,
         emitsInOrder([
-          isA<CashuWalletTransaction>()
-              .having((t) => t.state, 'state', WalletTransactionState.pending),
+          isA<CashuWalletTransaction>().having(
+            (t) => t.state,
+            'state',
+            WalletTransactionState.pending,
+          ),
           isA<CashuWalletTransaction>()
               .having((t) => t.state, 'state', WalletTransactionState.completed)
               .having((t) => t.transactionDate!, 'transactionDate', isA<int>()),
@@ -378,27 +391,38 @@ void main() {
       );
       // check balance
       final allBalances = await ndk.cashu.getBalances();
-      final balanceForMint =
-          allBalances.where((element) => element.mintUrl == devMintUrl);
+      final balanceForMint = allBalances.where(
+        (element) => element.mintUrl == devMintUrl,
+      );
       expect(balanceForMint.length, 1);
       final balance = balanceForMint.first.balances[fundUnit];
 
       expect(balance, equals(fundAmount));
 
-      final spend200 = await ndk.cashu
-          .initiateSpend(mintUrl: devMintUrl, amount: 200, unit: "sat");
-      await ndk.cashu
-          .initiateSpend(mintUrl: devMintUrl, amount: 18, unit: "sat");
-      await ndk.cashu
-          .initiateSpend(mintUrl: devMintUrl, amount: 32, unit: "sat");
+      final spend200 = await ndk.cashu.initiateSpend(
+        mintUrl: devMintUrl,
+        amount: 200,
+        unit: "sat",
+      );
+      await ndk.cashu.initiateSpend(
+        mintUrl: devMintUrl,
+        amount: 18,
+        unit: "sat",
+      );
+      await ndk.cashu.initiateSpend(
+        mintUrl: devMintUrl,
+        amount: 32,
+        unit: "sat",
+      );
 
       final spend200Token = spend200.token.toV4TokenString();
       // final spend19Token = spend19.token.toV4TokenString();
       // final spend31Token = spend31.token.toV4TokenString();
 
       final allBalancesSpend = await ndk.cashu.getBalances();
-      final balanceForMintSpend =
-          allBalancesSpend.where((element) => element.mintUrl == devMintUrl);
+      final balanceForMintSpend = allBalancesSpend.where(
+        (element) => element.mintUrl == devMintUrl,
+      );
 
       final balanceSpend = balanceForMintSpend.first.balances[fundUnit];
 
@@ -409,8 +433,11 @@ void main() {
       await expectLater(
         rcv,
         emitsInOrder([
-          isA<CashuWalletTransaction>()
-              .having((t) => t.state, 'state', WalletTransactionState.pending),
+          isA<CashuWalletTransaction>().having(
+            (t) => t.state,
+            'state',
+            WalletTransactionState.pending,
+          ),
           isA<CashuWalletTransaction>()
               .having((t) => t.state, 'state', WalletTransactionState.completed)
               .having((t) => t.transactionDate!, 'transactionDate', isA<int>()),
@@ -418,8 +445,9 @@ void main() {
       );
 
       final allBalancesRcv = await ndk.cashu.getBalances();
-      final balanceForMintRcv =
-          allBalancesRcv.where((element) => element.mintUrl == devMintUrl);
+      final balanceForMintRcv = allBalancesRcv.where(
+        (element) => element.mintUrl == devMintUrl,
+      );
 
       final balanceSpendRcv = balanceForMintRcv.first.balances[fundUnit];
 
@@ -438,25 +466,29 @@ void main() {
       final walletsRepo = MemWalletsRepo();
 
       final cashu = Cashu(
-          cashuRepo: cashuRepo,
-          walletsRepo: walletsRepo,
-          cacheManager: cache,
-          cashuKeyDerivation: derivation);
+        cashuRepo: cashuRepo,
+        walletsRepo: walletsRepo,
+        cacheManager: cache,
+        cashuKeyDerivation: derivation,
+      );
 
-      await cache.saveProofs(proofs: [
-        CashuProof(
-          keysetId: '00c726786980c4d9',
-          amount: 2,
-          secret: 'proof-s-2',
-          unblindedSig: '',
-        ),
-        CashuProof(
-          keysetId: '00c726786980c4d9',
-          amount: 4,
-          secret: 'proof-s-4',
-          unblindedSig: '',
-        ),
-      ], mintUrl: mockMintUrl);
+      await cache.saveProofs(
+        proofs: [
+          CashuProof(
+            keysetId: '00c726786980c4d9',
+            amount: 2,
+            secret: 'proof-s-2',
+            unblindedSig: '',
+          ),
+          CashuProof(
+            keysetId: '00c726786980c4d9',
+            amount: 4,
+            secret: 'proof-s-4',
+            unblindedSig: '',
+          ),
+        ],
+        mintUrl: mockMintUrl,
+      );
 
       await expectLater(
         () async => await cashu.initiateSpend(
@@ -471,21 +503,27 @@ void main() {
       expect(proofs.length, equals(2));
 
       final pendingProofs = await cache.getProofs(
-          mintUrl: mockMintUrl, state: CashuProofState.pending);
+        mintUrl: mockMintUrl,
+        state: CashuProofState.pending,
+      );
       expect(pendingProofs.length, equals(0));
 
       final spendProofs = await cache.getProofs(
-          mintUrl: mockMintUrl, state: CashuProofState.spend);
+        mintUrl: mockMintUrl,
+        state: CashuProofState.spend,
+      );
       expect(spendProofs.length, equals(0));
     });
   });
 }
 
 Ndk _ndk() {
-  return Ndk(NdkConfig(
-    cache: MemCacheManager(),
-    walletsRepo: MemWalletsRepo(),
-    eventVerifier: Bip340EventVerifier(),
-    bootstrapRelays: [],
-  ));
+  return Ndk(
+    NdkConfig(
+      cache: MemCacheManager(),
+      walletsRepo: MemWalletsRepo(),
+      eventVerifier: Bip340EventVerifier(),
+      bootstrapRelays: [],
+    ),
+  );
 }

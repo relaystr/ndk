@@ -61,14 +61,14 @@ class Requests {
     required EventVerifier eventVerifier,
     required List<EventFilter> eventOutFilters,
     required Duration defaultQueryTimeout,
-  })  : _engine = networkEngine,
-        _relayManager = relayManager,
-        _cacheWrite = cacheWrite,
-        _cacheRead = cacheRead,
-        _globalState = globalState,
-        _eventVerifier = eventVerifier,
-        _eventOutFilters = eventOutFilters,
-        _defaultQueryTimeout = defaultQueryTimeout;
+  }) : _engine = networkEngine,
+       _relayManager = relayManager,
+       _cacheWrite = cacheWrite,
+       _cacheRead = cacheRead,
+       _globalState = globalState,
+       _eventVerifier = eventVerifier,
+       _eventOutFilters = eventOutFilters,
+       _defaultQueryTimeout = defaultQueryTimeout;
 
   Stream<Nip01Event> _prepareNetworkStream(
     Stream<Nip01Event> verifiedNetworkStream, {
@@ -80,9 +80,8 @@ class Requests {
 
     return verifiedNetworkStream
         .flatMap(
-          (event) => Stream.fromFuture(
-            _persistAndFilterVisibleNetworkEvent(event),
-          ),
+          (event) =>
+              Stream.fromFuture(_persistAndFilterVisibleNetworkEvent(event)),
         )
         .whereType<Nip01Event>()
         .shareReplay(maxSize: 1);
@@ -145,7 +144,8 @@ class Requests {
   NdkResponse query({
     Filter? filter,
     @Deprecated(
-        'Use filter instead. Multiple filters support will be removed in a future version.')
+      'Use filter instead. Multiple filters support will be removed in a future version.',
+    )
     List<Filter>? filters,
     String name = '',
     RelaySet? relaySet,
@@ -181,21 +181,23 @@ class Requests {
       );
     }
 
-    return requestNostrEvent(NdkRequest.query(
-      '$name-${Helpers.getRandomString(10)}',
-      name: name,
-      filters: effectiveFilters.map((e) => e.clone()).toList(),
-      relaySet: relaySet,
-      cacheRead: cacheRead,
-      cacheWrite: cacheWrite,
-      timeoutDuration: timeout,
-      timeoutCallbackUserFacing: timeoutCallbackUserFacing,
-      timeoutCallback: timeoutCallback,
-      explicitRelays: explicitRelays,
-      desiredCoverage:
-          desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
-      authenticateAs: authenticateAs,
-    ));
+    return requestNostrEvent(
+      NdkRequest.query(
+        '$name-${Helpers.getRandomString(10)}',
+        name: name,
+        filters: effectiveFilters.map((e) => e.clone()).toList(),
+        relaySet: relaySet,
+        cacheRead: cacheRead,
+        cacheWrite: cacheWrite,
+        timeoutDuration: timeout,
+        timeoutCallbackUserFacing: timeoutCallbackUserFacing,
+        timeoutCallback: timeoutCallback,
+        explicitRelays: explicitRelays,
+        desiredCoverage:
+            desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
+        authenticateAs: authenticateAs,
+      ),
+    );
   }
 
   /// Creates a low-level Nostr subscription
@@ -215,7 +217,8 @@ class Requests {
   NdkResponse subscription({
     Filter? filter,
     @Deprecated(
-        'Use filter instead. Multiple filters support will be removed in a future version.')
+      'Use filter instead. Multiple filters support will be removed in a future version.',
+    )
     List<Filter>? filters,
     String name = '',
     String? id,
@@ -230,18 +233,20 @@ class Requests {
       throw ArgumentError('Either filter or filters must be provided');
     }
     final effectiveFilters = filter != null ? [filter] : filters!;
-    return requestNostrEvent(NdkRequest.subscription(
-      id ?? "$name-${Helpers.getRandomString(10)}",
-      name: name,
-      filters: effectiveFilters.map((e) => e.clone()).toList(),
-      relaySet: relaySet,
-      cacheRead: cacheRead,
-      cacheWrite: cacheWrite,
-      explicitRelays: explicitRelays,
-      desiredCoverage:
-          desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
-      authenticateAs: authenticateAs,
-    ));
+    return requestNostrEvent(
+      NdkRequest.subscription(
+        id ?? "$name-${Helpers.getRandomString(10)}",
+        name: name,
+        filters: effectiveFilters.map((e) => e.clone()).toList(),
+        relaySet: relaySet,
+        cacheRead: cacheRead,
+        cacheWrite: cacheWrite,
+        explicitRelays: explicitRelays,
+        desiredCoverage:
+            desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
+        authenticateAs: authenticateAs,
+      ),
+    );
   }
 
   /// Closes a Nostr network subscription
@@ -249,8 +254,10 @@ class Requests {
     final relayUrls = _globalState.inFlightRequests[subId]?.requests.keys;
 
     if (relayUrls == null) {
-      Logger.log.w(() =>
-          "no relay urls found for subscription $subId, cannot close :: debug: $debugLabel");
+      Logger.log.w(
+        () =>
+            "no relay urls found for subscription $subId, cannot close :: debug: $debugLabel",
+      );
       return;
     }
     Iterable<RelayConnectivity> relays = _relayManager.connectedRelays
@@ -265,7 +272,8 @@ class Requests {
 
     if (state == null) {
       Logger.log.w(
-          () => "no request state found for subscription $subId, cannot close");
+        () => "no request state found for subscription $subId, cannot close",
+      );
       return;
     }
 
@@ -275,8 +283,11 @@ class Requests {
 
   /// Close all subscriptions
   Future<void> closeAllSubscription() async {
-    await Future.wait(_globalState.inFlightRequests.values
-        .map((state) => closeSubscription(state.id)));
+    await Future.wait(
+      _globalState.inFlightRequests.values.map(
+        (state) => closeSubscription(state.id),
+      ),
+    );
   }
 
   /// Performs a low-level Nostr event request
@@ -319,10 +330,7 @@ class Requests {
 
     // register listener
     StreamResponseCleaner(
-      inputStreams: [
-        preparedNetworkStream,
-        state.cacheController.stream,
-      ],
+      inputStreams: [preparedNetworkStream, state.cacheController.stream],
       trackingSet: state.returnedIds,
       outController: state.controller,
       eventOutFilters: _eventOutFilters,
@@ -404,21 +412,23 @@ class Requests {
       final since = filter.since;
 
       // First request to discover relays and get initial events
-      final initialResponse = requestNostrEvent(NdkRequest.query(
-        '$name-page-initial-${Helpers.getRandomString(5)}',
-        name: name,
-        filters: [filter.clone()],
-        relaySet: relaySet,
-        cacheRead: cacheRead,
-        cacheWrite: cacheWrite,
-        timeoutDuration: timeout,
-        timeoutCallbackUserFacing: timeoutCallbackUserFacing,
-        timeoutCallback: timeoutCallback,
-        explicitRelays: explicitRelays,
-        desiredCoverage:
-            desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
-        authenticateAs: authenticateAs,
-      ));
+      final initialResponse = requestNostrEvent(
+        NdkRequest.query(
+          '$name-page-initial-${Helpers.getRandomString(5)}',
+          name: name,
+          filters: [filter.clone()],
+          relaySet: relaySet,
+          cacheRead: cacheRead,
+          cacheWrite: cacheWrite,
+          timeoutDuration: timeout,
+          timeoutCallbackUserFacing: timeoutCallbackUserFacing,
+          timeoutCallback: timeoutCallback,
+          explicitRelays: explicitRelays,
+          desiredCoverage:
+              desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
+          authenticateAs: authenticateAs,
+        ),
+      );
 
       final initialEvents = await initialResponse.future;
 
@@ -478,20 +488,22 @@ class Requests {
           final pageFilter = filter.clone();
           pageFilter.until = state.currentUntil;
 
-          final response = requestNostrEvent(NdkRequest.query(
-            '$name-page-${Helpers.getRandomString(5)}',
-            name: name,
-            filters: [pageFilter],
-            relaySet: relaySet,
-            cacheRead: false, // Don't read from cache for subsequent pages
-            cacheWrite: cacheWrite,
-            timeoutDuration: timeout,
-            timeoutCallbackUserFacing: timeoutCallbackUserFacing,
-            timeoutCallback: timeoutCallback,
-            explicitRelays: [relay],
-            desiredCoverage: 1,
-            authenticateAs: authenticateAs,
-          ));
+          final response = requestNostrEvent(
+            NdkRequest.query(
+              '$name-page-${Helpers.getRandomString(5)}',
+              name: name,
+              filters: [pageFilter],
+              relaySet: relaySet,
+              cacheRead: false, // Don't read from cache for subsequent pages
+              cacheWrite: cacheWrite,
+              timeoutDuration: timeout,
+              timeoutCallbackUserFacing: timeoutCallbackUserFacing,
+              timeoutCallback: timeoutCallback,
+              explicitRelays: [relay],
+              desiredCoverage: 1,
+              authenticateAs: authenticateAs,
+            ),
+          );
 
           return MapEntry(relay, await response.future);
         });

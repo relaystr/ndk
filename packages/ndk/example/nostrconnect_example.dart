@@ -6,16 +6,19 @@ Future<void> main() async {
   final ndk = Ndk.emptyBootstrapRelaysConfig();
 
   final nostrConnect = NostrConnect(
-      relays: ["wss://relay.nsec.app"],
-      appName: "NDK nostr connect example",
-      appUrl: "https://dart-nostr.com/");
+    relays: ["wss://relay.nsec.app"],
+    appName: "NDK nostr connect example",
+    appUrl: "https://dart-nostr.com/",
+  );
 
   log('Logging in with ${nostrConnect.nostrConnectURL}');
   log('Enter this URI into your Nostr Connect client to log in.');
 
   try {
     await ndk.accounts.loginWithNostrConnect(
-        nostrConnect: nostrConnect, bunkers: ndk.bunkers);
+      nostrConnect: nostrConnect,
+      bunkers: ndk.bunkers,
+    );
 
     log('Successfully logged in with bunker!');
     log('Logged in as: ${ndk.accounts.getPublicKey()}');

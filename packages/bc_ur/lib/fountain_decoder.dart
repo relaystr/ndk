@@ -121,8 +121,9 @@ class FountainDecoder {
   }
 
   void reduceBy(FountainDecoderPart p) {
-    var reducedParts =
-        mixedParts.values.map((value) => reducePartByPart(value, p)).toList();
+    var reducedParts = mixedParts.values
+        .map((value) => reducePartByPart(value, p))
+        .toList();
 
     var newMixed = <Set<int>, FountainDecoderPart>{};
     for (var reducedPart in reducedParts) {
@@ -137,7 +138,9 @@ class FountainDecoder {
   }
 
   FountainDecoderPart reducePartByPart(
-      FountainDecoderPart a, FountainDecoderPart b) {
+    FountainDecoderPart a,
+    FountainDecoderPart b,
+  ) {
     if (isStrictSubset(b.indexes, a.indexes)) {
       var newIndexes = a.indexes.difference(b.indexes);
       var newData = xorWith(Uint8List.fromList(a.data), b.data);
@@ -199,8 +202,9 @@ class FountainDecoder {
 
   bool validatePart(FountainEncoderPart p) {
     if (expectedPartIndexes == null) {
-      expectedPartIndexes =
-          Set<int>.from(List<int>.generate(p.seqLen, (i) => i));
+      expectedPartIndexes = Set<int>.from(
+        List<int>.generate(p.seqLen, (i) => i),
+      );
       expectedMessageLen = p.messageLen;
       expectedChecksum = p.checksum;
       expectedFragmentLen = p.data.length;

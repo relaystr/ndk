@@ -41,8 +41,10 @@ void main() {
         engine: NdkEngine.JIT,
       ),
     );
-    ndk.accounts
-        .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+    ndk.accounts.loginPrivateKey(
+      pubkey: key1.publicKey,
+      privkey: key1.privateKey!,
+    );
 
     client = ndk.blossom;
   });
@@ -126,9 +128,13 @@ void main() {
       /// expect not to throw
 
       expect(
-          getResponse, completion('http://localhost:${server.port}/$sha256'));
-      expect(getResponseAuth,
-          completion('http://localhost:${server.port}/$sha256'));
+        getResponse,
+        completion('http://localhost:${server.port}/$sha256'),
+      );
+      expect(
+        getResponseAuth,
+        completion('http://localhost:${server.port}/$sha256'),
+      );
 
       final getResponseVoid = client.checkBlob(
         sha256: "nonexistent_sha256",
@@ -266,80 +272,93 @@ void main() {
         strategy: UploadStrategy.firstSuccess,
       );
       // Assert results by server URL instead of relying on order
-      final dead = uploadResponse
-          .firstWhere((r) => r.serverUrl == 'http://dead.example.com');
+      final dead = uploadResponse.firstWhere(
+        (r) => r.serverUrl == 'http://dead.example.com',
+      );
       final server1Result = uploadResponse.firstWhere(
-          (r) => r.serverUrl == 'http://localhost:$secondaryServerPort');
+        (r) => r.serverUrl == 'http://localhost:$secondaryServerPort',
+      );
 
       expect(dead.success, false);
       expect(server1Result.success, true);
 
       final sha256 = server1Result.descriptor!.sha256;
 
-      final deadServer = client.getBlob(sha256: sha256, serverUrls: [
-        'http://dead.example.com',
-      ]);
+      final deadServer = client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://dead.example.com'],
+      );
       expect(deadServer, throwsException);
 
-      final server1 = await client.getBlob(sha256: sha256, serverUrls: [
-        'http://localhost:${server2.port}',
-      ]);
+      final server1 = await client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:${server2.port}'],
+      );
 
       expect(utf8.decode(server1.data), equals('strategy test'));
 
-      final served2 = client.getBlob(sha256: sha256, serverUrls: [
-        'http://localhost:${server.port}',
-      ]);
+      final served2 = client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:${server.port}'],
+      );
 
       expect(served2, throwsException);
     });
 
-    test('Upload to first successful server only - mirrorAfterSuccess',
-        () async {
-      final myData = "strategy test mirrorAfterSuccess";
-      final testData = Uint8List.fromList(utf8.encode(myData));
+    test(
+      'Upload to first successful server only - mirrorAfterSuccess',
+      () async {
+        final myData = "strategy test mirrorAfterSuccess";
+        final testData = Uint8List.fromList(utf8.encode(myData));
 
-      // Upload blob
-      final uploadResponse = await client.uploadBlob(
-        data: testData,
-        serverUrls: [
-          'http://dead.example.com',
-          'http://localhost:${server2.port}',
-          'http://localhost:${server.port}',
-        ],
-        strategy: UploadStrategy.mirrorAfterSuccess,
-      );
-      // Assert results by server URL instead of relying on order
-      final dead = uploadResponse
-          .firstWhere((r) => r.serverUrl == 'http://dead.example.com');
-      final server1Result = uploadResponse.firstWhere(
-          (r) => r.serverUrl == 'http://localhost:$secondaryServerPort');
-      final server2Result = uploadResponse.firstWhere(
-          (r) => r.serverUrl == 'http://localhost:$primaryServerPort');
+        // Upload blob
+        final uploadResponse = await client.uploadBlob(
+          data: testData,
+          serverUrls: [
+            'http://dead.example.com',
+            'http://localhost:${server2.port}',
+            'http://localhost:${server.port}',
+          ],
+          strategy: UploadStrategy.mirrorAfterSuccess,
+        );
+        // Assert results by server URL instead of relying on order
+        final dead = uploadResponse.firstWhere(
+          (r) => r.serverUrl == 'http://dead.example.com',
+        );
+        final server1Result = uploadResponse.firstWhere(
+          (r) => r.serverUrl == 'http://localhost:$secondaryServerPort',
+        );
+        final server2Result = uploadResponse.firstWhere(
+          (r) => r.serverUrl == 'http://localhost:$primaryServerPort',
+        );
 
-      expect(dead.success, false);
-      expect(server1Result.success, true);
-      expect(server2Result.success, true);
+        expect(dead.success, false);
+        expect(server1Result.success, true);
+        expect(server2Result.success, true);
 
-      final sha256 = server1Result.descriptor!.sha256;
+        final sha256 = server1Result.descriptor!.sha256;
 
-      final deadServer = client.getBlob(sha256: sha256, serverUrls: [
-        'http://dead.example.com',
-      ]);
-      expect(deadServer, throwsException);
+        final deadServer = client.getBlob(
+          sha256: sha256,
+          serverUrls: ['http://dead.example.com'],
+        );
+        expect(deadServer, throwsException);
 
-      final server1 = await client.getBlob(sha256: sha256, serverUrls: [
-        'http://localhost:${server2.port}',
-      ]);
+        final server1 = await client.getBlob(
+          sha256: sha256,
+          serverUrls: ['http://localhost:${server2.port}'],
+        );
 
-      expect(utf8.decode(server1.data), equals(myData));
+        expect(utf8.decode(server1.data), equals(myData));
 
-      final served2 = await client.getBlob(sha256: sha256, serverUrls: [
-        'http://localhost:${server.port}',
-      ]);
+        final served2 = await client.getBlob(
+          sha256: sha256,
+          serverUrls: ['http://localhost:${server.port}'],
+        );
 
-      expect(utf8.decode(served2.data), equals(myData));
-    });
+        expect(utf8.decode(served2.data), equals(myData));
+      },
+    );
 
     test('Upload to first successful server only - allSimultaneous', () async {
       final myData = "strategy test allSimultaneous";
@@ -356,12 +375,15 @@ void main() {
         strategy: UploadStrategy.allSimultaneous,
       );
       // Assert results by server URL instead of relying on order
-      final dead = uploadResponse
-          .firstWhere((r) => r.serverUrl == 'http://dead.example.com');
+      final dead = uploadResponse.firstWhere(
+        (r) => r.serverUrl == 'http://dead.example.com',
+      );
       final server1Result = uploadResponse.firstWhere(
-          (r) => r.serverUrl == 'http://localhost:$secondaryServerPort');
+        (r) => r.serverUrl == 'http://localhost:$secondaryServerPort',
+      );
       final server2Result = uploadResponse.firstWhere(
-          (r) => r.serverUrl == 'http://localhost:$primaryServerPort');
+        (r) => r.serverUrl == 'http://localhost:$primaryServerPort',
+      );
 
       expect(dead.success, false);
       expect(server1Result.success, true);
@@ -369,20 +391,23 @@ void main() {
 
       final sha256 = server1Result.descriptor!.sha256;
 
-      final deadServer = client.getBlob(sha256: sha256, serverUrls: [
-        'http://dead.example.com',
-      ]);
+      final deadServer = client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://dead.example.com'],
+      );
       expect(deadServer, throwsException);
 
-      final server1 = await client.getBlob(sha256: sha256, serverUrls: [
-        'http://localhost:${server2.port}',
-      ]);
+      final server1 = await client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:${server2.port}'],
+      );
 
       expect(utf8.decode(server1.data), equals(myData));
 
-      final served2 = await client.getBlob(sha256: sha256, serverUrls: [
-        'http://localhost:${server.port}',
-      ]);
+      final served2 = await client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:${server.port}'],
+      );
 
       expect(utf8.decode(served2.data), equals(myData));
     });
@@ -393,80 +418,85 @@ void main() {
       client: HttpRequestDS(http.Client()),
       fileIO: createFileIO(),
     );
-    test('getBlobStream should properly stream large files with range requests',
-        () async {
-      // First upload a test file to the mock server
-      final testData = Uint8List.fromList(
-          List.generate(5 * 1024 * 1024, (i) => i % 256)); // 5MB test file
+    test(
+      'getBlobStream should properly stream large files with range requests',
+      () async {
+        // First upload a test file to the mock server
+        final testData = Uint8List.fromList(
+          List.generate(5 * 1024 * 1024, (i) => i % 256),
+        ); // 5MB test file
 
-      // Upload the test file
-      final uploadResponse = await client.uploadBlob(
-        data: testData,
-        serverUrls: ['http://localhost:${server.port}'],
-      );
+        // Upload the test file
+        final uploadResponse = await client.uploadBlob(
+          data: testData,
+          serverUrls: ['http://localhost:${server.port}'],
+        );
 
-      expect(uploadResponse.first.success, true);
-      final sha256 = uploadResponse.first.descriptor!.sha256;
+        expect(uploadResponse.first.success, true);
+        final sha256 = uploadResponse.first.descriptor!.sha256;
 
-      // Now test the streaming download
-      final stream = await blossomRepo.getBlobStream(
-        sha256: sha256,
-        serverUrls: ['http://localhost:${server.port}'],
-        chunkSize: 1024 * 1024, // 1MB chunks
-      );
+        // Now test the streaming download
+        final stream = await blossomRepo.getBlobStream(
+          sha256: sha256,
+          serverUrls: ['http://localhost:${server.port}'],
+          chunkSize: 1024 * 1024, // 1MB chunks
+        );
 
-      // Collect all chunks and verify the data
-      final chunks = <Uint8List>[];
-      int totalSize = 0;
+        // Collect all chunks and verify the data
+        final chunks = <Uint8List>[];
+        int totalSize = 0;
 
-      await for (final response in stream) {
-        chunks.add(response.data);
-        totalSize += response.data.length;
+        await for (final response in stream) {
+          chunks.add(response.data);
+          totalSize += response.data.length;
 
-        // Verify chunk metadata
-        expect(response.mimeType, isNotNull);
-        expect(response.contentLength, equals(testData.length));
-        //expect(response.contentRange, matches(RegExp(r'bytes \d+-\d+/\d+')));
-      }
+          // Verify chunk metadata
+          expect(response.mimeType, isNotNull);
+          expect(response.contentLength, equals(testData.length));
+          //expect(response.contentRange, matches(RegExp(r'bytes \d+-\d+/\d+')));
+        }
 
-      // Combine chunks and verify the complete file
-      final resultData = Uint8List(totalSize);
-      int offset = 0;
-      for (final chunk in chunks) {
-        resultData.setRange(offset, offset + chunk.length, chunk);
-        offset += chunk.length;
-      }
+        // Combine chunks and verify the complete file
+        final resultData = Uint8List(totalSize);
+        int offset = 0;
+        for (final chunk in chunks) {
+          resultData.setRange(offset, offset + chunk.length, chunk);
+          offset += chunk.length;
+        }
 
-      expect(resultData, equals(testData));
-      expect(totalSize, equals(testData.length));
-    });
+        expect(resultData, equals(testData));
+        expect(totalSize, equals(testData.length));
+      },
+    );
 
     test(
-        'getBlobStream should fallback to regular download if range requests not supported',
-        () async {
-      // Upload a smaller test file
-      final testData = Uint8List.fromList(
-          List.generate(1024, (i) => i % 256)); // 1KB test file
+      'getBlobStream should fallback to regular download if range requests not supported',
+      () async {
+        // Upload a smaller test file
+        final testData = Uint8List.fromList(
+          List.generate(1024, (i) => i % 256),
+        ); // 1KB test file
 
-      final uploadResponse = await client.uploadBlob(
-        data: testData,
-        serverUrls: ['http://localhost:${server.port}'],
-      );
+        final uploadResponse = await client.uploadBlob(
+          data: testData,
+          serverUrls: ['http://localhost:${server.port}'],
+        );
 
-      expect(uploadResponse.first.success, true);
-      final sha256 = uploadResponse.first.descriptor!.sha256;
+        expect(uploadResponse.first.success, true);
+        final sha256 = uploadResponse.first.descriptor!.sha256;
 
-      // Test the streaming download
-      final stream = await blossomRepo.getBlobStream(
-        sha256: sha256,
-        serverUrls: ['http://localhost:${server.port}'],
-      );
+        // Test the streaming download
+        final stream = await blossomRepo.getBlobStream(
+          sha256: sha256,
+          serverUrls: ['http://localhost:${server.port}'],
+        );
 
-      // Should receive exactly one chunk with the complete file
-      final chunks = await stream.toList();
-      expect(chunks.length, equals(1));
-      expect(chunks.first.data, equals(testData));
-    });
+        // Should receive exactly one chunk with the complete file
+        final chunks = await stream.toList();
+        expect(chunks.length, equals(1));
+        expect(chunks.first.data, equals(testData));
+      },
+    );
 
     test('getBlobStream should handle server errors gracefully', () async {
       expect(
@@ -479,39 +509,42 @@ void main() {
     });
 
     test(
-        'getBlobStream should try multiple servers until finding one that works',
-        () async {
-      final testData = Uint8List.fromList(
-          List.generate(2 * 1024 * 1024, (i) => i % 256)); // 2MB test file
+      'getBlobStream should try multiple servers until finding one that works',
+      () async {
+        final testData = Uint8List.fromList(
+          List.generate(2 * 1024 * 1024, (i) => i % 256),
+        ); // 2MB test file
 
-      final uploadResponse = await client.uploadBlob(
-        data: testData,
-        serverUrls: ['http://localhost:${server.port}'],
-      );
+        final uploadResponse = await client.uploadBlob(
+          data: testData,
+          serverUrls: ['http://localhost:${server.port}'],
+        );
 
-      final sha256 = uploadResponse.first.descriptor!.sha256;
+        final sha256 = uploadResponse.first.descriptor!.sha256;
 
-      // Test with multiple servers, including non-existent ones
-      final stream = await blossomRepo.getBlobStream(
-        sha256: sha256,
-        serverUrls: [
-          'http://nonexistent-server:${server.port}',
-          'http://localhost:${server.port}',
-          'http://another-nonexistent:${server.port}',
-        ],
-      );
+        // Test with multiple servers, including non-existent ones
+        final stream = await blossomRepo.getBlobStream(
+          sha256: sha256,
+          serverUrls: [
+            'http://nonexistent-server:${server.port}',
+            'http://localhost:${server.port}',
+            'http://another-nonexistent:${server.port}',
+          ],
+        );
 
-      final receivedData = await stream
-          .map((response) => response.data)
-          .expand((chunk) => chunk)
-          .toList();
+        final receivedData = await stream
+            .map((response) => response.data)
+            .expand((chunk) => chunk)
+            .toList();
 
-      expect(Uint8List.fromList(receivedData), equals(testData));
-    });
+        expect(Uint8List.fromList(receivedData), equals(testData));
+      },
+    );
 
     test('getBlobStream with auth', () async {
       final testData = Uint8List.fromList(
-          List.generate(2 * 1024 * 1024, (i) => i % 256)); // 2MB test file
+        List.generate(2 * 1024 * 1024, (i) => i % 256),
+      ); // 2MB test file
 
       final uploadResponse = await client.uploadBlob(
         data: testData,
@@ -542,45 +575,48 @@ void main() {
   });
 
   group("mirror", () {
-    test('mirrorToServers should mirror blob from one server to others',
-        () async {
-      final myData = "mirror test data";
-      final testData = Uint8List.fromList(utf8.encode(myData));
+    test(
+      'mirrorToServers should mirror blob from one server to others',
+      () async {
+        final myData = "mirror test data";
+        final testData = Uint8List.fromList(utf8.encode(myData));
 
-      // Upload blob to first server only
-      final uploadResponse = await client.uploadBlob(
-        data: testData,
-        serverUrls: ['http://localhost:$primaryServerPort'],
-      );
-      expect(uploadResponse.first.success, true);
+        // Upload blob to first server only
+        final uploadResponse = await client.uploadBlob(
+          data: testData,
+          serverUrls: ['http://localhost:$primaryServerPort'],
+        );
+        expect(uploadResponse.first.success, true);
 
-      final sha256 = uploadResponse.first.descriptor!.sha256;
-      final blossomUrl =
-          Uri.parse('http://localhost:$primaryServerPort/$sha256');
+        final sha256 = uploadResponse.first.descriptor!.sha256;
+        final blossomUrl = Uri.parse(
+          'http://localhost:$primaryServerPort/$sha256',
+        );
 
-      // Mirror to the second server
-      final mirrorResponse = await client.mirrorToServers(
-        blossomUrl: blossomUrl,
-        targetServerUrls: ['http://localhost:$secondaryServerPort'],
-      );
+        // Mirror to the second server
+        final mirrorResponse = await client.mirrorToServers(
+          blossomUrl: blossomUrl,
+          targetServerUrls: ['http://localhost:$secondaryServerPort'],
+        );
 
-      expect(mirrorResponse.length, equals(1));
-      expect(mirrorResponse.first.success, true);
-      expect(mirrorResponse.first.descriptor?.sha256, equals(sha256));
+        expect(mirrorResponse.length, equals(1));
+        expect(mirrorResponse.first.success, true);
+        expect(mirrorResponse.first.descriptor?.sha256, equals(sha256));
 
-      // Verify both servers now have the blob
-      final fromServer1 = await client.getBlob(
-        sha256: sha256,
-        serverUrls: ['http://localhost:$primaryServerPort'],
-      );
-      final fromServer2 = await client.getBlob(
-        sha256: sha256,
-        serverUrls: ['http://localhost:$secondaryServerPort'],
-      );
+        // Verify both servers now have the blob
+        final fromServer1 = await client.getBlob(
+          sha256: sha256,
+          serverUrls: ['http://localhost:$primaryServerPort'],
+        );
+        final fromServer2 = await client.getBlob(
+          sha256: sha256,
+          serverUrls: ['http://localhost:$secondaryServerPort'],
+        );
 
-      expect(utf8.decode(fromServer1.data), equals(myData));
-      expect(utf8.decode(fromServer2.data), equals(myData));
-    });
+        expect(utf8.decode(fromServer1.data), equals(myData));
+        expect(utf8.decode(fromServer2.data), equals(myData));
+      },
+    );
 
     test('mirrorToServers accepts Created response status', () async {
       final mirrorServer = MockBlossomServer(
@@ -600,8 +636,9 @@ void main() {
       expect(uploadResponse.first.success, true);
 
       final sha256 = uploadResponse.first.descriptor!.sha256;
-      final blossomUrl =
-          Uri.parse('http://localhost:$primaryServerPort/$sha256');
+      final blossomUrl = Uri.parse(
+        'http://localhost:$primaryServerPort/$sha256',
+      );
 
       final mirrorResponse = await client.mirrorToServers(
         blossomUrl: blossomUrl,
@@ -612,42 +649,46 @@ void main() {
       expect(mirrorResponse.first.descriptor?.sha256, equals(sha256));
     });
 
-    test('mirrorToServers should mirror to multiple servers simultaneously',
-        () async {
-      final myData = "multi mirror test";
-      final testData = Uint8List.fromList(utf8.encode(myData));
+    test(
+      'mirrorToServers should mirror to multiple servers simultaneously',
+      () async {
+        final myData = "multi mirror test";
+        final testData = Uint8List.fromList(utf8.encode(myData));
 
-      // Upload to first server
-      final uploadResponse = await client.uploadBlob(
-        data: testData,
-        serverUrls: ['http://localhost:$primaryServerPort'],
-      );
-      expect(uploadResponse.first.success, true);
+        // Upload to first server
+        final uploadResponse = await client.uploadBlob(
+          data: testData,
+          serverUrls: ['http://localhost:$primaryServerPort'],
+        );
+        expect(uploadResponse.first.success, true);
 
-      final sha256 = uploadResponse.first.descriptor!.sha256;
-      final blossomUrl =
-          Uri.parse('http://localhost:$primaryServerPort/$sha256');
+        final sha256 = uploadResponse.first.descriptor!.sha256;
+        final blossomUrl = Uri.parse(
+          'http://localhost:$primaryServerPort/$sha256',
+        );
 
-      // Mirror to second server (we only have 2 servers in tests, but this demonstrates the capability)
-      final mirrorResponse = await client.mirrorToServers(
-        blossomUrl: blossomUrl,
-        targetServerUrls: ['http://localhost:$secondaryServerPort'],
-      );
+        // Mirror to second server (we only have 2 servers in tests, but this demonstrates the capability)
+        final mirrorResponse = await client.mirrorToServers(
+          blossomUrl: blossomUrl,
+          targetServerUrls: ['http://localhost:$secondaryServerPort'],
+        );
 
-      expect(mirrorResponse.every((r) => r.success), true);
+        expect(mirrorResponse.every((r) => r.success), true);
 
-      // Verify all servers have the blob
-      final fromServer2 = await client.getBlob(
-        sha256: sha256,
-        serverUrls: ['http://localhost:$secondaryServerPort'],
-      );
+        // Verify all servers have the blob
+        final fromServer2 = await client.getBlob(
+          sha256: sha256,
+          serverUrls: ['http://localhost:$secondaryServerPort'],
+        );
 
-      expect(utf8.decode(fromServer2.data), equals(myData));
-    });
+        expect(utf8.decode(fromServer2.data), equals(myData));
+      },
+    );
 
     test('mirrorToServers should throw error if URL has no SHA256', () async {
-      final invalidUrl =
-          Uri.parse('http://localhost:$primaryServerPort/invalid-url');
+      final invalidUrl = Uri.parse(
+        'http://localhost:$primaryServerPort/invalid-url',
+      );
 
       expect(
         () => client.mirrorToServers(
@@ -670,8 +711,9 @@ void main() {
       expect(uploadResponse.first.success, true);
 
       final sha256 = uploadResponse.first.descriptor!.sha256;
-      final blossomUrl =
-          Uri.parse('http://localhost:$primaryServerPort/$sha256');
+      final blossomUrl = Uri.parse(
+        'http://localhost:$primaryServerPort/$sha256',
+      );
 
       // Try to mirror to both a working server and a dead one
       final mirrorResponse = await client.mirrorToServers(
@@ -686,9 +728,11 @@ void main() {
 
       // Find results by server URL
       final workingServer = mirrorResponse.firstWhere(
-          (r) => r.serverUrl == 'http://localhost:$secondaryServerPort');
-      final deadServer = mirrorResponse
-          .firstWhere((r) => r.serverUrl == 'http://dead.example.com');
+        (r) => r.serverUrl == 'http://localhost:$secondaryServerPort',
+      );
+      final deadServer = mirrorResponse.firstWhere(
+        (r) => r.serverUrl == 'http://dead.example.com',
+      );
 
       expect(workingServer.success, true);
       expect(deadServer.success, false);
@@ -705,11 +749,12 @@ void main() {
   group("report", () {
     test('report', () async {
       final reportRsp = await client.report(
-          serverUrl: 'http://localhost:${server.port}',
-          sha256: "some_sha256",
-          eventId: "some_event_id",
-          reportMsg: "some_report_msg",
-          reportType: "malware");
+        serverUrl: 'http://localhost:${server.port}',
+        sha256: "some_sha256",
+        eventId: "some_event_id",
+        reportMsg: "some_report_msg",
+        reportType: "malware",
+      );
 
       expect(reportRsp, equals(200));
     });
@@ -792,63 +837,69 @@ void main() {
       }
 
       expect(uploadResults.any((result) => result.success), true);
-      expect(uploadResults.firstWhere((result) => result.success).descriptor,
-          isNotNull);
+      expect(
+        uploadResults.firstWhere((result) => result.success).descriptor,
+        isNotNull,
+      );
     });
 
-    test('uploadBlobFromFile emits phase-aware BlobUploadProgress stream',
-        () async {
-      final testFile = File('${tempDir.path}/test_progress_stream.txt');
-      await testFile.writeAsString('Progress stream validation payload');
+    test(
+      'uploadBlobFromFile emits phase-aware BlobUploadProgress stream',
+      () async {
+        final testFile = File('${tempDir.path}/test_progress_stream.txt');
+        await testFile.writeAsString('Progress stream validation payload');
 
-      final events = <BlobUploadProgress>[];
+        final events = <BlobUploadProgress>[];
 
-      await for (final progress in client.uploadBlobFromFile(
-        filePath: testFile.path,
-        serverUrls: ['http://localhost:$primaryServerPort'],
-      )) {
-        events.add(progress);
-      }
-
-      expect(events, isNotEmpty);
-      expect(events.first.phase, equals(UploadPhase.hashing));
-      expect(events.any((e) => e.phase == UploadPhase.uploading), isTrue);
-      expect(events.any((e) => e.phase == UploadPhase.mirroring), isTrue);
-
-      final firstUploadingIndex =
-          events.indexWhere((e) => e.phase == UploadPhase.uploading);
-      final firstMirroringIndex =
-          events.indexWhere((e) => e.phase == UploadPhase.mirroring);
-
-      expect(firstUploadingIndex, greaterThan(0));
-      expect(firstMirroringIndex, greaterThan(firstUploadingIndex));
-
-      // Once upload starts, hashing should not appear again.
-      final hasHashingAfterUpload = events
-          .skip(firstUploadingIndex)
-          .any((e) => e.phase == UploadPhase.hashing);
-      expect(hasHashingAfterUpload, isFalse);
-
-      // Overall percentage should map to phase bands.
-      for (final event in events) {
-        expect(event.percentage, inInclusiveRange(0, 100));
-
-        switch (event.phase) {
-          case UploadPhase.hashing:
-            expect(event.percentage, inInclusiveRange(0, 33));
-          case UploadPhase.uploading:
-            expect(event.percentage, inInclusiveRange(33, 66));
-          case UploadPhase.mirroring:
-            expect(event.percentage, inInclusiveRange(66, 100));
+        await for (final progress in client.uploadBlobFromFile(
+          filePath: testFile.path,
+          serverUrls: ['http://localhost:$primaryServerPort'],
+        )) {
+          events.add(progress);
         }
-      }
 
-      final lastEvent = events.last;
-      expect(lastEvent.isComplete, isTrue);
-      expect(lastEvent.phase, equals(UploadPhase.mirroring));
-      expect(lastEvent.percentage, closeTo(100, 0.000001));
-      expect(lastEvent.completedUploads.any((u) => u.success), isTrue);
-    });
+        expect(events, isNotEmpty);
+        expect(events.first.phase, equals(UploadPhase.hashing));
+        expect(events.any((e) => e.phase == UploadPhase.uploading), isTrue);
+        expect(events.any((e) => e.phase == UploadPhase.mirroring), isTrue);
+
+        final firstUploadingIndex = events.indexWhere(
+          (e) => e.phase == UploadPhase.uploading,
+        );
+        final firstMirroringIndex = events.indexWhere(
+          (e) => e.phase == UploadPhase.mirroring,
+        );
+
+        expect(firstUploadingIndex, greaterThan(0));
+        expect(firstMirroringIndex, greaterThan(firstUploadingIndex));
+
+        // Once upload starts, hashing should not appear again.
+        final hasHashingAfterUpload = events
+            .skip(firstUploadingIndex)
+            .any((e) => e.phase == UploadPhase.hashing);
+        expect(hasHashingAfterUpload, isFalse);
+
+        // Overall percentage should map to phase bands.
+        for (final event in events) {
+          expect(event.percentage, inInclusiveRange(0, 100));
+
+          switch (event.phase) {
+            case UploadPhase.hashing:
+              expect(event.percentage, inInclusiveRange(0, 33));
+            case UploadPhase.uploading:
+              expect(event.percentage, inInclusiveRange(33, 66));
+            case UploadPhase.mirroring:
+              expect(event.percentage, inInclusiveRange(66, 100));
+          }
+        }
+
+        final lastEvent = events.last;
+        expect(lastEvent.isComplete, isTrue);
+        expect(lastEvent.phase, equals(UploadPhase.mirroring));
+        expect(lastEvent.percentage, closeTo(100, 0.000001));
+        expect(lastEvent.completedUploads.any((u) => u.success), isTrue);
+      },
+    );
 
     test('downloadBlobToFile should download a blob to disk', () async {
       // First, upload some test data
@@ -881,7 +932,8 @@ void main() {
       // Create a test file with binary content
       final uploadFile = File('${tempDir.path}/test_binary_upload.bin');
       final testData = Uint8List.fromList(
-          List.generate(1024, (i) => i % 256)); // 1KB of test data
+        List.generate(1024, (i) => i % 256),
+      ); // 1KB of test data
       await uploadFile.writeAsBytes(testData);
 
       // Upload the file
@@ -938,89 +990,96 @@ void main() {
       expect(downloadedContent, equals(testContent));
     });
 
-    test('uploadBlobFromFile with multiple servers - mirrorAfterSuccess',
-        () async {
-      final testFile = File('${tempDir.path}/test_mirror.txt');
-      final testContent = 'Mirror upload test';
-      await testFile.writeAsString(testContent);
+    test(
+      'uploadBlobFromFile with multiple servers - mirrorAfterSuccess',
+      () async {
+        final testFile = File('${tempDir.path}/test_mirror.txt');
+        final testContent = 'Mirror upload test';
+        await testFile.writeAsString(testContent);
 
-      // Upload with mirror strategy
-      List<BlobUploadResult> uploadResults = const [];
-      await for (final progress in client.uploadBlobFromFile(
-        filePath: testFile.path,
-        serverUrls: [
-          'http://localhost:$primaryServerPort',
-          'http://localhost:$secondaryServerPort',
-        ],
-        strategy: UploadStrategy.mirrorAfterSuccess,
-      )) {
-        if (progress.completedUploads.isNotEmpty) {
-          uploadResults = progress.completedUploads;
+        // Upload with mirror strategy
+        List<BlobUploadResult> uploadResults = const [];
+        await for (final progress in client.uploadBlobFromFile(
+          filePath: testFile.path,
+          serverUrls: [
+            'http://localhost:$primaryServerPort',
+            'http://localhost:$secondaryServerPort',
+          ],
+          strategy: UploadStrategy.mirrorAfterSuccess,
+        )) {
+          if (progress.completedUploads.isNotEmpty) {
+            uploadResults = progress.completedUploads;
+          }
         }
-      }
 
-      // Should have uploaded to both servers
-      expect(uploadResults.length, equals(2));
-      expect(uploadResults.every((r) => r.success), true);
+        // Should have uploaded to both servers
+        expect(uploadResults.length, equals(2));
+        expect(uploadResults.every((r) => r.success), true);
 
-      final sha256 = uploadResults.first.descriptor!.sha256;
+        final sha256 = uploadResults.first.descriptor!.sha256;
 
-      // Verify both servers have the file
-      final fromServer1 = await client.getBlob(
-        sha256: sha256,
-        serverUrls: ['http://localhost:$primaryServerPort'],
-      );
-      final fromServer2 = await client.getBlob(
-        sha256: sha256,
-        serverUrls: ['http://localhost:$secondaryServerPort'],
-      );
+        // Verify both servers have the file
+        final fromServer1 = await client.getBlob(
+          sha256: sha256,
+          serverUrls: ['http://localhost:$primaryServerPort'],
+        );
+        final fromServer2 = await client.getBlob(
+          sha256: sha256,
+          serverUrls: ['http://localhost:$secondaryServerPort'],
+        );
 
-      expect(utf8.decode(fromServer1.data), equals(testContent));
-      expect(utf8.decode(fromServer2.data), equals(testContent));
-    });
+        expect(utf8.decode(fromServer1.data), equals(testContent));
+        expect(utf8.decode(fromServer2.data), equals(testContent));
+      },
+    );
 
     test(
-        'uploadBlobFromFile mirrorAfterSuccess reports mirrorsTotal and mirrorsCompleted progression',
-        () async {
-      final testFile = File('${tempDir.path}/test_mirror_progress.txt');
-      await testFile.writeAsString('Mirror progress test');
+      'uploadBlobFromFile mirrorAfterSuccess reports mirrorsTotal and mirrorsCompleted progression',
+      () async {
+        final testFile = File('${tempDir.path}/test_mirror_progress.txt');
+        await testFile.writeAsString('Mirror progress test');
 
-      final events = <BlobUploadProgress>[];
-      await for (final progress in client.uploadBlobFromFile(
-        filePath: testFile.path,
-        serverUrls: [
-          'http://localhost:$primaryServerPort',
-          'http://localhost:$secondaryServerPort',
-        ],
-        strategy: UploadStrategy.mirrorAfterSuccess,
-      )) {
-        events.add(progress);
-      }
+        final events = <BlobUploadProgress>[];
+        await for (final progress in client.uploadBlobFromFile(
+          filePath: testFile.path,
+          serverUrls: [
+            'http://localhost:$primaryServerPort',
+            'http://localhost:$secondaryServerPort',
+          ],
+          strategy: UploadStrategy.mirrorAfterSuccess,
+        )) {
+          events.add(progress);
+        }
 
-      final mirrorEvents = events
-          .where((e) =>
-              e.phase == UploadPhase.mirroring &&
-              (e.mirrorsTotal > 0 || e.mirrorsCompleted > 0))
-          .toList();
+        final mirrorEvents = events
+            .where(
+              (e) =>
+                  e.phase == UploadPhase.mirroring &&
+                  (e.mirrorsTotal > 0 || e.mirrorsCompleted > 0),
+            )
+            .toList();
 
-      expect(mirrorEvents, isNotEmpty);
+        expect(mirrorEvents, isNotEmpty);
 
-      // With 2 servers and first success strategy, only 1 mirror should be needed.
-      expect(mirrorEvents.every((e) => e.mirrorsTotal == 1), isTrue);
+        // With 2 servers and first success strategy, only 1 mirror should be needed.
+        expect(mirrorEvents.every((e) => e.mirrorsTotal == 1), isTrue);
 
-      // Should emit start of mirroring and completion of mirroring.
-      expect(mirrorEvents.any((e) => e.mirrorsCompleted == 0), isTrue);
-      expect(mirrorEvents.any((e) => e.mirrorsCompleted == e.mirrorsTotal),
-          isTrue);
-
-      // Progression should be monotonic.
-      for (var i = 1; i < mirrorEvents.length; i++) {
+        // Should emit start of mirroring and completion of mirroring.
+        expect(mirrorEvents.any((e) => e.mirrorsCompleted == 0), isTrue);
         expect(
-          mirrorEvents[i].mirrorsCompleted,
-          greaterThanOrEqualTo(mirrorEvents[i - 1].mirrorsCompleted),
+          mirrorEvents.any((e) => e.mirrorsCompleted == e.mirrorsTotal),
+          isTrue,
         );
-      }
-    });
+
+        // Progression should be monotonic.
+        for (var i = 1; i < mirrorEvents.length; i++) {
+          expect(
+            mirrorEvents[i].mirrorsCompleted,
+            greaterThanOrEqualTo(mirrorEvents[i - 1].mirrorsCompleted),
+          );
+        }
+      },
+    );
 
     test('downloadBlobToFile should handle server fallback', () async {
       // Upload to one server
@@ -1051,24 +1110,27 @@ void main() {
     });
 
     test(
-        'uploadBlob should work without logged in account using temporary signer',
-        () async {
-      final ndkNoLogin = Ndk(
-        NdkConfig(
-          eventVerifier: MockEventVerifier(),
-          cache: MemCacheManager(),
-        ),
-      );
+      'uploadBlob should work without logged in account using temporary signer',
+      () async {
+        final ndkNoLogin = Ndk(
+          NdkConfig(
+            eventVerifier: MockEventVerifier(),
+            cache: MemCacheManager(),
+          ),
+        );
 
-      final testData = Uint8List.fromList(utf8.encode('Temporary signer test'));
+        final testData = Uint8List.fromList(
+          utf8.encode('Temporary signer test'),
+        );
 
-      final uploadResponse = await ndkNoLogin.blossom.uploadBlob(
-        data: testData,
-        serverUrls: ['http://localhost:${server.port}'],
-      );
+        final uploadResponse = await ndkNoLogin.blossom.uploadBlob(
+          data: testData,
+          serverUrls: ['http://localhost:${server.port}'],
+        );
 
-      expect(uploadResponse.first.success, true);
-      expect(uploadResponse.first.descriptor, isNotNull);
-    });
+        expect(uploadResponse.first.success, true);
+        expect(uploadResponse.first.descriptor, isNotNull);
+      },
+    );
   });
 }

@@ -66,8 +66,9 @@ class _HomePageState extends State<HomePage> {
               final profileIcon = loggedPubkey == null
                   ? CircleAvatar(
                       radius: 14,
-                      backgroundColor:
-                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                       child: Icon(
                         Icons.person_outline,
                         size: 16,
@@ -75,8 +76,9 @@ class _HomePageState extends State<HomePage> {
                       ),
                     )
                   : NPicture(ndkFlutter: ndkFlutter, circleAvatarRadius: 14);
-              final unreadDmCount =
-                  loggedPubkey == null ? 0 : dmLiveState.unreadCount;
+              final unreadDmCount = loggedPubkey == null
+                  ? 0
+                  : dmLiveState.unreadCount;
               return IconButton(
                 tooltip: l10n.profileTooltip,
                 onPressed: () {
@@ -129,9 +131,7 @@ class _HomePageState extends State<HomePage> {
                           child: Text(
                             unreadDmCount > 99 ? '99+' : '$unreadDmCount',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
+                            style: Theme.of(context).textTheme.labelSmall
                                 ?.copyWith(
                                   color: Theme.of(context).colorScheme.onError,
                                   fontWeight: FontWeight.w700,
@@ -287,17 +287,12 @@ class _NavCard extends StatelessWidget {
 class _UnreadBadge extends StatelessWidget {
   final int count;
 
-  const _UnreadBadge({
-    required this.count,
-  });
+  const _UnreadBadge({required this.count});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 3,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.error,
         borderRadius: BorderRadius.circular(999),
@@ -305,9 +300,9 @@ class _UnreadBadge extends StatelessWidget {
       child: Text(
         count > 99 ? '99+' : '$count',
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onError,
-              fontWeight: FontWeight.w700,
-            ),
+          color: Theme.of(context).colorScheme.onError,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

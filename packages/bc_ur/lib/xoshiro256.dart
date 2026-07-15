@@ -14,14 +14,14 @@ final List<BigInt> JUMP = [
   BigInt.parse('1733541517147835066'), // 0x180ec6d33cfd0aba
   BigInt.parse('15369461998538869804'), // 0xd5a61266f0c9392c
   BigInt.parse('12197330014494892970'), // 0xa9582618e03fc9aa
-  BigInt.parse('4138621300654548508') // 0x39abdc4529b1661c
+  BigInt.parse('4138621300654548508'), // 0x39abdc4529b1661c
 ];
 
 final List<BigInt> LONG_JUMP = [
   BigInt.parse('8555335991981124543'), // 0x76e15d3efefdcbbf
   BigInt.parse('14194738350262587827'), // 0xc5004e441c522fb3
   BigInt.parse('8593769755450971713'), // 0x77710069854ee241
-  BigInt.parse('4111657796531716661') // 0x39109bb02acbe635
+  BigInt.parse('4111657796531716661'), // 0x39109bb02acbe635
 ];
 
 class Xoshiro256 {

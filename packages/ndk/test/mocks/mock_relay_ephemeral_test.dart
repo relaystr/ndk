@@ -12,10 +12,7 @@ void main() {
     late MockRelay mockRelay;
 
     setUp(() async {
-      mockRelay = MockRelay(
-        name: 'ephemeral-test-relay',
-        explicitPort: 4050,
-      );
+      mockRelay = MockRelay(name: 'ephemeral-test-relay', explicitPort: 4050);
       await mockRelay.startServer();
     });
 
@@ -34,88 +31,87 @@ void main() {
       throw TimeoutException('MockRelay did not register the subscription.');
     }
 
-    test('ephemeral events should be broadcast to matching subscriptions',
-        () async {
-      final keyPair1 = Bip340.generatePrivateKey();
-      final keyPair2 = Bip340.generatePrivateKey();
+    test(
+      'ephemeral events should be broadcast to matching subscriptions',
+      () async {
+        final keyPair1 = Bip340.generatePrivateKey();
+        final keyPair2 = Bip340.generatePrivateKey();
 
-      // Create two NDK clients
-      final ndk1 = Ndk(
-        NdkConfig(
-          cache: MemCacheManager(),
-          eventVerifier: MockEventVerifier(),
-          bootstrapRelays: [mockRelay.url],
-        ),
-      );
+        // Create two NDK clients
+        final ndk1 = Ndk(
+          NdkConfig(
+            cache: MemCacheManager(),
+            eventVerifier: MockEventVerifier(),
+            bootstrapRelays: [mockRelay.url],
+          ),
+        );
 
-      final ndk2 = Ndk(
-        NdkConfig(
-          cache: MemCacheManager(),
-          eventVerifier: MockEventVerifier(),
-          bootstrapRelays: [mockRelay.url],
-        ),
-      );
+        final ndk2 = Ndk(
+          NdkConfig(
+            cache: MemCacheManager(),
+            eventVerifier: MockEventVerifier(),
+            bootstrapRelays: [mockRelay.url],
+          ),
+        );
 
-      // Client 2 subscribes to ephemeral events (kind 21133) tagged with their pubkey
-      final receivedEvents = <Nip01Event>[];
-      final completer = Completer<void>();
+        // Client 2 subscribes to ephemeral events (kind 21133) tagged with their pubkey
+        final receivedEvents = <Nip01Event>[];
+        final completer = Completer<void>();
 
-      final subscription = ndk2.requests.subscription(
-        filter: Filter(
-          kinds: [21133],
-          pTags: [keyPair2.publicKey],
-        ),
-      );
+        final subscription = ndk2.requests.subscription(
+          filter: Filter(kinds: [21133], pTags: [keyPair2.publicKey]),
+        );
 
-      subscription.stream.listen((event) {
-        receivedEvents.add(event);
-        if (!completer.isCompleted) {
-          completer.complete();
-        }
-      });
+        subscription.stream.listen((event) {
+          receivedEvents.add(event);
+          if (!completer.isCompleted) {
+            completer.complete();
+          }
+        });
 
-      await waitForSubscriptionRegistration();
+        await waitForSubscriptionRegistration();
 
-      // Client 1 sends an ephemeral event (kind 21133 - NIP-46)
-      final ephemeralEvent = Nip01Event(
-        pubKey: keyPair1.publicKey,
-        kind: 21133,
-        tags: [
-          ['p', keyPair2.publicKey]
-        ],
-        content: 'test ephemeral content',
-      );
-      final signedEvent = Nip01Utils.signWithPrivateKey(
-        event: ephemeralEvent,
-        privateKey: keyPair1.privateKey!,
-      );
+        // Client 1 sends an ephemeral event (kind 21133 - NIP-46)
+        final ephemeralEvent = Nip01Event(
+          pubKey: keyPair1.publicKey,
+          kind: 21133,
+          tags: [
+            ['p', keyPair2.publicKey],
+          ],
+          content: 'test ephemeral content',
+        );
+        final signedEvent = Nip01Utils.signWithPrivateKey(
+          event: ephemeralEvent,
+          privateKey: keyPair1.privateKey!,
+        );
 
-      final broadcast = ndk1.broadcast.broadcast(
-        nostrEvent: signedEvent,
-        specificRelays: [mockRelay.url],
-      );
-      await broadcast.broadcastDoneFuture;
+        final broadcast = ndk1.broadcast.broadcast(
+          nostrEvent: signedEvent,
+          specificRelays: [mockRelay.url],
+        );
+        await broadcast.broadcastDoneFuture;
 
-      // Wait for event to be broadcast (with timeout)
-      await completer.future.timeout(
-        Duration(seconds: 2),
-        onTimeout: () => null,
-      );
+        // Wait for event to be broadcast (with timeout)
+        await completer.future.timeout(
+          Duration(seconds: 2),
+          onTimeout: () => null,
+        );
 
-      // Verify client2 received the ephemeral event
-      expect(
-        receivedEvents.length,
-        equals(1),
-        reason:
-            'Ephemeral events should be broadcast to matching subscriptions',
-      );
-      expect(receivedEvents.first.kind, equals(21133));
-      expect(receivedEvents.first.content, equals('test ephemeral content'));
+        // Verify client2 received the ephemeral event
+        expect(
+          receivedEvents.length,
+          equals(1),
+          reason:
+              'Ephemeral events should be broadcast to matching subscriptions',
+        );
+        expect(receivedEvents.first.kind, equals(21133));
+        expect(receivedEvents.first.content, equals('test ephemeral content'));
 
-      // Cleanup
-      await ndk1.destroy();
-      await ndk2.destroy();
-    });
+        // Cleanup
+        await ndk1.destroy();
+        await ndk2.destroy();
+      },
+    );
 
     test('ephemeral events should NOT be stored for later retrieval', () async {
       final keyPair1 = Bip340.generatePrivateKey();
@@ -134,7 +130,7 @@ void main() {
         pubKey: keyPair1.publicKey,
         kind: 21133,
         tags: [
-          ['p', keyPair2.publicKey]
+          ['p', keyPair2.publicKey],
         ],
         content: 'ephemeral content',
       );
@@ -164,10 +160,7 @@ void main() {
       final receivedEvents = <Nip01Event>[];
 
       final response = ndk2.requests.query(
-        filter: Filter(
-          kinds: [21133],
-          authors: [keyPair1.publicKey],
-        ),
+        filter: Filter(kinds: [21133], authors: [keyPair1.publicKey]),
       );
 
       await for (final event in response.stream) {
@@ -175,8 +168,11 @@ void main() {
       }
 
       // Ephemeral events should NOT be returned in historical queries
-      expect(receivedEvents.length, equals(0),
-          reason: 'Ephemeral events should not be stored for later retrieval');
+      expect(
+        receivedEvents.length,
+        equals(0),
+        reason: 'Ephemeral events should not be stored for later retrieval',
+      );
 
       // Cleanup
       await ndk1.destroy();

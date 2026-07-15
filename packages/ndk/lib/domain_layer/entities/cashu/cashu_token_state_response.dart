@@ -5,11 +5,7 @@ class CashuTokenStateResponse {
   final CashuProofState state;
   final String? witness;
 
-  CashuTokenStateResponse({
-    required this.Y,
-    required this.state,
-    this.witness,
-  });
+  CashuTokenStateResponse({required this.Y, required this.state, this.witness});
 
   factory CashuTokenStateResponse.fromServerMap(Map<String, dynamic> json) {
     return CashuTokenStateResponse(

@@ -7,13 +7,20 @@ void _runSearchTests(CacheManager Function() getCacheManager) {
 
     final metadatas = [
       Metadata(
-          pubKey: 'search_meta_1', name: 'Alice Smith', displayName: 'Alice'),
+        pubKey: 'search_meta_1',
+        name: 'Alice Smith',
+        displayName: 'Alice',
+      ),
       Metadata(
-          pubKey: 'search_meta_2', name: 'Bob Jones', displayName: 'Bobby'),
+        pubKey: 'search_meta_2',
+        name: 'Bob Jones',
+        displayName: 'Bobby',
+      ),
       Metadata(
-          pubKey: 'search_meta_3',
-          name: 'Alice Wonder',
-          nip05: 'alice@example.com'),
+        pubKey: 'search_meta_3',
+        name: 'Alice Wonder',
+        nip05: 'alice@example.com',
+      ),
     ];
 
     await cacheManager.saveMetadatas(metadatas);
@@ -21,11 +28,14 @@ void _runSearchTests(CacheManager Function() getCacheManager) {
     final aliceResults = await cacheManager.searchMetadatas('Alice', 10);
     expect(aliceResults.length, greaterThanOrEqualTo(2));
     expect(
-        aliceResults.every((m) =>
+      aliceResults.every(
+        (m) =>
             m.name?.toLowerCase().contains('alice') == true ||
             m.displayName?.toLowerCase().contains('alice') == true ||
-            m.nip05?.toLowerCase().contains('alice') == true),
-        isTrue);
+            m.nip05?.toLowerCase().contains('alice') == true,
+      ),
+      isTrue,
+    );
   });
 
   test('searchMetadatas with limit', () async {

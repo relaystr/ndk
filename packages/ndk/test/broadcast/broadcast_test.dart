@@ -36,46 +36,37 @@ void main() {
 
       stopwatch.stop();
 
-      expect(
-        stopwatch.elapsedMilliseconds,
-        lessThan(5000),
-      );
+      expect(stopwatch.elapsedMilliseconds, lessThan(5000));
     },
   );
 
-  test(
-    'broadcast to 0 relay should not time out',
-    () async {
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
-      addTearDown(() async => ndk.destroy());
+  test('broadcast to 0 relay should not time out', () async {
+    final ndk = Ndk.emptyBootstrapRelaysConfig();
+    addTearDown(() async => ndk.destroy());
 
-      final keyPair = Bip340.generatePrivateKey();
-      ndk.accounts.loginPrivateKey(
-        privkey: keyPair.privateKey!,
-        pubkey: keyPair.publicKey,
-      );
+    final keyPair = Bip340.generatePrivateKey();
+    ndk.accounts.loginPrivateKey(
+      privkey: keyPair.privateKey!,
+      pubkey: keyPair.publicKey,
+    );
 
-      final event = Nip01Event(
-        pubKey: keyPair.publicKey,
-        kind: 1,
-        content: '',
-        tags: [],
-      );
+    final event = Nip01Event(
+      pubKey: keyPair.publicKey,
+      kind: 1,
+      content: '',
+      tags: [],
+    );
 
-      final stopwatch = Stopwatch()..start();
+    final stopwatch = Stopwatch()..start();
 
-      final broadcast = ndk.broadcast.broadcast(
-        nostrEvent: event,
-        specificRelays: [],
-      );
-      await broadcast.broadcastDoneFuture;
+    final broadcast = ndk.broadcast.broadcast(
+      nostrEvent: event,
+      specificRelays: [],
+    );
+    await broadcast.broadcastDoneFuture;
 
-      stopwatch.stop();
+    stopwatch.stop();
 
-      expect(
-        stopwatch.elapsedMilliseconds,
-        lessThan(5000),
-      );
-    },
-  );
+    expect(stopwatch.elapsedMilliseconds, lessThan(5000));
+  });
 }

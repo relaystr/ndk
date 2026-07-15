@@ -158,5 +158,5 @@ enum NdkEngine {
 
   /// Uses Just-In-Time (JIT) mode for network operations.
   // ignore: constant_identifier_names
-  JIT
+  JIT,
 }

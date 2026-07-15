@@ -23,8 +23,7 @@ void main() {
   EventSigner eventSignerFactory({
     String? privateKey,
     required String publicKey,
-  }) =>
-      Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
+  }) => Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
 
   group('Zaps', () {
     KeyPair key = Bip340.generatePrivateKey();
@@ -39,26 +38,32 @@ void main() {
       final link = 'https://domain.com/.well-known/lnurlp/name';
 
       // Mock the client.get method
-      when(client.get(Uri.parse(link), headers: {"Accept": "application/json"}))
-          .thenAnswer((_) async => http.Response(jsonEncode(response), 200));
+      when(
+        client.get(Uri.parse(link), headers: {"Accept": "application/json"}),
+      ).thenAnswer((_) async => http.Response(jsonEncode(response), 200));
 
-      when(client.get(
-              argThat(
-                TypeMatcher<Uri>().having((uri) => uri.toString(), 'uri',
-                    startsWith('https://domain.com/callback')),
-              ),
-              headers: {"Accept": "application/json"}))
-          .thenAnswer((_) async => http.Response(
-              jsonEncode({
-                "status": "OK",
-                "successAction": {
-                  "tag": "message",
-                  "message": "Payment Received!"
-                },
-                "routes": [],
-                "pr": "lnbc1000...."
-              }),
-              200));
+      when(
+        client.get(
+          argThat(
+            TypeMatcher<Uri>().having(
+              (uri) => uri.toString(),
+              'uri',
+              startsWith('https://domain.com/callback'),
+            ),
+          ),
+          headers: {"Accept": "application/json"},
+        ),
+      ).thenAnswer(
+        (_) async => http.Response(
+          jsonEncode({
+            "status": "OK",
+            "successAction": {"tag": "message", "message": "Payment Received!"},
+            "routes": [],
+            "pr": "lnbc1000....",
+          }),
+          200,
+        ),
+      );
       final amount = 1000;
 
       final ndk = Ndk.defaultConfig();
@@ -68,13 +73,16 @@ void main() {
       // Logger.setLogLevel(Logger.logLevels.trace);
 
       ZapRequest zapRequest = await zaps.createZapRequest(
-          amountSats: amount,
-          eventId: 'eventId',
-          comment: 'comment',
-          signer: eventSignerFactory(
-              privateKey: key.privateKey, publicKey: key.publicKey),
-          pubKey: 'pubKey',
-          relays: ['relay1', 'relay2']);
+        amountSats: amount,
+        eventId: 'eventId',
+        comment: 'comment',
+        signer: eventSignerFactory(
+          privateKey: key.privateKey,
+          publicKey: key.publicKey,
+        ),
+        pubKey: 'pubKey',
+        relays: ['relay1', 'relay2'],
+      );
 
       var invoiceResponse = await zaps.fetchInvoice(
         lud16Link: link,
@@ -107,20 +115,23 @@ void main() {
         eventId: eventId,
         comment: comment,
         signer: eventSignerFactory(
-            privateKey: key.privateKey, publicKey: key.publicKey),
+          privateKey: key.privateKey,
+          publicKey: key.publicKey,
+        ),
         pubKey: pubKey,
         relays: relays,
       );
 
       expect(zapRequest, isNotNull);
       expect(
-          zapRequest.tags,
-          containsAll([
-            ['amount', (amount * 1000).toString()],
-            ['e', eventId],
-            ['p', pubKey],
-            ['relays', ...relays]
-          ]));
+        zapRequest.tags,
+        containsAll([
+          ['amount', (amount * 1000).toString()],
+          ['e', eventId],
+          ['p', pubKey],
+          ['relays', ...relays],
+        ]),
+      );
       expect(zapRequest.content, comment);
       expect(zapRequest.sig, isNotNull);
     });
@@ -134,7 +145,9 @@ void main() {
           eventId: 'eventId',
           comment: 'comment',
           signer: eventSignerFactory(
-              privateKey: key.privateKey, publicKey: key.publicKey),
+            privateKey: key.privateKey,
+            publicKey: key.publicKey,
+          ),
           pubKey: 'pubKey',
           relays: ['relay1', 'relay2'],
         ),
@@ -150,7 +163,9 @@ void main() {
         eventId: 'eventId',
         comment: 'comment',
         signer: eventSignerFactory(
-            privateKey: key.privateKey, publicKey: key.publicKey),
+          privateKey: key.privateKey,
+          publicKey: key.publicKey,
+        ),
         pubKey: 'pubKey',
         relays: [],
       );

@@ -44,20 +44,10 @@ enum RelayDeliveryReason {
   hint,
 }
 
-enum DecryptedPayloadScheme {
-  nip04,
-  nip44,
-  giftWrap,
-  seal,
-  unknown,
-}
+enum DecryptedPayloadScheme { nip04, nip44, giftWrap, seal, unknown }
 
 /// Result of attempting to obtain plaintext for an encrypted payload sidecar.
-enum DecryptedPayloadStatus {
-  ready,
-  transientFailure,
-  permanentFailure,
-}
+enum DecryptedPayloadStatus { ready, transientFailure, permanentFailure }
 
 /// Persisted relay-specific broadcast target.
 ///
@@ -220,8 +210,9 @@ class EventDeliveryRecord {
       serializedEventJson: identical(serializedEventJson, _noChange)
           ? this.serializedEventJson
           : serializedEventJson as String?,
-      signedAt:
-          identical(signedAt, _noChange) ? this.signedAt : signedAt as int?,
+      signedAt: identical(signedAt, _noChange)
+          ? this.signedAt
+          : signedAt as int?,
       completedAt: identical(completedAt, _noChange)
           ? this.completedAt
           : completedAt as int?,
@@ -261,16 +252,16 @@ class EventDeliveryRecord {
   factory EventDeliveryRecord.fromJson(Map<String, dynamic> json) {
     final requiresInteractiveSigning =
         json['requiresInteractiveSigning'] as bool? ??
-            json['requiresNetworkSigner'] as bool? ??
-            false;
+        json['requiresNetworkSigner'] as bool? ??
+        false;
     return EventDeliveryRecord(
       eventId: json['eventId'] as String,
       status: EventDeliveryStatus.values.byName(json['status'] as String),
       signingState: json['signingState'] != null
           ? EventSigningState.values.byName(json['signingState'] as String)
           : (requiresInteractiveSigning
-              ? EventSigningState.pending
-              : EventSigningState.notNeeded),
+                ? EventSigningState.pending
+                : EventSigningState.notNeeded),
       createdAt: json['createdAt'] as int,
       updatedAt: json['updatedAt'] as int,
       serializedEventJson: json['serializedEventJson'] as String?,
@@ -412,10 +403,7 @@ String? _buildCoordinateKey(
   return '${event.kind}:${event.pubKey}:${dTag ?? ''}';
 }
 
-String? _buildReplaceableConflictKey(
-  Nip01Event event,
-  String? dTag,
-) {
+String? _buildReplaceableConflictKey(Nip01Event event, String? dTag) {
   if (EventKindClassification.isParameterizedReplaceableKind(event.kind)) {
     return '${event.kind}:${event.pubKey}:${dTag ?? ''}';
   }
@@ -504,8 +492,9 @@ class EventCacheStateRecord {
     int? now,
   }) {
     final currentTime = now ?? Nip01Event.secondsSinceEpoch();
-    final deletionEvents =
-        rawEvents.where((event) => event.kind == 5).toList(growable: false);
+    final deletionEvents = rawEvents
+        .where((event) => event.kind == 5)
+        .toList(growable: false);
     final visibleWinners = <String, Nip01Event>{};
 
     for (final event in rawEvents) {
@@ -537,8 +526,10 @@ class EventCacheStateRecord {
         event.getDtag(),
         _isAddressableKind(event.kind),
       );
-      final replaceableConflictKey =
-          _buildReplaceableConflictKey(event, event.getDtag());
+      final replaceableConflictKey = _buildReplaceableConflictKey(
+        event,
+        event.getDtag(),
+      );
       final deletingEvent = _findDeletingEvent(event, deletionEvents);
       records.add(
         EventCacheStateRecord(
@@ -564,8 +555,10 @@ class EventCacheStateRecord {
     List<Nip01Event> deletionEvents,
   ) {
     if (target.kind == 5) return null;
-    final replaceableConflictKey =
-        _buildReplaceableConflictKey(target, target.getDtag());
+    final replaceableConflictKey = _buildReplaceableConflictKey(
+      target,
+      target.getDtag(),
+    );
 
     for (final event in deletionEvents) {
       if (event.pubKey != target.pubKey) continue;

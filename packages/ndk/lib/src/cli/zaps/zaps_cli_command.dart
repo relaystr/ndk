@@ -94,8 +94,9 @@ Options (common):
     final pubKey = parsed.pubkey ?? _resolvePubkeyFromAccount(ndk);
     if (wantZap && pubKey != null && ndk.accounts.canSign) {
       final signer = ndk.accounts.getLoggedAccount()!.signer;
-      final relays =
-          parsed.relays.isNotEmpty ? parsed.relays : _defaultZapRelays(ndk);
+      final relays = parsed.relays.isNotEmpty
+          ? parsed.relays
+          : _defaultZapRelays(ndk);
       zapRequest = await ndk.zaps.createZapRequest(
         amountSats: amount,
         signer: signer,
@@ -119,7 +120,8 @@ Options (common):
       return 1;
     }
     stdout.writeln(
-        'Invoice ($amount sats${zapRequest != null ? ", zap-encoded" : ""}):');
+      'Invoice ($amount sats${zapRequest != null ? ", zap-encoded" : ""}):',
+    );
     stdout.writeln(invoice.invoice);
     return 0;
   }
@@ -151,8 +153,9 @@ Options (common):
     }
 
     final pubKey = parsed.pubkey ?? _resolvePubkeyFromAccount(ndk);
-    final relays =
-        parsed.relays.isNotEmpty ? parsed.relays : _defaultZapRelays(ndk);
+    final relays = parsed.relays.isNotEmpty
+        ? parsed.relays
+        : _defaultZapRelays(ndk);
 
     stdout.writeln('Connecting to NWC wallet ${wallet.id} ...');
     final connection = await ndk.nwc.connect(nwcUrl, doGetInfoMethod: false);
@@ -216,8 +219,9 @@ Options (common):
       return 2;
     }
 
-    stdout
-        .writeln('Fetching zap receipts for ${Nip19.encodePubKey(pubkey)} ...');
+    stdout.writeln(
+      'Fetching zap receipts for ${Nip19.encodePubKey(pubkey)} ...',
+    );
     var count = 0;
     await for (final receipt in ndk.zaps.fetchZappedReceipts(
       pubKey: pubkey,
@@ -254,7 +258,8 @@ Options (common):
     final wallets = await ndk.wallets.getWallets();
     if (wallets.isEmpty) {
       throw StateError(
-          'No wallets available. Use "ndk wallets add nwc ..." first.');
+        'No wallets available. Use "ndk wallets add nwc ..." first.',
+      );
     }
     if (walletId != null) {
       final match = wallets.firstWhere(
@@ -263,7 +268,8 @@ Options (common):
       );
       if (match.type != WalletType.NWC) {
         throw ArgumentError(
-            'Wallet $walletId is ${match.type.value}, expected nwc.');
+          'Wallet $walletId is ${match.type.value}, expected nwc.',
+        );
       }
       return match;
     }
@@ -274,7 +280,8 @@ Options (common):
     final anyNwc = wallets.firstWhere(
       (w) => w.type == WalletType.NWC,
       orElse: () => throw StateError(
-          'No NWC wallet configured. Use "ndk wallets add nwc ..." first.'),
+        'No NWC wallet configured. Use "ndk wallets add nwc ..." first.',
+      ),
     );
     return anyNwc;
   }
@@ -322,8 +329,10 @@ Options (common):
 
   String? _formatUnix(int? secondsSinceEpoch) {
     if (secondsSinceEpoch == null) return null;
-    final dt = DateTime.fromMillisecondsSinceEpoch(secondsSinceEpoch * 1000,
-        isUtc: true);
+    final dt = DateTime.fromMillisecondsSinceEpoch(
+      secondsSinceEpoch * 1000,
+      isUtc: true,
+    );
     return dt.toIso8601String();
   }
 
@@ -441,8 +450,10 @@ Options (common):
 
     if (result.positional.length < requirePositional) {
       return _ZapsArgs(
-          error: 'Expected $requirePositional positional argument(s), '
-              'got ${result.positional.length}.');
+        error:
+            'Expected $requirePositional positional argument(s), '
+            'got ${result.positional.length}.',
+      );
     }
     return result;
   }

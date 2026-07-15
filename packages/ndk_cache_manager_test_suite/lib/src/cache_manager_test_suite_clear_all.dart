@@ -64,52 +64,82 @@ void _runClearAllTests(CacheManager Function() getCacheManager) {
       unblindedSig: 'clearall_sig',
       state: CashuProofState.unspend,
     );
-    await cacheManager
-        .saveProofs(proofs: [proof], mintUrl: 'https://clearall.mint.com');
+    await cacheManager.saveProofs(
+      proofs: [proof],
+      mintUrl: 'https://clearall.mint.com',
+    );
 
     expect(await cacheManager.loadEvent(event.id), isNotNull);
     expect(
-        await cacheManager.loadMetadata('clearall_metadata_pubkey'), isNotNull);
-    expect(await cacheManager.loadContactList('clearall_contact_pubkey'),
-        isNotNull);
-    expect(await cacheManager.loadNip05(pubKey: 'clearall_nip05_pubkey'),
-        isNotNull);
-    expect(await cacheManager.loadUserRelayList('clearall_relay_pubkey'),
-        isNotNull);
+      await cacheManager.loadMetadata('clearall_metadata_pubkey'),
+      isNotNull,
+    );
     expect(
-        await cacheManager.loadRelaySet(
-            'clearall_set', 'clearall_relayset_pubkey'),
-        isNotNull);
+      await cacheManager.loadContactList('clearall_contact_pubkey'),
+      isNotNull,
+    );
     expect(
-        (await cacheManager.getKeysets(mintUrl: 'https://clearall.mint.com'))
-            .length,
-        equals(1));
+      await cacheManager.loadNip05(pubKey: 'clearall_nip05_pubkey'),
+      isNotNull,
+    );
     expect(
-        (await cacheManager.getProofs(mintUrl: 'https://clearall.mint.com'))
-            .length,
-        equals(1));
+      await cacheManager.loadUserRelayList('clearall_relay_pubkey'),
+      isNotNull,
+    );
+    expect(
+      await cacheManager.loadRelaySet(
+        'clearall_set',
+        'clearall_relayset_pubkey',
+      ),
+      isNotNull,
+    );
+    expect(
+      (await cacheManager.getKeysets(
+        mintUrl: 'https://clearall.mint.com',
+      )).length,
+      equals(1),
+    );
+    expect(
+      (await cacheManager.getProofs(
+        mintUrl: 'https://clearall.mint.com',
+      )).length,
+      equals(1),
+    );
 
     await cacheManager.clearAll();
 
     expect(await cacheManager.loadEvent(event.id), isNull);
     expect(await cacheManager.loadMetadata('clearall_metadata_pubkey'), isNull);
     expect(
-        await cacheManager.loadContactList('clearall_contact_pubkey'), isNull);
+      await cacheManager.loadContactList('clearall_contact_pubkey'),
+      isNull,
+    );
     expect(
-        await cacheManager.loadNip05(pubKey: 'clearall_nip05_pubkey'), isNull);
+      await cacheManager.loadNip05(pubKey: 'clearall_nip05_pubkey'),
+      isNull,
+    );
     expect(
-        await cacheManager.loadUserRelayList('clearall_relay_pubkey'), isNull);
+      await cacheManager.loadUserRelayList('clearall_relay_pubkey'),
+      isNull,
+    );
     expect(
-        await cacheManager.loadRelaySet(
-            'clearall_set', 'clearall_relayset_pubkey'),
-        isNull);
+      await cacheManager.loadRelaySet(
+        'clearall_set',
+        'clearall_relayset_pubkey',
+      ),
+      isNull,
+    );
     expect(
-        (await cacheManager.getKeysets(mintUrl: 'https://clearall.mint.com'))
-            .length,
-        equals(0));
+      (await cacheManager.getKeysets(
+        mintUrl: 'https://clearall.mint.com',
+      )).length,
+      equals(0),
+    );
     expect(
-        (await cacheManager.getProofs(mintUrl: 'https://clearall.mint.com'))
-            .length,
-        equals(0));
+      (await cacheManager.getProofs(
+        mintUrl: 'https://clearall.mint.com',
+      )).length,
+      equals(0),
+    );
   });
 }

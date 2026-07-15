@@ -20,10 +20,10 @@ class Follows {
     required Broadcast broadcast,
     required CacheManager cacheManager,
     required Accounts accounts,
-  })  : _cacheManager = cacheManager,
-        _requests = requests,
-        _accounts = accounts,
-        _broadcast = broadcast;
+  }) : _cacheManager = cacheManager,
+       _requests = requests,
+       _accounts = accounts,
+       _broadcast = broadcast;
 
   void _checkSigner() {
     if (_accounts.cannotSign) {
@@ -34,6 +34,7 @@ class Follows {
   /// contact list of a given pubkey, not intended to get followers
   Future<ContactList?> getContactList(
     String pubKey, {
+
     /// skips the cache
     bool forceRefresh = false,
     Duration idleTimeout = RequestDefaults.DEFAULT_QUERY_TIMEOUT,
@@ -49,12 +50,19 @@ class Follows {
 
     ContactList? loadedContactList;
     try {
-      await for (final event in _requests.query(
-        timeout: idleTimeout,
-        filters: [
-          Filter(kinds: [ContactList.kKind], authors: [pubKey], limit: 1)
-        ],
-      ).stream) {
+      await for (final event
+          in _requests
+              .query(
+                timeout: idleTimeout,
+                filters: [
+                  Filter(
+                    kinds: [ContactList.kKind],
+                    authors: [pubKey],
+                    limit: 1,
+                  ),
+                ],
+              )
+              .stream) {
         if (loadedContactList == null ||
             loadedContactList.createdAt < event.createdAt) {
           loadedContactList = ContactList.fromEvent(event);
@@ -79,14 +87,13 @@ class Follows {
   // if cached contact list is older that now minus this duration that we should go refresh it,
   // otherwise we risk adding/removing contacts to a list that is out of date and thus loosing contacts other client has added/removed since.
   static const kRefreshContactListDuration = Duration(minutes: 10);
-  Future<ContactList> _ensureUpToDateContactListOrEmpty(
-    String pubkey,
-  ) async {
+  Future<ContactList> _ensureUpToDateContactListOrEmpty(String pubkey) async {
     ContactList? contactList = await _cacheManager.loadContactList(pubkey);
     if (contactList != null) {
       contactList.loadedTimestamp = Helpers.now;
     }
-    int sometimeAgo = DateTime.now()
+    int sometimeAgo =
+        DateTime.now()
             .subtract(kRefreshContactListDuration)
             .millisecondsSinceEpoch ~/
         1000;
@@ -104,8 +111,9 @@ class Follows {
     List<String> Function(ContactList) collectionAccessor,
   ) async {
     _checkSigner();
-    ContactList contactList =
-        await _ensureUpToDateContactListOrEmpty(_accounts.getPublicKey()!);
+    ContactList contactList = await _ensureUpToDateContactListOrEmpty(
+      _accounts.getPublicKey()!,
+    );
     List<String> collection = collectionAccessor(contactList);
     if (!collection.contains(toAdd)) {
       collection.add(toAdd);
@@ -129,9 +137,7 @@ class Follows {
     contactList.loadedTimestamp = Helpers.now;
     contactList.createdAt = _nextReplaceableTimestamp(contactList.createdAt);
 
-    final bResult = _broadcast.broadcast(
-      nostrEvent: contactList.toEvent(),
-    );
+    final bResult = _broadcast.broadcast(nostrEvent: contactList.toEvent());
     await bResult.broadcastDoneFuture;
 
     await _cacheManager.saveEvent(contactList.toEvent());
@@ -144,7 +150,10 @@ class Follows {
     Iterable<String>? customRelays,
   }) async {
     return _broadcastAddContactInCollection(
-        add, customRelays, (list) => list.contacts);
+      add,
+      customRelays,
+      (list) => list.contacts,
+    );
   }
 
   /// broadcast adding of followed tag
@@ -153,7 +162,10 @@ class Follows {
     Iterable<String>? customRelays,
   }) async {
     return _broadcastAddContactInCollection(
-        add, customRelays, (list) => list.followedTags);
+      add,
+      customRelays,
+      (list) => list.followedTags,
+    );
   }
 
   /// broadcast adding of followed community
@@ -162,7 +174,10 @@ class Follows {
     Iterable<String>? customRelays,
   }) async {
     return _broadcastAddContactInCollection(
-        toAdd, customRelays, (list) => list.followedCommunities);
+      toAdd,
+      customRelays,
+      (list) => list.followedCommunities,
+    );
   }
 
   /// broadcast adding of followed event
@@ -171,7 +186,10 @@ class Follows {
     Iterable<String>? customRelays,
   }) async {
     return _broadcastAddContactInCollection(
-        toAdd, customRelays, (list) => list.followedEvents);
+      toAdd,
+      customRelays,
+      (list) => list.followedEvents,
+    );
   }
 
   Future<ContactList?> _broadcastRemoveContactInCollection(
@@ -180,8 +198,9 @@ class Follows {
     List<String> Function(ContactList) collectionAccessor,
   ) async {
     _checkSigner();
-    ContactList? contactList =
-        await _ensureUpToDateContactListOrEmpty(_accounts.getPublicKey()!);
+    ContactList? contactList = await _ensureUpToDateContactListOrEmpty(
+      _accounts.getPublicKey()!,
+    );
     List<String> collection = collectionAccessor(contactList);
     if (collection.contains(toRemove)) {
       collection.remove(toRemove);
@@ -212,7 +231,10 @@ class Follows {
     Iterable<String>? customRelays,
   }) async {
     return _broadcastRemoveContactInCollection(
-        toRemove, customRelays, (list) => list.contacts);
+      toRemove,
+      customRelays,
+      (list) => list.contacts,
+    );
   }
 
   /// broadcast removal of followed tag
@@ -221,7 +243,10 @@ class Follows {
     Iterable<String>? customRelays,
   }) async {
     return _broadcastRemoveContactInCollection(
-        toRemove, customRelays, (list) => list.followedTags);
+      toRemove,
+      customRelays,
+      (list) => list.followedTags,
+    );
   }
 
   /// broadcast removal of followed community
@@ -230,7 +255,10 @@ class Follows {
     Iterable<String>? customRelays,
   }) async {
     return _broadcastRemoveContactInCollection(
-        toRemove, customRelays, (list) => list.followedCommunities);
+      toRemove,
+      customRelays,
+      (list) => list.followedCommunities,
+    );
   }
 
   /// broadcast removal of followed event
@@ -239,6 +267,9 @@ class Follows {
     Iterable<String>? customRelays,
   }) async {
     return _broadcastRemoveContactInCollection(
-        toRemove, customRelays, (list) => list.followedEvents);
+      toRemove,
+      customRelays,
+      (list) => list.followedEvents,
+    );
   }
 }

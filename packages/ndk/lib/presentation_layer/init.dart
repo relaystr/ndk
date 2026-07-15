@@ -113,7 +113,7 @@ class Initialization {
   late ProofOfWork proofOfWork;
   late TrustedAssertions trustedAssertions;
   StreamSubscription<Map<String, RelayConnectivity>>?
-      _relayConnectivitySubscription;
+  _relayConnectivitySubscription;
   final Map<String, bool> _relayOpenStates = {};
 
   late Nip05Usecase nip05;
@@ -126,8 +126,8 @@ class Initialization {
   Initialization({
     required NdkConfig ndkConfig,
     required GlobalState globalState,
-  })  : _globalState = globalState,
-        _ndkConfig = ndkConfig {
+  }) : _globalState = globalState,
+       _ndkConfig = ndkConfig {
     // Configure global WebSocket User-Agent on dart:io platforms
     configureDefaultUserAgent(ndkConfig.userAgent);
 
@@ -173,17 +173,16 @@ class Initialization {
     }
 
     /// repositories
-    final Nip05Repository nip05repository =
-        Nip05HttpRepositoryImpl(httpDS: _httpRequestDS);
+    final Nip05Repository nip05repository = Nip05HttpRepositoryImpl(
+      httpDS: _httpRequestDS,
+    );
 
     final BlossomRepository blossomRepository = BlossomRepositoryImpl(
       client: _httpRequestDS,
       fileIO: createFileIO(),
     );
 
-    final CashuRepo cashuRepo = CashuRepoImpl(
-      client: _httpRequestDS,
-    );
+    final CashuRepo cashuRepo = CashuRepoImpl(client: _httpRequestDS);
 
     ///   use cases
     cacheWrite = CacheWrite(_ndkConfig.cache);
@@ -223,14 +222,11 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
       pendingDelivery: pendingBroadcastDelivery,
     );
-    _relayConnectivitySubscription =
-        relayManager.relayConnectivityChanges.listen(
-      _handleRelayConnectivityUpdate,
-    );
+    _relayConnectivitySubscription = relayManager.relayConnectivityChanges
+        .listen(_handleRelayConnectivityUpdate);
     pendingBroadcastDelivery.startPeriodicRetry(
-      connectedRelayUrls: () => relayManager.connectedRelays.map(
-        (relay) => relay.url,
-      ),
+      connectedRelayUrls: () =>
+          relayManager.connectedRelays.map((relay) => relay.url),
       reconnectRelay: (relayUrl) => relayManager.reconnectRelay(
         relayUrl,
         connectionSource: ConnectionSource.explicit,
@@ -315,19 +311,16 @@ class Initialization {
       nip05Repository: nip05repository,
     );
 
-    final LnurlTransport lnurlTransport =
-        LnurlTransportHttpImpl(_httpRequestDS);
+    final LnurlTransport lnurlTransport = LnurlTransportHttpImpl(
+      _httpRequestDS,
+    );
 
     lnurl = Lnurl(transport: lnurlTransport);
 
     // Create LNURL wallet provider after lnurl is initialized
     final lnurlProvider = LnurlWalletProvider(lnurl);
 
-    zaps = Zaps(
-      requests: requests,
-      nwc: nwc,
-      lnurl: lnurl,
-    );
+    zaps = Zaps(requests: requests, nwc: nwc, lnurl: lnurl);
 
     blossomUserServerList = BlossomUserServerList(
       requests: requests,
@@ -344,14 +337,9 @@ class Initialization {
 
     files = Files(blossom: blossom);
 
-    search = Search(
-      cacheManager: _ndkConfig.cache,
-      requests: requests,
-    );
+    search = Search(cacheManager: _ndkConfig.cache, requests: requests);
 
-    fetchedRanges = FetchedRanges(
-      cacheManager: _ndkConfig.cache,
-    );
+    fetchedRanges = FetchedRanges(cacheManager: _ndkConfig.cache);
 
     // Connect fetchedRanges to requests for automatic range recording (if enabled)
     if (_ndkConfig.fetchedRangesEnabled) {

@@ -70,15 +70,11 @@ class _FollowsPageState extends State<FollowsPage> {
         return;
       }
 
-      final profiles = contacts
-          .map(
-            (pubKey) => _FollowProfile(
-              pubKey: pubKey,
-              metadata: null,
-            ),
-          )
-          .toList()
-        ..sort((a, b) => a.sortKey.compareTo(b.sortKey));
+      final profiles =
+          contacts
+              .map((pubKey) => _FollowProfile(pubKey: pubKey, metadata: null))
+              .toList()
+            ..sort((a, b) => a.sortKey.compareTo(b.sortKey));
 
       if (!mounted) return;
       setState(() {
@@ -156,10 +152,7 @@ class _FollowsPageState extends State<FollowsPage> {
 
     if (_error != null) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(_error!),
-        ),
+        child: Padding(padding: const EdgeInsets.all(24), child: Text(_error!)),
       );
     }
 
@@ -248,10 +241,8 @@ class _FollowsPageState extends State<FollowsPage> {
                           ),
                           icon: const Icon(Icons.forum_outlined),
                         ),
-                        onTap: () => context.push(
-                          '/profile',
-                          extra: profile.pubKey,
-                        ),
+                        onTap: () =>
+                            context.push('/profile', extra: profile.pubKey),
                       ),
                     );
                   },
@@ -279,8 +270,9 @@ class _FollowsPageState extends State<FollowsPage> {
 
   void _applyLoadedMetadata(Metadata metadata) {
     if (!mounted) return;
-    final index =
-        _profiles.indexWhere((profile) => profile.pubKey == metadata.pubKey);
+    final index = _profiles.indexWhere(
+      (profile) => profile.pubKey == metadata.pubKey,
+    );
     if (index == -1) {
       return;
     }
@@ -314,18 +306,10 @@ class _FollowProfile {
   final String pubKey;
   final Metadata? metadata;
 
-  const _FollowProfile({
-    required this.pubKey,
-    required this.metadata,
-  });
+  const _FollowProfile({required this.pubKey, required this.metadata});
 
-  _FollowProfile copyWith({
-    Metadata? metadata,
-  }) {
-    return _FollowProfile(
-      pubKey: pubKey,
-      metadata: metadata ?? this.metadata,
-    );
+  _FollowProfile copyWith({Metadata? metadata}) {
+    return _FollowProfile(pubKey: pubKey, metadata: metadata ?? this.metadata);
   }
 
   String get primaryLabel {
@@ -360,8 +344,8 @@ class _FollowProfile {
   String get sortKey => primaryLabel.toLowerCase();
 
   String get searchText => [
-        metadata?.displayName?.trim().toLowerCase(),
-        metadata?.name?.trim().toLowerCase(),
-        pubKey.toLowerCase(),
-      ].whereType<String>().where((value) => value.isNotEmpty).join(' ');
+    metadata?.displayName?.trim().toLowerCase(),
+    metadata?.name?.trim().toLowerCase(),
+    pubKey.toLowerCase(),
+  ].whereType<String>().where((value) => value.isNotEmpty).join(' ');
 }

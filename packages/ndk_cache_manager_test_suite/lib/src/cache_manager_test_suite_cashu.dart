@@ -17,8 +17,9 @@ void _runCashuTests(CacheManager Function() getCacheManager) {
     );
 
     await cacheManager.saveKeyset(keyset);
-    final loadedKeysets =
-        await cacheManager.getKeysets(mintUrl: 'https://test.mint.com');
+    final loadedKeysets = await cacheManager.getKeysets(
+      mintUrl: 'https://test.mint.com',
+    );
 
     expect(loadedKeysets.length, equals(1));
     expect(loadedKeysets[0].id, equals(keyset.id));
@@ -71,8 +72,10 @@ void _runCashuTests(CacheManager Function() getCacheManager) {
     );
     await cacheManager.saveKeyset(cashuKeyset);
 
-    await cacheManager
-        .saveProofs(proofs: [proof], mintUrl: 'https://test.mint.com');
+    await cacheManager.saveProofs(
+      proofs: [proof],
+      mintUrl: 'https://test.mint.com',
+    );
     final loadedProofs = await cacheManager.getProofs(
       mintUrl: 'https://test.mint.com',
       state: CashuProofState.unspend,
@@ -110,8 +113,10 @@ void _runCashuTests(CacheManager Function() getCacheManager) {
     );
     await cacheManager.saveKeyset(cashuKeyset);
 
-    await cacheManager
-        .saveProofs(proofs: [proof1, proof2], mintUrl: 'https://mint.com');
+    await cacheManager.saveProofs(
+      proofs: [proof1, proof2],
+      mintUrl: 'https://mint.com',
+    );
 
     final unspendProofs = await cacheManager.getProofs(
       mintUrl: 'https://mint.com',
@@ -139,8 +144,9 @@ void _runCashuTests(CacheManager Function() getCacheManager) {
     );
 
     await cacheManager.saveMintInfo(mintInfo: mintInfo);
-    final loadedInfos =
-        await cacheManager.getMintInfos(mintUrls: ['https://mint.info.com']);
+    final loadedInfos = await cacheManager.getMintInfos(
+      mintUrls: ['https://mint.info.com'],
+    );
     expect(loadedInfos!.length, equals(1));
     expect(loadedInfos[0].urls, equals(mintInfo.urls));
     expect(loadedInfos[0].name, equals(mintInfo.name));
@@ -152,20 +158,26 @@ void _runCashuTests(CacheManager Function() getCacheManager) {
     const initialCounter = 5;
 
     await cacheManager.setCashuSecretCounter(
-        mintUrl: 'https://counter.mint.com',
-        keysetId: keysetId,
-        counter: initialCounter);
+      mintUrl: 'https://counter.mint.com',
+      keysetId: keysetId,
+      counter: initialCounter,
+    );
     final loadedCounter = await cacheManager.getCashuSecretCounter(
-        mintUrl: "https://counter.mint.com", keysetId: keysetId);
+      mintUrl: "https://counter.mint.com",
+      keysetId: keysetId,
+    );
     expect(loadedCounter, equals(initialCounter));
 
     const newCounter = 10;
     await cacheManager.setCashuSecretCounter(
-        mintUrl: 'https://counter.mint.com',
-        keysetId: keysetId,
-        counter: newCounter);
+      mintUrl: 'https://counter.mint.com',
+      keysetId: keysetId,
+      counter: newCounter,
+    );
     final updatedCounter = await cacheManager.getCashuSecretCounter(
-        mintUrl: "https://counter.mint.com", keysetId: keysetId);
+      mintUrl: "https://counter.mint.com",
+      keysetId: keysetId,
+    );
     expect(updatedCounter, equals(newCounter));
   });
 
@@ -189,20 +201,28 @@ void _runCashuTests(CacheManager Function() getCacheManager) {
     );
     await cacheManager.saveKeyset(cashuKeyset);
 
-    await cacheManager
-        .saveProofs(proofs: [proof], mintUrl: 'https://upsert.mint.com');
+    await cacheManager.saveProofs(
+      proofs: [proof],
+      mintUrl: 'https://upsert.mint.com',
+    );
 
     // Update the state
     proof.state = CashuProofState.pending;
-    await cacheManager
-        .saveProofs(proofs: [proof], mintUrl: 'https://upsert.mint.com');
+    await cacheManager.saveProofs(
+      proofs: [proof],
+      mintUrl: 'https://upsert.mint.com',
+    );
 
     final loadedProofsUnspend = await cacheManager.getProofs(
-        mintUrl: 'https://upsert.mint.com', state: CashuProofState.unspend);
+      mintUrl: 'https://upsert.mint.com',
+      state: CashuProofState.unspend,
+    );
     expect(loadedProofsUnspend.length, equals(0));
 
     final loadedProofsPending = await cacheManager.getProofs(
-        mintUrl: 'https://upsert.mint.com', state: CashuProofState.pending);
+      mintUrl: 'https://upsert.mint.com',
+      state: CashuProofState.pending,
+    );
     expect(loadedProofsPending.length, equals(1));
     expect(loadedProofsPending[0].state, equals(CashuProofState.pending));
   });

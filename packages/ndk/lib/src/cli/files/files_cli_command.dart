@@ -94,10 +94,11 @@ Options:
       final phase = progress.phase.name;
       final pct = progress.percentage.toStringAsFixed(1);
       stdout.writeln(
-          '  [$phase] ${progress.currentServer.isEmpty ? "-" : progress.currentServer} '
-                  '$pct% '
-                  '${progress.mirrorsTotal > 0 ? "(${progress.mirrorsCompleted}/${progress.mirrorsTotal} mirrors)" : ""}'
-              .trimRight());
+        '  [$phase] ${progress.currentServer.isEmpty ? "-" : progress.currentServer} '
+                '$pct% '
+                '${progress.mirrorsTotal > 0 ? "(${progress.mirrorsCompleted}/${progress.mirrorsTotal} mirrors)" : ""}'
+            .trimRight(),
+      );
       if (progress.completedUploads.isNotEmpty) {
         finalResults = progress.completedUploads;
       }
@@ -156,8 +157,10 @@ Options:
     );
     for (final r in results) {
       final status = r.success ? 'OK' : 'FAILED';
-      stdout.writeln('  ${r.serverUrl}: $status'
-          '${r.error == null ? "" : " (${r.error})"}');
+      stdout.writeln(
+        '  ${r.serverUrl}: $status'
+        '${r.error == null ? "" : " (${r.error})"}',
+      );
     }
     return results.every((r) => r.success) ? 0 : 1;
   }
@@ -188,13 +191,17 @@ Options:
     for (final r in results) {
       if (r.success && r.descriptor != null) {
         final d = r.descriptor!;
-        stdout.writeln('  ${r.serverUrl}: OK '
-            'sha256=${d.sha256} '
-            'size=${_humanSize(d.size ?? 0)} '
-            'type=${d.type ?? "?"}');
+        stdout.writeln(
+          '  ${r.serverUrl}: OK '
+          'sha256=${d.sha256} '
+          'size=${_humanSize(d.size ?? 0)} '
+          'type=${d.type ?? "?"}',
+        );
       } else {
-        stdout.writeln('  ${r.serverUrl}: FAILED '
-            '${r.error == null ? "" : "(${r.error})"}');
+        stdout.writeln(
+          '  ${r.serverUrl}: FAILED '
+          '${r.error == null ? "" : "(${r.error})"}',
+        );
       }
     }
   }
@@ -292,8 +299,10 @@ Options:
 
     if (result.positional.length < requirePositional) {
       return _FilesArgs(
-          error: 'Expected $requirePositional positional argument(s), '
-              'got ${result.positional.length}.');
+        error:
+            'Expected $requirePositional positional argument(s), '
+            'got ${result.positional.length}.',
+      );
     }
     return result;
   }

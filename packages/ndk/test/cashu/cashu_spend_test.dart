@@ -28,18 +28,9 @@ void main() {
           active: true,
           inputFeePPK: 0,
           mintKeyPairs: {
-            CahsuMintKeyPair(
-              amount: 1,
-              pubkey: 'testPubKey-1',
-            ),
-            CahsuMintKeyPair(
-              amount: 2,
-              pubkey: 'testPubKey-2',
-            ),
-            CahsuMintKeyPair(
-              amount: 4,
-              pubkey: 'testPubKey-4',
-            ),
+            CahsuMintKeyPair(amount: 1, pubkey: 'testPubKey-1'),
+            CahsuMintKeyPair(amount: 2, pubkey: 'testPubKey-2'),
+            CahsuMintKeyPair(amount: 4, pubkey: 'testPubKey-4'),
           },
         ),
       );
@@ -71,8 +62,9 @@ void main() {
       final cashu = CashuTestTools.mockHttpCashu(
         customCache: cache,
         seedPhrase: CashuUserSeedphrase(
-            seedPhrase:
-                "reduce invest lunch step couch traffic measure civil want steel trip jar"),
+          seedPhrase:
+              "reduce invest lunch step couch traffic measure civil want steel trip jar",
+        ),
       );
 
       // This should throw an exception quickly (not hang)
@@ -102,8 +94,9 @@ void main() {
     test("spend - no unit for mint", () {
       final cashu = CashuTestTools.mockHttpCashu(
         seedPhrase: CashuUserSeedphrase(
-            seedPhrase:
-                "reduce invest lunch step couch traffic measure civil want steel trip jar"),
+          seedPhrase:
+              "reduce invest lunch step couch traffic measure civil want steel trip jar",
+        ),
       );
 
       expect(
@@ -127,18 +120,9 @@ void main() {
           active: true,
           inputFeePPK: 0,
           mintKeyPairs: {
-            CahsuMintKeyPair(
-              amount: 1,
-              pubkey: 'testPubKey-1',
-            ),
-            CahsuMintKeyPair(
-              amount: 2,
-              pubkey: 'testPubKey-2',
-            ),
-            CahsuMintKeyPair(
-              amount: 4,
-              pubkey: 'testPubKey-2',
-            ),
+            CahsuMintKeyPair(amount: 1, pubkey: 'testPubKey-1'),
+            CahsuMintKeyPair(amount: 2, pubkey: 'testPubKey-2'),
+            CahsuMintKeyPair(amount: 4, pubkey: 'testPubKey-2'),
           },
         ),
       );
@@ -150,7 +134,7 @@ void main() {
             amount: 1,
             secret: 'testSecret-32',
             unblindedSig: '',
-          )
+          ),
         ],
         mintUrl: mockMintUrl,
       );
@@ -158,8 +142,9 @@ void main() {
       final cashu = CashuTestTools.mockHttpCashu(
         customCache: cache,
         seedPhrase: CashuUserSeedphrase(
-            seedPhrase:
-                "reduce invest lunch step couch traffic measure civil want steel trip jar"),
+          seedPhrase:
+              "reduce invest lunch step couch traffic measure civil want steel trip jar",
+        ),
       );
 
       expect(
@@ -212,8 +197,9 @@ void main() {
         unit: fundUnit,
         method: "bolt11",
       );
-      final transactionStream =
-          cashu.retrieveFunds(draftTransaction: draftTransaction);
+      final transactionStream = cashu.retrieveFunds(
+        draftTransaction: draftTransaction,
+      );
 
       final transaction = await transactionStream.last;
       expect(transaction.state, WalletTransactionState.completed);
@@ -248,15 +234,20 @@ void main() {
 
       expect(myCompletedTransaction, isNotEmpty);
       expect(
-          myCompletedTransaction.last.state, WalletTransactionState.completed);
+        myCompletedTransaction.last.state,
+        WalletTransactionState.completed,
+      );
       expect(myCompletedTransaction.last.transactionDate, isNotNull);
 
-      final balance =
-          await cashu.getBalanceMintUnit(unit: "sat", mintUrl: devMintUrl);
+      final balance = await cashu.getBalanceMintUnit(
+        unit: "sat",
+        mintUrl: devMintUrl,
+      );
       expect(balance, equals(fundAmount - 4));
 
-      final pendingProofs =
-          await cache.getProofs(state: CashuProofState.pending);
+      final pendingProofs = await cache.getProofs(
+        state: CashuProofState.pending,
+      );
       expect(pendingProofs, isEmpty);
 
       final spendProofs = await cache.getProofs(state: CashuProofState.spend);

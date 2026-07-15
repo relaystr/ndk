@@ -19,34 +19,27 @@ void main() {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
       final rcvStream = ndk.cashu.receive("cashuBinvalidtoken");
-      expect(
-        () async => await rcvStream.last,
-        throwsA(isA<Exception>()),
-      );
+      expect(() async => await rcvStream.last, throwsA(isA<Exception>()));
     });
 
     test("empty token", () async {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
       final rcvStream = ndk.cashu.receive(
-          "cashuBo2FteBxodHRwczovL2Rldi5taW50LmNhbWVsdXMuYXBwYXVjc2F0YXSBomFpQGFwgaRhYQBhc2BhY0BhZKNhZUBhc0BhckA");
-
-      expect(
-        () async => await rcvStream.last,
-        throwsA(isA<Exception>()),
+        "cashuBo2FteBxodHRwczovL2Rldi5taW50LmNhbWVsdXMuYXBwYXVjc2F0YXSBomFpQGFwgaRhYQBhc2BhY0BhZKNhZUBhc0BhckA",
       );
+
+      expect(() async => await rcvStream.last, throwsA(isA<Exception>()));
     });
 
     test("invalid mint", () async {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
       final rcvStream = ndk.cashu.receive(
-          "cashuBo2FtdGh0dHBzOi8vbWludC5pbnZhbGlkYXVjc2F0YXSBomFpSABV3vjPJfyNYXCBpGFhAWFzeEBmYmMxYWY4ZTk1YWQyZTVjMGQzY2U3MTMxNjI3MDBkOGNmN2NhNDQ2Njc1ZTE5NTc0NWE5ZWYzMDI1Zjc0NjdhYWNYIQJYTRSL3snLOVtf2OECtcqM_y7kG1VCQnVeWc9BPzP4zGFko2FlWCAlHMDORr2HAR0NNMsV4tB3s09bCB_s35QvHIEVkqed3mFzWCBLAh8gJ0J0uv7WzGkFC9gn4jZc7sFTpZvEgnitZ6ijrGFyWCC9QCslHjMWBU_2TWwnUNXj-rM7-iP6_8RqxiJMsa1Dcg");
-
-      expect(
-        () async => await rcvStream.last,
-        throwsA(isA<Exception>()),
+        "cashuBo2FtdGh0dHBzOi8vbWludC5pbnZhbGlkYXVjc2F0YXSBomFpSABV3vjPJfyNYXCBpGFhAWFzeEBmYmMxYWY4ZTk1YWQyZTVjMGQzY2U3MTMxNjI3MDBkOGNmN2NhNDQ2Njc1ZTE5NTc0NWE5ZWYzMDI1Zjc0NjdhYWNYIQJYTRSL3snLOVtf2OECtcqM_y7kG1VCQnVeWc9BPzP4zGFko2FlWCAlHMDORr2HAR0NNMsV4tB3s09bCB_s35QvHIEVkqed3mFzWCBLAh8gJ0J0uv7WzGkFC9gn4jZc7sFTpZvEgnitZ6ijrGFyWCC9QCslHjMWBU_2TWwnUNXj-rM7-iP6_8RqxiJMsa1Dcg",
       );
+
+      expect(() async => await rcvStream.last, throwsA(isA<Exception>()));
     });
   });
 
@@ -66,8 +59,9 @@ void main() {
         walletsRepo: walletsRepo,
         cacheManager: cache,
         cashuKeyDerivation: derivation,
-        cashuUserSeedphrase:
-            CashuUserSeedphrase(seedPhrase: CashuSeed.generateSeedPhrase()),
+        cashuUserSeedphrase: CashuUserSeedphrase(
+          seedPhrase: CashuSeed.generateSeedPhrase(),
+        ),
       );
       final walletsRepo2 = MemWalletsRepo();
 
@@ -76,8 +70,9 @@ void main() {
         walletsRepo: walletsRepo2,
         cacheManager: cache2,
         cashuKeyDerivation: derivation,
-        cashuUserSeedphrase:
-            CashuUserSeedphrase(seedPhrase: CashuSeed.generateSeedPhrase()),
+        cashuUserSeedphrase: CashuUserSeedphrase(
+          seedPhrase: CashuSeed.generateSeedPhrase(),
+        ),
       );
 
       const fundAmount = 32;
@@ -89,8 +84,9 @@ void main() {
         unit: fundUnit,
         method: "bolt11",
       );
-      final transactionStream =
-          cashu.retrieveFunds(draftTransaction: draftTransaction);
+      final transactionStream = cashu.retrieveFunds(
+        draftTransaction: draftTransaction,
+      );
 
       final transaction = await transactionStream.last;
       expect(transaction.state, WalletTransactionState.completed);
@@ -105,31 +101,30 @@ void main() {
       final rcvStream = cashu2.receive(token);
 
       await expectLater(
-          rcvStream,
-          emitsInOrder(
-            [
-              isA<CashuWalletTransaction>().having(
-                  (t) => t.state, 'state', WalletTransactionState.pending),
-              isA<CashuWalletTransaction>()
-                  .having(
-                      (t) => t.state, 'state', WalletTransactionState.completed)
-                  .having(
-                      (t) => t.transactionDate!, 'transactionDate', isA<int>()),
-            ],
-          ));
+        rcvStream,
+        emitsInOrder([
+          isA<CashuWalletTransaction>().having(
+            (t) => t.state,
+            'state',
+            WalletTransactionState.pending,
+          ),
+          isA<CashuWalletTransaction>()
+              .having((t) => t.state, 'state', WalletTransactionState.completed)
+              .having((t) => t.transactionDate!, 'transactionDate', isA<int>()),
+        ]),
+      );
 
-      final balance =
-          await cashu2.getBalanceMintUnit(unit: fundUnit, mintUrl: devMintUrl);
+      final balance = await cashu2.getBalanceMintUnit(
+        unit: fundUnit,
+        mintUrl: devMintUrl,
+      );
 
       expect(balance, equals(16));
 
       // try to double spend the same token
       final rcvStream2 = cashu2.receive(token);
 
-      expect(
-        () async => await rcvStream2.last,
-        throwsA(isA<Exception>()),
-      );
+      expect(() async => await rcvStream2.last, throwsA(isA<Exception>()));
     });
   });
 }

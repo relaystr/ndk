@@ -9,164 +9,187 @@ import 'dart:developer' as developer;
 import '../../mocks/mock_event_verifier.dart';
 
 void main() async {
-  group(
-    "Calculate best relays (external REAL)",
-    skip: true,
-    () {
-      calculateBestRelaysForNpubContactsFeed(String npub,
-          {int relayMinCountPerPubKey = 2}) async {
-        CacheManager cacheManager = MemCacheManager();
+  group("Calculate best relays (external REAL)", skip: true, () {
+    calculateBestRelaysForNpubContactsFeed(
+      String npub, {
+      int relayMinCountPerPubKey = 2,
+    }) async {
+      CacheManager cacheManager = MemCacheManager();
 
-        final ndk = Ndk(NdkConfig(
+      final ndk = Ndk(
+        NdkConfig(
           eventVerifier: MockEventVerifier(),
           cache: cacheManager,
           engine: NdkEngine.JIT,
-        ));
+        ),
+      );
 
-        // wait for the relays to connect
-        await Future.delayed(const Duration(seconds: 2));
+      // wait for the relays to connect
+      await Future.delayed(const Duration(seconds: 2));
 
-        final t0 = DateTime.now();
+      final t0 = DateTime.now();
 
-        final key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
+      final key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
-        final contactsResponse = ndk.requests.query(name: "contacts", filters: [
+      final contactsResponse = ndk.requests.query(
+        name: "contacts",
+        filters: [
           Filter(authors: [key.publicKey], kinds: [ContactList.kKind]),
-        ]);
+        ],
+      );
 
-        var responseList = await contactsResponse.stream.toList();
+      var responseList = await contactsResponse.stream.toList();
 
-        List<ContactList> contactLists =
-            responseList.map((event) => ContactList.fromEvent(event)).toList();
+      List<ContactList> contactLists = responseList
+          .map((event) => ContactList.fromEvent(event))
+          .toList();
 
-        await cacheManager.saveEvents(
-          contactLists.map((contactList) => contactList.toEvent()).toList(),
-        );
+      await cacheManager.saveEvents(
+        contactLists.map((contactList) => contactList.toEvent()).toList(),
+      );
 
-        ContactList? myContactList =
-            await cacheManager.loadContactList(key.publicKey);
-        expect(myContactList, isNotNull);
+      ContactList? myContactList = await cacheManager.loadContactList(
+        key.publicKey,
+      );
+      expect(myContactList, isNotNull);
 
-        // get nip65 data
+      // get nip65 data
 
-        NdkResponse nip65Response = ndk.requests.query(name: "nip65", filters: [
+      NdkResponse nip65Response = ndk.requests.query(
+        name: "nip65",
+        filters: [
           Filter(authors: myContactList!.contacts, kinds: [Nip65.kKind]),
-        ]);
+        ],
+      );
 
-        var nip65events = await nip65Response.stream.toList();
-        await cacheManager.saveEvents(nip65events);
+      var nip65events = await nip65Response.stream.toList();
+      await cacheManager.saveEvents(nip65events);
 
-        //UserRelayList.fromNip65(Nip65.fromEvent(nip65events))
-        final List<Nip65> nip65List =
-            nip65events.map((event) => Nip65.fromEvent(event)).toList();
-        final List<UserRelayList> userRelayLists =
-            nip65List.map((nip65) => UserRelayList.fromNip65(nip65)).toList();
+      //UserRelayList.fromNip65(Nip65.fromEvent(nip65events))
+      final List<Nip65> nip65List = nip65events
+          .map((event) => Nip65.fromEvent(event))
+          .toList();
+      final List<UserRelayList> userRelayLists = nip65List
+          .map((nip65) => UserRelayList.fromNip65(nip65))
+          .toList();
 
-        await cacheManager.saveUserRelayLists(userRelayLists);
+      await cacheManager.saveUserRelayLists(userRelayLists);
 
-        await cacheManager.loadEvents(
-          pubKeys: myContactList.contacts,
-          kinds: [Nip65.kKind],
+      await cacheManager.loadEvents(
+        pubKeys: myContactList.contacts,
+        kinds: [Nip65.kKind],
+      );
+
+      developer.log('##################################################');
+
+      ndk.requests.query(
+        name: "feed-test",
+        filters: [
+          Filter(
+            authors: myContactList.contacts,
+            kinds: [Nip01Event.kTextNodeKind],
+            since:
+                (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 1,
+          ),
+        ],
+        desiredCoverage: relayMinCountPerPubKey,
+      );
+
+      await Future.delayed(const Duration(seconds: 5));
+
+      NdkResponse feedResponse2 = ndk.requests.subscription(
+        id: "feed-test2",
+        filters: [
+          Filter(
+            limit: 100,
+            authors: myContactList.contacts,
+            kinds: [Nip01Event.kTextNodeKind],
+            since:
+                (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 4,
+          ),
+        ],
+        desiredCoverage: relayMinCountPerPubKey,
+      );
+
+      List<Nip01Event> events = [];
+      developer.log('waiting for events...');
+      //final feedData = await feedResponse2.future;
+      //events.addAll(feedData);
+
+      feedResponse2.stream.listen((event) {
+        events.add(event);
+      });
+      await Future.delayed(const Duration(seconds: 5));
+
+      final t1 = DateTime.now();
+
+      for (final relay in ndk.relays.globalState.relays.values) {
+        log(
+          "Relay: ${relay.url} - ${relay.specificEngineData.assignedPubkeys.length} pubkeys",
         );
-
-        developer.log('##################################################');
-
-        ndk.requests.query(
-          name: "feed-test",
-          filters: [
-            Filter(
-              authors: myContactList.contacts,
-              kinds: [Nip01Event.kTextNodeKind],
-              since:
-                  (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 1,
-            ),
-          ],
-          desiredCoverage: relayMinCountPerPubKey,
-        );
-
-        await Future.delayed(const Duration(seconds: 5));
-
-        NdkResponse feedResponse2 = ndk.requests.subscription(
-          id: "feed-test2",
-          filters: [
-            Filter(
-              limit: 100,
-              authors: myContactList.contacts,
-              kinds: [Nip01Event.kTextNodeKind],
-              since:
-                  (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 4,
-            ),
-          ],
-          desiredCoverage: relayMinCountPerPubKey,
-        );
-
-        List<Nip01Event> events = [];
-        developer.log('waiting for events...');
-        //final feedData = await feedResponse2.future;
-        //events.addAll(feedData);
-
-        feedResponse2.stream.listen((event) {
-          events.add(event);
-        });
-        await Future.delayed(const Duration(seconds: 5));
-
-        final t1 = DateTime.now();
-
-        for (final relay in ndk.relays.globalState.relays.values) {
-          log(
-            "Relay: ${relay.url} - ${relay.specificEngineData.assignedPubkeys.length} pubkeys",
-          );
-        }
-
-        log("BEST ${ndk.relays.globalState.relays.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
-        log("CONTACTS ${myContactList.contacts.length} WITH  ${nip65events.length} nip65 events");
-        log("${events.length} events");
-
-        log("=====  time took ${t1.difference(t0).inMilliseconds} ms");
-
-        //developer.log("FEED: ${events.toString()}");
-
-        developer.log('##################################################');
-        // developer.log(
-        //     "Relay: {relay.url} - {relay.assignedPubkeys.length} - {relay.relayUsefulness}");
-        // for (var relay in relayJitManager.connectedRelays) {
-        //   developer.log(
-        //       "Relay: ${relay.url} - ${relay.assignedPubkeys.length} - ${relay.relayUsefulness.toString()}");
-        // }
-        // developer
-        //     .log('relays count: ${relayJitManager.connectedRelays.length}');
-        // developer.log('##################################################');
       }
 
-      test('Leo feed best relays', () async {
-        await calculateBestRelaysForNpubContactsFeed(
-            "npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur",
-            relayMinCountPerPubKey: 2);
-      }, timeout: const Timeout.factor(10));
+      log(
+        "BEST ${ndk.relays.globalState.relays.length} RELAYS (min $relayMinCountPerPubKey per pubKey):",
+      );
+      log(
+        "CONTACTS ${myContactList.contacts.length} WITH  ${nip65events.length} nip65 events",
+      );
+      log("${events.length} events");
 
-      test('Fmar feed best relays', () async {
-        await calculateBestRelaysForNpubContactsFeed(
-            "npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams",
-            relayMinCountPerPubKey: 2);
-      }, timeout: const Timeout.factor(10));
+      log("=====  time took ${t1.difference(t0).inMilliseconds} ms");
 
-      test('mikedilger feed best relays', () async {
-        await calculateBestRelaysForNpubContactsFeed(
-            "npub1acg6thl5psv62405rljzkj8spesceyfz2c32udakc2ak0dmvfeyse9p35c",
-            relayMinCountPerPubKey: 2);
-      }, timeout: const Timeout.factor(10));
+      //developer.log("FEED: ${events.toString()}");
 
-      test('Fiatjaf feed best relays', () async {
-        await calculateBestRelaysForNpubContactsFeed(
-            "npub180cvv07tjdrrgpa0j7j7tmnyl2yr6yr7l8j4s3evf6u64th6gkwsyjh6w6",
-            relayMinCountPerPubKey: 2);
-      }, timeout: const Timeout.factor(10));
+      developer.log('##################################################');
+      // developer.log(
+      //     "Relay: {relay.url} - {relay.assignedPubkeys.length} - {relay.relayUsefulness}");
+      // for (var relay in relayJitManager.connectedRelays) {
+      //   developer.log(
+      //       "Relay: ${relay.url} - ${relay.assignedPubkeys.length} - ${relay.relayUsefulness.toString()}");
+      // }
+      // developer
+      //     .log('relays count: ${relayJitManager.connectedRelays.length}');
+      // developer.log('##################################################');
+    }
 
-      test('Love is Bitcoin (3k follows) feed best relays', () async {
+    test('Leo feed best relays', () async {
+      await calculateBestRelaysForNpubContactsFeed(
+        "npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur",
+        relayMinCountPerPubKey: 2,
+      );
+    }, timeout: const Timeout.factor(10));
+
+    test('Fmar feed best relays', () async {
+      await calculateBestRelaysForNpubContactsFeed(
+        "npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams",
+        relayMinCountPerPubKey: 2,
+      );
+    }, timeout: const Timeout.factor(10));
+
+    test('mikedilger feed best relays', () async {
+      await calculateBestRelaysForNpubContactsFeed(
+        "npub1acg6thl5psv62405rljzkj8spesceyfz2c32udakc2ak0dmvfeyse9p35c",
+        relayMinCountPerPubKey: 2,
+      );
+    }, timeout: const Timeout.factor(10));
+
+    test('Fiatjaf feed best relays', () async {
+      await calculateBestRelaysForNpubContactsFeed(
+        "npub180cvv07tjdrrgpa0j7j7tmnyl2yr6yr7l8j4s3evf6u64th6gkwsyjh6w6",
+        relayMinCountPerPubKey: 2,
+      );
+    }, timeout: const Timeout.factor(10));
+
+    test(
+      'Love is Bitcoin (3k follows) feed best relays',
+      () async {
         await calculateBestRelaysForNpubContactsFeed(
-            "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx",
-            relayMinCountPerPubKey: 2);
-      }, timeout: const Timeout.factor(10));
-    },
-  );
+          "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx",
+          relayMinCountPerPubKey: 2,
+        );
+      },
+      timeout: const Timeout.factor(10),
+    );
+  });
 }
