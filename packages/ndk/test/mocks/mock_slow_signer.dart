@@ -38,15 +38,15 @@ class MockSlowSigner implements EventSigner {
   bool canSign() => _innerSigner.canSign();
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> decrypt(String msg, String destPubKey) async {
     await Future.delayed(_delay);
-    return _innerSigner.decrypt(msg, destPubKey, id: id);
+    return _innerSigner.decrypt(msg, destPubKey);
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> encrypt(String msg, String destPubKey) async {
     await Future.delayed(_delay);
-    return _innerSigner.encrypt(msg, destPubKey, id: id);
+    return _innerSigner.encrypt(msg, destPubKey);
   }
 
   @override

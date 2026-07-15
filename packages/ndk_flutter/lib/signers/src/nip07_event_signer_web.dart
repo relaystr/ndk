@@ -113,7 +113,7 @@ class Nip07EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   Iterable<String> get signerTransportRelayUrls => const <String>[];
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> decrypt(String msg, String destPubKey) async {
     if (js.nostr == null) {
       throw Exception('NIP-07 extension not available');
     }
@@ -154,7 +154,7 @@ class Nip07EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> encrypt(String msg, String destPubKey) async {
     if (js.nostr == null) {
       throw Exception('NIP-07 extension not available');
     }

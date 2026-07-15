@@ -40,14 +40,14 @@ class WebEventSigner implements EventSigner {
   }
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) {
+  Future<String?> decrypt(String msg, String destPubKey) {
     throw UnsupportedError(
       'WebEventSigner is only available on web platforms.',
     );
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) {
+  Future<String?> encrypt(String msg, String destPubKey) {
     throw UnsupportedError(
       'WebEventSigner is only available on web platforms.',
     );

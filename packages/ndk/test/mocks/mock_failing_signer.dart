@@ -23,7 +23,6 @@ class MockFailingSigner implements EventSigner {
   @override
   Future<Nip01Event> sign(Nip01Event event) async {
     throw SignerRequestRejectedException(
-      requestId: 'mock-request-id',
       originalMessage: 'User rejected the signing request',
     );
   }
@@ -32,17 +31,15 @@ class MockFailingSigner implements EventSigner {
   String getPublicKey() => _publicKey;
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> decrypt(String msg, String destPubKey) async {
     throw SignerRequestRejectedException(
-      requestId: id,
       originalMessage: 'User rejected the decrypt request',
     );
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> encrypt(String msg, String destPubKey) async {
     throw SignerRequestRejectedException(
-      requestId: id,
       originalMessage: 'User rejected the encrypt request',
     );
   }

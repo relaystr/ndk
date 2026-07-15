@@ -17,6 +17,8 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.PluginRegistry
+import org.json.JSONArray
+import org.json.JSONObject
 
 
 /// ndk_flutter native plugin.
@@ -31,9 +33,15 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     private lateinit var _channel : MethodChannel
     private lateinit var _context : Context
     private var _activity: Activity? = null
-    private lateinit var _result: MethodChannel.Result
 
-    private val _intentRequestCode = 0
+    private data class PendingIntentResult(
+        val result: MethodChannel.Result,
+        val id: String,
+    )
+
+    private val _pendingIntentResults = HashMap<Int, PendingIntentResult>()
+    private val _pendingIntentRequestCodesById = HashMap<String, Int>()
+    private var _nextIntentRequestCode = 1
 
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
@@ -55,11 +63,12 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             nostrSignerScheme -> {
-                _result = MethodResultWrapper(result)
+                val methodResult = MethodResultWrapper(result)
 
                 val paramsMap = call.arguments as? HashMap<*, *>
                 if (paramsMap == null) {
                     Log.d("onMethodCall", "paramsMap is null")
+                    methodResult.success(HashMap<String, String?>())
                     return
                 }
 
@@ -89,7 +98,7 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                     )
                     if (!data.isNullOrEmpty()) {
                         Log.d("onMethodCall", "content resolver got data")
-                        _result.success(data)
+                        methodResult.success(data)
                         return
                     }
                 }
@@ -99,6 +108,9 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                     Intent.ACTION_VIEW,
                     Uri.parse("$nostrSignerScheme:$uriData")
                 )
+                if (requestType != "get_public_key") {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                }
                 intent.putExtra(keyType, requestType)
                 intent.putExtra(keyCurrentUser, currentUser)
                 intent.putExtra(keyPubKey, pubKey)
@@ -112,11 +124,22 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                     intent.putExtra(keyPackage, signerPackage)
                 }
 
+                val activity = _activity
+                if (activity == null) {
+                    methodResult.success(HashMap<String, String?>())
+                    return
+                }
+
+                var requestCode: Int? = null
                 try {
-                    _activity?.startActivityForResult(intent, _intentRequestCode)
+                    requestCode = reserveIntentRequestCode(methodResult, id)
+                    activity.startActivityForResult(intent, requestCode)
                 } catch (e: Exception) {
                     Log.d("onMethodCall", "startActivityForResult failed for '$signerPackage': ${e.message}")
-                    _result.success(HashMap<String, String?>())
+                    if (requestCode != null) {
+                        removePendingIntentResult(requestCode)
+                    }
+                    methodResult.success(HashMap<String, String?>())
                 }
             }
 
@@ -137,34 +160,146 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?): Boolean {
-        if (requestCode == _intentRequestCode) {
-            if (resultCode == Activity.RESULT_OK && intent != null) {
-                val dataMap: HashMap<String, String?> = HashMap()
-                if (intent.hasExtra(keyResult)) {
-                    val result = intent.getStringExtra(keyResult)
-                    dataMap[keyResult] = result
-                    // keep `signature` populated for backwards compatibility
-                    dataMap[keySignature] = result
+    private fun reserveIntentRequestCode(result: MethodChannel.Result, id: String): Int {
+        repeat(65535) {
+            val requestCode = _nextIntentRequestCode
+            _nextIntentRequestCode = if (_nextIntentRequestCode == 65535) {
+                1
+            } else {
+                _nextIntentRequestCode + 1
+            }
+            if (!_pendingIntentResults.containsKey(requestCode)) {
+                _pendingIntentResults[requestCode] = PendingIntentResult(result, id)
+                if (id.isNotEmpty()) {
+                    _pendingIntentRequestCodesById[id] = requestCode
                 }
-                if (intent.hasExtra(keySignature)) {
-                    dataMap[keySignature] = intent.getStringExtra(keySignature)
-                }
-                if (intent.hasExtra(keyPackage)) {
-                    dataMap[keyPackage] = intent.getStringExtra(keyPackage)
-                }
-                if (intent.hasExtra(keyId)) {
-                    dataMap[keyId] = intent.getStringExtra(keyId)
-                }
-                if (intent.hasExtra(keyEvent)) {
-                    dataMap[keyEvent] = intent.getStringExtra(keyEvent)
-                }
-
-                _result.success(dataMap)
-                return true
+                return requestCode
             }
         }
-        return false
+        throw IllegalStateException("Too many pending NIP-55 signer intents")
+    }
+
+    private fun removePendingIntentResult(requestCode: Int): PendingIntentResult? {
+        val pending = _pendingIntentResults.remove(requestCode)
+        if (pending != null && pending.id.isNotEmpty()) {
+            _pendingIntentRequestCodesById.remove(pending.id)
+        }
+        return pending
+    }
+
+    private fun completePendingIntentResult(requestCode: Int, data: HashMap<String, String?>): Boolean {
+        val pending = removePendingIntentResult(requestCode) ?: return false
+        pending.result.success(data)
+        return true
+    }
+
+    private fun completePendingIntentResultById(id: String, data: HashMap<String, String?>): Boolean {
+        val requestCode = _pendingIntentRequestCodesById[id] ?: return false
+        val pending = removePendingIntentResult(requestCode) ?: return false
+        pending.result.success(data)
+        return true
+    }
+
+    private fun buildResultMapFromJson(resultJson: JSONObject): HashMap<String, String?> {
+        val dataMap: HashMap<String, String?> = HashMap()
+        if (resultJson.has(keyResult)) {
+            val signerResult = resultJson.optString(keyResult, "")
+            dataMap[keyResult] = signerResult
+            dataMap[keySignature] = signerResult
+        }
+        if (resultJson.has(keySignature)) {
+            dataMap[keySignature] = resultJson.optString(keySignature, "")
+        }
+        if (resultJson.has(keyPackage)) {
+            dataMap[keyPackage] = resultJson.optString(keyPackage, "")
+        }
+        if (resultJson.has(keyId)) {
+            dataMap[keyId] = resultJson.optString(keyId, "")
+        }
+        if (resultJson.has(keyEvent)) {
+            dataMap[keyEvent] = resultJson.optString(keyEvent, "")
+        }
+        if (resultJson.has(keyRejected)) {
+            dataMap[keyRejected] = resultJson.optString(keyRejected, "")
+        }
+        return dataMap
+    }
+
+    private fun buildResultMapFromIntent(intent: Intent): HashMap<String, String?> {
+        val dataMap: HashMap<String, String?> = HashMap()
+        if (intent.hasExtra(keyResult)) {
+            val signerResult = intent.getStringExtra(keyResult)
+            dataMap[keyResult] = signerResult
+            // keep `signature` populated for backwards compatibility
+            dataMap[keySignature] = signerResult
+        }
+        if (intent.hasExtra(keySignature)) {
+            dataMap[keySignature] = intent.getStringExtra(keySignature)
+        }
+        if (intent.hasExtra(keyPackage)) {
+            dataMap[keyPackage] = intent.getStringExtra(keyPackage)
+        }
+        if (intent.hasExtra(keyId)) {
+            dataMap[keyId] = intent.getStringExtra(keyId)
+        }
+        if (intent.hasExtra(keyEvent)) {
+            dataMap[keyEvent] = intent.getStringExtra(keyEvent)
+        }
+        if (intent.hasExtra(keyRejected)) {
+            dataMap[keyRejected] = intent.getBooleanExtra(keyRejected, false).toString()
+        }
+        return dataMap
+    }
+
+    private fun completeBatchedResults(intent: Intent): Boolean {
+        if (!intent.hasExtra(keyResults)) {
+            return false
+        }
+
+        val resultsJson = intent.getStringExtra(keyResults) ?: return false
+        return try {
+            val results = JSONArray(resultsJson)
+            var completedAny = false
+            for (index in 0 until results.length()) {
+                val item = results.optJSONObject(index) ?: continue
+                val id = item.optString(keyId, "")
+                if (id.isEmpty()) {
+                    continue
+                }
+                val dataMap = buildResultMapFromJson(item)
+                completedAny = completePendingIntentResultById(id, dataMap) || completedAny
+            }
+            completedAny
+        } catch (e: Exception) {
+            Log.d("onActivityResult", "failed to parse NIP-55 batched results: ${e.message}")
+            false
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?): Boolean {
+        if (!_pendingIntentResults.containsKey(requestCode)) {
+            return false
+        }
+
+        if (resultCode == Activity.RESULT_OK && intent != null) {
+            if (completeBatchedResults(intent)) {
+                if (_pendingIntentResults.containsKey(requestCode)) {
+                    completePendingIntentResult(requestCode, HashMap())
+                }
+                return true
+            }
+
+            val dataMap = buildResultMapFromIntent(intent)
+            val id = dataMap[keyId]
+            if (!id.isNullOrEmpty() && completePendingIntentResultById(id, dataMap)) {
+                return true
+            }
+            completePendingIntentResult(requestCode, dataMap)
+            return true
+        }
+
+        completePendingIntentResult(requestCode, HashMap())
+        return true
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {

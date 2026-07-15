@@ -186,7 +186,7 @@ class Nip46EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   Iterable<String> get signerTransportRelayUrls => connection.relays;
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> decrypt(String msg, String destPubKey) async {
     final request = BunkerRequest(
       method: SignerMethod.nip04Decrypt,
       params: [destPubKey, msg],
@@ -219,7 +219,7 @@ class Nip46EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> encrypt(String msg, String destPubKey) async {
     final request = BunkerRequest(
       method: SignerMethod.nip04Encrypt,
       params: [destPubKey, msg],
