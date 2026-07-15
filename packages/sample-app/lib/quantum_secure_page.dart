@@ -131,9 +131,7 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
 
   Future<void> _verifyEvents() async {
     if (_signer == null || _verifier == null || _signedEvents.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please generate events first')),
       );
       return;
@@ -242,9 +240,7 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
                         child: Text(
                           'This is an experiment to test the feasibility of Dilithium in Nostr.\n\n'
                           'Please note that the ID is still generated the conventional way.',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
+                          style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(color: Colors.grey[700], height: 1.5),
                         ),
                       ),
