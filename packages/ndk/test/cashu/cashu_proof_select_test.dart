@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'package:ndk/domain_layer/entities/cashu/cashu_keyset.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_proof.dart';
 import 'package:ndk/domain_layer/usecases/cashu/cashu_proof_select.dart';

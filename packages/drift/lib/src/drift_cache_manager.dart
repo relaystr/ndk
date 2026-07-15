@@ -70,6 +70,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
             sig: Value(event.sig),
             validSig: Value(event.validSig),
             tagsJson: jsonEncode(event.tags),
+            // ignore: deprecated_member_use
             sourcesJson: jsonEncode(event.sources),
           ),
         );
@@ -91,6 +92,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
                 sig: Value(event.sig),
                 validSig: Value(event.validSig),
                 tagsJson: jsonEncode(event.tags),
+                // ignore: deprecated_member_use
                 sourcesJson: jsonEncode(event.sources),
               ),
             )

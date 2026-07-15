@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'package:ndk/ndk.dart';
 
 final relay = "wss://nip85.uid.ovh";

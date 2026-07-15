@@ -428,7 +428,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                       else if (_uploadedSha256 != null) ...[
                         Text(
                           l10n.blossomUploadSuccess,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.green,
                             fontWeight: FontWeight.bold,
                           ),
@@ -506,7 +506,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                       else if (_downloadedFilePath != null) ...[
                         Text(
                           l10n.downloadSuccess,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.green,
                             fontWeight: FontWeight.bold,
                           ),
@@ -548,7 +548,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Text(
                             l10n.blossomUploadFirstToEnableDownload,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               fontStyle: FontStyle.italic,
                               color: Colors.grey,

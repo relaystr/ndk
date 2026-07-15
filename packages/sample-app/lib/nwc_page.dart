@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print, experimental_member_use, use_build_context_synchronously
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
@@ -241,7 +242,7 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
         // secret is the nwcAppKey the private part
 
         final String walletNwcServicePubkey = foundWalletAuthEvent.pubKey;
-        final String nwcRelayForConnectionUri =
+        const String nwcRelayForConnectionUri =
             discoveryRelayForQuery; // This was _pendingDiscoveryRelayUrl
         final String appNwcPrivateKeyForSecret = nwcAppKey!.privateKey!;
 

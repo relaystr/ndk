@@ -1,5 +1,7 @@
 part of 'cache_manager_test_suite.dart';
 
+// ignore_for_file: deprecated_member_use
+
 void _runContactListTests(CacheManager Function() getCacheManager) {
   test('saveContactList and loadContactList', () async {
     final cacheManager = getCacheManager();

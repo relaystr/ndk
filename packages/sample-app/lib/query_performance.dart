@@ -73,9 +73,7 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
 
   _runQuery(Ndk ndk) async {
     final query = ndk.requests.query(
-      filters: [
-        Filter(kinds: [1], limit: _eventCount),
-      ],
+      filter: Filter(kinds: [1], limit: _eventCount),
       cacheRead: false,
       cacheWrite: false,
     );

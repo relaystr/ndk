@@ -1,5 +1,7 @@
 part of 'cache_manager_test_suite.dart';
 
+// ignore_for_file: deprecated_member_use
+
 void _runMetadataTests(CacheManager Function() getCacheManager) {
   test('saveMetadata and loadMetadata', () async {
     final cacheManager = getCacheManager();

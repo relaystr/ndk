@@ -8,7 +8,7 @@ void main() {
     late RustEventVerifier verifier;
     late KeyPair keyPair;
 
-    String _mutateHex(String value) {
+    String mutateHex(String value) {
       final first = value[0].toLowerCase();
       final replacement = first == 'a' ? 'b' : 'a';
       return '$replacement${value.substring(1)}';
@@ -65,7 +65,7 @@ void main() {
         kind: 1,
         tags: [],
         content: 'hello world',
-        sig: _mutateHex(validSig),
+        sig: mutateHex(validSig),
       );
 
       final result = await verifier.verify(event);

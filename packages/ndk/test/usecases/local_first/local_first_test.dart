@@ -1206,6 +1206,7 @@ Future<void> _waitForRelayConnected({
 
 class _ControllableInteractiveSigner implements EventSigner {
   final KeyPair keyPair;
+  @override
   final bool requiresSignerNetwork;
   final Iterable<String> Function() _transportRelayUrlsProvider;
   bool available;

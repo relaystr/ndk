@@ -1,3 +1,4 @@
+// ignore_for_file: use_build_context_synchronously
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -132,7 +133,9 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
     if (_signer == null || _verifier == null || _signedEvents.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Please generate events first')));
+      ).showSnackBar(
+        const SnackBar(content: Text('Please generate events first')),
+      );
       return;
     }
 

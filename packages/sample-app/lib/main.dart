@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -48,7 +49,7 @@ Future<void> main() async {
 
   // Load the cashu seed phrase from secure storage, generating a fresh one on
   // first run. Never hardcode this — it controls cashu funds.
-  final cashuSeedPhrase = await CashuSeedStore().loadOrCreate();
+  final cashuSeedPhrase = await const CashuSeedStore().loadOrCreate();
 
   final eventVerifier = kIsWeb ? WebEventVerifier() : RustEventVerifier();
   ndk = Ndk(

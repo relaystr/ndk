@@ -1,5 +1,7 @@
 part of 'cache_manager_test_suite.dart';
 
+// ignore_for_file: deprecated_member_use
+
 void _runClearAllTests(CacheManager Function() getCacheManager) {
   test('clearAll removes all cached data', () async {
     final cacheManager = getCacheManager();

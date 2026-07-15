@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'dart:io';
 
 import 'package:ndk/domain_layer/entities/nip_05.dart';
