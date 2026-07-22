@@ -13,7 +13,6 @@ void main() async {
   final connection = await ndk.nwc.connect(
     nwcUri,
     doGetInfoMethod: true,
-    timeout: Duration(seconds: 10),
   );
 
   print("Connected, permissions: ${connection.permissions}");
