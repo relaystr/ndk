@@ -45,8 +45,7 @@ void main() {
       expect(
         stopwatch.elapsedMilliseconds,
         lessThan(500),
-        reason:
-            'an ids-only query fully served by cache should return '
+        reason: 'an ids-only query fully served by cache should return '
             'immediately, not wait for the query timeout',
       );
 

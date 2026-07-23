@@ -157,9 +157,8 @@ void main() async {
           authors: [key1.publicKey],
         );
 
-        final events = await ndk.requests
-            .query(filter: filter, explicitRelays: [relay1.url, relay2.url])
-            .future;
+        final events = await ndk.requests.query(
+            filter: filter, explicitRelays: [relay1.url, relay2.url]).future;
 
         expect(events, isNotEmpty);
         final eventId = events.first.id;

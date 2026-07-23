@@ -176,7 +176,7 @@ class NegentropyEncoder {
   /// Reconciles received message and creates response
   /// Returns (response bytes, need IDs, have IDs)
   static (Uint8List response, List<String> needIds, List<String> haveIds)
-  reconcile(Uint8List message, List<NegentropyItem> items) {
+      reconcile(Uint8List message, List<NegentropyItem> items) {
     items.sort((a, b) {
       final tsCmp = a.timestamp.compareTo(b.timestamp);
       if (tsCmp != 0) return tsCmp;
@@ -261,19 +261,15 @@ class NegentropyEncoder {
               // First half
               output.add(encodeBound(midItem.timestamp, midItem.id));
               output.addByte(modeFingerprint);
-              final firstHalfIds = rangeItems
-                  .sublist(0, mid)
-                  .map((i) => i.id)
-                  .toList();
+              final firstHalfIds =
+                  rangeItems.sublist(0, mid).map((i) => i.id).toList();
               output.add(calculateFingerprint(firstHalfIds));
 
               // Second half
               output.add(encodeBound(timestamp, idPrefix));
               output.addByte(modeFingerprint);
-              final secondHalfIds = rangeItems
-                  .sublist(mid)
-                  .map((i) => i.id)
-                  .toList();
+              final secondHalfIds =
+                  rangeItems.sublist(mid).map((i) => i.id).toList();
               output.add(calculateFingerprint(secondHalfIds));
             }
           }

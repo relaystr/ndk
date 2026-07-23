@@ -121,9 +121,8 @@ class FountainDecoder {
   }
 
   void reduceBy(FountainDecoderPart p) {
-    var reducedParts = mixedParts.values
-        .map((value) => reducePartByPart(value, p))
-        .toList();
+    var reducedParts =
+        mixedParts.values.map((value) => reducePartByPart(value, p)).toList();
 
     var newMixed = <Set<int>, FountainDecoderPart>{};
     for (var reducedPart in reducedParts) {

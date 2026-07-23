@@ -13,8 +13,8 @@ import 'package:ndk/ndk.dart';
 /// Pass the result to [NdkConfig.cashuUserSeedphrase] via [CashuUserSeedphrase].
 class CashuSeedStore {
   const CashuSeedStore({FlutterSecureStorage? storage, String? storageKey})
-    : _storage = storage ?? const FlutterSecureStorage(),
-      _seedKey = storageKey ?? _defaultSeedKey;
+      : _storage = storage ?? const FlutterSecureStorage(),
+        _seedKey = storageKey ?? _defaultSeedKey;
 
   final FlutterSecureStorage _storage;
   final String _seedKey;

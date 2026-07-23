@@ -211,9 +211,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
             totalBytes: contentLength,
             completedUploads: List.from(results),
             phase: UploadPhase.mirroring,
-            progressPhase: mirrorsTotal > 0
-                ? mirrorsCompleted / mirrorsTotal
-                : 1,
+            progressPhase:
+                mirrorsTotal > 0 ? mirrorsCompleted / mirrorsTotal : 1,
             mirrorsTotal: mirrorsTotal,
             mirrorsCompleted: mirrorsCompleted,
           );
@@ -446,9 +445,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
     String? contentType,
     bool mediaOptimisation = false,
   }) {
-    final endpointUrl = mediaOptimisation
-        ? '$serverUrl/media'
-        : '$serverUrl/upload';
+    final endpointUrl =
+        mediaOptimisation ? '$serverUrl/media' : '$serverUrl/upload';
 
     return client.putStream(
       url: Uri.parse(endpointUrl),

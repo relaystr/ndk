@@ -12,18 +12,17 @@ void main() {
       final key = Bip340.generatePrivateKey();
       final relay = MockRelay(name: "relay", requireAuthForRequests: true);
 
-      final testEvent =
-          await Bip340EventSigner(
-            privateKey: key.privateKey!,
-            publicKey: key.publicKey,
-          ).sign(
-            Nip01Event(
-              pubKey: key.publicKey,
-              kind: Nip01Event.kTextNodeKind,
-              tags: [],
-              content: "test event",
-            ),
-          );
+      final testEvent = await Bip340EventSigner(
+        privateKey: key.privateKey!,
+        publicKey: key.publicKey,
+      ).sign(
+        Nip01Event(
+          pubKey: key.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: [],
+          content: "test event",
+        ),
+      );
 
       await relay.startServer(textNotes: {key: testEvent});
 
@@ -40,12 +39,10 @@ void main() {
         privkey: key.privateKey!,
       );
 
-      final result = await ndk.requests
-          .query(
-            filter: Filter(kinds: [Nip01Event.kTextNodeKind]),
-            explicitRelays: [relay.url],
-          )
-          .future;
+      final result = await ndk.requests.query(
+        filter: Filter(kinds: [Nip01Event.kTextNodeKind]),
+        explicitRelays: [relay.url],
+      ).future;
 
       expect(result, isNotEmpty);
       expect(result.first.content, "test event");
@@ -81,9 +78,8 @@ void main() {
       content: "test broadcast",
     );
 
-    final result = await ndk.broadcast
-        .broadcast(nostrEvent: event, specificRelays: [relay.url])
-        .broadcastDoneFuture;
+    final result = await ndk.broadcast.broadcast(
+        nostrEvent: event, specificRelays: [relay.url]).broadcastDoneFuture;
 
     expect(result.any((r) => r.broadcastSuccessful), isTrue);
 
@@ -135,9 +131,9 @@ void main() {
         recipientPubkey: recipientKey.publicKey,
       );
 
-      final result = await ndk.broadcast
-          .broadcast(nostrEvent: giftWrap, specificRelays: [relay.url])
-          .broadcastDoneFuture;
+      final result = await ndk.broadcast.broadcast(
+          nostrEvent: giftWrap,
+          specificRelays: [relay.url]).broadcastDoneFuture;
 
       expect(result.any((r) => r.broadcastSuccessful), isTrue);
     },

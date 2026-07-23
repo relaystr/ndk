@@ -32,8 +32,8 @@ void main() async {
           )
           .then((value) {})
           .onError((error, stackTrace) async {
-            await relay1.stopServer();
-          });
+        await relay1.stopServer();
+      });
       await relay1.stopServer();
     });
 
@@ -53,8 +53,8 @@ void main() async {
           )
           .then((value) {})
           .onError((error, stackTrace) async {
-            await relay1.stopServer();
-          });
+        await relay1.stopServer();
+      });
 
       expect(
         manager.globalState.relays[relay1.url]!.relay
@@ -242,13 +242,10 @@ void main() async {
 
         // Listen to the request stream to collect events
         final streamSubscription = manager
-            .globalState
-            .inFlightRequests[requestId]!
-            .networkController
-            .stream
+            .globalState.inFlightRequests[requestId]!.networkController.stream
             .listen((event) {
-              eventsReceived.add(event);
-            });
+          eventsReceived.add(event);
+        });
 
         // Give a moment for stream setup
         await Future.delayed(Duration(milliseconds: 50));

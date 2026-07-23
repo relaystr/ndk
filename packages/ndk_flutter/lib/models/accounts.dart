@@ -14,8 +14,7 @@ class NostrWidgetsAccounts {
   factory NostrWidgetsAccounts.fromJson(Map<String, dynamic> json) {
     return NostrWidgetsAccounts(
       loggedAccount: json['loggedAccount'],
-      accounts:
-          (json['accounts'] as List<dynamic>?)
+      accounts: (json['accounts'] as List<dynamic>?)
               ?.map((accountJson) => NostrAccount.fromJson(accountJson))
               .toList() ??
           [],

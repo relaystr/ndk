@@ -240,9 +240,8 @@ class Bip32Keys {
 
   String toBase58({Bip32Network? overrideNetwork}) {
     final network = overrideNetwork ?? this.network;
-    final version = isNeutered
-        ? network.version.public
-        : network.version.private;
+    final version =
+        isNeutered ? network.version.public : network.version.private;
 
     final buffer = Uint8List(78);
     final bytes = buffer.buffer.asByteData();

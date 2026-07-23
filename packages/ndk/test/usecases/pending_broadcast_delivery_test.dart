@@ -229,12 +229,12 @@ void main() {
 
         await pendingDelivery
             .persistSpecificRelayBroadcastResult(ephemeralEvent, [
-              RelayBroadcastResponse(
-                relayUrl: 'wss://relay.example',
-                okReceived: true,
-                broadcastSuccessful: true,
-              ),
-            ]);
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: true,
+            broadcastSuccessful: true,
+          ),
+        ]);
 
         expect(await cacheManager.loadEvent(ephemeralEvent.id), isNull);
         expect(
@@ -284,13 +284,13 @@ void main() {
         // event and its delivery state must survive for a later auth-gated retry.
         await pendingDelivery
             .persistSpecificRelayBroadcastResult(ephemeralEvent, [
-              RelayBroadcastResponse(
-                relayUrl: 'wss://relay.example',
-                okReceived: false,
-                broadcastSuccessful: false,
-                msg: 'auth-required: need to authenticate',
-              ),
-            ]);
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: false,
+            broadcastSuccessful: false,
+            msg: 'auth-required: need to authenticate',
+          ),
+        ]);
 
         expect(await cacheManager.loadEvent(ephemeralEvent.id), isNotNull);
         final record = await cacheManager.loadEventDeliveryRecord(
@@ -812,15 +812,15 @@ class RecordingBroadcastSender extends BroadcastSender {
   final List<Nip01Event> broadcastedEvents = [];
 
   RecordingBroadcastSender({required MemCacheManager cacheManager})
-    : super(
-        globalState: GlobalState(),
-        cacheManager: cacheManager,
-        networkEngine: _ThrowingNetworkEngine(),
-        accounts: Accounts(_DummySignerFactory()),
-        considerDonePercent: 1,
-        timeout: const Duration(seconds: 1),
-        saveToCache: true,
-      );
+      : super(
+          globalState: GlobalState(),
+          cacheManager: cacheManager,
+          networkEngine: _ThrowingNetworkEngine(),
+          accounts: Accounts(_DummySignerFactory()),
+          considerDonePercent: 1,
+          timeout: const Duration(seconds: 1),
+          saveToCache: true,
+        );
 
   @override
   NdkBroadcastResponse broadcast({
@@ -901,7 +901,8 @@ class _DummySigner implements EventSigner {
   Future<String?> decryptNip44({
     required String ciphertext,
     required String senderPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   Future<void> dispose() async {}
@@ -914,7 +915,8 @@ class _DummySigner implements EventSigner {
   Future<String?> encryptNip44({
     required String plaintext,
     required String recipientPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   String getPublicKey() => pubKey;
@@ -944,9 +946,9 @@ class _RemoteTestSigner implements EventSigner {
     bool requiresSignerNetwork = false,
     List<String>? transportRelayUrls,
     List<PendingSignerRequest>? pendingRequests,
-  }) : _pendingRequests = pendingRequests ?? [],
-       _requiresSignerNetwork = requiresSignerNetwork,
-       _transportRelayUrls = transportRelayUrls ?? const [];
+  })  : _pendingRequests = pendingRequests ?? [],
+        _requiresSignerNetwork = requiresSignerNetwork,
+        _transportRelayUrls = transportRelayUrls ?? const [];
 
   @override
   bool get requiresInteractiveSigning => true;
@@ -972,7 +974,8 @@ class _RemoteTestSigner implements EventSigner {
   Future<String?> decryptNip44({
     required String ciphertext,
     required String senderPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   Future<void> dispose() async {}
@@ -985,7 +988,8 @@ class _RemoteTestSigner implements EventSigner {
   Future<String?> encryptNip44({
     required String plaintext,
     required String recipientPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   String getPublicKey() => pubKey;

@@ -122,9 +122,8 @@ class CashuRestore {
 
       // Call restore endpoint
       try {
-        final blindedMessages = blindedMessageItems
-            .map((item) => item.blindedMessage)
-            .toList();
+        final blindedMessages =
+            blindedMessageItems.map((item) => item.blindedMessage).toList();
 
         final (restoredOutputs, signatures) = await cashuRepo.restore(
           mintUrl: mintUrl,
@@ -173,8 +172,7 @@ class CashuRestore {
     }
 
     Logger.log.i(
-      () =>
-          'Restore completed for keyset $keysetId. '
+      () => 'Restore completed for keyset $keysetId. '
           'Found ${allRestoredProofs.length} proofs. '
           'Last used counter: $lastUsedCounter',
     );

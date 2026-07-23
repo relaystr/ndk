@@ -23,7 +23,8 @@ void main() {
   EventSigner eventSignerFactory({
     String? privateKey,
     required String publicKey,
-  }) => Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
+  }) =>
+      Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
 
   group('Zaps', () {
     KeyPair key = Bip340.generatePrivateKey();

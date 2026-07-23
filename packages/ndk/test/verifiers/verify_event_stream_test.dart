@@ -315,7 +315,8 @@ void main() {
       await controller.close();
     });
 
-    test('should handle continuous stream of events without blocking', () async {
+    test('should handle continuous stream of events without blocking',
+        () async {
       final controller = StreamController<Nip01Event>();
       final resultList = <Nip01Event>[];
 

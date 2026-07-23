@@ -52,8 +52,7 @@ void main() async {
         await ndk.relays.seedRelaysConnected;
 
         // Define filter with time bounds
-        final since =
-            DateTime.now()
+        final since = DateTime.now()
                 .subtract(const Duration(days: 1))
                 .millisecondsSinceEpoch ~/
             1000;

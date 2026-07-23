@@ -1,7 +1,7 @@
 import 'dart:async';
 
-typedef StreamComputeTask<Q, P> =
-    FutureOr<void> Function(Q argument, void Function(P progress) emit);
+typedef StreamComputeTask<Q, P> = FutureOr<void> Function(
+    Q argument, void Function(P progress) emit);
 
 /// Web implementation of IsolateManager that runs tasks on the main thread.
 /// Isolates are not supported on web platforms, so this implementation

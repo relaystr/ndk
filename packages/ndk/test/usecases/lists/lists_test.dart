@@ -401,8 +401,7 @@ void main() async {
         pubKey: key1.publicKey,
         kind: Nip51List.kRelaySet,
         name: setName,
-        createdAt:
-            DateTime.now().millisecondsSinceEpoch ~/ 1000 -
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000 -
             100, // 100 seconds ago
         elements: [
           Nip51ListElement(
@@ -468,9 +467,8 @@ void main() async {
       );
 
       String content = "";
-      List<Nip51ListElement> privateElements = nip04Set.elements
-          .where((element) => element.private)
-          .toList();
+      List<Nip51ListElement> privateElements =
+          nip04Set.elements.where((element) => element.private).toList();
       if (privateElements.isNotEmpty) {
         String json = jsonEncode(
           privateElements

@@ -19,7 +19,8 @@ void main() {
 
       final record = EventCacheStateRecord.buildForEvents([
         event,
-      ], now: 1700000100).single;
+      ], now: 1700000100)
+          .single;
 
       expect(record.eventId, event.id);
       expect(record.coordinateKey, '30023:pubkey-1:article-1');

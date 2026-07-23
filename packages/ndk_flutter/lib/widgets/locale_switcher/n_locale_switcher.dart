@@ -49,16 +49,16 @@ class NLocaleSwitcher extends StatelessWidget {
 
   /// Returns a map of locale codes to their display names
   Map<String, String> get _defaultDisplayNames => {
-    'en': 'English',
-    'es': 'Español',
-    'fr': 'Français',
-    'it': 'Italiano',
-    'de': "Deutsch",
-    'pl': 'Polski',
-    'ja': '日本語',
-    'ru': 'Русский',
-    'zh': '中文',
-  };
+        'en': 'English',
+        'es': 'Español',
+        'fr': 'Français',
+        'it': 'Italiano',
+        'de': "Deutsch",
+        'pl': 'Polski',
+        'ja': '日本語',
+        'ru': 'Русский',
+        'zh': '中文',
+      };
 
   Map<String, String> get _displayNames =>
       localeDisplayNames ?? _defaultDisplayNames;
@@ -129,8 +129,7 @@ class NLocaleSwitcher extends StatelessWidget {
                 final locale = orderedLocales[index];
                 final isSelected =
                     locale.languageCode == currentLocale.languageCode;
-                final displayName =
-                    _displayNames[locale.languageCode] ??
+                final displayName = _displayNames[locale.languageCode] ??
                     locale.languageCode.toUpperCase();
                 final flag = _getFlagEmoji(locale.languageCode);
 
@@ -187,16 +186,16 @@ class NLocaleSwitcherDropdown extends StatelessWidget {
 
   /// Returns a map of locale codes to their display names
   Map<String, String> get _defaultDisplayNames => {
-    'en': 'English',
-    'es': 'Español',
-    'fr': 'Français',
-    'it': 'Italiano',
-    'de': 'Deutsch',
-    'ja': '日本語',
-    'pl': 'Polski',
-    'ru': 'Русский',
-    'zh': '中文',
-  };
+        'en': 'English',
+        'es': 'Español',
+        'fr': 'Français',
+        'it': 'Italiano',
+        'de': 'Deutsch',
+        'ja': '日本語',
+        'pl': 'Polski',
+        'ru': 'Русский',
+        'zh': '中文',
+      };
 
   Map<String, String> get _displayNames =>
       localeDisplayNames ?? _defaultDisplayNames;

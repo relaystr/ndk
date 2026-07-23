@@ -77,14 +77,14 @@ abstract class WalletTransaction {
               : null,
           usedKeysets: metadata['usedKeyset'] != null
               ? (metadata['usedKeyset'] as List<dynamic>)
-                    .map((k) => CahsuKeyset.fromJson(k as Map<String, dynamic>))
-                    .toList()
+                  .map((k) => CahsuKeyset.fromJson(k as Map<String, dynamic>))
+                  .toList()
               : null,
           token: metadata['token'] as String? ?? token,
           proofPubKeys: metadata['proofPubKeys'] != null
               ? (metadata['proofPubKeys'] as List<dynamic>)
-                    .map((p) => p.toString())
-                    .toList()
+                  .map((p) => p.toString())
+                  .toList()
               : proofPubKeys,
         );
       case WalletType.NWC:
@@ -149,19 +149,18 @@ class CashuWalletTransaction extends WalletTransaction {
     this.proofPubKeys,
     Map<String, dynamic>? metadata,
   }) : super(
-         metadata:
-             metadata ??
-             {
-               'mintUrl': mintUrl,
-               'note': note,
-               'method': method,
-               'qoute': qoute?.toJson(),
-               'qouteMelt': qouteMelt?.toJson(),
-               'usedKeyset': usedKeysets?.map((k) => k.toJson()).toList(),
-               'token': token,
-               'proofPubKeys': proofPubKeys,
-             },
-       );
+          metadata: metadata ??
+              {
+                'mintUrl': mintUrl,
+                'note': note,
+                'method': method,
+                'qoute': qoute?.toJson(),
+                'qouteMelt': qouteMelt?.toJson(),
+                'usedKeyset': usedKeysets?.map((k) => k.toJson()).toList(),
+                'token': token,
+                'proofPubKeys': proofPubKeys,
+              },
+        );
 
   @override
   bool operator ==(Object other) =>

@@ -37,7 +37,7 @@ class QsRustEventSigner implements EventSigner {
   ///
   /// Use [QsRustEventSigner.generate] to create a new keypair first.
   QsRustEventSigner({required QsKeypair keypair, this.level = 2})
-    : _keypair = keypair;
+      : _keypair = keypair;
 
   @override
   bool get requiresInteractiveSigning => false;

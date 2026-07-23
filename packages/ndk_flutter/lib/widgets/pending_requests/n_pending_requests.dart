@@ -35,7 +35,7 @@ class NPendingRequests extends StatefulWidget {
 
   /// Custom builder for the collapsed content
   final Widget Function(BuildContext context, int count, String signerName)?
-  collapsedBuilder;
+      collapsedBuilder;
 
   /// Custom builder for the expanded content
   final Widget Function(
@@ -43,8 +43,7 @@ class NPendingRequests extends StatefulWidget {
     List<PendingSignerRequest> requests,
     String signerName,
     void Function(String requestId) onCancel,
-  )?
-  expandedBuilder;
+  )? expandedBuilder;
 
   const NPendingRequests({
     super.key,

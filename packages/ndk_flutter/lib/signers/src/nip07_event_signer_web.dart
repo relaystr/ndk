@@ -70,30 +70,27 @@ class Nip07EventSigner with ConcurrencyLimiterMixin implements EventSigner {
     _notifyPendingRequestsChange();
 
     runThrottled(() async {
-          if (!_pendingRequests.containsKey(requestId)) {
-            throw SignerRequestCancelledException(requestId);
-          }
-          return operation();
-        })
-        .then((result) {
-          if (!completer.isCompleted) {
-            completer.complete(result);
-          }
-        })
-        .catchError((error) {
-          if (!completer.isCompleted) {
-            completer.completeError(
-              SignerRequestRejectedException(
-                requestId: requestId,
-                originalMessage: error.toString(),
-              ),
-            );
-          }
-        })
-        .whenComplete(() {
-          _pendingRequests.remove(requestId);
-          _notifyPendingRequestsChange();
-        });
+      if (!_pendingRequests.containsKey(requestId)) {
+        throw SignerRequestCancelledException(requestId);
+      }
+      return operation();
+    }).then((result) {
+      if (!completer.isCompleted) {
+        completer.complete(result);
+      }
+    }).catchError((error) {
+      if (!completer.isCompleted) {
+        completer.completeError(
+          SignerRequestRejectedException(
+            requestId: requestId,
+            originalMessage: error.toString(),
+          ),
+        );
+      }
+    }).whenComplete(() {
+      _pendingRequests.remove(requestId);
+      _notifyPendingRequestsChange();
+    });
 
     return completer.future;
   }
@@ -121,9 +118,8 @@ class Nip07EventSigner with ConcurrencyLimiterMixin implements EventSigner {
     return _trackRequest(
       SignerMethod.nip04Decrypt,
       () async {
-        final result = await js.nostr!.nip04!
-            .decrypt(destPubKey.toJS, msg.toJS)
-            .toDart;
+        final result =
+            await js.nostr!.nip04!.decrypt(destPubKey.toJS, msg.toJS).toDart;
         return result.toDart;
       },
       ciphertext: msg,
@@ -162,9 +158,8 @@ class Nip07EventSigner with ConcurrencyLimiterMixin implements EventSigner {
     return _trackRequest(
       SignerMethod.nip04Encrypt,
       () async {
-        final result = await js.nostr!.nip04!
-            .encrypt(destPubKey.toJS, msg.toJS)
-            .toDart;
+        final result =
+            await js.nostr!.nip04!.encrypt(destPubKey.toJS, msg.toJS).toDart;
         return result.toDart;
       },
       plaintext: msg,

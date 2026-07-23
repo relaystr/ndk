@@ -153,20 +153,18 @@ void main() {
           privateKey: keyPair.privateKey!,
         );
 
-        await ndkB.broadcast
-            .broadcast(
-              nostrEvent: signedCurrentEvent,
-              specificRelays: [mockRelay.url],
-            )
-            .broadcastDoneFuture;
+        await ndkB.broadcast.broadcast(
+          nostrEvent: signedCurrentEvent,
+          specificRelays: [mockRelay.url],
+        ).broadcastDoneFuture;
 
-        final firstEventFromSubscription = await firstEventReceived.future
-            .timeout(
-              Duration(seconds: 2),
-              onTimeout: () => throw TimeoutException(
-                'NDK A did not receive the current replaceable event.',
-              ),
-            );
+        final firstEventFromSubscription =
+            await firstEventReceived.future.timeout(
+          Duration(seconds: 2),
+          onTimeout: () => throw TimeoutException(
+            'NDK A did not receive the current replaceable event.',
+          ),
+        );
 
         final staleEvent = Nip01Event(
           pubKey: keyPair.publicKey,
@@ -180,12 +178,10 @@ void main() {
           privateKey: keyPair.privateKey!,
         );
 
-        await ndkB.broadcast
-            .broadcast(
-              nostrEvent: signedStaleEvent,
-              specificRelays: [mockRelay.url],
-            )
-            .broadcastDoneFuture;
+        await ndkB.broadcast.broadcast(
+          nostrEvent: signedStaleEvent,
+          specificRelays: [mockRelay.url],
+        ).broadcastDoneFuture;
 
         final staleEventWasBroadcast = await unexpectedSecondEvent.future
             .then((_) => true)
@@ -260,9 +256,9 @@ void main() {
         privateKey: keyPair.privateKey!,
       );
 
-      await ndkB.broadcast
-          .broadcast(nostrEvent: signedEvent, specificRelays: [mockRelay.url])
-          .broadcastDoneFuture;
+      await ndkB.broadcast.broadcast(
+          nostrEvent: signedEvent,
+          specificRelays: [mockRelay.url]).broadcastDoneFuture;
 
       final received = await eventAfterReconnect.future.timeout(
         Duration(seconds: 5),

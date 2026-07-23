@@ -5,8 +5,8 @@ class SimpleProfiler {
   DateTime _lastCheckpoint;
 
   SimpleProfiler(this.name)
-    : startTime = DateTime.now(),
-      _lastCheckpoint = DateTime.now() {
+      : startTime = DateTime.now(),
+        _lastCheckpoint = DateTime.now() {
     // ignore: avoid_print
     print('Starting $name at $startTime');
   }

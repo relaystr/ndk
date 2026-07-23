@@ -15,7 +15,7 @@ class RelayJitBlastAllStrategy {
     required RequestState requestState,
     required Filter filter,
     required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-    connectedRelays,
+        connectedRelays,
     required bool closeOnEOSE,
     required RelayManager relayManager,
     required List<String> bootstrapRelays,

@@ -125,8 +125,8 @@ class RequestState {
 
   /// checks if all requests finished (received EOSE or CLOSED)
   bool get didAllRequestsFinish => requests.values.every(
-    (element) => element.receivedEOSE || element.receivedClosed,
-  );
+        (element) => element.receivedEOSE || element.receivedClosed,
+      );
 
   /// Adds single relay request to the state
   void addRequest(String url, List<Filter> filters) {

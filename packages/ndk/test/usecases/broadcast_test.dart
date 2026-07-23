@@ -755,8 +755,7 @@ void main() async {
         );
 
         await ndk.broadcast
-            .broadcastDeletion(events: [textNote, repost])
-            .broadcastDoneFuture;
+            .broadcastDeletion(events: [textNote, repost]).broadcastDoneFuture;
 
         List<Nip01Event> deletionEvents = await ndk.config.cache.loadEvents(
           kinds: [5],

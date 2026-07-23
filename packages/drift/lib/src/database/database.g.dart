@@ -104,16 +104,16 @@ class $EventsTable extends Events with TableInfo<$EventsTable, DbEvent> {
   );
   @override
   List<GeneratedColumn> get $columns => [
-    id,
-    pubKey,
-    kind,
-    createdAt,
-    content,
-    sig,
-    validSig,
-    tagsJson,
-    sourcesJson,
-  ];
+        id,
+        pubKey,
+        kind,
+        createdAt,
+        content,
+        sig,
+        validSig,
+        tagsJson,
+        sourcesJson,
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -347,17 +347,18 @@ class DbEvent extends DataClass implements Insertable<DbEvent> {
     Value<bool?> validSig = const Value.absent(),
     String? tagsJson,
     String? sourcesJson,
-  }) => DbEvent(
-    id: id ?? this.id,
-    pubKey: pubKey ?? this.pubKey,
-    kind: kind ?? this.kind,
-    createdAt: createdAt ?? this.createdAt,
-    content: content ?? this.content,
-    sig: sig.present ? sig.value : this.sig,
-    validSig: validSig.present ? validSig.value : this.validSig,
-    tagsJson: tagsJson ?? this.tagsJson,
-    sourcesJson: sourcesJson ?? this.sourcesJson,
-  );
+  }) =>
+      DbEvent(
+        id: id ?? this.id,
+        pubKey: pubKey ?? this.pubKey,
+        kind: kind ?? this.kind,
+        createdAt: createdAt ?? this.createdAt,
+        content: content ?? this.content,
+        sig: sig.present ? sig.value : this.sig,
+        validSig: validSig.present ? validSig.value : this.validSig,
+        tagsJson: tagsJson ?? this.tagsJson,
+        sourcesJson: sourcesJson ?? this.sourcesJson,
+      );
   DbEvent copyWithCompanion(EventsCompanion data) {
     return DbEvent(
       id: data.id.present ? data.id.value : this.id,
@@ -368,9 +369,8 @@ class DbEvent extends DataClass implements Insertable<DbEvent> {
       sig: data.sig.present ? data.sig.value : this.sig,
       validSig: data.validSig.present ? data.validSig.value : this.validSig,
       tagsJson: data.tagsJson.present ? data.tagsJson.value : this.tagsJson,
-      sourcesJson: data.sourcesJson.present
-          ? data.sourcesJson.value
-          : this.sourcesJson,
+      sourcesJson:
+          data.sourcesJson.present ? data.sourcesJson.value : this.sourcesJson,
     );
   }
 
@@ -392,16 +392,16 @@ class DbEvent extends DataClass implements Insertable<DbEvent> {
 
   @override
   int get hashCode => Object.hash(
-    id,
-    pubKey,
-    kind,
-    createdAt,
-    content,
-    sig,
-    validSig,
-    tagsJson,
-    sourcesJson,
-  );
+        id,
+        pubKey,
+        kind,
+        createdAt,
+        content,
+        sig,
+        validSig,
+        tagsJson,
+        sourcesJson,
+      );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -451,13 +451,13 @@ class EventsCompanion extends UpdateCompanion<DbEvent> {
     required String tagsJson,
     required String sourcesJson,
     this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       pubKey = Value(pubKey),
-       kind = Value(kind),
-       createdAt = Value(createdAt),
-       content = Value(content),
-       tagsJson = Value(tagsJson),
-       sourcesJson = Value(sourcesJson);
+  })  : id = Value(id),
+        pubKey = Value(pubKey),
+        kind = Value(kind),
+        createdAt = Value(createdAt),
+        content = Value(content),
+        tagsJson = Value(tagsJson),
+        sourcesJson = Value(sourcesJson);
   static Insertable<DbEvent> custom({
     Expression<String>? id,
     Expression<String>? pubKey,
@@ -613,11 +613,11 @@ class $UserRelayListsTable extends UserRelayLists
   );
   @override
   List<GeneratedColumn> get $columns => [
-    pubKey,
-    createdAt,
-    refreshedTimestamp,
-    relaysJson,
-  ];
+        pubKey,
+        createdAt,
+        refreshedTimestamp,
+        relaysJson,
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -757,12 +757,13 @@ class DbUserRelayList extends DataClass implements Insertable<DbUserRelayList> {
     int? createdAt,
     int? refreshedTimestamp,
     String? relaysJson,
-  }) => DbUserRelayList(
-    pubKey: pubKey ?? this.pubKey,
-    createdAt: createdAt ?? this.createdAt,
-    refreshedTimestamp: refreshedTimestamp ?? this.refreshedTimestamp,
-    relaysJson: relaysJson ?? this.relaysJson,
-  );
+  }) =>
+      DbUserRelayList(
+        pubKey: pubKey ?? this.pubKey,
+        createdAt: createdAt ?? this.createdAt,
+        refreshedTimestamp: refreshedTimestamp ?? this.refreshedTimestamp,
+        relaysJson: relaysJson ?? this.relaysJson,
+      );
   DbUserRelayList copyWithCompanion(UserRelayListsCompanion data) {
     return DbUserRelayList(
       pubKey: data.pubKey.present ? data.pubKey.value : this.pubKey,
@@ -770,9 +771,8 @@ class DbUserRelayList extends DataClass implements Insertable<DbUserRelayList> {
       refreshedTimestamp: data.refreshedTimestamp.present
           ? data.refreshedTimestamp.value
           : this.refreshedTimestamp,
-      relaysJson: data.relaysJson.present
-          ? data.relaysJson.value
-          : this.relaysJson,
+      relaysJson:
+          data.relaysJson.present ? data.relaysJson.value : this.relaysJson,
     );
   }
 
@@ -819,10 +819,10 @@ class UserRelayListsCompanion extends UpdateCompanion<DbUserRelayList> {
     required int refreshedTimestamp,
     required String relaysJson,
     this.rowid = const Value.absent(),
-  }) : pubKey = Value(pubKey),
-       createdAt = Value(createdAt),
-       refreshedTimestamp = Value(refreshedTimestamp),
-       relaysJson = Value(relaysJson);
+  })  : pubKey = Value(pubKey),
+        createdAt = Value(createdAt),
+        refreshedTimestamp = Value(refreshedTimestamp),
+        relaysJson = Value(relaysJson);
   static Insertable<DbUserRelayList> custom({
     Expression<String>? pubKey,
     Expression<int>? createdAt,
@@ -959,37 +959,37 @@ class $RelaySetsTable extends RelaySets
   @override
   late final GeneratedColumn<bool> fallbackToBootstrapRelays =
       GeneratedColumn<bool>(
-        'fallback_to_bootstrap_relays',
-        aliasedName,
-        false,
-        type: DriftSqlType.bool,
-        requiredDuringInsert: true,
-        defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'CHECK ("fallback_to_bootstrap_relays" IN (0, 1))',
-        ),
-      );
+    'fallback_to_bootstrap_relays',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("fallback_to_bootstrap_relays" IN (0, 1))',
+    ),
+  );
   static const VerificationMeta _notCoveredPubkeysJsonMeta =
       const VerificationMeta('notCoveredPubkeysJson');
   @override
   late final GeneratedColumn<String> notCoveredPubkeysJson =
       GeneratedColumn<String>(
-        'not_covered_pubkeys_json',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      );
+    'not_covered_pubkeys_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [
-    id,
-    name,
-    pubKey,
-    relayMinCountPerPubkey,
-    direction,
-    relaysMapJson,
-    fallbackToBootstrapRelays,
-    notCoveredPubkeysJson,
-  ];
+        id,
+        name,
+        pubKey,
+        relayMinCountPerPubkey,
+        direction,
+        relaysMapJson,
+        fallbackToBootstrapRelays,
+        notCoveredPubkeysJson,
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1221,18 +1221,20 @@ class DbRelaySet extends DataClass implements Insertable<DbRelaySet> {
     String? relaysMapJson,
     bool? fallbackToBootstrapRelays,
     String? notCoveredPubkeysJson,
-  }) => DbRelaySet(
-    id: id ?? this.id,
-    name: name ?? this.name,
-    pubKey: pubKey ?? this.pubKey,
-    relayMinCountPerPubkey:
-        relayMinCountPerPubkey ?? this.relayMinCountPerPubkey,
-    direction: direction ?? this.direction,
-    relaysMapJson: relaysMapJson ?? this.relaysMapJson,
-    fallbackToBootstrapRelays:
-        fallbackToBootstrapRelays ?? this.fallbackToBootstrapRelays,
-    notCoveredPubkeysJson: notCoveredPubkeysJson ?? this.notCoveredPubkeysJson,
-  );
+  }) =>
+      DbRelaySet(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        pubKey: pubKey ?? this.pubKey,
+        relayMinCountPerPubkey:
+            relayMinCountPerPubkey ?? this.relayMinCountPerPubkey,
+        direction: direction ?? this.direction,
+        relaysMapJson: relaysMapJson ?? this.relaysMapJson,
+        fallbackToBootstrapRelays:
+            fallbackToBootstrapRelays ?? this.fallbackToBootstrapRelays,
+        notCoveredPubkeysJson:
+            notCoveredPubkeysJson ?? this.notCoveredPubkeysJson,
+      );
   DbRelaySet copyWithCompanion(RelaySetsCompanion data) {
     return DbRelaySet(
       id: data.id.present ? data.id.value : this.id,
@@ -1271,15 +1273,15 @@ class DbRelaySet extends DataClass implements Insertable<DbRelaySet> {
 
   @override
   int get hashCode => Object.hash(
-    id,
-    name,
-    pubKey,
-    relayMinCountPerPubkey,
-    direction,
-    relaysMapJson,
-    fallbackToBootstrapRelays,
-    notCoveredPubkeysJson,
-  );
+        id,
+        name,
+        pubKey,
+        relayMinCountPerPubkey,
+        direction,
+        relaysMapJson,
+        fallbackToBootstrapRelays,
+        notCoveredPubkeysJson,
+      );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1325,14 +1327,14 @@ class RelaySetsCompanion extends UpdateCompanion<DbRelaySet> {
     required bool fallbackToBootstrapRelays,
     required String notCoveredPubkeysJson,
     this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       name = Value(name),
-       pubKey = Value(pubKey),
-       relayMinCountPerPubkey = Value(relayMinCountPerPubkey),
-       direction = Value(direction),
-       relaysMapJson = Value(relaysMapJson),
-       fallbackToBootstrapRelays = Value(fallbackToBootstrapRelays),
-       notCoveredPubkeysJson = Value(notCoveredPubkeysJson);
+  })  : id = Value(id),
+        name = Value(name),
+        pubKey = Value(pubKey),
+        relayMinCountPerPubkey = Value(relayMinCountPerPubkey),
+        direction = Value(direction),
+        relaysMapJson = Value(relaysMapJson),
+        fallbackToBootstrapRelays = Value(fallbackToBootstrapRelays),
+        notCoveredPubkeysJson = Value(notCoveredPubkeysJson);
   static Insertable<DbRelaySet> custom({
     Expression<String>? id,
     Expression<String>? name,
@@ -1502,12 +1504,12 @@ class $Nip05sTable extends Nip05s with TableInfo<$Nip05sTable, DbNip05> {
   );
   @override
   List<GeneratedColumn> get $columns => [
-    pubKey,
-    nip05,
-    valid,
-    networkFetchTime,
-    relaysJson,
-  ];
+        pubKey,
+        nip05,
+        valid,
+        networkFetchTime,
+        relaysJson,
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1668,15 +1670,16 @@ class DbNip05 extends DataClass implements Insertable<DbNip05> {
     bool? valid,
     Value<int?> networkFetchTime = const Value.absent(),
     String? relaysJson,
-  }) => DbNip05(
-    pubKey: pubKey ?? this.pubKey,
-    nip05: nip05 ?? this.nip05,
-    valid: valid ?? this.valid,
-    networkFetchTime: networkFetchTime.present
-        ? networkFetchTime.value
-        : this.networkFetchTime,
-    relaysJson: relaysJson ?? this.relaysJson,
-  );
+  }) =>
+      DbNip05(
+        pubKey: pubKey ?? this.pubKey,
+        nip05: nip05 ?? this.nip05,
+        valid: valid ?? this.valid,
+        networkFetchTime: networkFetchTime.present
+            ? networkFetchTime.value
+            : this.networkFetchTime,
+        relaysJson: relaysJson ?? this.relaysJson,
+      );
   DbNip05 copyWithCompanion(Nip05sCompanion data) {
     return DbNip05(
       pubKey: data.pubKey.present ? data.pubKey.value : this.pubKey,
@@ -1685,9 +1688,8 @@ class DbNip05 extends DataClass implements Insertable<DbNip05> {
       networkFetchTime: data.networkFetchTime.present
           ? data.networkFetchTime.value
           : this.networkFetchTime,
-      relaysJson: data.relaysJson.present
-          ? data.relaysJson.value
-          : this.relaysJson,
+      relaysJson:
+          data.relaysJson.present ? data.relaysJson.value : this.relaysJson,
     );
   }
 
@@ -1739,10 +1741,10 @@ class Nip05sCompanion extends UpdateCompanion<DbNip05> {
     this.networkFetchTime = const Value.absent(),
     required String relaysJson,
     this.rowid = const Value.absent(),
-  }) : pubKey = Value(pubKey),
-       nip05 = Value(nip05),
-       valid = Value(valid),
-       relaysJson = Value(relaysJson);
+  })  : pubKey = Value(pubKey),
+        nip05 = Value(nip05),
+        valid = Value(valid),
+        relaysJson = Value(relaysJson);
   static Insertable<DbNip05> custom({
     Expression<String>? pubKey,
     Expression<String>? nip05,
@@ -1879,12 +1881,12 @@ class $FilterFetchedRangeRecordsTable extends FilterFetchedRangeRecords
   );
   @override
   List<GeneratedColumn> get $columns => [
-    key,
-    filterHash,
-    relayUrl,
-    rangeStart,
-    rangeEnd,
-  ];
+        key,
+        filterHash,
+        relayUrl,
+        rangeStart,
+        rangeEnd,
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2044,25 +2046,24 @@ class DbFilterFetchedRangeRecord extends DataClass
     String? relayUrl,
     int? rangeStart,
     int? rangeEnd,
-  }) => DbFilterFetchedRangeRecord(
-    key: key ?? this.key,
-    filterHash: filterHash ?? this.filterHash,
-    relayUrl: relayUrl ?? this.relayUrl,
-    rangeStart: rangeStart ?? this.rangeStart,
-    rangeEnd: rangeEnd ?? this.rangeEnd,
-  );
+  }) =>
+      DbFilterFetchedRangeRecord(
+        key: key ?? this.key,
+        filterHash: filterHash ?? this.filterHash,
+        relayUrl: relayUrl ?? this.relayUrl,
+        rangeStart: rangeStart ?? this.rangeStart,
+        rangeEnd: rangeEnd ?? this.rangeEnd,
+      );
   DbFilterFetchedRangeRecord copyWithCompanion(
     FilterFetchedRangeRecordsCompanion data,
   ) {
     return DbFilterFetchedRangeRecord(
       key: data.key.present ? data.key.value : this.key,
-      filterHash: data.filterHash.present
-          ? data.filterHash.value
-          : this.filterHash,
+      filterHash:
+          data.filterHash.present ? data.filterHash.value : this.filterHash,
       relayUrl: data.relayUrl.present ? data.relayUrl.value : this.relayUrl,
-      rangeStart: data.rangeStart.present
-          ? data.rangeStart.value
-          : this.rangeStart,
+      rangeStart:
+          data.rangeStart.present ? data.rangeStart.value : this.rangeStart,
       rangeEnd: data.rangeEnd.present ? data.rangeEnd.value : this.rangeEnd,
     );
   }
@@ -2116,11 +2117,11 @@ class FilterFetchedRangeRecordsCompanion
     required int rangeStart,
     required int rangeEnd,
     this.rowid = const Value.absent(),
-  }) : key = Value(key),
-       filterHash = Value(filterHash),
-       relayUrl = Value(relayUrl),
-       rangeStart = Value(rangeStart),
-       rangeEnd = Value(rangeEnd);
+  })  : key = Value(key),
+        filterHash = Value(filterHash),
+        relayUrl = Value(relayUrl),
+        rangeStart = Value(rangeStart),
+        rangeEnd = Value(rangeEnd);
   static Insertable<DbFilterFetchedRangeRecord> custom({
     Expression<String>? key,
     Expression<String>? filterHash,
@@ -2318,9 +2319,9 @@ class DbEventSource extends DataClass implements Insertable<DbEventSource> {
   }
 
   DbEventSource copyWith({String? eventId, String? relayUrl}) => DbEventSource(
-    eventId: eventId ?? this.eventId,
-    relayUrl: relayUrl ?? this.relayUrl,
-  );
+        eventId: eventId ?? this.eventId,
+        relayUrl: relayUrl ?? this.relayUrl,
+      );
   DbEventSource copyWithCompanion(EventSourcesTableCompanion data) {
     return DbEventSource(
       eventId: data.eventId.present ? data.eventId.value : this.eventId,
@@ -2360,8 +2361,8 @@ class EventSourcesTableCompanion extends UpdateCompanion<DbEventSource> {
     required String eventId,
     required String relayUrl,
     this.rowid = const Value.absent(),
-  }) : eventId = Value(eventId),
-       relayUrl = Value(relayUrl);
+  })  : eventId = Value(eventId),
+        relayUrl = Value(relayUrl);
   static Insertable<DbEventSource> custom({
     Expression<String>? eventId,
     Expression<String>? relayUrl,
@@ -2487,26 +2488,26 @@ class $EventDeliveryRecordsTableTable extends EventDeliveryRecordsTable
   @override
   late final GeneratedColumn<bool> requiresNetworkSigner =
       GeneratedColumn<bool>(
-        'requires_network_signer',
-        aliasedName,
-        false,
-        type: DriftSqlType.bool,
-        requiredDuringInsert: false,
-        defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'CHECK ("requires_network_signer" IN (0, 1))',
-        ),
-        defaultValue: const Constant(false),
-      );
+    'requires_network_signer',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("requires_network_signer" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
-    eventId,
-    status,
-    createdAt,
-    updatedAt,
-    signedAt,
-    completedAt,
-    requiresNetworkSigner,
-  ];
+        eventId,
+        status,
+        createdAt,
+        updatedAt,
+        signedAt,
+        completedAt,
+        requiresNetworkSigner,
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2711,15 +2712,17 @@ class DbEventDeliveryRecord extends DataClass
     Value<int?> signedAt = const Value.absent(),
     Value<int?> completedAt = const Value.absent(),
     bool? requiresNetworkSigner,
-  }) => DbEventDeliveryRecord(
-    eventId: eventId ?? this.eventId,
-    status: status ?? this.status,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    signedAt: signedAt.present ? signedAt.value : this.signedAt,
-    completedAt: completedAt.present ? completedAt.value : this.completedAt,
-    requiresNetworkSigner: requiresNetworkSigner ?? this.requiresNetworkSigner,
-  );
+  }) =>
+      DbEventDeliveryRecord(
+        eventId: eventId ?? this.eventId,
+        status: status ?? this.status,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        signedAt: signedAt.present ? signedAt.value : this.signedAt,
+        completedAt: completedAt.present ? completedAt.value : this.completedAt,
+        requiresNetworkSigner:
+            requiresNetworkSigner ?? this.requiresNetworkSigner,
+      );
   DbEventDeliveryRecord copyWithCompanion(
     EventDeliveryRecordsTableCompanion data,
   ) {
@@ -2729,9 +2732,8 @@ class DbEventDeliveryRecord extends DataClass
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       signedAt: data.signedAt.present ? data.signedAt.value : this.signedAt,
-      completedAt: data.completedAt.present
-          ? data.completedAt.value
-          : this.completedAt,
+      completedAt:
+          data.completedAt.present ? data.completedAt.value : this.completedAt,
       requiresNetworkSigner: data.requiresNetworkSigner.present
           ? data.requiresNetworkSigner.value
           : this.requiresNetworkSigner,
@@ -2754,14 +2756,14 @@ class DbEventDeliveryRecord extends DataClass
 
   @override
   int get hashCode => Object.hash(
-    eventId,
-    status,
-    createdAt,
-    updatedAt,
-    signedAt,
-    completedAt,
-    requiresNetworkSigner,
-  );
+        eventId,
+        status,
+        createdAt,
+        updatedAt,
+        signedAt,
+        completedAt,
+        requiresNetworkSigner,
+      );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2804,10 +2806,10 @@ class EventDeliveryRecordsTableCompanion
     this.completedAt = const Value.absent(),
     this.requiresNetworkSigner = const Value.absent(),
     this.rowid = const Value.absent(),
-  }) : eventId = Value(eventId),
-       status = Value(status),
-       createdAt = Value(createdAt),
-       updatedAt = Value(updatedAt);
+  })  : eventId = Value(eventId),
+        status = Value(status),
+        createdAt = Value(createdAt),
+        updatedAt = Value(updatedAt);
   static Insertable<DbEventDeliveryRecord> custom({
     Expression<String>? eventId,
     Expression<String>? status,
@@ -3006,16 +3008,16 @@ class $RelayDeliveryTargetsTableTable extends RelayDeliveryTargetsTable
   );
   @override
   List<GeneratedColumn> get $columns => [
-    eventId,
-    relayUrl,
-    reason,
-    state,
-    attemptCount,
-    lastAttemptAt,
-    nextRetryAt,
-    lastError,
-    lastOkMessage,
-  ];
+        eventId,
+        relayUrl,
+        reason,
+        state,
+        attemptCount,
+        lastAttemptAt,
+        nextRetryAt,
+        lastError,
+        lastOkMessage,
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -3266,21 +3268,20 @@ class DbRelayDeliveryTarget extends DataClass
     Value<int?> nextRetryAt = const Value.absent(),
     Value<String?> lastError = const Value.absent(),
     Value<String?> lastOkMessage = const Value.absent(),
-  }) => DbRelayDeliveryTarget(
-    eventId: eventId ?? this.eventId,
-    relayUrl: relayUrl ?? this.relayUrl,
-    reason: reason ?? this.reason,
-    state: state ?? this.state,
-    attemptCount: attemptCount ?? this.attemptCount,
-    lastAttemptAt: lastAttemptAt.present
-        ? lastAttemptAt.value
-        : this.lastAttemptAt,
-    nextRetryAt: nextRetryAt.present ? nextRetryAt.value : this.nextRetryAt,
-    lastError: lastError.present ? lastError.value : this.lastError,
-    lastOkMessage: lastOkMessage.present
-        ? lastOkMessage.value
-        : this.lastOkMessage,
-  );
+  }) =>
+      DbRelayDeliveryTarget(
+        eventId: eventId ?? this.eventId,
+        relayUrl: relayUrl ?? this.relayUrl,
+        reason: reason ?? this.reason,
+        state: state ?? this.state,
+        attemptCount: attemptCount ?? this.attemptCount,
+        lastAttemptAt:
+            lastAttemptAt.present ? lastAttemptAt.value : this.lastAttemptAt,
+        nextRetryAt: nextRetryAt.present ? nextRetryAt.value : this.nextRetryAt,
+        lastError: lastError.present ? lastError.value : this.lastError,
+        lastOkMessage:
+            lastOkMessage.present ? lastOkMessage.value : this.lastOkMessage,
+      );
   DbRelayDeliveryTarget copyWithCompanion(
     RelayDeliveryTargetsTableCompanion data,
   ) {
@@ -3295,9 +3296,8 @@ class DbRelayDeliveryTarget extends DataClass
       lastAttemptAt: data.lastAttemptAt.present
           ? data.lastAttemptAt.value
           : this.lastAttemptAt,
-      nextRetryAt: data.nextRetryAt.present
-          ? data.nextRetryAt.value
-          : this.nextRetryAt,
+      nextRetryAt:
+          data.nextRetryAt.present ? data.nextRetryAt.value : this.nextRetryAt,
       lastError: data.lastError.present ? data.lastError.value : this.lastError,
       lastOkMessage: data.lastOkMessage.present
           ? data.lastOkMessage.value
@@ -3323,16 +3323,16 @@ class DbRelayDeliveryTarget extends DataClass
 
   @override
   int get hashCode => Object.hash(
-    eventId,
-    relayUrl,
-    reason,
-    state,
-    attemptCount,
-    lastAttemptAt,
-    nextRetryAt,
-    lastError,
-    lastOkMessage,
-  );
+        eventId,
+        relayUrl,
+        reason,
+        state,
+        attemptCount,
+        lastAttemptAt,
+        nextRetryAt,
+        lastError,
+        lastOkMessage,
+      );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3383,10 +3383,10 @@ class RelayDeliveryTargetsTableCompanion
     this.lastError = const Value.absent(),
     this.lastOkMessage = const Value.absent(),
     this.rowid = const Value.absent(),
-  }) : eventId = Value(eventId),
-       relayUrl = Value(relayUrl),
-       reason = Value(reason),
-       state = Value(state);
+  })  : eventId = Value(eventId),
+        relayUrl = Value(relayUrl),
+        reason = Value(reason),
+        state = Value(state);
   static Insertable<DbRelayDeliveryTarget> custom({
     Expression<String>? eventId,
     Expression<String>? relayUrl,
@@ -3570,14 +3570,14 @@ class $CashuProofsTable extends CashuProofs
   );
   @override
   List<GeneratedColumn> get $columns => [
-    Y,
-    keysetId,
-    amount,
-    secret,
-    unblindedSig,
-    state,
-    mintUrl,
-  ];
+        Y,
+        keysetId,
+        amount,
+        secret,
+        unblindedSig,
+        state,
+        mintUrl,
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -3771,15 +3771,16 @@ class DbCashuProof extends DataClass implements Insertable<DbCashuProof> {
     String? unblindedSig,
     String? state,
     String? mintUrl,
-  }) => DbCashuProof(
-    Y: Y ?? this.Y,
-    keysetId: keysetId ?? this.keysetId,
-    amount: amount ?? this.amount,
-    secret: secret ?? this.secret,
-    unblindedSig: unblindedSig ?? this.unblindedSig,
-    state: state ?? this.state,
-    mintUrl: mintUrl ?? this.mintUrl,
-  );
+  }) =>
+      DbCashuProof(
+        Y: Y ?? this.Y,
+        keysetId: keysetId ?? this.keysetId,
+        amount: amount ?? this.amount,
+        secret: secret ?? this.secret,
+        unblindedSig: unblindedSig ?? this.unblindedSig,
+        state: state ?? this.state,
+        mintUrl: mintUrl ?? this.mintUrl,
+      );
   DbCashuProof copyWithCompanion(CashuProofsCompanion data) {
     return DbCashuProof(
       Y: data.Y.present ? data.Y.value : this.Y,
@@ -3852,13 +3853,13 @@ class CashuProofsCompanion extends UpdateCompanion<DbCashuProof> {
     required String state,
     required String mintUrl,
     this.rowid = const Value.absent(),
-  }) : Y = Value(Y),
-       keysetId = Value(keysetId),
-       amount = Value(amount),
-       secret = Value(secret),
-       unblindedSig = Value(unblindedSig),
-       state = Value(state),
-       mintUrl = Value(mintUrl);
+  })  : Y = Value(Y),
+        keysetId = Value(keysetId),
+        amount = Value(amount),
+        secret = Value(secret),
+        unblindedSig = Value(unblindedSig),
+        state = Value(state),
+        mintUrl = Value(mintUrl);
   static Insertable<DbCashuProof> custom({
     Expression<String>? Y,
     Expression<String>? keysetId,
@@ -4031,14 +4032,14 @@ class $CashuKeysetsTable extends CashuKeysets
   );
   @override
   List<GeneratedColumn> get $columns => [
-    id,
-    mintUrl,
-    unit,
-    active,
-    inputFeePPK,
-    mintKeyPairsJson,
-    fetchedAt,
-  ];
+        id,
+        mintUrl,
+        unit,
+        active,
+        inputFeePPK,
+        mintKeyPairsJson,
+        fetchedAt,
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -4237,24 +4238,24 @@ class DbCashuKeyset extends DataClass implements Insertable<DbCashuKeyset> {
     int? inputFeePPK,
     String? mintKeyPairsJson,
     Value<int?> fetchedAt = const Value.absent(),
-  }) => DbCashuKeyset(
-    id: id ?? this.id,
-    mintUrl: mintUrl ?? this.mintUrl,
-    unit: unit ?? this.unit,
-    active: active ?? this.active,
-    inputFeePPK: inputFeePPK ?? this.inputFeePPK,
-    mintKeyPairsJson: mintKeyPairsJson ?? this.mintKeyPairsJson,
-    fetchedAt: fetchedAt.present ? fetchedAt.value : this.fetchedAt,
-  );
+  }) =>
+      DbCashuKeyset(
+        id: id ?? this.id,
+        mintUrl: mintUrl ?? this.mintUrl,
+        unit: unit ?? this.unit,
+        active: active ?? this.active,
+        inputFeePPK: inputFeePPK ?? this.inputFeePPK,
+        mintKeyPairsJson: mintKeyPairsJson ?? this.mintKeyPairsJson,
+        fetchedAt: fetchedAt.present ? fetchedAt.value : this.fetchedAt,
+      );
   DbCashuKeyset copyWithCompanion(CashuKeysetsCompanion data) {
     return DbCashuKeyset(
       id: data.id.present ? data.id.value : this.id,
       mintUrl: data.mintUrl.present ? data.mintUrl.value : this.mintUrl,
       unit: data.unit.present ? data.unit.value : this.unit,
       active: data.active.present ? data.active.value : this.active,
-      inputFeePPK: data.inputFeePPK.present
-          ? data.inputFeePPK.value
-          : this.inputFeePPK,
+      inputFeePPK:
+          data.inputFeePPK.present ? data.inputFeePPK.value : this.inputFeePPK,
       mintKeyPairsJson: data.mintKeyPairsJson.present
           ? data.mintKeyPairsJson.value
           : this.mintKeyPairsJson,
@@ -4278,14 +4279,14 @@ class DbCashuKeyset extends DataClass implements Insertable<DbCashuKeyset> {
 
   @override
   int get hashCode => Object.hash(
-    id,
-    mintUrl,
-    unit,
-    active,
-    inputFeePPK,
-    mintKeyPairsJson,
-    fetchedAt,
-  );
+        id,
+        mintUrl,
+        unit,
+        active,
+        inputFeePPK,
+        mintKeyPairsJson,
+        fetchedAt,
+      );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4327,12 +4328,12 @@ class CashuKeysetsCompanion extends UpdateCompanion<DbCashuKeyset> {
     required String mintKeyPairsJson,
     this.fetchedAt = const Value.absent(),
     this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       mintUrl = Value(mintUrl),
-       unit = Value(unit),
-       active = Value(active),
-       inputFeePPK = Value(inputFeePPK),
-       mintKeyPairsJson = Value(mintKeyPairsJson);
+  })  : id = Value(id),
+        mintUrl = Value(mintUrl),
+        unit = Value(unit),
+        active = Value(active),
+        inputFeePPK = Value(inputFeePPK),
+        mintKeyPairsJson = Value(mintKeyPairsJson);
   static Insertable<DbCashuKeyset> custom({
     Expression<String>? id,
     Expression<String>? mintUrl,
@@ -4562,20 +4563,20 @@ class $CashuMintInfosTable extends CashuMintInfos
   );
   @override
   List<GeneratedColumn> get $columns => [
-    id,
-    urlsJson,
-    name,
-    pubkey,
-    version,
-    description,
-    descriptionLong,
-    contactJson,
-    motd,
-    iconUrl,
-    time,
-    tosUrl,
-    nutsJson,
-  ];
+        id,
+        urlsJson,
+        name,
+        pubkey,
+        version,
+        description,
+        descriptionLong,
+        contactJson,
+        motd,
+        iconUrl,
+        time,
+        tosUrl,
+        nutsJson,
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -4821,9 +4822,8 @@ class DbCashuMintInfo extends DataClass implements Insertable<DbCashuMintInfo> {
       id: Value(id),
       urlsJson: Value(urlsJson),
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
-      pubkey: pubkey == null && nullToAbsent
-          ? const Value.absent()
-          : Value(pubkey),
+      pubkey:
+          pubkey == null && nullToAbsent ? const Value.absent() : Value(pubkey),
       version: version == null && nullToAbsent
           ? const Value.absent()
           : Value(version),
@@ -4839,9 +4839,8 @@ class DbCashuMintInfo extends DataClass implements Insertable<DbCashuMintInfo> {
           ? const Value.absent()
           : Value(iconUrl),
       time: time == null && nullToAbsent ? const Value.absent() : Value(time),
-      tosUrl: tosUrl == null && nullToAbsent
-          ? const Value.absent()
-          : Value(tosUrl),
+      tosUrl:
+          tosUrl == null && nullToAbsent ? const Value.absent() : Value(tosUrl),
       nutsJson: Value(nutsJson),
     );
   }
@@ -4901,23 +4900,24 @@ class DbCashuMintInfo extends DataClass implements Insertable<DbCashuMintInfo> {
     Value<int?> time = const Value.absent(),
     Value<String?> tosUrl = const Value.absent(),
     String? nutsJson,
-  }) => DbCashuMintInfo(
-    id: id ?? this.id,
-    urlsJson: urlsJson ?? this.urlsJson,
-    name: name.present ? name.value : this.name,
-    pubkey: pubkey.present ? pubkey.value : this.pubkey,
-    version: version.present ? version.value : this.version,
-    description: description.present ? description.value : this.description,
-    descriptionLong: descriptionLong.present
-        ? descriptionLong.value
-        : this.descriptionLong,
-    contactJson: contactJson ?? this.contactJson,
-    motd: motd.present ? motd.value : this.motd,
-    iconUrl: iconUrl.present ? iconUrl.value : this.iconUrl,
-    time: time.present ? time.value : this.time,
-    tosUrl: tosUrl.present ? tosUrl.value : this.tosUrl,
-    nutsJson: nutsJson ?? this.nutsJson,
-  );
+  }) =>
+      DbCashuMintInfo(
+        id: id ?? this.id,
+        urlsJson: urlsJson ?? this.urlsJson,
+        name: name.present ? name.value : this.name,
+        pubkey: pubkey.present ? pubkey.value : this.pubkey,
+        version: version.present ? version.value : this.version,
+        description: description.present ? description.value : this.description,
+        descriptionLong: descriptionLong.present
+            ? descriptionLong.value
+            : this.descriptionLong,
+        contactJson: contactJson ?? this.contactJson,
+        motd: motd.present ? motd.value : this.motd,
+        iconUrl: iconUrl.present ? iconUrl.value : this.iconUrl,
+        time: time.present ? time.value : this.time,
+        tosUrl: tosUrl.present ? tosUrl.value : this.tosUrl,
+        nutsJson: nutsJson ?? this.nutsJson,
+      );
   DbCashuMintInfo copyWithCompanion(CashuMintInfosCompanion data) {
     return DbCashuMintInfo(
       id: data.id.present ? data.id.value : this.id,
@@ -4925,15 +4925,13 @@ class DbCashuMintInfo extends DataClass implements Insertable<DbCashuMintInfo> {
       name: data.name.present ? data.name.value : this.name,
       pubkey: data.pubkey.present ? data.pubkey.value : this.pubkey,
       version: data.version.present ? data.version.value : this.version,
-      description: data.description.present
-          ? data.description.value
-          : this.description,
+      description:
+          data.description.present ? data.description.value : this.description,
       descriptionLong: data.descriptionLong.present
           ? data.descriptionLong.value
           : this.descriptionLong,
-      contactJson: data.contactJson.present
-          ? data.contactJson.value
-          : this.contactJson,
+      contactJson:
+          data.contactJson.present ? data.contactJson.value : this.contactJson,
       motd: data.motd.present ? data.motd.value : this.motd,
       iconUrl: data.iconUrl.present ? data.iconUrl.value : this.iconUrl,
       time: data.time.present ? data.time.value : this.time,
@@ -4964,20 +4962,20 @@ class DbCashuMintInfo extends DataClass implements Insertable<DbCashuMintInfo> {
 
   @override
   int get hashCode => Object.hash(
-    id,
-    urlsJson,
-    name,
-    pubkey,
-    version,
-    description,
-    descriptionLong,
-    contactJson,
-    motd,
-    iconUrl,
-    time,
-    tosUrl,
-    nutsJson,
-  );
+        id,
+        urlsJson,
+        name,
+        pubkey,
+        version,
+        description,
+        descriptionLong,
+        contactJson,
+        motd,
+        iconUrl,
+        time,
+        tosUrl,
+        nutsJson,
+      );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -5043,10 +5041,10 @@ class CashuMintInfosCompanion extends UpdateCompanion<DbCashuMintInfo> {
     this.tosUrl = const Value.absent(),
     required String nutsJson,
     this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       urlsJson = Value(urlsJson),
-       contactJson = Value(contactJson),
-       nutsJson = Value(nutsJson);
+  })  : id = Value(id),
+        urlsJson = Value(urlsJson),
+        contactJson = Value(contactJson),
+        nutsJson = Value(nutsJson);
   static Insertable<DbCashuMintInfo> custom({
     Expression<String>? id,
     Expression<String>? urlsJson,
@@ -5369,12 +5367,13 @@ class DbCashuSecretCounter extends DataClass
     String? mintUrl,
     String? keysetId,
     int? counter,
-  }) => DbCashuSecretCounter(
-    id: id ?? this.id,
-    mintUrl: mintUrl ?? this.mintUrl,
-    keysetId: keysetId ?? this.keysetId,
-    counter: counter ?? this.counter,
-  );
+  }) =>
+      DbCashuSecretCounter(
+        id: id ?? this.id,
+        mintUrl: mintUrl ?? this.mintUrl,
+        keysetId: keysetId ?? this.keysetId,
+        counter: counter ?? this.counter,
+      );
   DbCashuSecretCounter copyWithCompanion(CashuSecretCountersCompanion data) {
     return DbCashuSecretCounter(
       id: data.id.present ? data.id.value : this.id,
@@ -5427,10 +5426,10 @@ class CashuSecretCountersCompanion
     required String keysetId,
     required int counter,
     this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       mintUrl = Value(mintUrl),
-       keysetId = Value(keysetId),
-       counter = Value(counter);
+  })  : id = Value(id),
+        mintUrl = Value(mintUrl),
+        keysetId = Value(keysetId),
+        counter = Value(counter);
   static Insertable<DbCashuSecretCounter> custom({
     Expression<String>? id,
     Expression<String>? mintUrl,
@@ -5592,9 +5591,8 @@ class DbKeyValue extends DataClass implements Insertable<DbKeyValue> {
   KeyValuesCompanion toCompanion(bool nullToAbsent) {
     return KeyValuesCompanion(
       key: Value(key),
-      value: value == null && nullToAbsent
-          ? const Value.absent()
-          : Value(value),
+      value:
+          value == null && nullToAbsent ? const Value.absent() : Value(value),
     );
   }
 
@@ -5620,10 +5618,11 @@ class DbKeyValue extends DataClass implements Insertable<DbKeyValue> {
   DbKeyValue copyWith({
     String? key,
     Value<String?> value = const Value.absent(),
-  }) => DbKeyValue(
-    key: key ?? this.key,
-    value: value.present ? value.value : this.value,
-  );
+  }) =>
+      DbKeyValue(
+        key: key ?? this.key,
+        value: value.present ? value.value : this.value,
+      );
   DbKeyValue copyWithCompanion(KeyValuesCompanion data) {
     return DbKeyValue(
       key: data.key.present ? data.key.value : this.key,
@@ -5751,12 +5750,12 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, DbWallet> {
   @override
   late final GeneratedColumn<String> supportedUnitsJson =
       GeneratedColumn<String>(
-        'supported_units_json',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      );
+    'supported_units_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _metadataJsonMeta = const VerificationMeta(
     'metadataJson',
   );
@@ -5770,12 +5769,12 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, DbWallet> {
   );
   @override
   List<GeneratedColumn> get $columns => [
-    id,
-    name,
-    type,
-    supportedUnitsJson,
-    metadataJson,
-  ];
+        id,
+        name,
+        type,
+        supportedUnitsJson,
+        metadataJson,
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -5936,13 +5935,14 @@ class DbWallet extends DataClass implements Insertable<DbWallet> {
     String? type,
     String? supportedUnitsJson,
     String? metadataJson,
-  }) => DbWallet(
-    id: id ?? this.id,
-    name: name ?? this.name,
-    type: type ?? this.type,
-    supportedUnitsJson: supportedUnitsJson ?? this.supportedUnitsJson,
-    metadataJson: metadataJson ?? this.metadataJson,
-  );
+  }) =>
+      DbWallet(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        type: type ?? this.type,
+        supportedUnitsJson: supportedUnitsJson ?? this.supportedUnitsJson,
+        metadataJson: metadataJson ?? this.metadataJson,
+      );
   DbWallet copyWithCompanion(WalletsCompanion data) {
     return DbWallet(
       id: data.id.present ? data.id.value : this.id,
@@ -6005,11 +6005,11 @@ class WalletsCompanion extends UpdateCompanion<DbWallet> {
     required String supportedUnitsJson,
     required String metadataJson,
     this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       name = Value(name),
-       type = Value(type),
-       supportedUnitsJson = Value(supportedUnitsJson),
-       metadataJson = Value(metadataJson);
+  })  : id = Value(id),
+        name = Value(name),
+        type = Value(type),
+        supportedUnitsJson = Value(supportedUnitsJson),
+        metadataJson = Value(metadataJson);
   static Insertable<DbWallet> custom({
     Expression<String>? id,
     Expression<String>? name,
@@ -6195,17 +6195,17 @@ class $WalletTransactionsTable extends WalletTransactions
   );
   @override
   List<GeneratedColumn> get $columns => [
-    id,
-    walletId,
-    changeAmount,
-    unit,
-    type,
-    state,
-    completionMsg,
-    transactionDate,
-    initiatedDate,
-    metadataJson,
-  ];
+        id,
+        walletId,
+        changeAmount,
+        unit,
+        type,
+        state,
+        completionMsg,
+        transactionDate,
+        initiatedDate,
+        metadataJson,
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -6475,24 +6475,23 @@ class DbWalletTransaction extends DataClass
     Value<int?> transactionDate = const Value.absent(),
     Value<int?> initiatedDate = const Value.absent(),
     String? metadataJson,
-  }) => DbWalletTransaction(
-    id: id ?? this.id,
-    walletId: walletId ?? this.walletId,
-    changeAmount: changeAmount ?? this.changeAmount,
-    unit: unit ?? this.unit,
-    type: type ?? this.type,
-    state: state ?? this.state,
-    completionMsg: completionMsg.present
-        ? completionMsg.value
-        : this.completionMsg,
-    transactionDate: transactionDate.present
-        ? transactionDate.value
-        : this.transactionDate,
-    initiatedDate: initiatedDate.present
-        ? initiatedDate.value
-        : this.initiatedDate,
-    metadataJson: metadataJson ?? this.metadataJson,
-  );
+  }) =>
+      DbWalletTransaction(
+        id: id ?? this.id,
+        walletId: walletId ?? this.walletId,
+        changeAmount: changeAmount ?? this.changeAmount,
+        unit: unit ?? this.unit,
+        type: type ?? this.type,
+        state: state ?? this.state,
+        completionMsg:
+            completionMsg.present ? completionMsg.value : this.completionMsg,
+        transactionDate: transactionDate.present
+            ? transactionDate.value
+            : this.transactionDate,
+        initiatedDate:
+            initiatedDate.present ? initiatedDate.value : this.initiatedDate,
+        metadataJson: metadataJson ?? this.metadataJson,
+      );
   DbWalletTransaction copyWithCompanion(WalletTransactionsCompanion data) {
     return DbWalletTransaction(
       id: data.id.present ? data.id.value : this.id,
@@ -6537,17 +6536,17 @@ class DbWalletTransaction extends DataClass
 
   @override
   int get hashCode => Object.hash(
-    id,
-    walletId,
-    changeAmount,
-    unit,
-    type,
-    state,
-    completionMsg,
-    transactionDate,
-    initiatedDate,
-    metadataJson,
-  );
+        id,
+        walletId,
+        changeAmount,
+        unit,
+        type,
+        state,
+        completionMsg,
+        transactionDate,
+        initiatedDate,
+        metadataJson,
+      );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -6601,13 +6600,13 @@ class WalletTransactionsCompanion extends UpdateCompanion<DbWalletTransaction> {
     this.initiatedDate = const Value.absent(),
     required String metadataJson,
     this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       walletId = Value(walletId),
-       changeAmount = Value(changeAmount),
-       unit = Value(unit),
-       type = Value(type),
-       state = Value(state),
-       metadataJson = Value(metadataJson);
+  })  : id = Value(id),
+        walletId = Value(walletId),
+        changeAmount = Value(changeAmount),
+        unit = Value(unit),
+        type = Value(type),
+        state = Value(state),
+        metadataJson = Value(metadataJson);
   static Insertable<DbWalletTransaction> custom({
     Expression<String>? id,
     Expression<String>? walletId,
@@ -6751,50 +6750,48 @@ abstract class _$NdkCacheDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-    events,
-    userRelayLists,
-    relaySets,
-    nip05s,
-    filterFetchedRangeRecords,
-    eventSourcesTable,
-    eventDeliveryRecordsTable,
-    relayDeliveryTargetsTable,
-    cashuProofs,
-    cashuKeysets,
-    cashuMintInfos,
-    cashuSecretCounters,
-    keyValues,
-    wallets,
-    walletTransactions,
-  ];
+        events,
+        userRelayLists,
+        relaySets,
+        nip05s,
+        filterFetchedRangeRecords,
+        eventSourcesTable,
+        eventDeliveryRecordsTable,
+        relayDeliveryTargetsTable,
+        cashuProofs,
+        cashuKeysets,
+        cashuMintInfos,
+        cashuSecretCounters,
+        keyValues,
+        wallets,
+        walletTransactions,
+      ];
 }
 
-typedef $$EventsTableCreateCompanionBuilder =
-    EventsCompanion Function({
-      required String id,
-      required String pubKey,
-      required int kind,
-      required int createdAt,
-      required String content,
-      Value<String?> sig,
-      Value<bool?> validSig,
-      required String tagsJson,
-      required String sourcesJson,
-      Value<int> rowid,
-    });
-typedef $$EventsTableUpdateCompanionBuilder =
-    EventsCompanion Function({
-      Value<String> id,
-      Value<String> pubKey,
-      Value<int> kind,
-      Value<int> createdAt,
-      Value<String> content,
-      Value<String?> sig,
-      Value<bool?> validSig,
-      Value<String> tagsJson,
-      Value<String> sourcesJson,
-      Value<int> rowid,
-    });
+typedef $$EventsTableCreateCompanionBuilder = EventsCompanion Function({
+  required String id,
+  required String pubKey,
+  required int kind,
+  required int createdAt,
+  required String content,
+  Value<String?> sig,
+  Value<bool?> validSig,
+  required String tagsJson,
+  required String sourcesJson,
+  Value<int> rowid,
+});
+typedef $$EventsTableUpdateCompanionBuilder = EventsCompanion Function({
+  Value<String> id,
+  Value<String> pubKey,
+  Value<int> kind,
+  Value<int> createdAt,
+  Value<String> content,
+  Value<String?> sig,
+  Value<bool?> validSig,
+  Value<String> tagsJson,
+  Value<String> sourcesJson,
+  Value<int> rowid,
+});
 
 class $$EventsTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $EventsTable> {
@@ -6806,49 +6803,49 @@ class $$EventsTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.id,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get pubKey => $composableBuilder(
-    column: $table.pubKey,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.pubKey,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get kind => $composableBuilder(
-    column: $table.kind,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.kind,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.createdAt,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get content => $composableBuilder(
-    column: $table.content,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.content,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get sig => $composableBuilder(
-    column: $table.sig,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.sig,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<bool> get validSig => $composableBuilder(
-    column: $table.validSig,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.validSig,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get tagsJson => $composableBuilder(
-    column: $table.tagsJson,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.tagsJson,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get sourcesJson => $composableBuilder(
-    column: $table.sourcesJson,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.sourcesJson,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$EventsTableOrderingComposer
@@ -6861,49 +6858,49 @@ class $$EventsTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.id,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get pubKey => $composableBuilder(
-    column: $table.pubKey,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.pubKey,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get kind => $composableBuilder(
-    column: $table.kind,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.kind,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.createdAt,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get content => $composableBuilder(
-    column: $table.content,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.content,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get sig => $composableBuilder(
-    column: $table.sig,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.sig,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<bool> get validSig => $composableBuilder(
-    column: $table.validSig,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.validSig,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get tagsJson => $composableBuilder(
-    column: $table.tagsJson,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.tagsJson,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get sourcesJson => $composableBuilder(
-    column: $table.sourcesJson,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.sourcesJson,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$EventsTableAnnotationComposer
@@ -6940,123 +6937,118 @@ class $$EventsTableAnnotationComposer
       $composableBuilder(column: $table.tagsJson, builder: (column) => column);
 
   GeneratedColumn<String> get sourcesJson => $composableBuilder(
-    column: $table.sourcesJson,
-    builder: (column) => column,
-  );
-}
-
-class $$EventsTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $EventsTable,
-          DbEvent,
-          $$EventsTableFilterComposer,
-          $$EventsTableOrderingComposer,
-          $$EventsTableAnnotationComposer,
-          $$EventsTableCreateCompanionBuilder,
-          $$EventsTableUpdateCompanionBuilder,
-          (DbEvent, BaseReferences<_$NdkCacheDatabase, $EventsTable, DbEvent>),
-          DbEvent,
-          PrefetchHooks Function()
-        > {
-  $$EventsTableTableManager(_$NdkCacheDatabase db, $EventsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$EventsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$EventsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$EventsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> pubKey = const Value.absent(),
-                Value<int> kind = const Value.absent(),
-                Value<int> createdAt = const Value.absent(),
-                Value<String> content = const Value.absent(),
-                Value<String?> sig = const Value.absent(),
-                Value<bool?> validSig = const Value.absent(),
-                Value<String> tagsJson = const Value.absent(),
-                Value<String> sourcesJson = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => EventsCompanion(
-                id: id,
-                pubKey: pubKey,
-                kind: kind,
-                createdAt: createdAt,
-                content: content,
-                sig: sig,
-                validSig: validSig,
-                tagsJson: tagsJson,
-                sourcesJson: sourcesJson,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String pubKey,
-                required int kind,
-                required int createdAt,
-                required String content,
-                Value<String?> sig = const Value.absent(),
-                Value<bool?> validSig = const Value.absent(),
-                required String tagsJson,
-                required String sourcesJson,
-                Value<int> rowid = const Value.absent(),
-              }) => EventsCompanion.insert(
-                id: id,
-                pubKey: pubKey,
-                kind: kind,
-                createdAt: createdAt,
-                content: content,
-                sig: sig,
-                validSig: validSig,
-                tagsJson: tagsJson,
-                sourcesJson: sourcesJson,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
+        column: $table.sourcesJson,
+        builder: (column) => column,
       );
 }
 
-typedef $$EventsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $EventsTable,
-      DbEvent,
-      $$EventsTableFilterComposer,
-      $$EventsTableOrderingComposer,
-      $$EventsTableAnnotationComposer,
-      $$EventsTableCreateCompanionBuilder,
-      $$EventsTableUpdateCompanionBuilder,
-      (DbEvent, BaseReferences<_$NdkCacheDatabase, $EventsTable, DbEvent>),
-      DbEvent,
-      PrefetchHooks Function()
-    >;
-typedef $$UserRelayListsTableCreateCompanionBuilder =
-    UserRelayListsCompanion Function({
-      required String pubKey,
-      required int createdAt,
-      required int refreshedTimestamp,
-      required String relaysJson,
-      Value<int> rowid,
-    });
-typedef $$UserRelayListsTableUpdateCompanionBuilder =
-    UserRelayListsCompanion Function({
-      Value<String> pubKey,
-      Value<int> createdAt,
-      Value<int> refreshedTimestamp,
-      Value<String> relaysJson,
-      Value<int> rowid,
-    });
+class $$EventsTableTableManager extends RootTableManager<
+    _$NdkCacheDatabase,
+    $EventsTable,
+    DbEvent,
+    $$EventsTableFilterComposer,
+    $$EventsTableOrderingComposer,
+    $$EventsTableAnnotationComposer,
+    $$EventsTableCreateCompanionBuilder,
+    $$EventsTableUpdateCompanionBuilder,
+    (DbEvent, BaseReferences<_$NdkCacheDatabase, $EventsTable, DbEvent>),
+    DbEvent,
+    PrefetchHooks Function()> {
+  $$EventsTableTableManager(_$NdkCacheDatabase db, $EventsTable table)
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$EventsTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$EventsTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$EventsTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<String> id = const Value.absent(),
+              Value<String> pubKey = const Value.absent(),
+              Value<int> kind = const Value.absent(),
+              Value<int> createdAt = const Value.absent(),
+              Value<String> content = const Value.absent(),
+              Value<String?> sig = const Value.absent(),
+              Value<bool?> validSig = const Value.absent(),
+              Value<String> tagsJson = const Value.absent(),
+              Value<String> sourcesJson = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                EventsCompanion(
+              id: id,
+              pubKey: pubKey,
+              kind: kind,
+              createdAt: createdAt,
+              content: content,
+              sig: sig,
+              validSig: validSig,
+              tagsJson: tagsJson,
+              sourcesJson: sourcesJson,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String id,
+              required String pubKey,
+              required int kind,
+              required int createdAt,
+              required String content,
+              Value<String?> sig = const Value.absent(),
+              Value<bool?> validSig = const Value.absent(),
+              required String tagsJson,
+              required String sourcesJson,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                EventsCompanion.insert(
+              id: id,
+              pubKey: pubKey,
+              kind: kind,
+              createdAt: createdAt,
+              content: content,
+              sig: sig,
+              validSig: validSig,
+              tagsJson: tagsJson,
+              sourcesJson: sourcesJson,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: null,
+          ),
+        );
+}
+
+typedef $$EventsTableProcessedTableManager = ProcessedTableManager<
+    _$NdkCacheDatabase,
+    $EventsTable,
+    DbEvent,
+    $$EventsTableFilterComposer,
+    $$EventsTableOrderingComposer,
+    $$EventsTableAnnotationComposer,
+    $$EventsTableCreateCompanionBuilder,
+    $$EventsTableUpdateCompanionBuilder,
+    (DbEvent, BaseReferences<_$NdkCacheDatabase, $EventsTable, DbEvent>),
+    DbEvent,
+    PrefetchHooks Function()>;
+typedef $$UserRelayListsTableCreateCompanionBuilder = UserRelayListsCompanion
+    Function({
+  required String pubKey,
+  required int createdAt,
+  required int refreshedTimestamp,
+  required String relaysJson,
+  Value<int> rowid,
+});
+typedef $$UserRelayListsTableUpdateCompanionBuilder = UserRelayListsCompanion
+    Function({
+  Value<String> pubKey,
+  Value<int> createdAt,
+  Value<int> refreshedTimestamp,
+  Value<String> relaysJson,
+  Value<int> rowid,
+});
 
 class $$UserRelayListsTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $UserRelayListsTable> {
@@ -7068,24 +7060,24 @@ class $$UserRelayListsTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get pubKey => $composableBuilder(
-    column: $table.pubKey,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.pubKey,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.createdAt,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get refreshedTimestamp => $composableBuilder(
-    column: $table.refreshedTimestamp,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.refreshedTimestamp,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get relaysJson => $composableBuilder(
-    column: $table.relaysJson,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.relaysJson,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$UserRelayListsTableOrderingComposer
@@ -7098,24 +7090,24 @@ class $$UserRelayListsTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get pubKey => $composableBuilder(
-    column: $table.pubKey,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.pubKey,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.createdAt,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get refreshedTimestamp => $composableBuilder(
-    column: $table.refreshedTimestamp,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.refreshedTimestamp,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get relaysJson => $composableBuilder(
-    column: $table.relaysJson,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.relaysJson,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$UserRelayListsTableAnnotationComposer
@@ -7134,132 +7126,117 @@ class $$UserRelayListsTableAnnotationComposer
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
   GeneratedColumn<int> get refreshedTimestamp => $composableBuilder(
-    column: $table.refreshedTimestamp,
-    builder: (column) => column,
-  );
+        column: $table.refreshedTimestamp,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<String> get relaysJson => $composableBuilder(
-    column: $table.relaysJson,
-    builder: (column) => column,
-  );
+        column: $table.relaysJson,
+        builder: (column) => column,
+      );
 }
 
-class $$UserRelayListsTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $UserRelayListsTable,
-          DbUserRelayList,
-          $$UserRelayListsTableFilterComposer,
-          $$UserRelayListsTableOrderingComposer,
-          $$UserRelayListsTableAnnotationComposer,
-          $$UserRelayListsTableCreateCompanionBuilder,
-          $$UserRelayListsTableUpdateCompanionBuilder,
-          (
-            DbUserRelayList,
-            BaseReferences<
-              _$NdkCacheDatabase,
-              $UserRelayListsTable,
-              DbUserRelayList
-            >,
-          ),
-          DbUserRelayList,
-          PrefetchHooks Function()
-        > {
+class $$UserRelayListsTableTableManager extends RootTableManager<
+    _$NdkCacheDatabase,
+    $UserRelayListsTable,
+    DbUserRelayList,
+    $$UserRelayListsTableFilterComposer,
+    $$UserRelayListsTableOrderingComposer,
+    $$UserRelayListsTableAnnotationComposer,
+    $$UserRelayListsTableCreateCompanionBuilder,
+    $$UserRelayListsTableUpdateCompanionBuilder,
+    (
+      DbUserRelayList,
+      BaseReferences<_$NdkCacheDatabase, $UserRelayListsTable, DbUserRelayList>,
+    ),
+    DbUserRelayList,
+    PrefetchHooks Function()> {
   $$UserRelayListsTableTableManager(
     _$NdkCacheDatabase db,
     $UserRelayListsTable table,
   ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$UserRelayListsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$UserRelayListsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$UserRelayListsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> pubKey = const Value.absent(),
-                Value<int> createdAt = const Value.absent(),
-                Value<int> refreshedTimestamp = const Value.absent(),
-                Value<String> relaysJson = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => UserRelayListsCompanion(
-                pubKey: pubKey,
-                createdAt: createdAt,
-                refreshedTimestamp: refreshedTimestamp,
-                relaysJson: relaysJson,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String pubKey,
-                required int createdAt,
-                required int refreshedTimestamp,
-                required String relaysJson,
-                Value<int> rowid = const Value.absent(),
-              }) => UserRelayListsCompanion.insert(
-                pubKey: pubKey,
-                createdAt: createdAt,
-                refreshedTimestamp: refreshedTimestamp,
-                relaysJson: relaysJson,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$UserRelayListsTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$UserRelayListsTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$UserRelayListsTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<String> pubKey = const Value.absent(),
+              Value<int> createdAt = const Value.absent(),
+              Value<int> refreshedTimestamp = const Value.absent(),
+              Value<String> relaysJson = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                UserRelayListsCompanion(
+              pubKey: pubKey,
+              createdAt: createdAt,
+              refreshedTimestamp: refreshedTimestamp,
+              relaysJson: relaysJson,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String pubKey,
+              required int createdAt,
+              required int refreshedTimestamp,
+              required String relaysJson,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                UserRelayListsCompanion.insert(
+              pubKey: pubKey,
+              createdAt: createdAt,
+              refreshedTimestamp: refreshedTimestamp,
+              relaysJson: relaysJson,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: null,
+          ),
+        );
 }
 
-typedef $$UserRelayListsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $UserRelayListsTable,
+typedef $$UserRelayListsTableProcessedTableManager = ProcessedTableManager<
+    _$NdkCacheDatabase,
+    $UserRelayListsTable,
+    DbUserRelayList,
+    $$UserRelayListsTableFilterComposer,
+    $$UserRelayListsTableOrderingComposer,
+    $$UserRelayListsTableAnnotationComposer,
+    $$UserRelayListsTableCreateCompanionBuilder,
+    $$UserRelayListsTableUpdateCompanionBuilder,
+    (
       DbUserRelayList,
-      $$UserRelayListsTableFilterComposer,
-      $$UserRelayListsTableOrderingComposer,
-      $$UserRelayListsTableAnnotationComposer,
-      $$UserRelayListsTableCreateCompanionBuilder,
-      $$UserRelayListsTableUpdateCompanionBuilder,
-      (
-        DbUserRelayList,
-        BaseReferences<
-          _$NdkCacheDatabase,
-          $UserRelayListsTable,
-          DbUserRelayList
-        >,
-      ),
-      DbUserRelayList,
-      PrefetchHooks Function()
-    >;
-typedef $$RelaySetsTableCreateCompanionBuilder =
-    RelaySetsCompanion Function({
-      required String id,
-      required String name,
-      required String pubKey,
-      required int relayMinCountPerPubkey,
-      required int direction,
-      required String relaysMapJson,
-      required bool fallbackToBootstrapRelays,
-      required String notCoveredPubkeysJson,
-      Value<int> rowid,
-    });
-typedef $$RelaySetsTableUpdateCompanionBuilder =
-    RelaySetsCompanion Function({
-      Value<String> id,
-      Value<String> name,
-      Value<String> pubKey,
-      Value<int> relayMinCountPerPubkey,
-      Value<int> direction,
-      Value<String> relaysMapJson,
-      Value<bool> fallbackToBootstrapRelays,
-      Value<String> notCoveredPubkeysJson,
-      Value<int> rowid,
-    });
+      BaseReferences<_$NdkCacheDatabase, $UserRelayListsTable, DbUserRelayList>,
+    ),
+    DbUserRelayList,
+    PrefetchHooks Function()>;
+typedef $$RelaySetsTableCreateCompanionBuilder = RelaySetsCompanion Function({
+  required String id,
+  required String name,
+  required String pubKey,
+  required int relayMinCountPerPubkey,
+  required int direction,
+  required String relaysMapJson,
+  required bool fallbackToBootstrapRelays,
+  required String notCoveredPubkeysJson,
+  Value<int> rowid,
+});
+typedef $$RelaySetsTableUpdateCompanionBuilder = RelaySetsCompanion Function({
+  Value<String> id,
+  Value<String> name,
+  Value<String> pubKey,
+  Value<int> relayMinCountPerPubkey,
+  Value<int> direction,
+  Value<String> relaysMapJson,
+  Value<bool> fallbackToBootstrapRelays,
+  Value<String> notCoveredPubkeysJson,
+  Value<int> rowid,
+});
 
 class $$RelaySetsTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $RelaySetsTable> {
@@ -7271,44 +7248,44 @@ class $$RelaySetsTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.id,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.name,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get pubKey => $composableBuilder(
-    column: $table.pubKey,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.pubKey,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get relayMinCountPerPubkey => $composableBuilder(
-    column: $table.relayMinCountPerPubkey,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.relayMinCountPerPubkey,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get direction => $composableBuilder(
-    column: $table.direction,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.direction,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get relaysMapJson => $composableBuilder(
-    column: $table.relaysMapJson,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.relaysMapJson,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<bool> get fallbackToBootstrapRelays => $composableBuilder(
-    column: $table.fallbackToBootstrapRelays,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.fallbackToBootstrapRelays,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get notCoveredPubkeysJson => $composableBuilder(
-    column: $table.notCoveredPubkeysJson,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.notCoveredPubkeysJson,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$RelaySetsTableOrderingComposer
@@ -7321,44 +7298,44 @@ class $$RelaySetsTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.id,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.name,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get pubKey => $composableBuilder(
-    column: $table.pubKey,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.pubKey,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get relayMinCountPerPubkey => $composableBuilder(
-    column: $table.relayMinCountPerPubkey,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.relayMinCountPerPubkey,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get direction => $composableBuilder(
-    column: $table.direction,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.direction,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get relaysMapJson => $composableBuilder(
-    column: $table.relaysMapJson,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.relaysMapJson,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<bool> get fallbackToBootstrapRelays => $composableBuilder(
-    column: $table.fallbackToBootstrapRelays,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.fallbackToBootstrapRelays,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get notCoveredPubkeysJson => $composableBuilder(
-    column: $table.notCoveredPubkeysJson,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.notCoveredPubkeysJson,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$RelaySetsTableAnnotationComposer
@@ -7380,145 +7357,138 @@ class $$RelaySetsTableAnnotationComposer
       $composableBuilder(column: $table.pubKey, builder: (column) => column);
 
   GeneratedColumn<int> get relayMinCountPerPubkey => $composableBuilder(
-    column: $table.relayMinCountPerPubkey,
-    builder: (column) => column,
-  );
+        column: $table.relayMinCountPerPubkey,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<int> get direction =>
       $composableBuilder(column: $table.direction, builder: (column) => column);
 
   GeneratedColumn<String> get relaysMapJson => $composableBuilder(
-    column: $table.relaysMapJson,
-    builder: (column) => column,
-  );
+        column: $table.relaysMapJson,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<bool> get fallbackToBootstrapRelays => $composableBuilder(
-    column: $table.fallbackToBootstrapRelays,
-    builder: (column) => column,
-  );
+        column: $table.fallbackToBootstrapRelays,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<String> get notCoveredPubkeysJson => $composableBuilder(
-    column: $table.notCoveredPubkeysJson,
-    builder: (column) => column,
-  );
-}
-
-class $$RelaySetsTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $RelaySetsTable,
-          DbRelaySet,
-          $$RelaySetsTableFilterComposer,
-          $$RelaySetsTableOrderingComposer,
-          $$RelaySetsTableAnnotationComposer,
-          $$RelaySetsTableCreateCompanionBuilder,
-          $$RelaySetsTableUpdateCompanionBuilder,
-          (
-            DbRelaySet,
-            BaseReferences<_$NdkCacheDatabase, $RelaySetsTable, DbRelaySet>,
-          ),
-          DbRelaySet,
-          PrefetchHooks Function()
-        > {
-  $$RelaySetsTableTableManager(_$NdkCacheDatabase db, $RelaySetsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$RelaySetsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$RelaySetsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$RelaySetsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<String> pubKey = const Value.absent(),
-                Value<int> relayMinCountPerPubkey = const Value.absent(),
-                Value<int> direction = const Value.absent(),
-                Value<String> relaysMapJson = const Value.absent(),
-                Value<bool> fallbackToBootstrapRelays = const Value.absent(),
-                Value<String> notCoveredPubkeysJson = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => RelaySetsCompanion(
-                id: id,
-                name: name,
-                pubKey: pubKey,
-                relayMinCountPerPubkey: relayMinCountPerPubkey,
-                direction: direction,
-                relaysMapJson: relaysMapJson,
-                fallbackToBootstrapRelays: fallbackToBootstrapRelays,
-                notCoveredPubkeysJson: notCoveredPubkeysJson,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String name,
-                required String pubKey,
-                required int relayMinCountPerPubkey,
-                required int direction,
-                required String relaysMapJson,
-                required bool fallbackToBootstrapRelays,
-                required String notCoveredPubkeysJson,
-                Value<int> rowid = const Value.absent(),
-              }) => RelaySetsCompanion.insert(
-                id: id,
-                name: name,
-                pubKey: pubKey,
-                relayMinCountPerPubkey: relayMinCountPerPubkey,
-                direction: direction,
-                relaysMapJson: relaysMapJson,
-                fallbackToBootstrapRelays: fallbackToBootstrapRelays,
-                notCoveredPubkeysJson: notCoveredPubkeysJson,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
+        column: $table.notCoveredPubkeysJson,
+        builder: (column) => column,
       );
 }
 
-typedef $$RelaySetsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $RelaySetsTable,
+class $$RelaySetsTableTableManager extends RootTableManager<
+    _$NdkCacheDatabase,
+    $RelaySetsTable,
+    DbRelaySet,
+    $$RelaySetsTableFilterComposer,
+    $$RelaySetsTableOrderingComposer,
+    $$RelaySetsTableAnnotationComposer,
+    $$RelaySetsTableCreateCompanionBuilder,
+    $$RelaySetsTableUpdateCompanionBuilder,
+    (
       DbRelaySet,
-      $$RelaySetsTableFilterComposer,
-      $$RelaySetsTableOrderingComposer,
-      $$RelaySetsTableAnnotationComposer,
-      $$RelaySetsTableCreateCompanionBuilder,
-      $$RelaySetsTableUpdateCompanionBuilder,
-      (
-        DbRelaySet,
-        BaseReferences<_$NdkCacheDatabase, $RelaySetsTable, DbRelaySet>,
-      ),
+      BaseReferences<_$NdkCacheDatabase, $RelaySetsTable, DbRelaySet>,
+    ),
+    DbRelaySet,
+    PrefetchHooks Function()> {
+  $$RelaySetsTableTableManager(_$NdkCacheDatabase db, $RelaySetsTable table)
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$RelaySetsTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$RelaySetsTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$RelaySetsTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<String> id = const Value.absent(),
+              Value<String> name = const Value.absent(),
+              Value<String> pubKey = const Value.absent(),
+              Value<int> relayMinCountPerPubkey = const Value.absent(),
+              Value<int> direction = const Value.absent(),
+              Value<String> relaysMapJson = const Value.absent(),
+              Value<bool> fallbackToBootstrapRelays = const Value.absent(),
+              Value<String> notCoveredPubkeysJson = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                RelaySetsCompanion(
+              id: id,
+              name: name,
+              pubKey: pubKey,
+              relayMinCountPerPubkey: relayMinCountPerPubkey,
+              direction: direction,
+              relaysMapJson: relaysMapJson,
+              fallbackToBootstrapRelays: fallbackToBootstrapRelays,
+              notCoveredPubkeysJson: notCoveredPubkeysJson,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String id,
+              required String name,
+              required String pubKey,
+              required int relayMinCountPerPubkey,
+              required int direction,
+              required String relaysMapJson,
+              required bool fallbackToBootstrapRelays,
+              required String notCoveredPubkeysJson,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                RelaySetsCompanion.insert(
+              id: id,
+              name: name,
+              pubKey: pubKey,
+              relayMinCountPerPubkey: relayMinCountPerPubkey,
+              direction: direction,
+              relaysMapJson: relaysMapJson,
+              fallbackToBootstrapRelays: fallbackToBootstrapRelays,
+              notCoveredPubkeysJson: notCoveredPubkeysJson,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: null,
+          ),
+        );
+}
+
+typedef $$RelaySetsTableProcessedTableManager = ProcessedTableManager<
+    _$NdkCacheDatabase,
+    $RelaySetsTable,
+    DbRelaySet,
+    $$RelaySetsTableFilterComposer,
+    $$RelaySetsTableOrderingComposer,
+    $$RelaySetsTableAnnotationComposer,
+    $$RelaySetsTableCreateCompanionBuilder,
+    $$RelaySetsTableUpdateCompanionBuilder,
+    (
       DbRelaySet,
-      PrefetchHooks Function()
-    >;
-typedef $$Nip05sTableCreateCompanionBuilder =
-    Nip05sCompanion Function({
-      required String pubKey,
-      required String nip05,
-      required bool valid,
-      Value<int?> networkFetchTime,
-      required String relaysJson,
-      Value<int> rowid,
-    });
-typedef $$Nip05sTableUpdateCompanionBuilder =
-    Nip05sCompanion Function({
-      Value<String> pubKey,
-      Value<String> nip05,
-      Value<bool> valid,
-      Value<int?> networkFetchTime,
-      Value<String> relaysJson,
-      Value<int> rowid,
-    });
+      BaseReferences<_$NdkCacheDatabase, $RelaySetsTable, DbRelaySet>,
+    ),
+    DbRelaySet,
+    PrefetchHooks Function()>;
+typedef $$Nip05sTableCreateCompanionBuilder = Nip05sCompanion Function({
+  required String pubKey,
+  required String nip05,
+  required bool valid,
+  Value<int?> networkFetchTime,
+  required String relaysJson,
+  Value<int> rowid,
+});
+typedef $$Nip05sTableUpdateCompanionBuilder = Nip05sCompanion Function({
+  Value<String> pubKey,
+  Value<String> nip05,
+  Value<bool> valid,
+  Value<int?> networkFetchTime,
+  Value<String> relaysJson,
+  Value<int> rowid,
+});
 
 class $$Nip05sTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $Nip05sTable> {
@@ -7530,29 +7500,29 @@ class $$Nip05sTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get pubKey => $composableBuilder(
-    column: $table.pubKey,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.pubKey,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get nip05 => $composableBuilder(
-    column: $table.nip05,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.nip05,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<bool> get valid => $composableBuilder(
-    column: $table.valid,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.valid,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get networkFetchTime => $composableBuilder(
-    column: $table.networkFetchTime,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.networkFetchTime,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get relaysJson => $composableBuilder(
-    column: $table.relaysJson,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.relaysJson,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$Nip05sTableOrderingComposer
@@ -7565,29 +7535,29 @@ class $$Nip05sTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get pubKey => $composableBuilder(
-    column: $table.pubKey,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.pubKey,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get nip05 => $composableBuilder(
-    column: $table.nip05,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.nip05,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<bool> get valid => $composableBuilder(
-    column: $table.valid,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.valid,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get networkFetchTime => $composableBuilder(
-    column: $table.networkFetchTime,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.networkFetchTime,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get relaysJson => $composableBuilder(
-    column: $table.relaysJson,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.relaysJson,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$Nip05sTableAnnotationComposer
@@ -7609,114 +7579,109 @@ class $$Nip05sTableAnnotationComposer
       $composableBuilder(column: $table.valid, builder: (column) => column);
 
   GeneratedColumn<int> get networkFetchTime => $composableBuilder(
-    column: $table.networkFetchTime,
-    builder: (column) => column,
-  );
+        column: $table.networkFetchTime,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<String> get relaysJson => $composableBuilder(
-    column: $table.relaysJson,
-    builder: (column) => column,
-  );
-}
-
-class $$Nip05sTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $Nip05sTable,
-          DbNip05,
-          $$Nip05sTableFilterComposer,
-          $$Nip05sTableOrderingComposer,
-          $$Nip05sTableAnnotationComposer,
-          $$Nip05sTableCreateCompanionBuilder,
-          $$Nip05sTableUpdateCompanionBuilder,
-          (DbNip05, BaseReferences<_$NdkCacheDatabase, $Nip05sTable, DbNip05>),
-          DbNip05,
-          PrefetchHooks Function()
-        > {
-  $$Nip05sTableTableManager(_$NdkCacheDatabase db, $Nip05sTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$Nip05sTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$Nip05sTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$Nip05sTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> pubKey = const Value.absent(),
-                Value<String> nip05 = const Value.absent(),
-                Value<bool> valid = const Value.absent(),
-                Value<int?> networkFetchTime = const Value.absent(),
-                Value<String> relaysJson = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => Nip05sCompanion(
-                pubKey: pubKey,
-                nip05: nip05,
-                valid: valid,
-                networkFetchTime: networkFetchTime,
-                relaysJson: relaysJson,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String pubKey,
-                required String nip05,
-                required bool valid,
-                Value<int?> networkFetchTime = const Value.absent(),
-                required String relaysJson,
-                Value<int> rowid = const Value.absent(),
-              }) => Nip05sCompanion.insert(
-                pubKey: pubKey,
-                nip05: nip05,
-                valid: valid,
-                networkFetchTime: networkFetchTime,
-                relaysJson: relaysJson,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
+        column: $table.relaysJson,
+        builder: (column) => column,
       );
 }
 
-typedef $$Nip05sTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $Nip05sTable,
-      DbNip05,
-      $$Nip05sTableFilterComposer,
-      $$Nip05sTableOrderingComposer,
-      $$Nip05sTableAnnotationComposer,
-      $$Nip05sTableCreateCompanionBuilder,
-      $$Nip05sTableUpdateCompanionBuilder,
-      (DbNip05, BaseReferences<_$NdkCacheDatabase, $Nip05sTable, DbNip05>),
-      DbNip05,
-      PrefetchHooks Function()
-    >;
-typedef $$FilterFetchedRangeRecordsTableCreateCompanionBuilder =
-    FilterFetchedRangeRecordsCompanion Function({
-      required String key,
-      required String filterHash,
-      required String relayUrl,
-      required int rangeStart,
-      required int rangeEnd,
-      Value<int> rowid,
-    });
-typedef $$FilterFetchedRangeRecordsTableUpdateCompanionBuilder =
-    FilterFetchedRangeRecordsCompanion Function({
-      Value<String> key,
-      Value<String> filterHash,
-      Value<String> relayUrl,
-      Value<int> rangeStart,
-      Value<int> rangeEnd,
-      Value<int> rowid,
-    });
+class $$Nip05sTableTableManager extends RootTableManager<
+    _$NdkCacheDatabase,
+    $Nip05sTable,
+    DbNip05,
+    $$Nip05sTableFilterComposer,
+    $$Nip05sTableOrderingComposer,
+    $$Nip05sTableAnnotationComposer,
+    $$Nip05sTableCreateCompanionBuilder,
+    $$Nip05sTableUpdateCompanionBuilder,
+    (DbNip05, BaseReferences<_$NdkCacheDatabase, $Nip05sTable, DbNip05>),
+    DbNip05,
+    PrefetchHooks Function()> {
+  $$Nip05sTableTableManager(_$NdkCacheDatabase db, $Nip05sTable table)
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$Nip05sTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$Nip05sTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$Nip05sTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<String> pubKey = const Value.absent(),
+              Value<String> nip05 = const Value.absent(),
+              Value<bool> valid = const Value.absent(),
+              Value<int?> networkFetchTime = const Value.absent(),
+              Value<String> relaysJson = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                Nip05sCompanion(
+              pubKey: pubKey,
+              nip05: nip05,
+              valid: valid,
+              networkFetchTime: networkFetchTime,
+              relaysJson: relaysJson,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String pubKey,
+              required String nip05,
+              required bool valid,
+              Value<int?> networkFetchTime = const Value.absent(),
+              required String relaysJson,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                Nip05sCompanion.insert(
+              pubKey: pubKey,
+              nip05: nip05,
+              valid: valid,
+              networkFetchTime: networkFetchTime,
+              relaysJson: relaysJson,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: null,
+          ),
+        );
+}
+
+typedef $$Nip05sTableProcessedTableManager = ProcessedTableManager<
+    _$NdkCacheDatabase,
+    $Nip05sTable,
+    DbNip05,
+    $$Nip05sTableFilterComposer,
+    $$Nip05sTableOrderingComposer,
+    $$Nip05sTableAnnotationComposer,
+    $$Nip05sTableCreateCompanionBuilder,
+    $$Nip05sTableUpdateCompanionBuilder,
+    (DbNip05, BaseReferences<_$NdkCacheDatabase, $Nip05sTable, DbNip05>),
+    DbNip05,
+    PrefetchHooks Function()>;
+typedef $$FilterFetchedRangeRecordsTableCreateCompanionBuilder
+    = FilterFetchedRangeRecordsCompanion Function({
+  required String key,
+  required String filterHash,
+  required String relayUrl,
+  required int rangeStart,
+  required int rangeEnd,
+  Value<int> rowid,
+});
+typedef $$FilterFetchedRangeRecordsTableUpdateCompanionBuilder
+    = FilterFetchedRangeRecordsCompanion Function({
+  Value<String> key,
+  Value<String> filterHash,
+  Value<String> relayUrl,
+  Value<int> rangeStart,
+  Value<int> rangeEnd,
+  Value<int> rowid,
+});
 
 class $$FilterFetchedRangeRecordsTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $FilterFetchedRangeRecordsTable> {
@@ -7728,29 +7693,29 @@ class $$FilterFetchedRangeRecordsTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get key => $composableBuilder(
-    column: $table.key,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.key,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get filterHash => $composableBuilder(
-    column: $table.filterHash,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.filterHash,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get relayUrl => $composableBuilder(
-    column: $table.relayUrl,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.relayUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get rangeStart => $composableBuilder(
-    column: $table.rangeStart,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.rangeStart,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get rangeEnd => $composableBuilder(
-    column: $table.rangeEnd,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.rangeEnd,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$FilterFetchedRangeRecordsTableOrderingComposer
@@ -7763,29 +7728,29 @@ class $$FilterFetchedRangeRecordsTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get key => $composableBuilder(
-    column: $table.key,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.key,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get filterHash => $composableBuilder(
-    column: $table.filterHash,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.filterHash,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get relayUrl => $composableBuilder(
-    column: $table.relayUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.relayUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get rangeStart => $composableBuilder(
-    column: $table.rangeStart,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.rangeStart,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get rangeEnd => $composableBuilder(
-    column: $table.rangeEnd,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.rangeEnd,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$FilterFetchedRangeRecordsTableAnnotationComposer
@@ -7801,139 +7766,129 @@ class $$FilterFetchedRangeRecordsTableAnnotationComposer
       $composableBuilder(column: $table.key, builder: (column) => column);
 
   GeneratedColumn<String> get filterHash => $composableBuilder(
-    column: $table.filterHash,
-    builder: (column) => column,
-  );
+        column: $table.filterHash,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<String> get relayUrl =>
       $composableBuilder(column: $table.relayUrl, builder: (column) => column);
 
   GeneratedColumn<int> get rangeStart => $composableBuilder(
-    column: $table.rangeStart,
-    builder: (column) => column,
-  );
+        column: $table.rangeStart,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<int> get rangeEnd =>
       $composableBuilder(column: $table.rangeEnd, builder: (column) => column);
 }
 
-class $$FilterFetchedRangeRecordsTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $FilterFetchedRangeRecordsTable,
-          DbFilterFetchedRangeRecord,
-          $$FilterFetchedRangeRecordsTableFilterComposer,
-          $$FilterFetchedRangeRecordsTableOrderingComposer,
-          $$FilterFetchedRangeRecordsTableAnnotationComposer,
-          $$FilterFetchedRangeRecordsTableCreateCompanionBuilder,
-          $$FilterFetchedRangeRecordsTableUpdateCompanionBuilder,
-          (
-            DbFilterFetchedRangeRecord,
-            BaseReferences<
-              _$NdkCacheDatabase,
-              $FilterFetchedRangeRecordsTable,
-              DbFilterFetchedRangeRecord
-            >,
-          ),
-          DbFilterFetchedRangeRecord,
-          PrefetchHooks Function()
-        > {
+class $$FilterFetchedRangeRecordsTableTableManager extends RootTableManager<
+    _$NdkCacheDatabase,
+    $FilterFetchedRangeRecordsTable,
+    DbFilterFetchedRangeRecord,
+    $$FilterFetchedRangeRecordsTableFilterComposer,
+    $$FilterFetchedRangeRecordsTableOrderingComposer,
+    $$FilterFetchedRangeRecordsTableAnnotationComposer,
+    $$FilterFetchedRangeRecordsTableCreateCompanionBuilder,
+    $$FilterFetchedRangeRecordsTableUpdateCompanionBuilder,
+    (
+      DbFilterFetchedRangeRecord,
+      BaseReferences<_$NdkCacheDatabase, $FilterFetchedRangeRecordsTable,
+          DbFilterFetchedRangeRecord>,
+    ),
+    DbFilterFetchedRangeRecord,
+    PrefetchHooks Function()> {
   $$FilterFetchedRangeRecordsTableTableManager(
     _$NdkCacheDatabase db,
     $FilterFetchedRangeRecordsTable table,
   ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$FilterFetchedRangeRecordsTableFilterComposer(
-                $db: db,
-                $table: table,
-              ),
-          createOrderingComposer: () =>
-              $$FilterFetchedRangeRecordsTableOrderingComposer(
-                $db: db,
-                $table: table,
-              ),
-          createComputedFieldComposer: () =>
-              $$FilterFetchedRangeRecordsTableAnnotationComposer(
-                $db: db,
-                $table: table,
-              ),
-          updateCompanionCallback:
-              ({
-                Value<String> key = const Value.absent(),
-                Value<String> filterHash = const Value.absent(),
-                Value<String> relayUrl = const Value.absent(),
-                Value<int> rangeStart = const Value.absent(),
-                Value<int> rangeEnd = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => FilterFetchedRangeRecordsCompanion(
-                key: key,
-                filterHash: filterHash,
-                relayUrl: relayUrl,
-                rangeStart: rangeStart,
-                rangeEnd: rangeEnd,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String key,
-                required String filterHash,
-                required String relayUrl,
-                required int rangeStart,
-                required int rangeEnd,
-                Value<int> rowid = const Value.absent(),
-              }) => FilterFetchedRangeRecordsCompanion.insert(
-                key: key,
-                filterHash: filterHash,
-                relayUrl: relayUrl,
-                rangeStart: rangeStart,
-                rangeEnd: rangeEnd,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$FilterFetchedRangeRecordsTableFilterComposer(
+              $db: db,
+              $table: table,
+            ),
+            createOrderingComposer: () =>
+                $$FilterFetchedRangeRecordsTableOrderingComposer(
+              $db: db,
+              $table: table,
+            ),
+            createComputedFieldComposer: () =>
+                $$FilterFetchedRangeRecordsTableAnnotationComposer(
+              $db: db,
+              $table: table,
+            ),
+            updateCompanionCallback: ({
+              Value<String> key = const Value.absent(),
+              Value<String> filterHash = const Value.absent(),
+              Value<String> relayUrl = const Value.absent(),
+              Value<int> rangeStart = const Value.absent(),
+              Value<int> rangeEnd = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                FilterFetchedRangeRecordsCompanion(
+              key: key,
+              filterHash: filterHash,
+              relayUrl: relayUrl,
+              rangeStart: rangeStart,
+              rangeEnd: rangeEnd,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String key,
+              required String filterHash,
+              required String relayUrl,
+              required int rangeStart,
+              required int rangeEnd,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                FilterFetchedRangeRecordsCompanion.insert(
+              key: key,
+              filterHash: filterHash,
+              relayUrl: relayUrl,
+              rangeStart: rangeStart,
+              rangeEnd: rangeEnd,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: null,
+          ),
+        );
 }
 
-typedef $$FilterFetchedRangeRecordsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $FilterFetchedRangeRecordsTable,
-      DbFilterFetchedRangeRecord,
-      $$FilterFetchedRangeRecordsTableFilterComposer,
-      $$FilterFetchedRangeRecordsTableOrderingComposer,
-      $$FilterFetchedRangeRecordsTableAnnotationComposer,
-      $$FilterFetchedRangeRecordsTableCreateCompanionBuilder,
-      $$FilterFetchedRangeRecordsTableUpdateCompanionBuilder,
-      (
+typedef $$FilterFetchedRangeRecordsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$NdkCacheDatabase,
+        $FilterFetchedRangeRecordsTable,
         DbFilterFetchedRangeRecord,
-        BaseReferences<
-          _$NdkCacheDatabase,
-          $FilterFetchedRangeRecordsTable,
-          DbFilterFetchedRangeRecord
-        >,
-      ),
-      DbFilterFetchedRangeRecord,
-      PrefetchHooks Function()
-    >;
-typedef $$EventSourcesTableTableCreateCompanionBuilder =
-    EventSourcesTableCompanion Function({
-      required String eventId,
-      required String relayUrl,
-      Value<int> rowid,
-    });
-typedef $$EventSourcesTableTableUpdateCompanionBuilder =
-    EventSourcesTableCompanion Function({
-      Value<String> eventId,
-      Value<String> relayUrl,
-      Value<int> rowid,
-    });
+        $$FilterFetchedRangeRecordsTableFilterComposer,
+        $$FilterFetchedRangeRecordsTableOrderingComposer,
+        $$FilterFetchedRangeRecordsTableAnnotationComposer,
+        $$FilterFetchedRangeRecordsTableCreateCompanionBuilder,
+        $$FilterFetchedRangeRecordsTableUpdateCompanionBuilder,
+        (
+          DbFilterFetchedRangeRecord,
+          BaseReferences<_$NdkCacheDatabase, $FilterFetchedRangeRecordsTable,
+              DbFilterFetchedRangeRecord>,
+        ),
+        DbFilterFetchedRangeRecord,
+        PrefetchHooks Function()>;
+typedef $$EventSourcesTableTableCreateCompanionBuilder
+    = EventSourcesTableCompanion Function({
+  required String eventId,
+  required String relayUrl,
+  Value<int> rowid,
+});
+typedef $$EventSourcesTableTableUpdateCompanionBuilder
+    = EventSourcesTableCompanion Function({
+  Value<String> eventId,
+  Value<String> relayUrl,
+  Value<int> rowid,
+});
 
 class $$EventSourcesTableTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $EventSourcesTableTable> {
@@ -7945,14 +7900,14 @@ class $$EventSourcesTableTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get eventId => $composableBuilder(
-    column: $table.eventId,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.eventId,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get relayUrl => $composableBuilder(
-    column: $table.relayUrl,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.relayUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$EventSourcesTableTableOrderingComposer
@@ -7965,14 +7920,14 @@ class $$EventSourcesTableTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get eventId => $composableBuilder(
-    column: $table.eventId,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.eventId,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get relayUrl => $composableBuilder(
-    column: $table.relayUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.relayUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$EventSourcesTableTableAnnotationComposer
@@ -7991,115 +7946,105 @@ class $$EventSourcesTableTableAnnotationComposer
       $composableBuilder(column: $table.relayUrl, builder: (column) => column);
 }
 
-class $$EventSourcesTableTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $EventSourcesTableTable,
-          DbEventSource,
-          $$EventSourcesTableTableFilterComposer,
-          $$EventSourcesTableTableOrderingComposer,
-          $$EventSourcesTableTableAnnotationComposer,
-          $$EventSourcesTableTableCreateCompanionBuilder,
-          $$EventSourcesTableTableUpdateCompanionBuilder,
-          (
-            DbEventSource,
-            BaseReferences<
-              _$NdkCacheDatabase,
-              $EventSourcesTableTable,
-              DbEventSource
-            >,
-          ),
-          DbEventSource,
-          PrefetchHooks Function()
-        > {
+class $$EventSourcesTableTableTableManager extends RootTableManager<
+    _$NdkCacheDatabase,
+    $EventSourcesTableTable,
+    DbEventSource,
+    $$EventSourcesTableTableFilterComposer,
+    $$EventSourcesTableTableOrderingComposer,
+    $$EventSourcesTableTableAnnotationComposer,
+    $$EventSourcesTableTableCreateCompanionBuilder,
+    $$EventSourcesTableTableUpdateCompanionBuilder,
+    (
+      DbEventSource,
+      BaseReferences<_$NdkCacheDatabase, $EventSourcesTableTable,
+          DbEventSource>,
+    ),
+    DbEventSource,
+    PrefetchHooks Function()> {
   $$EventSourcesTableTableTableManager(
     _$NdkCacheDatabase db,
     $EventSourcesTableTable table,
   ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$EventSourcesTableTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$EventSourcesTableTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$EventSourcesTableTableAnnotationComposer(
-                $db: db,
-                $table: table,
-              ),
-          updateCompanionCallback:
-              ({
-                Value<String> eventId = const Value.absent(),
-                Value<String> relayUrl = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => EventSourcesTableCompanion(
-                eventId: eventId,
-                relayUrl: relayUrl,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String eventId,
-                required String relayUrl,
-                Value<int> rowid = const Value.absent(),
-              }) => EventSourcesTableCompanion.insert(
-                eventId: eventId,
-                relayUrl: relayUrl,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$EventSourcesTableTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$EventSourcesTableTableOrderingComposer(
+                    $db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$EventSourcesTableTableAnnotationComposer(
+              $db: db,
+              $table: table,
+            ),
+            updateCompanionCallback: ({
+              Value<String> eventId = const Value.absent(),
+              Value<String> relayUrl = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                EventSourcesTableCompanion(
+              eventId: eventId,
+              relayUrl: relayUrl,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String eventId,
+              required String relayUrl,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                EventSourcesTableCompanion.insert(
+              eventId: eventId,
+              relayUrl: relayUrl,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: null,
+          ),
+        );
 }
 
-typedef $$EventSourcesTableTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $EventSourcesTableTable,
+typedef $$EventSourcesTableTableProcessedTableManager = ProcessedTableManager<
+    _$NdkCacheDatabase,
+    $EventSourcesTableTable,
+    DbEventSource,
+    $$EventSourcesTableTableFilterComposer,
+    $$EventSourcesTableTableOrderingComposer,
+    $$EventSourcesTableTableAnnotationComposer,
+    $$EventSourcesTableTableCreateCompanionBuilder,
+    $$EventSourcesTableTableUpdateCompanionBuilder,
+    (
       DbEventSource,
-      $$EventSourcesTableTableFilterComposer,
-      $$EventSourcesTableTableOrderingComposer,
-      $$EventSourcesTableTableAnnotationComposer,
-      $$EventSourcesTableTableCreateCompanionBuilder,
-      $$EventSourcesTableTableUpdateCompanionBuilder,
-      (
-        DbEventSource,
-        BaseReferences<
-          _$NdkCacheDatabase,
-          $EventSourcesTableTable,
-          DbEventSource
-        >,
-      ),
-      DbEventSource,
-      PrefetchHooks Function()
-    >;
-typedef $$EventDeliveryRecordsTableTableCreateCompanionBuilder =
-    EventDeliveryRecordsTableCompanion Function({
-      required String eventId,
-      required String status,
-      required int createdAt,
-      required int updatedAt,
-      Value<int?> signedAt,
-      Value<int?> completedAt,
-      Value<bool> requiresNetworkSigner,
-      Value<int> rowid,
-    });
-typedef $$EventDeliveryRecordsTableTableUpdateCompanionBuilder =
-    EventDeliveryRecordsTableCompanion Function({
-      Value<String> eventId,
-      Value<String> status,
-      Value<int> createdAt,
-      Value<int> updatedAt,
-      Value<int?> signedAt,
-      Value<int?> completedAt,
-      Value<bool> requiresNetworkSigner,
-      Value<int> rowid,
-    });
+      BaseReferences<_$NdkCacheDatabase, $EventSourcesTableTable,
+          DbEventSource>,
+    ),
+    DbEventSource,
+    PrefetchHooks Function()>;
+typedef $$EventDeliveryRecordsTableTableCreateCompanionBuilder
+    = EventDeliveryRecordsTableCompanion Function({
+  required String eventId,
+  required String status,
+  required int createdAt,
+  required int updatedAt,
+  Value<int?> signedAt,
+  Value<int?> completedAt,
+  Value<bool> requiresNetworkSigner,
+  Value<int> rowid,
+});
+typedef $$EventDeliveryRecordsTableTableUpdateCompanionBuilder
+    = EventDeliveryRecordsTableCompanion Function({
+  Value<String> eventId,
+  Value<String> status,
+  Value<int> createdAt,
+  Value<int> updatedAt,
+  Value<int?> signedAt,
+  Value<int?> completedAt,
+  Value<bool> requiresNetworkSigner,
+  Value<int> rowid,
+});
 
 class $$EventDeliveryRecordsTableTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $EventDeliveryRecordsTableTable> {
@@ -8111,39 +8056,39 @@ class $$EventDeliveryRecordsTableTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get eventId => $composableBuilder(
-    column: $table.eventId,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.eventId,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.status,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.createdAt,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.updatedAt,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get signedAt => $composableBuilder(
-    column: $table.signedAt,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.signedAt,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get completedAt => $composableBuilder(
-    column: $table.completedAt,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.completedAt,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<bool> get requiresNetworkSigner => $composableBuilder(
-    column: $table.requiresNetworkSigner,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.requiresNetworkSigner,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$EventDeliveryRecordsTableTableOrderingComposer
@@ -8156,39 +8101,39 @@ class $$EventDeliveryRecordsTableTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get eventId => $composableBuilder(
-    column: $table.eventId,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.eventId,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.status,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.createdAt,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.updatedAt,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get signedAt => $composableBuilder(
-    column: $table.signedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.signedAt,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get completedAt => $composableBuilder(
-    column: $table.completedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.completedAt,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<bool> get requiresNetworkSigner => $composableBuilder(
-    column: $table.requiresNetworkSigner,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.requiresNetworkSigner,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$EventDeliveryRecordsTableTableAnnotationComposer
@@ -8216,155 +8161,145 @@ class $$EventDeliveryRecordsTableTableAnnotationComposer
       $composableBuilder(column: $table.signedAt, builder: (column) => column);
 
   GeneratedColumn<int> get completedAt => $composableBuilder(
-    column: $table.completedAt,
-    builder: (column) => column,
-  );
+        column: $table.completedAt,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<bool> get requiresNetworkSigner => $composableBuilder(
-    column: $table.requiresNetworkSigner,
-    builder: (column) => column,
-  );
+        column: $table.requiresNetworkSigner,
+        builder: (column) => column,
+      );
 }
 
-class $$EventDeliveryRecordsTableTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $EventDeliveryRecordsTableTable,
-          DbEventDeliveryRecord,
-          $$EventDeliveryRecordsTableTableFilterComposer,
-          $$EventDeliveryRecordsTableTableOrderingComposer,
-          $$EventDeliveryRecordsTableTableAnnotationComposer,
-          $$EventDeliveryRecordsTableTableCreateCompanionBuilder,
-          $$EventDeliveryRecordsTableTableUpdateCompanionBuilder,
-          (
-            DbEventDeliveryRecord,
-            BaseReferences<
-              _$NdkCacheDatabase,
-              $EventDeliveryRecordsTableTable,
-              DbEventDeliveryRecord
-            >,
-          ),
-          DbEventDeliveryRecord,
-          PrefetchHooks Function()
-        > {
+class $$EventDeliveryRecordsTableTableTableManager extends RootTableManager<
+    _$NdkCacheDatabase,
+    $EventDeliveryRecordsTableTable,
+    DbEventDeliveryRecord,
+    $$EventDeliveryRecordsTableTableFilterComposer,
+    $$EventDeliveryRecordsTableTableOrderingComposer,
+    $$EventDeliveryRecordsTableTableAnnotationComposer,
+    $$EventDeliveryRecordsTableTableCreateCompanionBuilder,
+    $$EventDeliveryRecordsTableTableUpdateCompanionBuilder,
+    (
+      DbEventDeliveryRecord,
+      BaseReferences<_$NdkCacheDatabase, $EventDeliveryRecordsTableTable,
+          DbEventDeliveryRecord>,
+    ),
+    DbEventDeliveryRecord,
+    PrefetchHooks Function()> {
   $$EventDeliveryRecordsTableTableTableManager(
     _$NdkCacheDatabase db,
     $EventDeliveryRecordsTableTable table,
   ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$EventDeliveryRecordsTableTableFilterComposer(
-                $db: db,
-                $table: table,
-              ),
-          createOrderingComposer: () =>
-              $$EventDeliveryRecordsTableTableOrderingComposer(
-                $db: db,
-                $table: table,
-              ),
-          createComputedFieldComposer: () =>
-              $$EventDeliveryRecordsTableTableAnnotationComposer(
-                $db: db,
-                $table: table,
-              ),
-          updateCompanionCallback:
-              ({
-                Value<String> eventId = const Value.absent(),
-                Value<String> status = const Value.absent(),
-                Value<int> createdAt = const Value.absent(),
-                Value<int> updatedAt = const Value.absent(),
-                Value<int?> signedAt = const Value.absent(),
-                Value<int?> completedAt = const Value.absent(),
-                Value<bool> requiresNetworkSigner = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => EventDeliveryRecordsTableCompanion(
-                eventId: eventId,
-                status: status,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                signedAt: signedAt,
-                completedAt: completedAt,
-                requiresNetworkSigner: requiresNetworkSigner,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String eventId,
-                required String status,
-                required int createdAt,
-                required int updatedAt,
-                Value<int?> signedAt = const Value.absent(),
-                Value<int?> completedAt = const Value.absent(),
-                Value<bool> requiresNetworkSigner = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => EventDeliveryRecordsTableCompanion.insert(
-                eventId: eventId,
-                status: status,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                signedAt: signedAt,
-                completedAt: completedAt,
-                requiresNetworkSigner: requiresNetworkSigner,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$EventDeliveryRecordsTableTableFilterComposer(
+              $db: db,
+              $table: table,
+            ),
+            createOrderingComposer: () =>
+                $$EventDeliveryRecordsTableTableOrderingComposer(
+              $db: db,
+              $table: table,
+            ),
+            createComputedFieldComposer: () =>
+                $$EventDeliveryRecordsTableTableAnnotationComposer(
+              $db: db,
+              $table: table,
+            ),
+            updateCompanionCallback: ({
+              Value<String> eventId = const Value.absent(),
+              Value<String> status = const Value.absent(),
+              Value<int> createdAt = const Value.absent(),
+              Value<int> updatedAt = const Value.absent(),
+              Value<int?> signedAt = const Value.absent(),
+              Value<int?> completedAt = const Value.absent(),
+              Value<bool> requiresNetworkSigner = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                EventDeliveryRecordsTableCompanion(
+              eventId: eventId,
+              status: status,
+              createdAt: createdAt,
+              updatedAt: updatedAt,
+              signedAt: signedAt,
+              completedAt: completedAt,
+              requiresNetworkSigner: requiresNetworkSigner,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String eventId,
+              required String status,
+              required int createdAt,
+              required int updatedAt,
+              Value<int?> signedAt = const Value.absent(),
+              Value<int?> completedAt = const Value.absent(),
+              Value<bool> requiresNetworkSigner = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                EventDeliveryRecordsTableCompanion.insert(
+              eventId: eventId,
+              status: status,
+              createdAt: createdAt,
+              updatedAt: updatedAt,
+              signedAt: signedAt,
+              completedAt: completedAt,
+              requiresNetworkSigner: requiresNetworkSigner,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: null,
+          ),
+        );
 }
 
-typedef $$EventDeliveryRecordsTableTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $EventDeliveryRecordsTableTable,
-      DbEventDeliveryRecord,
-      $$EventDeliveryRecordsTableTableFilterComposer,
-      $$EventDeliveryRecordsTableTableOrderingComposer,
-      $$EventDeliveryRecordsTableTableAnnotationComposer,
-      $$EventDeliveryRecordsTableTableCreateCompanionBuilder,
-      $$EventDeliveryRecordsTableTableUpdateCompanionBuilder,
-      (
+typedef $$EventDeliveryRecordsTableTableProcessedTableManager
+    = ProcessedTableManager<
+        _$NdkCacheDatabase,
+        $EventDeliveryRecordsTableTable,
         DbEventDeliveryRecord,
-        BaseReferences<
-          _$NdkCacheDatabase,
-          $EventDeliveryRecordsTableTable,
-          DbEventDeliveryRecord
-        >,
-      ),
-      DbEventDeliveryRecord,
-      PrefetchHooks Function()
-    >;
-typedef $$RelayDeliveryTargetsTableTableCreateCompanionBuilder =
-    RelayDeliveryTargetsTableCompanion Function({
-      required String eventId,
-      required String relayUrl,
-      required String reason,
-      required String state,
-      Value<int> attemptCount,
-      Value<int?> lastAttemptAt,
-      Value<int?> nextRetryAt,
-      Value<String?> lastError,
-      Value<String?> lastOkMessage,
-      Value<int> rowid,
-    });
-typedef $$RelayDeliveryTargetsTableTableUpdateCompanionBuilder =
-    RelayDeliveryTargetsTableCompanion Function({
-      Value<String> eventId,
-      Value<String> relayUrl,
-      Value<String> reason,
-      Value<String> state,
-      Value<int> attemptCount,
-      Value<int?> lastAttemptAt,
-      Value<int?> nextRetryAt,
-      Value<String?> lastError,
-      Value<String?> lastOkMessage,
-      Value<int> rowid,
-    });
+        $$EventDeliveryRecordsTableTableFilterComposer,
+        $$EventDeliveryRecordsTableTableOrderingComposer,
+        $$EventDeliveryRecordsTableTableAnnotationComposer,
+        $$EventDeliveryRecordsTableTableCreateCompanionBuilder,
+        $$EventDeliveryRecordsTableTableUpdateCompanionBuilder,
+        (
+          DbEventDeliveryRecord,
+          BaseReferences<_$NdkCacheDatabase, $EventDeliveryRecordsTableTable,
+              DbEventDeliveryRecord>,
+        ),
+        DbEventDeliveryRecord,
+        PrefetchHooks Function()>;
+typedef $$RelayDeliveryTargetsTableTableCreateCompanionBuilder
+    = RelayDeliveryTargetsTableCompanion Function({
+  required String eventId,
+  required String relayUrl,
+  required String reason,
+  required String state,
+  Value<int> attemptCount,
+  Value<int?> lastAttemptAt,
+  Value<int?> nextRetryAt,
+  Value<String?> lastError,
+  Value<String?> lastOkMessage,
+  Value<int> rowid,
+});
+typedef $$RelayDeliveryTargetsTableTableUpdateCompanionBuilder
+    = RelayDeliveryTargetsTableCompanion Function({
+  Value<String> eventId,
+  Value<String> relayUrl,
+  Value<String> reason,
+  Value<String> state,
+  Value<int> attemptCount,
+  Value<int?> lastAttemptAt,
+  Value<int?> nextRetryAt,
+  Value<String?> lastError,
+  Value<String?> lastOkMessage,
+  Value<int> rowid,
+});
 
 class $$RelayDeliveryTargetsTableTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $RelayDeliveryTargetsTableTable> {
@@ -8376,49 +8311,49 @@ class $$RelayDeliveryTargetsTableTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get eventId => $composableBuilder(
-    column: $table.eventId,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.eventId,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get relayUrl => $composableBuilder(
-    column: $table.relayUrl,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.relayUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get reason => $composableBuilder(
-    column: $table.reason,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.reason,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get state => $composableBuilder(
-    column: $table.state,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.state,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get attemptCount => $composableBuilder(
-    column: $table.attemptCount,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.attemptCount,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get lastAttemptAt => $composableBuilder(
-    column: $table.lastAttemptAt,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.lastAttemptAt,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get nextRetryAt => $composableBuilder(
-    column: $table.nextRetryAt,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.nextRetryAt,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get lastError => $composableBuilder(
-    column: $table.lastError,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.lastError,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get lastOkMessage => $composableBuilder(
-    column: $table.lastOkMessage,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.lastOkMessage,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$RelayDeliveryTargetsTableTableOrderingComposer
@@ -8431,49 +8366,49 @@ class $$RelayDeliveryTargetsTableTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get eventId => $composableBuilder(
-    column: $table.eventId,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.eventId,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get relayUrl => $composableBuilder(
-    column: $table.relayUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.relayUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get reason => $composableBuilder(
-    column: $table.reason,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.reason,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get state => $composableBuilder(
-    column: $table.state,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.state,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get attemptCount => $composableBuilder(
-    column: $table.attemptCount,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.attemptCount,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get lastAttemptAt => $composableBuilder(
-    column: $table.lastAttemptAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.lastAttemptAt,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get nextRetryAt => $composableBuilder(
-    column: $table.nextRetryAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.nextRetryAt,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get lastError => $composableBuilder(
-    column: $table.lastError,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.lastError,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get lastOkMessage => $composableBuilder(
-    column: $table.lastOkMessage,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.lastOkMessage,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$RelayDeliveryTargetsTableTableAnnotationComposer
@@ -8498,172 +8433,162 @@ class $$RelayDeliveryTargetsTableTableAnnotationComposer
       $composableBuilder(column: $table.state, builder: (column) => column);
 
   GeneratedColumn<int> get attemptCount => $composableBuilder(
-    column: $table.attemptCount,
-    builder: (column) => column,
-  );
+        column: $table.attemptCount,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<int> get lastAttemptAt => $composableBuilder(
-    column: $table.lastAttemptAt,
-    builder: (column) => column,
-  );
+        column: $table.lastAttemptAt,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<int> get nextRetryAt => $composableBuilder(
-    column: $table.nextRetryAt,
-    builder: (column) => column,
-  );
+        column: $table.nextRetryAt,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<String> get lastError =>
       $composableBuilder(column: $table.lastError, builder: (column) => column);
 
   GeneratedColumn<String> get lastOkMessage => $composableBuilder(
-    column: $table.lastOkMessage,
-    builder: (column) => column,
-  );
+        column: $table.lastOkMessage,
+        builder: (column) => column,
+      );
 }
 
-class $$RelayDeliveryTargetsTableTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $RelayDeliveryTargetsTableTable,
-          DbRelayDeliveryTarget,
-          $$RelayDeliveryTargetsTableTableFilterComposer,
-          $$RelayDeliveryTargetsTableTableOrderingComposer,
-          $$RelayDeliveryTargetsTableTableAnnotationComposer,
-          $$RelayDeliveryTargetsTableTableCreateCompanionBuilder,
-          $$RelayDeliveryTargetsTableTableUpdateCompanionBuilder,
-          (
-            DbRelayDeliveryTarget,
-            BaseReferences<
-              _$NdkCacheDatabase,
-              $RelayDeliveryTargetsTableTable,
-              DbRelayDeliveryTarget
-            >,
-          ),
-          DbRelayDeliveryTarget,
-          PrefetchHooks Function()
-        > {
+class $$RelayDeliveryTargetsTableTableTableManager extends RootTableManager<
+    _$NdkCacheDatabase,
+    $RelayDeliveryTargetsTableTable,
+    DbRelayDeliveryTarget,
+    $$RelayDeliveryTargetsTableTableFilterComposer,
+    $$RelayDeliveryTargetsTableTableOrderingComposer,
+    $$RelayDeliveryTargetsTableTableAnnotationComposer,
+    $$RelayDeliveryTargetsTableTableCreateCompanionBuilder,
+    $$RelayDeliveryTargetsTableTableUpdateCompanionBuilder,
+    (
+      DbRelayDeliveryTarget,
+      BaseReferences<_$NdkCacheDatabase, $RelayDeliveryTargetsTableTable,
+          DbRelayDeliveryTarget>,
+    ),
+    DbRelayDeliveryTarget,
+    PrefetchHooks Function()> {
   $$RelayDeliveryTargetsTableTableTableManager(
     _$NdkCacheDatabase db,
     $RelayDeliveryTargetsTableTable table,
   ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$RelayDeliveryTargetsTableTableFilterComposer(
-                $db: db,
-                $table: table,
-              ),
-          createOrderingComposer: () =>
-              $$RelayDeliveryTargetsTableTableOrderingComposer(
-                $db: db,
-                $table: table,
-              ),
-          createComputedFieldComposer: () =>
-              $$RelayDeliveryTargetsTableTableAnnotationComposer(
-                $db: db,
-                $table: table,
-              ),
-          updateCompanionCallback:
-              ({
-                Value<String> eventId = const Value.absent(),
-                Value<String> relayUrl = const Value.absent(),
-                Value<String> reason = const Value.absent(),
-                Value<String> state = const Value.absent(),
-                Value<int> attemptCount = const Value.absent(),
-                Value<int?> lastAttemptAt = const Value.absent(),
-                Value<int?> nextRetryAt = const Value.absent(),
-                Value<String?> lastError = const Value.absent(),
-                Value<String?> lastOkMessage = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => RelayDeliveryTargetsTableCompanion(
-                eventId: eventId,
-                relayUrl: relayUrl,
-                reason: reason,
-                state: state,
-                attemptCount: attemptCount,
-                lastAttemptAt: lastAttemptAt,
-                nextRetryAt: nextRetryAt,
-                lastError: lastError,
-                lastOkMessage: lastOkMessage,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String eventId,
-                required String relayUrl,
-                required String reason,
-                required String state,
-                Value<int> attemptCount = const Value.absent(),
-                Value<int?> lastAttemptAt = const Value.absent(),
-                Value<int?> nextRetryAt = const Value.absent(),
-                Value<String?> lastError = const Value.absent(),
-                Value<String?> lastOkMessage = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => RelayDeliveryTargetsTableCompanion.insert(
-                eventId: eventId,
-                relayUrl: relayUrl,
-                reason: reason,
-                state: state,
-                attemptCount: attemptCount,
-                lastAttemptAt: lastAttemptAt,
-                nextRetryAt: nextRetryAt,
-                lastError: lastError,
-                lastOkMessage: lastOkMessage,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$RelayDeliveryTargetsTableTableFilterComposer(
+              $db: db,
+              $table: table,
+            ),
+            createOrderingComposer: () =>
+                $$RelayDeliveryTargetsTableTableOrderingComposer(
+              $db: db,
+              $table: table,
+            ),
+            createComputedFieldComposer: () =>
+                $$RelayDeliveryTargetsTableTableAnnotationComposer(
+              $db: db,
+              $table: table,
+            ),
+            updateCompanionCallback: ({
+              Value<String> eventId = const Value.absent(),
+              Value<String> relayUrl = const Value.absent(),
+              Value<String> reason = const Value.absent(),
+              Value<String> state = const Value.absent(),
+              Value<int> attemptCount = const Value.absent(),
+              Value<int?> lastAttemptAt = const Value.absent(),
+              Value<int?> nextRetryAt = const Value.absent(),
+              Value<String?> lastError = const Value.absent(),
+              Value<String?> lastOkMessage = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                RelayDeliveryTargetsTableCompanion(
+              eventId: eventId,
+              relayUrl: relayUrl,
+              reason: reason,
+              state: state,
+              attemptCount: attemptCount,
+              lastAttemptAt: lastAttemptAt,
+              nextRetryAt: nextRetryAt,
+              lastError: lastError,
+              lastOkMessage: lastOkMessage,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String eventId,
+              required String relayUrl,
+              required String reason,
+              required String state,
+              Value<int> attemptCount = const Value.absent(),
+              Value<int?> lastAttemptAt = const Value.absent(),
+              Value<int?> nextRetryAt = const Value.absent(),
+              Value<String?> lastError = const Value.absent(),
+              Value<String?> lastOkMessage = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                RelayDeliveryTargetsTableCompanion.insert(
+              eventId: eventId,
+              relayUrl: relayUrl,
+              reason: reason,
+              state: state,
+              attemptCount: attemptCount,
+              lastAttemptAt: lastAttemptAt,
+              nextRetryAt: nextRetryAt,
+              lastError: lastError,
+              lastOkMessage: lastOkMessage,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: null,
+          ),
+        );
 }
 
-typedef $$RelayDeliveryTargetsTableTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $RelayDeliveryTargetsTableTable,
-      DbRelayDeliveryTarget,
-      $$RelayDeliveryTargetsTableTableFilterComposer,
-      $$RelayDeliveryTargetsTableTableOrderingComposer,
-      $$RelayDeliveryTargetsTableTableAnnotationComposer,
-      $$RelayDeliveryTargetsTableTableCreateCompanionBuilder,
-      $$RelayDeliveryTargetsTableTableUpdateCompanionBuilder,
-      (
+typedef $$RelayDeliveryTargetsTableTableProcessedTableManager
+    = ProcessedTableManager<
+        _$NdkCacheDatabase,
+        $RelayDeliveryTargetsTableTable,
         DbRelayDeliveryTarget,
-        BaseReferences<
-          _$NdkCacheDatabase,
-          $RelayDeliveryTargetsTableTable,
-          DbRelayDeliveryTarget
-        >,
-      ),
-      DbRelayDeliveryTarget,
-      PrefetchHooks Function()
-    >;
-typedef $$CashuProofsTableCreateCompanionBuilder =
-    CashuProofsCompanion Function({
-      required String Y,
-      required String keysetId,
-      required int amount,
-      required String secret,
-      required String unblindedSig,
-      required String state,
-      required String mintUrl,
-      Value<int> rowid,
-    });
-typedef $$CashuProofsTableUpdateCompanionBuilder =
-    CashuProofsCompanion Function({
-      Value<String> Y,
-      Value<String> keysetId,
-      Value<int> amount,
-      Value<String> secret,
-      Value<String> unblindedSig,
-      Value<String> state,
-      Value<String> mintUrl,
-      Value<int> rowid,
-    });
+        $$RelayDeliveryTargetsTableTableFilterComposer,
+        $$RelayDeliveryTargetsTableTableOrderingComposer,
+        $$RelayDeliveryTargetsTableTableAnnotationComposer,
+        $$RelayDeliveryTargetsTableTableCreateCompanionBuilder,
+        $$RelayDeliveryTargetsTableTableUpdateCompanionBuilder,
+        (
+          DbRelayDeliveryTarget,
+          BaseReferences<_$NdkCacheDatabase, $RelayDeliveryTargetsTableTable,
+              DbRelayDeliveryTarget>,
+        ),
+        DbRelayDeliveryTarget,
+        PrefetchHooks Function()>;
+typedef $$CashuProofsTableCreateCompanionBuilder = CashuProofsCompanion
+    Function({
+  required String Y,
+  required String keysetId,
+  required int amount,
+  required String secret,
+  required String unblindedSig,
+  required String state,
+  required String mintUrl,
+  Value<int> rowid,
+});
+typedef $$CashuProofsTableUpdateCompanionBuilder = CashuProofsCompanion
+    Function({
+  Value<String> Y,
+  Value<String> keysetId,
+  Value<int> amount,
+  Value<String> secret,
+  Value<String> unblindedSig,
+  Value<String> state,
+  Value<String> mintUrl,
+  Value<int> rowid,
+});
 
 class $$CashuProofsTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $CashuProofsTable> {
@@ -8675,39 +8600,39 @@ class $$CashuProofsTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get Y => $composableBuilder(
-    column: $table.Y,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.Y,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get keysetId => $composableBuilder(
-    column: $table.keysetId,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.keysetId,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get amount => $composableBuilder(
-    column: $table.amount,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.amount,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get secret => $composableBuilder(
-    column: $table.secret,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.secret,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get unblindedSig => $composableBuilder(
-    column: $table.unblindedSig,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.unblindedSig,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get state => $composableBuilder(
-    column: $table.state,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.state,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get mintUrl => $composableBuilder(
-    column: $table.mintUrl,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.mintUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$CashuProofsTableOrderingComposer
@@ -8720,39 +8645,39 @@ class $$CashuProofsTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get Y => $composableBuilder(
-    column: $table.Y,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.Y,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get keysetId => $composableBuilder(
-    column: $table.keysetId,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.keysetId,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get amount => $composableBuilder(
-    column: $table.amount,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.amount,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get secret => $composableBuilder(
-    column: $table.secret,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.secret,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get unblindedSig => $composableBuilder(
-    column: $table.unblindedSig,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.unblindedSig,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get state => $composableBuilder(
-    column: $table.state,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.state,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get mintUrl => $composableBuilder(
-    column: $table.mintUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.mintUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$CashuProofsTableAnnotationComposer
@@ -8777,9 +8702,9 @@ class $$CashuProofsTableAnnotationComposer
       $composableBuilder(column: $table.secret, builder: (column) => column);
 
   GeneratedColumn<String> get unblindedSig => $composableBuilder(
-    column: $table.unblindedSig,
-    builder: (column) => column,
-  );
+        column: $table.unblindedSig,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<String> get state =>
       $composableBuilder(column: $table.state, builder: (column) => column);
@@ -8788,122 +8713,117 @@ class $$CashuProofsTableAnnotationComposer
       $composableBuilder(column: $table.mintUrl, builder: (column) => column);
 }
 
-class $$CashuProofsTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $CashuProofsTable,
-          DbCashuProof,
-          $$CashuProofsTableFilterComposer,
-          $$CashuProofsTableOrderingComposer,
-          $$CashuProofsTableAnnotationComposer,
-          $$CashuProofsTableCreateCompanionBuilder,
-          $$CashuProofsTableUpdateCompanionBuilder,
-          (
-            DbCashuProof,
-            BaseReferences<_$NdkCacheDatabase, $CashuProofsTable, DbCashuProof>,
-          ),
-          DbCashuProof,
-          PrefetchHooks Function()
-        > {
+class $$CashuProofsTableTableManager extends RootTableManager<
+    _$NdkCacheDatabase,
+    $CashuProofsTable,
+    DbCashuProof,
+    $$CashuProofsTableFilterComposer,
+    $$CashuProofsTableOrderingComposer,
+    $$CashuProofsTableAnnotationComposer,
+    $$CashuProofsTableCreateCompanionBuilder,
+    $$CashuProofsTableUpdateCompanionBuilder,
+    (
+      DbCashuProof,
+      BaseReferences<_$NdkCacheDatabase, $CashuProofsTable, DbCashuProof>,
+    ),
+    DbCashuProof,
+    PrefetchHooks Function()> {
   $$CashuProofsTableTableManager(_$NdkCacheDatabase db, $CashuProofsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$CashuProofsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$CashuProofsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$CashuProofsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> Y = const Value.absent(),
-                Value<String> keysetId = const Value.absent(),
-                Value<int> amount = const Value.absent(),
-                Value<String> secret = const Value.absent(),
-                Value<String> unblindedSig = const Value.absent(),
-                Value<String> state = const Value.absent(),
-                Value<String> mintUrl = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CashuProofsCompanion(
-                Y: Y,
-                keysetId: keysetId,
-                amount: amount,
-                secret: secret,
-                unblindedSig: unblindedSig,
-                state: state,
-                mintUrl: mintUrl,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String Y,
-                required String keysetId,
-                required int amount,
-                required String secret,
-                required String unblindedSig,
-                required String state,
-                required String mintUrl,
-                Value<int> rowid = const Value.absent(),
-              }) => CashuProofsCompanion.insert(
-                Y: Y,
-                keysetId: keysetId,
-                amount: amount,
-                secret: secret,
-                unblindedSig: unblindedSig,
-                state: state,
-                mintUrl: mintUrl,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$CashuProofsTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$CashuProofsTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$CashuProofsTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<String> Y = const Value.absent(),
+              Value<String> keysetId = const Value.absent(),
+              Value<int> amount = const Value.absent(),
+              Value<String> secret = const Value.absent(),
+              Value<String> unblindedSig = const Value.absent(),
+              Value<String> state = const Value.absent(),
+              Value<String> mintUrl = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                CashuProofsCompanion(
+              Y: Y,
+              keysetId: keysetId,
+              amount: amount,
+              secret: secret,
+              unblindedSig: unblindedSig,
+              state: state,
+              mintUrl: mintUrl,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String Y,
+              required String keysetId,
+              required int amount,
+              required String secret,
+              required String unblindedSig,
+              required String state,
+              required String mintUrl,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                CashuProofsCompanion.insert(
+              Y: Y,
+              keysetId: keysetId,
+              amount: amount,
+              secret: secret,
+              unblindedSig: unblindedSig,
+              state: state,
+              mintUrl: mintUrl,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: null,
+          ),
+        );
 }
 
-typedef $$CashuProofsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $CashuProofsTable,
+typedef $$CashuProofsTableProcessedTableManager = ProcessedTableManager<
+    _$NdkCacheDatabase,
+    $CashuProofsTable,
+    DbCashuProof,
+    $$CashuProofsTableFilterComposer,
+    $$CashuProofsTableOrderingComposer,
+    $$CashuProofsTableAnnotationComposer,
+    $$CashuProofsTableCreateCompanionBuilder,
+    $$CashuProofsTableUpdateCompanionBuilder,
+    (
       DbCashuProof,
-      $$CashuProofsTableFilterComposer,
-      $$CashuProofsTableOrderingComposer,
-      $$CashuProofsTableAnnotationComposer,
-      $$CashuProofsTableCreateCompanionBuilder,
-      $$CashuProofsTableUpdateCompanionBuilder,
-      (
-        DbCashuProof,
-        BaseReferences<_$NdkCacheDatabase, $CashuProofsTable, DbCashuProof>,
-      ),
-      DbCashuProof,
-      PrefetchHooks Function()
-    >;
-typedef $$CashuKeysetsTableCreateCompanionBuilder =
-    CashuKeysetsCompanion Function({
-      required String id,
-      required String mintUrl,
-      required String unit,
-      required bool active,
-      required int inputFeePPK,
-      required String mintKeyPairsJson,
-      Value<int?> fetchedAt,
-      Value<int> rowid,
-    });
-typedef $$CashuKeysetsTableUpdateCompanionBuilder =
-    CashuKeysetsCompanion Function({
-      Value<String> id,
-      Value<String> mintUrl,
-      Value<String> unit,
-      Value<bool> active,
-      Value<int> inputFeePPK,
-      Value<String> mintKeyPairsJson,
-      Value<int?> fetchedAt,
-      Value<int> rowid,
-    });
+      BaseReferences<_$NdkCacheDatabase, $CashuProofsTable, DbCashuProof>,
+    ),
+    DbCashuProof,
+    PrefetchHooks Function()>;
+typedef $$CashuKeysetsTableCreateCompanionBuilder = CashuKeysetsCompanion
+    Function({
+  required String id,
+  required String mintUrl,
+  required String unit,
+  required bool active,
+  required int inputFeePPK,
+  required String mintKeyPairsJson,
+  Value<int?> fetchedAt,
+  Value<int> rowid,
+});
+typedef $$CashuKeysetsTableUpdateCompanionBuilder = CashuKeysetsCompanion
+    Function({
+  Value<String> id,
+  Value<String> mintUrl,
+  Value<String> unit,
+  Value<bool> active,
+  Value<int> inputFeePPK,
+  Value<String> mintKeyPairsJson,
+  Value<int?> fetchedAt,
+  Value<int> rowid,
+});
 
 class $$CashuKeysetsTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $CashuKeysetsTable> {
@@ -8915,39 +8835,39 @@ class $$CashuKeysetsTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.id,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get mintUrl => $composableBuilder(
-    column: $table.mintUrl,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.mintUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get unit => $composableBuilder(
-    column: $table.unit,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.unit,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<bool> get active => $composableBuilder(
-    column: $table.active,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.active,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get inputFeePPK => $composableBuilder(
-    column: $table.inputFeePPK,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.inputFeePPK,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get mintKeyPairsJson => $composableBuilder(
-    column: $table.mintKeyPairsJson,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.mintKeyPairsJson,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get fetchedAt => $composableBuilder(
-    column: $table.fetchedAt,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.fetchedAt,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$CashuKeysetsTableOrderingComposer
@@ -8960,39 +8880,39 @@ class $$CashuKeysetsTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.id,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get mintUrl => $composableBuilder(
-    column: $table.mintUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.mintUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get unit => $composableBuilder(
-    column: $table.unit,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.unit,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<bool> get active => $composableBuilder(
-    column: $table.active,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.active,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get inputFeePPK => $composableBuilder(
-    column: $table.inputFeePPK,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.inputFeePPK,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get mintKeyPairsJson => $composableBuilder(
-    column: $table.mintKeyPairsJson,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.mintKeyPairsJson,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get fetchedAt => $composableBuilder(
-    column: $table.fetchedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.fetchedAt,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$CashuKeysetsTableAnnotationComposer
@@ -9017,153 +8937,144 @@ class $$CashuKeysetsTableAnnotationComposer
       $composableBuilder(column: $table.active, builder: (column) => column);
 
   GeneratedColumn<int> get inputFeePPK => $composableBuilder(
-    column: $table.inputFeePPK,
-    builder: (column) => column,
-  );
+        column: $table.inputFeePPK,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<String> get mintKeyPairsJson => $composableBuilder(
-    column: $table.mintKeyPairsJson,
-    builder: (column) => column,
-  );
+        column: $table.mintKeyPairsJson,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<int> get fetchedAt =>
       $composableBuilder(column: $table.fetchedAt, builder: (column) => column);
 }
 
-class $$CashuKeysetsTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $CashuKeysetsTable,
-          DbCashuKeyset,
-          $$CashuKeysetsTableFilterComposer,
-          $$CashuKeysetsTableOrderingComposer,
-          $$CashuKeysetsTableAnnotationComposer,
-          $$CashuKeysetsTableCreateCompanionBuilder,
-          $$CashuKeysetsTableUpdateCompanionBuilder,
-          (
-            DbCashuKeyset,
-            BaseReferences<
-              _$NdkCacheDatabase,
-              $CashuKeysetsTable,
-              DbCashuKeyset
-            >,
-          ),
-          DbCashuKeyset,
-          PrefetchHooks Function()
-        > {
+class $$CashuKeysetsTableTableManager extends RootTableManager<
+    _$NdkCacheDatabase,
+    $CashuKeysetsTable,
+    DbCashuKeyset,
+    $$CashuKeysetsTableFilterComposer,
+    $$CashuKeysetsTableOrderingComposer,
+    $$CashuKeysetsTableAnnotationComposer,
+    $$CashuKeysetsTableCreateCompanionBuilder,
+    $$CashuKeysetsTableUpdateCompanionBuilder,
+    (
+      DbCashuKeyset,
+      BaseReferences<_$NdkCacheDatabase, $CashuKeysetsTable, DbCashuKeyset>,
+    ),
+    DbCashuKeyset,
+    PrefetchHooks Function()> {
   $$CashuKeysetsTableTableManager(
     _$NdkCacheDatabase db,
     $CashuKeysetsTable table,
   ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$CashuKeysetsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$CashuKeysetsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$CashuKeysetsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> mintUrl = const Value.absent(),
-                Value<String> unit = const Value.absent(),
-                Value<bool> active = const Value.absent(),
-                Value<int> inputFeePPK = const Value.absent(),
-                Value<String> mintKeyPairsJson = const Value.absent(),
-                Value<int?> fetchedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CashuKeysetsCompanion(
-                id: id,
-                mintUrl: mintUrl,
-                unit: unit,
-                active: active,
-                inputFeePPK: inputFeePPK,
-                mintKeyPairsJson: mintKeyPairsJson,
-                fetchedAt: fetchedAt,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String mintUrl,
-                required String unit,
-                required bool active,
-                required int inputFeePPK,
-                required String mintKeyPairsJson,
-                Value<int?> fetchedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CashuKeysetsCompanion.insert(
-                id: id,
-                mintUrl: mintUrl,
-                unit: unit,
-                active: active,
-                inputFeePPK: inputFeePPK,
-                mintKeyPairsJson: mintKeyPairsJson,
-                fetchedAt: fetchedAt,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$CashuKeysetsTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$CashuKeysetsTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$CashuKeysetsTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<String> id = const Value.absent(),
+              Value<String> mintUrl = const Value.absent(),
+              Value<String> unit = const Value.absent(),
+              Value<bool> active = const Value.absent(),
+              Value<int> inputFeePPK = const Value.absent(),
+              Value<String> mintKeyPairsJson = const Value.absent(),
+              Value<int?> fetchedAt = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                CashuKeysetsCompanion(
+              id: id,
+              mintUrl: mintUrl,
+              unit: unit,
+              active: active,
+              inputFeePPK: inputFeePPK,
+              mintKeyPairsJson: mintKeyPairsJson,
+              fetchedAt: fetchedAt,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String id,
+              required String mintUrl,
+              required String unit,
+              required bool active,
+              required int inputFeePPK,
+              required String mintKeyPairsJson,
+              Value<int?> fetchedAt = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                CashuKeysetsCompanion.insert(
+              id: id,
+              mintUrl: mintUrl,
+              unit: unit,
+              active: active,
+              inputFeePPK: inputFeePPK,
+              mintKeyPairsJson: mintKeyPairsJson,
+              fetchedAt: fetchedAt,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: null,
+          ),
+        );
 }
 
-typedef $$CashuKeysetsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $CashuKeysetsTable,
+typedef $$CashuKeysetsTableProcessedTableManager = ProcessedTableManager<
+    _$NdkCacheDatabase,
+    $CashuKeysetsTable,
+    DbCashuKeyset,
+    $$CashuKeysetsTableFilterComposer,
+    $$CashuKeysetsTableOrderingComposer,
+    $$CashuKeysetsTableAnnotationComposer,
+    $$CashuKeysetsTableCreateCompanionBuilder,
+    $$CashuKeysetsTableUpdateCompanionBuilder,
+    (
       DbCashuKeyset,
-      $$CashuKeysetsTableFilterComposer,
-      $$CashuKeysetsTableOrderingComposer,
-      $$CashuKeysetsTableAnnotationComposer,
-      $$CashuKeysetsTableCreateCompanionBuilder,
-      $$CashuKeysetsTableUpdateCompanionBuilder,
-      (
-        DbCashuKeyset,
-        BaseReferences<_$NdkCacheDatabase, $CashuKeysetsTable, DbCashuKeyset>,
-      ),
-      DbCashuKeyset,
-      PrefetchHooks Function()
-    >;
-typedef $$CashuMintInfosTableCreateCompanionBuilder =
-    CashuMintInfosCompanion Function({
-      required String id,
-      required String urlsJson,
-      Value<String?> name,
-      Value<String?> pubkey,
-      Value<String?> version,
-      Value<String?> description,
-      Value<String?> descriptionLong,
-      required String contactJson,
-      Value<String?> motd,
-      Value<String?> iconUrl,
-      Value<int?> time,
-      Value<String?> tosUrl,
-      required String nutsJson,
-      Value<int> rowid,
-    });
-typedef $$CashuMintInfosTableUpdateCompanionBuilder =
-    CashuMintInfosCompanion Function({
-      Value<String> id,
-      Value<String> urlsJson,
-      Value<String?> name,
-      Value<String?> pubkey,
-      Value<String?> version,
-      Value<String?> description,
-      Value<String?> descriptionLong,
-      Value<String> contactJson,
-      Value<String?> motd,
-      Value<String?> iconUrl,
-      Value<int?> time,
-      Value<String?> tosUrl,
-      Value<String> nutsJson,
-      Value<int> rowid,
-    });
+      BaseReferences<_$NdkCacheDatabase, $CashuKeysetsTable, DbCashuKeyset>,
+    ),
+    DbCashuKeyset,
+    PrefetchHooks Function()>;
+typedef $$CashuMintInfosTableCreateCompanionBuilder = CashuMintInfosCompanion
+    Function({
+  required String id,
+  required String urlsJson,
+  Value<String?> name,
+  Value<String?> pubkey,
+  Value<String?> version,
+  Value<String?> description,
+  Value<String?> descriptionLong,
+  required String contactJson,
+  Value<String?> motd,
+  Value<String?> iconUrl,
+  Value<int?> time,
+  Value<String?> tosUrl,
+  required String nutsJson,
+  Value<int> rowid,
+});
+typedef $$CashuMintInfosTableUpdateCompanionBuilder = CashuMintInfosCompanion
+    Function({
+  Value<String> id,
+  Value<String> urlsJson,
+  Value<String?> name,
+  Value<String?> pubkey,
+  Value<String?> version,
+  Value<String?> description,
+  Value<String?> descriptionLong,
+  Value<String> contactJson,
+  Value<String?> motd,
+  Value<String?> iconUrl,
+  Value<int?> time,
+  Value<String?> tosUrl,
+  Value<String> nutsJson,
+  Value<int> rowid,
+});
 
 class $$CashuMintInfosTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $CashuMintInfosTable> {
@@ -9175,69 +9086,69 @@ class $$CashuMintInfosTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.id,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get urlsJson => $composableBuilder(
-    column: $table.urlsJson,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.urlsJson,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.name,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get pubkey => $composableBuilder(
-    column: $table.pubkey,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.pubkey,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get version => $composableBuilder(
-    column: $table.version,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.version,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get description => $composableBuilder(
-    column: $table.description,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.description,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get descriptionLong => $composableBuilder(
-    column: $table.descriptionLong,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.descriptionLong,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get contactJson => $composableBuilder(
-    column: $table.contactJson,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.contactJson,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get motd => $composableBuilder(
-    column: $table.motd,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.motd,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get iconUrl => $composableBuilder(
-    column: $table.iconUrl,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.iconUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get time => $composableBuilder(
-    column: $table.time,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.time,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get tosUrl => $composableBuilder(
-    column: $table.tosUrl,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.tosUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get nutsJson => $composableBuilder(
-    column: $table.nutsJson,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.nutsJson,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$CashuMintInfosTableOrderingComposer
@@ -9250,69 +9161,69 @@ class $$CashuMintInfosTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.id,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get urlsJson => $composableBuilder(
-    column: $table.urlsJson,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.urlsJson,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.name,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get pubkey => $composableBuilder(
-    column: $table.pubkey,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.pubkey,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get version => $composableBuilder(
-    column: $table.version,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.version,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get description => $composableBuilder(
-    column: $table.description,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.description,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get descriptionLong => $composableBuilder(
-    column: $table.descriptionLong,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.descriptionLong,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get contactJson => $composableBuilder(
-    column: $table.contactJson,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.contactJson,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get motd => $composableBuilder(
-    column: $table.motd,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.motd,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get iconUrl => $composableBuilder(
-    column: $table.iconUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.iconUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get time => $composableBuilder(
-    column: $table.time,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.time,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get tosUrl => $composableBuilder(
-    column: $table.tosUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.tosUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get nutsJson => $composableBuilder(
-    column: $table.nutsJson,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.nutsJson,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$CashuMintInfosTableAnnotationComposer
@@ -9340,19 +9251,19 @@ class $$CashuMintInfosTableAnnotationComposer
       $composableBuilder(column: $table.version, builder: (column) => column);
 
   GeneratedColumn<String> get description => $composableBuilder(
-    column: $table.description,
-    builder: (column) => column,
-  );
+        column: $table.description,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<String> get descriptionLong => $composableBuilder(
-    column: $table.descriptionLong,
-    builder: (column) => column,
-  );
+        column: $table.descriptionLong,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<String> get contactJson => $composableBuilder(
-    column: $table.contactJson,
-    builder: (column) => column,
-  );
+        column: $table.contactJson,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<String> get motd =>
       $composableBuilder(column: $table.motd, builder: (column) => column);
@@ -9370,150 +9281,137 @@ class $$CashuMintInfosTableAnnotationComposer
       $composableBuilder(column: $table.nutsJson, builder: (column) => column);
 }
 
-class $$CashuMintInfosTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $CashuMintInfosTable,
-          DbCashuMintInfo,
-          $$CashuMintInfosTableFilterComposer,
-          $$CashuMintInfosTableOrderingComposer,
-          $$CashuMintInfosTableAnnotationComposer,
-          $$CashuMintInfosTableCreateCompanionBuilder,
-          $$CashuMintInfosTableUpdateCompanionBuilder,
-          (
-            DbCashuMintInfo,
-            BaseReferences<
-              _$NdkCacheDatabase,
-              $CashuMintInfosTable,
-              DbCashuMintInfo
-            >,
-          ),
-          DbCashuMintInfo,
-          PrefetchHooks Function()
-        > {
+class $$CashuMintInfosTableTableManager extends RootTableManager<
+    _$NdkCacheDatabase,
+    $CashuMintInfosTable,
+    DbCashuMintInfo,
+    $$CashuMintInfosTableFilterComposer,
+    $$CashuMintInfosTableOrderingComposer,
+    $$CashuMintInfosTableAnnotationComposer,
+    $$CashuMintInfosTableCreateCompanionBuilder,
+    $$CashuMintInfosTableUpdateCompanionBuilder,
+    (
+      DbCashuMintInfo,
+      BaseReferences<_$NdkCacheDatabase, $CashuMintInfosTable, DbCashuMintInfo>,
+    ),
+    DbCashuMintInfo,
+    PrefetchHooks Function()> {
   $$CashuMintInfosTableTableManager(
     _$NdkCacheDatabase db,
     $CashuMintInfosTable table,
   ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$CashuMintInfosTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$CashuMintInfosTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$CashuMintInfosTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> urlsJson = const Value.absent(),
-                Value<String?> name = const Value.absent(),
-                Value<String?> pubkey = const Value.absent(),
-                Value<String?> version = const Value.absent(),
-                Value<String?> description = const Value.absent(),
-                Value<String?> descriptionLong = const Value.absent(),
-                Value<String> contactJson = const Value.absent(),
-                Value<String?> motd = const Value.absent(),
-                Value<String?> iconUrl = const Value.absent(),
-                Value<int?> time = const Value.absent(),
-                Value<String?> tosUrl = const Value.absent(),
-                Value<String> nutsJson = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CashuMintInfosCompanion(
-                id: id,
-                urlsJson: urlsJson,
-                name: name,
-                pubkey: pubkey,
-                version: version,
-                description: description,
-                descriptionLong: descriptionLong,
-                contactJson: contactJson,
-                motd: motd,
-                iconUrl: iconUrl,
-                time: time,
-                tosUrl: tosUrl,
-                nutsJson: nutsJson,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String urlsJson,
-                Value<String?> name = const Value.absent(),
-                Value<String?> pubkey = const Value.absent(),
-                Value<String?> version = const Value.absent(),
-                Value<String?> description = const Value.absent(),
-                Value<String?> descriptionLong = const Value.absent(),
-                required String contactJson,
-                Value<String?> motd = const Value.absent(),
-                Value<String?> iconUrl = const Value.absent(),
-                Value<int?> time = const Value.absent(),
-                Value<String?> tosUrl = const Value.absent(),
-                required String nutsJson,
-                Value<int> rowid = const Value.absent(),
-              }) => CashuMintInfosCompanion.insert(
-                id: id,
-                urlsJson: urlsJson,
-                name: name,
-                pubkey: pubkey,
-                version: version,
-                description: description,
-                descriptionLong: descriptionLong,
-                contactJson: contactJson,
-                motd: motd,
-                iconUrl: iconUrl,
-                time: time,
-                tosUrl: tosUrl,
-                nutsJson: nutsJson,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$CashuMintInfosTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$CashuMintInfosTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$CashuMintInfosTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<String> id = const Value.absent(),
+              Value<String> urlsJson = const Value.absent(),
+              Value<String?> name = const Value.absent(),
+              Value<String?> pubkey = const Value.absent(),
+              Value<String?> version = const Value.absent(),
+              Value<String?> description = const Value.absent(),
+              Value<String?> descriptionLong = const Value.absent(),
+              Value<String> contactJson = const Value.absent(),
+              Value<String?> motd = const Value.absent(),
+              Value<String?> iconUrl = const Value.absent(),
+              Value<int?> time = const Value.absent(),
+              Value<String?> tosUrl = const Value.absent(),
+              Value<String> nutsJson = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                CashuMintInfosCompanion(
+              id: id,
+              urlsJson: urlsJson,
+              name: name,
+              pubkey: pubkey,
+              version: version,
+              description: description,
+              descriptionLong: descriptionLong,
+              contactJson: contactJson,
+              motd: motd,
+              iconUrl: iconUrl,
+              time: time,
+              tosUrl: tosUrl,
+              nutsJson: nutsJson,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String id,
+              required String urlsJson,
+              Value<String?> name = const Value.absent(),
+              Value<String?> pubkey = const Value.absent(),
+              Value<String?> version = const Value.absent(),
+              Value<String?> description = const Value.absent(),
+              Value<String?> descriptionLong = const Value.absent(),
+              required String contactJson,
+              Value<String?> motd = const Value.absent(),
+              Value<String?> iconUrl = const Value.absent(),
+              Value<int?> time = const Value.absent(),
+              Value<String?> tosUrl = const Value.absent(),
+              required String nutsJson,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                CashuMintInfosCompanion.insert(
+              id: id,
+              urlsJson: urlsJson,
+              name: name,
+              pubkey: pubkey,
+              version: version,
+              description: description,
+              descriptionLong: descriptionLong,
+              contactJson: contactJson,
+              motd: motd,
+              iconUrl: iconUrl,
+              time: time,
+              tosUrl: tosUrl,
+              nutsJson: nutsJson,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: null,
+          ),
+        );
 }
 
-typedef $$CashuMintInfosTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $CashuMintInfosTable,
+typedef $$CashuMintInfosTableProcessedTableManager = ProcessedTableManager<
+    _$NdkCacheDatabase,
+    $CashuMintInfosTable,
+    DbCashuMintInfo,
+    $$CashuMintInfosTableFilterComposer,
+    $$CashuMintInfosTableOrderingComposer,
+    $$CashuMintInfosTableAnnotationComposer,
+    $$CashuMintInfosTableCreateCompanionBuilder,
+    $$CashuMintInfosTableUpdateCompanionBuilder,
+    (
       DbCashuMintInfo,
-      $$CashuMintInfosTableFilterComposer,
-      $$CashuMintInfosTableOrderingComposer,
-      $$CashuMintInfosTableAnnotationComposer,
-      $$CashuMintInfosTableCreateCompanionBuilder,
-      $$CashuMintInfosTableUpdateCompanionBuilder,
-      (
-        DbCashuMintInfo,
-        BaseReferences<
-          _$NdkCacheDatabase,
-          $CashuMintInfosTable,
-          DbCashuMintInfo
-        >,
-      ),
-      DbCashuMintInfo,
-      PrefetchHooks Function()
-    >;
-typedef $$CashuSecretCountersTableCreateCompanionBuilder =
-    CashuSecretCountersCompanion Function({
-      required String id,
-      required String mintUrl,
-      required String keysetId,
-      required int counter,
-      Value<int> rowid,
-    });
-typedef $$CashuSecretCountersTableUpdateCompanionBuilder =
-    CashuSecretCountersCompanion Function({
-      Value<String> id,
-      Value<String> mintUrl,
-      Value<String> keysetId,
-      Value<int> counter,
-      Value<int> rowid,
-    });
+      BaseReferences<_$NdkCacheDatabase, $CashuMintInfosTable, DbCashuMintInfo>,
+    ),
+    DbCashuMintInfo,
+    PrefetchHooks Function()>;
+typedef $$CashuSecretCountersTableCreateCompanionBuilder
+    = CashuSecretCountersCompanion Function({
+  required String id,
+  required String mintUrl,
+  required String keysetId,
+  required int counter,
+  Value<int> rowid,
+});
+typedef $$CashuSecretCountersTableUpdateCompanionBuilder
+    = CashuSecretCountersCompanion Function({
+  Value<String> id,
+  Value<String> mintUrl,
+  Value<String> keysetId,
+  Value<int> counter,
+  Value<int> rowid,
+});
 
 class $$CashuSecretCountersTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $CashuSecretCountersTable> {
@@ -9525,24 +9423,24 @@ class $$CashuSecretCountersTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.id,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get mintUrl => $composableBuilder(
-    column: $table.mintUrl,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.mintUrl,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get keysetId => $composableBuilder(
-    column: $table.keysetId,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.keysetId,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get counter => $composableBuilder(
-    column: $table.counter,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.counter,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$CashuSecretCountersTableOrderingComposer
@@ -9555,24 +9453,24 @@ class $$CashuSecretCountersTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.id,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get mintUrl => $composableBuilder(
-    column: $table.mintUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.mintUrl,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get keysetId => $composableBuilder(
-    column: $table.keysetId,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.keysetId,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get counter => $composableBuilder(
-    column: $table.counter,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.counter,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$CashuSecretCountersTableAnnotationComposer
@@ -9597,116 +9495,104 @@ class $$CashuSecretCountersTableAnnotationComposer
       $composableBuilder(column: $table.counter, builder: (column) => column);
 }
 
-class $$CashuSecretCountersTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $CashuSecretCountersTable,
-          DbCashuSecretCounter,
-          $$CashuSecretCountersTableFilterComposer,
-          $$CashuSecretCountersTableOrderingComposer,
-          $$CashuSecretCountersTableAnnotationComposer,
-          $$CashuSecretCountersTableCreateCompanionBuilder,
-          $$CashuSecretCountersTableUpdateCompanionBuilder,
-          (
-            DbCashuSecretCounter,
-            BaseReferences<
-              _$NdkCacheDatabase,
-              $CashuSecretCountersTable,
-              DbCashuSecretCounter
-            >,
-          ),
-          DbCashuSecretCounter,
-          PrefetchHooks Function()
-        > {
+class $$CashuSecretCountersTableTableManager extends RootTableManager<
+    _$NdkCacheDatabase,
+    $CashuSecretCountersTable,
+    DbCashuSecretCounter,
+    $$CashuSecretCountersTableFilterComposer,
+    $$CashuSecretCountersTableOrderingComposer,
+    $$CashuSecretCountersTableAnnotationComposer,
+    $$CashuSecretCountersTableCreateCompanionBuilder,
+    $$CashuSecretCountersTableUpdateCompanionBuilder,
+    (
+      DbCashuSecretCounter,
+      BaseReferences<_$NdkCacheDatabase, $CashuSecretCountersTable,
+          DbCashuSecretCounter>,
+    ),
+    DbCashuSecretCounter,
+    PrefetchHooks Function()> {
   $$CashuSecretCountersTableTableManager(
     _$NdkCacheDatabase db,
     $CashuSecretCountersTable table,
   ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$CashuSecretCountersTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$CashuSecretCountersTableOrderingComposer(
-                $db: db,
-                $table: table,
-              ),
-          createComputedFieldComposer: () =>
-              $$CashuSecretCountersTableAnnotationComposer(
-                $db: db,
-                $table: table,
-              ),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> mintUrl = const Value.absent(),
-                Value<String> keysetId = const Value.absent(),
-                Value<int> counter = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CashuSecretCountersCompanion(
-                id: id,
-                mintUrl: mintUrl,
-                keysetId: keysetId,
-                counter: counter,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String mintUrl,
-                required String keysetId,
-                required int counter,
-                Value<int> rowid = const Value.absent(),
-              }) => CashuSecretCountersCompanion.insert(
-                id: id,
-                mintUrl: mintUrl,
-                keysetId: keysetId,
-                counter: counter,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$CashuSecretCountersTableFilterComposer(
+                    $db: db, $table: table),
+            createOrderingComposer: () =>
+                $$CashuSecretCountersTableOrderingComposer(
+              $db: db,
+              $table: table,
+            ),
+            createComputedFieldComposer: () =>
+                $$CashuSecretCountersTableAnnotationComposer(
+              $db: db,
+              $table: table,
+            ),
+            updateCompanionCallback: ({
+              Value<String> id = const Value.absent(),
+              Value<String> mintUrl = const Value.absent(),
+              Value<String> keysetId = const Value.absent(),
+              Value<int> counter = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                CashuSecretCountersCompanion(
+              id: id,
+              mintUrl: mintUrl,
+              keysetId: keysetId,
+              counter: counter,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String id,
+              required String mintUrl,
+              required String keysetId,
+              required int counter,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                CashuSecretCountersCompanion.insert(
+              id: id,
+              mintUrl: mintUrl,
+              keysetId: keysetId,
+              counter: counter,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: null,
+          ),
+        );
 }
 
-typedef $$CashuSecretCountersTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $CashuSecretCountersTable,
+typedef $$CashuSecretCountersTableProcessedTableManager = ProcessedTableManager<
+    _$NdkCacheDatabase,
+    $CashuSecretCountersTable,
+    DbCashuSecretCounter,
+    $$CashuSecretCountersTableFilterComposer,
+    $$CashuSecretCountersTableOrderingComposer,
+    $$CashuSecretCountersTableAnnotationComposer,
+    $$CashuSecretCountersTableCreateCompanionBuilder,
+    $$CashuSecretCountersTableUpdateCompanionBuilder,
+    (
       DbCashuSecretCounter,
-      $$CashuSecretCountersTableFilterComposer,
-      $$CashuSecretCountersTableOrderingComposer,
-      $$CashuSecretCountersTableAnnotationComposer,
-      $$CashuSecretCountersTableCreateCompanionBuilder,
-      $$CashuSecretCountersTableUpdateCompanionBuilder,
-      (
-        DbCashuSecretCounter,
-        BaseReferences<
-          _$NdkCacheDatabase,
-          $CashuSecretCountersTable,
-          DbCashuSecretCounter
-        >,
-      ),
-      DbCashuSecretCounter,
-      PrefetchHooks Function()
-    >;
-typedef $$KeyValuesTableCreateCompanionBuilder =
-    KeyValuesCompanion Function({
-      required String key,
-      Value<String?> value,
-      Value<int> rowid,
-    });
-typedef $$KeyValuesTableUpdateCompanionBuilder =
-    KeyValuesCompanion Function({
-      Value<String> key,
-      Value<String?> value,
-      Value<int> rowid,
-    });
+      BaseReferences<_$NdkCacheDatabase, $CashuSecretCountersTable,
+          DbCashuSecretCounter>,
+    ),
+    DbCashuSecretCounter,
+    PrefetchHooks Function()>;
+typedef $$KeyValuesTableCreateCompanionBuilder = KeyValuesCompanion Function({
+  required String key,
+  Value<String?> value,
+  Value<int> rowid,
+});
+typedef $$KeyValuesTableUpdateCompanionBuilder = KeyValuesCompanion Function({
+  Value<String> key,
+  Value<String?> value,
+  Value<int> rowid,
+});
 
 class $$KeyValuesTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $KeyValuesTable> {
@@ -9718,14 +9604,14 @@ class $$KeyValuesTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get key => $composableBuilder(
-    column: $table.key,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.key,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get value => $composableBuilder(
-    column: $table.value,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.value,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$KeyValuesTableOrderingComposer
@@ -9738,14 +9624,14 @@ class $$KeyValuesTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get key => $composableBuilder(
-    column: $table.key,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.key,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get value => $composableBuilder(
-    column: $table.value,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.value,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$KeyValuesTableAnnotationComposer
@@ -9764,94 +9650,87 @@ class $$KeyValuesTableAnnotationComposer
       $composableBuilder(column: $table.value, builder: (column) => column);
 }
 
-class $$KeyValuesTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $KeyValuesTable,
-          DbKeyValue,
-          $$KeyValuesTableFilterComposer,
-          $$KeyValuesTableOrderingComposer,
-          $$KeyValuesTableAnnotationComposer,
-          $$KeyValuesTableCreateCompanionBuilder,
-          $$KeyValuesTableUpdateCompanionBuilder,
-          (
-            DbKeyValue,
-            BaseReferences<_$NdkCacheDatabase, $KeyValuesTable, DbKeyValue>,
-          ),
-          DbKeyValue,
-          PrefetchHooks Function()
-        > {
+class $$KeyValuesTableTableManager extends RootTableManager<
+    _$NdkCacheDatabase,
+    $KeyValuesTable,
+    DbKeyValue,
+    $$KeyValuesTableFilterComposer,
+    $$KeyValuesTableOrderingComposer,
+    $$KeyValuesTableAnnotationComposer,
+    $$KeyValuesTableCreateCompanionBuilder,
+    $$KeyValuesTableUpdateCompanionBuilder,
+    (
+      DbKeyValue,
+      BaseReferences<_$NdkCacheDatabase, $KeyValuesTable, DbKeyValue>,
+    ),
+    DbKeyValue,
+    PrefetchHooks Function()> {
   $$KeyValuesTableTableManager(_$NdkCacheDatabase db, $KeyValuesTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$KeyValuesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$KeyValuesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$KeyValuesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> key = const Value.absent(),
-                Value<String?> value = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => KeyValuesCompanion(key: key, value: value, rowid: rowid),
-          createCompanionCallback:
-              ({
-                required String key,
-                Value<String?> value = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => KeyValuesCompanion.insert(
-                key: key,
-                value: value,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$KeyValuesTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$KeyValuesTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$KeyValuesTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<String> key = const Value.absent(),
+              Value<String?> value = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                KeyValuesCompanion(key: key, value: value, rowid: rowid),
+            createCompanionCallback: ({
+              required String key,
+              Value<String?> value = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                KeyValuesCompanion.insert(
+              key: key,
+              value: value,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: null,
+          ),
+        );
 }
 
-typedef $$KeyValuesTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $KeyValuesTable,
+typedef $$KeyValuesTableProcessedTableManager = ProcessedTableManager<
+    _$NdkCacheDatabase,
+    $KeyValuesTable,
+    DbKeyValue,
+    $$KeyValuesTableFilterComposer,
+    $$KeyValuesTableOrderingComposer,
+    $$KeyValuesTableAnnotationComposer,
+    $$KeyValuesTableCreateCompanionBuilder,
+    $$KeyValuesTableUpdateCompanionBuilder,
+    (
       DbKeyValue,
-      $$KeyValuesTableFilterComposer,
-      $$KeyValuesTableOrderingComposer,
-      $$KeyValuesTableAnnotationComposer,
-      $$KeyValuesTableCreateCompanionBuilder,
-      $$KeyValuesTableUpdateCompanionBuilder,
-      (
-        DbKeyValue,
-        BaseReferences<_$NdkCacheDatabase, $KeyValuesTable, DbKeyValue>,
-      ),
-      DbKeyValue,
-      PrefetchHooks Function()
-    >;
-typedef $$WalletsTableCreateCompanionBuilder =
-    WalletsCompanion Function({
-      required String id,
-      required String name,
-      required String type,
-      required String supportedUnitsJson,
-      required String metadataJson,
-      Value<int> rowid,
-    });
-typedef $$WalletsTableUpdateCompanionBuilder =
-    WalletsCompanion Function({
-      Value<String> id,
-      Value<String> name,
-      Value<String> type,
-      Value<String> supportedUnitsJson,
-      Value<String> metadataJson,
-      Value<int> rowid,
-    });
+      BaseReferences<_$NdkCacheDatabase, $KeyValuesTable, DbKeyValue>,
+    ),
+    DbKeyValue,
+    PrefetchHooks Function()>;
+typedef $$WalletsTableCreateCompanionBuilder = WalletsCompanion Function({
+  required String id,
+  required String name,
+  required String type,
+  required String supportedUnitsJson,
+  required String metadataJson,
+  Value<int> rowid,
+});
+typedef $$WalletsTableUpdateCompanionBuilder = WalletsCompanion Function({
+  Value<String> id,
+  Value<String> name,
+  Value<String> type,
+  Value<String> supportedUnitsJson,
+  Value<String> metadataJson,
+  Value<int> rowid,
+});
 
 class $$WalletsTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $WalletsTable> {
@@ -9863,29 +9742,29 @@ class $$WalletsTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.id,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.name,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get type => $composableBuilder(
-    column: $table.type,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.type,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get supportedUnitsJson => $composableBuilder(
-    column: $table.supportedUnitsJson,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.supportedUnitsJson,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get metadataJson => $composableBuilder(
-    column: $table.metadataJson,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.metadataJson,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$WalletsTableOrderingComposer
@@ -9898,29 +9777,29 @@ class $$WalletsTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.id,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.name,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get type => $composableBuilder(
-    column: $table.type,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.type,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get supportedUnitsJson => $composableBuilder(
-    column: $table.supportedUnitsJson,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.supportedUnitsJson,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get metadataJson => $composableBuilder(
-    column: $table.metadataJson,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.metadataJson,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$WalletsTableAnnotationComposer
@@ -9942,127 +9821,122 @@ class $$WalletsTableAnnotationComposer
       $composableBuilder(column: $table.type, builder: (column) => column);
 
   GeneratedColumn<String> get supportedUnitsJson => $composableBuilder(
-    column: $table.supportedUnitsJson,
-    builder: (column) => column,
-  );
+        column: $table.supportedUnitsJson,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<String> get metadataJson => $composableBuilder(
-    column: $table.metadataJson,
-    builder: (column) => column,
-  );
-}
-
-class $$WalletsTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $WalletsTable,
-          DbWallet,
-          $$WalletsTableFilterComposer,
-          $$WalletsTableOrderingComposer,
-          $$WalletsTableAnnotationComposer,
-          $$WalletsTableCreateCompanionBuilder,
-          $$WalletsTableUpdateCompanionBuilder,
-          (
-            DbWallet,
-            BaseReferences<_$NdkCacheDatabase, $WalletsTable, DbWallet>,
-          ),
-          DbWallet,
-          PrefetchHooks Function()
-        > {
-  $$WalletsTableTableManager(_$NdkCacheDatabase db, $WalletsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$WalletsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$WalletsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$WalletsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<String> type = const Value.absent(),
-                Value<String> supportedUnitsJson = const Value.absent(),
-                Value<String> metadataJson = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => WalletsCompanion(
-                id: id,
-                name: name,
-                type: type,
-                supportedUnitsJson: supportedUnitsJson,
-                metadataJson: metadataJson,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String name,
-                required String type,
-                required String supportedUnitsJson,
-                required String metadataJson,
-                Value<int> rowid = const Value.absent(),
-              }) => WalletsCompanion.insert(
-                id: id,
-                name: name,
-                type: type,
-                supportedUnitsJson: supportedUnitsJson,
-                metadataJson: metadataJson,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
+        column: $table.metadataJson,
+        builder: (column) => column,
       );
 }
 
-typedef $$WalletsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $WalletsTable,
+class $$WalletsTableTableManager extends RootTableManager<
+    _$NdkCacheDatabase,
+    $WalletsTable,
+    DbWallet,
+    $$WalletsTableFilterComposer,
+    $$WalletsTableOrderingComposer,
+    $$WalletsTableAnnotationComposer,
+    $$WalletsTableCreateCompanionBuilder,
+    $$WalletsTableUpdateCompanionBuilder,
+    (
       DbWallet,
-      $$WalletsTableFilterComposer,
-      $$WalletsTableOrderingComposer,
-      $$WalletsTableAnnotationComposer,
-      $$WalletsTableCreateCompanionBuilder,
-      $$WalletsTableUpdateCompanionBuilder,
-      (DbWallet, BaseReferences<_$NdkCacheDatabase, $WalletsTable, DbWallet>),
-      DbWallet,
-      PrefetchHooks Function()
-    >;
-typedef $$WalletTransactionsTableCreateCompanionBuilder =
-    WalletTransactionsCompanion Function({
-      required String id,
-      required String walletId,
-      required int changeAmount,
-      required String unit,
-      required String type,
-      required String state,
-      Value<String?> completionMsg,
-      Value<int?> transactionDate,
-      Value<int?> initiatedDate,
-      required String metadataJson,
-      Value<int> rowid,
-    });
-typedef $$WalletTransactionsTableUpdateCompanionBuilder =
-    WalletTransactionsCompanion Function({
-      Value<String> id,
-      Value<String> walletId,
-      Value<int> changeAmount,
-      Value<String> unit,
-      Value<String> type,
-      Value<String> state,
-      Value<String?> completionMsg,
-      Value<int?> transactionDate,
-      Value<int?> initiatedDate,
-      Value<String> metadataJson,
-      Value<int> rowid,
-    });
+      BaseReferences<_$NdkCacheDatabase, $WalletsTable, DbWallet>,
+    ),
+    DbWallet,
+    PrefetchHooks Function()> {
+  $$WalletsTableTableManager(_$NdkCacheDatabase db, $WalletsTable table)
+      : super(
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$WalletsTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$WalletsTableOrderingComposer($db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$WalletsTableAnnotationComposer($db: db, $table: table),
+            updateCompanionCallback: ({
+              Value<String> id = const Value.absent(),
+              Value<String> name = const Value.absent(),
+              Value<String> type = const Value.absent(),
+              Value<String> supportedUnitsJson = const Value.absent(),
+              Value<String> metadataJson = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                WalletsCompanion(
+              id: id,
+              name: name,
+              type: type,
+              supportedUnitsJson: supportedUnitsJson,
+              metadataJson: metadataJson,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String id,
+              required String name,
+              required String type,
+              required String supportedUnitsJson,
+              required String metadataJson,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                WalletsCompanion.insert(
+              id: id,
+              name: name,
+              type: type,
+              supportedUnitsJson: supportedUnitsJson,
+              metadataJson: metadataJson,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: null,
+          ),
+        );
+}
+
+typedef $$WalletsTableProcessedTableManager = ProcessedTableManager<
+    _$NdkCacheDatabase,
+    $WalletsTable,
+    DbWallet,
+    $$WalletsTableFilterComposer,
+    $$WalletsTableOrderingComposer,
+    $$WalletsTableAnnotationComposer,
+    $$WalletsTableCreateCompanionBuilder,
+    $$WalletsTableUpdateCompanionBuilder,
+    (DbWallet, BaseReferences<_$NdkCacheDatabase, $WalletsTable, DbWallet>),
+    DbWallet,
+    PrefetchHooks Function()>;
+typedef $$WalletTransactionsTableCreateCompanionBuilder
+    = WalletTransactionsCompanion Function({
+  required String id,
+  required String walletId,
+  required int changeAmount,
+  required String unit,
+  required String type,
+  required String state,
+  Value<String?> completionMsg,
+  Value<int?> transactionDate,
+  Value<int?> initiatedDate,
+  required String metadataJson,
+  Value<int> rowid,
+});
+typedef $$WalletTransactionsTableUpdateCompanionBuilder
+    = WalletTransactionsCompanion Function({
+  Value<String> id,
+  Value<String> walletId,
+  Value<int> changeAmount,
+  Value<String> unit,
+  Value<String> type,
+  Value<String> state,
+  Value<String?> completionMsg,
+  Value<int?> transactionDate,
+  Value<int?> initiatedDate,
+  Value<String> metadataJson,
+  Value<int> rowid,
+});
 
 class $$WalletTransactionsTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $WalletTransactionsTable> {
@@ -10074,54 +9948,54 @@ class $$WalletTransactionsTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.id,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get walletId => $composableBuilder(
-    column: $table.walletId,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.walletId,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get changeAmount => $composableBuilder(
-    column: $table.changeAmount,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.changeAmount,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get unit => $composableBuilder(
-    column: $table.unit,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.unit,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get type => $composableBuilder(
-    column: $table.type,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.type,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get state => $composableBuilder(
-    column: $table.state,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.state,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get completionMsg => $composableBuilder(
-    column: $table.completionMsg,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.completionMsg,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get transactionDate => $composableBuilder(
-    column: $table.transactionDate,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.transactionDate,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<int> get initiatedDate => $composableBuilder(
-    column: $table.initiatedDate,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.initiatedDate,
+        builder: (column) => ColumnFilters(column),
+      );
 
   ColumnFilters<String> get metadataJson => $composableBuilder(
-    column: $table.metadataJson,
-    builder: (column) => ColumnFilters(column),
-  );
+        column: $table.metadataJson,
+        builder: (column) => ColumnFilters(column),
+      );
 }
 
 class $$WalletTransactionsTableOrderingComposer
@@ -10134,54 +10008,54 @@ class $$WalletTransactionsTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.id,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get walletId => $composableBuilder(
-    column: $table.walletId,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.walletId,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get changeAmount => $composableBuilder(
-    column: $table.changeAmount,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.changeAmount,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get unit => $composableBuilder(
-    column: $table.unit,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.unit,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get type => $composableBuilder(
-    column: $table.type,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.type,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get state => $composableBuilder(
-    column: $table.state,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.state,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get completionMsg => $composableBuilder(
-    column: $table.completionMsg,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.completionMsg,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get transactionDate => $composableBuilder(
-    column: $table.transactionDate,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.transactionDate,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<int> get initiatedDate => $composableBuilder(
-    column: $table.initiatedDate,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.initiatedDate,
+        builder: (column) => ColumnOrderings(column),
+      );
 
   ColumnOrderings<String> get metadataJson => $composableBuilder(
-    column: $table.metadataJson,
-    builder: (column) => ColumnOrderings(column),
-  );
+        column: $table.metadataJson,
+        builder: (column) => ColumnOrderings(column),
+      );
 }
 
 class $$WalletTransactionsTableAnnotationComposer
@@ -10200,9 +10074,9 @@ class $$WalletTransactionsTableAnnotationComposer
       $composableBuilder(column: $table.walletId, builder: (column) => column);
 
   GeneratedColumn<int> get changeAmount => $composableBuilder(
-    column: $table.changeAmount,
-    builder: (column) => column,
-  );
+        column: $table.changeAmount,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<String> get unit =>
       $composableBuilder(column: $table.unit, builder: (column) => column);
@@ -10214,145 +10088,135 @@ class $$WalletTransactionsTableAnnotationComposer
       $composableBuilder(column: $table.state, builder: (column) => column);
 
   GeneratedColumn<String> get completionMsg => $composableBuilder(
-    column: $table.completionMsg,
-    builder: (column) => column,
-  );
+        column: $table.completionMsg,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<int> get transactionDate => $composableBuilder(
-    column: $table.transactionDate,
-    builder: (column) => column,
-  );
+        column: $table.transactionDate,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<int> get initiatedDate => $composableBuilder(
-    column: $table.initiatedDate,
-    builder: (column) => column,
-  );
+        column: $table.initiatedDate,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<String> get metadataJson => $composableBuilder(
-    column: $table.metadataJson,
-    builder: (column) => column,
-  );
+        column: $table.metadataJson,
+        builder: (column) => column,
+      );
 }
 
-class $$WalletTransactionsTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $WalletTransactionsTable,
-          DbWalletTransaction,
-          $$WalletTransactionsTableFilterComposer,
-          $$WalletTransactionsTableOrderingComposer,
-          $$WalletTransactionsTableAnnotationComposer,
-          $$WalletTransactionsTableCreateCompanionBuilder,
-          $$WalletTransactionsTableUpdateCompanionBuilder,
-          (
-            DbWalletTransaction,
-            BaseReferences<
-              _$NdkCacheDatabase,
-              $WalletTransactionsTable,
-              DbWalletTransaction
-            >,
-          ),
-          DbWalletTransaction,
-          PrefetchHooks Function()
-        > {
+class $$WalletTransactionsTableTableManager extends RootTableManager<
+    _$NdkCacheDatabase,
+    $WalletTransactionsTable,
+    DbWalletTransaction,
+    $$WalletTransactionsTableFilterComposer,
+    $$WalletTransactionsTableOrderingComposer,
+    $$WalletTransactionsTableAnnotationComposer,
+    $$WalletTransactionsTableCreateCompanionBuilder,
+    $$WalletTransactionsTableUpdateCompanionBuilder,
+    (
+      DbWalletTransaction,
+      BaseReferences<_$NdkCacheDatabase, $WalletTransactionsTable,
+          DbWalletTransaction>,
+    ),
+    DbWalletTransaction,
+    PrefetchHooks Function()> {
   $$WalletTransactionsTableTableManager(
     _$NdkCacheDatabase db,
     $WalletTransactionsTable table,
   ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$WalletTransactionsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$WalletTransactionsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$WalletTransactionsTableAnnotationComposer(
-                $db: db,
-                $table: table,
-              ),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> walletId = const Value.absent(),
-                Value<int> changeAmount = const Value.absent(),
-                Value<String> unit = const Value.absent(),
-                Value<String> type = const Value.absent(),
-                Value<String> state = const Value.absent(),
-                Value<String?> completionMsg = const Value.absent(),
-                Value<int?> transactionDate = const Value.absent(),
-                Value<int?> initiatedDate = const Value.absent(),
-                Value<String> metadataJson = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => WalletTransactionsCompanion(
-                id: id,
-                walletId: walletId,
-                changeAmount: changeAmount,
-                unit: unit,
-                type: type,
-                state: state,
-                completionMsg: completionMsg,
-                transactionDate: transactionDate,
-                initiatedDate: initiatedDate,
-                metadataJson: metadataJson,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String walletId,
-                required int changeAmount,
-                required String unit,
-                required String type,
-                required String state,
-                Value<String?> completionMsg = const Value.absent(),
-                Value<int?> transactionDate = const Value.absent(),
-                Value<int?> initiatedDate = const Value.absent(),
-                required String metadataJson,
-                Value<int> rowid = const Value.absent(),
-              }) => WalletTransactionsCompanion.insert(
-                id: id,
-                walletId: walletId,
-                changeAmount: changeAmount,
-                unit: unit,
-                type: type,
-                state: state,
-                completionMsg: completionMsg,
-                transactionDate: transactionDate,
-                initiatedDate: initiatedDate,
-                metadataJson: metadataJson,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
+          TableManagerState(
+            db: db,
+            table: table,
+            createFilteringComposer: () =>
+                $$WalletTransactionsTableFilterComposer($db: db, $table: table),
+            createOrderingComposer: () =>
+                $$WalletTransactionsTableOrderingComposer(
+                    $db: db, $table: table),
+            createComputedFieldComposer: () =>
+                $$WalletTransactionsTableAnnotationComposer(
+              $db: db,
+              $table: table,
+            ),
+            updateCompanionCallback: ({
+              Value<String> id = const Value.absent(),
+              Value<String> walletId = const Value.absent(),
+              Value<int> changeAmount = const Value.absent(),
+              Value<String> unit = const Value.absent(),
+              Value<String> type = const Value.absent(),
+              Value<String> state = const Value.absent(),
+              Value<String?> completionMsg = const Value.absent(),
+              Value<int?> transactionDate = const Value.absent(),
+              Value<int?> initiatedDate = const Value.absent(),
+              Value<String> metadataJson = const Value.absent(),
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                WalletTransactionsCompanion(
+              id: id,
+              walletId: walletId,
+              changeAmount: changeAmount,
+              unit: unit,
+              type: type,
+              state: state,
+              completionMsg: completionMsg,
+              transactionDate: transactionDate,
+              initiatedDate: initiatedDate,
+              metadataJson: metadataJson,
+              rowid: rowid,
+            ),
+            createCompanionCallback: ({
+              required String id,
+              required String walletId,
+              required int changeAmount,
+              required String unit,
+              required String type,
+              required String state,
+              Value<String?> completionMsg = const Value.absent(),
+              Value<int?> transactionDate = const Value.absent(),
+              Value<int?> initiatedDate = const Value.absent(),
+              required String metadataJson,
+              Value<int> rowid = const Value.absent(),
+            }) =>
+                WalletTransactionsCompanion.insert(
+              id: id,
+              walletId: walletId,
+              changeAmount: changeAmount,
+              unit: unit,
+              type: type,
+              state: state,
+              completionMsg: completionMsg,
+              transactionDate: transactionDate,
+              initiatedDate: initiatedDate,
+              metadataJson: metadataJson,
+              rowid: rowid,
+            ),
+            withReferenceMapper: (p0) => p0
+                .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+                .toList(),
+            prefetchHooksCallback: null,
+          ),
+        );
 }
 
-typedef $$WalletTransactionsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $WalletTransactionsTable,
+typedef $$WalletTransactionsTableProcessedTableManager = ProcessedTableManager<
+    _$NdkCacheDatabase,
+    $WalletTransactionsTable,
+    DbWalletTransaction,
+    $$WalletTransactionsTableFilterComposer,
+    $$WalletTransactionsTableOrderingComposer,
+    $$WalletTransactionsTableAnnotationComposer,
+    $$WalletTransactionsTableCreateCompanionBuilder,
+    $$WalletTransactionsTableUpdateCompanionBuilder,
+    (
       DbWalletTransaction,
-      $$WalletTransactionsTableFilterComposer,
-      $$WalletTransactionsTableOrderingComposer,
-      $$WalletTransactionsTableAnnotationComposer,
-      $$WalletTransactionsTableCreateCompanionBuilder,
-      $$WalletTransactionsTableUpdateCompanionBuilder,
-      (
-        DbWalletTransaction,
-        BaseReferences<
-          _$NdkCacheDatabase,
-          $WalletTransactionsTable,
-          DbWalletTransaction
-        >,
-      ),
-      DbWalletTransaction,
-      PrefetchHooks Function()
-    >;
+      BaseReferences<_$NdkCacheDatabase, $WalletTransactionsTable,
+          DbWalletTransaction>,
+    ),
+    DbWalletTransaction,
+    PrefetchHooks Function()>;
 
 class $NdkCacheDatabaseManager {
   final _$NdkCacheDatabase _db;

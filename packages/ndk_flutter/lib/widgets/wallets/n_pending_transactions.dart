@@ -137,8 +137,7 @@ class NPendingTransactions extends StatelessWidget {
                                   tx.state.value,
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color:
-                                        tx.state ==
+                                    color: tx.state ==
                                             WalletTransactionState.pending
                                         ? Colors.orange
                                         : Colors.grey,

@@ -109,9 +109,8 @@ class WebEventSigner implements EventSigner {
     }
 
     final crypto = await _getCrypto();
-    final signature = await crypto
-        .signEvent(privateKey!.toJS, event.id.toJS)
-        .toDart;
+    final signature =
+        await crypto.signEvent(privateKey!.toJS, event.id.toJS).toDart;
 
     return event.copyWith(sig: signature.toDart);
   }

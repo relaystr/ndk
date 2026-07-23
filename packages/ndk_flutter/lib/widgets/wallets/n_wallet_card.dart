@@ -131,11 +131,10 @@ class _NWalletCardState extends State<NWalletCard>
       _initializeNwcBalanceIfNeeded();
 
       // Use the balance stream to detect when wallet is fully initialized.
-      await for (final _
-          in widget.ndkFlutter.ndk.wallets
-              .getBalancesStream(nwcWallet.id)
-              .take(1)
-              .timeout(const Duration(seconds: 10))) {
+      await for (final _ in widget.ndkFlutter.ndk.wallets
+          .getBalancesStream(nwcWallet.id)
+          .take(1)
+          .timeout(const Duration(seconds: 10))) {
         break;
       }
 
@@ -177,9 +176,8 @@ class _NWalletCardState extends State<NWalletCard>
     if (customColorValue != null) {
       final color = Color(customColorValue);
       final hsl = HSLColor.fromColor(color);
-      final lighterColor = hsl
-          .withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0))
-          .toColor();
+      final lighterColor =
+          hsl.withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0)).toColor();
       _customGradientColors = [color, lighterColor];
     } else {
       _customGradientColors = null;
@@ -222,8 +220,8 @@ class _NWalletCardState extends State<NWalletCard>
 
         final permissionsChanged =
             oldPermissions.length != newPermissions.length ||
-            oldPermissions.difference(newPermissions).isNotEmpty ||
-            newPermissions.difference(oldPermissions).isNotEmpty;
+                oldPermissions.difference(newPermissions).isNotEmpty ||
+                newPermissions.difference(oldPermissions).isNotEmpty;
 
         shouldRefreshBudget = connectionChanged || permissionsChanged;
       }
@@ -247,9 +245,8 @@ class _NWalletCardState extends State<NWalletCard>
     final bool isCashu = widget.wallet is CashuWallet;
     final bool isNwc = widget.wallet is NwcWallet;
     final bool isLnurl = widget.wallet is LnurlWallet;
-    final nwcPermissions = isNwc
-        ? _nwcPermissions(widget.wallet as NwcWallet)
-        : const <String>{};
+    final nwcPermissions =
+        isNwc ? _nwcPermissions(widget.wallet as NwcWallet) : const <String>{};
     final bool canShowNwcBalance =
         !isNwc || nwcPermissions.contains(NwcMethod.GET_BALANCE.name);
     final bool showBudgetInfo = isNwc && _shouldShowBudgetInfo();
@@ -274,9 +271,9 @@ class _NWalletCardState extends State<NWalletCard>
     final String subtitle;
     if (isCashu) {
       subtitle = (widget.wallet as CashuWallet).mintUrl.replaceAll(
-        'https://',
-        '',
-      );
+            'https://',
+            '',
+          );
     } else if (isNwc) {
       subtitle = l10n.nwcWalletSubtitle;
     } else if (isLnurl) {
@@ -298,9 +295,8 @@ class _NWalletCardState extends State<NWalletCard>
       if (customColorValue != null) {
         final color = Color(customColorValue);
         final hsl = HSLColor.fromColor(color);
-        final lighterColor = hsl
-            .withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0))
-            .toColor();
+        final lighterColor =
+            hsl.withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0)).toColor();
         gradientColors = [color, lighterColor];
       } else {
         gradientColors = _getDefaultGradientColors(isCashu, isNwc, isLnurl);
@@ -331,8 +327,7 @@ class _NWalletCardState extends State<NWalletCard>
     }
 
     // Build main icon widget (full color, not monochromatic)
-    final Widget mainIcon =
-        iconConfig.iconWidget ??
+    final Widget mainIcon = iconConfig.iconWidget ??
         (defaultAssetName != null
             ? Image.asset(
                 'assets/images/$defaultAssetName',
@@ -354,8 +349,7 @@ class _NWalletCardState extends State<NWalletCard>
               ));
 
     // Build background widget
-    final Widget backgroundWidget =
-        iconConfig.backgroundWidget ??
+    final Widget backgroundWidget = iconConfig.backgroundWidget ??
         (defaultAssetName != null
             ? Image.asset(
                 'assets/images/$defaultAssetName',
@@ -479,8 +473,8 @@ class _NWalletCardState extends State<NWalletCard>
                               widget.wallet as LnurlWallet,
                             )
                           : (canShowNwcBalance
-                                ? _buildBalance(context)
-                                : const SizedBox.shrink()),
+                              ? _buildBalance(context)
+                              : const SizedBox.shrink()),
                       if (showBudgetInfo) _buildBudgetInfo(context),
                     ],
                   ),
@@ -496,11 +490,7 @@ class _NWalletCardState extends State<NWalletCard>
                   final bool isCashuWallet = widget.wallet is CashuWallet;
                   final reclaimable = isCashuWallet
                       ? reclaimablePending(
-                          widget
-                                  .ndkFlutter
-                                  .ndk
-                                  .cashu
-                                  .pendingTransactions
+                          widget.ndkFlutter.ndk.cashu.pendingTransactions
                                   .valueOrNull ??
                               const <CashuWalletTransaction>[],
                           mintUrl: (widget.wallet as CashuWallet).mintUrl,
@@ -972,9 +962,8 @@ class _NWalletCardState extends State<NWalletCard>
       setState(() {
         // Create a gradient from the selected color to a lighter version
         final hsl = HSLColor.fromColor(result);
-        final lighterColor = hsl
-            .withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0))
-            .toColor();
+        final lighterColor =
+            hsl.withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0)).toColor();
         _customGradientColors = [result, lighterColor];
       });
 

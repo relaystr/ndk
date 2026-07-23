@@ -117,10 +117,8 @@ void main() async {
             .toList();
         expect(giftWraps.length, greaterThanOrEqualTo(2));
 
-        final recipients = giftWraps
-            .map((e) => e.pTags)
-            .expand((p) => p)
-            .toSet();
+        final recipients =
+            giftWraps.map((e) => e.pTags).expand((p) => p).toSet();
         expect(recipients, containsAll([alice.publicKey, bob.publicKey]));
       },
     );

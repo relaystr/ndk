@@ -6,13 +6,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/entities.dart' as ndk_entities;
 
-const _walletsStateKey = kDebugMode
-    ? 'dev_ndk_flutter_wallets_state'
-    : 'ndk_flutter_wallets_state';
+const _walletsStateKey =
+    kDebugMode ? 'dev_ndk_flutter_wallets_state' : 'ndk_flutter_wallets_state';
 
 class FlutterSecureStorageWalletsRepo extends WalletsRepo {
   FlutterSecureStorageWalletsRepo({FlutterSecureStorage? storage})
-    : _storage = storage ?? FlutterSecureStorage() {
+      : _storage = storage ?? FlutterSecureStorage() {
     _initFuture = _loadState();
   }
 
@@ -133,10 +132,9 @@ class FlutterSecureStorageWalletsRepo extends WalletsRepo {
 
     for (final transaction in transactions) {
       _transactionsByKey[_transactionKey(
-            walletId: transaction.walletId,
-            id: transaction.id,
-          )] =
-          transaction;
+        walletId: transaction.walletId,
+        id: transaction.id,
+      )] = transaction;
     }
 
     await _persistState();
@@ -193,10 +191,9 @@ class FlutterSecureStorageWalletsRepo extends WalletsRepo {
       try {
         final transaction = _transactionFromJson(transactionJson);
         _transactionsByKey[_transactionKey(
-              walletId: transaction.walletId,
-              id: transaction.id,
-            )] =
-            transaction;
+          walletId: transaction.walletId,
+          id: transaction.id,
+        )] = transaction;
       } catch (_) {
         continue;
       }
@@ -208,9 +205,8 @@ class FlutterSecureStorageWalletsRepo extends WalletsRepo {
       key: _walletsStateKey,
       value: jsonEncode({
         'wallets': _walletsById.values.map(_walletToJson).toList(),
-        'transactions': _transactionsByKey.values
-            .map(_transactionToJson)
-            .toList(),
+        'transactions':
+            _transactionsByKey.values.map(_transactionToJson).toList(),
         'defaultWalletIdForReceiving': _defaultWalletIdForReceiving,
         'defaultWalletIdForSending': _defaultWalletIdForSending,
       }),

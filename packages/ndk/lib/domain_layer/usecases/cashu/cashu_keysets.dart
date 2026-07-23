@@ -9,8 +9,8 @@ class CashuKeysets {
   CashuKeysets({
     required CashuRepo cashuRepo,
     required CacheManager cacheManager,
-  }) : _cashuRepo = cashuRepo,
-       _cacheManager = cacheManager;
+  })  : _cashuRepo = cashuRepo,
+        _cacheManager = cacheManager;
 
   /// Fetches keysets from the cache or network. \
   /// If the cache is stale or empty, it fetches from the network. \
