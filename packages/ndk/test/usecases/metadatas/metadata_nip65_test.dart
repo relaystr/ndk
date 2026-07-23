@@ -7,7 +7,7 @@ import 'package:ndk/shared/nips/nip01/bip340.dart';
 import '../../mocks/mock_relay.dart';
 
 void main() {
-  test('loadMetadata follows the author write relay', () async {
+  Future<void> loadMetadataFollowsWriteRelay(NdkEngine engine) async {
     final key = Bip340.generatePrivateKey();
     final metadata = Metadata(pubKey: key.publicKey, name: 'nip65-profile');
 
@@ -34,6 +34,7 @@ void main() {
       eventVerifier: Bip340EventVerifier(),
       cache: MemCacheManager(),
       bootstrapRelays: [relayListBootstrap.url],
+      engine: engine,
     ));
 
     await ndk.relays.seedRelaysConnected;
@@ -57,5 +58,13 @@ void main() {
     );
 
     expect(loaded?.name, equals(metadata.name));
+  }
+
+  test('loadMetadata follows the author write relay (RELAY_SETS)', () async {
+    await loadMetadataFollowsWriteRelay(NdkEngine.RELAY_SETS);
+  });
+
+  test('loadMetadata follows the author write relay (JIT)', () async {
+    await loadMetadataFollowsWriteRelay(NdkEngine.JIT);
   });
 }
