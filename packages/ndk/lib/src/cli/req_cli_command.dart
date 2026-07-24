@@ -17,7 +17,8 @@ class ReqCliCommand implements CliCommand {
   String get description => 'Query relays for events';
 
   @override
-  String get usage => 'ndk req [options] <relay1> [relay2 ...]\n'
+  String get usage =>
+      'ndk req [options] <relay1> [relay2 ...]\n'
       'Options:\n'
       '  -k, --kind <kind>          Event kind (repeatable)\n'
       '  -a, --author <hex|npub>    Author pubkey (repeatable)\n'

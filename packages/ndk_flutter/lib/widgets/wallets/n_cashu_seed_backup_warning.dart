@@ -54,8 +54,9 @@ class _NCashuSeedBackupWarningState extends State<NCashuSeedBackupWarning> {
   /// list when no seed is configured.
   List<String> _seedWords() {
     try {
-      final mnemonic =
-          widget.ndkFlutter.ndk.cashu.getCashuSeed().getSeedPhrase();
+      final mnemonic = widget.ndkFlutter.ndk.cashu
+          .getCashuSeed()
+          .getSeedPhrase();
       return mnemonic.sentence.trim().split(RegExp(r'\s+'));
     } catch (_) {
       return const [];

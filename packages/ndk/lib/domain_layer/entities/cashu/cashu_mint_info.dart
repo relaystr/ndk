@@ -246,8 +246,9 @@ class CashuMintPaymentMethod {
       maxAmount: (json['max_amount'] is num)
           ? (json['max_amount'] as num).toInt()
           : null,
-      description:
-          json['description'] is bool ? json['description'] as bool : null,
+      description: json['description'] is bool
+          ? json['description'] as bool
+          : null,
       commands: (json['commands'] is List)
           ? (json['commands'] as List).map((e) => e.toString()).toList()
           : null,

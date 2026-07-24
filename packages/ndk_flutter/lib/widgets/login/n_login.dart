@@ -225,8 +225,8 @@ class _NLoginState extends State<NLogin> {
               child: FilledButton(
                 onPressed:
                     controller.isValidBunkerUrl && !controller.isBunkerLoading
-                        ? () => controller.loginWithBunkerUrl(context)
-                        : null,
+                    ? () => controller.loginWithBunkerUrl(context)
+                    : null,
                 child: Text(
                   controller.isBunkerLoading
                       ? "Loading..."

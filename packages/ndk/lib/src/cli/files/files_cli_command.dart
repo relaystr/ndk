@@ -299,7 +299,8 @@ Options:
 
     if (result.positional.length < requirePositional) {
       return _FilesArgs(
-        error: 'Expected $requirePositional positional argument(s), '
+        error:
+            'Expected $requirePositional positional argument(s), '
             'got ${result.positional.length}.',
       );
     }

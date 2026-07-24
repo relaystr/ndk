@@ -36,9 +36,9 @@ class NWalletActions extends StatefulWidget {
     this.showCloseButton = true,
     this.condensed = false,
   }) : assert(
-          !showCloseButton || onClearSelection != null,
-          'onClearSelection is required when showCloseButton is true',
-        );
+         !showCloseButton || onClearSelection != null,
+         'onClearSelection is required when showCloseButton is true',
+       );
 
   @override
   State<NWalletActions> createState() => _NWalletActionsState();
@@ -108,8 +108,8 @@ class _NWalletActionsState extends State<NWalletActions>
                       isCashu
                           ? l10n.cashuWallet
                           : isNwc
-                              ? l10n.nwcWallet
-                              : l10n.lnurlWallet,
+                          ? l10n.nwcWallet
+                          : l10n.lnurlWallet,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ],

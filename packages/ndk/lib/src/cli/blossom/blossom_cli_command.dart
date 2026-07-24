@@ -185,7 +185,8 @@ Options:
       stderr.writeln(parsed.error);
       return 2;
     }
-    final pubkey = parsed.pubkey ??
+    final pubkey =
+        parsed.pubkey ??
         (parsed.positional.isNotEmpty
             ? _resolvePubkey(parsed.positional[0])
             : null) ??
@@ -508,7 +509,8 @@ Options:
 
     if (result.positional.length < requirePositional) {
       return _BlossomArgs(
-        error: 'Expected $requirePositional positional argument(s), '
+        error:
+            'Expected $requirePositional positional argument(s), '
             'got ${result.positional.length}.',
       );
     }

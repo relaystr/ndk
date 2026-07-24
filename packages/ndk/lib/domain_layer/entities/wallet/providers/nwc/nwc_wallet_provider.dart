@@ -337,11 +337,14 @@ class NwcWalletProvider implements WalletProvider {
     // (payment_sent, payment_received, hold_invoice_accepted).
     // This keeps ndk.wallets.getBalance() accurate without polling.
     _notificationSubscriptions[wallet.id]?.cancel();
-    _notificationSubscriptions[wallet.id] =
-        wallet.connection!.notificationStream.stream.listen((_) {
-      _refreshBalance(wallet).catchError((_) {});
-      _refreshBudget(wallet).catchError((_) {});
-    });
+    _notificationSubscriptions[wallet.id] = wallet
+        .connection!
+        .notificationStream
+        .stream
+        .listen((_) {
+          _refreshBalance(wallet).catchError((_) {});
+          _refreshBudget(wallet).catchError((_) {});
+        });
 
     // Pre-cache budget immediately on connect so callers can read
     // cachedRemainingBudgetSats without issuing a separate live query.

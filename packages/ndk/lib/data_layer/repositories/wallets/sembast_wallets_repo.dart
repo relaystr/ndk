@@ -40,8 +40,9 @@ class SembastWalletsRepo extends WalletsRepo {
     final receiving = await _keyValueStore
         .record(defaultWalletForReceivingKey)
         .get(_database);
-    final sending =
-        await _keyValueStore.record(defaultWalletForSendingKey).get(_database);
+    final sending = await _keyValueStore
+        .record(defaultWalletForSendingKey)
+        .get(_database);
 
     _defaultWalletIdForReceiving = receiving?['value'] as String?;
     _defaultWalletIdForSending = sending?['value'] as String?;

@@ -190,8 +190,9 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed:
-                  hasPubkey && !_isGenerating ? _handleGenerateEvents : null,
+              onPressed: hasPubkey && !_isGenerating
+                  ? _handleGenerateEvents
+                  : null,
               child: _isGenerating
                   ? const SizedBox(
                       height: 20,

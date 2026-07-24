@@ -1049,8 +1049,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String budgetUsedOf(int used, int total) {
-    final intl.NumberFormat usedNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
     final String usedString = usedNumberFormat.format(used);
     final intl.NumberFormat totalNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);

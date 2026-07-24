@@ -46,9 +46,9 @@ void main() {
       );
 
       await expectLater(
-        ndk.broadcast.broadcast(
-            nostrEvent: event,
-            specificRelays: [relay0.url]).broadcastDoneFuture,
+        ndk.broadcast
+            .broadcast(nostrEvent: event, specificRelays: [relay0.url])
+            .broadcastDoneFuture,
         throwsA(isA<SignerRequestRejectedException>()),
       );
     });

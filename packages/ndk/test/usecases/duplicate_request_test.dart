@@ -53,7 +53,8 @@ void main() {
       expect(
         stopwatch.elapsedMilliseconds,
         lessThan(2000),
-        reason: 'Both requests should complete quickly when relay responds. '
+        reason:
+            'Both requests should complete quickly when relay responds. '
             'Elapsed: ${stopwatch.elapsedMilliseconds}ms. '
             'If this fails, the duplicate request timeout fix is needed.',
       );

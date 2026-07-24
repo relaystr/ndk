@@ -219,8 +219,9 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
       );
 
       setState(() {
-        _downloadedFilePath =
-            kIsWeb ? context.l10n.blossomDownloadedToBrowser : outputPath;
+        _downloadedFilePath = kIsWeb
+            ? context.l10n.blossomDownloadedToBrowser
+            : outputPath;
       });
     } catch (e) {
       setState(() {
@@ -371,8 +372,9 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton(
-                            onPressed:
-                                _isLoadingVideo ? null : _checkAndInitVideo,
+                            onPressed: _isLoadingVideo
+                                ? null
+                                : _checkAndInitVideo,
                             child: Text(l10n.blossomLoadVideo),
                           ),
                           ElevatedButton(

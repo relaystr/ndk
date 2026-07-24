@@ -113,7 +113,7 @@ class Initialization {
   late ProofOfWork proofOfWork;
   late TrustedAssertions trustedAssertions;
   StreamSubscription<Map<String, RelayConnectivity>>?
-      _relayConnectivitySubscription;
+  _relayConnectivitySubscription;
   final Map<String, bool> _relayOpenStates = {};
 
   late Nip05Usecase nip05;
@@ -126,8 +126,8 @@ class Initialization {
   Initialization({
     required NdkConfig ndkConfig,
     required GlobalState globalState,
-  })  : _globalState = globalState,
-        _ndkConfig = ndkConfig {
+  }) : _globalState = globalState,
+       _ndkConfig = ndkConfig {
     // Configure global WebSocket User-Agent on dart:io platforms
     configureDefaultUserAgent(ndkConfig.userAgent);
 

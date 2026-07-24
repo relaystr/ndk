@@ -95,31 +95,29 @@ void main() {
       Nip01Event wrap,
       Nip01Event seal,
       String viewer,
-    ) =>
-        DecryptedEventPayloadRecord(
-          eventId: wrap.id,
-          viewerPubKey: viewer,
-          scheme: DecryptedPayloadScheme.giftWrap,
-          status: DecryptedPayloadStatus.ready,
-          plaintextContent: Nip01EventModel.fromEntity(seal).toJsonString(),
-          createdAt: now(),
-          updatedAt: now(),
-        );
+    ) => DecryptedEventPayloadRecord(
+      eventId: wrap.id,
+      viewerPubKey: viewer,
+      scheme: DecryptedPayloadScheme.giftWrap,
+      status: DecryptedPayloadStatus.ready,
+      plaintextContent: Nip01EventModel.fromEntity(seal).toJsonString(),
+      createdAt: now(),
+      updatedAt: now(),
+    );
 
     DecryptedEventPayloadRecord rumorSidecar(
       Nip01Event seal,
       Nip01Event rumor,
       String viewer,
-    ) =>
-        DecryptedEventPayloadRecord(
-          eventId: seal.id,
-          viewerPubKey: viewer,
-          scheme: DecryptedPayloadScheme.seal,
-          status: DecryptedPayloadStatus.ready,
-          plaintextContent: Nip01EventModel.fromEntity(rumor).toJsonString(),
-          createdAt: now(),
-          updatedAt: now(),
-        );
+    ) => DecryptedEventPayloadRecord(
+      eventId: seal.id,
+      viewerPubKey: viewer,
+      scheme: DecryptedPayloadScheme.seal,
+      status: DecryptedPayloadStatus.ready,
+      plaintextContent: Nip01EventModel.fromEntity(rumor).toJsonString(),
+      createdAt: now(),
+      updatedAt: now(),
+    );
 
     test('throws when event is not a gift wrap kind', () async {
       final notAWrap = Nip01Event(

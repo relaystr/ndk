@@ -87,8 +87,8 @@ void main() {
 
 final _random = Random();
 String getRandomString(int length) => String.fromCharCodes(
-      Iterable.generate(length, (_) => _random.nextInt(26) + 97),
-    );
+  Iterable.generate(length, (_) => _random.nextInt(26) + 97),
+);
 
 String getRandomReadWrite() {
   final options = ['read', 'write', 'readwrite'];

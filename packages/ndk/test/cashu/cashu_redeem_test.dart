@@ -50,8 +50,7 @@ void main() {
       },
     );
 
-    test("redeem - offline mint should fail immediately on redeem stream",
-        () async {
+    test("redeem - offline mint should fail immediately on redeem stream", () async {
       final cache = MemCacheManager();
 
       // Save mint info so it doesn't try to fetch from network
@@ -319,8 +318,7 @@ void main() {
       );
     });
 
-    test("redeem fails after proofs spent on mint - proofs marked as spent",
-        () async {
+    test("redeem fails after proofs spent on mint - proofs marked as spent", () async {
       // This test verifies the fix for the broken proofs issue:
       // When meltTokens() fails AFTER the mint has already spent the proofs,
       // the proofs should be marked as spent locally (not released back to the wallet).

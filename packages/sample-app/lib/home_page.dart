@@ -76,8 +76,9 @@ class _HomePageState extends State<HomePage> {
                       ),
                     )
                   : NPicture(ndkFlutter: ndkFlutter, circleAvatarRadius: 14);
-              final unreadDmCount =
-                  loggedPubkey == null ? 0 : dmLiveState.unreadCount;
+              final unreadDmCount = loggedPubkey == null
+                  ? 0
+                  : dmLiveState.unreadCount;
               return IconButton(
                 tooltip: l10n.profileTooltip,
                 onPressed: () {
@@ -130,9 +131,7 @@ class _HomePageState extends State<HomePage> {
                           child: Text(
                             unreadDmCount > 99 ? '99+' : '$unreadDmCount',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
+                            style: Theme.of(context).textTheme.labelSmall
                                 ?.copyWith(
                                   color: Theme.of(context).colorScheme.onError,
                                   fontWeight: FontWeight.w700,
@@ -301,9 +300,9 @@ class _UnreadBadge extends StatelessWidget {
       child: Text(
         count > 99 ? '99+' : '$count',
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onError,
-              fontWeight: FontWeight.w700,
-            ),
+          color: Theme.of(context).colorScheme.onError,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

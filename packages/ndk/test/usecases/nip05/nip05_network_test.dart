@@ -197,7 +197,8 @@ void main() {
           httpDS: HttpRequestDS(client),
         );
         // Create a Nip05 object with an old updatedAt timestamp
-        final oldTimestamp = (DateTime.now()
+        final oldTimestamp =
+            (DateTime.now()
                 .subtract(
                   Duration(seconds: NIP_05_VALID_DURATION.inSeconds - 1),
                 )
@@ -245,7 +246,8 @@ void main() {
         );
 
         // Create a Nip05 object with a recent updatedAt timestamp
-        final recentTimestamp = (DateTime.now()
+        final recentTimestamp =
+            (DateTime.now()
                 .subtract(
                   Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 200),
                 )
@@ -283,7 +285,8 @@ void main() {
       );
 
       // Create a Nip05 object with an updatedAt timestamp exactly equal to the duration
-      final exactTimestamp = (DateTime.now()
+      final exactTimestamp =
+          (DateTime.now()
               .subtract(Duration(seconds: NIP_05_VALID_DURATION.inSeconds))
               .millisecondsSinceEpoch ~/
           1000);
@@ -493,7 +496,8 @@ void main() {
       );
 
       // Save an expired nip05 in cache
-      final expiredTimestamp = (DateTime.now()
+      final expiredTimestamp =
+          (DateTime.now()
               .subtract(
                 Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 100),
               )

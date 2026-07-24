@@ -60,11 +60,11 @@ class RelayManager<T> {
 
   /// Handler for NIP-77 NEG-MSG messages
   void Function(String subscriptionId, String relayUrl, String payload)?
-      onNegMsg;
+  onNegMsg;
 
   /// Handler for NIP-77 NEG-ERR messages
   void Function(String subscriptionId, String relayUrl, String errorMsg)?
-      onNegErr;
+  onNegErr;
 
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
@@ -350,8 +350,7 @@ class RelayManager<T> {
       if (!(await connectRelay(
         dirtyUrl: url,
         connectionSource: connectionSource,
-      ))
-          .first) {
+      )).first) {
         // could not connect
         return false;
       }
@@ -410,14 +409,14 @@ class RelayManager<T> {
       state.requests.values
           .where((req) => req.url == relayConnectivity.url)
           .forEach((req) {
-        if (!state.request.closeOnEOSE) {
-          List<dynamic> list = ["REQ", state.id];
-          list.addAll(req.filters.map((filter) => filter.toMap()));
+            if (!state.request.closeOnEOSE) {
+              List<dynamic> list = ["REQ", state.id];
+              list.addAll(req.filters.map((filter) => filter.toMap()));
 
-          relayConnectivity.stats.activeRequests++;
-          _sendRaw(relayConnectivity, transport, jsonEncode(list));
-        }
-      });
+              relayConnectivity.stats.activeRequests++;
+              _sendRaw(relayConnectivity, transport, jsonEncode(list));
+            }
+          });
     });
   }
 
@@ -633,9 +632,9 @@ class RelayManager<T> {
     try {
       nostrMsg = await IsolateManager.instance
           .runInEncodingIsolate<String, NostrMessageRaw>(
-        decodeNostrMsg,
-        message,
-      );
+            decodeNostrMsg,
+            message,
+          );
     } catch (e) {
       // Isolates not available on web
       nostrMsg = decodeNostrMsg(message);
@@ -697,13 +696,14 @@ class RelayManager<T> {
         // Check if this is auth-required for a broadcast - don't mark as done, will retry
         if (msg != null && msg.startsWith("auth-required")) {
           _handleBroadcastAuthRequired(eventId, relayConnectivity);
-          return Future
-              .value(); // Don't add to network controller yet, wait for retry result
+          return Future.value(); // Don't add to network controller yet, wait for retry result
         }
       }
       if (globalState.inFlightBroadcasts[eventId] != null &&
           !globalState
-              .inFlightBroadcasts[eventId]!.networkController.isClosed) {
+              .inFlightBroadcasts[eventId]!
+              .networkController
+              .isClosed) {
         globalState.inFlightBroadcasts[eventId]?.networkController.add(
           RelayBroadcastResponse(
             relayUrl: relayConnectivity.url,
@@ -729,7 +729,8 @@ class RelayManager<T> {
       // Check if this is a negentropy-related error
       // Look for various patterns relays might use to reject NEG commands
       final noticeLower = noticeMsg.toLowerCase();
-      final isNegentropyError = noticeLower.contains('negentropy') ||
+      final isNegentropyError =
+          noticeLower.contains('negentropy') ||
           noticeLower.contains('neg-') ||
           noticeLower.contains('unsupported') ||
           noticeLower.contains('unknown command') ||
@@ -1065,8 +1066,9 @@ class RelayManager<T> {
     }
 
     // Filter to accounts that can sign
-    final signableAccounts =
-        accountsToAuth.where((a) => a.signer.canSign()).toList();
+    final signableAccounts = accountsToAuth
+        .where((a) => a.signer.canSign())
+        .toList();
 
     if (signableAccounts.isEmpty) {
       Logger.log.w(

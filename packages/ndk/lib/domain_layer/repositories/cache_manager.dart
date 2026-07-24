@@ -306,7 +306,7 @@ abstract class CacheManager {
 
   /// Load all fetched range records for a relay (all filters)
   Future<List<FilterFetchedRangeRecord>>
-      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl);
+  loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl);
 
   /// Remove all fetched range records for a filter hash
   Future<void> removeFilterFetchedRangeRecords(String filterHash);

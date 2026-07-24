@@ -119,10 +119,10 @@ void main() {
       // Deserialize
       final deserializedFilter =
           BloomFilterPrehash.fromNumHashFunctionsAndByteArray(
-        numHashFunctions: originalFilter.numHashFunctions,
-        byteArray: base64Decode(serialized),
-        size: originalFilter.size,
-      );
+            numHashFunctions: originalFilter.numHashFunctions,
+            byteArray: base64Decode(serialized),
+            size: originalFilter.size,
+          );
 
       // Check that deserialized filter behaves the same
       expect(

@@ -40,8 +40,9 @@ void main() async {
 
       var responseList = await contactsResponse.stream.toList();
 
-      List<ContactList> contactLists =
-          responseList.map((event) => ContactList.fromEvent(event)).toList();
+      List<ContactList> contactLists = responseList
+          .map((event) => ContactList.fromEvent(event))
+          .toList();
 
       await cacheManager.saveEvents(
         contactLists.map((contactList) => contactList.toEvent()).toList(),
@@ -65,10 +66,12 @@ void main() async {
       await cacheManager.saveEvents(nip65events);
 
       //UserRelayList.fromNip65(Nip65.fromEvent(nip65events))
-      final List<Nip65> nip65List =
-          nip65events.map((event) => Nip65.fromEvent(event)).toList();
-      final List<UserRelayList> userRelayLists =
-          nip65List.map((nip65) => UserRelayList.fromNip65(nip65)).toList();
+      final List<Nip65> nip65List = nip65events
+          .map((event) => Nip65.fromEvent(event))
+          .toList();
+      final List<UserRelayList> userRelayLists = nip65List
+          .map((nip65) => UserRelayList.fromNip65(nip65))
+          .toList();
 
       await cacheManager.saveUserRelayLists(userRelayLists);
 

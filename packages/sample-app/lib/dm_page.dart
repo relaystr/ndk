@@ -592,8 +592,9 @@ class _DmConversationPageState extends State<DmConversationPage> {
               textInputAction: TextInputAction.send,
               onSubmitted: (_) => _sendInlineMessage(),
               decoration: InputDecoration(
-                hintText:
-                    myPubKey == null ? 'Log in to send a message' : 'Message',
+                hintText: myPubKey == null
+                    ? 'Log in to send a message'
+                    : 'Message',
                 border: const OutlineInputBorder(),
               ),
             ),
@@ -790,9 +791,9 @@ class _ConversationUnreadBadge extends StatelessWidget {
           child: Text(
             count > 99 ? '99+' : '$count',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onError,
-                  fontWeight: FontWeight.w700,
-                ),
+              color: Theme.of(context).colorScheme.onError,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
         const SizedBox(width: 8),

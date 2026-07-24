@@ -97,23 +97,26 @@ class Nip55EventSigner with ConcurrencyLimiterMixin implements EventSigner {
     // `pendingRequests` so the UI sees the full backlog. If the request was
     // cancelled while queued, skip the signer call entirely.
     runThrottled(() async {
-      if (!_pendingRequests.containsKey(requestId)) {
-        throw SignerRequestCancelledException(requestId);
-      }
-      return await operation(requestId);
-    }).then((result) {
-      if (!completer.isCompleted) {
-        completer.complete(result);
-      }
-    }).catchError((e) {
-      if (!completer.isCompleted) {
-        final error = SignerRequestRejectedException(requestId: requestId);
-        completer.completeError(error);
-      }
-    }).whenComplete(() {
-      _pendingRequests.remove(requestId);
-      _notifyPendingRequestsChange();
-    });
+          if (!_pendingRequests.containsKey(requestId)) {
+            throw SignerRequestCancelledException(requestId);
+          }
+          return await operation(requestId);
+        })
+        .then((result) {
+          if (!completer.isCompleted) {
+            completer.complete(result);
+          }
+        })
+        .catchError((e) {
+          if (!completer.isCompleted) {
+            final error = SignerRequestRejectedException(requestId: requestId);
+            completer.completeError(error);
+          }
+        })
+        .whenComplete(() {
+          _pendingRequests.remove(requestId);
+          _notifyPendingRequestsChange();
+        });
 
     return completer.future;
   }

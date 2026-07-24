@@ -185,8 +185,9 @@ Future<List<Nip01Event>> _queryRelay({
   addTearDown(writer.destroy);
 
   for (final event in events) {
-    await writer.broadcast.broadcast(
-        nostrEvent: event, specificRelays: [relay.url]).broadcastDoneFuture;
+    await writer.broadcast
+        .broadcast(nostrEvent: event, specificRelays: [relay.url])
+        .broadcastDoneFuture;
   }
 
   final reader = Ndk(

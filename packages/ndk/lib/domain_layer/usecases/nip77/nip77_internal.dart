@@ -12,9 +12,9 @@ class _Nip77Internal {
     required GlobalState globalState,
     required RelayManager relayManager,
     required CacheManager cacheManager,
-  })  : _globalState = globalState,
-        _relayManager = relayManager,
-        _cacheManager = cacheManager;
+  }) : _globalState = globalState,
+       _relayManager = relayManager,
+       _cacheManager = cacheManager;
 
   Nip77Response reconcile({
     required String relayUrl,

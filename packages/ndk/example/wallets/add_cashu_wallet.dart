@@ -30,8 +30,9 @@ Future<void> main() async {
       id: 'wallet_${DateTime.now().microsecondsSinceEpoch}',
       name: walletName,
       type: WalletType.CASHU,
-      supportedUnits:
-          mintInfo.supportedUnits.isEmpty ? {'sat'} : mintInfo.supportedUnits,
+      supportedUnits: mintInfo.supportedUnits.isEmpty
+          ? {'sat'}
+          : mintInfo.supportedUnits,
       metadata: {'mintUrl': mintUrl, 'mintInfo': mintInfo.toJson()},
     );
 

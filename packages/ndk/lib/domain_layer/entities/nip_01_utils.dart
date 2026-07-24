@@ -92,19 +92,19 @@ class Nip01Utils {
     required List<dynamic> tags,
     required String content,
   }) async {
-    final id =
-        await IsolateManager.instance.runInComputeIsolate<Nip01Event, String>(
-      calculateId,
-      Nip01Event(
-        pubKey: publicKey,
-        createdAt: createdAt,
-        kind: kind,
-        tags: List<List<String>>.from(
-          tags.map((tag) => List<String>.from(tag)),
-        ),
-        content: content,
-      ),
-    );
+    final id = await IsolateManager.instance
+        .runInComputeIsolate<Nip01Event, String>(
+          calculateId,
+          Nip01Event(
+            pubKey: publicKey,
+            createdAt: createdAt,
+            kind: kind,
+            tags: List<List<String>>.from(
+              tags.map((tag) => List<String>.from(tag)),
+            ),
+            content: content,
+          ),
+        );
     return id;
   }
 

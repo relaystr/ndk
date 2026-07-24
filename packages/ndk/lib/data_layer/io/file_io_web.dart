@@ -34,8 +34,9 @@ class FileIOWeb implements FileIO {
     final int totalSize = file.size;
 
     while (offset < totalSize) {
-      final int end =
-          (offset + chunkSize < totalSize) ? offset + chunkSize : totalSize;
+      final int end = (offset + chunkSize < totalSize)
+          ? offset + chunkSize
+          : totalSize;
 
       // Read chunk as blob slice
       final blob = file.slice(offset, end);
@@ -140,8 +141,9 @@ class FileIOWeb implements FileIO {
 
   /// Use File System Access API
   Future<List<JSObject>> _showOpenFilePicker() async {
-    final options = {'multiple': false, 'excludeAcceptAllOption': false}.jsify()
-        as JSObject;
+    final options =
+        {'multiple': false, 'excludeAcceptAllOption': false}.jsify()
+            as JSObject;
 
     final windowObj = window as JSObject;
     final showOpenFilePicker = windowObj['showOpenFilePicker'] as JSFunction;

@@ -28,17 +28,17 @@ class BlobUploadProgress {
     int? mirrorsTotal,
     int? mirrorsCompleted,
     this.isComplete = false,
-  })  : progressPhase =
-            ((progressPhase ?? (totalBytes > 0 ? sentBytes / totalBytes : 0))
-                    .clamp(0.0, 1.0))
-                .toDouble(),
-        percentagePhase =
-            ((progressPhase ?? (totalBytes > 0 ? sentBytes / totalBytes : 0))
-                        .clamp(0.0, 1.0))
-                    .toDouble() *
-                100,
-        mirrorsTotal = mirrorsTotal ?? 0,
-        mirrorsCompleted = mirrorsCompleted ?? 0;
+  }) : progressPhase =
+           ((progressPhase ?? (totalBytes > 0 ? sentBytes / totalBytes : 0))
+                   .clamp(0.0, 1.0))
+               .toDouble(),
+       percentagePhase =
+           ((progressPhase ?? (totalBytes > 0 ? sentBytes / totalBytes : 0))
+                   .clamp(0.0, 1.0))
+               .toDouble() *
+           100,
+       mirrorsTotal = mirrorsTotal ?? 0,
+       mirrorsCompleted = mirrorsCompleted ?? 0;
 
   double get uploadProgress => totalBytes > 0 ? sentBytes / totalBytes : 0;
 

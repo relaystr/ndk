@@ -40,9 +40,9 @@ class CashuStateExportImport {
     required CashuCacheDecorator cacheManagerCashu,
     required WalletsRepo walletsRepo,
     required CashuSeed cashuSeed,
-  })  : _cacheManagerCashu = cacheManagerCashu,
-        _walletsRepo = walletsRepo,
-        _cashuSeed = cashuSeed;
+  }) : _cacheManagerCashu = cacheManagerCashu,
+       _walletsRepo = walletsRepo,
+       _cashuSeed = cashuSeed;
 
   /// Export all cashu state as a JSON-serializable map.
   ///
@@ -126,8 +126,9 @@ class CashuStateExportImport {
       final transactions = await _walletsRepo.getTransactions(
         walletType: WalletType.CASHU,
       );
-      export['transactions'] =
-          transactions.map(WalletTransactionModel.toJson).toList();
+      export['transactions'] = transactions
+          .map(WalletTransactionModel.toJson)
+          .toList();
     }
 
     return export;

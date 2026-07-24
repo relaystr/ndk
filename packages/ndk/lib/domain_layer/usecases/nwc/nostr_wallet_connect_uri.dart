@@ -53,13 +53,12 @@ class NostrWalletConnectUri extends Equatable {
     required String relay,
     required String secret,
     String? lud16,
-  }) =>
-      NostrWalletConnectUri(
-        walletPubkey: walletPubkey,
-        relays: [relay],
-        secret: secret,
-        lud16: lud16,
-      );
+  }) => NostrWalletConnectUri(
+    walletPubkey: walletPubkey,
+    relays: [relay],
+    secret: secret,
+    lud16: lud16,
+  );
 
   /// Legacy getter for backward compatibility
   @Deprecated('Use relays list instead')

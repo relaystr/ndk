@@ -92,16 +92,17 @@ class NPicture extends StatelessWidget {
     // Keep the initial legible by contrasting against the derived background.
     final textColor =
         ThemeData.estimateBrightnessForColor(background) == Brightness.dark
-            ? const Color(0xFFFFFFFF)
-            : const Color(0xDE000000);
+        ? const Color(0xFFFFFFFF)
+        : const Color(0xDE000000);
 
     return Container(
       color: background,
       child: Center(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final fontSize =
-                constraints.maxHeight > 0 ? constraints.maxHeight * 0.4 : 16.0;
+            final fontSize = constraints.maxHeight > 0
+                ? constraints.maxHeight * 0.4
+                : 16.0;
             return Text(
               initial,
               style: TextStyle(

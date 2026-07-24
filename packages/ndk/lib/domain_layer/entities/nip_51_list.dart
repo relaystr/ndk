@@ -206,13 +206,15 @@ class Nip51List {
 
   Future<Nip01Event> toEvent(EventSigner? signer) async {
     String content = "";
-    List<Nip51ListElement> privateElements =
-        elements.where((element) => element.private).toList();
+    List<Nip51ListElement> privateElements = elements
+        .where((element) => element.private)
+        .toList();
     if (privateElements.isNotEmpty && signer != null) {
       String json = jsonEncode(
         privateElements.map((element) => [element.tag, element.value]).toList(),
       );
-      content = await signer.encryptNip44(
+      content =
+          await signer.encryptNip44(
             plaintext: json,
             recipientPubKey: signer.getPublicKey(),
           ) ??

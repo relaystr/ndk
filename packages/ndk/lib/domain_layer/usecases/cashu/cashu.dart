@@ -50,10 +50,10 @@ class Cashu {
     required CacheManager cacheManager,
     required CashuKeyDerivation cashuKeyDerivation,
     CashuUserSeedphrase? cashuUserSeedphrase,
-  })  : _cashuRepo = cashuRepo,
-        _walletsRepo = walletsRepo,
-        _cacheManager = cacheManager,
-        _cashuKeyDerivation = cashuKeyDerivation {
+  }) : _cashuRepo = cashuRepo,
+       _walletsRepo = walletsRepo,
+       _cacheManager = cacheManager,
+       _cashuKeyDerivation = cashuKeyDerivation {
     _cashuKeysets = CashuKeysets(
       cashuRepo: _cashuRepo,
       cacheManager: _cacheManager,
@@ -324,21 +324,24 @@ class Cashu {
     final distinctKeysetIds = allKeysets.map((keyset) => keyset.id).toSet();
 
     for (final keysetId in distinctKeysetIds) {
-      final mintUrl =
-          allKeysets.firstWhere((keyset) => keyset.id == keysetId).mintUrl;
+      final mintUrl = allKeysets
+          .firstWhere((keyset) => keyset.id == keysetId)
+          .mintUrl;
       if (!balances.containsKey(mintUrl)) {
         balances[mintUrl] = {};
       }
 
-      final keysetProofs =
-          allProofs.where((proof) => proof.keysetId == keysetId).toList();
+      final keysetProofs = allProofs
+          .where((proof) => proof.keysetId == keysetId)
+          .toList();
 
       if (!returnZeroValues && keysetProofs.isEmpty) {
         continue;
       }
 
-      final unit =
-          allKeysets.firstWhere((keyset) => keyset.id == keysetId).unit;
+      final unit = allKeysets
+          .firstWhere((keyset) => keyset.id == keysetId)
+          .unit;
       final totalBalanceForKeyset = CashuTools.sumOfProofs(
         proofs: keysetProofs,
       );
@@ -384,11 +387,13 @@ class Cashu {
     if (_balanceSubject == null) {
       _balanceSubject = BehaviorSubject<List<CashuMintBalance>>.seeded([]);
 
-      getBalances().then((balances) {
-        _balanceSubject?.add(balances);
-      }).catchError((error) {
-        _balanceSubject?.addError(error);
-      });
+      getBalances()
+          .then((balances) {
+            _balanceSubject?.add(balances);
+          })
+          .catchError((error) {
+            _balanceSubject?.addError(error);
+          });
     }
 
     return _balanceSubject!;
@@ -399,17 +404,19 @@ class Cashu {
     if (_latestTransactionsSubject == null) {
       _latestTransactionsSubject =
           BehaviorSubject<List<CashuWalletTransaction>>.seeded(
-        _latestTransactions,
-      );
-      _getLatestTransactionsDb().then((transactions) {
-        _latestTransactions.clear();
-        _latestTransactions.addAll(transactions);
-        _latestTransactionsSubject?.add(_latestTransactions);
-      }).catchError((error) {
-        _latestTransactionsSubject?.addError(
-          Exception('Failed to load latest transactions: $error'),
-        );
-      });
+            _latestTransactions,
+          );
+      _getLatestTransactionsDb()
+          .then((transactions) {
+            _latestTransactions.clear();
+            _latestTransactions.addAll(transactions);
+            _latestTransactionsSubject?.add(_latestTransactions);
+          })
+          .catchError((error) {
+            _latestTransactionsSubject?.addError(
+              Exception('Failed to load latest transactions: $error'),
+            );
+          });
     }
 
     return _latestTransactionsSubject!;
@@ -421,17 +428,19 @@ class Cashu {
     if (_pendingTransactionsSubject == null) {
       _pendingTransactionsSubject =
           BehaviorSubject<List<CashuWalletTransaction>>.seeded(
-        _pendingTransactions.toList(),
-      );
-      _getPendingTransactionsDb().then((transactions) {
-        _pendingTransactions.clear();
-        _pendingTransactions.addAll(transactions);
-        _pendingTransactionsSubject?.add(_pendingTransactions.toList());
-      }).catchError((error) {
-        _pendingTransactionsSubject?.addError(
-          Exception('Failed to load pending transactions: $error'),
-        );
-      });
+            _pendingTransactions.toList(),
+          );
+      _getPendingTransactionsDb()
+          .then((transactions) {
+            _pendingTransactions.clear();
+            _pendingTransactions.addAll(transactions);
+            _pendingTransactionsSubject?.add(_pendingTransactions.toList());
+          })
+          .catchError((error) {
+            _pendingTransactionsSubject?.addError(
+              Exception('Failed to load pending transactions: $error'),
+            );
+          });
     }
 
     return _pendingTransactionsSubject!;
@@ -444,15 +453,17 @@ class Cashu {
       _knownMintsSubject = BehaviorSubject<Set<CashuMintInfo>>.seeded(
         _knownMints,
       );
-      _getMintInfosDb().then((mintInfos) {
-        _knownMints.clear();
-        _knownMints.addAll(mintInfos);
-        _knownMintsSubject?.add(_knownMints);
-      }).catchError((error) {
-        _knownMintsSubject?.addError(
-          Exception('Failed to load known mints: $error'),
-        );
-      });
+      _getMintInfosDb()
+          .then((mintInfos) {
+            _knownMints.clear();
+            _knownMints.addAll(mintInfos);
+            _knownMintsSubject?.add(_knownMints);
+          })
+          .catchError((error) {
+            _knownMintsSubject?.addError(
+              Exception('Failed to load known mints: $error'),
+            );
+          });
     }
 
     return _knownMintsSubject!;
@@ -909,13 +920,13 @@ class Cashu {
     if (selectionResult.needsSplit) {
       final blindedMessagesOutputsOverpay =
           await CashuBdhke.createBlindedMsgForAmounts(
-        keysetId: activeKeyset.id,
-        amounts: CashuTools.splitAmount(selectionResult.splitAmount),
-        cacheManager: _cacheManagerCashu,
-        cashuSeed: _cashuSeed,
-        mintUrl: mintUrl,
-        cashuSeedSecretGenerator: _cashuKeyDerivation,
-      );
+            keysetId: activeKeyset.id,
+            amounts: CashuTools.splitAmount(selectionResult.splitAmount),
+            cacheManager: _cacheManagerCashu,
+            cashuSeed: _cashuSeed,
+            mintUrl: mintUrl,
+            cashuSeedSecretGenerator: _cashuKeyDerivation,
+          );
       myOutputs.addAll(blindedMessagesOutputsOverpay);
     }
 

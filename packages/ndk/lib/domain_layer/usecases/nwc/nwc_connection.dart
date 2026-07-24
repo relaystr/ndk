@@ -22,19 +22,19 @@ class NwcConnection {
   StreamController<NwcNotification> notificationStream =
       StreamController<NwcNotification>.broadcast();
 
-  Stream<NwcNotification> get paymentsReceivedStream =>
-      notificationStream.stream
-          .where((notification) => notification.isPaymentReceived)
-          .asBroadcastStream();
+  Stream<NwcNotification> get paymentsReceivedStream => notificationStream
+      .stream
+      .where((notification) => notification.isPaymentReceived)
+      .asBroadcastStream();
 
   Stream<NwcNotification> get paymentsSentStream => notificationStream.stream
       .where((notification) => notification.isPaymentSent)
       .asBroadcastStream();
 
-  Stream<NwcNotification> get holdInvoiceStateStream =>
-      notificationStream.stream
-          .where((notification) => notification.isHoldInvoiceAccepted)
-          .asBroadcastStream();
+  Stream<NwcNotification> get holdInvoiceStateStream => notificationStream
+      .stream
+      .where((notification) => notification.isHoldInvoiceAccepted)
+      .asBroadcastStream();
 
   /// listen
   void listen(void Function(Nip01Event event)? onData) {

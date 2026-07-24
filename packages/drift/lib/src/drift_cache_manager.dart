@@ -58,7 +58,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> saveEvent(Nip01Event event) async {
-    await _db.into(_db.events).insertOnConflictUpdate(
+    await _db
+        .into(_db.events)
+        .insertOnConflictUpdate(
           EventsCompanion.insert(
             id: event.id,
             pubKey: event.pubKey,
@@ -103,8 +105,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<Nip01Event?> loadEvent(String id) async {
     final row = await (_db.select(
       _db.events,
-    )..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     if (row == null) return null;
     return _eventFromRow(row);
   }
@@ -190,8 +191,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
     final deletionRows = await (_db.select(
       _db.events,
-    )..where((t) => t.kind.equals(5)))
-        .get();
+    )..where((t) => t.kind.equals(5))).get();
     final deletions = deletionRows.map(_eventFromRow).toList();
 
     events = _applyEventVisibilityRules(events, deletions);
@@ -218,8 +218,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<void> removeAllEventsByPubKey(String pubKey) async {
     final rows = await (_db.select(
       _db.events,
-    )..where((t) => t.pubKey.equals(pubKey)))
-        .get();
+    )..where((t) => t.pubKey.equals(pubKey))).get();
     final eventIds = rows.map((row) => row.id).toList();
     await (_db.delete(_db.events)..where((t) => t.pubKey.equals(pubKey))).go();
     await _removeEventSidecarsByIds(eventIds);
@@ -286,8 +285,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       if (idsToRemove.isNotEmpty) {
         await (_db.delete(
           _db.events,
-        )..where((t) => t.id.isIn(idsToRemove)))
-            .go();
+        )..where((t) => t.id.isIn(idsToRemove))).go();
         await _removeEventSidecarsByIds(idsToRemove);
       }
       if (deliverySweep.deliveryEventIdsToRemove.isNotEmpty) {
@@ -298,10 +296,10 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     });
 
     return plan.toResult().copyWith(
-          removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
-          removedTerminalFailedDeliveries:
-              deliverySweep.removedTerminalFailedDeliveries,
-        );
+      removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
+      removedTerminalFailedDeliveries:
+          deliverySweep.removedTerminalFailedDeliveries,
+    );
   }
 
   /// Removes only the delivery record, relay delivery targets and delivery
@@ -314,22 +312,19 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
     await (_db.delete(
       _db.eventDeliveryRecordsTable,
-    )..where((t) => t.eventId.isIn(ids)))
-        .go();
+    )..where((t) => t.eventId.isIn(ids))).go();
     await (_db.delete(
       _db.relayDeliveryTargetsTable,
-    )..where((t) => t.eventId.isIn(ids)))
-        .go();
-    await (_db.delete(_db.keyValues)
-          ..where((kv) {
-            final conditions = ids
-                .map((id) => kv.key.equals(_eventDeliverySnapshotKey(id)))
-                .toList();
-            if (conditions.length == 1) {
-              return conditions.first;
-            }
-            return conditions.reduce((a, b) => a | b);
-          }))
+    )..where((t) => t.eventId.isIn(ids))).go();
+    await (_db.delete(_db.keyValues)..where((kv) {
+          final conditions = ids
+              .map((id) => kv.key.equals(_eventDeliverySnapshotKey(id)))
+              .toList();
+          if (conditions.length == 1) {
+            return conditions.first;
+          }
+          return conditions.reduce((a, b) => a | b);
+        }))
         .go();
   }
 
@@ -342,7 +337,8 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     int? since,
     int? until,
   }) async {
-    final hasNoFilters = (ids == null || ids.isEmpty) &&
+    final hasNoFilters =
+        (ids == null || ids.isEmpty) &&
         (pubKeys == null || pubKeys.isEmpty) &&
         (kinds == null || kinds.isEmpty) &&
         (tags == null || tags.isEmpty) &&
@@ -373,55 +369,54 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       return;
     }
 
-    final rows = await (_db.select(_db.events)
-          ..where((t) {
-            final conditions = <Expression<bool>>[];
+    final rows =
+        await (_db.select(_db.events)..where((t) {
+              final conditions = <Expression<bool>>[];
 
-            if (ids != null && ids.isNotEmpty) {
-              conditions.add(t.id.isIn(ids));
-            }
-            if (pubKeys != null && pubKeys.isNotEmpty) {
-              conditions.add(t.pubKey.isIn(pubKeys));
-            }
-            if (kinds != null && kinds.isNotEmpty) {
-              conditions.add(t.kind.isIn(kinds));
-            }
-            if (since != null) {
-              conditions.add(t.createdAt.isBiggerOrEqualValue(since));
-            }
-            if (until != null) {
-              conditions.add(t.createdAt.isSmallerOrEqualValue(until));
-            }
+              if (ids != null && ids.isNotEmpty) {
+                conditions.add(t.id.isIn(ids));
+              }
+              if (pubKeys != null && pubKeys.isNotEmpty) {
+                conditions.add(t.pubKey.isIn(pubKeys));
+              }
+              if (kinds != null && kinds.isNotEmpty) {
+                conditions.add(t.kind.isIn(kinds));
+              }
+              if (since != null) {
+                conditions.add(t.createdAt.isBiggerOrEqualValue(since));
+              }
+              if (until != null) {
+                conditions.add(t.createdAt.isSmallerOrEqualValue(until));
+              }
 
-            return conditions.reduce((a, b) => a & b);
-          }))
-        .get();
+              return conditions.reduce((a, b) => a & b);
+            }))
+            .get();
     final removedEventIds = rows.map((row) => row.id).toList();
     final affectedPubKeys = rows.map((row) => row.pubKey).toSet();
 
     // No tags filter, delete directly without loading events
-    await (_db.delete(_db.events)
-          ..where((t) {
-            final conditions = <Expression<bool>>[];
+    await (_db.delete(_db.events)..where((t) {
+          final conditions = <Expression<bool>>[];
 
-            if (ids != null && ids.isNotEmpty) {
-              conditions.add(t.id.isIn(ids));
-            }
-            if (pubKeys != null && pubKeys.isNotEmpty) {
-              conditions.add(t.pubKey.isIn(pubKeys));
-            }
-            if (kinds != null && kinds.isNotEmpty) {
-              conditions.add(t.kind.isIn(kinds));
-            }
-            if (since != null) {
-              conditions.add(t.createdAt.isBiggerOrEqualValue(since));
-            }
-            if (until != null) {
-              conditions.add(t.createdAt.isSmallerOrEqualValue(until));
-            }
+          if (ids != null && ids.isNotEmpty) {
+            conditions.add(t.id.isIn(ids));
+          }
+          if (pubKeys != null && pubKeys.isNotEmpty) {
+            conditions.add(t.pubKey.isIn(pubKeys));
+          }
+          if (kinds != null && kinds.isNotEmpty) {
+            conditions.add(t.kind.isIn(kinds));
+          }
+          if (since != null) {
+            conditions.add(t.createdAt.isBiggerOrEqualValue(since));
+          }
+          if (until != null) {
+            conditions.add(t.createdAt.isSmallerOrEqualValue(until));
+          }
 
-            return conditions.reduce((a, b) => a & b);
-          }))
+          return conditions.reduce((a, b) => a & b);
+        }))
         .go();
 
     await _removeEventSidecarsByIds(removedEventIds);
@@ -434,31 +429,27 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
     await (_db.delete(
       _db.eventSourcesTable,
-    )..where((t) => t.eventId.isIn(ids)))
-        .go();
+    )..where((t) => t.eventId.isIn(ids))).go();
     await (_db.delete(
       _db.eventDeliveryRecordsTable,
-    )..where((t) => t.eventId.isIn(ids)))
-        .go();
+    )..where((t) => t.eventId.isIn(ids))).go();
     await (_db.delete(
       _db.relayDeliveryTargetsTable,
-    )..where((t) => t.eventId.isIn(ids)))
-        .go();
-    await (_db.delete(_db.keyValues)
-          ..where((kv) {
-            final conditions = ids
-                .expand(
-                  (id) => [
-                    kv.key.like('$_decryptedPayloadKeyPrefix$id|%'),
-                    kv.key.equals(_eventDeliverySnapshotKey(id)),
-                  ],
-                )
-                .toList();
-            if (conditions.length == 1) {
-              return conditions.first;
-            }
-            return conditions.reduce((a, b) => a | b);
-          }))
+    )..where((t) => t.eventId.isIn(ids))).go();
+    await (_db.delete(_db.keyValues)..where((kv) {
+          final conditions = ids
+              .expand(
+                (id) => [
+                  kv.key.like('$_decryptedPayloadKeyPrefix$id|%'),
+                  kv.key.equals(_eventDeliverySnapshotKey(id)),
+                ],
+              )
+              .toList();
+          if (conditions.length == 1) {
+            return conditions.first;
+          }
+          return conditions.reduce((a, b) => a | b);
+        }))
         .go();
   }
 
@@ -466,8 +457,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     final tags = (jsonDecode(row.tagsJson) as List)
         .map((e) => (e as List).map((item) => item.toString()).toList())
         .toList();
-    final sources =
-        (jsonDecode(row.sourcesJson) as List).map((e) => e.toString()).toList();
+    final sources = (jsonDecode(row.sourcesJson) as List)
+        .map((e) => e.toString())
+        .toList();
 
     return Nip01Event(
       id: row.id,
@@ -606,8 +598,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       return metadata.matchesSearch(normalizedSearch) ||
           (metadata.about?.toLowerCase().contains(normalizedSearch) ?? false) ||
           (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
-    }).toList()
-      ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
+    }).toList()..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
 
     return matches.take(limit);
   }
@@ -664,7 +655,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
-    await _db.into(_db.userRelayLists).insertOnConflictUpdate(
+    await _db
+        .into(_db.userRelayLists)
+        .insertOnConflictUpdate(
           UserRelayListsCompanion.insert(
             pubKey: userRelayList.pubKey,
             createdAt: userRelayList.createdAt,
@@ -702,8 +695,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
     final row = await (_db.select(
       _db.userRelayLists,
-    )..where((t) => t.pubKey.equals(pubKey)))
-        .getSingleOrNull();
+    )..where((t) => t.pubKey.equals(pubKey))).getSingleOrNull();
     if (row == null) return null;
     return _userRelayListFromRow(row);
   }
@@ -741,8 +733,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     if (derived == null) {
       await (_db.delete(
         _db.userRelayLists,
-      )..where((t) => t.pubKey.equals(pubKey)))
-          .go();
+      )..where((t) => t.pubKey.equals(pubKey))).go();
       return;
     }
 
@@ -770,8 +761,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<void> removeUserRelayList(String pubKey) async {
     await (_db.delete(
       _db.userRelayLists,
-    )..where((t) => t.pubKey.equals(pubKey)))
-        .go();
+    )..where((t) => t.pubKey.equals(pubKey))).go();
   }
 
   @override
@@ -817,7 +807,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> saveRelaySet(RelaySet relaySet) async {
-    await _db.into(_db.relaySets).insertOnConflictUpdate(
+    await _db
+        .into(_db.relaySets)
+        .insertOnConflictUpdate(
           RelaySetsCompanion.insert(
             id: relaySet.id,
             name: relaySet.name,
@@ -840,8 +832,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     final id = RelaySet.buildId(name, pubKey);
     final row = await (_db.select(
       _db.relaySets,
-    )..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     if (row == null) return null;
     return _relaySetFromRow(row);
   }
@@ -931,7 +922,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> saveNip05(Nip05 nip05) async {
-    await _db.into(_db.nip05s).insertOnConflictUpdate(
+    await _db
+        .into(_db.nip05s)
+        .insertOnConflictUpdate(
           Nip05sCompanion.insert(
             pubKey: nip05.pubKey,
             nip05: nip05.nip05,
@@ -967,16 +960,14 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     if (pubKey != null) {
       final row = await (_db.select(
         _db.nip05s,
-      )..where((t) => t.pubKey.equals(pubKey)))
-          .getSingleOrNull();
+      )..where((t) => t.pubKey.equals(pubKey))).getSingleOrNull();
       if (row == null) return null;
       return _nip05FromRow(row);
     }
     if (identifier != null) {
       final row = await (_db.select(
         _db.nip05s,
-      )..where((t) => t.nip05.equals(identifier)))
-          .getSingleOrNull();
+      )..where((t) => t.nip05.equals(identifier))).getSingleOrNull();
       if (row == null) return null;
       return _nip05FromRow(row);
     }
@@ -987,8 +978,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
     final rows = await (_db.select(
       _db.nip05s,
-    )..where((t) => t.pubKey.isIn(pubKeys)))
-        .get();
+    )..where((t) => t.pubKey.isIn(pubKeys))).get();
 
     final map = {for (var row in rows) row.pubKey: _nip05FromRow(row)};
     return pubKeys.map((pk) => map[pk]).toList();
@@ -1024,7 +1014,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<void> saveFilterFetchedRangeRecord(
     FilterFetchedRangeRecord record,
   ) async {
-    await _db.into(_db.filterFetchedRangeRecords).insertOnConflictUpdate(
+    await _db
+        .into(_db.filterFetchedRangeRecords)
+        .insertOnConflictUpdate(
           FilterFetchedRangeRecordsCompanion.insert(
             key: record.key,
             filterHash: record.filterHash,
@@ -1063,8 +1055,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   ) async {
     final rows = await (_db.select(
       _db.filterFetchedRangeRecords,
-    )..where((t) => t.filterHash.equals(filterHash)))
-        .get();
+    )..where((t) => t.filterHash.equals(filterHash))).get();
     return rows.map(_filterFetchedRangeRecordFromRow).toList();
   }
 
@@ -1073,22 +1064,21 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     String filterHash,
     String relayUrl,
   ) async {
-    final rows = await (_db.select(_db.filterFetchedRangeRecords)
-          ..where(
-            (t) =>
-                t.filterHash.equals(filterHash) & t.relayUrl.equals(relayUrl),
-          ))
-        .get();
+    final rows =
+        await (_db.select(_db.filterFetchedRangeRecords)..where(
+              (t) =>
+                  t.filterHash.equals(filterHash) & t.relayUrl.equals(relayUrl),
+            ))
+            .get();
     return rows.map(_filterFetchedRangeRecordFromRow).toList();
   }
 
   @override
   Future<List<FilterFetchedRangeRecord>>
-      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
+  loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
     final rows = await (_db.select(
       _db.filterFetchedRangeRecords,
-    )..where((t) => t.relayUrl.equals(relayUrl)))
-        .get();
+    )..where((t) => t.relayUrl.equals(relayUrl))).get();
     return rows.map(_filterFetchedRangeRecordFromRow).toList();
   }
 
@@ -1096,8 +1086,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<void> removeFilterFetchedRangeRecords(String filterHash) async {
     await (_db.delete(
       _db.filterFetchedRangeRecords,
-    )..where((t) => t.filterHash.equals(filterHash)))
-        .go();
+    )..where((t) => t.filterHash.equals(filterHash))).go();
   }
 
   @override
@@ -1105,11 +1094,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     String filterHash,
     String relayUrl,
   ) async {
-    await (_db.delete(_db.filterFetchedRangeRecords)
-          ..where(
-            (t) =>
-                t.filterHash.equals(filterHash) & t.relayUrl.equals(relayUrl),
-          ))
+    await (_db.delete(_db.filterFetchedRangeRecords)..where(
+          (t) => t.filterHash.equals(filterHash) & t.relayUrl.equals(relayUrl),
+        ))
         .go();
   }
 
@@ -1117,8 +1104,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<void> removeFilterFetchedRangeRecordsByRelay(String relayUrl) async {
     await (_db.delete(
       _db.filterFetchedRangeRecords,
-    )..where((t) => t.relayUrl.equals(relayUrl)))
-        .go();
+    )..where((t) => t.relayUrl.equals(relayUrl))).go();
   }
 
   @override
@@ -1174,7 +1160,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     required String eventId,
     required String relayUrl,
   }) async {
-    await _db.into(_db.eventSourcesTable).insertOnConflictUpdate(
+    await _db
+        .into(_db.eventSourcesTable)
+        .insertOnConflictUpdate(
           EventSourcesTableCompanion.insert(
             eventId: eventId,
             relayUrl: relayUrl,
@@ -1205,8 +1193,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<List<String>> loadEventSources(String eventId) async {
     final rows = await (_db.select(
       _db.eventSourcesTable,
-    )..where((t) => t.eventId.equals(eventId)))
-        .get();
+    )..where((t) => t.eventId.equals(eventId))).get();
     return rows.map((r) => r.relayUrl).toList();
   }
 
@@ -1214,8 +1201,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<void> removeEventSources(String eventId) async {
     await (_db.delete(
       _db.eventSourcesTable,
-    )..where((t) => t.eventId.equals(eventId)))
-        .go();
+    )..where((t) => t.eventId.equals(eventId))).go();
   }
 
   // =====================
@@ -1224,7 +1210,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> saveEventDeliveryRecord(EventDeliveryRecord record) async {
-    await _db.into(_db.eventDeliveryRecordsTable).insertOnConflictUpdate(
+    await _db
+        .into(_db.eventDeliveryRecordsTable)
+        .insertOnConflictUpdate(
           EventDeliveryRecordsTableCompanion.insert(
             eventId: record.eventId,
             status: record.status.name,
@@ -1267,8 +1255,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<EventDeliveryRecord?> loadEventDeliveryRecord(String eventId) async {
     final row = await (_db.select(
       _db.eventDeliveryRecordsTable,
-    )..where((t) => t.eventId.equals(eventId)))
-        .getSingleOrNull();
+    )..where((t) => t.eventId.equals(eventId))).getSingleOrNull();
     if (row == null) return null;
     return _withEventDeliverySnapshot(_eventDeliveryRecordFromRow(row));
   }
@@ -1298,8 +1285,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     await Future.wait([
       (_db.delete(
         _db.eventDeliveryRecordsTable,
-      )..where((t) => t.eventId.equals(eventId)))
-          .go(),
+      )..where((t) => t.eventId.equals(eventId))).go(),
       _removeEventDeliverySnapshot(eventId),
     ]);
   }
@@ -1325,7 +1311,8 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   }
 
   Future<void> _saveEventDeliverySnapshot(EventDeliveryRecord record) async {
-    final hasSnapshotPayload = (record.serializedEventJson != null &&
+    final hasSnapshotPayload =
+        (record.serializedEventJson != null &&
             record.serializedEventJson!.isNotEmpty) ||
         record.signingState != EventSigningState.notNeeded ||
         record.signAttemptCount > 0 ||
@@ -1338,7 +1325,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     }
 
     final snapshotJson = jsonEncode(record.toJson());
-    await _db.into(_db.keyValues).insertOnConflictUpdate(
+    await _db
+        .into(_db.keyValues)
+        .insertOnConflictUpdate(
           KeyValuesCompanion.insert(
             key: _eventDeliverySnapshotKey(record.eventId),
             value: Value(snapshotJson),
@@ -1349,11 +1338,11 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<EventDeliveryRecord> _withEventDeliverySnapshot(
     EventDeliveryRecord record,
   ) async {
-    final snapshotRow = await (_db.select(_db.keyValues)
-          ..where(
-            (kv) => kv.key.equals(_eventDeliverySnapshotKey(record.eventId)),
-          ))
-        .getSingleOrNull();
+    final snapshotRow =
+        await (_db.select(_db.keyValues)..where(
+              (kv) => kv.key.equals(_eventDeliverySnapshotKey(record.eventId)),
+            ))
+            .getSingleOrNull();
     final snapshotValue = snapshotRow?.value;
     if (snapshotValue == null || snapshotValue.isEmpty) {
       return record;
@@ -1376,15 +1365,13 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<void> _removeEventDeliverySnapshot(String eventId) async {
     await (_db.delete(
       _db.keyValues,
-    )..where((kv) => kv.key.equals(_eventDeliverySnapshotKey(eventId))))
-        .go();
+    )..where((kv) => kv.key.equals(_eventDeliverySnapshotKey(eventId)))).go();
   }
 
   Future<void> _removeAllEventDeliverySnapshots() async {
     await (_db.delete(
       _db.keyValues,
-    )..where((kv) => kv.key.like('$_eventDeliverySnapshotKeyPrefix%')))
-        .go();
+    )..where((kv) => kv.key.like('$_eventDeliverySnapshotKeyPrefix%'))).go();
   }
 
   String _eventDeliverySnapshotKey(String eventId) {
@@ -1397,7 +1384,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> saveRelayDeliveryTarget(RelayDeliveryTarget target) async {
-    await _db.into(_db.relayDeliveryTargetsTable).insertOnConflictUpdate(
+    await _db
+        .into(_db.relayDeliveryTargetsTable)
+        .insertOnConflictUpdate(
           RelayDeliveryTargetsTableCompanion.insert(
             eventId: target.eventId,
             relayUrl: target.relayUrl,
@@ -1443,11 +1432,11 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     required String eventId,
     required String relayUrl,
   }) async {
-    final row = await (_db.select(_db.relayDeliveryTargetsTable)
-          ..where(
-            (t) => t.eventId.equals(eventId) & t.relayUrl.equals(relayUrl),
-          ))
-        .getSingleOrNull();
+    final row =
+        await (_db.select(_db.relayDeliveryTargetsTable)..where(
+              (t) => t.eventId.equals(eventId) & t.relayUrl.equals(relayUrl),
+            ))
+            .getSingleOrNull();
     if (row == null) return null;
     return _relayDeliveryTargetFromRow(row);
   }
@@ -1499,10 +1488,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     required String eventId,
     required String relayUrl,
   }) async {
-    await (_db.delete(_db.relayDeliveryTargetsTable)
-          ..where(
-            (t) => t.eventId.equals(eventId) & t.relayUrl.equals(relayUrl),
-          ))
+    await (_db.delete(_db.relayDeliveryTargetsTable)..where(
+          (t) => t.eventId.equals(eventId) & t.relayUrl.equals(relayUrl),
+        ))
         .go();
   }
 
@@ -1510,8 +1498,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<void> removeRelayDeliveryTargets(String eventId) async {
     await (_db.delete(
       _db.relayDeliveryTargetsTable,
-    )..where((t) => t.eventId.equals(eventId)))
-        .go();
+    )..where((t) => t.eventId.equals(eventId))).go();
   }
 
   @override
@@ -1587,8 +1574,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   }) async {
     final rows = await (_db.select(
       _db.keyValues,
-    )..where((kv) => kv.key.like('$_decryptedPayloadKeyPrefix%')))
-        .get();
+    )..where((kv) => kv.key.like('$_decryptedPayloadKeyPrefix%'))).get();
 
     var records = rows
         .where((row) => row.value != null)
@@ -1598,17 +1584,18 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
           ),
         )
         .where((record) {
-      if (eventId != null && record.eventId != eventId) {
-        return false;
-      }
-      if (viewerPubKey != null && record.viewerPubKey != viewerPubKey) {
-        return false;
-      }
-      if (status != null && record.status != status) {
-        return false;
-      }
-      return true;
-    }).toList();
+          if (eventId != null && record.eventId != eventId) {
+            return false;
+          }
+          if (viewerPubKey != null && record.viewerPubKey != viewerPubKey) {
+            return false;
+          }
+          if (status != null && record.status != status) {
+            return false;
+          }
+          return true;
+        })
+        .toList();
 
     records.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     if (limit != null && limit > 0 && records.length > limit) {
@@ -1622,10 +1609,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     required String eventId,
     required String viewerPubKey,
   }) async {
-    await (_db.delete(_db.keyValues)
-          ..where(
-            (kv) => kv.key.equals(_decryptedPayloadKey(eventId, viewerPubKey)),
-          ))
+    await (_db.delete(_db.keyValues)..where(
+          (kv) => kv.key.equals(_decryptedPayloadKey(eventId, viewerPubKey)),
+        ))
         .go();
   }
 
@@ -1640,8 +1626,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<void> removeAllDecryptedEventPayloadRecords() async {
     await (_db.delete(
       _db.keyValues,
-    )..where((kv) => kv.key.like('$_decryptedPayloadKeyPrefix%')))
-        .go();
+    )..where((kv) => kv.key.like('$_decryptedPayloadKeyPrefix%'))).go();
   }
 
   // =====================
@@ -1650,7 +1635,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> saveKeyset(CahsuKeyset keyset) async {
-    await _db.into(_db.cashuKeysets).insertOnConflictUpdate(
+    await _db
+        .into(_db.cashuKeysets)
+        .insertOnConflictUpdate(
           CashuKeysetsCompanion.insert(
             id: keyset.id,
             mintUrl: keyset.mintUrl,
@@ -1759,14 +1746,15 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     final yValues = proofs.map((p) => p.Y).toList();
     await (_db.delete(
       _db.cashuProofs,
-    )..where((p) => p.mintUrl.equals(mintUrl) & p.Y.isIn(yValues)))
-        .go();
+    )..where((p) => p.mintUrl.equals(mintUrl) & p.Y.isIn(yValues))).go();
   }
 
   @override
   Future<void> saveMintInfo({required CashuMintInfo mintInfo}) async {
     final id = mintInfo.urls.isNotEmpty ? mintInfo.urls.first : '';
-    await _db.into(_db.cashuMintInfos).insertOnConflictUpdate(
+    await _db
+        .into(_db.cashuMintInfos)
+        .insertOnConflictUpdate(
           CashuMintInfosCompanion.insert(
             id: id,
             urlsJson: jsonEncode(mintInfo.urls),
@@ -1793,8 +1781,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<void> removeMintInfo({required String mintUrl}) async {
     await (_db.delete(
       _db.cashuMintInfos,
-    )..where((tbl) => tbl.id.equals(mintUrl)))
-        .go();
+    )..where((tbl) => tbl.id.equals(mintUrl))).go();
   }
 
   @override
@@ -1834,8 +1821,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     final id = '$mintUrl|$keysetId';
     final row = await (_db.select(
       _db.cashuSecretCounters,
-    )..where((c) => c.id.equals(id)))
-        .getSingleOrNull();
+    )..where((c) => c.id.equals(id))).getSingleOrNull();
     return row?.counter ?? 0;
   }
 
@@ -1846,7 +1832,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     required int counter,
   }) async {
     final id = '$mintUrl|$keysetId';
-    await _db.into(_db.cashuSecretCounters).insertOnConflictUpdate(
+    await _db
+        .into(_db.cashuSecretCounters)
+        .insertOnConflictUpdate(
           CashuSecretCountersCompanion.insert(
             id: id,
             mintUrl: mintUrl,
@@ -1862,7 +1850,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> storeWallet(Wallet wallet) async {
-    await _db.into(_db.wallets).insertOnConflictUpdate(
+    await _db
+        .into(_db.wallets)
+        .insertOnConflictUpdate(
           WalletsCompanion.insert(
             id: wallet.id,
             name: wallet.name,
@@ -1899,13 +1889,14 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<String?> _getKeyValue(String key) async {
     final row = await (_db.select(
       _db.keyValues,
-    )..where((kv) => kv.key.equals(key)))
-        .getSingleOrNull();
+    )..where((kv) => kv.key.equals(key))).getSingleOrNull();
     return row?.value;
   }
 
   Future<void> _storeKeyValue({required String key, required String? value}) {
-    return _db.into(_db.keyValues).insertOnConflictUpdate(
+    return _db
+        .into(_db.keyValues)
+        .insertOnConflictUpdate(
           KeyValuesCompanion.insert(key: key, value: Value(value)),
         );
   }
@@ -2021,8 +2012,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
     await (_db.delete(
       _db.walletTransactions,
-    )..where((t) => t.id.isIn(transactionIds)))
-        .go();
+    )..where((t) => t.id.isIn(transactionIds))).go();
   }
 
   @override

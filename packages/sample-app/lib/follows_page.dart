@@ -70,10 +70,11 @@ class _FollowsPageState extends State<FollowsPage> {
         return;
       }
 
-      final profiles = contacts
-          .map((pubKey) => _FollowProfile(pubKey: pubKey, metadata: null))
-          .toList()
-        ..sort((a, b) => a.sortKey.compareTo(b.sortKey));
+      final profiles =
+          contacts
+              .map((pubKey) => _FollowProfile(pubKey: pubKey, metadata: null))
+              .toList()
+            ..sort((a, b) => a.sortKey.compareTo(b.sortKey));
 
       if (!mounted) return;
       setState(() {
@@ -343,8 +344,8 @@ class _FollowProfile {
   String get sortKey => primaryLabel.toLowerCase();
 
   String get searchText => [
-        metadata?.displayName?.trim().toLowerCase(),
-        metadata?.name?.trim().toLowerCase(),
-        pubKey.toLowerCase(),
-      ].whereType<String>().where((value) => value.isNotEmpty).join(' ');
+    metadata?.displayName?.trim().toLowerCase(),
+    metadata?.name?.trim().toLowerCase(),
+    pubKey.toLowerCase(),
+  ].whereType<String>().where((value) => value.isNotEmpty).join(' ');
 }

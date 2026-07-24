@@ -18,13 +18,13 @@ CashuStateExportImport _export(
 }
 
 CahsuKeyset _keyset(String mintUrl) => CahsuKeyset(
-      id: 'keyset1',
-      mintUrl: mintUrl,
-      unit: 'sat',
-      active: true,
-      inputFeePPK: 0,
-      mintKeyPairs: {CahsuMintKeyPair(amount: 1, pubkey: 'abc')},
-    );
+  id: 'keyset1',
+  mintUrl: mintUrl,
+  unit: 'sat',
+  active: true,
+  inputFeePPK: 0,
+  mintKeyPairs: {CahsuMintKeyPair(amount: 1, pubkey: 'abc')},
+);
 
 void main() {
   const mintUrl = 'https://mint.test';

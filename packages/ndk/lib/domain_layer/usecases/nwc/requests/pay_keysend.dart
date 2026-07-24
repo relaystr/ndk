@@ -15,8 +15,8 @@ class PayKeysendRequest extends NwcRequest {
     required this.pubkey,
     this.preimage,
     this.tlvRecords,
-  })  : amountSat = amountMsat ~/ 1000,
-        super(method: NwcMethod.PAY_KEYSEND);
+  }) : amountSat = amountMsat ~/ 1000,
+       super(method: NwcMethod.PAY_KEYSEND);
 
   @override
   Map<String, dynamic> toMap() {

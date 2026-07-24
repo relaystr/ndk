@@ -19,8 +19,8 @@ class Nip05Usecase {
   Nip05Usecase({
     required CacheManager database,
     required Nip05Repository nip05Repository,
-  })  : _database = database,
-        _nip05Repository = nip05Repository;
+  }) : _database = database,
+       _nip05Repository = nip05Repository;
 
   /// checks the nip05 object for validity
   /// it checks the cache first, if not found it fetches from the network

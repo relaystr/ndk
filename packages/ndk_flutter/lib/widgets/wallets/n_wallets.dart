@@ -127,8 +127,8 @@ class NWalletsState extends State<NWallets> {
 
     if (!handled || !mounted) return handled;
 
-    final connectedWalletId =
-        _nwcWalletAuthCoordinator.takeLastConnectedWalletId();
+    final connectedWalletId = _nwcWalletAuthCoordinator
+        .takeLastConnectedWalletId();
     if (connectedWalletId != null) {
       setState(() {
         _selectedWalletId = connectedWalletId;
@@ -150,9 +150,9 @@ class NWalletsState extends State<NWallets> {
         widget.showRecentTransactions && hasSelectedWallet;
     final bool useExpandedCardList =
         widget.walletCardsScrollDirection == Axis.vertical &&
-            !widget.showWalletActions &&
-            !widget.showPendingTransactions &&
-            !widget.showRecentTransactions;
+        !widget.showWalletActions &&
+        !widget.showPendingTransactions &&
+        !widget.showRecentTransactions;
 
     if (useExpandedCardList) {
       return Padding(

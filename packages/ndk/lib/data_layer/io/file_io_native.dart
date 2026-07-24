@@ -71,9 +71,9 @@ class FileIONative implements FileIO {
 
     yield* IsolateManager.instance
         .runInComputeIsolateStream<String, FileHashProgress>(
-      _computeFileHashTask,
-      filePath,
-    );
+          _computeFileHashTask,
+          filePath,
+        );
   }
 }
 

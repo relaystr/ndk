@@ -96,8 +96,8 @@ class ReclaimPendingTile extends StatelessWidget {
         final String? reason = snapshot.hasError
             ? snapshot.error.toString()
             : (state == WalletTransactionState.failed
-                ? snapshot.data?.completionMsg
-                : null);
+                  ? snapshot.data?.completionMsg
+                  : null);
 
         final Widget trailing;
         if (errored) {
@@ -204,8 +204,8 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
             Future<void> generate() async {
               setDialogState(() => generating = true);
               try {
-                final json =
-                    await ndkFlutter.ndk.cashu.exportCashuStateJsonString();
+                final json = await ndkFlutter.ndk.cashu
+                    .exportCashuStateJsonString();
                 setDialogState(() {
                   backupJson = json;
                   generating = false;
@@ -527,12 +527,12 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                 }
 
                 try {
-                  final spendingResult =
-                      await ndkFlutter.ndk.cashu.initiateSpend(
-                    mintUrl: wallet.mintUrl,
-                    amount: amount,
-                    unit: 'sat',
-                  );
+                  final spendingResult = await ndkFlutter.ndk.cashu
+                      .initiateSpend(
+                        mintUrl: wallet.mintUrl,
+                        amount: amount,
+                        unit: 'sat',
+                      );
                   final cashuString = spendingResult.token.toV4TokenString();
 
                   await Clipboard.setData(ClipboardData(text: cashuString));
@@ -590,13 +590,13 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
 
                 try {
                   if (wallet is CashuWallet) {
-                    final draftTransaction =
-                        await ndkFlutter.ndk.cashu.initiateRedeem(
-                      mintUrl: wallet.mintUrl,
-                      request: invoice,
-                      unit: 'sat',
-                      method: 'bolt11',
-                    );
+                    final draftTransaction = await ndkFlutter.ndk.cashu
+                        .initiateRedeem(
+                          mintUrl: wallet.mintUrl,
+                          request: invoice,
+                          unit: 'sat',
+                          method: 'bolt11',
+                        );
 
                     await for (final transaction in ndkFlutter.ndk.cashu.redeem(
                       draftRedeemTransaction: draftTransaction,
@@ -744,13 +744,13 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
 
                 try {
                   if (wallet is CashuWallet) {
-                    final draftTransaction =
-                        await ndkFlutter.ndk.cashu.initiateFund(
-                      mintUrl: wallet.mintUrl,
-                      amount: amount,
-                      unit: 'sat',
-                      method: 'bolt11',
-                    );
+                    final draftTransaction = await ndkFlutter.ndk.cashu
+                        .initiateFund(
+                          mintUrl: wallet.mintUrl,
+                          amount: amount,
+                          unit: 'sat',
+                          method: 'bolt11',
+                        );
 
                     if (draftTransaction.qoute?.request != null) {
                       final invoice = draftTransaction.qoute!.request;

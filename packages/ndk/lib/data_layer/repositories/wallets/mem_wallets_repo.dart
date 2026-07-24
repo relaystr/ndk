@@ -53,8 +53,8 @@ class MemWalletsRepo extends WalletsRepo {
 
     for (final transaction in transactions) {
       final existingIndex = this.transactions.indexWhere(
-            (t) => t.id == transaction.id && t.walletId == transaction.walletId,
-          );
+        (t) => t.id == transaction.id && t.walletId == transaction.walletId,
+      );
       if (existingIndex != -1) {
         this.transactions[existingIndex] = transaction;
       } else {
@@ -82,8 +82,9 @@ class MemWalletsRepo extends WalletsRepo {
     if (ids == null || ids.isEmpty) {
       return Future.value(wallets.toList());
     } else {
-      final result =
-          wallets.where((wallet) => ids.contains(wallet.id)).toList();
+      final result = wallets
+          .where((wallet) => ids.contains(wallet.id))
+          .toList();
       return Future.value(result.isNotEmpty ? result : List.empty());
     }
   }

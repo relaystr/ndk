@@ -101,8 +101,9 @@ class NwcWalletAuthCoordinator {
         queryParameters: {
           'relay': config.discoveryRelay,
           'name': config.appName,
-          'request_methods':
-              config.requestMethods.map((method) => method.name).join(' '),
+          'request_methods': config.requestMethods
+              .map((method) => method.name)
+              .join(' '),
           'icon': config.appIconUrl,
           'return_to': config.callback,
         },
@@ -167,8 +168,9 @@ class NwcWalletAuthCoordinator {
     String url,
   ) async {
     final l10n = context.mounted ? AppLocalizations.of(context)! : null;
-    final scaffoldMessenger =
-        context.mounted ? ScaffoldMessenger.of(context) : null;
+    final scaffoldMessenger = context.mounted
+        ? ScaffoldMessenger.of(context)
+        : null;
 
     final callbackNwcUri = _extractNwcUriFromCallback(url);
     if (callbackNwcUri != null) {
@@ -183,7 +185,8 @@ class NwcWalletAuthCoordinator {
         await _addNwcWallet(
           ndkFlutter,
           nwcUri: callbackNwcUri,
-          walletName: pendingCallbackSession?.walletName ??
+          walletName:
+              pendingCallbackSession?.walletName ??
               _pendingSession?.walletName ??
               kDefaultAlbyGoConnectConfig.walletName,
         );
@@ -612,8 +615,8 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
                                   onPressed: () async {
                                     final clipboardData =
                                         await Clipboard.getData(
-                                      Clipboard.kTextPlain,
-                                    );
+                                          Clipboard.kTextPlain,
+                                        );
                                     if (clipboardData?.text != null) {
                                       nwcUriController.text =
                                           clipboardData!.text!;
@@ -659,7 +662,8 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
                     setState(() => isLoading = true);
 
                     try {
-                      final balance = int.tryParse(balanceController.text) ??
+                      final balance =
+                          int.tryParse(balanceController.text) ??
                           widget.defaultBalance;
                       final response = await http.post(
                         Uri.parse('https://faucet.nwc.dev?balance=$balance'),
@@ -669,8 +673,8 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
                         final nwcUri = response.body.trim();
 
                         if (nwcUri.isNotEmpty) {
-                          final walletId =
-                              DateTime.now().millisecondsSinceEpoch.toString();
+                          final walletId = DateTime.now().millisecondsSinceEpoch
+                              .toString();
                           final nwcWallet = NwcWallet(
                             id: walletId,
                             name: 'NWC Faucet',
@@ -722,8 +726,8 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
                   } else {
                     // Manual tab
                     try {
-                      final walletId =
-                          DateTime.now().millisecondsSinceEpoch.toString();
+                      final walletId = DateTime.now().millisecondsSinceEpoch
+                          .toString();
                       final nwcWallet = NwcWallet(
                         id: walletId,
                         name: 'NWC',
@@ -1161,10 +1165,10 @@ Future<bool> showNwcConnectionOptionsDialog(
                           await (nwcWalletAuthCoordinator ??
                                   NwcWalletAuthCoordinator())
                               .connectAlbyGo(
-                            context,
-                            ndkFlutter,
-                            config: albyGoConnectConfig,
-                          );
+                                context,
+                                ndkFlutter,
+                                config: albyGoConnectConfig,
+                              );
                         },
                       ),
                     // Manual connection button (with optional QR scanner hook)
@@ -1223,9 +1227,9 @@ class _WalletTypeOptionButton extends StatelessWidget {
     required this.label,
     required this.onTap,
   }) : assert(
-          icon != null || imageAsset != null,
-          'Either icon or imageAsset must be provided',
-        );
+         icon != null || imageAsset != null,
+         'Either icon or imageAsset must be provided',
+       );
 
   @override
   Widget build(BuildContext context) {
@@ -1295,9 +1299,9 @@ class _WalletTypeListOption extends StatelessWidget {
     required this.infoUrl,
     required this.onTap,
   }) : assert(
-          icon != null || imageAsset != null,
-          'Either icon or imageAsset must be provided',
-        );
+         icon != null || imageAsset != null,
+         'Either icon or imageAsset must be provided',
+       );
 
   @override
   Widget build(BuildContext context) {
@@ -1357,8 +1361,8 @@ class _WalletTypeListOption extends StatelessWidget {
                       child: Text(
                         infoUrl,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
                     ),
                   ],
@@ -1703,8 +1707,8 @@ Future<void> _showNwcFaucetDialog(
                   final nwcUri = response.body.trim();
 
                   if (nwcUri.isNotEmpty) {
-                    final walletId =
-                        DateTime.now().millisecondsSinceEpoch.toString();
+                    final walletId = DateTime.now().millisecondsSinceEpoch
+                        .toString();
                     final nwcWallet = NwcWallet(
                       id: walletId,
                       name: 'NWC Faucet',

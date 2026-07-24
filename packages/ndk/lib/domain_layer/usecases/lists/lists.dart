@@ -33,12 +33,12 @@ class Lists {
     required Accounts accounts,
     required LocalEventSignerFactory eventSignerFactory,
     required DecryptedEventPayloads decryptedEventPayloads,
-  })  : _cacheManager = cacheManager,
-        _requests = requests,
-        _broadcast = broadcast,
-        _accounts = accounts,
-        _eventSignerFactory = eventSignerFactory,
-        _decryptedEventPayloads = decryptedEventPayloads;
+  }) : _cacheManager = cacheManager,
+       _requests = requests,
+       _broadcast = broadcast,
+       _accounts = accounts,
+       _eventSignerFactory = eventSignerFactory,
+       _decryptedEventPayloads = decryptedEventPayloads;
 
   EventSigner? get _eventSigner {
     return _accounts.getLoggedAccount()?.signer;
@@ -52,8 +52,9 @@ class Lists {
     return _decryptedEventPayloads.loadOrDecrypt(
       event: event,
       viewerPubKey: signer.getPublicKey(),
-      scheme:
-          isNip04 ? DecryptedPayloadScheme.nip04 : DecryptedPayloadScheme.nip44,
+      scheme: isNip04
+          ? DecryptedPayloadScheme.nip04
+          : DecryptedPayloadScheme.nip44,
       decrypt: () => isNip04
           // ignore: deprecated_member_use_from_same_package
           ? signer.decrypt(event.content, signer.getPublicKey())
@@ -136,16 +137,20 @@ class Lists {
       throw Exception("cannot get nip51 list without a signer");
     }
     final signer = _eventSigner!;
-    Nip51List? list =
-        !forceRefresh ? await _getCachedNip51List(kind, signer) : null;
+    Nip51List? list = !forceRefresh
+        ? await _getCachedNip51List(kind, signer)
+        : null;
     if (list == null) {
       Nip51List? refreshedList;
-      await for (final event in _requests.query(
-        filters: [
-          Filter(authors: [signer.getPublicKey()], kinds: [kind]),
-        ],
-        timeout: timeout,
-      ).stream) {
+      await for (final event
+          in _requests
+              .query(
+                filters: [
+                  Filter(authors: [signer.getPublicKey()], kinds: [kind]),
+                ],
+                timeout: timeout,
+              )
+              .stream) {
         if (refreshedList == null ||
             refreshedList.createdAt <= event.createdAt) {
           refreshedList = await _parseListEvent(event, signer);
@@ -184,17 +189,20 @@ class Lists {
       publicKey: publicKey,
     );
 
-    Nip51List? list =
-        !forceRefresh ? await _getCachedNip51List(kind, signer) : null;
+    Nip51List? list = !forceRefresh
+        ? await _getCachedNip51List(kind, signer)
+        : null;
 
     if (list != null) return list;
 
-    final events = await _requests.query(
-      filters: [
-        Filter(authors: [publicKey], kinds: [kind], limit: 1),
-      ],
-      timeout: timeout,
-    ).future;
+    final events = await _requests
+        .query(
+          filters: [
+            Filter(authors: [publicKey], kinds: [kind], limit: 1),
+          ],
+          timeout: timeout,
+        )
+        .future;
 
     if (events.isEmpty) return null;
 
@@ -401,18 +409,21 @@ class Lists {
     Nip51Set? relaySet = await _getCachedSetByName(name, signer, kind);
     if (relaySet == null || forceRefresh) {
       Nip51Set? newRelaySet;
-      await for (final event in _requests.query(
-        filters: [
-          Filter(
-            authors: [signer.getPublicKey()],
-            kinds: [kind],
-            tags: {
-              "#d": [name],
-            },
-          ),
-        ],
-        cacheRead: !forceRefresh,
-      ).stream) {
+      await for (final event
+          in _requests
+              .query(
+                filters: [
+                  Filter(
+                    authors: [signer.getPublicKey()],
+                    kinds: [kind],
+                    tags: {
+                      "#d": [name],
+                    },
+                  ),
+                ],
+                cacheRead: !forceRefresh,
+              )
+              .stream) {
         if (newRelaySet == null || newRelaySet.createdAt < event.createdAt) {
           if (event.getDtag() != null && event.getDtag() == name) {
             newRelaySet = await _parseSetEvent(event, signer);
@@ -706,12 +717,15 @@ class Lists {
     // Nip51Set? relaySet;//  await getCachedNip51RelaySet(signer);
     // if (relaySet == null || forceRefresh) {
     Map<String, Nip51Set> newRelaySets = {};
-    await for (final event in _requests.query(
-      filters: [
-        Filter(authors: [signer.getPublicKey()], kinds: [kind]),
-      ],
-      cacheRead: !forceRefresh,
-    ).stream) {
+    await for (final event
+        in _requests
+            .query(
+              filters: [
+                Filter(authors: [signer.getPublicKey()], kinds: [kind]),
+              ],
+              cacheRead: !forceRefresh,
+            )
+            .stream) {
       if (event.getDtag() != null) {
         Nip51Set? newRelaySet = newRelaySets[event.getDtag()];
         if (newRelaySet == null || newRelaySet.createdAt < event.createdAt) {

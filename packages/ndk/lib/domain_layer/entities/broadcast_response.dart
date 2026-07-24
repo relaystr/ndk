@@ -24,6 +24,6 @@ class NdkBroadcastResponse {
     required this.publishEvent,
     required Stream<List<RelayBroadcastResponse>> broadcastDoneStream,
     Future<List<RelayBroadcastResponse>>? broadcastDoneFuture,
-  })  : _broadcastDoneStream = broadcastDoneStream,
-        _broadcastDoneFuture = broadcastDoneFuture ?? broadcastDoneStream.last;
+  }) : _broadcastDoneStream = broadcastDoneStream,
+       _broadcastDoneFuture = broadcastDoneFuture ?? broadcastDoneStream.last;
 }

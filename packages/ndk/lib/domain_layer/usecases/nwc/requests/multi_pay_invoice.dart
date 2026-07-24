@@ -6,7 +6,7 @@ class MultiPayInvoiceRequest extends NwcRequest {
   final List<MultiPayInvoiceRequestInvoicesElement> invoices;
 
   const MultiPayInvoiceRequest({required this.invoices})
-      : super(method: NwcMethod.MULTI_PAY_INVOICE);
+    : super(method: NwcMethod.MULTI_PAY_INVOICE);
 
   @override
   Map<String, dynamic> toMap() {

@@ -16,9 +16,9 @@ class BlossomUserServerList {
     required Requests requests,
     required Broadcast broadcast,
     required Accounts accounts,
-  })  : _accounts = accounts,
-        _broadcast = broadcast,
-        _requests = requests;
+  }) : _accounts = accounts,
+       _broadcast = broadcast,
+       _requests = requests;
 
   /// Get user server list \
   /// returns list of server urls \

@@ -60,7 +60,8 @@ class Nip01Event {
     this.createdAt = (createdAt == 0)
         ? DateTime.now().millisecondsSinceEpoch ~/ 1000
         : createdAt;
-    this.id = id ??
+    this.id =
+        id ??
         Nip01Utils.calculateEventIdSync(
           pubKey: pubKey,
           createdAt: createdAt,
