@@ -70,13 +70,15 @@ import 'sample_app_localizations_zh.dart';
 /// property.
 abstract class SampleAppLocalizations {
   SampleAppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
   static SampleAppLocalizations? of(BuildContext context) {
     return Localizations.of<SampleAppLocalizations>(
-        context, SampleAppLocalizations);
+      context,
+      SampleAppLocalizations,
+    );
   }
 
   static const LocalizationsDelegate<SampleAppLocalizations> delegate =
@@ -94,11 +96,11 @@ abstract class SampleAppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -110,7 +112,7 @@ abstract class SampleAppLocalizations {
     Locale('ja'),
     Locale('pl'),
     Locale('ru'),
-    Locale('zh')
+    Locale('zh'),
   ];
 
   /// No description provided for @appName.
@@ -799,21 +801,22 @@ class _SampleAppLocalizationsDelegate
   @override
   Future<SampleAppLocalizations> load(Locale locale) {
     return SynchronousFuture<SampleAppLocalizations>(
-        lookupSampleAppLocalizations(locale));
+      lookupSampleAppLocalizations(locale),
+    );
   }
 
   @override
   bool isSupported(Locale locale) => <String>[
-        'de',
-        'en',
-        'es',
-        'fr',
-        'it',
-        'ja',
-        'pl',
-        'ru',
-        'zh'
-      ].contains(locale.languageCode);
+    'de',
+    'en',
+    'es',
+    'fr',
+    'it',
+    'ja',
+    'pl',
+    'ru',
+    'zh',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_SampleAppLocalizationsDelegate old) => false;
@@ -843,8 +846,9 @@ SampleAppLocalizations lookupSampleAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-      'SampleAppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'SampleAppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }
