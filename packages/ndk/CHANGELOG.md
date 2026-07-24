@@ -1,3 +1,16 @@
+## 0.8.4-dev.11
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FEAT**: add local-first interactive signer retry flow.
+ - **FEAT**: local first.
+ - **FEAT**: local first.
+ - **FEAT**: local first.
+
 ## 0.8.4-dev.10
 
  - **FIX**: complete cache-served queries without waiting for timeout.
