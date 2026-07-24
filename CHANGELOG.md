@@ -3,6 +3,66 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-07-24
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.11`](#ndk---v084-dev11)
+ - [`ndk_bip32_keys` - `v0.1.0-dev.0+1`](#ndk_bip32_keys---v010-dev01)
+ - [`ndk_drift` - `v0.1.1-dev.13`](#ndk_drift---v011-dev13)
+ - [`ndk_flutter` - `v0.8.4-dev.14`](#ndk_flutter---v084-dev14)
+ - [`ndk_objectbox` - `v0.2.12-dev.11`](#ndk_objectbox---v0212-dev11)
+
+---
+
+#### `ndk` - `v0.8.4-dev.11`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FEAT**: add local-first interactive signer retry flow.
+ - **FEAT**: local first.
+ - **FEAT**: local first.
+ - **FEAT**: local first.
+
+#### `ndk_bip32_keys` - `v0.1.0-dev.0+1`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+
+#### `ndk_drift` - `v0.1.1-dev.13`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+
+#### `ndk_flutter` - `v0.8.4-dev.14`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FEAT**: add local-first interactive signer retry flow.
+
+#### `ndk_objectbox` - `v0.2.12-dev.11`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
 ## 2026-07-13
 
 ### Changes

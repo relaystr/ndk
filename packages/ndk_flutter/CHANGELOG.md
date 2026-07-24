@@ -1,3 +1,9 @@
+## 0.8.4-dev.14
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FEAT**: add local-first interactive signer retry flow.
+
 ## 0.8.4-dev.13
 
  - Update a dependency to the latest release.
