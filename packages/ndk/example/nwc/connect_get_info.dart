@@ -10,8 +10,7 @@ void main() async {
 
   // You need an NWC_URI env var or to replace with your NWC uri connection
   final nwcUri = Platform.environment['NWC_URI']!;
-  final connection = await ndk.nwc
-      .connect(nwcUri, doGetInfoMethod: true, timeout: Duration(seconds: 10));
+  final connection = await ndk.nwc.connect(nwcUri, doGetInfoMethod: true);
 
   print("Connected, permissions: ${connection.permissions}");
 

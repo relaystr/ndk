@@ -75,7 +75,7 @@ class Nip51List {
     kThread,
     kResource,
     kEmoji,
-    kA
+    kA,
   ];
 
   late String? id;
@@ -100,15 +100,22 @@ class Nip51List {
 
   set privateRelays(List<String> list) {
     elements.removeWhere((element) => element.tag == kRelay && element.private);
-    elements.addAll(list.map(
-        (url) => Nip51ListElement(tag: kRelay, value: url, private: true)));
+    elements.addAll(
+      list.map(
+        (url) => Nip51ListElement(tag: kRelay, value: url, private: true),
+      ),
+    );
   }
 
   set publicRelays(List<String> list) {
-    elements
-        .removeWhere((element) => element.tag == kRelay && !element.private);
-    elements.addAll(list.map(
-        (url) => Nip51ListElement(tag: kRelay, value: url, private: false)));
+    elements.removeWhere(
+      (element) => element.tag == kRelay && !element.private,
+    );
+    elements.addAll(
+      list.map(
+        (url) => Nip51ListElement(tag: kRelay, value: url, private: false),
+      ),
+    );
   }
 
   late int createdAt;
@@ -135,23 +142,27 @@ class Nip51List {
 
   List<String> get allRelays => relays.map((e) => e.value).toList();
 
-  Nip51List(
-      {required this.pubKey,
-      required this.kind,
-      required this.createdAt,
-      required this.elements});
+  Nip51List({
+    required this.pubKey,
+    required this.kind,
+    required this.createdAt,
+    required this.elements,
+  });
 
   static Future<Nip51List> fromEvent(
-      Nip01Event event, EventSigner? signer) async {
+    Nip01Event event,
+    EventSigner? signer,
+  ) async {
     // if (event.kind == Nip51List.SEARCH_RELAYS || event.kind == Nip51List.BLOCKED_RELAYS) {
     //   privateRelays = [];
     //   publicRelays = [];
     // }
     Nip51List list = Nip51List(
-        pubKey: event.pubKey,
-        kind: event.kind,
-        createdAt: event.createdAt,
-        elements: []);
+      pubKey: event.pubKey,
+      kind: event.kind,
+      createdAt: event.createdAt,
+      elements: [],
+    );
     list.id = event.id;
 
     list.parseTags(event.tags, private: false);
@@ -164,10 +175,7 @@ class Nip51List {
         final isNip04 = event.content.contains('?iv=');
         final json = isNip04
             // ignore: deprecated_member_use_from_same_package
-            ? await signer.decrypt(
-                event.content,
-                signer.getPublicKey(),
-              )
+            ? await signer.decrypt(event.content, signer.getPublicKey())
             : await signer.decryptNip44(
                 ciphertext: event.content,
                 senderPubKey: signer.getPublicKey(),
@@ -190,21 +198,26 @@ class Nip51List {
       final value = tag[1];
       if (kPossibleTags.contains(tagName)) {
         elements.add(
-            Nip51ListElement(tag: tagName, value: value, private: private));
+          Nip51ListElement(tag: tagName, value: value, private: private),
+        );
       }
     }
   }
 
   Future<Nip01Event> toEvent(EventSigner? signer) async {
     String content = "";
-    List<Nip51ListElement> privateElements =
-        elements.where((element) => element.private).toList();
+    List<Nip51ListElement> privateElements = elements
+        .where((element) => element.private)
+        .toList();
     if (privateElements.isNotEmpty && signer != null) {
-      String json = jsonEncode(privateElements
-          .map((element) => [element.tag, element.value])
-          .toList());
-      content = await signer.encryptNip44(
-              plaintext: json, recipientPubKey: signer.getPublicKey()) ??
+      String json = jsonEncode(
+        privateElements.map((element) => [element.tag, element.value]).toList(),
+      );
+      content =
+          await signer.encryptNip44(
+            plaintext: json,
+            recipientPubKey: signer.getPublicKey(),
+          ) ??
           '';
     }
     Nip01Event event = Nip01Event(
@@ -221,8 +234,9 @@ class Nip51List {
   }
 
   void addRelay(String relayUrl, bool private) {
-    elements
-        .add(Nip51ListElement(tag: kRelay, value: relayUrl, private: private));
+    elements.add(
+      Nip51ListElement(tag: kRelay, value: relayUrl, private: private),
+    );
   }
 
   void addElement(String tag, String value, bool private) {
@@ -231,12 +245,14 @@ class Nip51List {
 
   void removeRelay(String relayUrl) {
     elements.removeWhere(
-        (element) => element.tag == kRelay && element.value == relayUrl);
+      (element) => element.tag == kRelay && element.value == relayUrl,
+    );
   }
 
   void removeElement(String tag, String value) {
-    elements
-        .removeWhere((element) => element.tag == tag && element.value == value);
+    elements.removeWhere(
+      (element) => element.tag == tag && element.value == value,
+    );
   }
 }
 
@@ -245,8 +261,11 @@ class Nip51ListElement {
   String tag;
   String value;
 
-  Nip51ListElement(
-      {required this.tag, required this.value, required this.private});
+  Nip51ListElement({
+    required this.tag,
+    required this.value,
+    required this.private,
+  });
 }
 
 class Nip51Set extends Nip51List {
@@ -302,10 +321,7 @@ class Nip51Set extends Nip51List {
         final isNip04 = event.content.contains('?iv=');
         final json = isNip04
             // ignore: deprecated_member_use_from_same_package
-            ? await signer.decrypt(
-                event.content,
-                signer.getPublicKey(),
-              )
+            ? await signer.decrypt(event.content, signer.getPublicKey())
             : await signer.decryptNip44(
                 ciphertext: event.content,
                 senderPubKey: signer.getPublicKey(),
@@ -323,7 +339,7 @@ class Nip51Set extends Nip51List {
   Future<Nip01Event> toEvent(EventSigner? signer) async {
     Nip01Event event = await super.toEvent(signer);
     List<dynamic> tags = [
-      ["d", name]
+      ["d", name],
     ];
     if (Helpers.isNotBlank(description)) {
       tags.add(["description", description]);

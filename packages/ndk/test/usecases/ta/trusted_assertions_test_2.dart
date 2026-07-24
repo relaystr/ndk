@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'package:ndk/ndk.dart';
 
 final relay = "wss://nip85.uid.ovh";
@@ -124,8 +125,10 @@ void main() {
 
   print("Start");
 
-  final stream =
-      ndk.ta.streamUserMetrics(pubkey, metrics: {Nip85Metric.reactionsCount});
+  final stream = ndk.ta.streamUserMetrics(
+    pubkey,
+    metrics: {Nip85Metric.reactionsCount},
+  );
 
   stream.listen((metrics) {
     print('postCount: ${metrics.reactionsCount}');

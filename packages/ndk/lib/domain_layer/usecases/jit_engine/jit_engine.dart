@@ -53,9 +53,7 @@ class JitEngine with Logger implements NetworkEngine {
   /// the relay jit manager will try to find the right relay and use it
   /// if no relay is found the request will be blasted to all connected relays (on start seed Relays)
   @override
-  void handleRequest(
-    RequestState requestState,
-  ) async {
+  void handleRequest(RequestState requestState) async {
     await relayManagerLight.seedRelaysConnected;
 
     final ndkRequest = requestState.request;
@@ -70,8 +68,9 @@ class JitEngine with Logger implements NetworkEngine {
 
       if (requestState.request.explicitRelays != null &&
           requestState.request.explicitRelays!.isNotEmpty) {
-        final cleanedExplicitRelays =
-            cleanRelayUrls(requestState.request.explicitRelays!.toList());
+        final cleanedExplicitRelays = cleanRelayUrls(
+          requestState.request.explicitRelays!.toList(),
+        );
         RelayJitRequestSpecificStrategy.handleRequest(
           relayManager: relayManagerLight,
           requestState: requestState,
@@ -123,8 +122,9 @@ class JitEngine with Logger implements NetworkEngine {
       }
 
       if (filter.search != null) {
-        Logger.log.w(() =>
-            "search filter not implemented yet, using blast all strategy");
+        Logger.log.w(
+          () => "search filter not implemented yet, using blast all strategy",
+        );
       }
 
       // if (filter.ids != null) {
@@ -149,7 +149,9 @@ class JitEngine with Logger implements NetworkEngine {
         ndkRequest.authenticateAs!.isNotEmpty) {
       for (final relayUrl in requestState.requests.keys) {
         relayManagerLight.authenticateIfNeeded(
-            relayUrl, ndkRequest.authenticateAs!);
+          relayUrl,
+          ndkRequest.authenticateAs!,
+        );
       }
     }
   }
@@ -186,6 +188,7 @@ class JitEngine with Logger implements NetworkEngine {
         await RelayJitBroadcastSpecificRelaysStrategy.broadcast(
           specificRelays: cleanedSpecificRelays,
           relayManager: relayManagerLight,
+          cacheManager: cache,
           eventToPublish: workingNostrEvent,
           connectedRelays: relayManagerLight.connectedRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
@@ -225,8 +228,12 @@ class JitEngine with Logger implements NetworkEngine {
     asyncStuff();
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
-      broadcastDoneStream: broadcastState.stateUpdates
-          .map((state) => state.broadcasts.values.toList()),
+      broadcastDoneStream: broadcastState.stateUpdates.map(
+        (state) => state.broadcasts.values.toList(),
+      ),
+      broadcastDoneFuture: broadcastState.publishDoneFuture.then(
+        (state) => state.broadcasts.values.toList(),
+      ),
     );
   }
 

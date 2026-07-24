@@ -78,4 +78,5 @@ class NdkRequest {
     this.authenticateAs,
   });
 }
+
 // coverage:ignore-end

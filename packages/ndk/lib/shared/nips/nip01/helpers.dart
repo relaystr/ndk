@@ -15,8 +15,12 @@ class Helpers {
 
   /// return a random string of given length
   static String getRandomString(int length) {
-    return String.fromCharCodes(Iterable.generate(
-        length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
+    return String.fromCharCodes(
+      Iterable.generate(
+        length,
+        (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length)),
+      ),
+    );
   }
 
   /// return a secure random string of given length
@@ -91,7 +95,11 @@ class Helpers {
   /// If pad is true, and there are remaining bits after the conversion, then the remaining bits are left-shifted and added to the result
   /// [return] - the converted data
   static List<int> _convertBits(
-      List<int> data, int fromBits, int toBits, bool pad) {
+    List<int> data,
+    int fromBits,
+    int toBits,
+    bool pad,
+  ) {
     int acc = 0;
     int bits = 0;
     List<int> result = [];

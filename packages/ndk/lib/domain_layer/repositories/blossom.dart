@@ -66,9 +66,7 @@ abstract class BlossomRepository {
   });
 
   /// Directly downloads a blob from the url, without blossom
-  Future<BlobResponse> directDownload({
-    required Uri url,
-  });
+  Future<BlobResponse> directDownload({required Uri url});
 
   /// Directly downloads a blob from the url to a file, without blossom
   Future<void> directDownloadToFile({

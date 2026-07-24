@@ -51,16 +51,20 @@ class RelayManager<T> {
   /// stores timers for pending AUTH callbacks to clean them up on timeout
   final Map<String, Timer> _pendingAuthTimers = {};
 
+  /// Tracks relay connect attempts that are still finishing setup so callers
+  /// can wait for "socket open + listener attached", not just raw socket open.
+  final Map<String, Completer<bool>> _connectReadyCompleters = {};
+
   /// timeout for AUTH callbacks (how long to wait for AUTH OK)
   final Duration authCallbackTimeout;
 
   /// Handler for NIP-77 NEG-MSG messages
   void Function(String subscriptionId, String relayUrl, String payload)?
-      onNegMsg;
+  onNegMsg;
 
   /// Handler for NIP-77 NEG-ERR messages
   void Function(String subscriptionId, String relayUrl, String errorMsg)?
-      onNegErr;
+  onNegErr;
 
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
@@ -116,15 +120,16 @@ class RelayManager<T> {
     if (bootstrapRelays.isEmpty) {
       bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
     }
-    await Future.wait(urls
-            .map(
-              (url) => connectRelay(
-                dirtyUrl: url,
-                connectionSource: ConnectionSource.seed,
-              ),
-            )
-            .toList())
-        .whenComplete(() {
+    await Future.wait(
+      urls
+          .map(
+            (url) => connectRelay(
+              dirtyUrl: url,
+              connectionSource: ConnectionSource.seed,
+            ),
+          )
+          .toList(),
+    ).whenComplete(() {
       if (!_seedRelaysCompleter.isCompleted) {
         _seedRelaysCompleter.complete();
       }
@@ -146,6 +151,33 @@ class RelayManager<T> {
   bool isRelayConnecting(String url) {
     final relay = globalState.relays[url]?.relay;
     return relay != null && relay.connecting;
+  }
+
+  Future<bool> _waitForTransportOpen(
+    NostrTransport transport, {
+    required int timeoutSeconds,
+  }) async {
+    final deadline = DateTime.now().add(Duration(seconds: timeoutSeconds));
+
+    while (DateTime.now().isBefore(deadline)) {
+      if (transport.isOpen()) {
+        return true;
+      }
+
+      try {
+        await transport.ready.timeout(const Duration(milliseconds: 250));
+      } catch (_) {
+        // keep polling isOpen() until the overall timeout expires
+      }
+
+      if (transport.isOpen()) {
+        return true;
+      }
+
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
+
+    return transport.isOpen();
   }
 
   /// Connects to a relay to the relay pool.
@@ -174,18 +206,28 @@ class RelayManager<T> {
 
     if (isRelayConnecting(url)) {
       Logger.log.t(() => "relay is already connecting: $url");
+      final inFlightConnect = _connectReadyCompleters[url];
+      if (inFlightConnect != null) {
+        final connected = await inFlightConnect.future;
+        updateRelayConnectivity();
+        return Tuple(
+          connected,
+          connected
+              ? "relay finished connecting"
+              : "relay failed while connecting",
+        );
+      }
       updateRelayConnectivity();
-      return Tuple(true, "relay is still connecting");
+      return Tuple(false, "relay is still connecting");
     }
     RelayConnectivity? relayConnectivity = globalState.relays[url];
+    final connectCompleter = Completer<bool>();
+    _connectReadyCompleters[url] = connectCompleter;
 
     try {
       if (relayConnectivity == null) {
         relayConnectivity = RelayConnectivity<T>(
-          relay: Relay(
-            url: url,
-            connectionSource: connectionSource,
-          ),
+          relay: Relay(url: url, connectionSource: connectionSource),
           specificEngineData: engineAdditionalDataFactory?.call(),
         );
         globalState.relays[url] = relayConnectivity;
@@ -196,25 +238,43 @@ class RelayManager<T> {
       /// TO BE REMOVED, ONCE WE FIND A WAY OF AVOIDING PROBLEM WHEN CONNECTING TO THIS
       if (url.startsWith("wss://brb.io")) {
         relayConnectivity.relay.failedToConnect();
+        if (!connectCompleter.isCompleted) {
+          connectCompleter.complete(false);
+        }
+        if (identical(_connectReadyCompleters[url], connectCompleter)) {
+          _connectReadyCompleters.remove(url);
+        }
         updateRelayConnectivity();
         return Tuple(false, "bad relay");
       }
 
       Logger.log.i(() => "connecting to relay $dirtyUrl");
 
-      relayConnectivity.relayTransport =
-          nostrTransportFactory(url, onReconnect: () {
-        reSubscribeInFlightSubscriptions(relayConnectivity!);
-        updateRelayConnectivity();
-      }, onDisconnect: (code, error, reason) {
-        relayConnectivity!.stats.connectionErrors++;
-        updateRelayConnectivity();
-      });
-      await relayConnectivity.relayTransport!.ready.timeout(
-        Duration(seconds: connectTimeout),
+      relayConnectivity.relayTransport = nostrTransportFactory(
+        url,
+        onReconnect: () {
+          reSubscribeInFlightSubscriptions(relayConnectivity!);
+          updateRelayConnectivity();
+        },
+        onDisconnect: (code, error, reason) {
+          relayConnectivity!.stats.connectionErrors++;
+          updateRelayConnectivity();
+        },
       );
-
+      // Start listening immediately so we don't miss early frames such as
+      // relay AUTH challenges that may arrive before the transport reports
+      // itself fully open.
       _startListeningToSocket(relayConnectivity);
+      final opened = await _waitForTransportOpen(
+        relayConnectivity.relayTransport!,
+        timeoutSeconds: connectTimeout,
+      );
+      if (!opened) {
+        throw TimeoutException(
+          "Future not completed",
+          Duration(seconds: connectTimeout),
+        );
+      }
 
       Logger.log.i(() => "connected to relay: $url");
       relayConnectivity.relay.succeededToConnect();
@@ -222,14 +282,26 @@ class RelayManager<T> {
       getRelayInfo(url).then((info) {
         relayConnectivity!.relayInfo = info;
       });
+      if (!connectCompleter.isCompleted) {
+        connectCompleter.complete(true);
+      }
+      if (identical(_connectReadyCompleters[url], connectCompleter)) {
+        _connectReadyCompleters.remove(url);
+      }
       updateRelayConnectivity();
       return Tuple(true, "");
     } catch (e) {
       Logger.log.e(() => "!! could not connect to $url -> $e");
-      relayConnectivity!.relayTransport = null;
+      await relayConnectivity!.close();
     }
     relayConnectivity.relay.failedToConnect();
     relayConnectivity.stats.connectionErrors++;
+    if (!connectCompleter.isCompleted) {
+      connectCompleter.complete(false);
+    }
+    if (identical(_connectReadyCompleters[url], connectCompleter)) {
+      _connectReadyCompleters.remove(url);
+    }
     updateRelayConnectivity();
     return Tuple(false, "could not connect to $url");
   }
@@ -240,15 +312,27 @@ class RelayManager<T> {
     required ConnectionSource connectionSource,
     bool force = false,
   }) async {
+    final inFlightConnect = _connectReadyCompleters[url];
+    if (inFlightConnect != null) {
+      final connected = await inFlightConnect.future;
+      updateRelayConnectivity();
+      return connected;
+    }
+
     RelayConnectivity? relayConnectivity = globalState.relays[url];
     if (relayConnectivity != null && relayConnectivity.relayTransport != null) {
-      await relayConnectivity.relayTransport!.ready
-          .timeout(Duration(seconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT))
-          .onError(
-        (error, stackTrace) {
-          Logger.log.e(() => "error connecting to relay $url: $error");
-        },
-      );
+      try {
+        final opened = await _waitForTransportOpen(
+          relayConnectivity.relayTransport!,
+          timeoutSeconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT,
+        );
+        if (opened && relayConnectivity.relayTransport!.isOpen()) {
+          updateRelayConnectivity();
+          return true;
+        }
+      } catch (error) {
+        Logger.log.e(() => "error connecting to relay $url: $error");
+      }
     }
     if (relayConnectivity == null ||
         relayConnectivity.relayTransport == null ||
@@ -266,8 +350,7 @@ class RelayManager<T> {
       if (!(await connectRelay(
         dirtyUrl: url,
         connectionSource: connectionSource,
-      ))
-          .first) {
+      )).first) {
         // could not connect
         return false;
       }
@@ -282,52 +365,127 @@ class RelayManager<T> {
     return true;
   }
 
+  /// Closes and clears only transport-scoped state for a relay, while keeping
+  /// the relay entry and relay-scoped metadata in memory.
+  Future<void> resetTransport(String url) async {
+    final connectivity = globalState.relays[url];
+    if (connectivity != null) {
+      Logger.log.d(() => "Resetting transport for $url...");
+      connectivity.relay.failedToConnect();
+      _lastChallengePerRelay.remove(url);
+      await connectivity.close();
+      updateRelayConnectivity();
+    }
+  }
+
   /// Reconnects all given relays
   Future<void> reconnectRelays(Iterable<String> urls) async {
     final startTime = DateTime.now();
     Logger.log.d(() => "connecting ${urls.length} relays in parallel");
-    List<bool> connected = await Future.wait(urls.map((url) => reconnectRelay(
-        url,
-        connectionSource: ConnectionSource.explicit,
-        force: true)));
+    List<bool> connected = await Future.wait(
+      urls.map(
+        (url) => reconnectRelay(
+          url,
+          connectionSource: ConnectionSource.explicit,
+          force: true,
+        ),
+      ),
+    );
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.d(() =>
-        "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED, took ${duration.inMilliseconds} ms");
+    Logger.log.d(
+      () =>
+          "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED, took ${duration.inMilliseconds} ms",
+    );
   }
 
   void reSubscribeInFlightSubscriptions(RelayConnectivity relayConnectivity) {
+    final transport = relayConnectivity.relayTransport;
+    if (transport == null || !transport.isOpen()) {
+      return;
+    }
+
     globalState.inFlightRequests.forEach((key, state) {
       state.requests.values
           .where((req) => req.url == relayConnectivity.url)
           .forEach((req) {
-        if (!state.request.closeOnEOSE) {
-          List<dynamic> list = ["REQ", state.id];
-          list.addAll(req.filters.map((filter) => filter.toMap()));
+            if (!state.request.closeOnEOSE) {
+              List<dynamic> list = ["REQ", state.id];
+              list.addAll(req.filters.map((filter) => filter.toMap()));
 
-          relayConnectivity.stats.activeRequests++;
-          _sendRaw(relayConnectivity, jsonEncode(list));
-        }
-      });
+              relayConnectivity.stats.activeRequests++;
+              _sendRaw(relayConnectivity, transport, jsonEncode(list));
+            }
+          });
     });
   }
 
-  void _sendRaw(RelayConnectivity relayConnectivity, dynamic data) {
-    relayConnectivity.relayTransport!.send(data);
+  void _sendRaw(
+    RelayConnectivity relayConnectivity,
+    NostrTransport transport,
+    dynamic data,
+  ) {
+    if (!identical(relayConnectivity.relayTransport, transport) ||
+        !transport.isOpen()) {
+      Logger.log.t(
+        () =>
+            "skip send to ${relayConnectivity.url}: transport changed or closed",
+      );
+      return;
+    }
+    transport.send(data);
     Logger.log.d(() => "send message to ${relayConnectivity.url}: $data");
   }
 
-  /// sends a [ClientMsg] to relay transport sink, throw an error if relay not connected
-  void send(RelayConnectivity relayConnectivity, ClientMsg msg) async {
-    if (relayConnectivity.relayTransport == null) {
-      throw Exception("relay not connected");
+  /// Sends a [ClientMsg] and surfaces transport churn/closed-socket failures to
+  /// the caller instead of silently dropping the write.
+  Future<void> sendOrThrow(
+    RelayConnectivity relayConnectivity,
+    ClientMsg msg,
+  ) async {
+    NostrTransport? transport = relayConnectivity.relayTransport;
+    if (transport == null) {
+      throw StateError("relay not connected: ${relayConnectivity.url}");
     }
 
-    /// wait until rdy
-    await relayConnectivity.relayTransport!.ready;
+    await transport.ready;
+
+    if (!identical(relayConnectivity.relayTransport, transport) ||
+        !transport.isOpen()) {
+      transport = relayConnectivity.relayTransport;
+      if (transport == null) {
+        throw StateError(
+          "transport changed while waiting for ${relayConnectivity.url}",
+        );
+      }
+
+      await transport.ready;
+
+      if (!identical(relayConnectivity.relayTransport, transport) ||
+          !transport.isOpen()) {
+        throw StateError(
+          "transport changed while waiting for ${relayConnectivity.url}",
+        );
+      }
+    }
 
     final String encodedMsg = jsonEncode(msg.toJson());
-    _sendRaw(relayConnectivity, encodedMsg);
+    if (!identical(relayConnectivity.relayTransport, transport) ||
+        !transport.isOpen()) {
+      throw StateError(
+        "transport closed before send: ${relayConnectivity.url}",
+      );
+    }
+    _sendRaw(relayConnectivity, transport, encodedMsg);
+  }
+
+  /// sends a [ClientMsg] to relay transport sink, throw an error if relay not connected
+  void send(RelayConnectivity relayConnectivity, ClientMsg msg) {
+    unawaited(
+      sendOrThrow(relayConnectivity, msg).catchError((Object error) {
+        Logger.log.t(() => "skip send to ${relayConnectivity.url}: $error");
+      }),
+    );
   }
 
   /// use this to register your request against a relay, \
@@ -340,14 +498,12 @@ class RelayManager<T> {
     // new tracking
     if (globalState.inFlightRequests[reqId]!.requests[relayUrl] == null) {
       globalState.inFlightRequests[reqId]!.requests[relayUrl] =
-          RelayRequestState(
-        relayUrl,
-        filters,
-      );
+          RelayRequestState(relayUrl, filters);
     } else {
       // do not overwrite and add new filters
-      globalState.inFlightRequests[reqId]!.requests[relayUrl]!.filters
-          .addAll(filters);
+      globalState.inFlightRequests[reqId]!.requests[relayUrl]!.filters.addAll(
+        filters,
+      );
     }
   }
 
@@ -359,8 +515,10 @@ class RelayManager<T> {
   }) {
     final broadcastState = globalState.inFlightBroadcasts[eventToPublish.id];
     if (broadcastState == null) {
-      Logger.log.w(() =>
-          "registerRelayBroadcast: no broadcast state for ${eventToPublish.id}");
+      Logger.log.w(
+        () =>
+            "registerRelayBroadcast: no broadcast state for ${eventToPublish.id}",
+      );
       return;
     }
 
@@ -374,84 +532,109 @@ class RelayManager<T> {
       );
     } else {
       // do not overwrite
-      Logger.log.w(() =>
-          "registerRelayBroadcast: relay broadcast already registered for ${eventToPublish.id} $relayUrl, skipping");
+      Logger.log.w(
+        () =>
+            "registerRelayBroadcast: relay broadcast already registered for ${eventToPublish.id} $relayUrl, skipping",
+      );
     }
   }
 
   /// use this to signal a failed broadcast
   void failBroadcast(String nostrEventId, String relay, String msg) {
-    if (globalState.inFlightBroadcasts.containsKey(nostrEventId)) {
-      globalState.inFlightBroadcasts[nostrEventId]?.networkController.add(
-        RelayBroadcastResponse(
-          relayUrl: relay,
-          okReceived: false,
-          broadcastSuccessful: false,
-          msg: msg,
-        ),
-      );
+    final broadcastState = globalState.inFlightBroadcasts[nostrEventId];
+    if (broadcastState == null) {
+      return;
     }
+    if (broadcastState.networkController.isClosed) {
+      Logger.log.w(
+        () =>
+            "Ignoring late failed broadcast for $nostrEventId on $relay because the broadcast controller is already closed",
+      );
+      return;
+    }
+
+    broadcastState.networkController.add(
+      RelayBroadcastResponse(
+        relayUrl: relay,
+        okReceived: false,
+        broadcastSuccessful: false,
+        msg: msg,
+      ),
+    );
   }
 
   void _startListeningToSocket(RelayConnectivity relayConnectivity) {
-    relayConnectivity.listen((message) {
-      _handleIncomingMessage(
-        message,
-        relayConnectivity,
-      );
-    }, onError: (error) async {
-      Logger.log.e(() => "onError ${relayConnectivity.url} on listen $error");
-      relayConnectivity.stats.connectionErrors++;
-      try {
-        await relayConnectivity.close();
-      } catch (e) {
-        Logger.log.w(() => "Error closing relay ${relayConnectivity.url}: $e");
-      }
-      updateRelayConnectivity();
-    }, onDone: () async {
-      Logger.log.t(() =>
-          "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport?.closeCode()} ${relayConnectivity.relayTransport?.closeReason()})");
+    relayConnectivity.listen(
+      (message) {
+        _handleIncomingMessage(message, relayConnectivity);
+      },
+      onError: (error) async {
+        Logger.log.e(() => "onError ${relayConnectivity.url} on listen $error");
+        relayConnectivity.stats.connectionErrors++;
+        try {
+          await relayConnectivity.close();
+        } catch (e) {
+          Logger.log.w(
+            () => "Error closing relay ${relayConnectivity.url}: $e",
+          );
+        }
+        updateRelayConnectivity();
+      },
+      onDone: () async {
+        Logger.log.t(
+          () =>
+              "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport?.closeCode()} ${relayConnectivity.relayTransport?.closeReason()})",
+        );
 
-      try {
-        await relayConnectivity.close();
-      } catch (e) {
-        Logger.log.w(() => "Error closing relay ${relayConnectivity.url}: $e");
-      }
-      updateRelayConnectivity();
-      // reconnect on close
-      if (allowReconnectRelays &&
-          globalState.relays[relayConnectivity.url] != null &&
-          globalState.relays[relayConnectivity.url]!.relayTransport != null) {
-        Logger.log.i(() => "closed ${relayConnectivity.url}. Reconnecting");
-        reconnectRelay(relayConnectivity.url,
-                connectionSource: relayConnectivity.relay.connectionSource)
-            .then((connected) {
-          updateRelayConnectivity();
-          if (connected) {
-            reSubscribeInFlightSubscriptions(relayConnectivity);
-          }
-        });
-      }
-    });
+        try {
+          await relayConnectivity.close();
+        } catch (e) {
+          Logger.log.w(
+            () => "Error closing relay ${relayConnectivity.url}: $e",
+          );
+        }
+        updateRelayConnectivity();
+        // Reconnect on close. close() above nulls relayTransport, so the only
+        // condition is that the relay is still tracked: deliberate closes cancel
+        // the stream subscription first and never reach this handler.
+        if (allowReconnectRelays &&
+            globalState.relays[relayConnectivity.url] != null) {
+          Logger.log.i(() => "closed ${relayConnectivity.url}. Reconnecting");
+          reconnectRelay(
+            relayConnectivity.url,
+            connectionSource: relayConnectivity.relay.connectionSource,
+          ).then((connected) {
+            updateRelayConnectivity();
+            if (connected) {
+              reSubscribeInFlightSubscriptions(relayConnectivity);
+            }
+          });
+        }
+      },
+    );
   }
 
-  // tracking to process in order
-  Completer<void>? _lastMessageCompleter;
+  // Track processing order per relay so EVENT/EOSE/AUTH/CLOSED ordering stays
+  // correct without introducing cross-relay head-of-line blocking.
+  final Map<String, Completer<void>> _lastMessageCompleters = {};
 
   Future<void> _handleIncomingMessage(
-      dynamic message, RelayConnectivity relayConnectivity) async {
-    final previousMessage = _lastMessageCompleter;
+    dynamic message,
+    RelayConnectivity relayConnectivity,
+  ) async {
+    final relayUrl = relayConnectivity.url;
+    final previousMessage = _lastMessageCompleters[relayUrl];
 
     final myCompleter = Completer<void>();
-    _lastMessageCompleter = myCompleter;
+    _lastMessageCompleters[relayUrl] = myCompleter;
 
     NostrMessageRaw nostrMsg;
     try {
       nostrMsg = await IsolateManager.instance
           .runInEncodingIsolate<String, NostrMessageRaw>(
-        decodeNostrMsg,
-        message,
-      );
+            decodeNostrMsg,
+            message,
+          );
     } catch (e) {
       // Isolates not available on web
       nostrMsg = decodeNostrMsg(message);
@@ -460,18 +643,29 @@ class RelayManager<T> {
     if (previousMessage != null) {
       await previousMessage.future;
     }
-
-    myCompleter.complete();
-
-    _processDecodedMessage(nostrMsg, relayConnectivity, message);
+    try {
+      await _processDecodedMessage(nostrMsg, relayConnectivity, message);
+    } finally {
+      if (!myCompleter.isCompleted) {
+        myCompleter.complete();
+      }
+      if (identical(_lastMessageCompleters[relayUrl], myCompleter)) {
+        _lastMessageCompleters.remove(relayUrl);
+      }
+    }
   }
 
-  void _processDecodedMessage(NostrMessageRaw nostrMsg,
-      RelayConnectivity relayConnectivity, dynamic message) {
+  Future<void> _processDecodedMessage(
+    NostrMessageRaw nostrMsg,
+    RelayConnectivity relayConnectivity,
+    dynamic message,
+  ) {
     if (nostrMsg.type == NostrMessageRawType.unknown) {
-      Logger.log.w(() =>
-          "Received non NostrMessageRaw message from ${relayConnectivity.url}: $nostrMsg");
-      return;
+      Logger.log.w(
+        () =>
+            "Received non NostrMessageRaw message from ${relayConnectivity.url}: $nostrMsg",
+      );
+      return Future.value();
     }
 
     if (nostrMsg.type == NostrMessageRawType.ok) {
@@ -492,7 +686,7 @@ class RelayManager<T> {
           Logger.log.e(() => "AUTH failed for $eventId: $msg");
           _pendingAuthCallbacks.remove(eventId);
         }
-        return;
+        return Future.value();
       }
 
       //nip 20 used to notify clients if an EVENT was successful
@@ -502,12 +696,14 @@ class RelayManager<T> {
         // Check if this is auth-required for a broadcast - don't mark as done, will retry
         if (msg != null && msg.startsWith("auth-required")) {
           _handleBroadcastAuthRequired(eventId, relayConnectivity);
-          return; // Don't add to network controller yet, wait for retry result
+          return Future.value(); // Don't add to network controller yet, wait for retry result
         }
       }
       if (globalState.inFlightBroadcasts[eventId] != null &&
           !globalState
-              .inFlightBroadcasts[eventId]!.networkController.isClosed) {
+              .inFlightBroadcasts[eventId]!
+              .networkController
+              .isClosed) {
         globalState.inFlightBroadcasts[eventId]?.networkController.add(
           RelayBroadcastResponse(
             relayUrl: relayConnectivity.url,
@@ -517,10 +713,12 @@ class RelayManager<T> {
           ),
         );
       } else {
-        Logger.log.w(() =>
-            "Received OK for broadcast $eventId but the network controller is already closed");
+        Logger.log.w(
+          () =>
+              "Received OK for broadcast $eventId but the network controller is already closed",
+        );
       }
-      return;
+      return Future.value();
     }
     if (nostrMsg.type == NostrMessageRawType.notice) {
       final eventJson = nostrMsg.otherData;
@@ -531,7 +729,8 @@ class RelayManager<T> {
       // Check if this is a negentropy-related error
       // Look for various patterns relays might use to reject NEG commands
       final noticeLower = noticeMsg.toLowerCase();
-      final isNegentropyError = noticeLower.contains('negentropy') ||
+      final isNegentropyError =
+          noticeLower.contains('negentropy') ||
           noticeLower.contains('neg-') ||
           noticeLower.contains('unsupported') ||
           noticeLower.contains('unknown command') ||
@@ -545,7 +744,8 @@ class RelayManager<T> {
         for (final entry in globalState.inFlightNegotiations.entries) {
           if (entry.value.relayUrl == relayUrl) {
             entry.value.completeWithError(
-                Exception('Relay does not support NIP-77: $noticeMsg'));
+              Exception('Relay does not support NIP-77: $noticeMsg'),
+            );
             toRemove.add(entry.key);
           }
         }
@@ -555,7 +755,10 @@ class RelayManager<T> {
       }
     } else if (nostrMsg.type == NostrMessageRawType.event) {
       _handleIncomingEvent(
-          nostrMsg, relayConnectivity, message.toString().codeUnits.length);
+        nostrMsg,
+        relayConnectivity,
+        message.toString().codeUnits.length,
+      );
       // Logger.log.t(()=>"EVENT from ${relayConnectivity.url}: $eventJson");
     } else if (nostrMsg.type == NostrMessageRawType.eose) {
       final eventJson = nostrMsg.otherData;
@@ -563,8 +766,10 @@ class RelayManager<T> {
       _handleEOSE(eventJson, relayConnectivity);
     } else if (nostrMsg.type == NostrMessageRawType.closed) {
       final eventJson = nostrMsg.otherData;
-      Logger.log.w(() =>
-          " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
+      Logger.log.w(
+        () =>
+            " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}",
+      );
       _handleClosed(eventJson, relayConnectivity);
     }
     if (nostrMsg.type == NostrMessageRawType.auth) {
@@ -572,28 +777,31 @@ class RelayManager<T> {
       // nip 42 used to send authentication challenges
       // NIP-42 allows multiple AUTH events for different pubkeys on the same connection
       final challenge = eventJson[1];
-      Logger.log
-          .d(() => "AUTH challenge from ${relayConnectivity.url}: $challenge");
+      Logger.log.d(
+        () => "AUTH challenge from ${relayConnectivity.url}: $challenge",
+      );
 
       // Store challenge for late authentication (multiple accounts on same connection)
       _lastChallengePerRelay[relayConnectivity.url] = challenge;
 
       // If not eager auth, don't authenticate now - wait for auth-required
       if (!eagerAuth) {
-        return;
+        return Future.value();
       }
 
       if (_accounts == null) {
-        Logger.log
-            .w(() => "Received an AUTH challenge but no accounts configured");
-        return;
+        Logger.log.w(
+          () => "Received an AUTH challenge but no accounts configured",
+        );
+        return Future.value();
       }
 
       // Collect accounts from active requests on this relay
       final accountsToAuth = <Account>{};
       for (final state in globalState.inFlightRequests.values) {
-        final hasRequestOnThisRelay =
-            state.requests.keys.contains(relayConnectivity.url);
+        final hasRequestOnThisRelay = state.requests.keys.contains(
+          relayConnectivity.url,
+        );
         if (hasRequestOnThisRelay && state.request.authenticateAs != null) {
           accountsToAuth.addAll(state.request.authenticateAs!);
         }
@@ -606,12 +814,13 @@ class RelayManager<T> {
 
       if (accountsToAuth.isEmpty) {
         Logger.log.w(
-            () => "Received an AUTH challenge but no accounts to authenticate");
-        return;
+          () => "Received an AUTH challenge but no accounts to authenticate",
+        );
+        return Future.value();
       }
 
       _authenticateAccounts(relayConnectivity, challenge, accountsToAuth);
-      return;
+      return Future.value();
     }
     if (nostrMsg.type == NostrMessageRawType.negMsg) {
       final msgData = nostrMsg.otherData;
@@ -620,7 +829,7 @@ class RelayManager<T> {
         final payload = msgData[2] as String;
         onNegMsg!(subscriptionId, relayConnectivity.url, payload);
       }
-      return;
+      return Future.value();
     }
     if (nostrMsg.type == NostrMessageRawType.negErr) {
       final msgData = nostrMsg.otherData;
@@ -629,8 +838,9 @@ class RelayManager<T> {
         final errorMsg = msgData[2] as String;
         onNegErr!(subscriptionId, relayConnectivity.url, errorMsg);
       }
-      return;
+      return Future.value();
     }
+    return Future.value();
     //
     // if (eventJson[0] == 'COUNT') {
     //   log("COUNT: ${eventJson[1]}");
@@ -656,19 +866,26 @@ class RelayManager<T> {
     int authCount = 0;
     for (final account in accounts) {
       if (account.signer.canSign()) {
-        final auth = AuthEvent(pubKey: account.pubkey, tags: [
-          ["relay", relayConnectivity.url],
-          ["challenge", challenge]
-        ]);
+        final auth = AuthEvent(
+          pubKey: account.pubkey,
+          tags: [
+            ["relay", relayConnectivity.url],
+            ["challenge", challenge],
+          ],
+        );
         account.signer.sign(auth).then((signedAuth) {
           // Resume timeout for requests after signing completes
           for (final state in requestsOnRelay) {
             state.resumeTimeout();
           }
-          send(relayConnectivity,
-              ClientMsg(ClientMsgType.kAuth, event: signedAuth));
-          Logger.log.d(() =>
-              "AUTH sent for ${account.pubkey.substring(0, 8)} to ${relayConnectivity.url}");
+          send(
+            relayConnectivity,
+            ClientMsg(ClientMsgType.kAuth, event: signedAuth),
+          );
+          Logger.log.d(
+            () =>
+                "AUTH sent for ${account.pubkey.substring(0, 8)} to ${relayConnectivity.url}",
+          );
         });
         authCount++;
       }
@@ -688,8 +905,9 @@ class RelayManager<T> {
   void authenticateIfNeeded(String relayUrl, List<Account> accounts) {
     final challenge = _lastChallengePerRelay[relayUrl];
     if (challenge == null) {
-      Logger.log
-          .t(() => "No stored challenge for $relayUrl, skipping late auth");
+      Logger.log.t(
+        () => "No stored challenge for $relayUrl, skipping late auth",
+      );
       return;
     }
 
@@ -699,19 +917,25 @@ class RelayManager<T> {
       return;
     }
 
-    Logger.log
-        .d(() => "Late AUTH for ${accounts.length} accounts on $relayUrl");
+    Logger.log.d(
+      () => "Late AUTH for ${accounts.length} accounts on $relayUrl",
+    );
     _authenticateAccounts(relayConnectivity, challenge, accounts.toSet());
   }
 
-  void _handleIncomingEvent(NostrMessageRaw nostrMsgRaw,
-      RelayConnectivity connectivity, int messageSize) {
+  void _handleIncomingEvent(
+    NostrMessageRaw nostrMsgRaw,
+    RelayConnectivity connectivity,
+    int messageSize,
+  ) {
     final requestId = nostrMsgRaw.requestId!;
     final event = nostrMsgRaw.nip01Event!;
 
     if (globalState.inFlightRequests[requestId] == null) {
-      Logger.log.w(() =>
-          "RECEIVED EVENT from ${connectivity.url} for id $requestId, not in globalState inFlightRequests. Likely data after EOSE on a query");
+      Logger.log.w(
+        () =>
+            "RECEIVED EVENT from ${connectivity.url} for id $requestId, not in globalState inFlightRequests. Likely data after EOSE on a query",
+      );
       return;
     }
 
@@ -725,13 +949,16 @@ class RelayManager<T> {
         return;
       }
 
-      final eventWithSources =
-          event.copyWith(sources: [...event.sources, connectivity.url]);
+      final eventWithSources = event.copyWith(
+        sources: [...event.sources, connectivity.url],
+      );
 
       if (state.networkController.isClosed) {
         // this might happen because relays even after we send a CLOSE subscription.id, they'll still send more events
-        Logger.log.t(() =>
-            "tried to add event to an already closed STREAM ${state.request.id} ${state.request.filters}");
+        Logger.log.t(
+          () =>
+              "tried to add event to an already closed STREAM ${state.request.id} ${state.request.filters}",
+        );
       } else {
         state.networkController.add(eventWithSources);
       }
@@ -740,12 +967,16 @@ class RelayManager<T> {
 
   /// handles EOSE messages
   void _handleEOSE(
-      List<dynamic> eventJson, RelayConnectivity relayConnectivity) {
+    List<dynamic> eventJson,
+    RelayConnectivity relayConnectivity,
+  ) {
     String id = eventJson[1];
     RequestState? state = globalState.inFlightRequests[id];
     if (state != null && state.request.closeOnEOSE) {
-      Logger.log.t(() =>
-          "⛁ received EOSE from ${relayConnectivity.url} for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
+      Logger.log.t(
+        () =>
+            "⛁ received EOSE from ${relayConnectivity.url} for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}",
+      );
       RelayRequestState? request = state.requests[relayConnectivity.url];
       if (request != null) {
         request.receivedEOSE = true;
@@ -762,7 +993,9 @@ class RelayManager<T> {
 
   /// handles CLOSED messages
   void _handleClosed(
-      List<dynamic> eventJson, RelayConnectivity relayConnectivity) {
+    List<dynamic> eventJson,
+    RelayConnectivity relayConnectivity,
+  ) {
     String id = eventJson[1];
     String? message = eventJson.length > 2 ? eventJson[2] : null;
 
@@ -774,8 +1007,10 @@ class RelayManager<T> {
 
     RequestState? state = globalState.inFlightRequests[id];
     if (state != null) {
-      Logger.log.t(() =>
-          "⛁ received CLOSE from ${relayConnectivity.url} for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
+      Logger.log.t(
+        () =>
+            "⛁ received CLOSE from ${relayConnectivity.url} for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}",
+      );
       RelayRequestState? request = state.requests[relayConnectivity.url];
       if (request != null) {
         request.receivedClosed = true;
@@ -789,25 +1024,32 @@ class RelayManager<T> {
 
   /// Handles CLOSED auth-required by authenticating and re-sending the REQ
   void _handleClosedAuthRequired(
-      String reqId, RelayConnectivity relayConnectivity) {
+    String reqId,
+    RelayConnectivity relayConnectivity,
+  ) {
     final state = globalState.inFlightRequests[reqId];
     if (state == null) {
-      Logger.log
-          .w(() => "Received CLOSED auth-required for unknown request $reqId");
+      Logger.log.w(
+        () => "Received CLOSED auth-required for unknown request $reqId",
+      );
       return;
     }
 
     final request = state.requests[relayConnectivity.url];
     if (request == null) {
-      Logger.log.w(() =>
-          "Received CLOSED auth-required but no request state for ${relayConnectivity.url}");
+      Logger.log.w(
+        () =>
+            "Received CLOSED auth-required but no request state for ${relayConnectivity.url}",
+      );
       return;
     }
 
     final challenge = _lastChallengePerRelay[relayConnectivity.url];
     if (challenge == null) {
-      Logger.log.w(() =>
-          "Received CLOSED auth-required but no challenge stored for ${relayConnectivity.url}");
+      Logger.log.w(
+        () =>
+            "Received CLOSED auth-required but no challenge stored for ${relayConnectivity.url}",
+      );
       // Mark this relay as closed since we can't authenticate without a challenge
       request.receivedClosed = true;
       _checkNetworkClose(state, relayConnectivity);
@@ -824,20 +1066,25 @@ class RelayManager<T> {
     }
 
     // Filter to accounts that can sign
-    final signableAccounts =
-        accountsToAuth.where((a) => a.signer.canSign()).toList();
+    final signableAccounts = accountsToAuth
+        .where((a) => a.signer.canSign())
+        .toList();
 
     if (signableAccounts.isEmpty) {
-      Logger.log.w(() =>
-          "Received CLOSED auth-required but no account can sign for ${relayConnectivity.url}");
+      Logger.log.w(
+        () =>
+            "Received CLOSED auth-required but no account can sign for ${relayConnectivity.url}",
+      );
       // Mark this relay as closed and check if we can complete the request
       request.receivedClosed = true;
       _checkNetworkClose(state, relayConnectivity);
       return;
     }
 
-    Logger.log.d(() =>
-        "AUTH required for REQ $reqId on ${relayConnectivity.url}, authenticating ${signableAccounts.length} account(s)...");
+    Logger.log.d(
+      () =>
+          "AUTH required for REQ $reqId on ${relayConnectivity.url}, authenticating ${signableAccounts.length} account(s)...",
+    );
 
     // Pause timeout during AUTH signing
     state.pauseTimeout();
@@ -847,10 +1094,13 @@ class RelayManager<T> {
     int pendingSignCount = signableAccounts.length;
 
     for (final account in signableAccounts) {
-      final auth = AuthEvent(pubKey: account.pubkey, tags: [
-        ["relay", relayConnectivity.url],
-        ["challenge", challenge]
-      ]);
+      final auth = AuthEvent(
+        pubKey: account.pubkey,
+        tags: [
+          ["relay", relayConnectivity.url],
+          ["challenge", challenge],
+        ],
+      );
 
       account.signer.sign(auth).then((signedAuth) {
         // Resume timeout after all signings complete
@@ -863,51 +1113,69 @@ class RelayManager<T> {
         _pendingAuthCallbacks[signedAuth.id] = () {
           pendingAuthCount--;
           if (pendingAuthCount == 0) {
-            Logger.log.d(() =>
-                "All AUTH OK received, re-sending REQ $reqId to ${relayConnectivity.url}");
+            Logger.log.d(
+              () =>
+                  "All AUTH OK received, re-sending REQ $reqId to ${relayConnectivity.url}",
+            );
             List<dynamic> list = ["REQ", reqId];
             list.addAll(request.filters.map((filter) => filter.toMap()));
-            _sendRaw(relayConnectivity, jsonEncode(list));
+            final transport = relayConnectivity.relayTransport;
+            if (transport != null && transport.isOpen()) {
+              _sendRaw(relayConnectivity, transport, jsonEncode(list));
+            }
           }
         };
 
         // Start timeout timer to clean up orphaned callbacks
         _pendingAuthTimers[signedAuth.id] = Timer(authCallbackTimeout, () {
-          Logger.log.w(() =>
-              "AUTH callback timeout for ${signedAuth.id} on ${relayConnectivity.url}");
+          Logger.log.w(
+            () =>
+                "AUTH callback timeout for ${signedAuth.id} on ${relayConnectivity.url}",
+          );
           _pendingAuthCallbacks.remove(signedAuth.id);
           _pendingAuthTimers.remove(signedAuth.id);
         });
 
-        send(relayConnectivity,
-            ClientMsg(ClientMsgType.kAuth, event: signedAuth));
-        Logger.log.d(() =>
-            "AUTH sent for ${account.pubkey.substring(0, 8)} to ${relayConnectivity.url}");
+        send(
+          relayConnectivity,
+          ClientMsg(ClientMsgType.kAuth, event: signedAuth),
+        );
+        Logger.log.d(
+          () =>
+              "AUTH sent for ${account.pubkey.substring(0, 8)} to ${relayConnectivity.url}",
+        );
       });
     }
   }
 
   /// Handles OK auth-required for broadcasts by authenticating and re-sending the EVENT
   void _handleBroadcastAuthRequired(
-      String eventId, RelayConnectivity relayConnectivity) {
+    String eventId,
+    RelayConnectivity relayConnectivity,
+  ) {
     final challenge = _lastChallengePerRelay[relayConnectivity.url];
     if (challenge == null) {
-      Logger.log.w(() =>
-          "Received OK auth-required but no challenge stored for ${relayConnectivity.url}");
+      Logger.log.w(
+        () =>
+            "Received OK auth-required but no challenge stored for ${relayConnectivity.url}",
+      );
       return;
     }
 
     final broadcastState = globalState.inFlightBroadcasts[eventId];
     if (broadcastState == null) {
-      Logger.log
-          .w(() => "Received OK auth-required for unknown broadcast $eventId");
+      Logger.log.w(
+        () => "Received OK auth-required for unknown broadcast $eventId",
+      );
       return;
     }
 
     final eventToResend = broadcastState.event;
     if (eventToResend == null) {
-      Logger.log.w(() =>
-          "Received OK auth-required but no event stored for broadcast $eventId");
+      Logger.log.w(
+        () =>
+            "Received OK auth-required but no event stored for broadcast $eventId",
+      );
       return;
     }
 
@@ -923,48 +1191,67 @@ class RelayManager<T> {
     }
 
     if (account == null || !account.signer.canSign()) {
-      Logger.log.w(() =>
-          "Received OK auth-required but no account can sign for ${relayConnectivity.url}");
+      Logger.log.w(
+        () =>
+            "Received OK auth-required but no account can sign for ${relayConnectivity.url}",
+      );
       return;
     }
 
-    Logger.log.d(() =>
-        "AUTH required for EVENT $eventId on ${relayConnectivity.url}, authenticating...");
+    Logger.log.d(
+      () =>
+          "AUTH required for EVENT $eventId on ${relayConnectivity.url}, authenticating...",
+    );
 
     // Create AUTH event
-    final auth = AuthEvent(pubKey: account.pubkey, tags: [
-      ["relay", relayConnectivity.url],
-      ["challenge", challenge]
-    ]);
+    final auth = AuthEvent(
+      pubKey: account.pubkey,
+      tags: [
+        ["relay", relayConnectivity.url],
+        ["challenge", challenge],
+      ],
+    );
 
     // Sign and send AUTH, then re-send EVENT on OK
     account.signer.sign(auth).then((signedAuth) {
       // Store callback to re-send EVENT after AUTH OK
       _pendingAuthCallbacks[signedAuth.id] = () {
-        Logger.log.d(() =>
-            "AUTH OK received, re-sending EVENT $eventId to ${relayConnectivity.url}");
+        Logger.log.d(
+          () =>
+              "AUTH OK received, re-sending EVENT $eventId to ${relayConnectivity.url}",
+        );
         // Re-send the EVENT
-        send(relayConnectivity,
-            ClientMsg(ClientMsgType.kEvent, event: eventToResend));
+        send(
+          relayConnectivity,
+          ClientMsg(ClientMsgType.kEvent, event: eventToResend),
+        );
       };
 
       // Start timeout timer to clean up orphaned callbacks
       _pendingAuthTimers[signedAuth.id] = Timer(authCallbackTimeout, () {
-        Logger.log.w(() =>
-            "AUTH callback timeout for ${signedAuth.id} on ${relayConnectivity.url}");
+        Logger.log.w(
+          () =>
+              "AUTH callback timeout for ${signedAuth.id} on ${relayConnectivity.url}",
+        );
         _pendingAuthCallbacks.remove(signedAuth.id);
         _pendingAuthTimers.remove(signedAuth.id);
       });
 
       send(
-          relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: signedAuth));
-      Logger.log.d(() =>
-          "AUTH sent for ${account!.pubkey.substring(0, 8)} to ${relayConnectivity.url}, waiting for OK...");
+        relayConnectivity,
+        ClientMsg(ClientMsgType.kAuth, event: signedAuth),
+      );
+      Logger.log.d(
+        () =>
+            "AUTH sent for ${account!.pubkey.substring(0, 8)} to ${relayConnectivity.url}, waiting for OK...",
+      );
     });
   }
 
   void _checkNetworkClose(
-      RequestState state, RelayConnectivity relayConnectivity) {
+    RequestState state,
+    RelayConnectivity relayConnectivity,
+  ) {
     /// received everything, close the network controller
     if (state.didAllRequestsFinish) {
       state.networkController.close();
@@ -1029,8 +1316,10 @@ class RelayManager<T> {
       // kindsMap[kind] = kindCount;
       namesMap[state.request.name] = nameCount;
     });
-    Logger.log.d(() =>
-        "------------ IN FLIGHT REQUESTS: ${globalState.inFlightRequests.length} || $namesMap");
+    Logger.log.d(
+      () =>
+          "------------ IN FLIGHT REQUESTS: ${globalState.inFlightRequests.length} || $namesMap",
+    );
   }
 
   /// Closes this url transport and removes

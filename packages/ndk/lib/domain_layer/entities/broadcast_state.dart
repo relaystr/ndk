@@ -87,29 +87,30 @@ class BroadcastState {
   }
 
   /// completes when state update controller closes
-  Future<BroadcastState> get publishDoneFuture => _stateUpdatesController.last;
+  Future<BroadcastState> get publishDoneFuture => _publishDoneCompleter.future;
 
   late final StreamSubscription _networkSubscription;
   Timer? _timeoutTimer;
   bool _isDisposed = false;
+  final Completer<BroadcastState> _publishDoneCompleter = Completer();
 
   bool _timeoutStarted = false;
 
   /// creates a new [BroadcastState] instance
-  BroadcastState({
-    required this.timeout,
-    this.considerDonePercent = 1,
-  }) {
-    _networkSubscription = networkController.stream.listen((response) {
-      // got a response from a relay
-      broadcasts[response.relayUrl] = response;
-      // send state update
-      _stateUpdatesController.add(this);
-      // check if all relays responded
-      _checkBroadcastDone();
-    }, onDone: () {
-      _checkBroadcastDone();
-    });
+  BroadcastState({required this.timeout, this.considerDonePercent = 1}) {
+    _networkSubscription = networkController.stream.listen(
+      (response) {
+        // got a response from a relay
+        broadcasts[response.relayUrl] = response;
+        // send state update
+        _stateUpdatesController.add(this);
+        // check if all relays responded
+        _checkBroadcastDone();
+      },
+      onDone: () {
+        _checkBroadcastDone();
+      },
+    );
   }
 
   /// Starts the timeout timer. Call this after signing is complete.
@@ -139,13 +140,18 @@ class BroadcastState {
     _isDisposed = true;
     _timeoutTimer?.cancel();
     _networkSubscription.cancel();
+    if (!_publishDoneCompleter.isCompleted) {
+      _publishDoneCompleter.complete(this);
+    }
     _stateUpdatesController.close();
     networkController.close();
   }
 
   /// Add an error to the broadcast state stream and dispose
   void addError(Object error, [StackTrace? stackTrace]) {
-    _stateUpdatesController.addError(error, stackTrace);
+    if (!_publishDoneCompleter.isCompleted) {
+      _publishDoneCompleter.completeError(error, stackTrace);
+    }
     _dispose();
   }
 

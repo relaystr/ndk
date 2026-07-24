@@ -10,18 +10,22 @@ const int kMinIsolatePoolSize = 1;
 const int kNumberOfProcessorsFactor = 4;
 
 final int encodingIsolatePoolSize = math.max(
-    kMinIsolatePoolSize,
-    math.min(Platform.numberOfProcessors ~/ kNumberOfProcessorsFactor,
-        kMaxIsolatePoolSize));
-final int computeIsolatePoolSize = math.max(
-    kMinIsolatePoolSize,
-    math.min(Platform.numberOfProcessors ~/ kNumberOfProcessorsFactor,
-        kMaxIsolatePoolSize));
-
-typedef StreamComputeTask<Q, P> = FutureOr<void> Function(
-  Q argument,
-  void Function(P progress) emit,
+  kMinIsolatePoolSize,
+  math.min(
+    Platform.numberOfProcessors ~/ kNumberOfProcessorsFactor,
+    kMaxIsolatePoolSize,
+  ),
 );
+final int computeIsolatePoolSize = math.max(
+  kMinIsolatePoolSize,
+  math.min(
+    Platform.numberOfProcessors ~/ kNumberOfProcessorsFactor,
+    kMaxIsolatePoolSize,
+  ),
+);
+
+typedef StreamComputeTask<Q, P> =
+    FutureOr<void> Function(Q argument, void Function(P progress) emit);
 
 class IsolateConfig {
   Isolate isolate;
@@ -74,16 +78,20 @@ class IsolateManager {
 
   Future<void> _initialize() async {
     try {
-      Logger.log.d(() =>
-          "Initializing encoding isolate pool size = $encodingIsolatePoolSize");
+      Logger.log.d(
+        () =>
+            "Initializing encoding isolate pool size = $encodingIsolatePoolSize",
+      );
       // Initialize encoding isolate pool
       for (int i = 0; i < encodingIsolatePoolSize; i++) {
         final config = await _createIsolate();
         _encodePool.add(config);
       }
 
-      Logger.log.d(() =>
-          "Initializing compute isolate pool size = $encodingIsolatePoolSize");
+      Logger.log.d(
+        () =>
+            "Initializing compute isolate pool size = $encodingIsolatePoolSize",
+      );
       // Initialize compute isolate pool
       for (int i = 0; i < computeIsolatePoolSize; i++) {
         final config = await _createIsolate();
@@ -133,19 +141,13 @@ class IsolateManager {
   Future<void> get ready => _readyCompleter.future;
 
   /// dedicated for decoding/encoding json
-  Future<R> runInEncodingIsolate<Q, R>(
-    R Function(Q) task,
-    Q argument,
-  ) async {
+  Future<R> runInEncodingIsolate<Q, R>(R Function(Q) task, Q argument) async {
     await ready;
     return _runTask(task, argument, _encodePool);
   }
 
   /// dedicated for compute operations (like crypto, hashing, etc)
-  Future<R> runInComputeIsolate<Q, R>(
-    R Function(Q) task,
-    Q argument,
-  ) async {
+  Future<R> runInComputeIsolate<Q, R>(R Function(Q) task, Q argument) async {
     await ready;
     return _runTask(task, argument, _computePool);
   }

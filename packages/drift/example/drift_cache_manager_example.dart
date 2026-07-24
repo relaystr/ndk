@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'package:ndk_drift/ndk_drift.dart';
 import 'package:ndk/ndk.dart';
 

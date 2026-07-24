@@ -5,6 +5,9 @@ class InvoiceResponse {
   String? nostrPubkey;
 
   /// .
-  InvoiceResponse(
-      {required this.invoice, this.nostrPubkey, required this.amountSats});
+  InvoiceResponse({
+    required this.invoice,
+    this.nostrPubkey,
+    required this.amountSats,
+  });
 }

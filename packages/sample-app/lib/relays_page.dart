@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -54,10 +55,7 @@ class _RelaysPageState extends State<RelaysPage>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        url,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
+                      Text(url, style: Theme.of(context).textTheme.titleMedium),
                       const SizedBox(height: 6),
                       Text(
                         l10n.relayConnection(stateLabel),
@@ -74,8 +72,10 @@ class _RelaysPageState extends State<RelaysPage>
               runSpacing: 8,
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: stateColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(999),
@@ -90,8 +90,10 @@ class _RelaysPageState extends State<RelaysPage>
                 ),
                 if (marker.isRead)
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(999),
@@ -103,8 +105,10 @@ class _RelaysPageState extends State<RelaysPage>
                   ),
                 if (marker.isWrite)
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: colorScheme.secondaryContainer,
                       borderRadius: BorderRadius.circular(999),
@@ -243,22 +247,22 @@ class _RelaysPageState extends State<RelaysPage>
         }
 
         final entry = entries[index - 1];
-        final transport = ndk.relays
-            .getRelayConnectivity(entry.key)
-            ?.relayTransport as WebSocketClientNostrTransport?;
+        final transport =
+            ndk.relays.getRelayConnectivity(entry.key)?.relayTransport
+                as WebSocketClientNostrTransport?;
         final stateColor = transport != null
             ? transport.isConnecting()
-                ? Colors.orange
-                : transport.isOpen()
-                    ? Colors.green
-                    : Colors.red
+                  ? Colors.orange
+                  : transport.isOpen()
+                  ? Colors.green
+                  : Colors.red
             : Colors.grey;
         final stateLabel = transport != null
             ? transport.isConnecting()
-                ? l10n.relayStateConnecting
-                : transport.isOpen()
-                    ? l10n.relayStateOnline
-                    : l10n.relayStateOffline
+                  ? l10n.relayStateConnecting
+                  : transport.isOpen()
+                  ? l10n.relayStateOnline
+                  : l10n.relayStateOffline
             : l10n.relayStateUnknown;
 
         return _buildRelayCard(

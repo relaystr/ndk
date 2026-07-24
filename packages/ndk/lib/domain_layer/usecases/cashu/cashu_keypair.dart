@@ -8,10 +8,7 @@ class CashuKeypair {
   final String privateKey;
   final String publicKey;
 
-  CashuKeypair({
-    required this.privateKey,
-    required this.publicKey,
-  });
+  CashuKeypair({required this.privateKey, required this.publicKey});
 
   static CashuKeypair generateCashuKeyPair() {
     // 32-byte private key
@@ -24,10 +21,7 @@ class CashuKeypair {
     final pubKey = pubKeyPoint.getEncoded(true);
     final pubKeyHex = hex.encode(pubKey);
 
-    return CashuKeypair(
-      privateKey: privKey,
-      publicKey: pubKeyHex,
-    );
+    return CashuKeypair(privateKey: privKey, publicKey: pubKeyHex);
   }
 
   static ECPoint derivePublicKey(String privateKeyHex) {
@@ -50,9 +44,6 @@ class CashuKeypair {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'privateKey': privateKey,
-      'publicKey': publicKey,
-    };
+    return {'privateKey': privateKey, 'publicKey': publicKey};
   }
 }

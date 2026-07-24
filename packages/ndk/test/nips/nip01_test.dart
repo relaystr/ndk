@@ -12,8 +12,9 @@ void main() {
     test('sign and verify', () {
       final keyPair = Bip340.generatePrivateKey();
       const message = 'Hello, World!';
-      final messageSha256 =
-          Uint8List.fromList(sha256.convert(utf8.encode(message)).bytes);
+      final messageSha256 = Uint8List.fromList(
+        sha256.convert(utf8.encode(message)).bytes,
+      );
       final messageHex = hex.encode(messageSha256);
       final signature = Bip340.sign(messageHex, keyPair.privateKey!);
       expect(Bip340.verify(messageHex, signature, keyPair.publicKey), isTrue);
@@ -22,7 +23,9 @@ void main() {
     test('getPublicKey', () {
       final keyPair = Bip340.generatePrivateKey();
       expect(
-          Bip340.getPublicKey(keyPair.privateKey!), equals(keyPair.publicKey));
+        Bip340.getPublicKey(keyPair.privateKey!),
+        equals(keyPair.publicKey),
+      );
     });
   });
   group('Metadata', () {
@@ -43,7 +46,7 @@ void main() {
         'pubKey': 'pubKey1',
         'content': contentData,
         'tags': [
-          ['i', 'test']
+          ['i', 'test'],
         ],
         'updatedAt': 1234567890,
       };

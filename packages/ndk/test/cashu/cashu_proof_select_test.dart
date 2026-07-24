@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'package:ndk/domain_layer/entities/cashu/cashu_keyset.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_proof.dart';
 import 'package:ndk/domain_layer/usecases/cashu/cashu_proof_select.dart';
@@ -115,9 +116,13 @@ void main() {
 
     test('split test - insufficient', () {
       expect(
-          () => CashuProofSelect.selectProofsForSpending(
-              proofs: myproofs, targetAmount: 9999999, keysets: keysets),
-          throwsA(isA<Exception>()));
+        () => CashuProofSelect.selectProofsForSpending(
+          proofs: myproofs,
+          targetAmount: 9999999,
+          keysets: keysets,
+        ),
+        throwsA(isA<Exception>()),
+      );
     });
 
     test('split test - combination', () {
@@ -159,29 +164,31 @@ void main() {
       expect(combination.needsSplit, true);
       expect(combination.totalSelected > target, isTrue);
       expect(
-          combination.totalSelected -
-              combination.splitAmount -
-              combination.fees,
-          target);
+        combination.totalSelected - combination.splitAmount - combination.fees,
+        target,
+      );
     });
 
     test('fee calculation - mixed keysets', () {
       final mixedProofs = [
         CashuProof(
-            amount: 10,
-            keysetId: 'test-keyset',
-            secret: "",
-            unblindedSig: ""), // 1000 ppk
+          amount: 10,
+          keysetId: 'test-keyset',
+          secret: "",
+          unblindedSig: "",
+        ), // 1000 ppk
         CashuProof(
-            amount: 20,
-            keysetId: 'other-keyset',
-            secret: "",
-            unblindedSig: ""), // 100 ppk
+          amount: 20,
+          keysetId: 'other-keyset',
+          secret: "",
+          unblindedSig: "",
+        ), // 100 ppk
         CashuProof(
-            amount: 30,
-            keysetId: 'test-keyset',
-            secret: "",
-            unblindedSig: ""), // 1000 ppk
+          amount: 30,
+          keysetId: 'test-keyset',
+          secret: "",
+          unblindedSig: "",
+        ), // 1000 ppk
       ];
 
       final fees = CashuProofSelect.calculateFees(mixedProofs, keysets);
@@ -192,11 +199,23 @@ void main() {
     test('fee calculation - breakdown by keyset', () {
       final mixedProofs = [
         CashuProof(
-            amount: 10, keysetId: 'test-keyset', secret: "", unblindedSig: ""),
+          amount: 10,
+          keysetId: 'test-keyset',
+          secret: "",
+          unblindedSig: "",
+        ),
         CashuProof(
-            amount: 20, keysetId: 'other-keyset', secret: "", unblindedSig: ""),
+          amount: 20,
+          keysetId: 'other-keyset',
+          secret: "",
+          unblindedSig: "",
+        ),
         CashuProof(
-            amount: 30, keysetId: 'test-keyset', secret: "", unblindedSig: ""),
+          amount: 30,
+          keysetId: 'test-keyset',
+          secret: "",
+          unblindedSig: "",
+        ),
       ];
 
       final breakdown = CashuProofSelect.calculateFeesWithBreakdown(
@@ -225,10 +244,11 @@ void main() {
     test('fee calculation - unknown keyset throws exception', () {
       final invalidProofs = [
         CashuProof(
-            amount: 10,
-            keysetId: 'unknown-keyset',
-            secret: "",
-            unblindedSig: ""),
+          amount: 10,
+          keysetId: 'unknown-keyset',
+          secret: "",
+          unblindedSig: "",
+        ),
       ];
 
       expect(
@@ -240,15 +260,29 @@ void main() {
     test('proof sorting - amount priority', () {
       final unsortedProofs = [
         CashuProof(
-            amount: 10, keysetId: 'test-keyset', secret: "", unblindedSig: ""),
+          amount: 10,
+          keysetId: 'test-keyset',
+          secret: "",
+          unblindedSig: "",
+        ),
         CashuProof(
-            amount: 50, keysetId: 'test-keyset', secret: "", unblindedSig: ""),
+          amount: 50,
+          keysetId: 'test-keyset',
+          secret: "",
+          unblindedSig: "",
+        ),
         CashuProof(
-            amount: 25, keysetId: 'test-keyset', secret: "", unblindedSig: ""),
+          amount: 25,
+          keysetId: 'test-keyset',
+          secret: "",
+          unblindedSig: "",
+        ),
       ];
 
-      final sorted =
-          CashuProofSelect.sortProofsOptimally(unsortedProofs, keysets);
+      final sorted = CashuProofSelect.sortProofsOptimally(
+        unsortedProofs,
+        keysets,
+      );
       expect(sorted[0].amount, 50);
       expect(sorted[1].amount, 25);
       expect(sorted[2].amount, 10);
@@ -257,19 +291,23 @@ void main() {
     test('proof sorting - fee priority when amounts equal', () {
       final equalAmountProofs = [
         CashuProof(
-            amount: 10,
-            keysetId: 'test-keyset',
-            secret: "",
-            unblindedSig: ""), // 1000 ppk
+          amount: 10,
+          keysetId: 'test-keyset',
+          secret: "",
+          unblindedSig: "",
+        ), // 1000 ppk
         CashuProof(
-            amount: 10,
-            keysetId: 'other-keyset',
-            secret: "",
-            unblindedSig: ""), // 100 ppk
+          amount: 10,
+          keysetId: 'other-keyset',
+          secret: "",
+          unblindedSig: "",
+        ), // 100 ppk
       ];
 
-      final sorted =
-          CashuProofSelect.sortProofsOptimally(equalAmountProofs, keysets);
+      final sorted = CashuProofSelect.sortProofsOptimally(
+        equalAmountProofs,
+        keysets,
+      );
       // Lower fee keyset should come first
       expect(sorted[0].keysetId, 'other-keyset');
       expect(sorted[1].keysetId, 'test-keyset');
@@ -296,15 +334,17 @@ void main() {
       final cheaperFirst = CashuProofSelect.selectProofsForSpending(
         proofs: [
           CashuProof(
-              amount: 50,
-              keysetId: 'test-keyset',
-              secret: "",
-              unblindedSig: ""), // 1000 ppk
+            amount: 50,
+            keysetId: 'test-keyset',
+            secret: "",
+            unblindedSig: "",
+          ), // 1000 ppk
           CashuProof(
-              amount: 50,
-              keysetId: 'other-keyset',
-              secret: "",
-              unblindedSig: ""), // 100 ppk
+            amount: 50,
+            keysetId: 'other-keyset',
+            secret: "",
+            unblindedSig: "",
+          ), // 100 ppk
         ],
         targetAmount: 49,
         keysets: keysets,
@@ -318,12 +358,14 @@ void main() {
 
     test('maximum iterations exceeded', () {
       final manySmallProofs = List.generate(
-          20,
-          (i) => CashuProof(
-              amount: 1,
-              keysetId: 'test-keyset',
-              secret: "",
-              unblindedSig: ""));
+        20,
+        (i) => CashuProof(
+          amount: 1,
+          keysetId: 'test-keyset',
+          secret: "",
+          unblindedSig: "",
+        ),
+      );
 
       expect(
         () => CashuProofSelect.selectProofsForSpending(
@@ -339,25 +381,29 @@ void main() {
     test('fee breakdown accuracy', () {
       final mixedProofs = [
         CashuProof(
-            amount: 10,
-            keysetId: 'test-keyset',
-            secret: "proofSecret10-0",
-            unblindedSig: ""), // 1000 ppk
+          amount: 10,
+          keysetId: 'test-keyset',
+          secret: "proofSecret10-0",
+          unblindedSig: "",
+        ), // 1000 ppk
         CashuProof(
-            amount: 20,
-            keysetId: 'test-keyset',
-            secret: "proofSecret20-0",
-            unblindedSig: ""), // 1000 ppk
+          amount: 20,
+          keysetId: 'test-keyset',
+          secret: "proofSecret20-0",
+          unblindedSig: "",
+        ), // 1000 ppk
         CashuProof(
-            amount: 30,
-            keysetId: 'other-keyset',
-            secret: "proofSecret30-0",
-            unblindedSig: ""), // 100 ppk
+          amount: 30,
+          keysetId: 'other-keyset',
+          secret: "proofSecret30-0",
+          unblindedSig: "",
+        ), // 100 ppk
         CashuProof(
-            amount: 40,
-            keysetId: 'other-keyset',
-            secret: "proofSecret40-0",
-            unblindedSig: ""), // 100 ppk
+          amount: 40,
+          keysetId: 'other-keyset',
+          secret: "proofSecret40-0",
+          unblindedSig: "",
+        ), // 100 ppk
       ];
 
       final result = CashuProofSelect.selectProofsForSpending(
@@ -377,22 +423,25 @@ void main() {
 
     test('single sat amounts with high fees - impossible', () {
       final singleSatProofs = List.generate(
-          11,
-          (i) => CashuProof(
-              amount: 1,
-              keysetId: 'test-keyset',
-              secret: "",
-              unblindedSig: ""));
+        11,
+        (i) => CashuProof(
+          amount: 1,
+          keysetId: 'test-keyset',
+          secret: "",
+          unblindedSig: "",
+        ),
+      );
 
       // fee for each is 1 + 1 sat => never enough to spend
 
       expect(
-          () => CashuProofSelect.selectProofsForSpending(
-                proofs: singleSatProofs,
-                targetAmount: 1,
-                keysets: keysets,
-              ),
-          throwsA(isA<Exception>()));
+        () => CashuProofSelect.selectProofsForSpending(
+          proofs: singleSatProofs,
+          targetAmount: 1,
+          keysets: keysets,
+        ),
+        throwsA(isA<Exception>()),
+      );
     });
 
     test('large value - should converge quickly', () {
@@ -400,28 +449,34 @@ void main() {
       final largeValueProofs = [
         // Add some larger proofs
         ...List.generate(
-            10,
-            (i) => CashuProof(
-                amount: 1000,
-                keysetId: 'test-keyset',
-                secret: "proof1000-$i",
-                unblindedSig: "")),
+          10,
+          (i) => CashuProof(
+            amount: 1000,
+            keysetId: 'test-keyset',
+            secret: "proof1000-$i",
+            unblindedSig: "",
+          ),
+        ),
         // Add medium proofs
         ...List.generate(
-            20,
-            (i) => CashuProof(
-                amount: 100,
-                keysetId: 'test-keyset',
-                secret: "proof100-$i",
-                unblindedSig: "")),
+          20,
+          (i) => CashuProof(
+            amount: 100,
+            keysetId: 'test-keyset',
+            secret: "proof100-$i",
+            unblindedSig: "",
+          ),
+        ),
         // Add smaller proofs
         ...List.generate(
-            30,
-            (i) => CashuProof(
-                amount: 10,
-                keysetId: 'test-keyset',
-                secret: "proof10-$i",
-                unblindedSig: "")),
+          30,
+          (i) => CashuProof(
+            amount: 10,
+            keysetId: 'test-keyset',
+            secret: "proof10-$i",
+            unblindedSig: "",
+          ),
+        ),
       ];
 
       // Target a large amount (8000 sats) - should converge without hitting max iterations
@@ -439,19 +494,23 @@ void main() {
       // This test reproduces the convergence issue
       final manyProofs = [
         ...List.generate(
-            10,
-            (i) => CashuProof(
-                amount: 500,
-                keysetId: 'test-keyset',
-                secret: "proof500-$i",
-                unblindedSig: "")),
+          10,
+          (i) => CashuProof(
+            amount: 500,
+            keysetId: 'test-keyset',
+            secret: "proof500-$i",
+            unblindedSig: "",
+          ),
+        ),
         ...List.generate(
-            50,
-            (i) => CashuProof(
-                amount: 50,
-                keysetId: 'test-keyset',
-                secret: "proof50-$i",
-                unblindedSig: "")),
+          50,
+          (i) => CashuProof(
+            amount: 50,
+            keysetId: 'test-keyset',
+            secret: "proof50-$i",
+            unblindedSig: "",
+          ),
+        ),
       ];
 
       // Target 7000 sats - this would previously fail to converge
@@ -469,19 +528,23 @@ void main() {
       // Extreme test with very large target amount
       final extremeProofs = [
         ...List.generate(
-            30,
-            (i) => CashuProof(
-                amount: 2000,
-                keysetId: 'test-keyset',
-                secret: "proof2000-$i",
-                unblindedSig: "")),
+          30,
+          (i) => CashuProof(
+            amount: 2000,
+            keysetId: 'test-keyset',
+            secret: "proof2000-$i",
+            unblindedSig: "",
+          ),
+        ),
         ...List.generate(
-            100,
-            (i) => CashuProof(
-                amount: 100,
-                keysetId: 'test-keyset',
-                secret: "proof100-$i",
-                unblindedSig: "")),
+          100,
+          (i) => CashuProof(
+            amount: 100,
+            keysetId: 'test-keyset',
+            secret: "proof100-$i",
+            unblindedSig: "",
+          ),
+        ),
       ];
 
       // Target 50000 sats - should still converge quickly with optimized algorithm
@@ -500,19 +563,23 @@ void main() {
       // Performance test with many proofs
       final manyProofs = [
         ...List.generate(
-            50,
-            (i) => CashuProof(
-                amount: 5000,
-                keysetId: 'test-keyset',
-                secret: "proof5000-$i",
-                unblindedSig: "")),
+          50,
+          (i) => CashuProof(
+            amount: 5000,
+            keysetId: 'test-keyset',
+            secret: "proof5000-$i",
+            unblindedSig: "",
+          ),
+        ),
         ...List.generate(
-            150,
-            (i) => CashuProof(
-                amount: 100,
-                keysetId: 'test-keyset',
-                secret: "proof100-$i",
-                unblindedSig: "")),
+          150,
+          (i) => CashuProof(
+            amount: 100,
+            keysetId: 'test-keyset',
+            secret: "proof100-$i",
+            unblindedSig: "",
+          ),
+        ),
       ];
 
       final stopwatch = Stopwatch()..start();
@@ -530,7 +597,8 @@ void main() {
 
       // Should be fast (under 50ms for 200 proofs)
       print(
-          'Selection time for 200 proofs: ${stopwatch.elapsedMilliseconds}ms');
+        'Selection time for 200 proofs: ${stopwatch.elapsedMilliseconds}ms',
+      );
       expect(stopwatch.elapsedMilliseconds, lessThan(100));
     });
   });

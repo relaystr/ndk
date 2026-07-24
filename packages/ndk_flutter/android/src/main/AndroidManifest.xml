@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Required on Android 11+ to detect and launch a NIP-55 external signer
-         (Amber, Primal, Aegis, ...) via the nostrsigner: scheme. -->
+         via the nostrsigner: scheme. -->
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />

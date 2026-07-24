@@ -59,8 +59,10 @@ class Nip77State {
   /// Returns the response message bytes to send back, or null if done
   Uint8List? processMessage(Uint8List messageBytes) {
     try {
-      final (response, newNeedIds, newHaveIds) =
-          NegentropyEncoder.reconcile(messageBytes, localItems);
+      final (response, newNeedIds, newHaveIds) = NegentropyEncoder.reconcile(
+        messageBytes,
+        localItems,
+      );
 
       // Add newly discovered IDs
       for (final id in newNeedIds) {
@@ -90,10 +92,12 @@ class Nip77State {
     _isCompleted = true;
     _needController.close();
     _haveController.close();
-    _completer.complete(Nip77Result(
-      needIds: List.unmodifiable(needIds),
-      haveIds: List.unmodifiable(haveIds),
-    ));
+    _completer.complete(
+      Nip77Result(
+        needIds: List.unmodifiable(needIds),
+        haveIds: List.unmodifiable(haveIds),
+      ),
+    );
   }
 
   /// Complete the session with an error
@@ -113,10 +117,12 @@ class Nip77State {
     _needController.close();
     _haveController.close();
     if (!_completer.isCompleted) {
-      _completer.complete(Nip77Result(
-        needIds: List.unmodifiable(needIds),
-        haveIds: List.unmodifiable(haveIds),
-      ));
+      _completer.complete(
+        Nip77Result(
+          needIds: List.unmodifiable(needIds),
+          haveIds: List.unmodifiable(haveIds),
+        ),
+      );
     }
   }
 }
@@ -129,10 +135,7 @@ class Nip77Result {
   /// IDs that we have that the relay doesn't
   final List<String> haveIds;
 
-  Nip77Result({
-    required this.needIds,
-    required this.haveIds,
-  });
+  Nip77Result({required this.needIds, required this.haveIds});
 
   @override
   String toString() =>

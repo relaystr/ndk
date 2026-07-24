@@ -2,15 +2,12 @@ class CashuEventContent {
   final String privKey;
   final Set<String> mints;
 
-  CashuEventContent({
-    required this.privKey,
-    required this.mints,
-  });
+  CashuEventContent({required this.privKey, required this.mints});
 
   /// converts to plain list data from WalletCashuEvent
   List<List<String>> toCashuEventContent() {
     final jsonList = [
-      ["privkey", privKey]
+      ["privkey", privKey],
     ];
 
     jsonList.addAll(mints.map((mint) => ["mint", mint]));
@@ -19,9 +16,7 @@ class CashuEventContent {
   }
 
   /// extracts data from plain lists
-  factory CashuEventContent.fromCashuEventContent(
-    List<List<String>> jsonList,
-  ) {
+  factory CashuEventContent.fromCashuEventContent(List<List<String>> jsonList) {
     String? privKey;
     final Set<String> mints = {};
 

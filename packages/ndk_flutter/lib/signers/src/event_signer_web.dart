@@ -61,6 +61,15 @@ class WebEventSigner implements EventSigner {
     _init();
   }
 
+  @override
+  bool get requiresInteractiveSigning => false;
+
+  @override
+  bool get requiresSignerNetwork => false;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls => const <String>[];
+
   Future<void> _init() async {
     if (!_jsInjected) {
       _injectJS();

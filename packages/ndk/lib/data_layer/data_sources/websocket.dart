@@ -18,8 +18,11 @@ class WebsocketDS {
     Function? onError,
     void Function()? onDone,
   }) {
-    return webSocketChannel.stream
-        .listen(onData, onDone: onDone, onError: onError);
+    return webSocketChannel.stream.listen(
+      onData,
+      onDone: onDone,
+      onError: onError,
+    );
   }
 
   /// send data to the websocket channel
@@ -52,4 +55,5 @@ class WebsocketDS {
     return webSocketChannel.closeReason;
   }
 }
+
 // coverage:ignore-end

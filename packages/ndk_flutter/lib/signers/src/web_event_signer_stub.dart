@@ -17,6 +17,15 @@ class WebEventSigner implements EventSigner {
   }
 
   @override
+  bool get requiresInteractiveSigning => false;
+
+  @override
+  bool get requiresSignerNetwork => false;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls => const <String>[];
+
+  @override
   Future<Nip01Event> sign(Nip01Event event) {
     throw UnsupportedError(
       'WebEventSigner is only available on web platforms.',

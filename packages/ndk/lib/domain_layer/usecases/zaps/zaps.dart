@@ -21,20 +21,18 @@ class Zaps {
   final Lnurl _lnurl;
 
   /// .
-  Zaps({
-    required Requests requests,
-    required Nwc nwc,
-    required Lnurl lnurl,
-  })  : _requests = requests,
-        _nwc = nwc,
-        _lnurl = lnurl;
+  Zaps({required Requests requests, required Nwc nwc, required Lnurl lnurl})
+    : _requests = requests,
+      _nwc = nwc,
+      _lnurl = lnurl;
 
   /// creates an invoice with an optional zap request encoded if signer, pubKey & relays are non empty
-  Future<InvoiceResponse?> fetchInvoice(
-      {required String lud16Link,
-      required int amountSats,
-      ZapRequest? zapRequest,
-      String? comment}) async {
+  Future<InvoiceResponse?> fetchInvoice({
+    required String lud16Link,
+    required int amountSats,
+    ZapRequest? zapRequest,
+    String? comment,
+  }) async {
     final lnurlResponse = await _lnurl.getLnurlResponse(lud16Link);
     if (lnurlResponse == null) {
       return null;
@@ -42,9 +40,10 @@ class Zaps {
 
     try {
       return _lnurl.fetchInvoice(
-          lnurlResponse: lnurlResponse,
-          amountSats: amountSats,
-          zapRequest: zapRequest);
+        lnurlResponse: lnurlResponse,
+        amountSats: amountSats,
+        zapRequest: zapRequest,
+      );
     } catch (e) {
       Logger.log.d(() => e);
       return null;
@@ -82,7 +81,10 @@ class Zaps {
       tags.add(["poll_option", pollOption]);
     }
     final zapRequestEvent = ZapRequest(
-        pubKey: signer.getPublicKey(), tags: tags, content: comment ?? '');
+      pubKey: signer.getPublicKey(),
+      tags: tags,
+      content: comment ?? '',
+    );
     final signedEvent = await signer.sign(zapRequestEvent);
 
     final sigendZapRequest = ZapRequest.nip01Event(event: signedEvent);
@@ -113,13 +115,14 @@ class Zaps {
         relays != null &&
         relays.isNotEmpty) {
       zapRequest = await createZapRequest(
-          amountSats: amountSats,
-          signer: signer,
-          pubKey: pubKey,
-          comment: comment,
-          relays: relays,
-          eventId: eventId,
-          addressableId: addressableId);
+        amountSats: amountSats,
+        signer: signer,
+        pubKey: pubKey,
+        comment: comment,
+        relays: relays,
+        eventId: eventId,
+        addressableId: addressableId,
+      );
     }
     final invoice = await fetchInvoice(
       lud16Link: lud16Link!,
@@ -131,8 +134,11 @@ class Zaps {
       return ZapResponse(error: "couldn't get invoice from $lnurl");
     }
     try {
-      final payResponse = await _nwc.payInvoice(nwcConnection,
-          invoice: invoice.invoice, timeout: Duration(seconds: 10));
+      final payResponse = await _nwc.payInvoice(
+        nwcConnection,
+        invoice: invoice.invoice,
+        timeout: Duration(seconds: 10),
+      );
       if (payResponse.preimage != null &&
           payResponse.preimage!.isNotEmpty &&
           payResponse.errorCode == null) {
@@ -142,29 +148,35 @@ class Zaps {
             invoice.nostrPubkey != null &&
             invoice.nostrPubkey!.isNotEmpty) {
           // if it's a zap, try to find the zap receipt
-          zapResponse.receiptResponse =
-              _requests.subscription(explicitRelays: relays, filters: [
-            eventId != null
-                ? Filter(
-                    kinds: [ZapReceipt.kKind],
-                    eTags: [eventId],
-                    pTags: [pubKey!])
-                : Filter(kinds: [ZapReceipt.kKind], pTags: [pubKey!])
-          ]);
+          zapResponse.receiptResponse = _requests.subscription(
+            explicitRelays: relays,
+            filters: [
+              eventId != null
+                  ? Filter(
+                      kinds: [ZapReceipt.kKind],
+                      eTags: [eventId],
+                      pTags: [pubKey!],
+                    )
+                  : Filter(kinds: [ZapReceipt.kKind], pTags: [pubKey!]),
+            ],
+          );
           // TODO make timeout waiting for receipt parameterizable somehow
           StreamSubscription<Nip01Event>? streamSubscription;
           final timeout = Timer(Duration(seconds: 30), () {
-            _requests
-                .closeSubscription(zapResponse.zapReceiptResponse!.requestId);
+            _requests.closeSubscription(
+              zapResponse.zapReceiptResponse!.requestId,
+            );
             if (streamSubscription != null) {
               streamSubscription.cancel();
             }
             Logger.log.w(
-                () => "timed out waiting for zap receipt for invoice $invoice");
+              () => "timed out waiting for zap receipt for invoice $invoice",
+            );
           });
 
-          streamSubscription =
-              zapResponse.zapReceiptResponse!.stream.listen((event) {
+          streamSubscription = zapResponse.zapReceiptResponse!.stream.listen((
+            event,
+          ) {
             String? bolt11 = event.getFirstTag("bolt11");
             String? preimage = event.getFirstTag("preimage");
             if (bolt11 != null && bolt11 == invoice.invoice ||
@@ -172,14 +184,17 @@ class Zaps {
               ZapReceipt receipt = ZapReceipt.fromEvent(event);
               Logger.log.d(() => "Zap Receipt: $receipt");
               if (receipt.isValid(
-                  nostrPubKey: invoice.nostrPubkey!, recipientLnurl: lnurl)) {
+                nostrPubKey: invoice.nostrPubkey!,
+                recipientLnurl: lnurl,
+              )) {
                 zapResponse.emitReceipt(receipt);
               } else {
                 Logger.log.w(() => "Zap Receipt invalid: $receipt");
               }
               timeout.cancel();
-              _requests
-                  .closeSubscription(zapResponse.zapReceiptResponse!.requestId);
+              _requests.closeSubscription(
+                zapResponse.zapReceiptResponse!.requestId,
+              );
               if (streamSubscription != null) {
                 streamSubscription.cancel();
               }
@@ -197,19 +212,23 @@ class Zaps {
   }
 
   /// fetch all zap receipts matching given pubKey and optional event id, in sats
-  Stream<ZapReceipt> fetchZappedReceipts(
-      {required String pubKey,
-      String? eventId,
-      String? addressableId,
-      Duration? timeout}) {
-    NdkResponse? response =
-        _requests.query(timeout: timeout ?? Duration(seconds: 10), filters: [
-      Filter(
+  Stream<ZapReceipt> fetchZappedReceipts({
+    required String pubKey,
+    String? eventId,
+    String? addressableId,
+    Duration? timeout,
+  }) {
+    NdkResponse? response = _requests.query(
+      timeout: timeout ?? Duration(seconds: 10),
+      filters: [
+        Filter(
           kinds: [ZapReceipt.kKind],
           eTags: eventId != null ? [eventId] : null,
           aTags: addressableId != null ? [addressableId] : null,
-          pTags: [pubKey])
-    ]);
+          pTags: [pubKey],
+        ),
+      ],
+    );
     // TODO how to check validity of zap receipts without nostrPubKey and recipientLnurl????
     return response.stream.map((event) => ZapReceipt.fromEvent(event));
     // List<Nip01Event> events = await response.future;
@@ -217,15 +236,21 @@ class Zaps {
   }
 
   /// fetch all zap receipts matching given pubKey and optional event id, in sats
-  NdkResponse subscribeToZapReceipts(
-      {required String pubKey, String? eventId, String? addressableId}) {
-    NdkResponse? response = _requests.subscription(filters: [
-      Filter(
+  NdkResponse subscribeToZapReceipts({
+    required String pubKey,
+    String? eventId,
+    String? addressableId,
+  }) {
+    NdkResponse? response = _requests.subscription(
+      filters: [
+        Filter(
           kinds: [ZapReceipt.kKind],
           eTags: eventId != null ? [eventId] : null,
           aTags: addressableId != null ? [addressableId] : null,
-          pTags: [pubKey])
-    ]);
+          pTags: [pubKey],
+        ),
+      ],
+    );
     return response;
   }
 }

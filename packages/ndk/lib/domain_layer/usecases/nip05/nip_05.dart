@@ -19,8 +19,8 @@ class Nip05Usecase {
   Nip05Usecase({
     required CacheManager database,
     required Nip05Repository nip05Repository,
-  })  : _database = database,
-        _nip05Repository = nip05Repository;
+  }) : _database = database,
+       _nip05Repository = nip05Repository;
 
   /// checks the nip05 object for validity
   /// it checks the cache first, if not found it fetches from the network
@@ -51,8 +51,11 @@ class Nip05Usecase {
     }
 
     // Create a new request and add it to the in-flight map
-    final request =
-        _performCheck(nip05, pubkey, Nip05(pubKey: pubkey, nip05: nip05));
+    final request = _performCheck(
+      nip05,
+      pubkey,
+      Nip05(pubKey: pubkey, nip05: nip05),
+    );
     _inFlightRequests[nip05] = request;
 
     try {
@@ -130,9 +133,7 @@ class Nip05Usecase {
     } on FormatException catch (e) {
       return Nip05ResolveInvalidResponse(e);
     } on TypeError catch (e) {
-      return Nip05ResolveInvalidResponse(
-        Exception(e.toString()),
-      );
+      return Nip05ResolveInvalidResponse(Exception(e.toString()));
     } catch (e) {
       return Nip05ResolveNetworkError(
         e is Exception ? e : Exception(e.toString()),

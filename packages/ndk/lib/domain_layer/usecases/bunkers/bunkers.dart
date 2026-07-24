@@ -24,9 +24,9 @@ class Bunkers {
     required Broadcast broadcast,
     required Requests requests,
     required LocalEventSignerFactory eventSignerFactory,
-  })  : _broadcast = broadcast,
-        _requests = requests,
-        _eventSignerFactory = eventSignerFactory;
+  }) : _broadcast = broadcast,
+       _requests = requests,
+       _eventSignerFactory = eventSignerFactory;
 
   /// Connects to a bunker using a bunker URL (bunker://)
   /// authCallback is called with the auth URL if the bunker requires authentication
@@ -99,8 +99,9 @@ class Bunkers {
 
     BunkerConnection? result;
 
-    await for (final event in subscription.stream
-        .timeout(Duration(seconds: kMaxWaitingTimeForConnectionSeconds))) {
+    await for (final event in subscription.stream.timeout(
+      Duration(seconds: kMaxWaitingTimeForConnectionSeconds),
+    )) {
       final decryptedContent = await localEventSigner.decryptNip44(
         ciphertext: event.content,
         senderPubKey: remotePubkey,
@@ -159,8 +160,9 @@ class Bunkers {
     );
     BunkerConnection? result;
 
-    await for (final event in subscription.stream
-        .timeout(Duration(seconds: kMaxWaitingTimeForConnectionSeconds))) {
+    await for (final event in subscription.stream.timeout(
+      Duration(seconds: kMaxWaitingTimeForConnectionSeconds),
+    )) {
       final decryptedContent = await localEventSigner.decryptNip44(
         ciphertext: event.content,
         senderPubKey: event.pubKey,
@@ -186,8 +188,10 @@ class Bunkers {
   }
 
   /// Creates a simple signer that delegates to this bunker instance
-  Nip46EventSigner createSigner(BunkerConnection connection,
-      {Function(String)? authCallback}) {
+  Nip46EventSigner createSigner(
+    BunkerConnection connection, {
+    Function(String)? authCallback,
+  }) {
     return Nip46EventSigner(
       connection: connection,
       requests: _requests,

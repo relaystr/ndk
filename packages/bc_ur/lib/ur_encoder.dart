@@ -6,10 +6,17 @@ class UREncoder {
   final UR ur;
   final FountainEncoder fountainEncoder;
 
-  UREncoder(this.ur, int maxFragmentLen,
-      {int firstSeqNum = 0, int minFragmentLen = 10})
-      : fountainEncoder = FountainEncoder(ur.cbor, maxFragmentLen,
-            firstSeqNum: firstSeqNum, minFragmentLen: minFragmentLen);
+  UREncoder(
+    this.ur,
+    int maxFragmentLen, {
+    int firstSeqNum = 0,
+    int minFragmentLen = 10,
+  }) : fountainEncoder = FountainEncoder(
+         ur.cbor,
+         maxFragmentLen,
+         firstSeqNum: firstSeqNum,
+         minFragmentLen: minFragmentLen,
+       );
 
   static String encode(UR ur) {
     String body = Bytewords.encodeStyle(Bytewords.Style.minimal, ur.cbor);

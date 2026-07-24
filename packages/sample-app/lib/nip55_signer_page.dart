@@ -25,22 +25,20 @@ class _Nip55SignerPageState extends State<Nip55SignerPage> {
       children: <Widget>[
         FilledButton(
           onPressed: () async {
-            nip55Signer.getPublicKey(
-              permissions: [
-                const Nip55Permission(
-                  type: "nip04_encrypt",
-                ),
-                const Nip55Permission(
-                  type: "nip04_decrypt",
-                ),
-              ],
-            ).then((value) {
-              _npub = value['signature'] ?? '';
-              _pubkeyHex = Nip19.decode(_npub);
-              setState(() {
-                _text = '$value';
-              });
-            });
+            nip55Signer
+                .getPublicKey(
+                  permissions: [
+                    const Nip55Permission(type: "nip04_encrypt"),
+                    const Nip55Permission(type: "nip04_decrypt"),
+                  ],
+                )
+                .then((value) {
+                  _npub = value['signature'] ?? '';
+                  _pubkeyHex = Nip19.decode(_npub);
+                  setState(() {
+                    _text = '$value';
+                  });
+                });
           },
           child: const Text('Get Public Key'),
         ),
@@ -51,22 +49,19 @@ class _Nip55SignerPageState extends State<Nip55SignerPage> {
               'pubkey': Nip19.decode(_npub),
               'kind': 1,
               'content': 'Hello from NDK Flutter!',
-              'created_at':
-                  (DateTime.now().millisecondsSinceEpoch / 1000).round(),
+              'created_at': (DateTime.now().millisecondsSinceEpoch / 1000)
+                  .round(),
               'tags': [],
               'sig': '',
             });
 
             nip55Signer
-                .signEvent(
-              currentUser: _npub,
-              eventJson: eventJson,
-            )
+                .signEvent(currentUser: _npub, eventJson: eventJson)
                 .then((value) {
-              setState(() {
-                _text = '$value';
-              });
-            });
+                  setState(() {
+                    _text = '$value';
+                  });
+                });
           },
           child: const Text('Sign Event'),
         ),
@@ -77,8 +72,8 @@ class _Nip55SignerPageState extends State<Nip55SignerPage> {
               'pubkey': Nip19.decode(_npub),
               'kind': 1,
               'content': 'Hello from NDK Flutter!',
-              'created_at':
-                  (DateTime.now().millisecondsSinceEpoch / 1000).round(),
+              'created_at': (DateTime.now().millisecondsSinceEpoch / 1000)
+                  .round(),
               'tags': [],
               'sig': '',
             });
@@ -91,10 +86,10 @@ class _Nip55SignerPageState extends State<Nip55SignerPage> {
             eventVerifier
                 .verify(Nip01EventModel.fromJson(json.decode(value['event'])))
                 .then((valid) {
-              setState(() {
-                _text = valid ? "✅ Valid" : "❌ Invalid";
-              });
-            });
+                  setState(() {
+                    _text = valid ? "✅ Valid" : "❌ Invalid";
+                  });
+                });
           },
           child: const Text('Verify signature'),
         ),
@@ -102,16 +97,16 @@ class _Nip55SignerPageState extends State<Nip55SignerPage> {
           onPressed: () {
             nip55Signer
                 .nip04Encrypt(
-              plaintext: "Hello from NDK Flutter, Nip 04!",
-              currentUser: _npub,
-              pubKey: _pubkeyHex,
-            )
+                  plaintext: "Hello from NDK Flutter, Nip 04!",
+                  currentUser: _npub,
+                  pubKey: _pubkeyHex,
+                )
                 .then((value) {
-              _cipherText = value['signature'] ?? '';
-              setState(() {
-                _text = '$value';
-              });
-            });
+                  _cipherText = value['signature'] ?? '';
+                  setState(() {
+                    _text = '$value';
+                  });
+                });
           },
           child: const Text('Nip 04 Encrypt'),
         ),
@@ -119,39 +114,39 @@ class _Nip55SignerPageState extends State<Nip55SignerPage> {
           onPressed: () async {
             nip55Signer
                 .nip04Decrypt(
-              ciphertext: _cipherText,
-              currentUser: _npub,
-              pubKey: _pubkeyHex,
-            )
+                  ciphertext: _cipherText,
+                  currentUser: _npub,
+                  pubKey: _pubkeyHex,
+                )
                 .then((value) {
-              setState(() {
-                _text = '$value 1';
-              });
-            });
+                  setState(() {
+                    _text = '$value 1';
+                  });
+                });
             // ;
             nip55Signer
                 .nip04Decrypt(
-              ciphertext: _cipherText,
-              currentUser: _npub,
-              pubKey: _pubkeyHex,
-            )
+                  ciphertext: _cipherText,
+                  currentUser: _npub,
+                  pubKey: _pubkeyHex,
+                )
                 .then((value) {
-              setState(() {
-                _text = '$value 2';
-              });
-            });
+                  setState(() {
+                    _text = '$value 2';
+                  });
+                });
             //   ,
             nip55Signer
                 .nip04Decrypt(
-              ciphertext: _cipherText,
-              currentUser: _npub,
-              pubKey: _pubkeyHex,
-            )
+                  ciphertext: _cipherText,
+                  currentUser: _npub,
+                  pubKey: _pubkeyHex,
+                )
                 .then((value) {
-              setState(() {
-                _text = '$value 3';
-              });
-            });
+                  setState(() {
+                    _text = '$value 3';
+                  });
+                });
           },
           child: const Text('Nip 04 Decrypt'),
         ),
@@ -159,16 +154,16 @@ class _Nip55SignerPageState extends State<Nip55SignerPage> {
           onPressed: () {
             nip55Signer
                 .nip44Encrypt(
-              plaintext: "Hello from NDK Flutter, Nip 44!",
-              currentUser: _npub,
-              pubKey: _pubkeyHex,
-            )
+                  plaintext: "Hello from NDK Flutter, Nip 44!",
+                  currentUser: _npub,
+                  pubKey: _pubkeyHex,
+                )
                 .then((value) {
-              _cipherText = value['signature'] ?? '';
-              setState(() {
-                _text = '$value';
-              });
-            });
+                  _cipherText = value['signature'] ?? '';
+                  setState(() {
+                    _text = '$value';
+                  });
+                });
           },
           child: const Text('Nip 44 Encrypt'),
         ),
@@ -176,15 +171,15 @@ class _Nip55SignerPageState extends State<Nip55SignerPage> {
           onPressed: () {
             nip55Signer
                 .nip44Decrypt(
-              ciphertext: _cipherText,
-              currentUser: _npub,
-              pubKey: _pubkeyHex,
-            )
+                  ciphertext: _cipherText,
+                  currentUser: _npub,
+                  pubKey: _pubkeyHex,
+                )
                 .then((value) {
-              setState(() {
-                _text = '$value';
-              });
-            });
+                  setState(() {
+                    _text = '$value';
+                  });
+                });
           },
           child: const Text('Nip 44 Decrypt'),
         ),

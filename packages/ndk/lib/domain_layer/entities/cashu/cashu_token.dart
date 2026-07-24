@@ -29,10 +29,9 @@ class CashuToken {
     }
 
     final proofMap = allProofs.entries
-        .map((entry) => {
-              "i": CashuTools.hexToBytes(entry.key),
-              "p": entry.value,
-            })
+        .map(
+          (entry) => {"i": CashuTools.hexToBytes(entry.key), "p": entry.value},
+        )
         .toList();
 
     return {
@@ -44,9 +43,7 @@ class CashuToken {
   }
 
   String toV4TokenString() {
-    return CashuTokenEncoder.encodeTokenV4(
-      token: this,
-    );
+    return CashuTokenEncoder.encodeTokenV4(token: this);
   }
 
   factory CashuToken.fromV4Json(Map json) {
@@ -75,11 +72,6 @@ class CashuToken {
       }
     }
 
-    return CashuToken(
-      mintUrl: mint,
-      proofs: myProofs,
-      memo: memo,
-      unit: unit,
-    );
+    return CashuToken(mintUrl: mint, proofs: myProofs, memo: memo, unit: unit);
   }
 }

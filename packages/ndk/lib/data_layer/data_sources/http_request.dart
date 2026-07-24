@@ -51,8 +51,9 @@ class HttpRequestDS {
   /// make a get request to the given url
   Future<Map<String, dynamic>> jsonRequest(String url) async {
     http.Response response = await _client.get(
-        Uri.parse(url).replace(scheme: 'https'),
-        headers: {"Accept": "application/json"});
+      Uri.parse(url).replace(scheme: 'https'),
+      headers: {"Accept": "application/json"},
+    );
 
     if (!_isSuccessStatus(response.statusCode)) {
       throw HttpRequestException(
@@ -77,7 +78,8 @@ class HttpRequestDS {
 
     if (!_isSuccessStatus(response.statusCode)) {
       throw Exception(
-          "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
+        "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url",
+      );
     }
 
     return response;
@@ -115,10 +117,9 @@ class HttpRequestDS {
 
         final progressStream = body.map((chunk) {
           bytesSent += chunk.length;
-          progressSubject.add(UploadProgress(
-            sentBytes: bytesSent,
-            totalBytes: totalBytes,
-          ));
+          progressSubject.add(
+            UploadProgress(sentBytes: bytesSent, totalBytes: totalBytes),
+          );
           return chunk;
         });
 
@@ -139,19 +140,22 @@ class HttpRequestDS {
 
         if (!_isSuccessStatus(response.statusCode)) {
           final error = Exception(
-              "error fetching STATUS: ${response.statusCode}, Link: $url");
+            "error fetching STATUS: ${response.statusCode}, Link: $url",
+          );
           progressSubject.addError(error);
           await progressSubject.close();
           return;
         }
 
         // Upload complete
-        progressSubject.add(UploadProgress(
-          sentBytes: totalBytes,
-          totalBytes: totalBytes,
-          isComplete: true,
-          response: response,
-        ));
+        progressSubject.add(
+          UploadProgress(
+            sentBytes: totalBytes,
+            totalBytes: totalBytes,
+            isComplete: true,
+            response: response,
+          ),
+        );
         await progressSubject.close();
       } catch (error) {
         progressSubject.addError(error);
@@ -177,41 +181,32 @@ class HttpRequestDS {
 
     if (!_isSuccessStatus(response.statusCode)) {
       throw Exception(
-          "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url,  ");
+        "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url,  ",
+      );
     }
 
     return response;
   }
 
-  Future<http.Response> head({
-    required Uri url,
-    headers,
-  }) async {
-    http.Response response = await _client.head(
-      url,
-      headers: headers,
-    );
+  Future<http.Response> head({required Uri url, headers}) async {
+    http.Response response = await _client.head(url, headers: headers);
 
     if (!_isSuccessStatus(response.statusCode)) {
       throw Exception(
-          "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
+        "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url",
+      );
     }
 
     return response;
   }
 
-  Future<http.Response> get({
-    required Uri url,
-    headers,
-  }) async {
-    http.Response response = await _client.get(
-      url,
-      headers: headers,
-    );
+  Future<http.Response> get({required Uri url, headers}) async {
+    http.Response response = await _client.get(url, headers: headers);
 
     if (!_isSuccessStatus(response.statusCode)) {
       throw Exception(
-          "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
+        "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url",
+      );
     }
 
     return response;
@@ -232,24 +227,20 @@ class HttpRequestDS {
 
     if (!_isSuccessStatus(streamedResponse.statusCode)) {
       throw Exception(
-          "error fetching STATUS: ${streamedResponse.statusCode}, Link: $url");
+        "error fetching STATUS: ${streamedResponse.statusCode}, Link: $url",
+      );
     }
 
     yield* streamedResponse.stream;
   }
 
-  Future<http.Response> delete({
-    required Uri url,
-    required headers,
-  }) async {
-    http.Response response = await _client.delete(
-      url,
-      headers: headers,
-    );
+  Future<http.Response> delete({required Uri url, required headers}) async {
+    http.Response response = await _client.delete(url, headers: headers);
 
     if (!_isSuccessStatus(response.statusCode)) {
       throw Exception(
-          "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
+        "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url",
+      );
     }
 
     return response;

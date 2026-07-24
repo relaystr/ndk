@@ -12,10 +12,7 @@ import '../../../shared/nips/nip44/nip44.dart';
 class Bip340EventSignerFactory implements LocalEventSignerFactory {
   const Bip340EventSignerFactory();
   @override
-  EventSigner create({
-    String? privateKey,
-    String? publicKey,
-  }) {
+  EventSigner create({String? privateKey, String? publicKey}) {
     final derivedPublicKey =
         publicKey ?? (privateKey != null ? derivePublicKey(privateKey) : null);
 
@@ -57,10 +54,16 @@ class Bip340EventSigner implements EventSigner {
   String publicKey;
 
   /// Get a new event signer with the given keys
-  Bip340EventSigner({
-    required this.privateKey,
-    required this.publicKey,
-  });
+  Bip340EventSigner({required this.privateKey, required this.publicKey});
+
+  @override
+  bool get requiresInteractiveSigning => false;
+
+  @override
+  bool get requiresSignerNetwork => false;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls => const <String>[];
 
   @override
   Future<Nip01Event> sign(Nip01Event event) async {
@@ -95,11 +98,7 @@ class Bip340EventSigner implements EventSigner {
     required String plaintext,
     required String recipientPubKey,
   }) {
-    return Nip44.encryptMessage(
-      plaintext,
-      privateKey!,
-      recipientPubKey,
-    );
+    return Nip44.encryptMessage(plaintext, privateKey!, recipientPubKey);
   }
 
   @override
@@ -107,11 +106,7 @@ class Bip340EventSigner implements EventSigner {
     required String ciphertext,
     required String senderPubKey,
   }) {
-    return Nip44.decryptMessage(
-      ciphertext,
-      privateKey!,
-      senderPubKey,
-    );
+    return Nip44.decryptMessage(ciphertext, privateKey!, senderPubKey);
   }
 
   // Local signer - no pending requests (operations are instant)

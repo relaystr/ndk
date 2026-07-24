@@ -115,8 +115,10 @@ void main() {
         expect(encrypted, isNotNull);
         expect(encrypted, isNot(equals(message)));
 
-        final decrypted =
-            await otherSigner.decrypt(encrypted!, keyPair.publicKey);
+        final decrypted = await otherSigner.decrypt(
+          encrypted!,
+          keyPair.publicKey,
+        );
         expect(decrypted, equals(message));
 
         await otherSigner.dispose();
@@ -211,24 +213,22 @@ void main() {
         await signer.dispose();
       });
 
-      test('creates signer with only private key (derives public key)',
-          () async {
-        final keyPair = Bip340.generatePrivateKey();
-        final signer = factory.create(
-          privateKey: keyPair.privateKey,
-        );
+      test(
+        'creates signer with only private key (derives public key)',
+        () async {
+          final keyPair = Bip340.generatePrivateKey();
+          final signer = factory.create(privateKey: keyPair.privateKey);
 
-        expect(signer.getPublicKey(), equals(keyPair.publicKey));
-        expect(signer.canSign(), isTrue);
+          expect(signer.getPublicKey(), equals(keyPair.publicKey));
+          expect(signer.canSign(), isTrue);
 
-        await signer.dispose();
-      });
+          await signer.dispose();
+        },
+      );
 
       test('creates read-only signer with only public key', () async {
         final keyPair = Bip340.generatePrivateKey();
-        final signer = factory.create(
-          publicKey: keyPair.publicKey,
-        );
+        final signer = factory.create(publicKey: keyPair.publicKey);
 
         expect(signer.getPublicKey(), equals(keyPair.publicKey));
         expect(signer.canSign(), isFalse);
@@ -237,10 +237,7 @@ void main() {
       });
 
       test('throws ArgumentError when neither key is provided', () {
-        expect(
-          () => factory.create(),
-          throwsArgumentError,
-        );
+        expect(() => factory.create(), throwsArgumentError);
       });
 
       test('derived public key can sign valid events', () async {
@@ -266,23 +263,25 @@ void main() {
         await signer.dispose();
       });
 
-      test('uses provided public key even if derivation would differ',
-          () async {
-        final keyPair1 = Bip340.generatePrivateKey();
-        final keyPair2 = Bip340.generatePrivateKey();
+      test(
+        'uses provided public key even if derivation would differ',
+        () async {
+          final keyPair1 = Bip340.generatePrivateKey();
+          final keyPair2 = Bip340.generatePrivateKey();
 
-        // Intentionally mismatched keys
-        final signer = factory.create(
-          privateKey: keyPair1.privateKey,
-          publicKey: keyPair2.publicKey, // Different public key
-        );
+          // Intentionally mismatched keys
+          final signer = factory.create(
+            privateKey: keyPair1.privateKey,
+            publicKey: keyPair2.publicKey, // Different public key
+          );
 
-        // Should use the provided public key, not derived
-        expect(signer.getPublicKey(), equals(keyPair2.publicKey));
-        expect(signer.getPublicKey(), isNot(equals(keyPair1.publicKey)));
+          // Should use the provided public key, not derived
+          expect(signer.getPublicKey(), equals(keyPair2.publicKey));
+          expect(signer.getPublicKey(), isNot(equals(keyPair1.publicKey)));
 
-        await signer.dispose();
-      });
+          await signer.dispose();
+        },
+      );
     });
 
     group('createWithNewKeyPair', () {

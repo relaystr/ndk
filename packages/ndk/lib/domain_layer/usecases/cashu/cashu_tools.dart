@@ -64,7 +64,7 @@ class CashuTools {
   static List<int> splitAmount(int value) {
     return [
       for (int i = 0; value > 0; i++, value >>= 1)
-        if (value & 1 == 1) 1 << i
+        if (value & 1 == 1) 1 << i,
     ];
   }
 
@@ -76,8 +76,10 @@ class CashuTools {
     const maxAttempt = 65536;
 
     final hashBytes = Uint8List.fromList(utf8.encode(hash));
-    Uint8List msgToHash = Uint8List.fromList(
-        [...CashuConfig.DOMAIN_SEPARATOR_HashToCurve.codeUnits, ...hashBytes]);
+    Uint8List msgToHash = Uint8List.fromList([
+      ...CashuConfig.DOMAIN_SEPARATOR_HashToCurve.codeUnits,
+      ...hashBytes,
+    ]);
 
     var digest = SHA256Digest();
     Uint8List msgHash = digest.process(msgToHash);
@@ -111,9 +113,7 @@ class CashuTools {
   static String ecPointToHex(ECPoint point, {bool compressed = true}) {
     return point
         .getEncoded(compressed)
-        .map(
-          (byte) => byte.toRadixString(16).padLeft(2, '0'),
-        )
+        .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
         .join();
   }
 
@@ -164,8 +164,9 @@ class CashuTools {
     required List<CahsuKeyset> keysets,
     required String unit,
   }) {
-    final keysetsFiltered =
-        keysets.where((keyset) => keyset.unit == unit).toList();
+    final keysetsFiltered = keysets
+        .where((keyset) => keyset.unit == unit)
+        .toList();
 
     if (keysetsFiltered.isEmpty) {
       throw Exception('No keysets found with unit: $unit');

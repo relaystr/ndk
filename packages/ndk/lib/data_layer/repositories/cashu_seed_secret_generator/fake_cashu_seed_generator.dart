@@ -17,9 +17,11 @@ class FakeCashuSeedGenerator implements CashuKeyDerivation {
     final fakeBlindingHex =
         'cafebabe${counter.toRadixString(16).padLeft(24, '0')}';
 
-    return Future.value(CashuSeedDeriveSecretResult(
-      secretHex: fakeSecretHex,
-      blindingHex: fakeBlindingHex,
-    ));
+    return Future.value(
+      CashuSeedDeriveSecretResult(
+        secretHex: fakeSecretHex,
+        blindingHex: fakeBlindingHex,
+      ),
+    );
   }
 }

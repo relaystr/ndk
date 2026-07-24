@@ -22,4 +22,5 @@ class NdkResponse {
   /// Creates a new [NdkResponse] instance.
   NdkResponse(this.requestId, this.stream);
 }
+
 // coverage:ignore-end

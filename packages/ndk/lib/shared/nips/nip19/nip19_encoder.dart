@@ -51,7 +51,8 @@ class Nip19Encoder {
         final relayBytes = utf8.encode(relay);
         if (relayBytes.length > 255) {
           throw ArgumentError(
-              'Relay URL too long: ${relay.length} bytes (max 255)');
+            'Relay URL too long: ${relay.length} bytes (max 255)',
+          );
         }
         tlvData.add(1); // type
         tlvData.add(relayBytes.length); // length
@@ -64,7 +65,8 @@ class Nip19Encoder {
       final authorBytes = hex.decode(author);
       if (authorBytes.length != 32) {
         throw ArgumentError(
-            'Author pubkey must be 32 bytes (64 hex characters)');
+          'Author pubkey must be 32 bytes (64 hex characters)',
+        );
       }
       tlvData.add(2); // type
       tlvData.add(32); // length
@@ -117,7 +119,8 @@ class Nip19Encoder {
         final relayBytes = utf8.encode(relay);
         if (relayBytes.length > 255) {
           throw ArgumentError(
-              'Relay URL too long: ${relay.length} bytes (max 255)');
+            'Relay URL too long: ${relay.length} bytes (max 255)',
+          );
         }
         tlvData.add(1); // type
         tlvData.add(relayBytes.length); // length
@@ -156,10 +159,7 @@ class Nip19Encoder {
   /// Encode nprofile (profile reference)
   /// [pubkey] - 32-byte hex public key (required)
   /// [relays] - optional list of relay URLs where the profile may be found
-  static String encodeNprofile({
-    required String pubkey,
-    List<String>? relays,
-  }) {
+  static String encodeNprofile({required String pubkey, List<String>? relays}) {
     final tlvData = <int>[];
 
     // Type 0: pubkey (special) - 32 bytes
@@ -177,7 +177,8 @@ class Nip19Encoder {
         final relayBytes = utf8.encode(relay);
         if (relayBytes.length > 255) {
           throw ArgumentError(
-              'Relay URL too long: ${relay.length} bytes (max 255)');
+            'Relay URL too long: ${relay.length} bytes (max 255)',
+          );
         }
         tlvData.add(1); // type
         tlvData.add(relayBytes.length); // length

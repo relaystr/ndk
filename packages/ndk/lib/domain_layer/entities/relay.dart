@@ -17,10 +17,7 @@ class Relay {
   ConnectionSource connectionSource;
 
   /// default constructor
-  Relay({
-    required this.url,
-    required this.connectionSource,
-  });
+  Relay({required this.url, required this.connectionSource});
 
   /// set trying to connect
   void tryingToConnect() {

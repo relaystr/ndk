@@ -18,36 +18,39 @@ const failingMintUrl = 'https://mint.example.com';
 const mockMintUrl = "https://mock.mint";
 
 Ndk _ndk() {
-  return Ndk(NdkConfig(
-    cache: MemCacheManager(),
-    walletsRepo: MemWalletsRepo(),
-    eventVerifier: Bip340EventVerifier(),
-    bootstrapRelays: [],
-  ));
+  return Ndk(
+    NdkConfig(
+      cache: MemCacheManager(),
+      walletsRepo: MemWalletsRepo(),
+      eventVerifier: Bip340EventVerifier(),
+      bootstrapRelays: [],
+    ),
+  );
 }
 
 void main() {
   setUp(() {});
 
   group('redeem tests - exceptions ', () {
-    test("redeem - offline mint should fail immediately on initiateRedeem",
-        () async {
-      final ndk = _ndk();
+    test(
+      "redeem - offline mint should fail immediately on initiateRedeem",
+      () async {
+        final ndk = _ndk();
 
-      // This should throw an exception quickly (not hang)
-      expect(
-        () async => await ndk.cashu.initiateRedeem(
-          mintUrl: 'https://offline.mint.example.com',
-          request: "lnbc1...",
-          unit: "sat",
-          method: "bolt11",
-        ),
-        throwsA(isA<Exception>()),
-      );
-    });
+        // This should throw an exception quickly (not hang)
+        expect(
+          () async => await ndk.cashu.initiateRedeem(
+            mintUrl: 'https://offline.mint.example.com',
+            request: "lnbc1...",
+            unit: "sat",
+            method: "bolt11",
+          ),
+          throwsA(isA<Exception>()),
+        );
+      },
+    );
 
-    test("redeem - offline mint should fail immediately on redeem stream",
-        () async {
+    test("redeem - offline mint should fail immediately on redeem stream", () async {
       final cache = MemCacheManager();
 
       // Save mint info so it doesn't try to fetch from network
@@ -75,14 +78,8 @@ void main() {
           fetchedAt:
               DateTime.now().millisecondsSinceEpoch ~/ 1000, // mark as fresh
           mintKeyPairs: {
-            CahsuMintKeyPair(
-              amount: 1,
-              pubkey: 'testPubKey-1',
-            ),
-            CahsuMintKeyPair(
-              amount: 2,
-              pubkey: 'testPubKey-2',
-            ),
+            CahsuMintKeyPair(amount: 1, pubkey: 'testPubKey-1'),
+            CahsuMintKeyPair(amount: 2, pubkey: 'testPubKey-2'),
           },
         ),
       );
@@ -142,8 +139,9 @@ void main() {
         ),
       );
 
-      final redeemStream =
-          cashu.redeem(draftRedeemTransaction: draftTransaction);
+      final redeemStream = cashu.redeem(
+        draftRedeemTransaction: draftTransaction,
+      );
 
       // The stream should emit pending first, then fail with a failed transaction
       // This should not hang - it should fail quickly (within timeout period)
@@ -184,8 +182,9 @@ void main() {
         mintUrl: devMintUrl,
       );
 
-      final redeemStream =
-          ndk.cashu.redeem(draftRedeemTransaction: draftTransaction);
+      final redeemStream = ndk.cashu.redeem(
+        draftRedeemTransaction: draftTransaction,
+      );
 
       await expectLater(
         () async => await redeemStream.last,
@@ -205,8 +204,9 @@ void main() {
           request: '',
         ),
       );
-      final redeemStream2 =
-          ndk.cashu.redeem(draftRedeemTransaction: dTwithQuote);
+      final redeemStream2 = ndk.cashu.redeem(
+        draftRedeemTransaction: dTwithQuote,
+      );
 
       await expectLater(
         () async => await redeemStream2.last,
@@ -215,8 +215,9 @@ void main() {
 
       // missing request
       final dTwithQuoteAndMethod = dTwithQuote.copyWith(method: "bolt11");
-      final redeemStream3 =
-          ndk.cashu.redeem(draftRedeemTransaction: dTwithQuoteAndMethod);
+      final redeemStream3 = ndk.cashu.redeem(
+        draftRedeemTransaction: dTwithQuoteAndMethod,
+      );
 
       await expectLater(
         () async => await redeemStream3.last,
@@ -257,32 +258,37 @@ void main() {
       final mockRequest = "lnbc1...";
 
       final cashu = CashuTestTools.mockHttpCashu(
-          seedPhrase: CashuUserSeedphrase(
-              seedPhrase:
-                  "reduce invest lunch step couch traffic measure civil want steel trip jar"),
-          customMockClient: myHttpMock,
-          customCache: cache);
+        seedPhrase: CashuUserSeedphrase(
+          seedPhrase:
+              "reduce invest lunch step couch traffic measure civil want steel trip jar",
+        ),
+        customMockClient: myHttpMock,
+        customCache: cache,
+      );
 
-      await cache.saveProofs(proofs: [
-        CashuProof(
-          keysetId: '00c726786980c4d9',
-          amount: 1,
-          secret: 'proof-s-1',
-          unblindedSig: '',
-        ),
-        CashuProof(
-          keysetId: '00c726786980c4d9',
-          amount: 2,
-          secret: 'proof-s-2',
-          unblindedSig: '',
-        ),
-        CashuProof(
-          keysetId: '00c726786980c4d9',
-          amount: 4,
-          secret: 'proof-s-4',
-          unblindedSig: '',
-        ),
-      ], mintUrl: mockMintUrl);
+      await cache.saveProofs(
+        proofs: [
+          CashuProof(
+            keysetId: '00c726786980c4d9',
+            amount: 1,
+            secret: 'proof-s-1',
+            unblindedSig: '',
+          ),
+          CashuProof(
+            keysetId: '00c726786980c4d9',
+            amount: 2,
+            secret: 'proof-s-2',
+            unblindedSig: '',
+          ),
+          CashuProof(
+            keysetId: '00c726786980c4d9',
+            amount: 4,
+            secret: 'proof-s-4',
+            unblindedSig: '',
+          ),
+        ],
+        mintUrl: mockMintUrl,
+      );
 
       final meltQuoteTransaction = await cashu.initiateRedeem(
         mintUrl: mockMintUrl,
@@ -291,23 +297,28 @@ void main() {
         method: "bolt11",
       );
 
-      final redeemStream =
-          cashu.redeem(draftRedeemTransaction: meltQuoteTransaction);
+      final redeemStream = cashu.redeem(
+        draftRedeemTransaction: meltQuoteTransaction,
+      );
 
       expectLater(
-          redeemStream,
-          emitsInOrder(
-            [
-              isA<CashuWalletTransaction>().having(
-                  (p0) => p0.state, 'state', WalletTransactionState.pending),
-              isA<CashuWalletTransaction>().having(
-                  (p0) => p0.state, 'state', WalletTransactionState.completed),
-            ],
-          ));
+        redeemStream,
+        emitsInOrder([
+          isA<CashuWalletTransaction>().having(
+            (p0) => p0.state,
+            'state',
+            WalletTransactionState.pending,
+          ),
+          isA<CashuWalletTransaction>().having(
+            (p0) => p0.state,
+            'state',
+            WalletTransactionState.completed,
+          ),
+        ]),
+      );
     });
 
-    test("redeem fails after proofs spent on mint - proofs marked as spent",
-        () async {
+    test("redeem fails after proofs spent on mint - proofs marked as spent", () async {
       // This test verifies the fix for the broken proofs issue:
       // When meltTokens() fails AFTER the mint has already spent the proofs,
       // the proofs should be marked as spent locally (not released back to the wallet).
@@ -371,8 +382,9 @@ void main() {
         method: "bolt11",
       );
 
-      final redeemStream =
-          cashu.redeem(draftRedeemTransaction: meltQuoteTransaction);
+      final redeemStream = cashu.redeem(
+        draftRedeemTransaction: meltQuoteTransaction,
+      );
 
       // Collect all events from the stream
       final events = await redeemStream.toList();

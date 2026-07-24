@@ -1,3 +1,4 @@
+// ignore_for_file: use_build_context_synchronously
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -62,8 +63,10 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                'Generated $_eventCount events for quantum secure signing')),
+          content: Text(
+            'Generated $_eventCount events for quantum secure signing',
+          ),
+        ),
       );
     }
 
@@ -102,8 +105,9 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
       final lastSignedEvent = signedEvents.last;
       setState(() {
         // Manually construct JSON-like representation from Nip01Event fields
-        _lastEventJson =
-            jsonEncode(Nip01EventModel.fromEntity(lastSignedEvent).toJson());
+        _lastEventJson = jsonEncode(
+          Nip01EventModel.fromEntity(lastSignedEvent).toJson(),
+        );
         // Store all signed events globally for verification
         _signedEvents = List.from(signedEvents);
       });
@@ -111,23 +115,24 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              'Signed $_eventCount events in ${_signTimeMs!.toStringAsFixed(2)} ms'),
+            'Signed $_eventCount events in ${_signTimeMs!.toStringAsFixed(2)} ms',
+          ),
         ),
       );
     } catch (e) {
       setState(() {
         _signTimeMs = null;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error signing events: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error signing events: $e')));
     }
   }
 
   Future<void> _verifyEvents() async {
     if (_signer == null || _verifier == null || _signedEvents.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please generate events first')),
+        const SnackBar(content: Text('Please generate events first')),
       );
       return;
     }
@@ -168,9 +173,9 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
         statusMessage += ' ($failedCount failed)';
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(statusMessage)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(statusMessage)));
 
       if (!allValid) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -182,18 +187,16 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
         _verifyTimeMs = null;
         _failedVerifications = null;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error verifying events: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error verifying events: $e')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Quantum Secure Sign/Verify Demo'),
-      ),
+      appBar: AppBar(title: const Text('Quantum Secure Sign/Verify Demo')),
       body: kIsWeb
           ? const Center(
               child: Padding(
@@ -201,13 +204,18 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.warning_amber_rounded,
-                        size: 64, color: Colors.orange),
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      size: 64,
+                      color: Colors.orange,
+                    ),
                     SizedBox(height: 16),
                     Text(
                       'Not supported on Web',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 8),
                     Text(
@@ -232,11 +240,8 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
                         child: Text(
                           'This is an experiment to test the feasibility of Dilithium in Nostr.\n\n'
                           'Please note that the ID is still generated the conventional way.',
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Colors.grey[700],
-                                    height: 1.5,
-                                  ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Colors.grey[700], height: 1.5),
                         ),
                       ),
                     ),
@@ -294,7 +299,8 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
                               label: '$_eventCount events',
                               onChanged: (value) {
                                 setState(
-                                    () => _eventCount = (value * 1000).toInt());
+                                  () => _eventCount = (value * 1000).toInt(),
+                                );
                               },
                             ),
 
@@ -348,8 +354,9 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
                               const Divider(),
                               if (_signTimeMs != null) ...[
                                 Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4.0),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4.0,
+                                  ),
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -368,8 +375,9 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
                               ],
                               if (_verifyTimeMs != null) ...[
                                 Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4.0),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4.0,
+                                  ),
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -389,8 +397,9 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
                               if (_failedVerifications != null &&
                                   _failedVerifications! > 0) ...[
                                 Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4.0),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4.0,
+                                  ),
                                   child: Text(
                                     'Failed Verifications: $_failedVerifications',
                                     style: const TextStyle(

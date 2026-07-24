@@ -28,20 +28,20 @@ class Nip55LoginResult {
   /// The user's public key, in hex format.
   final String pubkey;
 
-  /// The signer app package name (e.g. Amber, Primal), if the signer returned
+  /// The signer app package name, if the signer returned
   /// it. Used to target the same signer for subsequent requests.
   final String? package;
 }
 
 /// Dart bridge to a NIP-55 "Android Signer Application".
 ///
-/// NIP-55 is a protocol implemented by several external signer apps
-/// (Amber, Primal, Aegis, ...). This class talks to whichever compatible
-/// signer is installed through the native `ndk` method channel
+/// NIP-55 is a protocol implemented by several external signer apps.
+/// This class talks to whichever compatible signer is installed through the
+/// native `ndk` method channel
 /// ([DartNdkPlugin]).
 ///
 /// Every method resolves to a `Map` that contains (at least) a `signature`
-/// key with the result, mirroring the historical `amberflutter` API.
+/// key with the result, mirroring the historical external-signer plugin API.
 class Nip55Signer {
   /// The method channel shared with the native [DartNdkPlugin].
   static const MethodChannel _channel = MethodChannel('ndk');
@@ -56,7 +56,7 @@ class Nip55Signer {
     Nip55Permission(type: 'nip44_decrypt'),
   ];
 
-  /// The signer app package (e.g. Amber, Primal), captured at login. Used to
+  /// The signer app package, captured at login. Used to
   /// target the right signer for both the ContentResolver and the Intent.
   /// When `null`, the native side lets Android route through a compatible
   /// signer app.
@@ -92,7 +92,7 @@ class Nip55Signer {
   /// if the user rejected or no key was returned.
   ///
   /// NIP-55 returns the key in the `result` field, in hex format. Older
-  /// signers (and Amber legacy) may return an npub instead, so both are
+  /// signer implementations may return an npub instead, so both are
   /// accepted. See https://github.com/nostr-protocol/nips/blob/master/55.md
   Future<String?> getPublicKeyHex({List<Nip55Permission>? permissions}) async {
     return (await login(permissions: permissions))?.pubkey;

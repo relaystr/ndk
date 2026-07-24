@@ -816,7 +816,7 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                   data: invoice.toUpperCase(),
                   errorCorrectLevel: QrErrorCorrectLevel.M,
                   decoration: const PrettyQrDecoration(
-                    quietZone: PrettyQrQuietZone.standart,
+                    quietZone: PrettyQrQuietZone.standard,
                     background: Colors.white,
                     shape: PrettyQrSmoothSymbol(
                       color: Colors.black,
@@ -933,7 +933,7 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                   data: invoice.toUpperCase(),
                   errorCorrectLevel: QrErrorCorrectLevel.M,
                   decoration: const PrettyQrDecoration(
-                    quietZone: PrettyQrQuietZone.standart,
+                    quietZone: PrettyQrQuietZone.standard,
                     background: Colors.white,
                     shape: PrettyQrSmoothSymbol(
                       color: Colors.black,

@@ -31,10 +31,10 @@ class UserRelayLists {
     required CacheManager cacheManager,
     required Broadcast broadcast,
     required Accounts accounts,
-  })  : _cacheManager = cacheManager,
-        _requests = requests,
-        _broadcast = broadcast,
-        _accounts = accounts;
+  }) : _cacheManager = cacheManager,
+       _requests = requests,
+       _broadcast = broadcast,
+       _accounts = accounts;
 
   EventSigner get _signer {
     if (_accounts.isNotLoggedIn) {
@@ -52,8 +52,9 @@ class UserRelayLists {
   }) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
-      UserRelayList? userRelayList =
-          await _cacheManager.loadUserRelayList(pubKey);
+      UserRelayList? userRelayList = await _cacheManager.loadUserRelayList(
+        pubKey,
+      );
       if (userRelayList == null || forceRefresh) {
         // TODO check if not too old (time passed since last refreshed timestamp)
         missingPubKeys.add(pubKey);
@@ -65,35 +66,42 @@ class UserRelayLists {
     Set<String> found = {};
 
     if (missingPubKeys.isNotEmpty) {
-      Logger.log
-          .d(() => "loading missing relay lists ${missingPubKeys.length}");
+      Logger.log.d(
+        () => "loading missing relay lists ${missingPubKeys.length}",
+      );
       if (onProgress != null) {
         onProgress.call(
-            "Loading missing relay lists", 0, missingPubKeys.length);
+          "Loading missing relay lists",
+          0,
+          missingPubKeys.length,
+        );
       }
       try {
         await for (final event in (_requests.query(
-//                timeout: missingPubKeys.length > 1 ? 10 : 3,
-            name: "user-relay-lists",
-            filters: [
-              Filter(
-                  authors: missingPubKeys,
-                  kinds: [Nip65.kKind, ContactList.kKind])
-            ])).stream) {
+          //                timeout: missingPubKeys.length > 1 ? 10 : 3,
+          name: "user-relay-lists",
+          filters: [
+            Filter(
+              authors: missingPubKeys,
+              kinds: [Nip65.kKind, ContactList.kKind],
+            ),
+          ],
+        )).stream) {
           switch (event.kind) {
             case Nip65.kKind:
               Nip65 nip65 = Nip65.fromEvent(event);
-              if (nip65.relays.isNotEmpty) {
-                UserRelayList fromNip65 = UserRelayList.fromNip65(nip65);
-                if (fromNip65s[event.pubKey] == null ||
-                    fromNip65s[event.pubKey]!.createdAt < event.createdAt) {
-                  fromNip65s[event.pubKey] = fromNip65;
-                }
-                if (onProgress != null) {
-                  found.add(event.pubKey);
-                  onProgress.call("Loading missing relay lists", found.length,
-                      missingPubKeys.length);
-                }
+              UserRelayList fromNip65 = UserRelayList.fromNip65(nip65);
+              if (fromNip65s[event.pubKey] == null ||
+                  fromNip65s[event.pubKey]!.createdAt < event.createdAt) {
+                fromNip65s[event.pubKey] = fromNip65;
+              }
+              if (onProgress != null) {
+                found.add(event.pubKey);
+                onProgress.call(
+                  "Loading missing relay lists",
+                  found.length,
+                  missingPubKeys.length,
+                );
               }
             case ContactList.kKind:
               ContactList contactList = ContactList.fromEvent(event);
@@ -107,8 +115,11 @@ class UserRelayLists {
                 }
                 if (onProgress != null) {
                   found.add(event.pubKey);
-                  onProgress.call("Loading missing relay lists", found.length,
-                      missingPubKeys.length);
+                  onProgress.call(
+                    "Loading missing relay lists",
+                    found.length,
+                    missingPubKeys.length,
+                  );
                 }
               }
           }
@@ -116,30 +127,30 @@ class UserRelayLists {
       } catch (e) {
         Logger.log.e(() => e);
       }
-      Set<UserRelayList> relayLists = Set.of(fromNip65s.values);
-      // Only add kind3 contents relays if there is no Nip65 for given pubKey.
-      // This is because kind3 contents relay should be deprecated, and if we have a nip65 list should be considered more up-to-date.
-      for (MapEntry<String, UserRelayList> entry in fromNip02Contacts.entries) {
-        if (!fromNip65s.containsKey(entry.key)) {
-          relayLists.add(entry.value);
+      final eventsToSave = <Nip01Event>[];
+      eventsToSave.addAll(
+        fromNip65s.values.map((relayList) => relayList.toNip65().toEvent()),
+      );
+      for (final contactList in contactLists) {
+        final existingEvent = await _loadCachedRelaySourceEvent(
+          pubKey: contactList.pubKey,
+          kind: ContactList.kKind,
+        );
+        if (existingEvent == null ||
+            existingEvent.createdAt < contactList.createdAt) {
+          eventsToSave.add(contactList.toEvent());
         }
       }
-      await _cacheManager.saveUserRelayLists(relayLists.toList());
-
-      // also save to cache any fresher contact list
-      List<ContactList> contactListsSave = [];
-      for (ContactList contactList in contactLists) {
-        ContactList? existing =
-            await _cacheManager.loadContactList(contactList.pubKey);
-        if (existing == null || existing.createdAt < contactList.createdAt) {
-          contactListsSave.add(contactList);
-        }
+      if (eventsToSave.isNotEmpty) {
+        await _cacheManager.saveEvents(eventsToSave);
       }
-      await _cacheManager.saveContactLists(contactListsSave);
 
       if (onProgress != null) {
         onProgress.call(
-            "Loading missing relay lists", found.length, missingPubKeys.length);
+          "Loading missing relay lists",
+          found.length,
+          missingPubKeys.length,
+        );
       }
     }
     Logger.log.d(() => "Loaded ${found.length} relay lists ");
@@ -150,14 +161,14 @@ class UserRelayLists {
     String pubKey, {
     bool forceRefresh = false,
   }) async {
-    UserRelayList? userRelayList =
-        await _cacheManager.loadUserRelayList(pubKey);
+    UserRelayList? userRelayList = await _cacheManager.loadUserRelayList(
+      pubKey,
+    );
 
     if (userRelayList == null || forceRefresh) {
-      await loadMissingRelayListsFromNip65OrNip02(
-        [pubKey],
-        forceRefresh: forceRefresh,
-      );
+      await loadMissingRelayListsFromNip65OrNip02([
+        pubKey,
+      ], forceRefresh: forceRefresh);
       userRelayList = await _cacheManager.loadUserRelayList(pubKey);
     }
     return userRelayList;
@@ -187,16 +198,14 @@ class UserRelayLists {
       }
     }
 
-    final events = await _requests.query(
-      name: "dm-relays",
-      filters: [
-        Filter(
-          authors: [pubKey],
-          kinds: [Nip51List.kDmRelays],
-          limit: 1,
-        ),
-      ],
-    ).future;
+    final events = await _requests
+        .query(
+          name: "dm-relays",
+          filters: [
+            Filter(authors: [pubKey], kinds: [Nip51List.kDmRelays], limit: 1),
+          ],
+        )
+        .future;
 
     if (events.isEmpty) return null;
 
@@ -222,12 +231,18 @@ class UserRelayLists {
 
     /// if cached user relay list is older that now minus this duration that we should go refresh it,
     /// otherwise we risk adding/removing relays to a list that is out of date and thus loosing relays other client has added/removed since.
-    int sometimeAgo = DateTime.now()
+    int sometimeAgo =
+        DateTime.now()
             .subtract(REFRESH_USER_RELAY_DURATION)
             .millisecondsSinceEpoch ~/
         1000;
+    final latestSourceEvent = await _loadCachedUserRelaySourceEvent(
+      _signer.getPublicKey(),
+    );
     bool refresh =
-        userRelayList == null || userRelayList.refreshedTimestamp < sometimeAgo;
+        userRelayList == null ||
+        latestSourceEvent == null ||
+        latestSourceEvent.createdAt < sometimeAgo;
 
     if (refresh) {
       userRelayList = await getSingleUserRelayList(
@@ -250,14 +265,19 @@ class UserRelayLists {
     if (userRelayList == null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       userRelayList = UserRelayList(
-          pubKey: _signer.getPublicKey(),
-          relays: {
-            for (String url in broadcastRelays) url: ReadWriteMarker.readWrite
-          },
-          createdAt: now,
-          refreshedTimestamp: now);
+        pubKey: _signer.getPublicKey(),
+        relays: {
+          for (String url in broadcastRelays) url: ReadWriteMarker.readWrite,
+        },
+        createdAt: now,
+        refreshedTimestamp: now,
+      );
     }
     userRelayList.relays[relayUrl] = marker;
+    userRelayList.createdAt = _nextReplaceableTimestamp(
+      userRelayList.createdAt,
+    );
+    userRelayList.refreshedTimestamp = Helpers.now;
 
     final broadcastResponse = _broadcast.broadcast(
       nostrEvent: userRelayList.toNip65().toEvent(),
@@ -266,7 +286,7 @@ class UserRelayLists {
     await Future.wait([
       broadcastResponse.broadcastDoneFuture,
       Future.delayed(Duration(seconds: 1)),
-      _cacheManager.saveUserRelayList(userRelayList)
+      _cacheManager.saveEvent(userRelayList.toNip65().toEvent()),
     ]);
     return userRelayList;
   }
@@ -281,10 +301,10 @@ class UserRelayLists {
     double? considerDonePercent,
     Duration? timeout,
   }) async {
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    // set created at and refreshed timestamp
-    newUserRelayList.refreshedTimestamp = now;
-    newUserRelayList.createdAt = now;
+    newUserRelayList.createdAt = _nextReplaceableTimestamp(
+      newUserRelayList.createdAt,
+    );
+    newUserRelayList.refreshedTimestamp = Helpers.now;
 
     final broadcastResponse = _broadcast.broadcast(
       nostrEvent: newUserRelayList.toNip65().toEvent(),
@@ -295,7 +315,7 @@ class UserRelayLists {
 
     await broadcastResponse.broadcastDoneFuture;
 
-    await _cacheManager.saveUserRelayList(newUserRelayList);
+    await _cacheManager.saveEvent(newUserRelayList.toNip65().toEvent());
     return newUserRelayList;
   }
 
@@ -313,6 +333,9 @@ class UserRelayLists {
     }
     if (userRelayList.relays.keys.contains(relayUrl)) {
       userRelayList.relays.remove(relayUrl);
+      userRelayList.createdAt = _nextReplaceableTimestamp(
+        userRelayList.createdAt,
+      );
       userRelayList.refreshedTimestamp = Helpers.now;
 
       final broadcastResponse = _broadcast.broadcast(
@@ -322,7 +345,7 @@ class UserRelayLists {
       await Future.wait([
         broadcastResponse.broadcastDoneFuture,
         Future.delayed(Duration(seconds: 1)),
-        _cacheManager.saveUserRelayList(userRelayList)
+        _cacheManager.saveEvent(userRelayList.toNip65().toEvent()),
       ]);
     }
     return userRelayList;
@@ -353,18 +376,65 @@ class UserRelayLists {
     }
     if (url != null) {
       userRelayList.relays[url] = marker;
+      userRelayList.createdAt = _nextReplaceableTimestamp(
+        userRelayList.createdAt,
+      );
       userRelayList.refreshedTimestamp = Helpers.now;
 
       final broadcastResponse = _broadcast.broadcast(
-          nostrEvent: userRelayList.toNip65().toEvent(),
-          specificRelays: broadcastRelays);
+        nostrEvent: userRelayList.toNip65().toEvent(),
+        specificRelays: broadcastRelays,
+      );
 
       await broadcastResponse.broadcastDoneFuture;
       await Future.delayed(Duration(seconds: 1));
 
-      await _cacheManager.saveUserRelayList(userRelayList);
+      await _cacheManager.saveEvent(userRelayList.toNip65().toEvent());
     }
     return userRelayList;
+  }
+
+  Future<Nip01Event?> _loadCachedRelaySourceEvent({
+    required String pubKey,
+    required int kind,
+  }) async {
+    final events = await _cacheManager.loadEvents(
+      pubKeys: [pubKey],
+      kinds: [kind],
+      limit: 1,
+    );
+    if (events.isEmpty) return null;
+    return events.first;
+  }
+
+  Future<Nip01Event?> _loadCachedUserRelaySourceEvent(String pubKey) async {
+    final events = await _cacheManager.loadEvents(
+      pubKeys: [pubKey],
+      kinds: [Nip65.kKind, ContactList.kKind],
+      limit: 10,
+    );
+
+    Nip01Event? latestNip65;
+    Nip01Event? latestKind3WithRelayContent;
+    for (final event in events) {
+      if (event.kind == Nip65.kKind) {
+        latestNip65 ??= event;
+      } else if (event.kind == ContactList.kKind &&
+          event.content.isNotEmpty &&
+          ContactList.relaysFromContent(event).isNotEmpty) {
+        latestKind3WithRelayContent ??= event;
+      }
+    }
+
+    return latestNip65 ?? latestKind3WithRelayContent;
+  }
+
+  int _nextReplaceableTimestamp(int currentCreatedAt) {
+    final now = Helpers.now;
+    if (now > currentCreatedAt) {
+      return now;
+    }
+    return currentCreatedAt + 1;
   }
 
   /// reads the latest nip65 data from cache \
@@ -376,9 +446,7 @@ class UserRelayLists {
   }) async {
     // get the data from cache
     final List<UserRelayList> events = await Future.wait(
-      pubkeys.map(
-        (pubkey) => cacheManager.loadUserRelayList(pubkey),
-      ),
+      pubkeys.map((pubkey) => cacheManager.loadUserRelayList(pubkey)),
     ).then((results) => results.whereType<UserRelayList>().toList());
 
     List<UserRelayList> nip65Data = _filterLatest(events);
@@ -408,8 +476,9 @@ class UserRelayLists {
     final List<UserRelayList> cleanData = [];
 
     for (final data in uncleanData) {
-      final alreadyIn =
-          cleanData.where((element) => element.pubKey == data.pubKey);
+      final alreadyIn = cleanData.where(
+        (element) => element.pubKey == data.pubKey,
+      );
 
       if (alreadyIn.isNotEmpty) {
         final existing = alreadyIn.first;

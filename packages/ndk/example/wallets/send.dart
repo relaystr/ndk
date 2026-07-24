@@ -29,10 +29,7 @@ Future<void> main() async {
 
     final walletId = Platform.environment['WALLET_ID'] ?? wallets.first.id;
 
-    final result = await ndk.wallets.send(
-      walletId: walletId,
-      invoice: invoice,
-    );
+    final result = await ndk.wallets.send(walletId: walletId, invoice: invoice);
 
     print('Payment result:');
     print('- preimage: ${result.preimage}');

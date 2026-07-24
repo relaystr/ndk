@@ -11,14 +11,7 @@ void main() async {
     KeyPair key0 = Bip340.generatePrivateKey();
     final ContactList network0ContactList = ContactList(
       pubKey: key0.publicKey,
-      contacts: [
-        'old0',
-        'old1',
-        'old2',
-        'old3',
-        'old4',
-        'old5',
-      ],
+      contacts: ['old0', 'old1', 'old2', 'old3', 'old4', 'old5'],
     );
     network0ContactList.createdAt = 100;
     final ContactList cache0ContactList = ContactList(
@@ -37,18 +30,12 @@ void main() async {
     KeyPair key1 = Bip340.generatePrivateKey();
     final ContactList network1ContactList = ContactList(
       pubKey: key1.publicKey,
-      contacts: [
-        'contact0',
-        'contact1',
-        'contact2',
-      ],
+      contacts: ['contact0', 'contact1', 'contact2'],
     );
 
     final ContactList cache1ContactList = ContactList(
       pubKey: key1.publicKey,
-      contacts: [
-        'old0',
-      ],
+      contacts: ['old0'],
     );
     cache1ContactList.createdAt = 100;
 
@@ -57,10 +44,12 @@ void main() async {
 
     setUp(() async {
       relay0 = MockRelay(name: "relay 0", explicitPort: 5095);
-      await relay0.startServer(contactLists: {
-        key0.publicKey: network0ContactList.toEvent(),
-        key1.publicKey: network1ContactList.toEvent(),
-      });
+      await relay0.startServer(
+        contactLists: {
+          key0.publicKey: network0ContactList.toEvent(),
+          key1.publicKey: network1ContactList.toEvent(),
+        },
+      );
 
       final cache = MemCacheManager();
       final NdkConfig config = NdkConfig(
@@ -75,7 +64,7 @@ void main() async {
 
       await ndk.relays.seedRelaysConnected;
 
-      cache.saveContactList(cache0ContactList);
+      await cache.saveEvent(cache0ContactList.toEvent());
       //cache.saveContactList(cache1ContactList);
     });
 
@@ -93,7 +82,13 @@ void main() async {
       final rcvContactList = await ndk.follows.getContactList(key0.publicKey);
 
       // cache
-      expect(rcvContactList, equals(cache0ContactList));
+      expect(rcvContactList, isNotNull);
+      expect(rcvContactList!.pubKey, equals(cache0ContactList.pubKey));
+      expect(rcvContactList.contacts, equals(cache0ContactList.contacts));
+      expect(
+        rcvContactList.followedTags,
+        equals(cache0ContactList.followedTags),
+      );
     });
 
     test('getContactList- network', () async {
@@ -107,13 +102,13 @@ void main() async {
     });
 
     test('add/remove contact', () async {
-      var list = await ndk.follows.getContactList(
-        key0.publicKey,
-      );
+      var list = await ndk.follows.getContactList(key0.publicKey);
       expect(list!.contacts.contains(key1.publicKey), false);
 
-      ndk.accounts
-          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
 
       // overwrite same list
       await ndk.follows.broadcastSetContactList(list);
@@ -121,99 +116,111 @@ void main() async {
       // add key1
       await ndk.follows.broadcastAddContact(key1.publicKey);
 
-      list =
-          await ndk.follows.getContactList(key0.publicKey, forceRefresh: true);
+      list = await ndk.follows.getContactList(
+        key0.publicKey,
+        forceRefresh: true,
+      );
       expect(list!.contacts.contains(key1.publicKey), true);
 
       // remove key1
       await ndk.follows.broadcastRemoveContact(key1.publicKey);
 
-      list =
-          await ndk.follows.getContactList(key0.publicKey, forceRefresh: true);
+      list = await ndk.follows.getContactList(
+        key0.publicKey,
+        forceRefresh: true,
+      );
       expect(list!.contacts.contains(key1.publicKey), false);
     });
 
     test('add/remove followed tag', () async {
-      var list = await ndk.follows.getContactList(
-        key0.publicKey,
-      );
+      var list = await ndk.follows.getContactList(key0.publicKey);
       final tag = "myTag";
       expect(list!.followedTags.contains(tag), false);
 
-      ndk.accounts
-          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
 
       // add tag
       await ndk.follows.broadcastAddFollowedTag(tag);
 
-      list = await ndk.follows.getContactList(
-        key0.publicKey,
-      );
+      list = await ndk.follows.getContactList(key0.publicKey);
       expect(list!.followedTags.contains(tag), true);
 
-      list =
-          await ndk.follows.getContactList(key0.publicKey, forceRefresh: true);
+      list = await ndk.follows.getContactList(
+        key0.publicKey,
+        forceRefresh: true,
+      );
       expect(list!.followedTags.contains(tag), true);
 
       // remove key1
       await ndk.follows.broadcastRemoveFollowedTag(tag);
 
+      list = await ndk.follows.getContactList(key0.publicKey);
+      expect(list!.followedTags.contains(tag), false);
       list = await ndk.follows.getContactList(
         key0.publicKey,
+        forceRefresh: true,
       );
-      expect(list!.followedTags.contains(tag), false);
-      list =
-          await ndk.follows.getContactList(key0.publicKey, forceRefresh: true);
       expect(list!.followedTags.contains(tag), false);
     });
 
     test('add/remove followed community', () async {
-      var list = await ndk.follows.getContactList(
-        key0.publicKey,
-      );
+      var list = await ndk.follows.getContactList(key0.publicKey);
       final community = "myCommunity";
       expect(list!.followedCommunities.contains(community), false);
 
-      ndk.accounts
-          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
 
       // add community
       await ndk.follows.broadcastAddFollowedCommunity(community);
 
-      list =
-          await ndk.follows.getContactList(key0.publicKey, forceRefresh: true);
+      list = await ndk.follows.getContactList(
+        key0.publicKey,
+        forceRefresh: true,
+      );
       expect(list!.followedCommunities.contains(community), true);
 
       // remove community
       await ndk.follows.broadcastRemoveFollowedCommunity(community);
 
-      list =
-          await ndk.follows.getContactList(key0.publicKey, forceRefresh: true);
+      list = await ndk.follows.getContactList(
+        key0.publicKey,
+        forceRefresh: true,
+      );
       expect(list!.followedCommunities.contains(community), false);
     });
 
     test('add/remove followed event', () async {
-      var list = await ndk.follows.getContactList(
-        key0.publicKey,
-      );
+      var list = await ndk.follows.getContactList(key0.publicKey);
       final event = "myEvent";
       expect(list!.followedEvents.contains(event), false);
 
-      ndk.accounts
-          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
 
       // add community
       await ndk.follows.broadcastAddFollowedEvent(event);
 
-      list =
-          await ndk.follows.getContactList(key0.publicKey, forceRefresh: true);
+      list = await ndk.follows.getContactList(
+        key0.publicKey,
+        forceRefresh: true,
+      );
       expect(list!.followedEvents.contains(event), true);
 
       // remove community
       await ndk.follows.broadcastRemoveFollowedEvent(event);
 
-      list =
-          await ndk.follows.getContactList(key0.publicKey, forceRefresh: true);
+      list = await ndk.follows.getContactList(
+        key0.publicKey,
+        forceRefresh: true,
+      );
       expect(list!.followedEvents.contains(event), false);
     });
   });

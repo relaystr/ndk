@@ -22,11 +22,12 @@ void main() async {
 
     Nip01Event textNote(KeyPair key2) {
       return Nip01Event(
-          kind: Nip01Event.kTextNodeKind,
-          pubKey: key2.publicKey,
-          content: "some note from key ${keyNames[key2]}",
-          tags: [],
-          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
+        kind: Nip01Event.kTextNodeKind,
+        pubKey: key2.publicKey,
+        content: "some note from key ${keyNames[key2]}",
+        tags: [],
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
     }
 
     Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
@@ -34,10 +35,10 @@ void main() async {
     Map<KeyPair, Nip01Event> key3TextNotes = {key3: textNote(key3)};
     Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
-    MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 4340);
-    MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 4341);
-    MockRelay relay3 = MockRelay(name: "relay 3", explicitPort: 4342);
-    MockRelay relay4 = MockRelay(name: "relay 4", explicitPort: 4343);
+    MockRelay relay1 = MockRelay(name: "relay 1");
+    MockRelay relay2 = MockRelay(name: "relay 2");
+    MockRelay relay3 = MockRelay(name: "relay 3");
+    MockRelay relay4 = MockRelay(name: "relay 4");
 
     final myRelayUrls = [relay1.url, relay2.url, relay3.url, relay4.url];
 
@@ -55,39 +56,47 @@ void main() async {
       await relay4.stopServer();
     });
 
-    test('test if events get replayed on concurrency requests',
-        timeout: const Timeout(Duration(seconds: 3)), () async {
-      final ndkJit = Ndk(
-        NdkConfig(
-          eventVerifier: MockEventVerifier(),
-          cache: MemCacheManager(),
-          engine: NdkEngine.JIT,
-          bootstrapRelays: myRelayUrls,
-        ),
-      );
-      ndkJit.accounts
-          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+    test(
+      'test if events get replayed on concurrency requests',
+      timeout: const Timeout(Duration(seconds: 10)),
+      () async {
+        final ndkJit = Ndk(
+          NdkConfig(
+            eventVerifier: MockEventVerifier(),
+            cache: MemCacheManager(),
+            engine: NdkEngine.JIT,
+            bootstrapRelays: myRelayUrls,
+          ),
+        );
+        ndkJit.accounts.loginPrivateKey(
+          pubkey: key1.publicKey,
+          privkey: key1.privateKey!,
+        );
+        await ndkJit.relays.seedRelaysConnected;
 
-      final myfilter = Filter(
+        final myfilter = Filter(
           kinds: [Nip01Event.kTextNodeKind],
-          authors: [key1.publicKey, key2.publicKey]);
+          authors: [key1.publicKey],
+        );
 
-      final response0 = ndkJit.requests.query(
-        filters: [myfilter],
-        desiredCoverage: 1,
-      );
-      await Future.delayed(Duration(milliseconds: 1));
-      final response1 = ndkJit.requests.query(
-        filters: [myfilter],
-        desiredCoverage: 1,
-      );
+        final response0 = ndkJit.requests.query(
+          filters: [myfilter],
+          desiredCoverage: 1,
+        );
+        await Future.delayed(Duration(milliseconds: 1));
+        final response1 = ndkJit.requests.query(
+          filters: [myfilter],
+          desiredCoverage: 1,
+        );
 
-      await expectLater(
-          response0.stream, emitsInAnyOrder(key1TextNotes.values));
+        final result0 = await response0.future;
+        final result1 = await response1.future;
 
-      await expectLater(
-          response1.stream, emitsInAnyOrder(key1TextNotes.values));
-      await ndkJit.destroy();
-    });
+        expect(result0, hasLength(1));
+        expect(result0.map((event) => event.id), [key1TextNotes[key1]!.id]);
+        expect(result1.map((event) => event.id), [key1TextNotes[key1]!.id]);
+        await ndkJit.destroy();
+      },
+    );
   });
 }

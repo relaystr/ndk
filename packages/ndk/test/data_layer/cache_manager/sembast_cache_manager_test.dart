@@ -125,7 +125,7 @@ void main() {
         // Test tags filter (p tag)
         final eventsByPTag = await cacheManager.loadEvents(
           tags: {
-            'p': ['target_pubkey']
+            'p': ['target_pubkey'],
           },
         );
         expect(eventsByPTag.length, equals(1));
@@ -248,6 +248,58 @@ void main() {
         expect(await cacheManager.loadEvent(events[0].id), isNull);
         expect(await cacheManager.loadEvent(events[1].id), isNull);
         expect(await cacheManager.loadEvent(events[2].id), isNotNull);
+      });
+
+      test('save and load decrypted payload record', () async {
+        final record = DecryptedEventPayloadRecord(
+          eventId: 'event-1',
+          viewerPubKey: 'viewer-1',
+          scheme: DecryptedPayloadScheme.giftWrap,
+          status: DecryptedPayloadStatus.ready,
+          plaintextContent: 'decrypted payload',
+          createdAt: 100,
+          updatedAt: 101,
+          decryptedAt: 101,
+        );
+
+        await cacheManager.saveDecryptedEventPayloadRecord(record);
+        final loaded = await cacheManager.loadDecryptedEventPayloadRecord(
+          eventId: 'event-1',
+          viewerPubKey: 'viewer-1',
+        );
+
+        expect(loaded, isNotNull);
+        expect(loaded!.plaintextContent, 'decrypted payload');
+        expect(loaded.scheme, DecryptedPayloadScheme.giftWrap);
+        expect(loaded.status, DecryptedPayloadStatus.ready);
+      });
+
+      test('removeEvent removes decrypted payload sidecar', () async {
+        final event = Nip01Event(
+          pubKey: 'author-1',
+          kind: 1059,
+          tags: const [],
+          content: 'ciphertext',
+        );
+
+        await cacheManager.saveEvent(event);
+        await cacheManager.saveDecryptedEventPayloadRecord(
+          DecryptedEventPayloadRecord(
+            eventId: event.id,
+            viewerPubKey: 'viewer-1',
+            plaintextContent: 'plaintext',
+            createdAt: 100,
+            updatedAt: 100,
+          ),
+        );
+
+        await cacheManager.removeEvent(event.id);
+
+        final loaded = await cacheManager.loadDecryptedEventPayloadRecord(
+          eventId: event.id,
+          viewerPubKey: 'viewer-1',
+        );
+        expect(loaded, isNull);
       });
     });
 
@@ -606,6 +658,58 @@ void main() {
         expect(() async => await cacheManager.close(), returnsNormally);
       });
     });
+
+    group('Eviction tests', () {
+      test('default eviction removes delivered ephemeral events', () async {
+        final event = Nip01Event(
+          pubKey: 'ephemeral-author',
+          kind: 21133,
+          tags: const [],
+          content: 'ephemeral pending-delivery payload',
+          createdAt: 1700000000,
+        );
+        await cacheManager.saveEvent(event);
+        await cacheManager.saveEventDeliveryRecord(
+          EventDeliveryRecord(
+            eventId: event.id,
+            status: EventDeliveryStatus.delivered,
+            createdAt: 1700000000,
+            updatedAt: 1700000001,
+            completedAt: 1700000001,
+          ),
+        );
+
+        final result = await cacheManager.evict(const EvictionPolicy());
+
+        expect(result.removedDeliveredEphemeral, 1);
+        expect(await cacheManager.loadEvent(event.id), isNull);
+      });
+
+      test('default eviction keeps delivered non-ephemeral events', () async {
+        final event = Nip01Event(
+          pubKey: 'regular-author',
+          kind: 1,
+          tags: const [],
+          content: 'regular delivered event',
+          createdAt: 1700000100,
+        );
+        await cacheManager.saveEvent(event);
+        await cacheManager.saveEventDeliveryRecord(
+          EventDeliveryRecord(
+            eventId: event.id,
+            status: EventDeliveryStatus.delivered,
+            createdAt: 1700000100,
+            updatedAt: 1700000101,
+            completedAt: 1700000101,
+          ),
+        );
+
+        final result = await cacheManager.evict(const EvictionPolicy());
+
+        expect(result.removedDeliveredEphemeral, 0);
+        expect(await cacheManager.loadEvent(event.id), isNotNull);
+      });
+    });
   });
 
   // Run shared test suite for comprehensive coverage
@@ -613,8 +717,9 @@ void main() {
   runCacheManagerTestSuite(
     name: 'SembastCacheManager (Shared Suite)',
     createCacheManager: () async {
-      sharedTempDir =
-          await Directory.systemTemp.createTemp('sembast_shared_test');
+      sharedTempDir = await Directory.systemTemp.createTemp(
+        'sembast_shared_test',
+      );
       return SembastCacheManager.create(databasePath: sharedTempDir.path);
     },
     cleanUp: (cacheManager) async {

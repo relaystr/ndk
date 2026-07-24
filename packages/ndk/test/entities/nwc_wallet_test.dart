@@ -36,15 +36,15 @@ void main() {
             'nostr+walletconnect://a?relay=wss://relay.example&secret=secret',
       );
 
-      final updated =
-          wallet.withCachedPermissions({NwcMethod.PAY_INVOICE.name});
+      final updated = wallet.withCachedPermissions({
+        NwcMethod.PAY_INVOICE.name,
+      });
 
       expect(updated.canSend, isTrue);
       expect(updated.canReceive, isFalse);
-      expect(
-        updated.metadata[NwcWallet.kPermissionsMetadataKey],
-        [NwcMethod.PAY_INVOICE.name],
-      );
+      expect(updated.metadata[NwcWallet.kPermissionsMetadataKey], [
+        NwcMethod.PAY_INVOICE.name,
+      ]);
     });
   });
 }

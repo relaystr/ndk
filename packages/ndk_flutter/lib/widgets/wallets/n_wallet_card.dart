@@ -496,7 +496,11 @@ class _NWalletCardState extends State<NWalletCard>
                   final bool isCashuWallet = widget.wallet is CashuWallet;
                   final reclaimable = isCashuWallet
                       ? reclaimablePending(
-                          widget.ndkFlutter.ndk.cashu.pendingTransactions
+                          widget
+                                  .ndkFlutter
+                                  .ndk
+                                  .cashu
+                                  .pendingTransactions
                                   .valueOrNull ??
                               const <CashuWalletTransaction>[],
                           mintUrl: (widget.wallet as CashuWallet).mintUrl,
@@ -676,16 +680,10 @@ class _NWalletCardState extends State<NWalletCard>
                       );
                       break;
                     case 'backup':
-                      showBackupDialog(
-                        context,
-                        widget.wallet as CashuWallet,
-                      );
+                      showBackupDialog(context, widget.wallet as CashuWallet);
                       break;
                     case 'restore':
-                      showRestoreDialog(
-                        context,
-                        widget.wallet as CashuWallet,
-                      );
+                      showRestoreDialog(context, widget.wallet as CashuWallet);
                       break;
                     case 'set_default_receive':
                       widget.ndkFlutter.ndk.wallets

@@ -11,8 +11,10 @@ class ListTransactionsResponse extends NwcResponse {
   /// A list of transaction results.
   final List<TransactionResult> transactions;
 
-  ListTransactionsResponse(
-      {required this.transactions, required super.resultType});
+  ListTransactionsResponse({
+    required this.transactions,
+    required super.resultType,
+  });
 
   factory ListTransactionsResponse.deserialize(Map<String, dynamic> input) {
     if (!input.containsKey('result')) {
@@ -27,8 +29,9 @@ class ListTransactionsResponse extends NwcResponse {
         .toList();
 
     return ListTransactionsResponse(
-        transactions: transactions,
-        resultType: NwcMethod.LIST_TRANSACTIONS.name);
+      transactions: transactions,
+      resultType: NwcMethod.LIST_TRANSACTIONS.name,
+    );
   }
 }
 
@@ -142,17 +145,17 @@ class TransactionResult extends Equatable {
 
   @override
   List<Object?> get props => [
-        type,
-        invoice,
-        description,
-        descriptionHash,
-        preimage,
-        paymentHash,
-        amount,
-        feesPaid,
-        createdAt,
-        expiresAt,
-        settledAt,
-        metadata,
-      ];
+    type,
+    invoice,
+    description,
+    descriptionHash,
+    preimage,
+    paymentHash,
+    amount,
+    feesPaid,
+    createdAt,
+    expiresAt,
+    settledAt,
+    metadata,
+  ];
 }

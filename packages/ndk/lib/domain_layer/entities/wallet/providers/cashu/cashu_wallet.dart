@@ -17,12 +17,12 @@ class CashuWallet extends Wallet {
     required this.mintInfo,
     Map<String, dynamic>? metadata,
   }) : super(
-          metadata: Map.unmodifiable({
-            ...(metadata ?? const {}),
-            'mintUrl': mintUrl,
-            'mintInfo': mintInfo.toJson(),
-          }),
-        );
+         metadata: Map.unmodifiable({
+           ...(metadata ?? const {}),
+           'mintUrl': mintUrl,
+           'mintInfo': mintInfo.toJson(),
+         }),
+       );
 
   @override
   Map<String, dynamic> toMetadata() => metadata;

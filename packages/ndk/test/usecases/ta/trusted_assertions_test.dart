@@ -162,13 +162,15 @@ void main() {
 
     test('getUserMetrics returns null when no providers configured', () async {
       // Create NDK without trusted providers
-      final ndkNoProviders = Ndk(NdkConfig(
-        eventVerifier: MockEventVerifier(),
-        cache: MemCacheManager(),
-        engine: NdkEngine.RELAY_SETS,
-        bootstrapRelays: [relay.url],
-        defaultTrustedProviders: [],
-      ));
+      final ndkNoProviders = Ndk(
+        NdkConfig(
+          eventVerifier: MockEventVerifier(),
+          cache: MemCacheManager(),
+          engine: NdkEngine.RELAY_SETS,
+          bootstrapRelays: [relay.url],
+          defaultTrustedProviders: [],
+        ),
+      );
 
       await ndkNoProviders.relays.seedRelaysConnected;
 
@@ -189,7 +191,7 @@ void main() {
         publicKey: provider2Key.publicKey,
       );
 
-      final relay2 = MockRelay(name: 'nip85-relay-2', explicitPort: 5197);
+      final relay2 = MockRelay(name: 'nip85-relay-2', explicitPort: 5299);
 
       final assertionEvent2 = await provider2Signer.sign(
         createNip85UserAssertion(
@@ -251,70 +253,72 @@ void main() {
       expect(tag, equals(['30382:followers', 'xyz789', 'wss://test.relay']));
     });
 
-    test('getEventMetrics merges metrics from multiple assertion events',
-        () async {
-      final eventId = 'event-id-123';
+    test(
+      'getEventMetrics merges metrics from multiple assertion events',
+      () async {
+        final eventId = 'event-id-123';
 
-      final provider1Key = Bip340.generatePrivateKey();
-      final provider1Signer = Bip340EventSigner(
-        privateKey: provider1Key.privateKey,
-        publicKey: provider1Key.publicKey,
-      );
+        final provider1Key = Bip340.generatePrivateKey();
+        final provider1Signer = Bip340EventSigner(
+          privateKey: provider1Key.privateKey,
+          publicKey: provider1Key.publicKey,
+        );
 
-      final provider2Key = Bip340.generatePrivateKey();
-      final provider2Signer = Bip340EventSigner(
-        privateKey: provider2Key.privateKey,
-        publicKey: provider2Key.publicKey,
-      );
+        final provider2Key = Bip340.generatePrivateKey();
+        final provider2Signer = Bip340EventSigner(
+          privateKey: provider2Key.privateKey,
+          publicKey: provider2Key.publicKey,
+        );
 
-      final relay2 = MockRelay(name: 'nip85-event-relay', explicitPort: 5198);
+        final relay2 = MockRelay(name: 'nip85-event-relay', explicitPort: 5300);
 
-      final eventAssertion1 = await provider1Signer.sign(
-        createNip85EventAssertion(
-          providerPubkey: provider1Key.publicKey,
-          subjectEventId: eventId,
-          commentCount: 12,
-        ),
-      );
-
-      final eventAssertion2 = await provider2Signer.sign(
-        createNip85EventAssertion(
-          providerPubkey: provider2Key.publicKey,
-          subjectEventId: eventId,
-          reactionCount: 34,
-        ),
-      );
-
-      await relay2.startServer(
-        nip85Assertions: {
-          '${provider1Key.publicKey}:$eventId': eventAssertion1,
-          '${provider2Key.publicKey}:$eventId': eventAssertion2,
-        },
-      );
-
-      final metrics = await ndk.ta.getEventMetrics(
-        eventId,
-        providers: [
-          Nip85TrustedProvider(
-            kind: Nip85Kind.event,
-            metric: Nip85Metric.commentCount,
-            pubkey: provider1Key.publicKey,
-            relay: relay2.url,
+        final eventAssertion1 = await provider1Signer.sign(
+          createNip85EventAssertion(
+            providerPubkey: provider1Key.publicKey,
+            subjectEventId: eventId,
+            commentCount: 12,
           ),
-          Nip85TrustedProvider(
-            kind: Nip85Kind.event,
-            metric: Nip85Metric.reactionCount,
-            pubkey: provider2Key.publicKey,
-            relay: relay2.url,
+        );
+
+        final eventAssertion2 = await provider2Signer.sign(
+          createNip85EventAssertion(
+            providerPubkey: provider2Key.publicKey,
+            subjectEventId: eventId,
+            reactionCount: 34,
           ),
-        ],
-      );
+        );
 
-      expect(metrics, isNotNull);
-      expect(metrics!.commentCount, equals(12));
-      expect(metrics.reactionCount, equals(34));
+        await relay2.startServer(
+          nip85Assertions: {
+            '${provider1Key.publicKey}:$eventId': eventAssertion1,
+            '${provider2Key.publicKey}:$eventId': eventAssertion2,
+          },
+        );
 
-      await relay2.stopServer();
-    });
+        final metrics = await ndk.ta.getEventMetrics(
+          eventId,
+          providers: [
+            Nip85TrustedProvider(
+              kind: Nip85Kind.event,
+              metric: Nip85Metric.commentCount,
+              pubkey: provider1Key.publicKey,
+              relay: relay2.url,
+            ),
+            Nip85TrustedProvider(
+              kind: Nip85Kind.event,
+              metric: Nip85Metric.reactionCount,
+              pubkey: provider2Key.publicKey,
+              relay: relay2.url,
+            ),
+          ],
+        );
+
+        expect(metrics, isNotNull);
+        expect(metrics!.commentCount, equals(12));
+        expect(metrics.reactionCount, equals(34));
+
+        await relay2.stopServer();
+      },
+    );
   });
 }

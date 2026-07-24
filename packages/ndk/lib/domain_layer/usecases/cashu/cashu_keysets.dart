@@ -9,8 +9,8 @@ class CashuKeysets {
   CashuKeysets({
     required CashuRepo cashuRepo,
     required CacheManager cacheManager,
-  })  : _cashuRepo = cashuRepo,
-        _cacheManager = cacheManager;
+  }) : _cashuRepo = cashuRepo,
+       _cacheManager = cacheManager;
 
   /// Fetches keysets from the cache or network. \
   /// If the cache is stale or empty, it fetches from the network. \
@@ -26,9 +26,11 @@ class CashuKeysets {
     if (cachedKeysets != null && cachedKeysets.isNotEmpty) {
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-      final isCacheStale = cachedKeysets.any((keyset) =>
-          keyset.fetchedAt == null ||
-          (now - keyset.fetchedAt!) >= validityDurationSeconds);
+      final isCacheStale = cachedKeysets.any(
+        (keyset) =>
+            keyset.fetchedAt == null ||
+            (now - keyset.fetchedAt!) >= validityDurationSeconds,
+      );
 
       if (!isCacheStale) {
         return cachedKeysets;
@@ -48,9 +50,7 @@ class CashuKeysets {
     required String mintUrl,
   }) async {
     final List<CahsuKeyset> mintKeys = [];
-    final keySets = await _cashuRepo.getKeysets(
-      mintUrl: mintUrl,
-    );
+    final keySets = await _cashuRepo.getKeysets(mintUrl: mintUrl);
 
     for (final keySet in keySets) {
       final keys = await _cashuRepo.getKeys(

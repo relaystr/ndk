@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -13,14 +14,16 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 
+import 'dm_live_state.dart';
 import 'l10n/generated/sample_app_localizations.dart';
-
 
 bool signerAppAvailable = false;
 
 late Ndk ndk;
 final ndkFlutter = NdkFlutter(ndk: ndk);
 final localeNotifier = ValueNotifier<Locale>(const Locale('en'));
+DmLiveState? _dmLiveState;
+DmLiveState get dmLiveState => _dmLiveState ??= DmLiveState(ndk: ndk)..start();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,11 +44,12 @@ Future<void> main() async {
   final cacheManager = kIsWeb
       ? await DriftCacheManager.create()
       : await SembastCacheManager.create(
-          databasePath: (await getApplicationDocumentsDirectory()).path);
+          databasePath: (await getApplicationDocumentsDirectory()).path,
+        );
 
   // Load the cashu seed phrase from secure storage, generating a fresh one on
   // first run. Never hardcode this — it controls cashu funds.
-  final cashuSeedPhrase = await CashuSeedStore().loadOrCreate();
+  final cashuSeedPhrase = await const CashuSeedStore().loadOrCreate();
 
   final eventVerifier = kIsWeb ? WebEventVerifier() : RustEventVerifier();
   ndk = Ndk(
@@ -54,11 +58,10 @@ Future<void> main() async {
       cache: cacheManager,
       walletsRepo: FlutterSecureStorageWalletsRepo(),
       logLevel: Logger.logLevels.info,
-      cashuUserSeedphrase: CashuUserSeedphrase(
-        seedPhrase: cashuSeedPhrase,
-      ),
+      cashuUserSeedphrase: CashuUserSeedphrase(seedPhrase: cashuSeedPhrase),
     ),
   );
+  final _ = dmLiveState;
 
   await ndkFlutter.restoreAccountsState();
 
@@ -132,7 +135,7 @@ class _MyAppState extends State<MyApp> with ProtocolListener {
         routerConfig: appRouter,
         builder: (context, child) => Stack(
           children: [
-            child ?? const SizedBox.shrink(),
+            SafeArea(top: false, child: child ?? const SizedBox.shrink()),
             NPendingRequests(ndkFlutter: ndkFlutter),
           ],
         ),

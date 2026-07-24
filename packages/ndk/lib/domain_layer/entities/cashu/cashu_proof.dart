@@ -20,9 +20,7 @@ class CashuProof {
   });
 
   /// Y derived public key
-  String get Y => CashuTools.ecPointToHex(
-        CashuTools.hashToCurve(secret),
-      );
+  String get Y => CashuTools.ecPointToHex(CashuTools.hashToCurve(secret));
 
   Map<String, Object> toJson() {
     return {
@@ -34,11 +32,7 @@ class CashuProof {
   }
 
   Map<String, Object> toV4Json() {
-    return {
-      'a': amount,
-      's': secret,
-      'c': CashuTools.hexToBytes(unblindedSig),
-    };
+    return {'a': amount, 's': secret, 'c': CashuTools.hexToBytes(unblindedSig)};
   }
 
   factory CashuProof.fromV4Json({
@@ -52,11 +46,12 @@ class CashuProof {
     }
 
     return CashuProof(
-        keysetId: keysetId,
-        amount: json['a'] ?? 0,
-        secret: json['s']?.toString() ?? '',
-        unblindedSig: unblindedSig,
-        state: state);
+      keysetId: keysetId,
+      amount: json['a'] ?? 0,
+      secret: json['s']?.toString() ?? '',
+      unblindedSig: unblindedSig,
+      state: state,
+    );
   }
 
   @override

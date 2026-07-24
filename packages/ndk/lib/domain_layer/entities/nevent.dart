@@ -5,12 +5,7 @@ class Nevent {
   final int? kind;
   final List<String>? relays;
 
-  Nevent({
-    required this.eventId,
-    this.author,
-    this.kind,
-    this.relays,
-  });
+  Nevent({required this.eventId, this.author, this.kind, this.relays});
 
   @override
   String toString() =>

@@ -19,11 +19,13 @@ void main() {
       relay0 = MockRelay(name: "relay 0", explicitPort: 5110);
       await relay0.startServer();
 
-      ndk = Ndk(NdkConfig(
-        eventVerifier: MockEventVerifier(),
-        cache: MemCacheManager(),
-        bootstrapRelays: [relay0.url],
-      ));
+      ndk = Ndk(
+        NdkConfig(
+          eventVerifier: MockEventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: [relay0.url],
+        ),
+      );
 
       failingSigner = MockFailingSigner(publicKey: key0.publicKey);
       ndk.accounts.loginExternalSigner(signer: failingSigner);
@@ -44,9 +46,9 @@ void main() {
       );
 
       await expectLater(
-        ndk.broadcast.broadcast(
-            nostrEvent: event,
-            specificRelays: [relay0.url]).broadcastDoneFuture,
+        ndk.broadcast
+            .broadcast(nostrEvent: event, specificRelays: [relay0.url])
+            .broadcastDoneFuture,
         throwsA(isA<SignerRequestRejectedException>()),
       );
     });

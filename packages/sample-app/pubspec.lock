@@ -122,7 +122,7 @@ packages:
     source: hosted
     version: "1.19.1"
   convert:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: convert
       sha256: b30acd5944035672bc15c6b7a8b47d773e41e2f17de064350988c5d02adb1c68
@@ -138,7 +138,7 @@ packages:
     source: hosted
     version: "0.3.5+2"
   crypto:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: crypto
       sha256: c8ea0233063ba03258fbcf2ca4d6dadfefe14f02fab57702265467a19f27fadf
@@ -553,10 +553,10 @@ packages:
     dependency: "direct main"
     description:
       name: mobile_scanner
-      sha256: c92c26bf2231695b6d3477c8dcf435f51e28f87b1745966b1fe4c47a286171ce
+      sha256: "30f7dc342094eb257ead933572f7e442dfd9d8aa6f3fa5506c3206f7837d1615"
       url: "https://pub.dev"
     source: hosted
-    version: "7.2.0"
+    version: "7.2.1"
   native_toolchain_c:
     dependency: transitive
     description:
@@ -579,7 +579,7 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.8.4-dev.5"
+    version: "0.8.4-dev.10"
   ndk_bip32_keys:
     dependency: transitive
     description:
@@ -594,14 +594,14 @@ packages:
       path: "../drift"
       relative: true
     source: path
-    version: "0.1.1-dev.7"
+    version: "0.1.1-dev.12"
   ndk_flutter:
     dependency: "direct main"
     description:
       path: "../ndk_flutter"
       relative: true
     source: path
-    version: "0.8.4-dev.7"
+    version: "0.8.4-dev.13"
   nested:
     dependency: transitive
     description:
@@ -610,13 +610,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
-  nip07_event_signer:
-    dependency: "direct overridden"
-    description:
-      path: "../nip07_event_signer"
-      relative: true
-    source: path
-    version: "1.1.0-dev.5"
   objective_c:
     dependency: transitive
     description:

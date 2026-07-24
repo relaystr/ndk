@@ -55,8 +55,10 @@ void main() async {
         expect(loadedEvent, isNotNull);
       }
 
-      final duplicatedEvents =
-          await myCacheManager.loadEvents(kinds: [1], pubKeys: ['duplicate']);
+      final duplicatedEvents = await myCacheManager.loadEvents(
+        kinds: [1],
+        pubKeys: ['duplicate'],
+      );
 
       expect(duplicatedEvents.length, equals(1));
     });

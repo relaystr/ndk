@@ -22,17 +22,21 @@ void main() async {
   KeyPair key1 = Bip340.generatePrivateKey();
 
   // login using private key
-  ndk.accounts
-      .loginPrivateKey(privkey: key1.privateKey!, pubkey: key1.publicKey);
+  ndk.accounts.loginPrivateKey(
+    privkey: key1.privateKey!,
+    pubkey: key1.publicKey,
+  );
 
   // broadcast a new event using the logged in account with it's signer to sign
   NdkBroadcastResponse response = ndk.broadcast.broadcast(
-      nostrEvent: Nip01Event(
-          pubKey: key1.publicKey,
-          kind: Nip01Event.kTextNodeKind,
-          tags: [],
-          content: "test"),
-      specificRelays: DEFAULT_BOOTSTRAP_RELAYS);
+    nostrEvent: Nip01Event(
+      pubKey: key1.publicKey,
+      kind: Nip01Event.kTextNodeKind,
+      tags: [],
+      content: "test",
+    ),
+    specificRelays: DEFAULT_BOOTSTRAP_RELAYS,
+  );
   await response.broadcastDoneFuture;
 
   // generate a new key

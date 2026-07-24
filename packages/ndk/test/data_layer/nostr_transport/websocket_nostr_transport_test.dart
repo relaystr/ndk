@@ -42,15 +42,20 @@ void main() {
     onDone() {}
     final mockSubscription = MockStreamSubscription();
 
-    when(mockWebsocketDS.listen(any,
-            onError: anyNamed('onError'), onDone: anyNamed('onDone')))
-        .thenReturn(mockSubscription);
+    when(
+      mockWebsocketDS.listen(
+        any,
+        onError: anyNamed('onError'),
+        onDone: anyNamed('onDone'),
+      ),
+    ).thenReturn(mockSubscription);
 
     final result = transport.listen(onData, onError: onError, onDone: onDone);
 
     expect(result, equals(mockSubscription));
-    verify(mockWebsocketDS.listen(onData, onError: onError, onDone: onDone))
-        .called(1);
+    verify(
+      mockWebsocketDS.listen(onData, onError: onError, onDone: onDone),
+    ).called(1);
   });
 
   test('send should delegate to WebsocketDS send', () {

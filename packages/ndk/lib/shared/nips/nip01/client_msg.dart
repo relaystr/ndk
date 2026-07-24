@@ -16,12 +16,7 @@ class ClientMsg {
   List<Filter>? filters;
   Nip01Event? event;
 
-  ClientMsg(
-    this.type, {
-    this.id,
-    this.event,
-    this.filters,
-  }) {
+  ClientMsg(this.type, {this.id, this.event, this.filters}) {
     // verify based on type
     if (type == ClientMsgType.kEvent) {
       if (event == null) {

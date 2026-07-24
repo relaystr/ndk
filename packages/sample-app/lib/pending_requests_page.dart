@@ -194,7 +194,8 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
       );
       _ciphertext = result;
       _showResult(
-          l10n.pendingEncryptedResult('${result?.substring(0, 30)}...'));
+        l10n.pendingEncryptedResult('${result?.substring(0, 30)}...'),
+      );
     } catch (e) {
       _showError(l10n.pendingEncryptFailed(e.toString()));
     }
@@ -364,9 +365,9 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
           const SizedBox(height: 8),
           Text(
             l10n.pendingDescription,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
           ),
           const SizedBox(height: 16),
 
@@ -474,14 +475,9 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
           const SizedBox(height: 16),
 
           if (widget.embedded)
-            SizedBox(
-              height: 360,
-              child: pendingRequestsList,
-            )
+            SizedBox(height: 360, child: pendingRequestsList)
           else
-            Expanded(
-              child: pendingRequestsList,
-            ),
+            Expanded(child: pendingRequestsList),
         ],
       ),
     );
@@ -492,10 +488,7 @@ class _PendingRequestCard extends StatelessWidget {
   final PendingSignerRequest request;
   final VoidCallback onCancel;
 
-  const _PendingRequestCard({
-    required this.request,
-    required this.onCancel,
-  });
+  const _PendingRequestCard({required this.request, required this.onCancel});
 
   IconData _getIconForMethod(SignerMethod method) {
     switch (method) {
@@ -583,8 +576,9 @@ class _PendingRequestCard extends StatelessWidget {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor:
-                      _getColorForMethod(method).withValues(alpha: 0.2),
+                  backgroundColor: _getColorForMethod(
+                    method,
+                  ).withValues(alpha: 0.2),
                   child: Icon(
                     _getIconForMethod(method),
                     color: _getColorForMethod(method),
@@ -604,10 +598,7 @@ class _PendingRequestCard extends StatelessWidget {
                       ),
                       Text(
                         _formatDuration(context, duration),
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
                       ),
                     ],
                   ),
@@ -616,9 +607,7 @@ class _PendingRequestCard extends StatelessWidget {
                   onPressed: onCancel,
                   icon: const Icon(Icons.cancel, size: 18),
                   label: Text(context.l10n.cancel),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.red,
-                  ),
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
                 ),
               ],
             ),
@@ -634,8 +623,9 @@ class _PendingRequestCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      context.l10n
-                          .pendingEventKind(request.event!.kind.toString()),
+                      context.l10n.pendingEventKind(
+                        request.event!.kind.toString(),
+                      ),
                       style: const TextStyle(fontFamily: 'monospace'),
                     ),
                     const SizedBox(height: 4),

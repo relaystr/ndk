@@ -17,6 +17,9 @@ abstract class NostrTransport {
 }
 
 abstract class NostrTransportFactory {
-  NostrTransport call(String url,
-      {Function? onReconnect, Function(int?, Object?, String?)? onDisconnect});
+  NostrTransport call(
+    String url, {
+    Function? onReconnect,
+    Function(int?, Object?, String?)? onDisconnect,
+  });
 }

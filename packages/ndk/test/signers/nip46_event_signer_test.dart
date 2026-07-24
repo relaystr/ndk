@@ -13,15 +13,19 @@ void main() {
     late BunkerConnection connection;
     late Ndk ndk;
     late MockRelay mockRelay;
+    var signerInitialized = false;
+    var ndkInitialized = false;
+    var relayInitialized = false;
 
     setUp(() async {
+      signerInitialized = false;
+      ndkInitialized = false;
+      relayInitialized = false;
+
       // Start the mock relay with NIP-46 support
-      mockRelay = MockRelay(
-        name: 'nip46-test-relay',
-        signEvents: true,
-        explicitPort: 4046, // Use a specific port for NIP-46 tests
-      );
+      mockRelay = MockRelay(name: 'nip46-test-relay', signEvents: true);
       await mockRelay.startServer();
+      relayInitialized = true;
 
       ndk = Ndk(
         NdkConfig(
@@ -31,6 +35,8 @@ void main() {
           logLevel: Logger.logLevels.trace,
         ),
       );
+      ndkInitialized = true;
+      await ndk.relays.seedRelaysConnected;
 
       connection = BunkerConnection(
         privateKey:
@@ -41,16 +47,24 @@ void main() {
       );
 
       signer = Nip46EventSigner(
-          connection: connection,
-          requests: ndk.requests,
-          broadcast: ndk.broadcast,
-          eventSignerFactory: eventSignerFactory);
+        connection: connection,
+        requests: ndk.requests,
+        broadcast: ndk.broadcast,
+        eventSignerFactory: eventSignerFactory,
+      );
+      signerInitialized = true;
     });
 
     tearDown(() async {
-      signer.dispose();
-      await ndk.destroy();
-      await mockRelay.stopServer();
+      if (signerInitialized) {
+        signer.dispose();
+      }
+      if (ndkInitialized) {
+        await ndk.destroy();
+      }
+      if (relayInitialized) {
+        await mockRelay.stopServer();
+      }
     });
 
     test('canSign should return true', () {
@@ -80,7 +94,7 @@ void main() {
         pubKey: MockRelay.remoteSignerPublicKey,
         kind: 1,
         tags: [
-          ['t', 'test']
+          ['t', 'test'],
         ],
         content: 'requested content',
         createdAt: 1234567890,
@@ -114,7 +128,8 @@ void main() {
 
     test('login with bunker URL should connect successfully', () async {
       // Create bunker URL with mock relay's remote signer
-      final bunkerUrl = 'bunker://${MockRelay.remoteSignerPublicKey}'
+      final bunkerUrl =
+          'bunker://${MockRelay.remoteSignerPublicKey}'
           '?relay=${mockRelay.url}'
           '&secret=test-secret-123';
 
@@ -134,8 +149,10 @@ void main() {
       );
 
       expect(bunkerConnection, isNotNull);
-      expect(bunkerConnection!.remotePubkey,
-          equals(MockRelay.remoteSignerPublicKey));
+      expect(
+        bunkerConnection!.remotePubkey,
+        equals(MockRelay.remoteSignerPublicKey),
+      );
       expect(bunkerConnection.relays, contains(mockRelay.url));
 
       // Create a signer with the connection and test signing
@@ -163,7 +180,8 @@ void main() {
 
     test('loginWithBunkerUrl should set up account correctly', () async {
       // Create bunker URL with mock relay's remote signer
-      final bunkerUrl = 'bunker://${MockRelay.remoteSignerPublicKey}'
+      final bunkerUrl =
+          'bunker://${MockRelay.remoteSignerPublicKey}'
           '?relay=${mockRelay.url}'
           '&secret=bunker-url-test-secret';
 

@@ -9,20 +9,28 @@ import '../../mocks/mock_relay.dart';
 void main() async {
   group('metadatas', () {
     KeyPair key0 = Bip340.generatePrivateKey();
-    final Metadata network0Metadata =
-        Metadata(pubKey: key0.publicKey, name: "network0");
+    final Metadata network0Metadata = Metadata(
+      pubKey: key0.publicKey,
+      name: "network0",
+    );
     network0Metadata.updatedAt = 100;
 
-    final Metadata cache0Metadata =
-        Metadata(pubKey: key0.publicKey, name: "cache0");
+    final Metadata cache0Metadata = Metadata(
+      pubKey: key0.publicKey,
+      name: "cache0",
+    );
 
     //? network last
     KeyPair key1 = Bip340.generatePrivateKey();
-    final Metadata network1Metadata =
-        Metadata(pubKey: key1.publicKey, name: "network1");
+    final Metadata network1Metadata = Metadata(
+      pubKey: key1.publicKey,
+      name: "network1",
+    );
 
-    final Metadata cache1Metadata =
-        Metadata(pubKey: key1.publicKey, name: "cache1");
+    final Metadata cache1Metadata = Metadata(
+      pubKey: key1.publicKey,
+      name: "cache1",
+    );
     cache1Metadata.updatedAt = 100;
 
     late MockRelay relay0;
@@ -30,10 +38,12 @@ void main() async {
 
     setUp(() async {
       relay0 = MockRelay(name: "relay 0", explicitPort: 5096);
-      await relay0.startServer(metadatas: {
-        key0.publicKey: network0Metadata.toEvent(),
-        key1.publicKey: network1Metadata.toEvent(),
-      });
+      await relay0.startServer(
+        metadatas: {
+          key0.publicKey: network0Metadata.toEvent(),
+          key1.publicKey: network1Metadata.toEvent(),
+        },
+      );
 
       final cache = MemCacheManager();
       final NdkConfig config = NdkConfig(
@@ -45,7 +55,7 @@ void main() async {
       ndk = Ndk(config);
 
       await ndk.relays.seedRelaysConnected;
-      cache.saveMetadata(cache0Metadata);
+      await cache.saveEvent(cache0Metadata.toEvent());
       //cache.saveContactList(cache1ContactList);
     });
 
@@ -63,7 +73,9 @@ void main() async {
       final rcvMetadata = await ndk.metadata.loadMetadata(key0.publicKey);
 
       // cache
-      expect(rcvMetadata, equals(cache0Metadata));
+      expect(rcvMetadata, isNotNull);
+      expect(rcvMetadata!.pubKey, equals(cache0Metadata.pubKey));
+      expect(rcvMetadata.name, equals(cache0Metadata.name));
     });
 
     test('getMetadata- network', () async {
@@ -77,20 +89,26 @@ void main() async {
     });
 
     test('getMetadatas - network', () async {
-      final rcvMetadatas = await ndk.metadata
-          .loadMetadatas([key0.publicKey, key1.publicKey], null);
+      final rcvMetadatas = await ndk.metadata.loadMetadatas([
+        key0.publicKey,
+        key1.publicKey,
+      ], null);
 
       expect(rcvMetadatas.length, 2);
     });
 
     test('broadcast metadata', () async {
-      ndk.accounts
-          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
       Metadata metadata = Metadata(pubKey: key0.publicKey);
       await ndk.metadata.broadcastMetadata(metadata);
 
-      Metadata? result =
-          await ndk.metadata.loadMetadata(key0.publicKey, forceRefresh: true);
+      Metadata? result = await ndk.metadata.loadMetadata(
+        key0.publicKey,
+        forceRefresh: true,
+      );
       expect(result!.pubKey, metadata.pubKey);
 
       // NIP-01 replacement uses created_at (1s resolution); on a tie the
@@ -100,8 +118,10 @@ void main() async {
 
       metadata.name = "my name";
       await ndk.metadata.broadcastMetadata(metadata);
-      result =
-          await ndk.metadata.loadMetadata(key0.publicKey, forceRefresh: true);
+      result = await ndk.metadata.loadMetadata(
+        key0.publicKey,
+        forceRefresh: true,
+      );
       expect(result!.name, metadata.name);
     });
   });

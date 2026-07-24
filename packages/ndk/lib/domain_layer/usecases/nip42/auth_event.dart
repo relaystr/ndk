@@ -9,16 +9,8 @@ class AuthEvent extends Nip01Event {
   static const int KIND = 22242;
 
   /// Zap Request
-  AuthEvent._({
-    required super.pubKey,
-    required super.tags,
-    required super.id,
-  }) : super(
-          kind: KIND,
-          content: '',
-          sig: null,
-          validSig: null,
-        );
+  AuthEvent._({required super.pubKey, required super.tags, required super.id})
+    : super(kind: KIND, content: '', sig: null, validSig: null);
 
   factory AuthEvent({
     required String pubKey,
@@ -32,10 +24,6 @@ class AuthEvent extends Nip01Event {
       content: '',
     );
 
-    return AuthEvent._(
-      pubKey: pubKey,
-      tags: tags,
-      id: calculatedId,
-    );
+    return AuthEvent._(pubKey: pubKey, tags: tags, id: calculatedId);
   }
 }

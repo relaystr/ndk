@@ -60,12 +60,14 @@ class CashuBdhke {
           blindedMessage: blindedMessageHex,
         );
 
-        items.add(CashuBlindedMessageItem(
-          blindedMessage: blindedMessage,
-          secret: secret,
-          r: r,
-          amount: amount,
-        ));
+        items.add(
+          CashuBlindedMessageItem(
+            blindedMessage: blindedMessage,
+            secret: secret,
+            r: r,
+            amount: amount,
+          ),
+        );
       } catch (e) {
         Logger.log.w(
           () => 'Error creating blinded message for amount $amount: $e',
@@ -116,7 +118,8 @@ class CashuBdhke {
 
     if (mintSignatures.length != blindedMessages.length) {
       throw Exception(
-          'Mismatched lengths: ${mintSignatures.length} signatures, ${blindedMessages.length} messages');
+        'Mismatched lengths: ${mintSignatures.length} signatures, ${blindedMessages.length} messages',
+      );
     }
 
     final keysByAmount = <int, CahsuMintKeyPair>{};
@@ -150,12 +153,14 @@ class CashuBdhke {
         throw Exception('Failed to unblind signature');
       }
 
-      tokens.add(CashuProof(
-        secret: blindedMsg.secret,
-        amount: blindedMsg.amount,
-        unblindedSig: CashuTools.ecPointToHex(unblindedSig),
-        keysetId: mintPublicKeys.id,
-      ));
+      tokens.add(
+        CashuProof(
+          secret: blindedMsg.secret,
+          amount: blindedMsg.amount,
+          unblindedSig: CashuTools.ecPointToHex(unblindedSig),
+          keysetId: mintPublicKeys.id,
+        ),
+      );
     }
 
     return tokens;

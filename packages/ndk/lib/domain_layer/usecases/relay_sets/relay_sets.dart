@@ -23,26 +23,28 @@ class RelaySets {
     required RelayManager relayManager,
     required UserRelayLists userRelayLists,
     required Set<String> blockedRelays,
-  })  : _userRelayLists = userRelayLists,
-        _relayManager = relayManager,
-        _cacheManager = cacheManager,
-        _blockedRelays = blockedRelays;
+  }) : _userRelayLists = userRelayLists,
+       _relayManager = relayManager,
+       _cacheManager = cacheManager,
+       _blockedRelays = blockedRelays;
 
   /// relay -> list of pubKey mappings
-  Future<RelaySet> calculateRelaySet(
-      {required String name,
-      required String ownerPubKey,
-      required List<String> pubKeys,
-      required RelayDirection direction,
-      required int relayMinCountPerPubKey,
-      Function(String, int, int)? onProgress}) async {
+  Future<RelaySet> calculateRelaySet({
+    required String name,
+    required String ownerPubKey,
+    required List<String> pubKeys,
+    required RelayDirection direction,
+    required int relayMinCountPerPubKey,
+    Function(String, int, int)? onProgress,
+  }) async {
     RelaySet byScore = await _relaysByPopularity(
-        name: name,
-        ownerPubKey: ownerPubKey,
-        pubKeys: pubKeys,
-        direction: direction,
-        relayMinCountPerPubKey: relayMinCountPerPubKey,
-        onProgress: onProgress);
+      name: name,
+      ownerPubKey: ownerPubKey,
+      pubKeys: pubKeys,
+      direction: direction,
+      relayMinCountPerPubKey: relayMinCountPerPubKey,
+      onProgress: onProgress,
+    );
 
     /// try by score
     if (byScore.relaysMap.isNotEmpty) {
@@ -51,20 +53,25 @@ class RelaySets {
 
     /// if everything fails just return a map of all currently registered connected relays for each pubKeys
     return RelaySet(
-        name: name,
-        pubKey: ownerPubKey,
-        relayMinCountPerPubkey: relayMinCountPerPubKey,
-        direction: direction,
-        relaysMap: _allConnectedRelays(pubKeys),
-        notCoveredPubkeys: []);
+      name: name,
+      pubKey: ownerPubKey,
+      relayMinCountPerPubkey: relayMinCountPerPubKey,
+      direction: direction,
+      relaysMap: _allConnectedRelays(pubKeys),
+      notCoveredPubkeys: [],
+    );
   }
 
   Map<String, List<PubkeyMapping>> _allConnectedRelays(List<String> pubKeys) {
     Map<String, List<PubkeyMapping>> map = {};
     for (final relay in _relayManager.connectedRelays) {
       map[relay.url] = pubKeys
-          .map((pubKey) => PubkeyMapping(
-              pubKey: pubKey, rwMarker: ReadWriteMarker.readWrite))
+          .map(
+            (pubKey) => PubkeyMapping(
+              pubKey: pubKey,
+              rwMarker: ReadWriteMarker.readWrite,
+            ),
+          )
           .toList();
     }
     return map;
@@ -77,15 +84,18 @@ class RelaySets {
   ///   - check if relay is connected or can connect
   ///   - for each pubKey mapped for given relay check if you already have minimum amount of relay coverage (use auxiliary map to remember this)
   ///     - if not add this relay to list of best relays
-  Future<RelaySet> _relaysByPopularity(
-      {required String name,
-      required String ownerPubKey,
-      required List<String> pubKeys,
-      required RelayDirection direction,
-      required int relayMinCountPerPubKey,
-      Function(String stepName, int count, int total)? onProgress}) async {
-    await _userRelayLists.loadMissingRelayListsFromNip65OrNip02(pubKeys,
-        onProgress: onProgress);
+  Future<RelaySet> _relaysByPopularity({
+    required String name,
+    required String ownerPubKey,
+    required List<String> pubKeys,
+    required RelayDirection direction,
+    required int relayMinCountPerPubKey,
+    Function(String stepName, int count, int total)? onProgress,
+  }) async {
+    await _userRelayLists.loadMissingRelayListsFromNip65OrNip02(
+      pubKeys,
+      onProgress: onProgress,
+    );
     Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl =
         await _buildPubKeysMapFromRelayLists(pubKeys, direction);
 
@@ -93,8 +103,11 @@ class RelaySets {
     Map<String, List<PubkeyMapping>> bestRelays = {};
     if (onProgress != null) {
       Logger.log.d(() => "Calculating best relays...");
-      onProgress.call("Calculating best relays",
-          minimumRelaysCoverageByPubkey.length, pubKeysByRelayUrl.length);
+      onProgress.call(
+        "Calculating best relays",
+        minimumRelaysCoverageByPubkey.length,
+        pubKeysByRelayUrl.length,
+      );
     }
     Map<String, int> notCoveredPubkeys = {};
     for (var pubKey in pubKeys) {
@@ -104,17 +117,18 @@ class RelaySets {
       if (_blockedRelays.contains(cleanRelayUrl(url))) {
         continue;
       }
-      if (!pubKeysByRelayUrl[url]!.any((pubKey) =>
-          minimumRelaysCoverageByPubkey[pubKey.pubKey] == null ||
-          minimumRelaysCoverageByPubkey[pubKey.pubKey]!.length <
-              relayMinCountPerPubKey)) {
+      if (!pubKeysByRelayUrl[url]!.any(
+        (pubKey) =>
+            minimumRelaysCoverageByPubkey[pubKey.pubKey] == null ||
+            minimumRelaysCoverageByPubkey[pubKey.pubKey]!.length <
+                relayMinCountPerPubKey,
+      )) {
         continue;
       }
       bool connectable = (await _relayManager.connectRelay(
         dirtyUrl: url,
         connectionSource: ConnectionSource.connectionProbe,
-      ))
-          .first;
+      )).first;
       Logger.log.d(() => "tried to reconnect to $url = $connectable");
       if (!connectable) {
         continue;
@@ -144,81 +158,96 @@ class RelaySets {
         // print(
         //     "Calculating best relays minimumRelaysCoverageByPubkey.length:${minimumRelaysCoverageByPubkey
         //         .length} pubKeysByRelayUrl.length: ${pubKeys.length}");
-        onProgress.call("Calculating best relays",
-            minimumRelaysCoverageByPubkey.length, pubKeys.length);
+        onProgress.call(
+          "Calculating best relays",
+          minimumRelaysCoverageByPubkey.length,
+          pubKeys.length,
+        );
       }
     }
 
     notCoveredPubkeys.removeWhere((key, value) => value <= 0);
 
     return RelaySet(
-        name: name,
-        pubKey: ownerPubKey,
-        relayMinCountPerPubkey: relayMinCountPerPubKey,
-        direction: direction,
-        relaysMap: bestRelays,
-        notCoveredPubkeys: notCoveredPubkeys.entries
-            .map(
-              (entry) => NotCoveredPubKey(entry.key, entry.value),
-            )
-            .toList());
+      name: name,
+      pubKey: ownerPubKey,
+      relayMinCountPerPubkey: relayMinCountPerPubKey,
+      direction: direction,
+      relaysMap: bestRelays,
+      notCoveredPubkeys: notCoveredPubkeys.entries
+          .map((entry) => NotCoveredPubKey(entry.key, entry.value))
+          .toList(),
+    );
   }
 
   Future<Map<String, Set<PubkeyMapping>>> _buildPubKeysMapFromRelayLists(
-      List<String> pubKeys, RelayDirection direction) async {
+    List<String> pubKeys,
+    RelayDirection direction,
+  ) async {
     Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl = {};
     int foundCount = 0;
     for (String pubKey in pubKeys) {
-      UserRelayList? userRelayList =
-          await _cacheManager.loadUserRelayList(pubKey);
+      UserRelayList? userRelayList = await _cacheManager.loadUserRelayList(
+        pubKey,
+      );
       if (userRelayList != null) {
         if (userRelayList.relays.isNotEmpty) {
           foundCount++;
         }
         for (var entry in userRelayList.relays.entries) {
           _handleRelayUrlForPubKey(
-              pubKey, direction, entry.key, entry.value, pubKeysByRelayUrl);
+            pubKey,
+            direction,
+            entry.key,
+            entry.value,
+            pubKeysByRelayUrl,
+          );
         }
       } else {
         int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        await _cacheManager.saveUserRelayList(UserRelayList(
+        await _cacheManager.saveUserRelayList(
+          UserRelayList(
             pubKey: pubKey,
             relays: {},
             createdAt: now,
-            refreshedTimestamp: now));
+            refreshedTimestamp: now,
+          ),
+        );
       }
     }
-    Logger.log.d(() =>
-        "Have lists of relays for $foundCount/${pubKeys.length} pubKeys ${foundCount < pubKeys.length ? "(missing ${pubKeys.length - foundCount})" : ""}");
+    Logger.log.d(
+      () =>
+          "Have lists of relays for $foundCount/${pubKeys.length} pubKeys ${foundCount < pubKeys.length ? "(missing ${pubKeys.length - foundCount})" : ""}",
+    );
 
     /// sort by pubKeys count for each relay descending
-    List<MapEntry<String, Set<PubkeyMapping>>> sortedEntries =
-        pubKeysByRelayUrl.entries.toList()
-
-          /// todo: use more stuff to improve sorting
-          ..sort((a, b) {
-            int rr = b.value.length.compareTo(a.value.length);
-            if (rr == 0) {
-              // if amount of pubKeys is equal check for webSocket connected, and prioritize connected
-              bool aC = _relayManager.isRelayConnected(a.key);
-              bool bC = _relayManager.isRelayConnected(b.key);
-              if (aC != bC) {
-                return aC ? -1 : 1;
-              }
-              return 0;
-            }
-            return rr;
-          });
+    List<MapEntry<String, Set<PubkeyMapping>>>
+    sortedEntries = pubKeysByRelayUrl.entries.toList()
+      /// todo: use more stuff to improve sorting
+      ..sort((a, b) {
+        int rr = b.value.length.compareTo(a.value.length);
+        if (rr == 0) {
+          // if amount of pubKeys is equal check for webSocket connected, and prioritize connected
+          bool aC = _relayManager.isRelayConnected(a.key);
+          bool bC = _relayManager.isRelayConnected(b.key);
+          if (aC != bC) {
+            return aC ? -1 : 1;
+          }
+          return 0;
+        }
+        return rr;
+      });
 
     return Map<String, Set<PubkeyMapping>>.fromEntries(sortedEntries);
   }
 
   void _handleRelayUrlForPubKey(
-      String pubKey,
-      RelayDirection direction,
-      String url,
-      ReadWriteMarker marker,
-      Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl) {
+    String pubKey,
+    RelayDirection direction,
+    String url,
+    ReadWriteMarker marker,
+    Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl,
+  ) {
     String? cleanUrl = cleanRelayUrl(url);
     if (cleanUrl != null) {
       if (direction.matchesMarker(marker)) {
@@ -226,8 +255,9 @@ class RelaySets {
         if (set == null) {
           pubKeysByRelayUrl[cleanUrl] = {};
         }
-        pubKeysByRelayUrl[cleanUrl]!
-            .add(PubkeyMapping(pubKey: pubKey, rwMarker: marker));
+        pubKeysByRelayUrl[cleanUrl]!.add(
+          PubkeyMapping(pubKey: pubKey, rwMarker: marker),
+        );
       }
     }
   }

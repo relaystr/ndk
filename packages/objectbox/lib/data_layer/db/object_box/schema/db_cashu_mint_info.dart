@@ -61,9 +61,7 @@ class DbCashuMintInfo {
       version: ndkM.version,
       description: ndkM.description,
       descriptionLong: ndkM.descriptionLong,
-      contactJson: jsonEncode(
-        ndkM.contact.map((c) => c.toJson()).toList(),
-      ),
+      contactJson: jsonEncode(ndkM.contact.map((c) => c.toJson()).toList()),
       motd: ndkM.motd,
       iconUrl: ndkM.iconUrl,
       urls: ndkM.urls,
@@ -78,9 +76,11 @@ class DbCashuMintInfo {
 
   ndk_entities.CashuMintInfo toNdk() {
     final decodedContact = (jsonDecode(contactJson) as List<dynamic>)
-        .map((e) => ndk_entities.CashuMintContact.fromJson(
-              Map<String, dynamic>.from(e as Map),
-            ))
+        .map(
+          (e) => ndk_entities.CashuMintContact.fromJson(
+            Map<String, dynamic>.from(e as Map),
+          ),
+        )
         .toList();
 
     final decodedNutsRaw = Map<String, dynamic>.from(

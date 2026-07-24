@@ -83,24 +83,27 @@ RelayRankingResult rankRelays({
     for (final pubkey in bestCoveredPubkeys) {
       if ((remainingCoverage[pubkey] ?? 0) > 0) {
         coveredPubkeyObjects.add(
-            CoveragePubkey(pubkey, 1, 0) // This relay covers this pubkey once
-            );
+          CoveragePubkey(pubkey, 1, 0), // This relay covers this pubkey once
+        );
         remainingCoverage[pubkey] = remainingCoverage[pubkey]! - 1;
       }
     }
 
     // check if this relay is already selected, if so update it
-    int existingIndex =
-        selectedRelays.indexWhere((r) => r.relayUrl == bestRelay);
+    int existingIndex = selectedRelays.indexWhere(
+      (r) => r.relayUrl == bestRelay,
+    );
     if (existingIndex != -1) {
       selectedRelays[existingIndex].score += bestScore;
       selectedRelays[existingIndex].coveredPubkeys.addAll(coveredPubkeyObjects);
     } else {
-      selectedRelays.add(RelayRanking(
-        relayUrl: bestRelay,
-        score: bestScore,
-        coveredPubkeys: coveredPubkeyObjects,
-      ));
+      selectedRelays.add(
+        RelayRanking(
+          relayUrl: bestRelay,
+          score: bestScore,
+          coveredPubkeys: coveredPubkeyObjects,
+        ),
+      );
     }
 
     // remove this relay from future consideration for this iteration
@@ -112,8 +115,9 @@ RelayRankingResult rankRelays({
   for (final cp in searchingPubkeys) {
     int remaining = remainingCoverage[cp.pubkey] ?? 0;
     if (remaining > 0) {
-      notCoveredPubkeys
-          .add(CoveragePubkey(cp.pubkey, cp.desiredCoverage, remaining));
+      notCoveredPubkeys.add(
+        CoveragePubkey(cp.pubkey, cp.desiredCoverage, remaining),
+      );
     }
   }
 
@@ -130,10 +134,7 @@ class RelayRankingResult {
   final List<RelayRanking> ranking;
   final List<CoveragePubkey> notCoveredPubkeys;
 
-  RelayRankingResult({
-    required this.ranking,
-    required this.notCoveredPubkeys,
-  });
+  RelayRankingResult({required this.ranking, required this.notCoveredPubkeys});
 }
 
 class RelayRanking {

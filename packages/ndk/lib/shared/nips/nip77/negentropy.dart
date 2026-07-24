@@ -45,8 +45,10 @@ class NegentropyEncoder {
   }
 
   /// Decodes a varint from bytes, returns (value, bytesConsumed)
-  static (int value, int bytesConsumed) decodeVarint(Uint8List data,
-      [int offset = 0]) {
+  static (int value, int bytesConsumed) decodeVarint(
+    Uint8List data, [
+    int offset = 0,
+  ]) {
     if (offset >= data.length) {
       throw ArgumentError('Not enough data to decode varint');
     }
@@ -72,7 +74,8 @@ class NegentropyEncoder {
     final lastByte = data[offset + bytesConsumed - 1];
     if ((lastByte & 0x80) != 0) {
       throw ArgumentError(
-          'Truncated varint: data ends with continuation bit set');
+        'Truncated varint: data ends with continuation bit set',
+      );
     }
 
     return (value, bytesConsumed);
@@ -114,12 +117,14 @@ class NegentropyEncoder {
 
   /// Decodes a bound from bytes
   static (int timestamp, Uint8List idPrefix, int bytesConsumed) decodeBound(
-      Uint8List data,
-      [int offset = 0]) {
+    Uint8List data, [
+    int offset = 0,
+  ]) {
     final (timestamp, tsBytes) = decodeVarint(data, offset);
     final prefixLength = data[offset + tsBytes];
-    final idPrefix = Uint8List.fromList(data.sublist(
-        offset + tsBytes + 1, offset + tsBytes + 1 + prefixLength));
+    final idPrefix = Uint8List.fromList(
+      data.sublist(offset + tsBytes + 1, offset + tsBytes + 1 + prefixLength),
+    );
     return (timestamp, idPrefix, tsBytes + 1 + prefixLength);
   }
 
@@ -142,7 +147,9 @@ class NegentropyEncoder {
 
   /// Creates an initial client message (NEG-OPEN query payload)
   static Uint8List createInitialMessage(
-      List<NegentropyItem> items, int idSize) {
+    List<NegentropyItem> items,
+    int idSize,
+  ) {
     items.sort((a, b) {
       final tsCmp = a.timestamp.compareTo(b.timestamp);
       if (tsCmp != 0) return tsCmp;
@@ -169,7 +176,7 @@ class NegentropyEncoder {
   /// Reconciles received message and creates response
   /// Returns (response bytes, need IDs, have IDs)
   static (Uint8List response, List<String> needIds, List<String> haveIds)
-      reconcile(Uint8List message, List<NegentropyItem> items) {
+  reconcile(Uint8List message, List<NegentropyItem> items) {
     items.sort((a, b) {
       final tsCmp = a.timestamp.compareTo(b.timestamp);
       if (tsCmp != 0) return tsCmp;
@@ -228,7 +235,8 @@ class NegentropyEncoder {
             throw ArgumentError('Not enough data for fingerprint');
           }
           final theirFingerprint = Uint8List.fromList(
-              message.sublist(offset, offset + fingerprintSize));
+            message.sublist(offset, offset + fingerprintSize),
+          );
           offset += fingerprintSize;
 
           // Calculate our fingerprint for this range
@@ -253,15 +261,19 @@ class NegentropyEncoder {
               // First half
               output.add(encodeBound(midItem.timestamp, midItem.id));
               output.addByte(modeFingerprint);
-              final firstHalfIds =
-                  rangeItems.sublist(0, mid).map((i) => i.id).toList();
+              final firstHalfIds = rangeItems
+                  .sublist(0, mid)
+                  .map((i) => i.id)
+                  .toList();
               output.add(calculateFingerprint(firstHalfIds));
 
               // Second half
               output.add(encodeBound(timestamp, idPrefix));
               output.addByte(modeFingerprint);
-              final secondHalfIds =
-                  rangeItems.sublist(mid).map((i) => i.id).toList();
+              final secondHalfIds = rangeItems
+                  .sublist(mid)
+                  .map((i) => i.id)
+                  .toList();
               output.add(calculateFingerprint(secondHalfIds));
             }
           }
@@ -278,7 +290,8 @@ class NegentropyEncoder {
               throw ArgumentError('Not enough data for ID');
             }
             theirIds.add(
-                Uint8List.fromList(message.sublist(offset, offset + idSize)));
+              Uint8List.fromList(message.sublist(offset, offset + idSize)),
+            );
             offset += idSize;
           }
 
@@ -361,8 +374,10 @@ class NegentropyItem {
 
   NegentropyItem({required this.timestamp, required this.id});
 
-  factory NegentropyItem.fromHex(
-      {required int timestamp, required String idHex}) {
+  factory NegentropyItem.fromHex({
+    required int timestamp,
+    required String idHex,
+  }) {
     return NegentropyItem(
       timestamp: timestamp,
       id: NegentropyEncoder.hexToBytes(idHex),

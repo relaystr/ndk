@@ -13,10 +13,7 @@ class TimeRange {
   /// End timestamp (inclusive)
   final int until;
 
-  const TimeRange({
-    required this.since,
-    required this.until,
-  });
+  const TimeRange({required this.since, required this.until});
 
   /// Check if this range overlaps or is adjacent to another range
   bool canMergeWith(TimeRange other) {
@@ -53,15 +50,10 @@ class TimeRange {
   @override
   int get hashCode => since.hashCode ^ until.hashCode;
 
-  Map<String, dynamic> toJson() => {
-        'since': since,
-        'until': until,
-      };
+  Map<String, dynamic> toJson() => {'since': since, 'until': until};
 
-  factory TimeRange.fromJson(Map<String, dynamic> json) => TimeRange(
-        since: json['since'] as int,
-        until: json['until'] as int,
-      );
+  factory TimeRange.fromJson(Map<String, dynamic> json) =>
+      TimeRange(since: json['since'] as int, until: json['until'] as int);
 }
 
 /// A gap in fetched ranges (missing time range)
@@ -128,10 +120,9 @@ class RelayFetchedRanges {
 
       // Gap before this range?
       if (currentPos < range.since) {
-        gaps.add(TimeRange(
-          since: currentPos,
-          until: min(range.since - 1, until),
-        ));
+        gaps.add(
+          TimeRange(since: currentPos, until: min(range.since - 1, until)),
+        );
       }
 
       // Move position past this range
@@ -140,10 +131,7 @@ class RelayFetchedRanges {
 
     // Gap after last range?
     if (currentPos <= until) {
-      gaps.add(TimeRange(
-        since: currentPos,
-        until: until,
-      ));
+      gaps.add(TimeRange(since: currentPos, until: until));
     }
 
     return gaps;
@@ -152,11 +140,13 @@ class RelayFetchedRanges {
   /// Get gaps as FetchedRangesGap objects
   List<FetchedRangesGap> getGaps(int since, int until) {
     return findGaps(since, until)
-        .map((g) => FetchedRangesGap(
-              relayUrl: relayUrl,
-              since: g.since,
-              until: g.until,
-            ))
+        .map(
+          (g) => FetchedRangesGap(
+            relayUrl: relayUrl,
+            since: g.since,
+            until: g.until,
+          ),
+        )
         .toList();
   }
 
@@ -194,11 +184,11 @@ class FilterFetchedRangeRecord {
       'FilterFetchedRangeRecord($filterHash, $relayUrl, $rangeStart-$rangeEnd)';
 
   Map<String, dynamic> toJson() => {
-        'filterHash': filterHash,
-        'relayUrl': relayUrl,
-        'rangeStart': rangeStart,
-        'rangeEnd': rangeEnd,
-      };
+    'filterHash': filterHash,
+    'relayUrl': relayUrl,
+    'rangeStart': rangeStart,
+    'rangeEnd': rangeEnd,
+  };
 
   factory FilterFetchedRangeRecord.fromJson(Map<String, dynamic> json) =>
       FilterFetchedRangeRecord(

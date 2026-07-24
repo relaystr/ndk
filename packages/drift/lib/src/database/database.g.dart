@@ -564,1545 +564,6 @@ class EventsCompanion extends UpdateCompanion<DbEvent> {
   }
 }
 
-class $MetadatasTable extends Metadatas
-    with TableInfo<$MetadatasTable, DbMetadata> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $MetadatasTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _pubKeyMeta = const VerificationMeta('pubKey');
-  @override
-  late final GeneratedColumn<String> pubKey = GeneratedColumn<String>(
-    'pub_key',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _displayNameMeta = const VerificationMeta(
-    'displayName',
-  );
-  @override
-  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
-    'display_name',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _pictureMeta = const VerificationMeta(
-    'picture',
-  );
-  @override
-  late final GeneratedColumn<String> picture = GeneratedColumn<String>(
-    'picture',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _bannerMeta = const VerificationMeta('banner');
-  @override
-  late final GeneratedColumn<String> banner = GeneratedColumn<String>(
-    'banner',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _websiteMeta = const VerificationMeta(
-    'website',
-  );
-  @override
-  late final GeneratedColumn<String> website = GeneratedColumn<String>(
-    'website',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _aboutMeta = const VerificationMeta('about');
-  @override
-  late final GeneratedColumn<String> about = GeneratedColumn<String>(
-    'about',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _nip05Meta = const VerificationMeta('nip05');
-  @override
-  late final GeneratedColumn<String> nip05 = GeneratedColumn<String>(
-    'nip05',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _lud16Meta = const VerificationMeta('lud16');
-  @override
-  late final GeneratedColumn<String> lud16 = GeneratedColumn<String>(
-    'lud16',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _lud06Meta = const VerificationMeta('lud06');
-  @override
-  late final GeneratedColumn<String> lud06 = GeneratedColumn<String>(
-    'lud06',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
-    'updated_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _refreshedTimestampMeta =
-      const VerificationMeta('refreshedTimestamp');
-  @override
-  late final GeneratedColumn<int> refreshedTimestamp = GeneratedColumn<int>(
-    'refreshed_timestamp',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _sourcesJsonMeta = const VerificationMeta(
-    'sourcesJson',
-  );
-  @override
-  late final GeneratedColumn<String> sourcesJson = GeneratedColumn<String>(
-    'sources_json',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _tagsJsonMeta = const VerificationMeta(
-    'tagsJson',
-  );
-  @override
-  late final GeneratedColumn<String> tagsJson = GeneratedColumn<String>(
-    'tags_json',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant('[]'),
-  );
-  static const VerificationMeta _rawContentJsonMeta = const VerificationMeta(
-    'rawContentJson',
-  );
-  @override
-  late final GeneratedColumn<String> rawContentJson = GeneratedColumn<String>(
-    'raw_content_json',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    pubKey,
-    name,
-    displayName,
-    picture,
-    banner,
-    website,
-    about,
-    nip05,
-    lud16,
-    lud06,
-    updatedAt,
-    refreshedTimestamp,
-    sourcesJson,
-    tagsJson,
-    rawContentJson,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'metadatas';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<DbMetadata> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('pub_key')) {
-      context.handle(
-        _pubKeyMeta,
-        pubKey.isAcceptableOrUnknown(data['pub_key']!, _pubKeyMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_pubKeyMeta);
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
-      );
-    }
-    if (data.containsKey('display_name')) {
-      context.handle(
-        _displayNameMeta,
-        displayName.isAcceptableOrUnknown(
-          data['display_name']!,
-          _displayNameMeta,
-        ),
-      );
-    }
-    if (data.containsKey('picture')) {
-      context.handle(
-        _pictureMeta,
-        picture.isAcceptableOrUnknown(data['picture']!, _pictureMeta),
-      );
-    }
-    if (data.containsKey('banner')) {
-      context.handle(
-        _bannerMeta,
-        banner.isAcceptableOrUnknown(data['banner']!, _bannerMeta),
-      );
-    }
-    if (data.containsKey('website')) {
-      context.handle(
-        _websiteMeta,
-        website.isAcceptableOrUnknown(data['website']!, _websiteMeta),
-      );
-    }
-    if (data.containsKey('about')) {
-      context.handle(
-        _aboutMeta,
-        about.isAcceptableOrUnknown(data['about']!, _aboutMeta),
-      );
-    }
-    if (data.containsKey('nip05')) {
-      context.handle(
-        _nip05Meta,
-        nip05.isAcceptableOrUnknown(data['nip05']!, _nip05Meta),
-      );
-    }
-    if (data.containsKey('lud16')) {
-      context.handle(
-        _lud16Meta,
-        lud16.isAcceptableOrUnknown(data['lud16']!, _lud16Meta),
-      );
-    }
-    if (data.containsKey('lud06')) {
-      context.handle(
-        _lud06Meta,
-        lud06.isAcceptableOrUnknown(data['lud06']!, _lud06Meta),
-      );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('refreshed_timestamp')) {
-      context.handle(
-        _refreshedTimestampMeta,
-        refreshedTimestamp.isAcceptableOrUnknown(
-          data['refreshed_timestamp']!,
-          _refreshedTimestampMeta,
-        ),
-      );
-    }
-    if (data.containsKey('sources_json')) {
-      context.handle(
-        _sourcesJsonMeta,
-        sourcesJson.isAcceptableOrUnknown(
-          data['sources_json']!,
-          _sourcesJsonMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_sourcesJsonMeta);
-    }
-    if (data.containsKey('tags_json')) {
-      context.handle(
-        _tagsJsonMeta,
-        tagsJson.isAcceptableOrUnknown(data['tags_json']!, _tagsJsonMeta),
-      );
-    }
-    if (data.containsKey('raw_content_json')) {
-      context.handle(
-        _rawContentJsonMeta,
-        rawContentJson.isAcceptableOrUnknown(
-          data['raw_content_json']!,
-          _rawContentJsonMeta,
-        ),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {pubKey};
-  @override
-  DbMetadata map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return DbMetadata(
-      pubKey: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}pub_key'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      ),
-      displayName: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}display_name'],
-      ),
-      picture: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}picture'],
-      ),
-      banner: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}banner'],
-      ),
-      website: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}website'],
-      ),
-      about: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}about'],
-      ),
-      nip05: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}nip05'],
-      ),
-      lud16: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}lud16'],
-      ),
-      lud06: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}lud06'],
-      ),
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}updated_at'],
-      ),
-      refreshedTimestamp: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}refreshed_timestamp'],
-      ),
-      sourcesJson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}sources_json'],
-      )!,
-      tagsJson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}tags_json'],
-      )!,
-      rawContentJson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}raw_content_json'],
-      ),
-    );
-  }
-
-  @override
-  $MetadatasTable createAlias(String alias) {
-    return $MetadatasTable(attachedDatabase, alias);
-  }
-}
-
-class DbMetadata extends DataClass implements Insertable<DbMetadata> {
-  final String pubKey;
-  final String? name;
-  final String? displayName;
-  final String? picture;
-  final String? banner;
-  final String? website;
-  final String? about;
-  final String? nip05;
-  final String? lud16;
-  final String? lud06;
-  final int? updatedAt;
-  final int? refreshedTimestamp;
-  final String sourcesJson;
-  final String tagsJson;
-  final String? rawContentJson;
-  const DbMetadata({
-    required this.pubKey,
-    this.name,
-    this.displayName,
-    this.picture,
-    this.banner,
-    this.website,
-    this.about,
-    this.nip05,
-    this.lud16,
-    this.lud06,
-    this.updatedAt,
-    this.refreshedTimestamp,
-    required this.sourcesJson,
-    required this.tagsJson,
-    this.rawContentJson,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['pub_key'] = Variable<String>(pubKey);
-    if (!nullToAbsent || name != null) {
-      map['name'] = Variable<String>(name);
-    }
-    if (!nullToAbsent || displayName != null) {
-      map['display_name'] = Variable<String>(displayName);
-    }
-    if (!nullToAbsent || picture != null) {
-      map['picture'] = Variable<String>(picture);
-    }
-    if (!nullToAbsent || banner != null) {
-      map['banner'] = Variable<String>(banner);
-    }
-    if (!nullToAbsent || website != null) {
-      map['website'] = Variable<String>(website);
-    }
-    if (!nullToAbsent || about != null) {
-      map['about'] = Variable<String>(about);
-    }
-    if (!nullToAbsent || nip05 != null) {
-      map['nip05'] = Variable<String>(nip05);
-    }
-    if (!nullToAbsent || lud16 != null) {
-      map['lud16'] = Variable<String>(lud16);
-    }
-    if (!nullToAbsent || lud06 != null) {
-      map['lud06'] = Variable<String>(lud06);
-    }
-    if (!nullToAbsent || updatedAt != null) {
-      map['updated_at'] = Variable<int>(updatedAt);
-    }
-    if (!nullToAbsent || refreshedTimestamp != null) {
-      map['refreshed_timestamp'] = Variable<int>(refreshedTimestamp);
-    }
-    map['sources_json'] = Variable<String>(sourcesJson);
-    map['tags_json'] = Variable<String>(tagsJson);
-    if (!nullToAbsent || rawContentJson != null) {
-      map['raw_content_json'] = Variable<String>(rawContentJson);
-    }
-    return map;
-  }
-
-  MetadatasCompanion toCompanion(bool nullToAbsent) {
-    return MetadatasCompanion(
-      pubKey: Value(pubKey),
-      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
-      displayName: displayName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(displayName),
-      picture: picture == null && nullToAbsent
-          ? const Value.absent()
-          : Value(picture),
-      banner: banner == null && nullToAbsent
-          ? const Value.absent()
-          : Value(banner),
-      website: website == null && nullToAbsent
-          ? const Value.absent()
-          : Value(website),
-      about: about == null && nullToAbsent
-          ? const Value.absent()
-          : Value(about),
-      nip05: nip05 == null && nullToAbsent
-          ? const Value.absent()
-          : Value(nip05),
-      lud16: lud16 == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lud16),
-      lud06: lud06 == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lud06),
-      updatedAt: updatedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(updatedAt),
-      refreshedTimestamp: refreshedTimestamp == null && nullToAbsent
-          ? const Value.absent()
-          : Value(refreshedTimestamp),
-      sourcesJson: Value(sourcesJson),
-      tagsJson: Value(tagsJson),
-      rawContentJson: rawContentJson == null && nullToAbsent
-          ? const Value.absent()
-          : Value(rawContentJson),
-    );
-  }
-
-  factory DbMetadata.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return DbMetadata(
-      pubKey: serializer.fromJson<String>(json['pubKey']),
-      name: serializer.fromJson<String?>(json['name']),
-      displayName: serializer.fromJson<String?>(json['displayName']),
-      picture: serializer.fromJson<String?>(json['picture']),
-      banner: serializer.fromJson<String?>(json['banner']),
-      website: serializer.fromJson<String?>(json['website']),
-      about: serializer.fromJson<String?>(json['about']),
-      nip05: serializer.fromJson<String?>(json['nip05']),
-      lud16: serializer.fromJson<String?>(json['lud16']),
-      lud06: serializer.fromJson<String?>(json['lud06']),
-      updatedAt: serializer.fromJson<int?>(json['updatedAt']),
-      refreshedTimestamp: serializer.fromJson<int?>(json['refreshedTimestamp']),
-      sourcesJson: serializer.fromJson<String>(json['sourcesJson']),
-      tagsJson: serializer.fromJson<String>(json['tagsJson']),
-      rawContentJson: serializer.fromJson<String?>(json['rawContentJson']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'pubKey': serializer.toJson<String>(pubKey),
-      'name': serializer.toJson<String?>(name),
-      'displayName': serializer.toJson<String?>(displayName),
-      'picture': serializer.toJson<String?>(picture),
-      'banner': serializer.toJson<String?>(banner),
-      'website': serializer.toJson<String?>(website),
-      'about': serializer.toJson<String?>(about),
-      'nip05': serializer.toJson<String?>(nip05),
-      'lud16': serializer.toJson<String?>(lud16),
-      'lud06': serializer.toJson<String?>(lud06),
-      'updatedAt': serializer.toJson<int?>(updatedAt),
-      'refreshedTimestamp': serializer.toJson<int?>(refreshedTimestamp),
-      'sourcesJson': serializer.toJson<String>(sourcesJson),
-      'tagsJson': serializer.toJson<String>(tagsJson),
-      'rawContentJson': serializer.toJson<String?>(rawContentJson),
-    };
-  }
-
-  DbMetadata copyWith({
-    String? pubKey,
-    Value<String?> name = const Value.absent(),
-    Value<String?> displayName = const Value.absent(),
-    Value<String?> picture = const Value.absent(),
-    Value<String?> banner = const Value.absent(),
-    Value<String?> website = const Value.absent(),
-    Value<String?> about = const Value.absent(),
-    Value<String?> nip05 = const Value.absent(),
-    Value<String?> lud16 = const Value.absent(),
-    Value<String?> lud06 = const Value.absent(),
-    Value<int?> updatedAt = const Value.absent(),
-    Value<int?> refreshedTimestamp = const Value.absent(),
-    String? sourcesJson,
-    String? tagsJson,
-    Value<String?> rawContentJson = const Value.absent(),
-  }) => DbMetadata(
-    pubKey: pubKey ?? this.pubKey,
-    name: name.present ? name.value : this.name,
-    displayName: displayName.present ? displayName.value : this.displayName,
-    picture: picture.present ? picture.value : this.picture,
-    banner: banner.present ? banner.value : this.banner,
-    website: website.present ? website.value : this.website,
-    about: about.present ? about.value : this.about,
-    nip05: nip05.present ? nip05.value : this.nip05,
-    lud16: lud16.present ? lud16.value : this.lud16,
-    lud06: lud06.present ? lud06.value : this.lud06,
-    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
-    refreshedTimestamp: refreshedTimestamp.present
-        ? refreshedTimestamp.value
-        : this.refreshedTimestamp,
-    sourcesJson: sourcesJson ?? this.sourcesJson,
-    tagsJson: tagsJson ?? this.tagsJson,
-    rawContentJson: rawContentJson.present
-        ? rawContentJson.value
-        : this.rawContentJson,
-  );
-  DbMetadata copyWithCompanion(MetadatasCompanion data) {
-    return DbMetadata(
-      pubKey: data.pubKey.present ? data.pubKey.value : this.pubKey,
-      name: data.name.present ? data.name.value : this.name,
-      displayName: data.displayName.present
-          ? data.displayName.value
-          : this.displayName,
-      picture: data.picture.present ? data.picture.value : this.picture,
-      banner: data.banner.present ? data.banner.value : this.banner,
-      website: data.website.present ? data.website.value : this.website,
-      about: data.about.present ? data.about.value : this.about,
-      nip05: data.nip05.present ? data.nip05.value : this.nip05,
-      lud16: data.lud16.present ? data.lud16.value : this.lud16,
-      lud06: data.lud06.present ? data.lud06.value : this.lud06,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      refreshedTimestamp: data.refreshedTimestamp.present
-          ? data.refreshedTimestamp.value
-          : this.refreshedTimestamp,
-      sourcesJson: data.sourcesJson.present
-          ? data.sourcesJson.value
-          : this.sourcesJson,
-      tagsJson: data.tagsJson.present ? data.tagsJson.value : this.tagsJson,
-      rawContentJson: data.rawContentJson.present
-          ? data.rawContentJson.value
-          : this.rawContentJson,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('DbMetadata(')
-          ..write('pubKey: $pubKey, ')
-          ..write('name: $name, ')
-          ..write('displayName: $displayName, ')
-          ..write('picture: $picture, ')
-          ..write('banner: $banner, ')
-          ..write('website: $website, ')
-          ..write('about: $about, ')
-          ..write('nip05: $nip05, ')
-          ..write('lud16: $lud16, ')
-          ..write('lud06: $lud06, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('refreshedTimestamp: $refreshedTimestamp, ')
-          ..write('sourcesJson: $sourcesJson, ')
-          ..write('tagsJson: $tagsJson, ')
-          ..write('rawContentJson: $rawContentJson')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    pubKey,
-    name,
-    displayName,
-    picture,
-    banner,
-    website,
-    about,
-    nip05,
-    lud16,
-    lud06,
-    updatedAt,
-    refreshedTimestamp,
-    sourcesJson,
-    tagsJson,
-    rawContentJson,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is DbMetadata &&
-          other.pubKey == this.pubKey &&
-          other.name == this.name &&
-          other.displayName == this.displayName &&
-          other.picture == this.picture &&
-          other.banner == this.banner &&
-          other.website == this.website &&
-          other.about == this.about &&
-          other.nip05 == this.nip05 &&
-          other.lud16 == this.lud16 &&
-          other.lud06 == this.lud06 &&
-          other.updatedAt == this.updatedAt &&
-          other.refreshedTimestamp == this.refreshedTimestamp &&
-          other.sourcesJson == this.sourcesJson &&
-          other.tagsJson == this.tagsJson &&
-          other.rawContentJson == this.rawContentJson);
-}
-
-class MetadatasCompanion extends UpdateCompanion<DbMetadata> {
-  final Value<String> pubKey;
-  final Value<String?> name;
-  final Value<String?> displayName;
-  final Value<String?> picture;
-  final Value<String?> banner;
-  final Value<String?> website;
-  final Value<String?> about;
-  final Value<String?> nip05;
-  final Value<String?> lud16;
-  final Value<String?> lud06;
-  final Value<int?> updatedAt;
-  final Value<int?> refreshedTimestamp;
-  final Value<String> sourcesJson;
-  final Value<String> tagsJson;
-  final Value<String?> rawContentJson;
-  final Value<int> rowid;
-  const MetadatasCompanion({
-    this.pubKey = const Value.absent(),
-    this.name = const Value.absent(),
-    this.displayName = const Value.absent(),
-    this.picture = const Value.absent(),
-    this.banner = const Value.absent(),
-    this.website = const Value.absent(),
-    this.about = const Value.absent(),
-    this.nip05 = const Value.absent(),
-    this.lud16 = const Value.absent(),
-    this.lud06 = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.refreshedTimestamp = const Value.absent(),
-    this.sourcesJson = const Value.absent(),
-    this.tagsJson = const Value.absent(),
-    this.rawContentJson = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  MetadatasCompanion.insert({
-    required String pubKey,
-    this.name = const Value.absent(),
-    this.displayName = const Value.absent(),
-    this.picture = const Value.absent(),
-    this.banner = const Value.absent(),
-    this.website = const Value.absent(),
-    this.about = const Value.absent(),
-    this.nip05 = const Value.absent(),
-    this.lud16 = const Value.absent(),
-    this.lud06 = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.refreshedTimestamp = const Value.absent(),
-    required String sourcesJson,
-    this.tagsJson = const Value.absent(),
-    this.rawContentJson = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : pubKey = Value(pubKey),
-       sourcesJson = Value(sourcesJson);
-  static Insertable<DbMetadata> custom({
-    Expression<String>? pubKey,
-    Expression<String>? name,
-    Expression<String>? displayName,
-    Expression<String>? picture,
-    Expression<String>? banner,
-    Expression<String>? website,
-    Expression<String>? about,
-    Expression<String>? nip05,
-    Expression<String>? lud16,
-    Expression<String>? lud06,
-    Expression<int>? updatedAt,
-    Expression<int>? refreshedTimestamp,
-    Expression<String>? sourcesJson,
-    Expression<String>? tagsJson,
-    Expression<String>? rawContentJson,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (pubKey != null) 'pub_key': pubKey,
-      if (name != null) 'name': name,
-      if (displayName != null) 'display_name': displayName,
-      if (picture != null) 'picture': picture,
-      if (banner != null) 'banner': banner,
-      if (website != null) 'website': website,
-      if (about != null) 'about': about,
-      if (nip05 != null) 'nip05': nip05,
-      if (lud16 != null) 'lud16': lud16,
-      if (lud06 != null) 'lud06': lud06,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (refreshedTimestamp != null) 'refreshed_timestamp': refreshedTimestamp,
-      if (sourcesJson != null) 'sources_json': sourcesJson,
-      if (tagsJson != null) 'tags_json': tagsJson,
-      if (rawContentJson != null) 'raw_content_json': rawContentJson,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  MetadatasCompanion copyWith({
-    Value<String>? pubKey,
-    Value<String?>? name,
-    Value<String?>? displayName,
-    Value<String?>? picture,
-    Value<String?>? banner,
-    Value<String?>? website,
-    Value<String?>? about,
-    Value<String?>? nip05,
-    Value<String?>? lud16,
-    Value<String?>? lud06,
-    Value<int?>? updatedAt,
-    Value<int?>? refreshedTimestamp,
-    Value<String>? sourcesJson,
-    Value<String>? tagsJson,
-    Value<String?>? rawContentJson,
-    Value<int>? rowid,
-  }) {
-    return MetadatasCompanion(
-      pubKey: pubKey ?? this.pubKey,
-      name: name ?? this.name,
-      displayName: displayName ?? this.displayName,
-      picture: picture ?? this.picture,
-      banner: banner ?? this.banner,
-      website: website ?? this.website,
-      about: about ?? this.about,
-      nip05: nip05 ?? this.nip05,
-      lud16: lud16 ?? this.lud16,
-      lud06: lud06 ?? this.lud06,
-      updatedAt: updatedAt ?? this.updatedAt,
-      refreshedTimestamp: refreshedTimestamp ?? this.refreshedTimestamp,
-      sourcesJson: sourcesJson ?? this.sourcesJson,
-      tagsJson: tagsJson ?? this.tagsJson,
-      rawContentJson: rawContentJson ?? this.rawContentJson,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (pubKey.present) {
-      map['pub_key'] = Variable<String>(pubKey.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    if (displayName.present) {
-      map['display_name'] = Variable<String>(displayName.value);
-    }
-    if (picture.present) {
-      map['picture'] = Variable<String>(picture.value);
-    }
-    if (banner.present) {
-      map['banner'] = Variable<String>(banner.value);
-    }
-    if (website.present) {
-      map['website'] = Variable<String>(website.value);
-    }
-    if (about.present) {
-      map['about'] = Variable<String>(about.value);
-    }
-    if (nip05.present) {
-      map['nip05'] = Variable<String>(nip05.value);
-    }
-    if (lud16.present) {
-      map['lud16'] = Variable<String>(lud16.value);
-    }
-    if (lud06.present) {
-      map['lud06'] = Variable<String>(lud06.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<int>(updatedAt.value);
-    }
-    if (refreshedTimestamp.present) {
-      map['refreshed_timestamp'] = Variable<int>(refreshedTimestamp.value);
-    }
-    if (sourcesJson.present) {
-      map['sources_json'] = Variable<String>(sourcesJson.value);
-    }
-    if (tagsJson.present) {
-      map['tags_json'] = Variable<String>(tagsJson.value);
-    }
-    if (rawContentJson.present) {
-      map['raw_content_json'] = Variable<String>(rawContentJson.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('MetadatasCompanion(')
-          ..write('pubKey: $pubKey, ')
-          ..write('name: $name, ')
-          ..write('displayName: $displayName, ')
-          ..write('picture: $picture, ')
-          ..write('banner: $banner, ')
-          ..write('website: $website, ')
-          ..write('about: $about, ')
-          ..write('nip05: $nip05, ')
-          ..write('lud16: $lud16, ')
-          ..write('lud06: $lud06, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('refreshedTimestamp: $refreshedTimestamp, ')
-          ..write('sourcesJson: $sourcesJson, ')
-          ..write('tagsJson: $tagsJson, ')
-          ..write('rawContentJson: $rawContentJson, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $ContactListsTable extends ContactLists
-    with TableInfo<$ContactListsTable, DbContactList> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $ContactListsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _pubKeyMeta = const VerificationMeta('pubKey');
-  @override
-  late final GeneratedColumn<String> pubKey = GeneratedColumn<String>(
-    'pub_key',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _contactsJsonMeta = const VerificationMeta(
-    'contactsJson',
-  );
-  @override
-  late final GeneratedColumn<String> contactsJson = GeneratedColumn<String>(
-    'contacts_json',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _contactRelaysJsonMeta = const VerificationMeta(
-    'contactRelaysJson',
-  );
-  @override
-  late final GeneratedColumn<String> contactRelaysJson =
-      GeneratedColumn<String>(
-        'contact_relays_json',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      );
-  static const VerificationMeta _petnamesJsonMeta = const VerificationMeta(
-    'petnamesJson',
-  );
-  @override
-  late final GeneratedColumn<String> petnamesJson = GeneratedColumn<String>(
-    'petnames_json',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _followedTagsJsonMeta = const VerificationMeta(
-    'followedTagsJson',
-  );
-  @override
-  late final GeneratedColumn<String> followedTagsJson = GeneratedColumn<String>(
-    'followed_tags_json',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _followedCommunitiesJsonMeta =
-      const VerificationMeta('followedCommunitiesJson');
-  @override
-  late final GeneratedColumn<String> followedCommunitiesJson =
-      GeneratedColumn<String>(
-        'followed_communities_json',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      );
-  static const VerificationMeta _followedEventsJsonMeta =
-      const VerificationMeta('followedEventsJson');
-  @override
-  late final GeneratedColumn<String> followedEventsJson =
-      GeneratedColumn<String>(
-        'followed_events_json',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _loadedTimestampMeta = const VerificationMeta(
-    'loadedTimestamp',
-  );
-  @override
-  late final GeneratedColumn<int> loadedTimestamp = GeneratedColumn<int>(
-    'loaded_timestamp',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _sourcesJsonMeta = const VerificationMeta(
-    'sourcesJson',
-  );
-  @override
-  late final GeneratedColumn<String> sourcesJson = GeneratedColumn<String>(
-    'sources_json',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    pubKey,
-    contactsJson,
-    contactRelaysJson,
-    petnamesJson,
-    followedTagsJson,
-    followedCommunitiesJson,
-    followedEventsJson,
-    createdAt,
-    loadedTimestamp,
-    sourcesJson,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'contact_lists';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<DbContactList> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('pub_key')) {
-      context.handle(
-        _pubKeyMeta,
-        pubKey.isAcceptableOrUnknown(data['pub_key']!, _pubKeyMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_pubKeyMeta);
-    }
-    if (data.containsKey('contacts_json')) {
-      context.handle(
-        _contactsJsonMeta,
-        contactsJson.isAcceptableOrUnknown(
-          data['contacts_json']!,
-          _contactsJsonMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_contactsJsonMeta);
-    }
-    if (data.containsKey('contact_relays_json')) {
-      context.handle(
-        _contactRelaysJsonMeta,
-        contactRelaysJson.isAcceptableOrUnknown(
-          data['contact_relays_json']!,
-          _contactRelaysJsonMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_contactRelaysJsonMeta);
-    }
-    if (data.containsKey('petnames_json')) {
-      context.handle(
-        _petnamesJsonMeta,
-        petnamesJson.isAcceptableOrUnknown(
-          data['petnames_json']!,
-          _petnamesJsonMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_petnamesJsonMeta);
-    }
-    if (data.containsKey('followed_tags_json')) {
-      context.handle(
-        _followedTagsJsonMeta,
-        followedTagsJson.isAcceptableOrUnknown(
-          data['followed_tags_json']!,
-          _followedTagsJsonMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_followedTagsJsonMeta);
-    }
-    if (data.containsKey('followed_communities_json')) {
-      context.handle(
-        _followedCommunitiesJsonMeta,
-        followedCommunitiesJson.isAcceptableOrUnknown(
-          data['followed_communities_json']!,
-          _followedCommunitiesJsonMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_followedCommunitiesJsonMeta);
-    }
-    if (data.containsKey('followed_events_json')) {
-      context.handle(
-        _followedEventsJsonMeta,
-        followedEventsJson.isAcceptableOrUnknown(
-          data['followed_events_json']!,
-          _followedEventsJsonMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_followedEventsJsonMeta);
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
-    }
-    if (data.containsKey('loaded_timestamp')) {
-      context.handle(
-        _loadedTimestampMeta,
-        loadedTimestamp.isAcceptableOrUnknown(
-          data['loaded_timestamp']!,
-          _loadedTimestampMeta,
-        ),
-      );
-    }
-    if (data.containsKey('sources_json')) {
-      context.handle(
-        _sourcesJsonMeta,
-        sourcesJson.isAcceptableOrUnknown(
-          data['sources_json']!,
-          _sourcesJsonMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_sourcesJsonMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {pubKey};
-  @override
-  DbContactList map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return DbContactList(
-      pubKey: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}pub_key'],
-      )!,
-      contactsJson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}contacts_json'],
-      )!,
-      contactRelaysJson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}contact_relays_json'],
-      )!,
-      petnamesJson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}petnames_json'],
-      )!,
-      followedTagsJson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}followed_tags_json'],
-      )!,
-      followedCommunitiesJson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}followed_communities_json'],
-      )!,
-      followedEventsJson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}followed_events_json'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}created_at'],
-      )!,
-      loadedTimestamp: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}loaded_timestamp'],
-      ),
-      sourcesJson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}sources_json'],
-      )!,
-    );
-  }
-
-  @override
-  $ContactListsTable createAlias(String alias) {
-    return $ContactListsTable(attachedDatabase, alias);
-  }
-}
-
-class DbContactList extends DataClass implements Insertable<DbContactList> {
-  final String pubKey;
-  final String contactsJson;
-  final String contactRelaysJson;
-  final String petnamesJson;
-  final String followedTagsJson;
-  final String followedCommunitiesJson;
-  final String followedEventsJson;
-  final int createdAt;
-  final int? loadedTimestamp;
-  final String sourcesJson;
-  const DbContactList({
-    required this.pubKey,
-    required this.contactsJson,
-    required this.contactRelaysJson,
-    required this.petnamesJson,
-    required this.followedTagsJson,
-    required this.followedCommunitiesJson,
-    required this.followedEventsJson,
-    required this.createdAt,
-    this.loadedTimestamp,
-    required this.sourcesJson,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['pub_key'] = Variable<String>(pubKey);
-    map['contacts_json'] = Variable<String>(contactsJson);
-    map['contact_relays_json'] = Variable<String>(contactRelaysJson);
-    map['petnames_json'] = Variable<String>(petnamesJson);
-    map['followed_tags_json'] = Variable<String>(followedTagsJson);
-    map['followed_communities_json'] = Variable<String>(
-      followedCommunitiesJson,
-    );
-    map['followed_events_json'] = Variable<String>(followedEventsJson);
-    map['created_at'] = Variable<int>(createdAt);
-    if (!nullToAbsent || loadedTimestamp != null) {
-      map['loaded_timestamp'] = Variable<int>(loadedTimestamp);
-    }
-    map['sources_json'] = Variable<String>(sourcesJson);
-    return map;
-  }
-
-  ContactListsCompanion toCompanion(bool nullToAbsent) {
-    return ContactListsCompanion(
-      pubKey: Value(pubKey),
-      contactsJson: Value(contactsJson),
-      contactRelaysJson: Value(contactRelaysJson),
-      petnamesJson: Value(petnamesJson),
-      followedTagsJson: Value(followedTagsJson),
-      followedCommunitiesJson: Value(followedCommunitiesJson),
-      followedEventsJson: Value(followedEventsJson),
-      createdAt: Value(createdAt),
-      loadedTimestamp: loadedTimestamp == null && nullToAbsent
-          ? const Value.absent()
-          : Value(loadedTimestamp),
-      sourcesJson: Value(sourcesJson),
-    );
-  }
-
-  factory DbContactList.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return DbContactList(
-      pubKey: serializer.fromJson<String>(json['pubKey']),
-      contactsJson: serializer.fromJson<String>(json['contactsJson']),
-      contactRelaysJson: serializer.fromJson<String>(json['contactRelaysJson']),
-      petnamesJson: serializer.fromJson<String>(json['petnamesJson']),
-      followedTagsJson: serializer.fromJson<String>(json['followedTagsJson']),
-      followedCommunitiesJson: serializer.fromJson<String>(
-        json['followedCommunitiesJson'],
-      ),
-      followedEventsJson: serializer.fromJson<String>(
-        json['followedEventsJson'],
-      ),
-      createdAt: serializer.fromJson<int>(json['createdAt']),
-      loadedTimestamp: serializer.fromJson<int?>(json['loadedTimestamp']),
-      sourcesJson: serializer.fromJson<String>(json['sourcesJson']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'pubKey': serializer.toJson<String>(pubKey),
-      'contactsJson': serializer.toJson<String>(contactsJson),
-      'contactRelaysJson': serializer.toJson<String>(contactRelaysJson),
-      'petnamesJson': serializer.toJson<String>(petnamesJson),
-      'followedTagsJson': serializer.toJson<String>(followedTagsJson),
-      'followedCommunitiesJson': serializer.toJson<String>(
-        followedCommunitiesJson,
-      ),
-      'followedEventsJson': serializer.toJson<String>(followedEventsJson),
-      'createdAt': serializer.toJson<int>(createdAt),
-      'loadedTimestamp': serializer.toJson<int?>(loadedTimestamp),
-      'sourcesJson': serializer.toJson<String>(sourcesJson),
-    };
-  }
-
-  DbContactList copyWith({
-    String? pubKey,
-    String? contactsJson,
-    String? contactRelaysJson,
-    String? petnamesJson,
-    String? followedTagsJson,
-    String? followedCommunitiesJson,
-    String? followedEventsJson,
-    int? createdAt,
-    Value<int?> loadedTimestamp = const Value.absent(),
-    String? sourcesJson,
-  }) => DbContactList(
-    pubKey: pubKey ?? this.pubKey,
-    contactsJson: contactsJson ?? this.contactsJson,
-    contactRelaysJson: contactRelaysJson ?? this.contactRelaysJson,
-    petnamesJson: petnamesJson ?? this.petnamesJson,
-    followedTagsJson: followedTagsJson ?? this.followedTagsJson,
-    followedCommunitiesJson:
-        followedCommunitiesJson ?? this.followedCommunitiesJson,
-    followedEventsJson: followedEventsJson ?? this.followedEventsJson,
-    createdAt: createdAt ?? this.createdAt,
-    loadedTimestamp: loadedTimestamp.present
-        ? loadedTimestamp.value
-        : this.loadedTimestamp,
-    sourcesJson: sourcesJson ?? this.sourcesJson,
-  );
-  DbContactList copyWithCompanion(ContactListsCompanion data) {
-    return DbContactList(
-      pubKey: data.pubKey.present ? data.pubKey.value : this.pubKey,
-      contactsJson: data.contactsJson.present
-          ? data.contactsJson.value
-          : this.contactsJson,
-      contactRelaysJson: data.contactRelaysJson.present
-          ? data.contactRelaysJson.value
-          : this.contactRelaysJson,
-      petnamesJson: data.petnamesJson.present
-          ? data.petnamesJson.value
-          : this.petnamesJson,
-      followedTagsJson: data.followedTagsJson.present
-          ? data.followedTagsJson.value
-          : this.followedTagsJson,
-      followedCommunitiesJson: data.followedCommunitiesJson.present
-          ? data.followedCommunitiesJson.value
-          : this.followedCommunitiesJson,
-      followedEventsJson: data.followedEventsJson.present
-          ? data.followedEventsJson.value
-          : this.followedEventsJson,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      loadedTimestamp: data.loadedTimestamp.present
-          ? data.loadedTimestamp.value
-          : this.loadedTimestamp,
-      sourcesJson: data.sourcesJson.present
-          ? data.sourcesJson.value
-          : this.sourcesJson,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('DbContactList(')
-          ..write('pubKey: $pubKey, ')
-          ..write('contactsJson: $contactsJson, ')
-          ..write('contactRelaysJson: $contactRelaysJson, ')
-          ..write('petnamesJson: $petnamesJson, ')
-          ..write('followedTagsJson: $followedTagsJson, ')
-          ..write('followedCommunitiesJson: $followedCommunitiesJson, ')
-          ..write('followedEventsJson: $followedEventsJson, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('loadedTimestamp: $loadedTimestamp, ')
-          ..write('sourcesJson: $sourcesJson')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    pubKey,
-    contactsJson,
-    contactRelaysJson,
-    petnamesJson,
-    followedTagsJson,
-    followedCommunitiesJson,
-    followedEventsJson,
-    createdAt,
-    loadedTimestamp,
-    sourcesJson,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is DbContactList &&
-          other.pubKey == this.pubKey &&
-          other.contactsJson == this.contactsJson &&
-          other.contactRelaysJson == this.contactRelaysJson &&
-          other.petnamesJson == this.petnamesJson &&
-          other.followedTagsJson == this.followedTagsJson &&
-          other.followedCommunitiesJson == this.followedCommunitiesJson &&
-          other.followedEventsJson == this.followedEventsJson &&
-          other.createdAt == this.createdAt &&
-          other.loadedTimestamp == this.loadedTimestamp &&
-          other.sourcesJson == this.sourcesJson);
-}
-
-class ContactListsCompanion extends UpdateCompanion<DbContactList> {
-  final Value<String> pubKey;
-  final Value<String> contactsJson;
-  final Value<String> contactRelaysJson;
-  final Value<String> petnamesJson;
-  final Value<String> followedTagsJson;
-  final Value<String> followedCommunitiesJson;
-  final Value<String> followedEventsJson;
-  final Value<int> createdAt;
-  final Value<int?> loadedTimestamp;
-  final Value<String> sourcesJson;
-  final Value<int> rowid;
-  const ContactListsCompanion({
-    this.pubKey = const Value.absent(),
-    this.contactsJson = const Value.absent(),
-    this.contactRelaysJson = const Value.absent(),
-    this.petnamesJson = const Value.absent(),
-    this.followedTagsJson = const Value.absent(),
-    this.followedCommunitiesJson = const Value.absent(),
-    this.followedEventsJson = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.loadedTimestamp = const Value.absent(),
-    this.sourcesJson = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  ContactListsCompanion.insert({
-    required String pubKey,
-    required String contactsJson,
-    required String contactRelaysJson,
-    required String petnamesJson,
-    required String followedTagsJson,
-    required String followedCommunitiesJson,
-    required String followedEventsJson,
-    required int createdAt,
-    this.loadedTimestamp = const Value.absent(),
-    required String sourcesJson,
-    this.rowid = const Value.absent(),
-  }) : pubKey = Value(pubKey),
-       contactsJson = Value(contactsJson),
-       contactRelaysJson = Value(contactRelaysJson),
-       petnamesJson = Value(petnamesJson),
-       followedTagsJson = Value(followedTagsJson),
-       followedCommunitiesJson = Value(followedCommunitiesJson),
-       followedEventsJson = Value(followedEventsJson),
-       createdAt = Value(createdAt),
-       sourcesJson = Value(sourcesJson);
-  static Insertable<DbContactList> custom({
-    Expression<String>? pubKey,
-    Expression<String>? contactsJson,
-    Expression<String>? contactRelaysJson,
-    Expression<String>? petnamesJson,
-    Expression<String>? followedTagsJson,
-    Expression<String>? followedCommunitiesJson,
-    Expression<String>? followedEventsJson,
-    Expression<int>? createdAt,
-    Expression<int>? loadedTimestamp,
-    Expression<String>? sourcesJson,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (pubKey != null) 'pub_key': pubKey,
-      if (contactsJson != null) 'contacts_json': contactsJson,
-      if (contactRelaysJson != null) 'contact_relays_json': contactRelaysJson,
-      if (petnamesJson != null) 'petnames_json': petnamesJson,
-      if (followedTagsJson != null) 'followed_tags_json': followedTagsJson,
-      if (followedCommunitiesJson != null)
-        'followed_communities_json': followedCommunitiesJson,
-      if (followedEventsJson != null)
-        'followed_events_json': followedEventsJson,
-      if (createdAt != null) 'created_at': createdAt,
-      if (loadedTimestamp != null) 'loaded_timestamp': loadedTimestamp,
-      if (sourcesJson != null) 'sources_json': sourcesJson,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  ContactListsCompanion copyWith({
-    Value<String>? pubKey,
-    Value<String>? contactsJson,
-    Value<String>? contactRelaysJson,
-    Value<String>? petnamesJson,
-    Value<String>? followedTagsJson,
-    Value<String>? followedCommunitiesJson,
-    Value<String>? followedEventsJson,
-    Value<int>? createdAt,
-    Value<int?>? loadedTimestamp,
-    Value<String>? sourcesJson,
-    Value<int>? rowid,
-  }) {
-    return ContactListsCompanion(
-      pubKey: pubKey ?? this.pubKey,
-      contactsJson: contactsJson ?? this.contactsJson,
-      contactRelaysJson: contactRelaysJson ?? this.contactRelaysJson,
-      petnamesJson: petnamesJson ?? this.petnamesJson,
-      followedTagsJson: followedTagsJson ?? this.followedTagsJson,
-      followedCommunitiesJson:
-          followedCommunitiesJson ?? this.followedCommunitiesJson,
-      followedEventsJson: followedEventsJson ?? this.followedEventsJson,
-      createdAt: createdAt ?? this.createdAt,
-      loadedTimestamp: loadedTimestamp ?? this.loadedTimestamp,
-      sourcesJson: sourcesJson ?? this.sourcesJson,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (pubKey.present) {
-      map['pub_key'] = Variable<String>(pubKey.value);
-    }
-    if (contactsJson.present) {
-      map['contacts_json'] = Variable<String>(contactsJson.value);
-    }
-    if (contactRelaysJson.present) {
-      map['contact_relays_json'] = Variable<String>(contactRelaysJson.value);
-    }
-    if (petnamesJson.present) {
-      map['petnames_json'] = Variable<String>(petnamesJson.value);
-    }
-    if (followedTagsJson.present) {
-      map['followed_tags_json'] = Variable<String>(followedTagsJson.value);
-    }
-    if (followedCommunitiesJson.present) {
-      map['followed_communities_json'] = Variable<String>(
-        followedCommunitiesJson.value,
-      );
-    }
-    if (followedEventsJson.present) {
-      map['followed_events_json'] = Variable<String>(followedEventsJson.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<int>(createdAt.value);
-    }
-    if (loadedTimestamp.present) {
-      map['loaded_timestamp'] = Variable<int>(loadedTimestamp.value);
-    }
-    if (sourcesJson.present) {
-      map['sources_json'] = Variable<String>(sourcesJson.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('ContactListsCompanion(')
-          ..write('pubKey: $pubKey, ')
-          ..write('contactsJson: $contactsJson, ')
-          ..write('contactRelaysJson: $contactRelaysJson, ')
-          ..write('petnamesJson: $petnamesJson, ')
-          ..write('followedTagsJson: $followedTagsJson, ')
-          ..write('followedCommunitiesJson: $followedCommunitiesJson, ')
-          ..write('followedEventsJson: $followedEventsJson, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('loadedTimestamp: $loadedTimestamp, ')
-          ..write('sourcesJson: $sourcesJson, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $UserRelayListsTable extends UserRelayLists
     with TableInfo<$UserRelayListsTable, DbUserRelayList> {
   @override
@@ -3728,6 +2189,1304 @@ class FilterFetchedRangeRecordsCompanion
           ..write('relayUrl: $relayUrl, ')
           ..write('rangeStart: $rangeStart, ')
           ..write('rangeEnd: $rangeEnd, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $EventSourcesTableTable extends EventSourcesTable
+    with TableInfo<$EventSourcesTableTable, DbEventSource> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EventSourcesTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _eventIdMeta = const VerificationMeta(
+    'eventId',
+  );
+  @override
+  late final GeneratedColumn<String> eventId = GeneratedColumn<String>(
+    'event_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _relayUrlMeta = const VerificationMeta(
+    'relayUrl',
+  );
+  @override
+  late final GeneratedColumn<String> relayUrl = GeneratedColumn<String>(
+    'relay_url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [eventId, relayUrl];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'event_sources_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DbEventSource> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('event_id')) {
+      context.handle(
+        _eventIdMeta,
+        eventId.isAcceptableOrUnknown(data['event_id']!, _eventIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_eventIdMeta);
+    }
+    if (data.containsKey('relay_url')) {
+      context.handle(
+        _relayUrlMeta,
+        relayUrl.isAcceptableOrUnknown(data['relay_url']!, _relayUrlMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_relayUrlMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {eventId, relayUrl};
+  @override
+  DbEventSource map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DbEventSource(
+      eventId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}event_id'],
+      )!,
+      relayUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}relay_url'],
+      )!,
+    );
+  }
+
+  @override
+  $EventSourcesTableTable createAlias(String alias) {
+    return $EventSourcesTableTable(attachedDatabase, alias);
+  }
+}
+
+class DbEventSource extends DataClass implements Insertable<DbEventSource> {
+  final String eventId;
+  final String relayUrl;
+  const DbEventSource({required this.eventId, required this.relayUrl});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['event_id'] = Variable<String>(eventId);
+    map['relay_url'] = Variable<String>(relayUrl);
+    return map;
+  }
+
+  EventSourcesTableCompanion toCompanion(bool nullToAbsent) {
+    return EventSourcesTableCompanion(
+      eventId: Value(eventId),
+      relayUrl: Value(relayUrl),
+    );
+  }
+
+  factory DbEventSource.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DbEventSource(
+      eventId: serializer.fromJson<String>(json['eventId']),
+      relayUrl: serializer.fromJson<String>(json['relayUrl']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'eventId': serializer.toJson<String>(eventId),
+      'relayUrl': serializer.toJson<String>(relayUrl),
+    };
+  }
+
+  DbEventSource copyWith({String? eventId, String? relayUrl}) => DbEventSource(
+    eventId: eventId ?? this.eventId,
+    relayUrl: relayUrl ?? this.relayUrl,
+  );
+  DbEventSource copyWithCompanion(EventSourcesTableCompanion data) {
+    return DbEventSource(
+      eventId: data.eventId.present ? data.eventId.value : this.eventId,
+      relayUrl: data.relayUrl.present ? data.relayUrl.value : this.relayUrl,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DbEventSource(')
+          ..write('eventId: $eventId, ')
+          ..write('relayUrl: $relayUrl')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(eventId, relayUrl);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DbEventSource &&
+          other.eventId == this.eventId &&
+          other.relayUrl == this.relayUrl);
+}
+
+class EventSourcesTableCompanion extends UpdateCompanion<DbEventSource> {
+  final Value<String> eventId;
+  final Value<String> relayUrl;
+  final Value<int> rowid;
+  const EventSourcesTableCompanion({
+    this.eventId = const Value.absent(),
+    this.relayUrl = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  EventSourcesTableCompanion.insert({
+    required String eventId,
+    required String relayUrl,
+    this.rowid = const Value.absent(),
+  }) : eventId = Value(eventId),
+       relayUrl = Value(relayUrl);
+  static Insertable<DbEventSource> custom({
+    Expression<String>? eventId,
+    Expression<String>? relayUrl,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (eventId != null) 'event_id': eventId,
+      if (relayUrl != null) 'relay_url': relayUrl,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  EventSourcesTableCompanion copyWith({
+    Value<String>? eventId,
+    Value<String>? relayUrl,
+    Value<int>? rowid,
+  }) {
+    return EventSourcesTableCompanion(
+      eventId: eventId ?? this.eventId,
+      relayUrl: relayUrl ?? this.relayUrl,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (eventId.present) {
+      map['event_id'] = Variable<String>(eventId.value);
+    }
+    if (relayUrl.present) {
+      map['relay_url'] = Variable<String>(relayUrl.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EventSourcesTableCompanion(')
+          ..write('eventId: $eventId, ')
+          ..write('relayUrl: $relayUrl, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $EventDeliveryRecordsTableTable extends EventDeliveryRecordsTable
+    with TableInfo<$EventDeliveryRecordsTableTable, DbEventDeliveryRecord> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EventDeliveryRecordsTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _eventIdMeta = const VerificationMeta(
+    'eventId',
+  );
+  @override
+  late final GeneratedColumn<String> eventId = GeneratedColumn<String>(
+    'event_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _signedAtMeta = const VerificationMeta(
+    'signedAt',
+  );
+  @override
+  late final GeneratedColumn<int> signedAt = GeneratedColumn<int>(
+    'signed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<int> completedAt = GeneratedColumn<int>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _requiresNetworkSignerMeta =
+      const VerificationMeta('requiresNetworkSigner');
+  @override
+  late final GeneratedColumn<bool> requiresNetworkSigner =
+      GeneratedColumn<bool>(
+        'requires_network_signer',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("requires_network_signer" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    eventId,
+    status,
+    createdAt,
+    updatedAt,
+    signedAt,
+    completedAt,
+    requiresNetworkSigner,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'event_delivery_records_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DbEventDeliveryRecord> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('event_id')) {
+      context.handle(
+        _eventIdMeta,
+        eventId.isAcceptableOrUnknown(data['event_id']!, _eventIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_eventIdMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('signed_at')) {
+      context.handle(
+        _signedAtMeta,
+        signedAt.isAcceptableOrUnknown(data['signed_at']!, _signedAtMeta),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('requires_network_signer')) {
+      context.handle(
+        _requiresNetworkSignerMeta,
+        requiresNetworkSigner.isAcceptableOrUnknown(
+          data['requires_network_signer']!,
+          _requiresNetworkSignerMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {eventId};
+  @override
+  DbEventDeliveryRecord map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DbEventDeliveryRecord(
+      eventId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}event_id'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      signedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}signed_at'],
+      ),
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}completed_at'],
+      ),
+      requiresNetworkSigner: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}requires_network_signer'],
+      )!,
+    );
+  }
+
+  @override
+  $EventDeliveryRecordsTableTable createAlias(String alias) {
+    return $EventDeliveryRecordsTableTable(attachedDatabase, alias);
+  }
+}
+
+class DbEventDeliveryRecord extends DataClass
+    implements Insertable<DbEventDeliveryRecord> {
+  final String eventId;
+  final String status;
+  final int createdAt;
+  final int updatedAt;
+  final int? signedAt;
+  final int? completedAt;
+  final bool requiresNetworkSigner;
+  const DbEventDeliveryRecord({
+    required this.eventId,
+    required this.status,
+    required this.createdAt,
+    required this.updatedAt,
+    this.signedAt,
+    this.completedAt,
+    required this.requiresNetworkSigner,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['event_id'] = Variable<String>(eventId);
+    map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<int>(createdAt);
+    map['updated_at'] = Variable<int>(updatedAt);
+    if (!nullToAbsent || signedAt != null) {
+      map['signed_at'] = Variable<int>(signedAt);
+    }
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<int>(completedAt);
+    }
+    map['requires_network_signer'] = Variable<bool>(requiresNetworkSigner);
+    return map;
+  }
+
+  EventDeliveryRecordsTableCompanion toCompanion(bool nullToAbsent) {
+    return EventDeliveryRecordsTableCompanion(
+      eventId: Value(eventId),
+      status: Value(status),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      signedAt: signedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(signedAt),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      requiresNetworkSigner: Value(requiresNetworkSigner),
+    );
+  }
+
+  factory DbEventDeliveryRecord.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DbEventDeliveryRecord(
+      eventId: serializer.fromJson<String>(json['eventId']),
+      status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
+      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+      signedAt: serializer.fromJson<int?>(json['signedAt']),
+      completedAt: serializer.fromJson<int?>(json['completedAt']),
+      requiresNetworkSigner: serializer.fromJson<bool>(
+        json['requiresNetworkSigner'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'eventId': serializer.toJson<String>(eventId),
+      'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<int>(createdAt),
+      'updatedAt': serializer.toJson<int>(updatedAt),
+      'signedAt': serializer.toJson<int?>(signedAt),
+      'completedAt': serializer.toJson<int?>(completedAt),
+      'requiresNetworkSigner': serializer.toJson<bool>(requiresNetworkSigner),
+    };
+  }
+
+  DbEventDeliveryRecord copyWith({
+    String? eventId,
+    String? status,
+    int? createdAt,
+    int? updatedAt,
+    Value<int?> signedAt = const Value.absent(),
+    Value<int?> completedAt = const Value.absent(),
+    bool? requiresNetworkSigner,
+  }) => DbEventDeliveryRecord(
+    eventId: eventId ?? this.eventId,
+    status: status ?? this.status,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    signedAt: signedAt.present ? signedAt.value : this.signedAt,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    requiresNetworkSigner: requiresNetworkSigner ?? this.requiresNetworkSigner,
+  );
+  DbEventDeliveryRecord copyWithCompanion(
+    EventDeliveryRecordsTableCompanion data,
+  ) {
+    return DbEventDeliveryRecord(
+      eventId: data.eventId.present ? data.eventId.value : this.eventId,
+      status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      signedAt: data.signedAt.present ? data.signedAt.value : this.signedAt,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+      requiresNetworkSigner: data.requiresNetworkSigner.present
+          ? data.requiresNetworkSigner.value
+          : this.requiresNetworkSigner,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DbEventDeliveryRecord(')
+          ..write('eventId: $eventId, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('signedAt: $signedAt, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('requiresNetworkSigner: $requiresNetworkSigner')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    eventId,
+    status,
+    createdAt,
+    updatedAt,
+    signedAt,
+    completedAt,
+    requiresNetworkSigner,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DbEventDeliveryRecord &&
+          other.eventId == this.eventId &&
+          other.status == this.status &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.signedAt == this.signedAt &&
+          other.completedAt == this.completedAt &&
+          other.requiresNetworkSigner == this.requiresNetworkSigner);
+}
+
+class EventDeliveryRecordsTableCompanion
+    extends UpdateCompanion<DbEventDeliveryRecord> {
+  final Value<String> eventId;
+  final Value<String> status;
+  final Value<int> createdAt;
+  final Value<int> updatedAt;
+  final Value<int?> signedAt;
+  final Value<int?> completedAt;
+  final Value<bool> requiresNetworkSigner;
+  final Value<int> rowid;
+  const EventDeliveryRecordsTableCompanion({
+    this.eventId = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.signedAt = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.requiresNetworkSigner = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  EventDeliveryRecordsTableCompanion.insert({
+    required String eventId,
+    required String status,
+    required int createdAt,
+    required int updatedAt,
+    this.signedAt = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.requiresNetworkSigner = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : eventId = Value(eventId),
+       status = Value(status),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<DbEventDeliveryRecord> custom({
+    Expression<String>? eventId,
+    Expression<String>? status,
+    Expression<int>? createdAt,
+    Expression<int>? updatedAt,
+    Expression<int>? signedAt,
+    Expression<int>? completedAt,
+    Expression<bool>? requiresNetworkSigner,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (eventId != null) 'event_id': eventId,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (signedAt != null) 'signed_at': signedAt,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (requiresNetworkSigner != null)
+        'requires_network_signer': requiresNetworkSigner,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  EventDeliveryRecordsTableCompanion copyWith({
+    Value<String>? eventId,
+    Value<String>? status,
+    Value<int>? createdAt,
+    Value<int>? updatedAt,
+    Value<int?>? signedAt,
+    Value<int?>? completedAt,
+    Value<bool>? requiresNetworkSigner,
+    Value<int>? rowid,
+  }) {
+    return EventDeliveryRecordsTableCompanion(
+      eventId: eventId ?? this.eventId,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      signedAt: signedAt ?? this.signedAt,
+      completedAt: completedAt ?? this.completedAt,
+      requiresNetworkSigner:
+          requiresNetworkSigner ?? this.requiresNetworkSigner,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (eventId.present) {
+      map['event_id'] = Variable<String>(eventId.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
+    if (signedAt.present) {
+      map['signed_at'] = Variable<int>(signedAt.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<int>(completedAt.value);
+    }
+    if (requiresNetworkSigner.present) {
+      map['requires_network_signer'] = Variable<bool>(
+        requiresNetworkSigner.value,
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EventDeliveryRecordsTableCompanion(')
+          ..write('eventId: $eventId, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('signedAt: $signedAt, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('requiresNetworkSigner: $requiresNetworkSigner, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RelayDeliveryTargetsTableTable extends RelayDeliveryTargetsTable
+    with TableInfo<$RelayDeliveryTargetsTableTable, DbRelayDeliveryTarget> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RelayDeliveryTargetsTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _eventIdMeta = const VerificationMeta(
+    'eventId',
+  );
+  @override
+  late final GeneratedColumn<String> eventId = GeneratedColumn<String>(
+    'event_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _relayUrlMeta = const VerificationMeta(
+    'relayUrl',
+  );
+  @override
+  late final GeneratedColumn<String> relayUrl = GeneratedColumn<String>(
+    'relay_url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _reasonMeta = const VerificationMeta('reason');
+  @override
+  late final GeneratedColumn<String> reason = GeneratedColumn<String>(
+    'reason',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _stateMeta = const VerificationMeta('state');
+  @override
+  late final GeneratedColumn<String> state = GeneratedColumn<String>(
+    'state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _attemptCountMeta = const VerificationMeta(
+    'attemptCount',
+  );
+  @override
+  late final GeneratedColumn<int> attemptCount = GeneratedColumn<int>(
+    'attempt_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _lastAttemptAtMeta = const VerificationMeta(
+    'lastAttemptAt',
+  );
+  @override
+  late final GeneratedColumn<int> lastAttemptAt = GeneratedColumn<int>(
+    'last_attempt_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nextRetryAtMeta = const VerificationMeta(
+    'nextRetryAt',
+  );
+  @override
+  late final GeneratedColumn<int> nextRetryAt = GeneratedColumn<int>(
+    'next_retry_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastErrorMeta = const VerificationMeta(
+    'lastError',
+  );
+  @override
+  late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
+    'last_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastOkMessageMeta = const VerificationMeta(
+    'lastOkMessage',
+  );
+  @override
+  late final GeneratedColumn<String> lastOkMessage = GeneratedColumn<String>(
+    'last_ok_message',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    eventId,
+    relayUrl,
+    reason,
+    state,
+    attemptCount,
+    lastAttemptAt,
+    nextRetryAt,
+    lastError,
+    lastOkMessage,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'relay_delivery_targets_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DbRelayDeliveryTarget> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('event_id')) {
+      context.handle(
+        _eventIdMeta,
+        eventId.isAcceptableOrUnknown(data['event_id']!, _eventIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_eventIdMeta);
+    }
+    if (data.containsKey('relay_url')) {
+      context.handle(
+        _relayUrlMeta,
+        relayUrl.isAcceptableOrUnknown(data['relay_url']!, _relayUrlMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_relayUrlMeta);
+    }
+    if (data.containsKey('reason')) {
+      context.handle(
+        _reasonMeta,
+        reason.isAcceptableOrUnknown(data['reason']!, _reasonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_reasonMeta);
+    }
+    if (data.containsKey('state')) {
+      context.handle(
+        _stateMeta,
+        state.isAcceptableOrUnknown(data['state']!, _stateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_stateMeta);
+    }
+    if (data.containsKey('attempt_count')) {
+      context.handle(
+        _attemptCountMeta,
+        attemptCount.isAcceptableOrUnknown(
+          data['attempt_count']!,
+          _attemptCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_attempt_at')) {
+      context.handle(
+        _lastAttemptAtMeta,
+        lastAttemptAt.isAcceptableOrUnknown(
+          data['last_attempt_at']!,
+          _lastAttemptAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('next_retry_at')) {
+      context.handle(
+        _nextRetryAtMeta,
+        nextRetryAt.isAcceptableOrUnknown(
+          data['next_retry_at']!,
+          _nextRetryAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_error')) {
+      context.handle(
+        _lastErrorMeta,
+        lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta),
+      );
+    }
+    if (data.containsKey('last_ok_message')) {
+      context.handle(
+        _lastOkMessageMeta,
+        lastOkMessage.isAcceptableOrUnknown(
+          data['last_ok_message']!,
+          _lastOkMessageMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {eventId, relayUrl};
+  @override
+  DbRelayDeliveryTarget map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DbRelayDeliveryTarget(
+      eventId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}event_id'],
+      )!,
+      relayUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}relay_url'],
+      )!,
+      reason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reason'],
+      )!,
+      state: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}state'],
+      )!,
+      attemptCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}attempt_count'],
+      )!,
+      lastAttemptAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}last_attempt_at'],
+      ),
+      nextRetryAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}next_retry_at'],
+      ),
+      lastError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_error'],
+      ),
+      lastOkMessage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_ok_message'],
+      ),
+    );
+  }
+
+  @override
+  $RelayDeliveryTargetsTableTable createAlias(String alias) {
+    return $RelayDeliveryTargetsTableTable(attachedDatabase, alias);
+  }
+}
+
+class DbRelayDeliveryTarget extends DataClass
+    implements Insertable<DbRelayDeliveryTarget> {
+  final String eventId;
+  final String relayUrl;
+  final String reason;
+  final String state;
+  final int attemptCount;
+  final int? lastAttemptAt;
+  final int? nextRetryAt;
+  final String? lastError;
+  final String? lastOkMessage;
+  const DbRelayDeliveryTarget({
+    required this.eventId,
+    required this.relayUrl,
+    required this.reason,
+    required this.state,
+    required this.attemptCount,
+    this.lastAttemptAt,
+    this.nextRetryAt,
+    this.lastError,
+    this.lastOkMessage,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['event_id'] = Variable<String>(eventId);
+    map['relay_url'] = Variable<String>(relayUrl);
+    map['reason'] = Variable<String>(reason);
+    map['state'] = Variable<String>(state);
+    map['attempt_count'] = Variable<int>(attemptCount);
+    if (!nullToAbsent || lastAttemptAt != null) {
+      map['last_attempt_at'] = Variable<int>(lastAttemptAt);
+    }
+    if (!nullToAbsent || nextRetryAt != null) {
+      map['next_retry_at'] = Variable<int>(nextRetryAt);
+    }
+    if (!nullToAbsent || lastError != null) {
+      map['last_error'] = Variable<String>(lastError);
+    }
+    if (!nullToAbsent || lastOkMessage != null) {
+      map['last_ok_message'] = Variable<String>(lastOkMessage);
+    }
+    return map;
+  }
+
+  RelayDeliveryTargetsTableCompanion toCompanion(bool nullToAbsent) {
+    return RelayDeliveryTargetsTableCompanion(
+      eventId: Value(eventId),
+      relayUrl: Value(relayUrl),
+      reason: Value(reason),
+      state: Value(state),
+      attemptCount: Value(attemptCount),
+      lastAttemptAt: lastAttemptAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastAttemptAt),
+      nextRetryAt: nextRetryAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextRetryAt),
+      lastError: lastError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastError),
+      lastOkMessage: lastOkMessage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastOkMessage),
+    );
+  }
+
+  factory DbRelayDeliveryTarget.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DbRelayDeliveryTarget(
+      eventId: serializer.fromJson<String>(json['eventId']),
+      relayUrl: serializer.fromJson<String>(json['relayUrl']),
+      reason: serializer.fromJson<String>(json['reason']),
+      state: serializer.fromJson<String>(json['state']),
+      attemptCount: serializer.fromJson<int>(json['attemptCount']),
+      lastAttemptAt: serializer.fromJson<int?>(json['lastAttemptAt']),
+      nextRetryAt: serializer.fromJson<int?>(json['nextRetryAt']),
+      lastError: serializer.fromJson<String?>(json['lastError']),
+      lastOkMessage: serializer.fromJson<String?>(json['lastOkMessage']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'eventId': serializer.toJson<String>(eventId),
+      'relayUrl': serializer.toJson<String>(relayUrl),
+      'reason': serializer.toJson<String>(reason),
+      'state': serializer.toJson<String>(state),
+      'attemptCount': serializer.toJson<int>(attemptCount),
+      'lastAttemptAt': serializer.toJson<int?>(lastAttemptAt),
+      'nextRetryAt': serializer.toJson<int?>(nextRetryAt),
+      'lastError': serializer.toJson<String?>(lastError),
+      'lastOkMessage': serializer.toJson<String?>(lastOkMessage),
+    };
+  }
+
+  DbRelayDeliveryTarget copyWith({
+    String? eventId,
+    String? relayUrl,
+    String? reason,
+    String? state,
+    int? attemptCount,
+    Value<int?> lastAttemptAt = const Value.absent(),
+    Value<int?> nextRetryAt = const Value.absent(),
+    Value<String?> lastError = const Value.absent(),
+    Value<String?> lastOkMessage = const Value.absent(),
+  }) => DbRelayDeliveryTarget(
+    eventId: eventId ?? this.eventId,
+    relayUrl: relayUrl ?? this.relayUrl,
+    reason: reason ?? this.reason,
+    state: state ?? this.state,
+    attemptCount: attemptCount ?? this.attemptCount,
+    lastAttemptAt: lastAttemptAt.present
+        ? lastAttemptAt.value
+        : this.lastAttemptAt,
+    nextRetryAt: nextRetryAt.present ? nextRetryAt.value : this.nextRetryAt,
+    lastError: lastError.present ? lastError.value : this.lastError,
+    lastOkMessage: lastOkMessage.present
+        ? lastOkMessage.value
+        : this.lastOkMessage,
+  );
+  DbRelayDeliveryTarget copyWithCompanion(
+    RelayDeliveryTargetsTableCompanion data,
+  ) {
+    return DbRelayDeliveryTarget(
+      eventId: data.eventId.present ? data.eventId.value : this.eventId,
+      relayUrl: data.relayUrl.present ? data.relayUrl.value : this.relayUrl,
+      reason: data.reason.present ? data.reason.value : this.reason,
+      state: data.state.present ? data.state.value : this.state,
+      attemptCount: data.attemptCount.present
+          ? data.attemptCount.value
+          : this.attemptCount,
+      lastAttemptAt: data.lastAttemptAt.present
+          ? data.lastAttemptAt.value
+          : this.lastAttemptAt,
+      nextRetryAt: data.nextRetryAt.present
+          ? data.nextRetryAt.value
+          : this.nextRetryAt,
+      lastError: data.lastError.present ? data.lastError.value : this.lastError,
+      lastOkMessage: data.lastOkMessage.present
+          ? data.lastOkMessage.value
+          : this.lastOkMessage,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DbRelayDeliveryTarget(')
+          ..write('eventId: $eventId, ')
+          ..write('relayUrl: $relayUrl, ')
+          ..write('reason: $reason, ')
+          ..write('state: $state, ')
+          ..write('attemptCount: $attemptCount, ')
+          ..write('lastAttemptAt: $lastAttemptAt, ')
+          ..write('nextRetryAt: $nextRetryAt, ')
+          ..write('lastError: $lastError, ')
+          ..write('lastOkMessage: $lastOkMessage')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    eventId,
+    relayUrl,
+    reason,
+    state,
+    attemptCount,
+    lastAttemptAt,
+    nextRetryAt,
+    lastError,
+    lastOkMessage,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DbRelayDeliveryTarget &&
+          other.eventId == this.eventId &&
+          other.relayUrl == this.relayUrl &&
+          other.reason == this.reason &&
+          other.state == this.state &&
+          other.attemptCount == this.attemptCount &&
+          other.lastAttemptAt == this.lastAttemptAt &&
+          other.nextRetryAt == this.nextRetryAt &&
+          other.lastError == this.lastError &&
+          other.lastOkMessage == this.lastOkMessage);
+}
+
+class RelayDeliveryTargetsTableCompanion
+    extends UpdateCompanion<DbRelayDeliveryTarget> {
+  final Value<String> eventId;
+  final Value<String> relayUrl;
+  final Value<String> reason;
+  final Value<String> state;
+  final Value<int> attemptCount;
+  final Value<int?> lastAttemptAt;
+  final Value<int?> nextRetryAt;
+  final Value<String?> lastError;
+  final Value<String?> lastOkMessage;
+  final Value<int> rowid;
+  const RelayDeliveryTargetsTableCompanion({
+    this.eventId = const Value.absent(),
+    this.relayUrl = const Value.absent(),
+    this.reason = const Value.absent(),
+    this.state = const Value.absent(),
+    this.attemptCount = const Value.absent(),
+    this.lastAttemptAt = const Value.absent(),
+    this.nextRetryAt = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.lastOkMessage = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RelayDeliveryTargetsTableCompanion.insert({
+    required String eventId,
+    required String relayUrl,
+    required String reason,
+    required String state,
+    this.attemptCount = const Value.absent(),
+    this.lastAttemptAt = const Value.absent(),
+    this.nextRetryAt = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.lastOkMessage = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : eventId = Value(eventId),
+       relayUrl = Value(relayUrl),
+       reason = Value(reason),
+       state = Value(state);
+  static Insertable<DbRelayDeliveryTarget> custom({
+    Expression<String>? eventId,
+    Expression<String>? relayUrl,
+    Expression<String>? reason,
+    Expression<String>? state,
+    Expression<int>? attemptCount,
+    Expression<int>? lastAttemptAt,
+    Expression<int>? nextRetryAt,
+    Expression<String>? lastError,
+    Expression<String>? lastOkMessage,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (eventId != null) 'event_id': eventId,
+      if (relayUrl != null) 'relay_url': relayUrl,
+      if (reason != null) 'reason': reason,
+      if (state != null) 'state': state,
+      if (attemptCount != null) 'attempt_count': attemptCount,
+      if (lastAttemptAt != null) 'last_attempt_at': lastAttemptAt,
+      if (nextRetryAt != null) 'next_retry_at': nextRetryAt,
+      if (lastError != null) 'last_error': lastError,
+      if (lastOkMessage != null) 'last_ok_message': lastOkMessage,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RelayDeliveryTargetsTableCompanion copyWith({
+    Value<String>? eventId,
+    Value<String>? relayUrl,
+    Value<String>? reason,
+    Value<String>? state,
+    Value<int>? attemptCount,
+    Value<int?>? lastAttemptAt,
+    Value<int?>? nextRetryAt,
+    Value<String?>? lastError,
+    Value<String?>? lastOkMessage,
+    Value<int>? rowid,
+  }) {
+    return RelayDeliveryTargetsTableCompanion(
+      eventId: eventId ?? this.eventId,
+      relayUrl: relayUrl ?? this.relayUrl,
+      reason: reason ?? this.reason,
+      state: state ?? this.state,
+      attemptCount: attemptCount ?? this.attemptCount,
+      lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
+      nextRetryAt: nextRetryAt ?? this.nextRetryAt,
+      lastError: lastError ?? this.lastError,
+      lastOkMessage: lastOkMessage ?? this.lastOkMessage,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (eventId.present) {
+      map['event_id'] = Variable<String>(eventId.value);
+    }
+    if (relayUrl.present) {
+      map['relay_url'] = Variable<String>(relayUrl.value);
+    }
+    if (reason.present) {
+      map['reason'] = Variable<String>(reason.value);
+    }
+    if (state.present) {
+      map['state'] = Variable<String>(state.value);
+    }
+    if (attemptCount.present) {
+      map['attempt_count'] = Variable<int>(attemptCount.value);
+    }
+    if (lastAttemptAt.present) {
+      map['last_attempt_at'] = Variable<int>(lastAttemptAt.value);
+    }
+    if (nextRetryAt.present) {
+      map['next_retry_at'] = Variable<int>(nextRetryAt.value);
+    }
+    if (lastError.present) {
+      map['last_error'] = Variable<String>(lastError.value);
+    }
+    if (lastOkMessage.present) {
+      map['last_ok_message'] = Variable<String>(lastOkMessage.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RelayDeliveryTargetsTableCompanion(')
+          ..write('eventId: $eventId, ')
+          ..write('relayUrl: $relayUrl, ')
+          ..write('reason: $reason, ')
+          ..write('state: $state, ')
+          ..write('attemptCount: $attemptCount, ')
+          ..write('lastAttemptAt: $lastAttemptAt, ')
+          ..write('nextRetryAt: $nextRetryAt, ')
+          ..write('lastError: $lastError, ')
+          ..write('lastOkMessage: $lastOkMessage, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -6967,13 +6726,17 @@ abstract class _$NdkCacheDatabase extends GeneratedDatabase {
   _$NdkCacheDatabase(QueryExecutor e) : super(e);
   $NdkCacheDatabaseManager get managers => $NdkCacheDatabaseManager(this);
   late final $EventsTable events = $EventsTable(this);
-  late final $MetadatasTable metadatas = $MetadatasTable(this);
-  late final $ContactListsTable contactLists = $ContactListsTable(this);
   late final $UserRelayListsTable userRelayLists = $UserRelayListsTable(this);
   late final $RelaySetsTable relaySets = $RelaySetsTable(this);
   late final $Nip05sTable nip05s = $Nip05sTable(this);
   late final $FilterFetchedRangeRecordsTable filterFetchedRangeRecords =
       $FilterFetchedRangeRecordsTable(this);
+  late final $EventSourcesTableTable eventSourcesTable =
+      $EventSourcesTableTable(this);
+  late final $EventDeliveryRecordsTableTable eventDeliveryRecordsTable =
+      $EventDeliveryRecordsTableTable(this);
+  late final $RelayDeliveryTargetsTableTable relayDeliveryTargetsTable =
+      $RelayDeliveryTargetsTableTable(this);
   late final $CashuProofsTable cashuProofs = $CashuProofsTable(this);
   late final $CashuKeysetsTable cashuKeysets = $CashuKeysetsTable(this);
   late final $CashuMintInfosTable cashuMintInfos = $CashuMintInfosTable(this);
@@ -6989,12 +6752,13 @@ abstract class _$NdkCacheDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     events,
-    metadatas,
-    contactLists,
     userRelayLists,
     relaySets,
     nip05s,
     filterFetchedRangeRecords,
+    eventSourcesTable,
+    eventDeliveryRecordsTable,
+    relayDeliveryTargetsTable,
     cashuProofs,
     cashuKeysets,
     cashuMintInfos,
@@ -7275,721 +7039,6 @@ typedef $$EventsTableProcessedTableManager =
       $$EventsTableUpdateCompanionBuilder,
       (DbEvent, BaseReferences<_$NdkCacheDatabase, $EventsTable, DbEvent>),
       DbEvent,
-      PrefetchHooks Function()
-    >;
-typedef $$MetadatasTableCreateCompanionBuilder =
-    MetadatasCompanion Function({
-      required String pubKey,
-      Value<String?> name,
-      Value<String?> displayName,
-      Value<String?> picture,
-      Value<String?> banner,
-      Value<String?> website,
-      Value<String?> about,
-      Value<String?> nip05,
-      Value<String?> lud16,
-      Value<String?> lud06,
-      Value<int?> updatedAt,
-      Value<int?> refreshedTimestamp,
-      required String sourcesJson,
-      Value<String> tagsJson,
-      Value<String?> rawContentJson,
-      Value<int> rowid,
-    });
-typedef $$MetadatasTableUpdateCompanionBuilder =
-    MetadatasCompanion Function({
-      Value<String> pubKey,
-      Value<String?> name,
-      Value<String?> displayName,
-      Value<String?> picture,
-      Value<String?> banner,
-      Value<String?> website,
-      Value<String?> about,
-      Value<String?> nip05,
-      Value<String?> lud16,
-      Value<String?> lud06,
-      Value<int?> updatedAt,
-      Value<int?> refreshedTimestamp,
-      Value<String> sourcesJson,
-      Value<String> tagsJson,
-      Value<String?> rawContentJson,
-      Value<int> rowid,
-    });
-
-class $$MetadatasTableFilterComposer
-    extends Composer<_$NdkCacheDatabase, $MetadatasTable> {
-  $$MetadatasTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get pubKey => $composableBuilder(
-    column: $table.pubKey,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get displayName => $composableBuilder(
-    column: $table.displayName,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get picture => $composableBuilder(
-    column: $table.picture,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get banner => $composableBuilder(
-    column: $table.banner,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get website => $composableBuilder(
-    column: $table.website,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get about => $composableBuilder(
-    column: $table.about,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get nip05 => $composableBuilder(
-    column: $table.nip05,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get lud16 => $composableBuilder(
-    column: $table.lud16,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get lud06 => $composableBuilder(
-    column: $table.lud06,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get refreshedTimestamp => $composableBuilder(
-    column: $table.refreshedTimestamp,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get sourcesJson => $composableBuilder(
-    column: $table.sourcesJson,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get tagsJson => $composableBuilder(
-    column: $table.tagsJson,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get rawContentJson => $composableBuilder(
-    column: $table.rawContentJson,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$MetadatasTableOrderingComposer
-    extends Composer<_$NdkCacheDatabase, $MetadatasTable> {
-  $$MetadatasTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get pubKey => $composableBuilder(
-    column: $table.pubKey,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get displayName => $composableBuilder(
-    column: $table.displayName,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get picture => $composableBuilder(
-    column: $table.picture,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get banner => $composableBuilder(
-    column: $table.banner,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get website => $composableBuilder(
-    column: $table.website,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get about => $composableBuilder(
-    column: $table.about,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get nip05 => $composableBuilder(
-    column: $table.nip05,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get lud16 => $composableBuilder(
-    column: $table.lud16,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get lud06 => $composableBuilder(
-    column: $table.lud06,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get refreshedTimestamp => $composableBuilder(
-    column: $table.refreshedTimestamp,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get sourcesJson => $composableBuilder(
-    column: $table.sourcesJson,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get tagsJson => $composableBuilder(
-    column: $table.tagsJson,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get rawContentJson => $composableBuilder(
-    column: $table.rawContentJson,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$MetadatasTableAnnotationComposer
-    extends Composer<_$NdkCacheDatabase, $MetadatasTable> {
-  $$MetadatasTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get pubKey =>
-      $composableBuilder(column: $table.pubKey, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<String> get displayName => $composableBuilder(
-    column: $table.displayName,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get picture =>
-      $composableBuilder(column: $table.picture, builder: (column) => column);
-
-  GeneratedColumn<String> get banner =>
-      $composableBuilder(column: $table.banner, builder: (column) => column);
-
-  GeneratedColumn<String> get website =>
-      $composableBuilder(column: $table.website, builder: (column) => column);
-
-  GeneratedColumn<String> get about =>
-      $composableBuilder(column: $table.about, builder: (column) => column);
-
-  GeneratedColumn<String> get nip05 =>
-      $composableBuilder(column: $table.nip05, builder: (column) => column);
-
-  GeneratedColumn<String> get lud16 =>
-      $composableBuilder(column: $table.lud16, builder: (column) => column);
-
-  GeneratedColumn<String> get lud06 =>
-      $composableBuilder(column: $table.lud06, builder: (column) => column);
-
-  GeneratedColumn<int> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<int> get refreshedTimestamp => $composableBuilder(
-    column: $table.refreshedTimestamp,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get sourcesJson => $composableBuilder(
-    column: $table.sourcesJson,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get tagsJson =>
-      $composableBuilder(column: $table.tagsJson, builder: (column) => column);
-
-  GeneratedColumn<String> get rawContentJson => $composableBuilder(
-    column: $table.rawContentJson,
-    builder: (column) => column,
-  );
-}
-
-class $$MetadatasTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $MetadatasTable,
-          DbMetadata,
-          $$MetadatasTableFilterComposer,
-          $$MetadatasTableOrderingComposer,
-          $$MetadatasTableAnnotationComposer,
-          $$MetadatasTableCreateCompanionBuilder,
-          $$MetadatasTableUpdateCompanionBuilder,
-          (
-            DbMetadata,
-            BaseReferences<_$NdkCacheDatabase, $MetadatasTable, DbMetadata>,
-          ),
-          DbMetadata,
-          PrefetchHooks Function()
-        > {
-  $$MetadatasTableTableManager(_$NdkCacheDatabase db, $MetadatasTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$MetadatasTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$MetadatasTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$MetadatasTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> pubKey = const Value.absent(),
-                Value<String?> name = const Value.absent(),
-                Value<String?> displayName = const Value.absent(),
-                Value<String?> picture = const Value.absent(),
-                Value<String?> banner = const Value.absent(),
-                Value<String?> website = const Value.absent(),
-                Value<String?> about = const Value.absent(),
-                Value<String?> nip05 = const Value.absent(),
-                Value<String?> lud16 = const Value.absent(),
-                Value<String?> lud06 = const Value.absent(),
-                Value<int?> updatedAt = const Value.absent(),
-                Value<int?> refreshedTimestamp = const Value.absent(),
-                Value<String> sourcesJson = const Value.absent(),
-                Value<String> tagsJson = const Value.absent(),
-                Value<String?> rawContentJson = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => MetadatasCompanion(
-                pubKey: pubKey,
-                name: name,
-                displayName: displayName,
-                picture: picture,
-                banner: banner,
-                website: website,
-                about: about,
-                nip05: nip05,
-                lud16: lud16,
-                lud06: lud06,
-                updatedAt: updatedAt,
-                refreshedTimestamp: refreshedTimestamp,
-                sourcesJson: sourcesJson,
-                tagsJson: tagsJson,
-                rawContentJson: rawContentJson,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String pubKey,
-                Value<String?> name = const Value.absent(),
-                Value<String?> displayName = const Value.absent(),
-                Value<String?> picture = const Value.absent(),
-                Value<String?> banner = const Value.absent(),
-                Value<String?> website = const Value.absent(),
-                Value<String?> about = const Value.absent(),
-                Value<String?> nip05 = const Value.absent(),
-                Value<String?> lud16 = const Value.absent(),
-                Value<String?> lud06 = const Value.absent(),
-                Value<int?> updatedAt = const Value.absent(),
-                Value<int?> refreshedTimestamp = const Value.absent(),
-                required String sourcesJson,
-                Value<String> tagsJson = const Value.absent(),
-                Value<String?> rawContentJson = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => MetadatasCompanion.insert(
-                pubKey: pubKey,
-                name: name,
-                displayName: displayName,
-                picture: picture,
-                banner: banner,
-                website: website,
-                about: about,
-                nip05: nip05,
-                lud16: lud16,
-                lud06: lud06,
-                updatedAt: updatedAt,
-                refreshedTimestamp: refreshedTimestamp,
-                sourcesJson: sourcesJson,
-                tagsJson: tagsJson,
-                rawContentJson: rawContentJson,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$MetadatasTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $MetadatasTable,
-      DbMetadata,
-      $$MetadatasTableFilterComposer,
-      $$MetadatasTableOrderingComposer,
-      $$MetadatasTableAnnotationComposer,
-      $$MetadatasTableCreateCompanionBuilder,
-      $$MetadatasTableUpdateCompanionBuilder,
-      (
-        DbMetadata,
-        BaseReferences<_$NdkCacheDatabase, $MetadatasTable, DbMetadata>,
-      ),
-      DbMetadata,
-      PrefetchHooks Function()
-    >;
-typedef $$ContactListsTableCreateCompanionBuilder =
-    ContactListsCompanion Function({
-      required String pubKey,
-      required String contactsJson,
-      required String contactRelaysJson,
-      required String petnamesJson,
-      required String followedTagsJson,
-      required String followedCommunitiesJson,
-      required String followedEventsJson,
-      required int createdAt,
-      Value<int?> loadedTimestamp,
-      required String sourcesJson,
-      Value<int> rowid,
-    });
-typedef $$ContactListsTableUpdateCompanionBuilder =
-    ContactListsCompanion Function({
-      Value<String> pubKey,
-      Value<String> contactsJson,
-      Value<String> contactRelaysJson,
-      Value<String> petnamesJson,
-      Value<String> followedTagsJson,
-      Value<String> followedCommunitiesJson,
-      Value<String> followedEventsJson,
-      Value<int> createdAt,
-      Value<int?> loadedTimestamp,
-      Value<String> sourcesJson,
-      Value<int> rowid,
-    });
-
-class $$ContactListsTableFilterComposer
-    extends Composer<_$NdkCacheDatabase, $ContactListsTable> {
-  $$ContactListsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get pubKey => $composableBuilder(
-    column: $table.pubKey,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get contactsJson => $composableBuilder(
-    column: $table.contactsJson,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get contactRelaysJson => $composableBuilder(
-    column: $table.contactRelaysJson,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get petnamesJson => $composableBuilder(
-    column: $table.petnamesJson,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get followedTagsJson => $composableBuilder(
-    column: $table.followedTagsJson,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get followedCommunitiesJson => $composableBuilder(
-    column: $table.followedCommunitiesJson,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get followedEventsJson => $composableBuilder(
-    column: $table.followedEventsJson,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get loadedTimestamp => $composableBuilder(
-    column: $table.loadedTimestamp,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get sourcesJson => $composableBuilder(
-    column: $table.sourcesJson,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$ContactListsTableOrderingComposer
-    extends Composer<_$NdkCacheDatabase, $ContactListsTable> {
-  $$ContactListsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get pubKey => $composableBuilder(
-    column: $table.pubKey,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get contactsJson => $composableBuilder(
-    column: $table.contactsJson,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get contactRelaysJson => $composableBuilder(
-    column: $table.contactRelaysJson,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get petnamesJson => $composableBuilder(
-    column: $table.petnamesJson,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get followedTagsJson => $composableBuilder(
-    column: $table.followedTagsJson,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get followedCommunitiesJson => $composableBuilder(
-    column: $table.followedCommunitiesJson,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get followedEventsJson => $composableBuilder(
-    column: $table.followedEventsJson,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get loadedTimestamp => $composableBuilder(
-    column: $table.loadedTimestamp,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get sourcesJson => $composableBuilder(
-    column: $table.sourcesJson,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$ContactListsTableAnnotationComposer
-    extends Composer<_$NdkCacheDatabase, $ContactListsTable> {
-  $$ContactListsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get pubKey =>
-      $composableBuilder(column: $table.pubKey, builder: (column) => column);
-
-  GeneratedColumn<String> get contactsJson => $composableBuilder(
-    column: $table.contactsJson,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get contactRelaysJson => $composableBuilder(
-    column: $table.contactRelaysJson,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get petnamesJson => $composableBuilder(
-    column: $table.petnamesJson,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get followedTagsJson => $composableBuilder(
-    column: $table.followedTagsJson,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get followedCommunitiesJson => $composableBuilder(
-    column: $table.followedCommunitiesJson,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get followedEventsJson => $composableBuilder(
-    column: $table.followedEventsJson,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<int> get loadedTimestamp => $composableBuilder(
-    column: $table.loadedTimestamp,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get sourcesJson => $composableBuilder(
-    column: $table.sourcesJson,
-    builder: (column) => column,
-  );
-}
-
-class $$ContactListsTableTableManager
-    extends
-        RootTableManager<
-          _$NdkCacheDatabase,
-          $ContactListsTable,
-          DbContactList,
-          $$ContactListsTableFilterComposer,
-          $$ContactListsTableOrderingComposer,
-          $$ContactListsTableAnnotationComposer,
-          $$ContactListsTableCreateCompanionBuilder,
-          $$ContactListsTableUpdateCompanionBuilder,
-          (
-            DbContactList,
-            BaseReferences<
-              _$NdkCacheDatabase,
-              $ContactListsTable,
-              DbContactList
-            >,
-          ),
-          DbContactList,
-          PrefetchHooks Function()
-        > {
-  $$ContactListsTableTableManager(
-    _$NdkCacheDatabase db,
-    $ContactListsTable table,
-  ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$ContactListsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$ContactListsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$ContactListsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> pubKey = const Value.absent(),
-                Value<String> contactsJson = const Value.absent(),
-                Value<String> contactRelaysJson = const Value.absent(),
-                Value<String> petnamesJson = const Value.absent(),
-                Value<String> followedTagsJson = const Value.absent(),
-                Value<String> followedCommunitiesJson = const Value.absent(),
-                Value<String> followedEventsJson = const Value.absent(),
-                Value<int> createdAt = const Value.absent(),
-                Value<int?> loadedTimestamp = const Value.absent(),
-                Value<String> sourcesJson = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => ContactListsCompanion(
-                pubKey: pubKey,
-                contactsJson: contactsJson,
-                contactRelaysJson: contactRelaysJson,
-                petnamesJson: petnamesJson,
-                followedTagsJson: followedTagsJson,
-                followedCommunitiesJson: followedCommunitiesJson,
-                followedEventsJson: followedEventsJson,
-                createdAt: createdAt,
-                loadedTimestamp: loadedTimestamp,
-                sourcesJson: sourcesJson,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String pubKey,
-                required String contactsJson,
-                required String contactRelaysJson,
-                required String petnamesJson,
-                required String followedTagsJson,
-                required String followedCommunitiesJson,
-                required String followedEventsJson,
-                required int createdAt,
-                Value<int?> loadedTimestamp = const Value.absent(),
-                required String sourcesJson,
-                Value<int> rowid = const Value.absent(),
-              }) => ContactListsCompanion.insert(
-                pubKey: pubKey,
-                contactsJson: contactsJson,
-                contactRelaysJson: contactRelaysJson,
-                petnamesJson: petnamesJson,
-                followedTagsJson: followedTagsJson,
-                followedCommunitiesJson: followedCommunitiesJson,
-                followedEventsJson: followedEventsJson,
-                createdAt: createdAt,
-                loadedTimestamp: loadedTimestamp,
-                sourcesJson: sourcesJson,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$ContactListsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$NdkCacheDatabase,
-      $ContactListsTable,
-      DbContactList,
-      $$ContactListsTableFilterComposer,
-      $$ContactListsTableOrderingComposer,
-      $$ContactListsTableAnnotationComposer,
-      $$ContactListsTableCreateCompanionBuilder,
-      $$ContactListsTableUpdateCompanionBuilder,
-      (
-        DbContactList,
-        BaseReferences<_$NdkCacheDatabase, $ContactListsTable, DbContactList>,
-      ),
-      DbContactList,
       PrefetchHooks Function()
     >;
 typedef $$UserRelayListsTableCreateCompanionBuilder =
@@ -8871,6 +7920,726 @@ typedef $$FilterFetchedRangeRecordsTableProcessedTableManager =
         >,
       ),
       DbFilterFetchedRangeRecord,
+      PrefetchHooks Function()
+    >;
+typedef $$EventSourcesTableTableCreateCompanionBuilder =
+    EventSourcesTableCompanion Function({
+      required String eventId,
+      required String relayUrl,
+      Value<int> rowid,
+    });
+typedef $$EventSourcesTableTableUpdateCompanionBuilder =
+    EventSourcesTableCompanion Function({
+      Value<String> eventId,
+      Value<String> relayUrl,
+      Value<int> rowid,
+    });
+
+class $$EventSourcesTableTableFilterComposer
+    extends Composer<_$NdkCacheDatabase, $EventSourcesTableTable> {
+  $$EventSourcesTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get eventId => $composableBuilder(
+    column: $table.eventId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get relayUrl => $composableBuilder(
+    column: $table.relayUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$EventSourcesTableTableOrderingComposer
+    extends Composer<_$NdkCacheDatabase, $EventSourcesTableTable> {
+  $$EventSourcesTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get eventId => $composableBuilder(
+    column: $table.eventId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get relayUrl => $composableBuilder(
+    column: $table.relayUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$EventSourcesTableTableAnnotationComposer
+    extends Composer<_$NdkCacheDatabase, $EventSourcesTableTable> {
+  $$EventSourcesTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get eventId =>
+      $composableBuilder(column: $table.eventId, builder: (column) => column);
+
+  GeneratedColumn<String> get relayUrl =>
+      $composableBuilder(column: $table.relayUrl, builder: (column) => column);
+}
+
+class $$EventSourcesTableTableTableManager
+    extends
+        RootTableManager<
+          _$NdkCacheDatabase,
+          $EventSourcesTableTable,
+          DbEventSource,
+          $$EventSourcesTableTableFilterComposer,
+          $$EventSourcesTableTableOrderingComposer,
+          $$EventSourcesTableTableAnnotationComposer,
+          $$EventSourcesTableTableCreateCompanionBuilder,
+          $$EventSourcesTableTableUpdateCompanionBuilder,
+          (
+            DbEventSource,
+            BaseReferences<
+              _$NdkCacheDatabase,
+              $EventSourcesTableTable,
+              DbEventSource
+            >,
+          ),
+          DbEventSource,
+          PrefetchHooks Function()
+        > {
+  $$EventSourcesTableTableTableManager(
+    _$NdkCacheDatabase db,
+    $EventSourcesTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EventSourcesTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EventSourcesTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EventSourcesTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> eventId = const Value.absent(),
+                Value<String> relayUrl = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EventSourcesTableCompanion(
+                eventId: eventId,
+                relayUrl: relayUrl,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String eventId,
+                required String relayUrl,
+                Value<int> rowid = const Value.absent(),
+              }) => EventSourcesTableCompanion.insert(
+                eventId: eventId,
+                relayUrl: relayUrl,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$EventSourcesTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$NdkCacheDatabase,
+      $EventSourcesTableTable,
+      DbEventSource,
+      $$EventSourcesTableTableFilterComposer,
+      $$EventSourcesTableTableOrderingComposer,
+      $$EventSourcesTableTableAnnotationComposer,
+      $$EventSourcesTableTableCreateCompanionBuilder,
+      $$EventSourcesTableTableUpdateCompanionBuilder,
+      (
+        DbEventSource,
+        BaseReferences<
+          _$NdkCacheDatabase,
+          $EventSourcesTableTable,
+          DbEventSource
+        >,
+      ),
+      DbEventSource,
+      PrefetchHooks Function()
+    >;
+typedef $$EventDeliveryRecordsTableTableCreateCompanionBuilder =
+    EventDeliveryRecordsTableCompanion Function({
+      required String eventId,
+      required String status,
+      required int createdAt,
+      required int updatedAt,
+      Value<int?> signedAt,
+      Value<int?> completedAt,
+      Value<bool> requiresNetworkSigner,
+      Value<int> rowid,
+    });
+typedef $$EventDeliveryRecordsTableTableUpdateCompanionBuilder =
+    EventDeliveryRecordsTableCompanion Function({
+      Value<String> eventId,
+      Value<String> status,
+      Value<int> createdAt,
+      Value<int> updatedAt,
+      Value<int?> signedAt,
+      Value<int?> completedAt,
+      Value<bool> requiresNetworkSigner,
+      Value<int> rowid,
+    });
+
+class $$EventDeliveryRecordsTableTableFilterComposer
+    extends Composer<_$NdkCacheDatabase, $EventDeliveryRecordsTableTable> {
+  $$EventDeliveryRecordsTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get eventId => $composableBuilder(
+    column: $table.eventId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get signedAt => $composableBuilder(
+    column: $table.signedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get requiresNetworkSigner => $composableBuilder(
+    column: $table.requiresNetworkSigner,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$EventDeliveryRecordsTableTableOrderingComposer
+    extends Composer<_$NdkCacheDatabase, $EventDeliveryRecordsTableTable> {
+  $$EventDeliveryRecordsTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get eventId => $composableBuilder(
+    column: $table.eventId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get signedAt => $composableBuilder(
+    column: $table.signedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get requiresNetworkSigner => $composableBuilder(
+    column: $table.requiresNetworkSigner,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$EventDeliveryRecordsTableTableAnnotationComposer
+    extends Composer<_$NdkCacheDatabase, $EventDeliveryRecordsTableTable> {
+  $$EventDeliveryRecordsTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get eventId =>
+      $composableBuilder(column: $table.eventId, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get signedAt =>
+      $composableBuilder(column: $table.signedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get requiresNetworkSigner => $composableBuilder(
+    column: $table.requiresNetworkSigner,
+    builder: (column) => column,
+  );
+}
+
+class $$EventDeliveryRecordsTableTableTableManager
+    extends
+        RootTableManager<
+          _$NdkCacheDatabase,
+          $EventDeliveryRecordsTableTable,
+          DbEventDeliveryRecord,
+          $$EventDeliveryRecordsTableTableFilterComposer,
+          $$EventDeliveryRecordsTableTableOrderingComposer,
+          $$EventDeliveryRecordsTableTableAnnotationComposer,
+          $$EventDeliveryRecordsTableTableCreateCompanionBuilder,
+          $$EventDeliveryRecordsTableTableUpdateCompanionBuilder,
+          (
+            DbEventDeliveryRecord,
+            BaseReferences<
+              _$NdkCacheDatabase,
+              $EventDeliveryRecordsTableTable,
+              DbEventDeliveryRecord
+            >,
+          ),
+          DbEventDeliveryRecord,
+          PrefetchHooks Function()
+        > {
+  $$EventDeliveryRecordsTableTableTableManager(
+    _$NdkCacheDatabase db,
+    $EventDeliveryRecordsTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EventDeliveryRecordsTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$EventDeliveryRecordsTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$EventDeliveryRecordsTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> eventId = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int> createdAt = const Value.absent(),
+                Value<int> updatedAt = const Value.absent(),
+                Value<int?> signedAt = const Value.absent(),
+                Value<int?> completedAt = const Value.absent(),
+                Value<bool> requiresNetworkSigner = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EventDeliveryRecordsTableCompanion(
+                eventId: eventId,
+                status: status,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                signedAt: signedAt,
+                completedAt: completedAt,
+                requiresNetworkSigner: requiresNetworkSigner,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String eventId,
+                required String status,
+                required int createdAt,
+                required int updatedAt,
+                Value<int?> signedAt = const Value.absent(),
+                Value<int?> completedAt = const Value.absent(),
+                Value<bool> requiresNetworkSigner = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EventDeliveryRecordsTableCompanion.insert(
+                eventId: eventId,
+                status: status,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                signedAt: signedAt,
+                completedAt: completedAt,
+                requiresNetworkSigner: requiresNetworkSigner,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$EventDeliveryRecordsTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$NdkCacheDatabase,
+      $EventDeliveryRecordsTableTable,
+      DbEventDeliveryRecord,
+      $$EventDeliveryRecordsTableTableFilterComposer,
+      $$EventDeliveryRecordsTableTableOrderingComposer,
+      $$EventDeliveryRecordsTableTableAnnotationComposer,
+      $$EventDeliveryRecordsTableTableCreateCompanionBuilder,
+      $$EventDeliveryRecordsTableTableUpdateCompanionBuilder,
+      (
+        DbEventDeliveryRecord,
+        BaseReferences<
+          _$NdkCacheDatabase,
+          $EventDeliveryRecordsTableTable,
+          DbEventDeliveryRecord
+        >,
+      ),
+      DbEventDeliveryRecord,
+      PrefetchHooks Function()
+    >;
+typedef $$RelayDeliveryTargetsTableTableCreateCompanionBuilder =
+    RelayDeliveryTargetsTableCompanion Function({
+      required String eventId,
+      required String relayUrl,
+      required String reason,
+      required String state,
+      Value<int> attemptCount,
+      Value<int?> lastAttemptAt,
+      Value<int?> nextRetryAt,
+      Value<String?> lastError,
+      Value<String?> lastOkMessage,
+      Value<int> rowid,
+    });
+typedef $$RelayDeliveryTargetsTableTableUpdateCompanionBuilder =
+    RelayDeliveryTargetsTableCompanion Function({
+      Value<String> eventId,
+      Value<String> relayUrl,
+      Value<String> reason,
+      Value<String> state,
+      Value<int> attemptCount,
+      Value<int?> lastAttemptAt,
+      Value<int?> nextRetryAt,
+      Value<String?> lastError,
+      Value<String?> lastOkMessage,
+      Value<int> rowid,
+    });
+
+class $$RelayDeliveryTargetsTableTableFilterComposer
+    extends Composer<_$NdkCacheDatabase, $RelayDeliveryTargetsTableTable> {
+  $$RelayDeliveryTargetsTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get eventId => $composableBuilder(
+    column: $table.eventId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get relayUrl => $composableBuilder(
+    column: $table.relayUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get state => $composableBuilder(
+    column: $table.state,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get attemptCount => $composableBuilder(
+    column: $table.attemptCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lastAttemptAt => $composableBuilder(
+    column: $table.lastAttemptAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get nextRetryAt => $composableBuilder(
+    column: $table.nextRetryAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastOkMessage => $composableBuilder(
+    column: $table.lastOkMessage,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$RelayDeliveryTargetsTableTableOrderingComposer
+    extends Composer<_$NdkCacheDatabase, $RelayDeliveryTargetsTableTable> {
+  $$RelayDeliveryTargetsTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get eventId => $composableBuilder(
+    column: $table.eventId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get relayUrl => $composableBuilder(
+    column: $table.relayUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get state => $composableBuilder(
+    column: $table.state,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get attemptCount => $composableBuilder(
+    column: $table.attemptCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lastAttemptAt => $composableBuilder(
+    column: $table.lastAttemptAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get nextRetryAt => $composableBuilder(
+    column: $table.nextRetryAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastOkMessage => $composableBuilder(
+    column: $table.lastOkMessage,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$RelayDeliveryTargetsTableTableAnnotationComposer
+    extends Composer<_$NdkCacheDatabase, $RelayDeliveryTargetsTableTable> {
+  $$RelayDeliveryTargetsTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get eventId =>
+      $composableBuilder(column: $table.eventId, builder: (column) => column);
+
+  GeneratedColumn<String> get relayUrl =>
+      $composableBuilder(column: $table.relayUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get reason =>
+      $composableBuilder(column: $table.reason, builder: (column) => column);
+
+  GeneratedColumn<String> get state =>
+      $composableBuilder(column: $table.state, builder: (column) => column);
+
+  GeneratedColumn<int> get attemptCount => $composableBuilder(
+    column: $table.attemptCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get lastAttemptAt => $composableBuilder(
+    column: $table.lastAttemptAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get nextRetryAt => $composableBuilder(
+    column: $table.nextRetryAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => column);
+
+  GeneratedColumn<String> get lastOkMessage => $composableBuilder(
+    column: $table.lastOkMessage,
+    builder: (column) => column,
+  );
+}
+
+class $$RelayDeliveryTargetsTableTableTableManager
+    extends
+        RootTableManager<
+          _$NdkCacheDatabase,
+          $RelayDeliveryTargetsTableTable,
+          DbRelayDeliveryTarget,
+          $$RelayDeliveryTargetsTableTableFilterComposer,
+          $$RelayDeliveryTargetsTableTableOrderingComposer,
+          $$RelayDeliveryTargetsTableTableAnnotationComposer,
+          $$RelayDeliveryTargetsTableTableCreateCompanionBuilder,
+          $$RelayDeliveryTargetsTableTableUpdateCompanionBuilder,
+          (
+            DbRelayDeliveryTarget,
+            BaseReferences<
+              _$NdkCacheDatabase,
+              $RelayDeliveryTargetsTableTable,
+              DbRelayDeliveryTarget
+            >,
+          ),
+          DbRelayDeliveryTarget,
+          PrefetchHooks Function()
+        > {
+  $$RelayDeliveryTargetsTableTableTableManager(
+    _$NdkCacheDatabase db,
+    $RelayDeliveryTargetsTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RelayDeliveryTargetsTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$RelayDeliveryTargetsTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$RelayDeliveryTargetsTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> eventId = const Value.absent(),
+                Value<String> relayUrl = const Value.absent(),
+                Value<String> reason = const Value.absent(),
+                Value<String> state = const Value.absent(),
+                Value<int> attemptCount = const Value.absent(),
+                Value<int?> lastAttemptAt = const Value.absent(),
+                Value<int?> nextRetryAt = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<String?> lastOkMessage = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RelayDeliveryTargetsTableCompanion(
+                eventId: eventId,
+                relayUrl: relayUrl,
+                reason: reason,
+                state: state,
+                attemptCount: attemptCount,
+                lastAttemptAt: lastAttemptAt,
+                nextRetryAt: nextRetryAt,
+                lastError: lastError,
+                lastOkMessage: lastOkMessage,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String eventId,
+                required String relayUrl,
+                required String reason,
+                required String state,
+                Value<int> attemptCount = const Value.absent(),
+                Value<int?> lastAttemptAt = const Value.absent(),
+                Value<int?> nextRetryAt = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<String?> lastOkMessage = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RelayDeliveryTargetsTableCompanion.insert(
+                eventId: eventId,
+                relayUrl: relayUrl,
+                reason: reason,
+                state: state,
+                attemptCount: attemptCount,
+                lastAttemptAt: lastAttemptAt,
+                nextRetryAt: nextRetryAt,
+                lastError: lastError,
+                lastOkMessage: lastOkMessage,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$RelayDeliveryTargetsTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$NdkCacheDatabase,
+      $RelayDeliveryTargetsTableTable,
+      DbRelayDeliveryTarget,
+      $$RelayDeliveryTargetsTableTableFilterComposer,
+      $$RelayDeliveryTargetsTableTableOrderingComposer,
+      $$RelayDeliveryTargetsTableTableAnnotationComposer,
+      $$RelayDeliveryTargetsTableTableCreateCompanionBuilder,
+      $$RelayDeliveryTargetsTableTableUpdateCompanionBuilder,
+      (
+        DbRelayDeliveryTarget,
+        BaseReferences<
+          _$NdkCacheDatabase,
+          $RelayDeliveryTargetsTableTable,
+          DbRelayDeliveryTarget
+        >,
+      ),
+      DbRelayDeliveryTarget,
       PrefetchHooks Function()
     >;
 typedef $$CashuProofsTableCreateCompanionBuilder =
@@ -10590,10 +10359,6 @@ class $NdkCacheDatabaseManager {
   $NdkCacheDatabaseManager(this._db);
   $$EventsTableTableManager get events =>
       $$EventsTableTableManager(_db, _db.events);
-  $$MetadatasTableTableManager get metadatas =>
-      $$MetadatasTableTableManager(_db, _db.metadatas);
-  $$ContactListsTableTableManager get contactLists =>
-      $$ContactListsTableTableManager(_db, _db.contactLists);
   $$UserRelayListsTableTableManager get userRelayLists =>
       $$UserRelayListsTableTableManager(_db, _db.userRelayLists);
   $$RelaySetsTableTableManager get relaySets =>
@@ -10604,6 +10369,18 @@ class $NdkCacheDatabaseManager {
       $$FilterFetchedRangeRecordsTableTableManager(
         _db,
         _db.filterFetchedRangeRecords,
+      );
+  $$EventSourcesTableTableTableManager get eventSourcesTable =>
+      $$EventSourcesTableTableTableManager(_db, _db.eventSourcesTable);
+  $$EventDeliveryRecordsTableTableTableManager get eventDeliveryRecordsTable =>
+      $$EventDeliveryRecordsTableTableTableManager(
+        _db,
+        _db.eventDeliveryRecordsTable,
+      );
+  $$RelayDeliveryTargetsTableTableTableManager get relayDeliveryTargetsTable =>
+      $$RelayDeliveryTargetsTableTableTableManager(
+        _db,
+        _db.relayDeliveryTargetsTable,
       );
   $$CashuProofsTableTableManager get cashuProofs =>
       $$CashuProofsTableTableManager(_db, _db.cashuProofs);

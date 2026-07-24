@@ -35,10 +35,7 @@ class SplitResult {
   final List<CashuProof> exactProofs;
   final List<CashuProof> changeProofs;
 
-  SplitResult({
-    required this.exactProofs,
-    required this.changeProofs,
-  });
+  SplitResult({required this.exactProofs, required this.changeProofs});
 }
 
 class CashuProofSelect {
@@ -49,12 +46,14 @@ class CashuProofSelect {
   CashuProofSelect({
     required CashuRepo cashuRepo,
     required CashuKeyDerivation cashuSeedSecretGenerator,
-  })  : _cashuRepo = cashuRepo,
-        _cashuSeedSecretGenerator = cashuSeedSecretGenerator;
+  }) : _cashuRepo = cashuRepo,
+       _cashuSeedSecretGenerator = cashuSeedSecretGenerator;
 
   /// Find keyset by ID from list
   static CahsuKeyset? _findKeysetById(
-      List<CahsuKeyset> keysets, String keysetId) {
+    List<CahsuKeyset> keysets,
+    String keysetId,
+  ) {
     try {
       return keysets.firstWhere((keyset) => keyset.id == keysetId);
     } catch (e) {
@@ -63,10 +62,7 @@ class CashuProofSelect {
   }
 
   /// Calculate fees for a list of proofs across multiple keysets
-  static int calculateFees(
-    List<CashuProof> proofs,
-    List<CahsuKeyset> keysets,
-  ) {
+  static int calculateFees(List<CashuProof> proofs, List<CahsuKeyset> keysets) {
     if (proofs.isEmpty) return 0;
 
     int sumFees = 0;
@@ -76,7 +72,8 @@ class CashuProofSelect {
         sumFees += keyset.inputFeePPK;
       } else {
         throw Exception(
-            'Keyset not found for proof with keyset ID: ${proof.keysetId}');
+          'Keyset not found for proof with keyset ID: ${proof.keysetId}',
+        );
       }
     }
 
@@ -147,29 +144,28 @@ class CashuProofSelect {
     List<CashuProof> proofs,
     List<CahsuKeyset> keysets,
   ) {
-    return List<CashuProof>.from(proofs)
-      ..sort((a, b) {
-        // Primary: prefer larger amounts
-        final amountComparison = b.amount.compareTo(a.amount);
-        if (amountComparison != 0) return amountComparison;
+    return List<CashuProof>.from(proofs)..sort((a, b) {
+      // Primary: prefer larger amounts
+      final amountComparison = b.amount.compareTo(a.amount);
+      if (amountComparison != 0) return amountComparison;
 
-        // Secondary: prefer lower fee keysets
-        final keysetA = _findKeysetById(keysets, a.keysetId);
-        final keysetB = _findKeysetById(keysets, b.keysetId);
-        final feeA = keysetA?.inputFeePPK ?? 0;
-        final feeB = keysetB?.inputFeePPK ?? 0;
+      // Secondary: prefer lower fee keysets
+      final keysetA = _findKeysetById(keysets, a.keysetId);
+      final keysetB = _findKeysetById(keysets, b.keysetId);
+      final feeA = keysetA?.inputFeePPK ?? 0;
+      final feeB = keysetB?.inputFeePPK ?? 0;
 
-        // Lower fees first
-        final feeComparison = feeA.compareTo(feeB);
-        if (feeComparison != 0) return feeComparison;
+      // Lower fees first
+      final feeComparison = feeA.compareTo(feeB);
+      if (feeComparison != 0) return feeComparison;
 
-        // Tertiary: prefer active keysets
-        final activeA = keysetA?.active ?? false;
-        final activeB = keysetB?.active ?? false;
-        return activeB
-            .toString()
-            .compareTo(activeA.toString()); // true comes before false
-      });
+      // Tertiary: prefer active keysets
+      final activeA = keysetA?.active ?? false;
+      final activeB = keysetB?.active ?? false;
+      return activeB.toString().compareTo(
+        activeA.toString(),
+      ); // true comes before false
+    });
   }
 
   /// Swaps proofs in target amount and change
@@ -215,9 +211,7 @@ class CashuProofSelect {
     );
 
     // sort to increase privacy
-    blindedMessagesOutputs.sort(
-      (a, b) => a.amount.compareTo(b.amount),
-    );
+    blindedMessagesOutputs.sort((a, b) => a.amount.compareTo(b.amount));
 
     final blindedSignatures = await _cashuRepo.swap(
       mintUrl: mint,
@@ -277,11 +271,16 @@ class CashuProofSelect {
     // For large amounts, skip exact match search (it's exponential and slow)
     // Only try exact match for smaller amounts with fewer proofs
     if (targetAmount < 1000 && proofs.length <= 15) {
-      final exactMatch =
-          _findExactMatchWithFees(sortedProofs, targetAmount, keysets);
+      final exactMatch = _findExactMatchWithFees(
+        sortedProofs,
+        targetAmount,
+        keysets,
+      );
       if (exactMatch.isNotEmpty) {
-        final feeData =
-            calculateFeesWithBreakdown(proofs: exactMatch, keysets: keysets);
+        final feeData = calculateFeesWithBreakdown(
+          proofs: exactMatch,
+          keysets: keysets,
+        );
         return ProofSelectionResult(
           selectedProofs: exactMatch,
           totalSelected: exactMatch.fold(0, (sum, proof) => sum + proof.amount),
@@ -345,11 +344,15 @@ class CashuProofSelect {
 
     // Now calculate exact fees with selected proofs
     final selectedProofs = selected.map((i) => sortedProofs[i]).toList();
-    final feeData =
-        calculateFeesWithBreakdown(proofs: selectedProofs, keysets: keysets);
+    final feeData = calculateFeesWithBreakdown(
+      proofs: selectedProofs,
+      keysets: keysets,
+    );
     final exactFees = feeData['totalFees'];
-    final exactTotal =
-        selectedProofs.fold(0, (sum, proof) => sum + proof.amount);
+    final exactTotal = selectedProofs.fold(
+      0,
+      (sum, proof) => sum + proof.amount,
+    );
 
     // Check if we need more proofs (fees were underestimated)
     if (exactTotal < targetAmount + exactFees) {
@@ -363,15 +366,20 @@ class CashuProofSelect {
       }
 
       // Recalculate
-      final newFeeData =
-          calculateFeesWithBreakdown(proofs: selectedProofs, keysets: keysets);
+      final newFeeData = calculateFeesWithBreakdown(
+        proofs: selectedProofs,
+        keysets: keysets,
+      );
       final newFees = newFeeData['totalFees'];
-      final newTotal =
-          selectedProofs.fold(0, (sum, proof) => sum + proof.amount);
+      final newTotal = selectedProofs.fold(
+        0,
+        (sum, proof) => sum + proof.amount,
+      );
 
       if (newTotal < targetAmount + newFees) {
         throw Exception(
-            'Insufficient funds: need $targetAmount + fees ($newFees), have $newTotal selected');
+          'Insufficient funds: need $targetAmount + fees ($newFees), have $newTotal selected',
+        );
       }
 
       final splitAmount = newTotal - targetAmount - newFees;
@@ -412,8 +420,12 @@ class CashuProofSelect {
     }
 
     // Check combinations with fee consideration
-    return _findExactCombinationWithFees(proofs, targetAmount, keysets,
-        maxProofs: 5);
+    return _findExactCombinationWithFees(
+      proofs,
+      targetAmount,
+      keysets,
+      maxProofs: 5,
+    );
   }
 
   /// Find exact combination accounting for fees across multiple keysets
@@ -427,8 +439,12 @@ class CashuProofSelect {
     if (proofs.length > 15) return [];
 
     for (int len = 2; len <= maxProofs && len <= proofs.length; len++) {
-      final combination =
-          _findCombinationOfLengthWithFees(proofs, targetAmount, keysets, len);
+      final combination = _findCombinationOfLengthWithFees(
+        proofs,
+        targetAmount,
+        keysets,
+        len,
+      );
       if (combination.isNotEmpty) return combination;
     }
 

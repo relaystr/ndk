@@ -21,10 +21,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
   final HttpRequestDS client;
   final FileIO fileIO;
 
-  BlossomRepositoryImpl({
-    required this.client,
-    required this.fileIO,
-  });
+  BlossomRepositoryImpl({required this.client, required this.fileIO});
 
   @override
   Stream<BlobUploadProgress> uploadBlob({
@@ -149,8 +146,9 @@ class BlossomRepositoryImpl implements BlossomRepository {
             final result = BlobUploadResult(
               serverUrl: serverUrl,
               success: true,
-              descriptor:
-                  BlobDescriptor.fromJson(jsonDecode(progress.response!.body)),
+              descriptor: BlobDescriptor.fromJson(
+                jsonDecode(progress.response!.body),
+              ),
             );
             results.add(result);
             successfulUpload = result;
@@ -213,8 +211,9 @@ class BlossomRepositoryImpl implements BlossomRepository {
             totalBytes: contentLength,
             completedUploads: List.from(results),
             phase: UploadPhase.mirroring,
-            progressPhase:
-                mirrorsTotal > 0 ? mirrorsCompleted / mirrorsTotal : 1,
+            progressPhase: mirrorsTotal > 0
+                ? mirrorsCompleted / mirrorsTotal
+                : 1,
             mirrorsTotal: mirrorsTotal,
             mirrorsCompleted: mirrorsCompleted,
           );
@@ -267,32 +266,37 @@ class BlossomRepositoryImpl implements BlossomRepository {
         )) {
           // Emit intermediate per-server progress updates
           if (!progress.isComplete) {
-            progressSubject.add(BlobUploadProgress(
-              currentServer: serverUrl,
-              sentBytes: progress.sentBytes,
-              totalBytes: progress.totalBytes,
-              completedUploads: List.from(results),
-              phase: UploadPhase.uploading,
-              progressPhase: progress.progress,
-            ));
+            progressSubject.add(
+              BlobUploadProgress(
+                currentServer: serverUrl,
+                sentBytes: progress.sentBytes,
+                totalBytes: progress.totalBytes,
+                completedUploads: List.from(results),
+                phase: UploadPhase.uploading,
+                progressPhase: progress.progress,
+              ),
+            );
             continue;
           }
           if (progress.isComplete && progress.response != null) {
             final result = BlobUploadResult(
               serverUrl: serverUrl,
               success: true,
-              descriptor:
-                  BlobDescriptor.fromJson(jsonDecode(progress.response!.body)),
+              descriptor: BlobDescriptor.fromJson(
+                jsonDecode(progress.response!.body),
+              ),
             );
             results.add(result);
-            progressSubject.add(BlobUploadProgress(
-              currentServer: serverUrl,
-              sentBytes: progress.sentBytes,
-              totalBytes: contentLength,
-              completedUploads: List.from(results),
-              phase: UploadPhase.uploading,
-              progressPhase: progress.progress,
-            ));
+            progressSubject.add(
+              BlobUploadProgress(
+                currentServer: serverUrl,
+                sentBytes: progress.sentBytes,
+                totalBytes: contentLength,
+                completedUploads: List.from(results),
+                phase: UploadPhase.uploading,
+                progressPhase: progress.progress,
+              ),
+            );
           } else if (progress.isComplete && progress.error != null) {
             final result = BlobUploadResult(
               serverUrl: serverUrl,
@@ -300,14 +304,16 @@ class BlossomRepositoryImpl implements BlossomRepository {
               error: progress.error.toString(),
             );
             results.add(result);
-            progressSubject.add(BlobUploadProgress(
-              currentServer: serverUrl,
-              sentBytes: progress.sentBytes,
-              totalBytes: contentLength,
-              completedUploads: List.from(results),
-              phase: UploadPhase.uploading,
-              progressPhase: progress.progress,
-            ));
+            progressSubject.add(
+              BlobUploadProgress(
+                currentServer: serverUrl,
+                sentBytes: progress.sentBytes,
+                totalBytes: contentLength,
+                completedUploads: List.from(results),
+                phase: UploadPhase.uploading,
+                progressPhase: progress.progress,
+              ),
+            );
           }
         }
       } catch (e) {
@@ -318,28 +324,32 @@ class BlossomRepositoryImpl implements BlossomRepository {
           error: e.toString(),
         );
         results.add(result);
-        progressSubject.add(BlobUploadProgress(
-          currentServer: serverUrl,
-          sentBytes: 0,
-          totalBytes: contentLength,
-          completedUploads: List.from(results),
-          phase: UploadPhase.uploading,
-          progressPhase: 0,
-        ));
+        progressSubject.add(
+          BlobUploadProgress(
+            currentServer: serverUrl,
+            sentBytes: 0,
+            totalBytes: contentLength,
+            completedUploads: List.from(results),
+            phase: UploadPhase.uploading,
+            progressPhase: 0,
+          ),
+        );
       }
     }).toList();
 
     // When all uploads complete, close the stream
     Future.wait(uploadFutures).then((_) async {
-      progressSubject.add(BlobUploadProgress(
-        currentServer: '',
-        sentBytes: contentLength,
-        totalBytes: contentLength,
-        completedUploads: List.from(results),
-        phase: UploadPhase.mirroring,
-        progressPhase: 1,
-        isComplete: true,
-      ));
+      progressSubject.add(
+        BlobUploadProgress(
+          currentServer: '',
+          sentBytes: contentLength,
+          totalBytes: contentLength,
+          completedUploads: List.from(results),
+          phase: UploadPhase.mirroring,
+          progressPhase: 1,
+          isComplete: true,
+        ),
+      );
       await progressSubject.close();
     });
 
@@ -380,8 +390,9 @@ class BlossomRepositoryImpl implements BlossomRepository {
             final result = BlobUploadResult(
               serverUrl: url,
               success: true,
-              descriptor:
-                  BlobDescriptor.fromJson(jsonDecode(progress.response!.body)),
+              descriptor: BlobDescriptor.fromJson(
+                jsonDecode(progress.response!.body),
+              ),
             );
             results.add(result);
 
@@ -396,20 +407,20 @@ class BlossomRepositoryImpl implements BlossomRepository {
             );
             return;
           } else if (progress.isComplete && progress.error != null) {
-            results.add(BlobUploadResult(
-              serverUrl: url,
-              success: false,
-              error: progress.error.toString(),
-            ));
+            results.add(
+              BlobUploadResult(
+                serverUrl: url,
+                success: false,
+                error: progress.error.toString(),
+              ),
+            );
           }
         }
       } catch (e) {
         // Handle network exceptions (e.g., host lookup failures)
-        results.add(BlobUploadResult(
-          serverUrl: url,
-          success: false,
-          error: e.toString(),
-        ));
+        results.add(
+          BlobUploadResult(serverUrl: url, success: false, error: e.toString()),
+        );
       }
     }
 
@@ -435,8 +446,9 @@ class BlossomRepositoryImpl implements BlossomRepository {
     String? contentType,
     bool mediaOptimisation = false,
   }) {
-    final endpointUrl =
-        mediaOptimisation ? '$serverUrl/media' : '$serverUrl/upload';
+    final endpointUrl = mediaOptimisation
+        ? '$serverUrl/media'
+        : '$serverUrl/upload';
 
     return client.putStream(
       url: Uri.parse(endpointUrl),
@@ -531,8 +543,9 @@ class BlossomRepositoryImpl implements BlossomRepository {
           return BlobResponse(
             data: response.bodyBytes,
             mimeType: response.headers['content-type'],
-            contentLength:
-                int.tryParse(response.headers['content-length'] ?? ''),
+            contentLength: int.tryParse(
+              response.headers['content-length'] ?? '',
+            ),
             contentRange: response.headers['content-range'] ?? '',
           );
         }
@@ -543,7 +556,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
     }
 
     throw Exception(
-        'Failed to get blob from any of the servers. Last error: $lastError');
+      'Failed to get blob from any of the servers. Last error: $lastError',
+    );
   }
 
   @override
@@ -563,9 +577,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
     for (final url in serverUrls) {
       try {
-        final response = await client.head(
-          url: Uri.parse('$url/$sha256'),
-        );
+        final response = await client.head(url: Uri.parse('$url/$sha256'));
 
         if (_isSuccessStatus(response.statusCode)) {
           return '$url/$sha256';
@@ -577,7 +589,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
     }
 
     throw Exception(
-        'Failed to check blob from any of the servers. Last error: $lastError');
+      'Failed to check blob from any of the servers. Last error: $lastError',
+    );
   }
 
   /// first value is whether the server supports range requests \
@@ -588,13 +601,12 @@ class BlossomRepositoryImpl implements BlossomRepository {
     required String serverUrl,
   }) async {
     try {
-      final response = await client.head(
-        url: Uri.parse('$serverUrl/$sha256'),
-      );
+      final response = await client.head(url: Uri.parse('$serverUrl/$sha256'));
 
       final acceptRanges = response.headers['accept-ranges'];
-      final contentLength =
-          int.tryParse(response.headers['content-length'] ?? '');
+      final contentLength = int.tryParse(
+        response.headers['content-length'] ?? '',
+      );
       return Tuple(acceptRanges?.toLowerCase() == 'bytes', contentLength);
     } catch (e) {
       return Tuple(false, null);
@@ -685,8 +697,9 @@ class BlossomRepositoryImpl implements BlossomRepository {
         }
 
         final response = await client.get(
-          url: Uri.parse('$url/list/$pubkey')
-              .replace(queryParameters: queryParams),
+          url: Uri.parse(
+            '$url/list/$pubkey',
+          ).replace(queryParameters: queryParams),
           headers: headers,
         );
 
@@ -701,7 +714,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
     }
 
     throw Exception(
-        'Failed to list blobs from all servers. Last error: $lastError');
+      'Failed to list blobs from all servers. Last error: $lastError',
+    );
   }
 
   @override
@@ -710,11 +724,15 @@ class BlossomRepositoryImpl implements BlossomRepository {
     required List<String> serverUrls,
     required Nip01Event authorization,
   }) async {
-    final results = await Future.wait(serverUrls.map((url) => _deleteFromServer(
+    final results = await Future.wait(
+      serverUrls.map(
+        (url) => _deleteFromServer(
           serverUrl: url,
           sha256: sha256,
           authorization: authorization,
-        )));
+        ),
+      ),
+    );
     return results;
   }
 
@@ -749,9 +767,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
   }
 
   @override
-  Future<BlobResponse> directDownload({
-    required Uri url,
-  }) async {
+  Future<BlobResponse> directDownload({required Uri url}) async {
     final response = await client.get(url: url);
     return BlobResponse(
       data: response.bodyBytes,
@@ -768,7 +784,9 @@ class BlossomRepositoryImpl implements BlossomRepository {
   }) async {
     final response = client.getStream(url: url);
     await fileIO.writeFileStream(
-        outputPath, response.map((chunk) => Uint8List.fromList(chunk)));
+      outputPath,
+      response.map((chunk) => Uint8List.fromList(chunk)),
+    );
   }
 
   @override
@@ -786,7 +804,9 @@ class BlossomRepositoryImpl implements BlossomRepository {
     );
 
     await fileIO.writeFileStream(
-        outputPath, stream.map((response) => response.data));
+      outputPath,
+      stream.map((response) => response.data),
+    );
   }
 
   @override
@@ -795,15 +815,14 @@ class BlossomRepositoryImpl implements BlossomRepository {
     required String sha256,
     required Nip01Event reportEvent,
   }) async {
-    final String myBody =
-        jsonEncode(Nip01EventModel.fromEntity(reportEvent).toJson());
+    final String myBody = jsonEncode(
+      Nip01EventModel.fromEntity(reportEvent).toJson(),
+    );
 
     final response = await client.put(
       url: Uri.parse('$serverUrl/report'),
       body: myBody, //reportEvent.toBase64(),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
     );
     return response.statusCode;
   }

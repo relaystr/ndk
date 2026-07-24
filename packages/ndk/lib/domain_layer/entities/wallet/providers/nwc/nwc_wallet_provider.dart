@@ -24,7 +24,8 @@ class NwcWalletProvider implements WalletProvider {
 
   /// Subscriptions to NWC notification streams, one per wallet.
   /// Cancelled in [removeWallet].
-  final Map<String, StreamSubscription<dynamic>> _notificationSubscriptions = {};
+  final Map<String, StreamSubscription<dynamic>> _notificationSubscriptions =
+      {};
 
   NwcWalletProvider(this._nwcUseCase);
 
@@ -143,7 +144,11 @@ class NwcWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<PayInvoiceResponse> send(Wallet wallet, String invoice, {Duration? timeout}) async {
+  Future<PayInvoiceResponse> send(
+    Wallet wallet,
+    String invoice, {
+    Duration? timeout,
+  }) async {
     final nwcWallet = wallet as NwcWallet;
 
     await initialize(wallet);
@@ -152,7 +157,7 @@ class NwcWalletProvider implements WalletProvider {
     final response = await _nwcUseCase.payInvoice(
       connection,
       invoice: invoice,
-      timeout: timeout
+      timeout: timeout,
     );
     await _refreshAll(nwcWallet);
     return response;
@@ -274,8 +279,11 @@ class NwcWalletProvider implements WalletProvider {
           changeAmount: e.isIncoming ? e.amountSat : -e.amountSat,
           unit: "sat",
           walletType: WalletType.NWC,
-          state:
-              _mapState(e.state, defaultPending: false, settledAt: e.settledAt),
+          state: _mapState(
+            e.state,
+            defaultPending: false,
+            settledAt: e.settledAt,
+          ),
           metadata: e.metadata ?? {},
           transactionDate: e.settledAt ?? e.createdAt,
           initiatedDate: e.createdAt,
@@ -284,8 +292,11 @@ class NwcWalletProvider implements WalletProvider {
     );
   }
 
-  WalletTransactionState _mapState(String? state,
-      {required bool defaultPending, int? settledAt}) {
+  WalletTransactionState _mapState(
+    String? state, {
+    required bool defaultPending,
+    int? settledAt,
+  }) {
     if (state == null) {
       if (settledAt != null) {
         return WalletTransactionState.completed;
@@ -326,11 +337,14 @@ class NwcWalletProvider implements WalletProvider {
     // (payment_sent, payment_received, hold_invoice_accepted).
     // This keeps ndk.wallets.getBalance() accurate without polling.
     _notificationSubscriptions[wallet.id]?.cancel();
-    _notificationSubscriptions[wallet.id] =
-        wallet.connection!.notificationStream.stream.listen((_) {
-      _refreshBalance(wallet).catchError((_) {});
-      _refreshBudget(wallet).catchError((_) {});
-    });
+    _notificationSubscriptions[wallet.id] = wallet
+        .connection!
+        .notificationStream
+        .stream
+        .listen((_) {
+          _refreshBalance(wallet).catchError((_) {});
+          _refreshBudget(wallet).catchError((_) {});
+        });
 
     // Pre-cache budget immediately on connect so callers can read
     // cachedRemainingBudgetSats without issuing a separate live query.

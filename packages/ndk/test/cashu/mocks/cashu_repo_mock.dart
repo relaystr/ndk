@@ -41,10 +41,7 @@ class CashuRepoMeltFailAfterSpendMock extends CashuRepoImpl {
   }) async {
     // Return that all proofs are spent on the mint
     return proofPubkeys
-        .map((y) => CashuTokenStateResponse(
-              Y: y,
-              state: CashuProofState.spend,
-            ))
+        .map((y) => CashuTokenStateResponse(Y: y, state: CashuProofState.spend))
         .toList();
   }
 }

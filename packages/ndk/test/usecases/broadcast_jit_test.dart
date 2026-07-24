@@ -17,12 +17,15 @@ void main() async {
 
     setUp(() async {
       relay0 = MockRelay(name: "relay 0", explicitPort: 5085);
-      await relay0.startServer(nip65s: {
-        key0: Nip65(
+      await relay0.startServer(
+        nip65s: {
+          key0: Nip65(
             pubKey: key0.publicKey,
             relays: {relay0.url: ReadWriteMarker.readWrite},
-            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000)
-      });
+            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          ),
+        },
+      );
 
       final cache = MemCacheManager();
       final NdkConfig config = NdkConfig(
@@ -46,145 +49,225 @@ void main() async {
     });
 
     test('broadcast 2 events', () async {
-      ndk.accounts
-          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
       Nip01Event event = Nip01Event(
-          pubKey: key0.publicKey,
-          kind: Nip01Event.kTextNodeKind,
-          tags: [],
-          content: "");
+        pubKey: key0.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: [],
+        content: "",
+      );
 
       final signedEvent = Nip01Utils.signWithPrivateKey(
-          event: event, privateKey: key0.privateKey!);
+        event: event,
+        privateKey: key0.privateKey!,
+      );
       await ndk.broadcast
           .broadcast(nostrEvent: signedEvent)
           .broadcastDoneFuture;
 
-      List<Nip01Event> result = await ndk.requests.query(
-        filters: [
-          Filter(authors: [key0.publicKey], kinds: [Nip01Event.kTextNodeKind])
-        ],
-      ).future;
+      List<Nip01Event> result = await ndk.requests
+          .query(
+            filters: [
+              Filter(
+                authors: [key0.publicKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(result.length, 1);
 
       final event2 = Nip01Event(
-          pubKey: key0.publicKey,
-          kind: Nip01Event.kTextNodeKind,
-          tags: [],
-          content: "my content");
+        pubKey: key0.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: [],
+        content: "my content",
+      );
 
       final signedEvent2 = Nip01Utils.signWithPrivateKey(
-          event: event2, privateKey: key0.privateKey!);
+        event: event2,
+        privateKey: key0.privateKey!,
+      );
       await ndk.broadcast
           .broadcast(nostrEvent: signedEvent2)
           .broadcastDoneFuture;
 
-      result = await ndk.requests.query(
-        filters: [
-          Filter(authors: [key0.publicKey], kinds: [Nip01Event.kTextNodeKind])
-        ],
-      ).future;
+      result = await ndk.requests
+          .query(
+            filters: [
+              Filter(
+                authors: [key0.publicKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(result.length, 2);
     });
 
     test('broadcast deletion', () async {
-      ndk.accounts
-          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
       Nip01Event event = Nip01Event(
-          pubKey: key0.publicKey,
-          kind: Nip01Event.kTextNodeKind,
-          tags: [],
-          content: "");
+        pubKey: key0.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: [],
+        content: "",
+      );
 
       final signedEvent = Nip01Utils.signWithPrivateKey(
-          event: event, privateKey: key0.privateKey!);
-      NdkBroadcastResponse response =
-          ndk.broadcast.broadcast(nostrEvent: signedEvent);
+        event: event,
+        privateKey: key0.privateKey!,
+      );
+      NdkBroadcastResponse response = ndk.broadcast.broadcast(
+        nostrEvent: signedEvent,
+      );
       await response.broadcastDoneFuture;
 
-      List<Nip01Event> list = await ndk.requests.query(filters: [
-        Filter(authors: [signedEvent.pubKey], kinds: [Nip01Event.kTextNodeKind])
-      ]).future;
+      List<Nip01Event> list = await ndk.requests
+          .query(
+            filters: [
+              Filter(
+                authors: [signedEvent.pubKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(list.first, signedEvent);
 
       response = ndk.broadcast.broadcastDeletion(eventId: signedEvent.id);
       await response.broadcastDoneFuture;
 
-      list = await ndk.requests.query(filters: [
-        Filter(authors: [signedEvent.pubKey], kinds: [Nip01Event.kTextNodeKind])
-      ]).future;
+      list = await ndk.requests
+          .query(
+            filters: [
+              Filter(
+                authors: [signedEvent.pubKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(list, isEmpty);
     });
 
     test('broadcast deletion', () async {
-      ndk.accounts
-          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
       Nip01Event event1 = Nip01Event(
-          pubKey: key0.publicKey,
-          kind: Nip01Event.kTextNodeKind,
-          tags: [],
-          content: "1");
+        pubKey: key0.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: [],
+        content: "1",
+      );
       Nip01Event event2 = Nip01Event(
-          pubKey: key0.publicKey,
-          kind: Nip01Event.kTextNodeKind,
-          tags: [],
-          content: "2");
-      NdkBroadcastResponse response1 =
-          ndk.broadcast.broadcast(nostrEvent: event1);
+        pubKey: key0.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: [],
+        content: "2",
+      );
+      NdkBroadcastResponse response1 = ndk.broadcast.broadcast(
+        nostrEvent: event1,
+      );
       await response1.broadcastDoneFuture;
-      NdkBroadcastResponse response2 =
-          ndk.broadcast.broadcast(nostrEvent: event2);
+      NdkBroadcastResponse response2 = ndk.broadcast.broadcast(
+        nostrEvent: event2,
+      );
       await response2.broadcastDoneFuture;
 
-      List<Nip01Event> list = await ndk.requests.query(filters: [
-        Filter(authors: [event1.pubKey], kinds: [Nip01Event.kTextNodeKind])
-      ]).future;
+      List<Nip01Event> list = await ndk.requests
+          .query(
+            filters: [
+              Filter(
+                authors: [event1.pubKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
 
-      response1 =
-          ndk.broadcast.broadcastDeletion(eventIds: [event1.id, event2.id]);
+      response1 = ndk.broadcast.broadcastDeletion(
+        eventIds: [event1.id, event2.id],
+      );
       await response1.broadcastDoneFuture;
 
-      list = await ndk.requests.query(filters: [
-        Filter(authors: [event1.pubKey], kinds: [Nip01Event.kTextNodeKind])
-      ]).future;
+      list = await ndk.requests
+          .query(
+            filters: [
+              Filter(
+                authors: [event1.pubKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(list, isEmpty);
     });
 
-    test('broadcast deletion with empty eventIds throws ArgumentError',
-        () async {
-      ndk.accounts
-          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
-      expect(
-        () => ndk.broadcast.broadcastDeletion(eventIds: []),
-        throwsA(isA<ArgumentError>()),
-      );
-    });
+    test(
+      'broadcast deletion with empty eventIds throws ArgumentError',
+      () async {
+        ndk.accounts.loginPrivateKey(
+          pubkey: key0.publicKey,
+          privkey: key0.privateKey!,
+        );
+        expect(
+          () => ndk.broadcast.broadcastDeletion(eventIds: []),
+          throwsA(isA<ArgumentError>()),
+        );
+      },
+    );
 
     test('broadcast reaction', () async {
-      ndk.accounts
-          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
       Nip01Event event = Nip01Event(
-          pubKey: key0.publicKey,
-          kind: Nip01Event.kTextNodeKind,
-          tags: [],
-          content: "");
-      NdkBroadcastResponse response =
-          ndk.broadcast.broadcast(nostrEvent: event);
+        pubKey: key0.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: [],
+        content: "",
+      );
+      NdkBroadcastResponse response = ndk.broadcast.broadcast(
+        nostrEvent: event,
+      );
       await response.broadcastDoneFuture;
 
-      List<Nip01Event> list = await ndk.requests.query(filters: [
-        Filter(authors: [event.pubKey], kinds: [Nip01Event.kTextNodeKind])
-      ]).future;
+      List<Nip01Event> list = await ndk.requests
+          .query(
+            filters: [
+              Filter(
+                authors: [event.pubKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(list.first, event);
 
       final reaction = "♡";
-      response = ndk.broadcast
-          .broadcastReaction(eventId: event.id, reaction: reaction);
+      response = ndk.broadcast.broadcastReaction(
+        eventId: event.id,
+        reaction: reaction,
+      );
       await response.broadcastDoneFuture;
 
-      list = await ndk.requests.query(filters: [
-        Filter(authors: [event.pubKey], kinds: [Reaction.kKind])
-      ]).future;
+      list = await ndk.requests
+          .query(
+            filters: [
+              Filter(authors: [event.pubKey], kinds: [Reaction.kKind]),
+            ],
+          )
+          .future;
       expect(list.first.content, reaction);
     });
   });
@@ -202,12 +285,15 @@ void main() async {
       relay1 = MockRelay(name: "relay 1", explicitPort: 5086);
       relay2 = MockRelay(name: "relay 2", explicitPort: 5087);
       relay3 = MockRelay(name: "relay 3", explicitPort: 5088);
-      await relay1.startServer(nip65s: {
-        key1: Nip65(
+      await relay1.startServer(
+        nip65s: {
+          key1: Nip65(
             pubKey: key1.publicKey,
             relays: {relay1.url: ReadWriteMarker.readWrite},
-            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000)
-      });
+            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          ),
+        },
+      );
       await relay2.startServer();
 
       await relay3.startServer();
@@ -225,30 +311,39 @@ void main() async {
       ndk = Ndk(config);
 
       // own
-      await cache.saveUserRelayList(UserRelayList.fromNip65(
-        Nip65(
+      await cache.saveUserRelayList(
+        UserRelayList.fromNip65(
+          Nip65(
             pubKey: key1.publicKey,
             relays: {relay1.url: ReadWriteMarker.readWrite},
-            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000),
-      ));
+            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          ),
+        ),
+      );
 
       // other
-      await cache.saveUserRelayList(UserRelayList.fromNip65(
-        Nip65(
+      await cache.saveUserRelayList(
+        UserRelayList.fromNip65(
+          Nip65(
             pubKey: keyOther.publicKey,
             relays: {relay2.url: ReadWriteMarker.readWrite},
-            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000),
-      ));
+            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          ),
+        ),
+      );
 
-      await cache.saveUserRelayList(UserRelayList.fromNip65(
-        Nip65(
+      await cache.saveUserRelayList(
+        UserRelayList.fromNip65(
+          Nip65(
             pubKey: key1.publicKey,
             relays: {
               relay1.url: ReadWriteMarker.readWrite,
               relay3.url: ReadWriteMarker.readWrite, // Add new relay
             },
-            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000),
-      ));
+            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          ),
+        ),
+      );
 
       await ndk.relays.seedRelaysConnected;
     });
@@ -261,85 +356,113 @@ void main() async {
     });
 
     test('broadcast JIT - specific', () async {
-      ndk.accounts
-          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+      ndk.accounts.loginPrivateKey(
+        pubkey: key1.publicKey,
+        privkey: key1.privateKey!,
+      );
       Nip01Event event = Nip01Event(
-          pubKey: key1.publicKey,
-          kind: Nip01Event.kTextNodeKind,
-          tags: [],
-          content: "hi there");
-      await ndk.broadcast.broadcast(
-          nostrEvent: event,
-          specificRelays: [relay1.url, relay2.url]).broadcastDoneFuture;
+        pubKey: key1.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: [],
+        content: "hi there",
+      );
+      await ndk.broadcast
+          .broadcast(
+            nostrEvent: event,
+            specificRelays: [relay1.url, relay2.url],
+          )
+          .broadcastDoneFuture;
 
-      List<Nip01Event> result = await ndk.requests.query(
-        explicitRelays: [relay2.url],
-        filters: [
-          Filter(authors: [key1.publicKey], kinds: [Nip01Event.kTextNodeKind])
-        ],
-      ).future;
+      List<Nip01Event> result = await ndk.requests
+          .query(
+            explicitRelays: [relay2.url],
+            filters: [
+              Filter(
+                authors: [key1.publicKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(result.length, 1);
     });
 
     test('broadcast JIT - other read', () async {
-      ndk.accounts
-          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+      ndk.accounts.loginPrivateKey(
+        pubkey: key1.publicKey,
+        privkey: key1.privateKey!,
+      );
 
       Nip01Event event = Nip01Event(
-          pubKey: key1.publicKey,
-          kind: Nip01Event.kTextNodeKind,
-          tags: [
-            ["p", keyOther.publicKey]
-          ],
-          content: "hi other");
-
-      await ndk.broadcast
-          .broadcast(
-            nostrEvent: event,
-          )
-          .broadcastDoneFuture;
-
-      List<Nip01Event> result = await ndk.requests.query(
-        name: "other read",
-        explicitRelays: [relay2.url],
-        filters: [
-          Filter(authors: [key1.publicKey], kinds: [Nip01Event.kTextNodeKind])
+        pubKey: key1.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: [
+          ["p", keyOther.publicKey],
         ],
-      ).future;
+        content: "hi other",
+      );
+
+      await ndk.broadcast.broadcast(nostrEvent: event).broadcastDoneFuture;
+
+      List<Nip01Event> result = await ndk.requests
+          .query(
+            name: "other read",
+            explicitRelays: [relay2.url],
+            filters: [
+              Filter(
+                authors: [key1.publicKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(result.length, 1);
     });
 
     test('broadcast JIT - connect relay during broadcast', () async {
-      ndk.accounts
-          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+      ndk.accounts.loginPrivateKey(
+        pubkey: key1.publicKey,
+        privkey: key1.privateKey!,
+      );
 
       // verify relay3 is not initially connected
       expect(ndk.relays.isRelayConnected(relay3.url), false);
 
       Nip01Event event = Nip01Event(
-          pubKey: key1.publicKey,
-          kind: Nip01Event.kTextNodeKind,
-          tags: [],
-          content: "test connection during broadcast");
+        pubKey: key1.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: [],
+        content: "test connection during broadcast",
+      );
 
       // broadcast the event - this should trigger connection to relay3
       await ndk.broadcast.broadcast(nostrEvent: event).broadcastDoneFuture;
 
       // verify the event was broadcast to both relays
-      List<Nip01Event> resultRelay1 = await ndk.requests.query(
-        explicitRelays: [relay1.url],
-        filters: [
-          Filter(authors: [key1.publicKey], kinds: [Nip01Event.kTextNodeKind])
-        ],
-      ).future;
+      List<Nip01Event> resultRelay1 = await ndk.requests
+          .query(
+            explicitRelays: [relay1.url],
+            filters: [
+              Filter(
+                authors: [key1.publicKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(resultRelay1.length, 1);
 
-      List<Nip01Event> resultRelay3 = await ndk.requests.query(
-        explicitRelays: [relay3.url],
-        filters: [
-          Filter(authors: [key1.publicKey], kinds: [Nip01Event.kTextNodeKind])
-        ],
-      ).future;
+      List<Nip01Event> resultRelay3 = await ndk.requests
+          .query(
+            explicitRelays: [relay3.url],
+            filters: [
+              Filter(
+                authors: [key1.publicKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(resultRelay3.length, 1);
     });
   });

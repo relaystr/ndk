@@ -30,7 +30,9 @@ void main() async {
       createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
     final signedEvent = Nip01Utils.signWithPrivateKey(
-        event: event, privateKey: key2.privateKey!);
+      event: event,
+      privateKey: key2.privateKey!,
+    );
 
     return signedEvent;
   }
@@ -38,94 +40,135 @@ void main() async {
   Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
 
   group('Ndk', () {
-    test('query simple note LISTS',
-        timeout: const Timeout(Duration(seconds: 3)), () async {
-      MockRelay relay1 =
-          MockRelay(name: "relay 1", explicitPort: 3960, signEvents: false);
-      await relay1.startServer(textNotes: key1TextNotes);
+    test(
+      'query simple note LISTS',
+      timeout: const Timeout(Duration(seconds: 3)),
+      () async {
+        MockRelay relay1 = MockRelay(
+          name: "relay 1",
+          explicitPort: 3960,
+          signEvents: false,
+        );
+        await relay1.startServer(textNotes: key1TextNotes);
 
-      final ndk = Ndk(
-        NdkConfig(
+        final ndk = Ndk(
+          NdkConfig(
             eventVerifier: Bip340EventVerifier(),
             cache: MemCacheManager(),
             engine: NdkEngine.RELAY_SETS,
-            bootstrapRelays: [relay1.url]),
-      );
-      await ndk.relays.seedRelaysConnected;
-      ndk.accounts
-          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+            bootstrapRelays: [relay1.url],
+          ),
+        );
+        await ndk.relays.seedRelaysConnected;
+        ndk.accounts.loginPrivateKey(
+          pubkey: key1.publicKey,
+          privkey: key1.privateKey!,
+        );
 
-      final response = ndk.requests.query(filters: [
-        Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey])
-      ]);
+        final response = ndk.requests.query(
+          filters: [
+            Filter(
+              kinds: [Nip01Event.kTextNodeKind],
+              authors: [key1.publicKey],
+            ),
+          ],
+        );
 
-      await expectLater(response.stream, emitsInAnyOrder(key1TextNotes.values));
+        await expectLater(
+          response.stream,
+          emitsInAnyOrder(key1TextNotes.values),
+        );
 
-      final response2 = ndk.requests.query(filters: [
-        Filter(
-          kinds: [Nip01Event.kTextNodeKind],
-          authors: [key1.publicKey, key2.publicKey],
-        )
-      ]);
+        final response2 = ndk.requests.query(
+          filters: [
+            Filter(
+              kinds: [Nip01Event.kTextNodeKind],
+              authors: [key1.publicKey, key2.publicKey],
+            ),
+          ],
+        );
 
-      await expectLater(
-          response2.stream, emitsInAnyOrder(key1TextNotes.values));
+        await expectLater(
+          response2.stream,
+          emitsInAnyOrder(key1TextNotes.values),
+        );
 
-      await relay1.stopServer();
-    });
+        await relay1.stopServer();
+      },
+    );
 
-    test('query simple event by id',
-        timeout: const Timeout(Duration(seconds: 3)), () async {
-      MockRelay relay1 =
-          MockRelay(name: "relay 1", explicitPort: 3961, signEvents: false);
-      await relay1.startServer(textNotes: key1TextNotes);
+    test(
+      'query simple event by id',
+      timeout: const Timeout(Duration(seconds: 3)),
+      () async {
+        MockRelay relay1 = MockRelay(
+          name: "relay 1",
+          explicitPort: 3961,
+          signEvents: false,
+        );
+        await relay1.startServer(textNotes: key1TextNotes);
 
-      final cache = MemCacheManager();
+        final cache = MemCacheManager();
 
-      final ndk = Ndk(
-        NdkConfig(
+        final ndk = Ndk(
+          NdkConfig(
             eventVerifier: Bip340EventVerifier(),
             cache: cache,
             engine: NdkEngine.RELAY_SETS,
-            bootstrapRelays: [relay1.url]),
-      );
-      await ndk.relays.seedRelaysConnected;
+            bootstrapRelays: [relay1.url],
+          ),
+        );
+        await ndk.relays.seedRelaysConnected;
 
-      final response = ndk.requests.query(filters: [
-        Filter(ids: [key1TextNotes[key1]!.id])
-      ]);
+        final response = ndk.requests.query(
+          filters: [
+            Filter(ids: [key1TextNotes[key1]!.id]),
+          ],
+        );
 
-      await expectLater(response.stream, emitsInAnyOrder(key1TextNotes.values));
+        await expectLater(
+          response.stream,
+          emitsInAnyOrder(key1TextNotes.values),
+        );
 
-      await cache.saveEvent(key1TextNotes[key1]!);
+        await cache.saveEvent(key1TextNotes[key1]!);
 
-      final response2 = ndk.requests.query(filters: [
-        Filter(ids: [key1TextNotes[key1]!.id])
-      ]);
+        final response2 = ndk.requests.query(
+          filters: [
+            Filter(ids: [key1TextNotes[key1]!.id]),
+          ],
+        );
 
-      await expectLater(
-          response2.stream, emitsInAnyOrder(key1TextNotes.values));
+        await expectLater(
+          response2.stream,
+          emitsInAnyOrder(key1TextNotes.values),
+        );
 
-      await relay1.stopServer();
-    });
+        await relay1.stopServer();
+      },
+    );
     // ================================================================================================
 
     test('verify signatures of events', () async {
-      MockRelay relay1 =
-          MockRelay(name: "relay 1", explicitPort: 3962, signEvents: false);
+      MockRelay relay1 = MockRelay(
+        name: "relay 1",
+        explicitPort: 3962,
+        signEvents: false,
+      );
       await relay1.startServer(textNotes: key1TextNotes);
 
       final ndk = Ndk(
         NdkConfig(
-            eventVerifier: MockEventVerifier(result: false),
-            cache: MemCacheManager(),
-            engine: NdkEngine.RELAY_SETS,
-            bootstrapRelays: [relay1.url]),
+          eventVerifier: MockEventVerifier(result: false),
+          cache: MemCacheManager(),
+          engine: NdkEngine.RELAY_SETS,
+          bootstrapRelays: [relay1.url],
+        ),
       );
 
       final response = ndk.requests.query(
         filters: [
-          Filter(authors: [key1.publicKey], kinds: [Nip01Event.kTextNodeKind])
+          Filter(authors: [key1.publicKey], kinds: [Nip01Event.kTextNodeKind]),
         ],
       );
       // ignore: unused_local_variable
@@ -136,54 +179,57 @@ void main() async {
     });
 
     test(
-        'emptyBootstrapRelaysConfig with non-list welcome message from explicit relay',
-        () async {
-      final welcomeMessage =
-          '{"welcome": {"motd": "test message"}, "type": "welcome"}';
-      MockRelay explicitRelay = MockRelay(
-        name: "explicitRelay",
-        explicitPort: 3963,
-        customWelcomeMessage: welcomeMessage,
-      );
-      await explicitRelay.startServer();
+      'emptyBootstrapRelaysConfig with non-list welcome message from explicit relay',
+      () async {
+        final welcomeMessage =
+            '{"welcome": {"motd": "test message"}, "type": "welcome"}';
+        MockRelay explicitRelay = MockRelay(
+          name: "explicitRelay",
+          explicitPort: 3963,
+          customWelcomeMessage: welcomeMessage,
+        );
+        await explicitRelay.startServer();
 
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
+        final ndk = Ndk.emptyBootstrapRelaysConfig();
 
-      final query = ndk.requests.query(
-        filters: [
-          Filter(kinds: [0]),
-        ],
-        explicitRelays: [explicitRelay.url],
-      );
+        final query = ndk.requests.query(
+          filters: [
+            Filter(kinds: [0]),
+          ],
+          explicitRelays: [explicitRelay.url],
+        );
 
-      await query.future;
+        await query.future;
 
-      ndk.destroy();
-      await explicitRelay.stopServer();
-    });
+        ndk.destroy();
+        await explicitRelay.stopServer();
+      },
+    );
 
-    test('should handle null values in events from relays gracefully',
-        () async {
-      MockRelay explicitRelay = MockRelay(
-        name: "malformedRelay",
-        explicitPort: 3966,
-        sendMalformedEvents: true,
-      );
-      await explicitRelay.startServer(textNotes: key1TextNotes);
+    test(
+      'should handle null values in events from relays gracefully',
+      () async {
+        MockRelay explicitRelay = MockRelay(
+          name: "malformedRelay",
+          explicitPort: 3966,
+          sendMalformedEvents: true,
+        );
+        await explicitRelay.startServer(textNotes: key1TextNotes);
 
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
+        final ndk = Ndk.emptyBootstrapRelaysConfig();
 
-      final query = ndk.requests.query(
-        filters: [
-          Filter(kinds: [0]),
-        ],
-        explicitRelays: [explicitRelay.url],
-      );
+        final query = ndk.requests.query(
+          filters: [
+            Filter(kinds: [0]),
+          ],
+          explicitRelays: [explicitRelay.url],
+        );
 
-      await query.future;
+        await query.future;
 
-      ndk.destroy();
-      await explicitRelay.stopServer();
-    });
+        ndk.destroy();
+        await explicitRelay.stopServer();
+      },
+    );
   });
 }

@@ -118,16 +118,20 @@ class CashuWalletTransactionModel extends CashuWalletTransaction {
   factory CashuWalletTransactionModel.fromJson(Map<String, dynamic> json) {
     final metadata = Map<String, dynamic>.from(json['metadata'] as Map? ?? {});
 
-    final rawQuote = json['qoute'] as Map<String, dynamic>? ??
+    final rawQuote =
+        json['qoute'] as Map<String, dynamic>? ??
         metadata['qoute'] as Map<String, dynamic>?;
-    final rawQuoteMelt = json['qouteMelt'] as Map<String, dynamic>? ??
+    final rawQuoteMelt =
+        json['qouteMelt'] as Map<String, dynamic>? ??
         metadata['qouteMelt'] as Map<String, dynamic>?;
 
-    final rawUsedKeysets = json['usedKeysets'] as List<dynamic>? ??
+    final rawUsedKeysets =
+        json['usedKeysets'] as List<dynamic>? ??
         metadata['usedKeyset'] as List<dynamic>? ??
         metadata['usedKeysets'] as List<dynamic>?;
 
-    final rawProofPubKeys = json['proofPubKeys'] as List<dynamic>? ??
+    final rawProofPubKeys =
+        json['proofPubKeys'] as List<dynamic>? ??
         metadata['proofPubKeys'] as List<dynamic>?;
 
     return CashuWalletTransactionModel(
@@ -144,8 +148,9 @@ class CashuWalletTransactionModel extends CashuWalletTransaction {
       note: json['note'] as String? ?? metadata['note'] as String?,
       method: json['method'] as String? ?? metadata['method'] as String?,
       qoute: rawQuote != null ? CashuQuote.fromJson(rawQuote) : null,
-      qouteMelt:
-          rawQuoteMelt != null ? CashuQuoteMelt.fromJson(rawQuoteMelt) : null,
+      qouteMelt: rawQuoteMelt != null
+          ? CashuQuoteMelt.fromJson(rawQuoteMelt)
+          : null,
       usedKeysets: rawUsedKeysets
           ?.map((entry) => CahsuKeyset.fromJson(entry as Map<String, dynamic>))
           .toList(),
@@ -156,10 +161,7 @@ class CashuWalletTransactionModel extends CashuWalletTransaction {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      ...WalletTransactionModel._baseJson(this),
-      'metadata': metadata,
-    };
+    return {...WalletTransactionModel._baseJson(this), 'metadata': metadata};
   }
 }
 
@@ -210,10 +212,7 @@ class NwcWalletTransactionModel extends NwcWalletTransaction {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      ...WalletTransactionModel._baseJson(this),
-      'metadata': metadata,
-    };
+    return {...WalletTransactionModel._baseJson(this), 'metadata': metadata};
   }
 }
 
@@ -264,9 +263,6 @@ class LnurlWalletTransactionModel extends LnurlWalletTransaction {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      ...WalletTransactionModel._baseJson(this),
-      'metadata': metadata,
-    };
+    return {...WalletTransactionModel._baseJson(this), 'metadata': metadata};
   }
 }

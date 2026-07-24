@@ -36,8 +36,11 @@ class Bip32Keys {
   bool get isNeutered => _d == null;
 
   Bip32Keys get neutered {
-    final neutered =
-        Bip32Keys.fromPublicKey(public, chainCode, network: network);
+    final neutered = Bip32Keys.fromPublicKey(
+      public,
+      chainCode,
+      network: network,
+    );
     neutered.depth = depth;
     neutered.index = index;
     neutered.parentFingerprint = parentFingerprint;
@@ -65,8 +68,9 @@ class Bip32Keys {
     }
 
     final depth = buffer[Constants.depthOffset];
-    final parentFingerprint =
-        bytes.getUint32(Constants.parentFingerprintOffset);
+    final parentFingerprint = bytes.getUint32(
+      Constants.parentFingerprintOffset,
+    );
     if (depth == Constants.minDepth) {
       if (parentFingerprint != Constants.defaultParentFingerprint) {
         throw ArgumentError(Constants.errorInvalidParentFingerprint);
@@ -86,11 +90,15 @@ class Bip32Keys {
         throw ArgumentError(Constants.errorInvalidPrivateKey);
       }
       final k = buffer.sublist(
-          Constants.privateKeyOffset, Constants.extendedKeyLength);
+        Constants.privateKeyOffset,
+        Constants.extendedKeyLength,
+      );
       hd = Bip32Keys.fromPrivateKey(k, chainCode, network: network);
     } else {
       final x = buffer.sublist(
-          Constants.publicKeyOffset, Constants.extendedKeyLength);
+        Constants.publicKeyOffset,
+        Constants.extendedKeyLength,
+      );
       hd = Bip32Keys.fromPublicKey(x, chainCode, network: network);
     }
 
@@ -100,8 +108,11 @@ class Bip32Keys {
     return hd;
   }
 
-  factory Bip32Keys.fromPublicKey(Uint8List publicKey, Uint8List chainCode,
-      {Bip32Network? network}) {
+  factory Bip32Keys.fromPublicKey(
+    Uint8List publicKey,
+    Uint8List chainCode, {
+    Bip32Network? network,
+  }) {
     network ??= Constants.bitcoin;
 
     if (!ecc.isPoint(publicKey)) {
@@ -229,8 +240,9 @@ class Bip32Keys {
 
   String toBase58({Bip32Network? overrideNetwork}) {
     final network = overrideNetwork ?? this.network;
-    final version =
-        isNeutered ? network.version.public : network.version.private;
+    final version = isNeutered
+        ? network.version.public
+        : network.version.private;
 
     final buffer = Uint8List(78);
     final bytes = buffer.buffer.asByteData();
@@ -254,11 +266,7 @@ class Bip32Keys {
     if (private == null) throw ArgumentError(Constants.errorMissingPrivateKey);
 
     return wif.encode(
-      wif.WIF(
-        version: network.wif,
-        privateKey: private!,
-        compressed: true,
-      ),
+      wif.WIF(version: network.wif, privateKey: private!, compressed: true),
     );
   }
 }

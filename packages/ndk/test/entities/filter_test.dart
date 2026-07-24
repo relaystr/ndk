@@ -151,9 +151,7 @@ void main() {
     });
 
     test('cloneWithAuthors updates authors', () {
-      var filter = Filter(
-        authors: ['author1', 'author2'],
-      );
+      var filter = Filter(authors: ['author1', 'author2']);
 
       var newAuthors = ['author3', 'author4'];
       var updatedFilter = filter.cloneWithAuthors(newAuthors);
@@ -162,9 +160,7 @@ void main() {
     });
 
     test('cloneWithPTags updates pTags', () {
-      var filter = Filter(
-        pTags: ['ptag1'],
-      );
+      var filter = Filter(pTags: ['ptag1']);
 
       var newPTags = ['ptag2', 'ptag3'];
       var updatedFilter = filter.cloneWithPTags(newPTags);

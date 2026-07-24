@@ -15,8 +15,10 @@ void main() {
       final result = nip19_utils.Nip19Utils.convertBits(data, 8, 5, true);
 
       expect(result, isNotEmpty);
-      expect(result.every((v) => v >= 0 && v < 32),
-          true); // All values should be 5-bit
+      expect(
+        result.every((v) => v >= 0 && v < 32),
+        true,
+      ); // All values should be 5-bit
     });
 
     test('convertBits should convert from 5 to 8 bits with padding', () {
@@ -28,25 +30,29 @@ void main() {
         3,
         12,
         15,
-        0
+        0,
       ]; // 5-bit values, padded correctly
       final result = nip19_utils.Nip19Utils.convertBits(data, 5, 8, true);
 
       expect(result, isNotEmpty);
-      expect(result.every((v) => v >= 0 && v < 256),
-          true); // All values should be 8-bit
-    });
-
-    test('convertBits should throw InvalidPadding for illegal zero padding',
-        () {
-      // Create data that will have bits >= from when pad is false
-      final data = [1, 2, 3, 4, 5];
-
       expect(
-        () => nip19_utils.Nip19Utils.convertBits(data, 5, 8, false),
-        throwsA(isA<nip19_utils.InvalidPadding>()),
-      );
+        result.every((v) => v >= 0 && v < 256),
+        true,
+      ); // All values should be 8-bit
     });
+
+    test(
+      'convertBits should throw InvalidPadding for illegal zero padding',
+      () {
+        // Create data that will have bits >= from when pad is false
+        final data = [1, 2, 3, 4, 5];
+
+        expect(
+          () => nip19_utils.Nip19Utils.convertBits(data, 5, 8, false),
+          throwsA(isA<nip19_utils.InvalidPadding>()),
+        );
+      },
+    );
 
     test('convertBits should throw InvalidPadding for non-zero padding', () {
       // Create data with non-zero remaining bits that violate padding rules
@@ -86,12 +92,20 @@ void main() {
       final original = [72, 101, 108, 108, 111]; // "Hello"
 
       // Convert 8 to 5 bits
-      final converted5bit =
-          nip19_utils.Nip19Utils.convertBits(original, 8, 5, true);
+      final converted5bit = nip19_utils.Nip19Utils.convertBits(
+        original,
+        8,
+        5,
+        true,
+      );
 
       // Convert back 5 to 8 bits
-      final converted8bit =
-          nip19_utils.Nip19Utils.convertBits(converted5bit, 5, 8, false);
+      final converted8bit = nip19_utils.Nip19Utils.convertBits(
+        converted5bit,
+        5,
+        8,
+        false,
+      );
 
       expect(converted8bit, original);
     });
@@ -104,7 +118,7 @@ void main() {
       // Type 1, Length 3, Value [0x03, 0x04, 0x05]
       final data = <int>[
         0, 2, 0x01, 0x02, // TLV 1
-        1, 3, 0x03, 0x04, 0x05 // TLV 2
+        1, 3, 0x03, 0x04, 0x05, // TLV 2
       ];
 
       final result = Nip19TLV.parseTLV(data);
@@ -152,7 +166,7 @@ void main() {
         0,
         5,
         1,
-        2
+        2,
       ]; // Type 0, Length 5, but only 2 bytes of value
       expect(() => Nip19TLV.parseTLV(data), throwsA(isA<FormatException>()));
     });
@@ -253,10 +267,7 @@ void main() {
           '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177';
       const relays = ['wss://relay.example.com', 'wss://relay2.example.com'];
 
-      final nprofile = Nip19.encodeNprofile(
-        pubkey: pubkey,
-        relays: relays,
-      );
+      final nprofile = Nip19.encodeNprofile(pubkey: pubkey, relays: relays);
 
       expect(nprofile.startsWith('nprofile1'), true);
 
@@ -292,9 +303,11 @@ void main() {
         final str = naddr.toString();
         expect(str.contains('test-id'), true);
         expect(
-            str.contains(
-                '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c'),
-            true);
+          str.contains(
+            '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
+          ),
+          true,
+        );
         expect(str.contains('30023'), true);
         expect(str.contains('wss://relay.example.com'), true);
       });
@@ -311,13 +324,17 @@ void main() {
 
         final str = nevent.toString();
         expect(
-            str.contains(
-                'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43'),
-            true);
+          str.contains(
+            'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43',
+          ),
+          true,
+        );
         expect(
-            str.contains(
-                '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29cafa'),
-            true);
+          str.contains(
+            '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29cafa',
+          ),
+          true,
+        );
         expect(str.contains('1'), true);
         expect(str.contains('wss://nos.lol/'), true);
       });
@@ -331,9 +348,11 @@ void main() {
 
         final str = nprofile.toString();
         expect(
-            str.contains(
-                '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177'),
-            true);
+          str.contains(
+            '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177',
+          ),
+          true,
+        );
         expect(str.contains('wss://relay.example.com'), true);
       });
     });
@@ -343,8 +362,9 @@ void main() {
         // Use valid hex but wrong length (30 bytes instead of 32)
         expect(
           () => Nip19.encodeNevent(
-              eventId:
-                  'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d516'),
+            eventId:
+                'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d516',
+          ),
           throwsA(isA<ArgumentError>()),
         );
       });
@@ -405,8 +425,9 @@ void main() {
         // Use valid hex but wrong length (30 bytes instead of 32)
         expect(
           () => Nip19.encodeNprofile(
-              pubkey:
-                  '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f'),
+            pubkey:
+                '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f',
+          ),
           throwsA(isA<ArgumentError>()),
         );
       });
@@ -426,7 +447,8 @@ void main() {
       test('decodeNaddr should throw on missing identifier', () {
         // Create naddr with pubkey (type 2) and kind (type 3) but NO identifier (type 0)
         final pubkeyBytes = hex.decode(
-            '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c');
+          '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
+        );
         final tlvData = <int>[
           2, 32, // type 2 (pubkey), length 32
           ...pubkeyBytes, // pubkey value
@@ -440,10 +462,7 @@ void main() {
           'naddr'.length + bech32Data.length + 10,
         );
 
-        expect(
-          () => Nip19.decodeNaddr(naddr),
-          throwsA(isA<ArgumentError>()),
-        );
+        expect(() => Nip19.decodeNaddr(naddr), throwsA(isA<ArgumentError>()));
       });
 
       test('decodeNprofile should throw on invalid HRP', () {
@@ -512,10 +531,7 @@ void main() {
           'nevent'.length + bech32Data.length + 10,
         );
 
-        expect(
-          () => Nip19.decodeNevent(nevent),
-          throwsA(isA<ArgumentError>()),
-        );
+        expect(() => Nip19.decodeNevent(nevent), throwsA(isA<ArgumentError>()));
       });
 
       test('decodeNaddr should throw on missing pubkey field', () {
@@ -534,16 +550,14 @@ void main() {
           'naddr'.length + bech32Data.length + 10,
         );
 
-        expect(
-          () => Nip19.decodeNaddr(naddr),
-          throwsA(isA<ArgumentError>()),
-        );
+        expect(() => Nip19.decodeNaddr(naddr), throwsA(isA<ArgumentError>()));
       });
 
       test('decodeNaddr should throw on missing kind field', () {
         // Create naddr with identifier and pubkey but no kind
         final pubkeyBytes = hex.decode(
-            '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c');
+          '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
+        );
         final identifier = 'test';
         final tlvData = <int>[
           0, identifier.length, // type 0 (identifier), length
@@ -558,10 +572,7 @@ void main() {
           'naddr'.length + bech32Data.length + 10,
         );
 
-        expect(
-          () => Nip19.decodeNaddr(naddr),
-          throwsA(isA<ArgumentError>()),
-        );
+        expect(() => Nip19.decodeNaddr(naddr), throwsA(isA<ArgumentError>()));
       });
     });
 
@@ -692,14 +703,11 @@ void main() {
         const relays = [
           'wss://relay.example.com',
           'wss://relay2.example.com',
-          'wss://nos.lol/'
+          'wss://nos.lol/',
         ];
 
         // Encode
-        final encoded = Nip19.encodeNprofile(
-          pubkey: pubkey,
-          relays: relays,
-        );
+        final encoded = Nip19.encodeNprofile(pubkey: pubkey, relays: relays);
 
         // Decode
         final decoded = Nip19.decodeNprofile(encoded);
@@ -879,10 +887,7 @@ void main() {
         );
 
         // Encode as nprofile (using author pubkey)
-        final nprofile = Nip19.encodeNprofile(
-          pubkey: pubkey,
-          relays: relays,
-        );
+        final nprofile = Nip19.encodeNprofile(pubkey: pubkey, relays: relays);
 
         // Encode as note (just event ID)
         final note = Nip19.encodeNoteId(eventId);

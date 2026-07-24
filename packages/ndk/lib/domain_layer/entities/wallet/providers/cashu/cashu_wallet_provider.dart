@@ -77,11 +77,13 @@ class CashuWalletProvider implements WalletProvider {
 
     return _cashuUseCase.balances.map((balances) {
       return balances.where((b) => b.mintUrl == wallet.mintUrl).expand((b) {
-        return b.balances.entries.map((entry) => WalletBalance(
-              unit: entry.key,
-              amount: entry.value,
-              walletId: wallet.id,
-            ));
+        return b.balances.entries.map(
+          (entry) => WalletBalance(
+            unit: entry.key,
+            amount: entry.value,
+            walletId: wallet.id,
+          ),
+        );
       }).toList();
     });
   }
@@ -108,8 +110,11 @@ class CashuWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<PayInvoiceResponse> send(Wallet wallet, String invoice,
-      {Duration? timeout}) async {
+  Future<PayInvoiceResponse> send(
+    Wallet wallet,
+    String invoice, {
+    Duration? timeout,
+  }) async {
     if (wallet is! CashuWallet) {
       throw ArgumentError('Expected a CashuWallet');
     }
@@ -149,13 +154,15 @@ class CashuWalletProvider implements WalletProvider {
   Stream<List<Wallet>> get discoveredWallets {
     return _cashuUseCase.knownMints.map((mints) {
       return mints
-          .map((mint) => CashuWallet(
-                id: mint.urls.first,
-                name: mint.name ?? mint.urls.first,
-                supportedUnits: mint.supportedUnits,
-                mintUrl: mint.urls.first,
-                mintInfo: mint,
-              ))
+          .map(
+            (mint) => CashuWallet(
+              id: mint.urls.first,
+              name: mint.name ?? mint.urls.first,
+              supportedUnits: mint.supportedUnits,
+              mintUrl: mint.urls.first,
+              mintInfo: mint,
+            ),
+          )
           .toList();
     });
   }

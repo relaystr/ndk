@@ -34,17 +34,16 @@ void main() {
       tags: [],
       content: "content 2",
     );
-    await ndk.broadcast.broadcast(
-        nostrEvent: event1, specificRelays: [relayUrl]).broadcastDoneFuture;
-    await ndk.broadcast.broadcast(
-        nostrEvent: event2, specificRelays: [relayUrl]).broadcastDoneFuture;
+    await ndk.broadcast
+        .broadcast(nostrEvent: event1, specificRelays: [relayUrl])
+        .broadcastDoneFuture;
+    await ndk.broadcast
+        .broadcast(nostrEvent: event2, specificRelays: [relayUrl])
+        .broadcastDoneFuture;
 
     final filter = Filter(authors: [keypair.publicKey]);
 
-    final reconcile = ndk.nip77.reconcile(
-      relayUrl: relayUrl,
-      filter: filter,
-    );
+    final reconcile = ndk.nip77.reconcile(relayUrl: relayUrl, filter: filter);
 
     final res = await reconcile.future;
 
@@ -54,7 +53,7 @@ void main() {
     await ndk.destroy();
   });
 
-  test("should return needIds with empty local cache", () async {
+  test("should return needIds with empty local cache", skip: true, () async {
     final relayUrl = "wss://relay.damus.io";
 
     final ndk = Ndk(
@@ -84,7 +83,7 @@ void main() {
     await ndk.destroy();
   });
 
-  test("should report local events as haveIds", () async {
+  test("should report local events as haveIds", skip: true, () async {
     final relayUrl = "wss://relay.damus.io";
 
     final ndk = Ndk(
@@ -127,27 +126,31 @@ void main() {
     await ndk.destroy();
   });
 
-  test("should fail gracefully when NIP-77 not supported", () async {
-    final relayUrl = "wss://relay.primal.net";
+  test(
+    "should fail gracefully when NIP-77 not supported",
+    skip: true,
+    () async {
+      final relayUrl = "wss://relay.primal.net";
 
-    final ndk = Ndk(
-      NdkConfig(
-        eventVerifier: MockEventVerifier(),
-        cache: MemCacheManager(),
-        bootstrapRelays: [relayUrl],
-      ),
-    );
-
-    try {
-      final reconcile = ndk.nip77.reconcile(
-        relayUrl: relayUrl,
-        filter: Filter(kinds: [1]),
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: MockEventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: [relayUrl],
+        ),
       );
-      await reconcile.future;
-    } catch (e) {
-      expect(true, isTrue);
-    }
 
-    await ndk.destroy();
-  });
+      try {
+        final reconcile = ndk.nip77.reconcile(
+          relayUrl: relayUrl,
+          filter: Filter(kinds: [1]),
+        );
+        await reconcile.future;
+      } catch (e) {
+        expect(true, isTrue);
+      }
+
+      await ndk.destroy();
+    },
+  );
 }

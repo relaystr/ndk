@@ -15,7 +15,9 @@ NostrMessageRaw decodeNostrMsg(String msgJsonStr) {
     switch (msgTypeStr) {
       case 'NOTICE':
         return NostrMessageRaw(
-            type: NostrMessageRawType.notice, otherData: decoded);
+          type: NostrMessageRawType.notice,
+          otherData: decoded,
+        );
       case 'EVENT':
         if (decoded.length < 3) {
           return NostrMessageRaw(type: NostrMessageRawType.unknown);
@@ -47,29 +49,41 @@ NostrMessageRaw decodeNostrMsg(String msgJsonStr) {
         );
       case 'OK':
         return NostrMessageRaw(
-            type: NostrMessageRawType.ok, otherData: decoded);
+          type: NostrMessageRawType.ok,
+          otherData: decoded,
+        );
       case 'CLOSED':
         return NostrMessageRaw(
-            type: NostrMessageRawType.closed, otherData: decoded);
+          type: NostrMessageRawType.closed,
+          otherData: decoded,
+        );
       case 'AUTH':
         return NostrMessageRaw(
-            type: NostrMessageRawType.auth, otherData: decoded);
+          type: NostrMessageRawType.auth,
+          otherData: decoded,
+        );
       case 'NEG-MSG':
         return NostrMessageRaw(
-            type: NostrMessageRawType.negMsg,
-            requestId: decoded.length > 1 ? decoded[1] : null,
-            otherData: decoded);
+          type: NostrMessageRawType.negMsg,
+          requestId: decoded.length > 1 ? decoded[1] : null,
+          otherData: decoded,
+        );
       case 'NEG-ERR':
         return NostrMessageRaw(
-            type: NostrMessageRawType.negErr,
-            requestId: decoded.length > 1 ? decoded[1] : null,
-            otherData: decoded);
+          type: NostrMessageRawType.negErr,
+          requestId: decoded.length > 1 ? decoded[1] : null,
+          otherData: decoded,
+        );
       default:
         return NostrMessageRaw(
-            type: NostrMessageRawType.unknown, otherData: decoded);
+          type: NostrMessageRawType.unknown,
+          otherData: decoded,
+        );
     }
   } catch (e) {
     return NostrMessageRaw(
-        type: NostrMessageRawType.unknown, otherData: msgJsonStr);
+      type: NostrMessageRawType.unknown,
+      otherData: msgJsonStr,
+    );
   }
 }

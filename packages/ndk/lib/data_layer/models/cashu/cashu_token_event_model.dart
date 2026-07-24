@@ -6,10 +6,11 @@ import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/repositories/event_signer.dart';
 
 class CashuTokenEventModel extends CashuTokenEvent {
-  CashuTokenEventModel(
-      {required super.mintUrl,
-      required super.proofs,
-      required super.deletedIds});
+  CashuTokenEventModel({
+    required super.mintUrl,
+    required super.proofs,
+    required super.deletedIds,
+  });
 
   Future<CashuTokenEventModel> fromNip01Event({
     required Nip01Event nostrEvent,

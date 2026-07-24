@@ -24,10 +24,12 @@ class RelayJitRequestSpecificStrategy {
       final isConnected = relayManager.isRelayConnected(sRelay);
       final tryingToConnect = relayManager.isRelayConnecting(sRelay);
       if (isConnected || tryingToConnect) continue;
-      connectFutures.add(relayManager.connectRelay(
-        dirtyUrl: sRelay,
-        connectionSource: ConnectionSource.explicit,
-      ));
+      connectFutures.add(
+        relayManager.connectRelay(
+          dirtyUrl: sRelay,
+          connectionSource: ConnectionSource.explicit,
+        ),
+      );
     }
     await Future.wait(connectFutures);
 

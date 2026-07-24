@@ -59,10 +59,7 @@ class Files {
     required String sha256,
     List<String>? serverUrls,
   }) {
-    return _blossom.deleteBlob(
-      sha256: sha256,
-      serverUrls: serverUrls,
-    );
+    return _blossom.deleteBlob(sha256: sha256, serverUrls: serverUrls);
   }
 
   /// download a file from the server(s) \
@@ -86,9 +83,10 @@ class Files {
 
       // Try to download using blossom
       return await _blossom.getBlob(
-          sha256: sha256,
-          serverUrls: serverUrls,
-          pubkeyToFetchUserServerList: pubkey);
+        sha256: sha256,
+        serverUrls: serverUrls,
+        pubkeyToFetchUserServerList: pubkey,
+      );
     } else {
       return await _blossom.directDownload(url: Uri.parse(url));
     }

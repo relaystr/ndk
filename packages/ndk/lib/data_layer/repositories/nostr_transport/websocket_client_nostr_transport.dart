@@ -19,13 +19,17 @@ class WebSocketClientNostrTransport implements NostrTransport {
   /// Creates a new WebSocketNostrTransport instance.
   ///
   /// [_websocketDS] is the WebSocket data source to be used for communication.
-  WebSocketClientNostrTransport(this._websocketDS,
-      {Function? onReconnect, Function(int?, Object?, String?)? onDisconnect}) {
+  WebSocketClientNostrTransport(
+    this._websocketDS, {
+    Function? onReconnect,
+    Function(int?, Object?, String?)? onDisconnect,
+  }) {
     Completer completer = Completer();
     ready = completer.future;
     _stateStreamSubscription = _websocketDS.ws.connection.listen((state) {
-      Logger.log
-          .d(() => "${_websocketDS.url} connection state changed to $state");
+      Logger.log.d(
+        () => "${_websocketDS.url} connection state changed to $state",
+      );
       switch (state) {
         case Connected() || Reconnected():
           completer.complete();
@@ -47,8 +51,10 @@ class WebSocketClientNostrTransport implements NostrTransport {
           // Do nothing, just waiting for reconnection to be established
           break;
         default:
-          Logger.log.w(() =>
-              "${_websocketDS.url} connection state changed to unknown state: $state");
+          Logger.log.w(
+            () =>
+                "${_websocketDS.url} connection state changed to unknown state: $state",
+          );
       }
     });
   }
@@ -74,8 +80,11 @@ class WebSocketClientNostrTransport implements NostrTransport {
   ///
   /// Returns a StreamSubscription that can be used to control the subscription.
   @override
-  StreamSubscription listen(void Function(dynamic p1) onData,
-      {Function? onError, void Function()? onDone}) {
+  StreamSubscription listen(
+    void Function(dynamic p1) onData, {
+    Function? onError,
+    void Function()? onDone,
+  }) {
     return _websocketDS.listen(onData, onError: onError, onDone: onDone);
   }
 

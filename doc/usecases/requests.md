@@ -52,3 +52,15 @@ final response = ndk.requests.query(
 ```
 
 If `authenticateAs` is not specified, NDK falls back to the currently logged-in account.
+
+## Event sources
+
+When events are cached, NDK may also persist source relay information.
+
+Current behavior:
+
+- source relays are optional provenance data
+- they answer where an event was observed
+- they are separate from relay delivery targets
+
+For most apps, normal request and usecase APIs are enough and you do not need to access source relay data directly.

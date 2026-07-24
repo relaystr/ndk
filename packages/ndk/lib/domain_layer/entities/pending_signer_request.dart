@@ -19,7 +19,7 @@ enum SignerMethod {
 /// Represents a pending request waiting for user approval on a signer.
 ///
 /// This is used by signers that require human approval (NIP-46 bunkers,
-/// NIP-07 browser extensions, Amber, etc.) to expose their pending
+/// NIP-07 browser extensions, NIP-55 signer apps, etc.) to expose their pending
 /// operations to the UI.
 class PendingSignerRequest {
   /// Unique identifier for this request

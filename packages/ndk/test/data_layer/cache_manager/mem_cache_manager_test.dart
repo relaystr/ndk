@@ -6,8 +6,14 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk_cache_manager_test_suite/ndk_cache_manager_test_suite.dart';
 
 // This will generate mock classes for our entities
-@GenerateMocks(
-    [UserRelayList, RelaySet, ContactList, Metadata, Nip01Event, Nip05])
+@GenerateMocks([
+  UserRelayList,
+  RelaySet,
+  ContactList,
+  Metadata,
+  Nip01Event,
+  Nip05,
+])
 import 'mem_cache_manager_test.mocks.dart';
 
 void main() {
@@ -45,8 +51,10 @@ void main() {
       when(mockUserRelayList1.pubKey).thenReturn('testPubKey1');
       when(mockUserRelayList2.pubKey).thenReturn('testPubKey2');
 
-      await cacheManager
-          .saveUserRelayLists([mockUserRelayList1, mockUserRelayList2]);
+      await cacheManager.saveUserRelayLists([
+        mockUserRelayList1,
+        mockUserRelayList2,
+      ]);
       await cacheManager.removeAllUserRelayLists();
 
       expect(await cacheManager.loadUserRelayList('testPubKey1'), isNull);
@@ -96,37 +104,109 @@ void main() {
 
   group('Event tests', () {
     test('saveEvent and loadEvent', () async {
-      final mockEvent = MockNip01Event();
-      when(mockEvent.id).thenReturn('testId');
+      final event = Nip01Event(
+        pubKey: 'testPubKey',
+        kind: 1,
+        tags: [],
+        content: 'test event',
+      );
 
-      await cacheManager.saveEvent(mockEvent);
-      final result = await cacheManager.loadEvent('testId');
+      await cacheManager.saveEvent(event);
+      final result = await cacheManager.loadEvent(event.id);
 
-      expect(result, equals(mockEvent));
+      expect(result, equals(event));
     });
 
     test('removeEvent', () async {
-      final mockEvent = MockNip01Event();
-      when(mockEvent.id).thenReturn('testId');
+      final event = Nip01Event(
+        pubKey: 'testPubKey',
+        kind: 1,
+        tags: [],
+        content: 'test event',
+      );
 
-      await cacheManager.saveEvent(mockEvent);
-      await cacheManager.removeEvent('testId');
-      final result = await cacheManager.loadEvent('testId');
+      await cacheManager.saveEvent(event);
+      await cacheManager.removeEvent(event.id);
+      final result = await cacheManager.loadEvent(event.id);
 
       expect(result, isNull);
     });
 
     test('removeAllEvents', () async {
-      final mockEvent1 = MockNip01Event();
-      final mockEvent2 = MockNip01Event();
-      when(mockEvent1.id).thenReturn('testId1');
-      when(mockEvent2.id).thenReturn('testId2');
+      final event1 = Nip01Event(
+        pubKey: 'testPubKey1',
+        kind: 1,
+        tags: [],
+        content: 'test event 1',
+      );
+      final event2 = Nip01Event(
+        pubKey: 'testPubKey2',
+        kind: 1,
+        tags: [],
+        content: 'test event 2',
+      );
 
-      await cacheManager.saveEvents([mockEvent1, mockEvent2]);
+      await cacheManager.saveEvents([event1, event2]);
       await cacheManager.removeAllEvents();
 
-      expect(await cacheManager.loadEvent('testId1'), isNull);
-      expect(await cacheManager.loadEvent('testId2'), isNull);
+      expect(await cacheManager.loadEvent(event1.id), isNull);
+      expect(await cacheManager.loadEvent(event2.id), isNull);
+    });
+  });
+
+  group('DecryptedEventPayloadRecord tests', () {
+    test('save and load decrypted payload record', () async {
+      final record = DecryptedEventPayloadRecord(
+        eventId: 'event-1',
+        viewerPubKey: 'viewer-1',
+        scheme: DecryptedPayloadScheme.nip44,
+        status: DecryptedPayloadStatus.ready,
+        plaintextContent: 'decrypted payload',
+        createdAt: 100,
+        updatedAt: 101,
+        decryptedAt: 101,
+        sourceEventPubKey: 'author-1',
+        sourceEventKind: 4,
+      );
+
+      await cacheManager.saveDecryptedEventPayloadRecord(record);
+
+      final loaded = await cacheManager.loadDecryptedEventPayloadRecord(
+        eventId: 'event-1',
+        viewerPubKey: 'viewer-1',
+      );
+
+      expect(loaded, isNotNull);
+      expect(loaded!.plaintextContent, 'decrypted payload');
+      expect(loaded.scheme, DecryptedPayloadScheme.nip44);
+      expect(loaded.status, DecryptedPayloadStatus.ready);
+    });
+
+    test('removeEvent removes decrypted payload sidecar', () async {
+      final event = Nip01Event(
+        pubKey: 'author-1',
+        kind: 4,
+        tags: const [],
+        content: 'ciphertext',
+      );
+      await cacheManager.saveEvent(event);
+      await cacheManager.saveDecryptedEventPayloadRecord(
+        DecryptedEventPayloadRecord(
+          eventId: event.id,
+          viewerPubKey: 'viewer-1',
+          plaintextContent: 'plaintext',
+          createdAt: 100,
+          updatedAt: 100,
+        ),
+      );
+
+      await cacheManager.removeEvent(event.id);
+
+      final loaded = await cacheManager.loadDecryptedEventPayloadRecord(
+        eventId: event.id,
+        viewerPubKey: 'viewer-1',
+      );
+      expect(loaded, isNull);
     });
   });
 
@@ -135,8 +215,9 @@ void main() {
       final mockRelaySet = MockRelaySet();
       when(mockRelaySet.name).thenReturn('testName');
       when(mockRelaySet.pubKey).thenReturn('testPubKey');
-      when(mockRelaySet.id)
-          .thenReturn(RelaySet.buildId('testName', 'testPubKey'));
+      when(
+        mockRelaySet.id,
+      ).thenReturn(RelaySet.buildId('testName', 'testPubKey'));
 
       await cacheManager.saveRelaySet(mockRelaySet);
       final result = await cacheManager.loadRelaySet('testName', 'testPubKey');
@@ -148,8 +229,9 @@ void main() {
       final mockRelaySet = MockRelaySet();
       when(mockRelaySet.name).thenReturn('testName');
       when(mockRelaySet.pubKey).thenReturn('testPubKey');
-      when(mockRelaySet.id)
-          .thenReturn(RelaySet.buildId('testName', 'testPubKey'));
+      when(
+        mockRelaySet.id,
+      ).thenReturn(RelaySet.buildId('testName', 'testPubKey'));
 
       await cacheManager.saveRelaySet(mockRelaySet);
       await cacheManager.removeRelaySet('testName', 'testPubKey');
@@ -163,40 +245,52 @@ void main() {
       final mockRelaySet2 = MockRelaySet();
       when(mockRelaySet1.name).thenReturn('testName1');
       when(mockRelaySet1.pubKey).thenReturn('testPubKey1');
-      when(mockRelaySet1.id)
-          .thenReturn(RelaySet.buildId('testName1', 'testPubKey1'));
+      when(
+        mockRelaySet1.id,
+      ).thenReturn(RelaySet.buildId('testName1', 'testPubKey1'));
       when(mockRelaySet2.name).thenReturn('testName2');
       when(mockRelaySet2.pubKey).thenReturn('testPubKey2');
-      when(mockRelaySet2.id)
-          .thenReturn(RelaySet.buildId('testName2', 'testPubKey2'));
+      when(
+        mockRelaySet2.id,
+      ).thenReturn(RelaySet.buildId('testName2', 'testPubKey2'));
 
       await cacheManager.saveRelaySet(mockRelaySet1);
       await cacheManager.saveRelaySet(mockRelaySet2);
       await cacheManager.removeAllRelaySets();
 
       expect(
-          await cacheManager.loadRelaySet('testName1', 'testPubKey1'), isNull);
+        await cacheManager.loadRelaySet('testName1', 'testPubKey1'),
+        isNull,
+      );
       expect(
-          await cacheManager.loadRelaySet('testName2', 'testPubKey2'), isNull);
+        await cacheManager.loadRelaySet('testName2', 'testPubKey2'),
+        isNull,
+      );
     });
   });
 
   group('ContactList tests', () {
     test('saveContactList and loadContactList', () async {
-      final mockContactList = MockContactList();
-      when(mockContactList.pubKey).thenReturn('testPubKey');
+      final contactList = ContactList(
+        pubKey: 'testPubKey',
+        contacts: ['contact1'],
+      );
 
-      await cacheManager.saveContactList(mockContactList);
+      await cacheManager.saveContactList(contactList);
       final result = await cacheManager.loadContactList('testPubKey');
 
-      expect(result, equals(mockContactList));
+      expect(result, isNotNull);
+      expect(result!.pubKey, equals(contactList.pubKey));
+      expect(result.contacts, equals(contactList.contacts));
     });
 
     test('removeContactList', () async {
-      final mockContactList = MockContactList();
-      when(mockContactList.pubKey).thenReturn('testPubKey');
+      final contactList = ContactList(
+        pubKey: 'testPubKey',
+        contacts: ['contact1'],
+      );
 
-      await cacheManager.saveContactList(mockContactList);
+      await cacheManager.saveContactList(contactList);
       await cacheManager.removeContactList('testPubKey');
       final result = await cacheManager.loadContactList('testPubKey');
 
@@ -204,12 +298,16 @@ void main() {
     });
 
     test('removeAllContactLists', () async {
-      final mockContactList1 = MockContactList();
-      final mockContactList2 = MockContactList();
-      when(mockContactList1.pubKey).thenReturn('testPubKey1');
-      when(mockContactList2.pubKey).thenReturn('testPubKey2');
+      final contactList1 = ContactList(
+        pubKey: 'testPubKey1',
+        contacts: ['contact1'],
+      );
+      final contactList2 = ContactList(
+        pubKey: 'testPubKey2',
+        contacts: ['contact2'],
+      );
 
-      await cacheManager.saveContactLists([mockContactList1, mockContactList2]);
+      await cacheManager.saveContactLists([contactList1, contactList2]);
       await cacheManager.removeAllContactLists();
 
       expect(await cacheManager.loadContactList('testPubKey1'), isNull);
@@ -219,20 +317,28 @@ void main() {
 
   group('Metadata tests', () {
     test('saveMetadata and loadMetadata', () async {
-      final mockMetadata = MockMetadata();
-      when(mockMetadata.pubKey).thenReturn('testPubKey');
+      final metadata = Metadata(
+        pubKey: 'testPubKey',
+        name: 'Test User',
+        updatedAt: 1234,
+      );
 
-      await cacheManager.saveMetadata(mockMetadata);
+      await cacheManager.saveMetadata(metadata);
       final result = await cacheManager.loadMetadata('testPubKey');
 
-      expect(result, equals(mockMetadata));
+      expect(result, isNotNull);
+      expect(result!.pubKey, equals(metadata.pubKey));
+      expect(result.name, equals(metadata.name));
     });
 
     test('removeMetadata', () async {
-      final mockMetadata = MockMetadata();
-      when(mockMetadata.pubKey).thenReturn('testPubKey');
+      final metadata = Metadata(
+        pubKey: 'testPubKey',
+        name: 'Test User',
+        updatedAt: 1234,
+      );
 
-      await cacheManager.saveMetadata(mockMetadata);
+      await cacheManager.saveMetadata(metadata);
       await cacheManager.removeMetadata('testPubKey');
       final result = await cacheManager.loadMetadata('testPubKey');
 
@@ -240,12 +346,18 @@ void main() {
     });
 
     test('removeAllMetadatas', () async {
-      final mockMetadata1 = MockMetadata();
-      final mockMetadata2 = MockMetadata();
-      when(mockMetadata1.pubKey).thenReturn('testPubKey1');
-      when(mockMetadata2.pubKey).thenReturn('testPubKey2');
+      final metadata1 = Metadata(
+        pubKey: 'testPubKey1',
+        name: 'User 1',
+        updatedAt: 1000,
+      );
+      final metadata2 = Metadata(
+        pubKey: 'testPubKey2',
+        name: 'User 2',
+        updatedAt: 2000,
+      );
 
-      await cacheManager.saveMetadatas([mockMetadata1, mockMetadata2]);
+      await cacheManager.saveMetadatas([metadata1, metadata2]);
       await cacheManager.removeAllMetadatas();
 
       expect(await cacheManager.loadMetadata('testPubKey1'), isNull);
@@ -253,20 +365,81 @@ void main() {
     });
 
     test('loadMetadatas', () async {
-      final mockMetadata1 = MockMetadata();
-      final mockMetadata2 = MockMetadata();
-      when(mockMetadata1.pubKey).thenReturn('testPubKey1');
-      when(mockMetadata2.pubKey).thenReturn('testPubKey2');
+      final metadata1 = Metadata(
+        pubKey: 'testPubKey1',
+        name: 'User 1',
+        updatedAt: 1000,
+      );
+      final metadata2 = Metadata(
+        pubKey: 'testPubKey2',
+        name: 'User 2',
+        updatedAt: 2000,
+      );
 
-      await cacheManager.saveMetadatas([mockMetadata1, mockMetadata2]);
-      final results = await cacheManager
-          .loadMetadatas(['testPubKey1', 'testPubKey2', 'nonExistentKey']);
+      await cacheManager.saveMetadatas([metadata1, metadata2]);
+      final results = await cacheManager.loadMetadatas([
+        'testPubKey1',
+        'testPubKey2',
+        'nonExistentKey',
+      ]);
 
       // Results should preserve position correspondence with input
       expect(results.length, equals(3));
-      expect(results[0], equals(mockMetadata1));
-      expect(results[1], equals(mockMetadata2));
+      expect(results[0]?.pubKey, equals(metadata1.pubKey));
+      expect(results[1]?.pubKey, equals(metadata2.pubKey));
       expect(results[2], isNull);
+    });
+  });
+
+  group('Eviction tests', () {
+    test('default eviction removes delivered ephemeral events', () async {
+      final event = Nip01Event(
+        pubKey: 'ephemeral-author',
+        kind: 21133,
+        tags: const [],
+        content: 'ephemeral pending-delivery payload',
+        createdAt: 1700000000,
+      );
+      await cacheManager.saveEvent(event);
+      await cacheManager.saveEventDeliveryRecord(
+        EventDeliveryRecord(
+          eventId: event.id,
+          status: EventDeliveryStatus.delivered,
+          createdAt: 1700000000,
+          updatedAt: 1700000001,
+          completedAt: 1700000001,
+        ),
+      );
+
+      final result = await cacheManager.evict(const EvictionPolicy());
+
+      expect(result.removedDeliveredEphemeral, 1);
+      expect(await cacheManager.loadEvent(event.id), isNull);
+    });
+
+    test('default eviction keeps delivered non-ephemeral events', () async {
+      final event = Nip01Event(
+        pubKey: 'regular-author',
+        kind: 1,
+        tags: const [],
+        content: 'regular delivered event',
+        createdAt: 1700000100,
+      );
+      await cacheManager.saveEvent(event);
+      await cacheManager.saveEventDeliveryRecord(
+        EventDeliveryRecord(
+          eventId: event.id,
+          status: EventDeliveryStatus.delivered,
+          createdAt: 1700000100,
+          updatedAt: 1700000101,
+          completedAt: 1700000101,
+        ),
+      );
+
+      final result = await cacheManager.evict(const EvictionPolicy());
+
+      expect(result.removedDeliveredEphemeral, 0);
+      expect(await cacheManager.loadEvent(event.id), isNotNull);
     });
   });
 

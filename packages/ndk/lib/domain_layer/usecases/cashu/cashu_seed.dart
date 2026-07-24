@@ -19,9 +19,7 @@ class CashuSeed {
   Mnemonic? _userSeedPhrase;
   List<int> _cachedSeed = [];
 
-  CashuSeed({
-    CashuUserSeedphrase? userSeedPhrase,
-  }) {
+  CashuSeed({CashuUserSeedphrase? userSeedPhrase}) {
     if (userSeedPhrase != null) {
       setSeedPhrase(
         seedPhrase: userSeedPhrase.seedPhrase,

@@ -13,15 +13,18 @@ void main() {
       final secret =
           'd341ee4871f1f889041e63cf0d3823c713eea6aff01e80f1719f08f9e5be98f6';
       final r = BigInt.parse(
-          '99fce58439fc37412ab3468b73db0569322588f62fb3a49182d67e23d877824a',
-          radix: 16);
+        '99fce58439fc37412ab3468b73db0569322588f62fb3a49182d67e23d877824a',
+        radix: 16,
+      );
 
       final (blindedMessage, returnedR) = CashuBdhke.blindMessage(secret, r: r);
 
       // Verify the function returns a valid blinded message
       expect(blindedMessage, isNotEmpty);
-      expect(blindedMessage.length,
-          equals(66)); // Compressed EC point (33 bytes = 66 hex chars)
+      expect(
+        blindedMessage.length,
+        equals(66),
+      ); // Compressed EC point (33 bytes = 66 hex chars)
       expect(returnedR, equals(r));
     });
 
@@ -30,8 +33,9 @@ void main() {
       final secret =
           'f1aaf16c2239746f369572c0784d9dd3d032d952c2d992175873fb58fae31a60';
       final r = BigInt.parse(
-          'f78476ea7cc9ade20f9e05e58a804cf19533f03ea805ece5fee88c8e2874ba50',
-          radix: 16);
+        'f78476ea7cc9ade20f9e05e58a804cf19533f03ea805ece5fee88c8e2874ba50',
+        radix: 16,
+      );
 
       final (blindedMessage, returnedR) = CashuBdhke.blindMessage(secret, r: r);
 
@@ -50,8 +54,10 @@ void main() {
 
       // Should return a valid hex string for the blinded message
       expect(blindedMessage, isNotEmpty);
-      expect(blindedMessage.length,
-          greaterThan(60)); // Compressed EC point should be 66 chars (33 bytes)
+      expect(
+        blindedMessage.length,
+        greaterThan(60),
+      ); // Compressed EC point should be 66 chars (33 bytes)
 
       // Should return a valid r value
       expect(r, isNotNull);
@@ -63,8 +69,9 @@ void main() {
       final secret =
           'd341ee4871f1f889041e63cf0d3823c713eea6aff01e80f1719f08f9e5be98f6';
       final r = BigInt.parse(
-          '99fce58439fc37412ab3468b73db0569322588f62fb3a49182d67e23d877824a',
-          radix: 16);
+        '99fce58439fc37412ab3468b73db0569322588f62fb3a49182d67e23d877824a',
+        radix: 16,
+      );
 
       final (blindedMessage1, r1) = CashuBdhke.blindMessage(secret, r: r);
       final (blindedMessage2, r2) = CashuBdhke.blindMessage(secret, r: r);
@@ -79,11 +86,13 @@ void main() {
       final secret =
           'd341ee4871f1f889041e63cf0d3823c713eea6aff01e80f1719f08f9e5be98f6';
       final r1 = BigInt.parse(
-          '99fce58439fc37412ab3468b73db0569322588f62fb3a49182d67e23d877824a',
-          radix: 16);
+        '99fce58439fc37412ab3468b73db0569322588f62fb3a49182d67e23d877824a',
+        radix: 16,
+      );
       final r2 = BigInt.parse(
-          'f78476ea7cc9ade20f9e05e58a804cf19533f03ea805ece5fee88c8e2874ba50',
-          radix: 16);
+        'f78476ea7cc9ade20f9e05e58a804cf19533f03ea805ece5fee88c8e2874ba50',
+        radix: 16,
+      );
 
       final (blindedMessage1, _) = CashuBdhke.blindMessage(secret, r: r1);
       final (blindedMessage2, _) = CashuBdhke.blindMessage(secret, r: r2);

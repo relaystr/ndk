@@ -19,21 +19,20 @@ class CashuTestTools {
         customMockClient ?? MockCashuHttpClient();
     final HttpRequestDS httpRequestDS = HttpRequestDS(mockClient);
 
-    final CashuRepo cashuRepo = customRepo ??
-        CashuRepoImpl(
-          client: httpRequestDS,
-        );
+    final CashuRepo cashuRepo =
+        customRepo ?? CashuRepoImpl(client: httpRequestDS);
 
     final CacheManager cache = customCache ?? MemCacheManager();
 
     final derivation = DartCashuKeyDerivation();
 
     final cashu = Cashu(
-        cashuUserSeedphrase: seedPhrase,
-        walletsRepo: MemWalletsRepo(),
-        cashuRepo: cashuRepo,
-        cacheManager: cache,
-        cashuKeyDerivation: derivation);
+      cashuUserSeedphrase: seedPhrase,
+      walletsRepo: MemWalletsRepo(),
+      cashuRepo: cashuRepo,
+      cacheManager: cache,
+      cashuKeyDerivation: derivation,
+    );
     return cashu;
   }
 }

@@ -12,9 +12,9 @@ class _Nip77Internal {
     required GlobalState globalState,
     required RelayManager relayManager,
     required CacheManager cacheManager,
-  })  : _globalState = globalState,
-        _relayManager = relayManager,
-        _cacheManager = cacheManager;
+  }) : _globalState = globalState,
+       _relayManager = relayManager,
+       _cacheManager = cacheManager;
 
   Nip77Response reconcile({
     required String relayUrl,
@@ -79,7 +79,8 @@ class _Nip77Internal {
       }
       if (!connected) {
         state.completeWithError(
-            Exception('Failed to connect to relay: $cleanUrl'));
+          Exception('Failed to connect to relay: $cleanUrl'),
+        );
         _globalState.inFlightNegotiations.remove(subscriptionId);
         return;
       }
@@ -109,7 +110,9 @@ class _Nip77Internal {
 
       // Create initial message (hex encoded per NIP-77)
       final initialMessage = neg.NegentropyEncoder.createInitialMessage(
-          localItems, neg.NegentropyEncoder.idSize);
+        localItems,
+        neg.NegentropyEncoder.idSize,
+      );
       final initialPayload = neg.NegentropyEncoder.bytesToHex(initialMessage);
 
       // Send NEG-OPEN (final guard before network action)
@@ -118,11 +121,12 @@ class _Nip77Internal {
         'NEG-OPEN',
         subscriptionId,
         filter.toMap(),
-        initialPayload
+        initialPayload,
       ];
-      _relayManager.getRelayConnectivity(cleanUrl)?.relayTransport?.send(
-            jsonEncode(negOpen),
-          );
+      _relayManager
+          .getRelayConnectivity(cleanUrl)
+          ?.relayTransport
+          ?.send(jsonEncode(negOpen));
 
       Logger.log.d(() => 'NEG-OPEN sent to $cleanUrl: $subscriptionId');
     } catch (e) {
@@ -137,15 +141,11 @@ class _Nip77Internal {
     for (final id in ids) {
       final event = await _cacheManager.loadEvent(id);
       if (event != null) {
-        items.add(neg.NegentropyItem.fromHex(
-          timestamp: event.createdAt,
-          idHex: id,
-        ));
+        items.add(
+          neg.NegentropyItem.fromHex(timestamp: event.createdAt, idHex: id),
+        );
       } else {
-        items.add(neg.NegentropyItem.fromHex(
-          timestamp: 0,
-          idHex: id,
-        ));
+        items.add(neg.NegentropyItem.fromHex(timestamp: 0, idHex: id));
       }
     }
 
@@ -165,10 +165,10 @@ class _Nip77Internal {
     );
 
     return events
-        .map((e) => neg.NegentropyItem.fromHex(
-              timestamp: e.createdAt,
-              idHex: e.id,
-            ))
+        .map(
+          (e) =>
+              neg.NegentropyItem.fromHex(timestamp: e.createdAt, idHex: e.id),
+        )
         .toList();
   }
 
@@ -176,16 +176,19 @@ class _Nip77Internal {
   void processNegMsg(String subscriptionId, String relayUrl, String payload) {
     final state = _globalState.inFlightNegotiations[subscriptionId];
     if (state == null) {
-      Logger.log
-          .w(() => 'Received NEG-MSG for unknown session: $subscriptionId');
+      Logger.log.w(
+        () => 'Received NEG-MSG for unknown session: $subscriptionId',
+      );
       return;
     }
 
     // Verify relay origin to avoid cross-relay session contamination
     final cleanUrl = cleanRelayUrl(relayUrl);
     if (cleanUrl == null || state.relayUrl != cleanUrl) {
-      Logger.log.w(() =>
-          'Received NEG-MSG from mismatched relay: expected ${state.relayUrl}, got $relayUrl');
+      Logger.log.w(
+        () =>
+            'Received NEG-MSG from mismatched relay: expected ${state.relayUrl}, got $relayUrl',
+      );
       return;
     }
 
@@ -198,8 +201,10 @@ class _Nip77Internal {
         _sendNegClose(relayUrl, subscriptionId);
         state.complete();
         _globalState.inFlightNegotiations.remove(subscriptionId);
-        Logger.log.d(() =>
-            'NEG reconciliation complete: need=${state.needIds.length}, have=${state.haveIds.length}');
+        Logger.log.d(
+          () =>
+              'NEG reconciliation complete: need=${state.needIds.length}, have=${state.haveIds.length}',
+        );
       } else {
         // Send response (hex encoded)
         final responsePayload = neg.NegentropyEncoder.bytesToHex(response);
@@ -221,16 +226,19 @@ class _Nip77Internal {
   void processNegErr(String subscriptionId, String relayUrl, String errorMsg) {
     final state = _globalState.inFlightNegotiations[subscriptionId];
     if (state == null) {
-      Logger.log
-          .w(() => 'Received NEG-ERR for unknown session: $subscriptionId');
+      Logger.log.w(
+        () => 'Received NEG-ERR for unknown session: $subscriptionId',
+      );
       return;
     }
 
     // Verify relay origin to avoid cross-relay session contamination
     final cleanUrl = cleanRelayUrl(relayUrl);
     if (cleanUrl == null || state.relayUrl != cleanUrl) {
-      Logger.log.w(() =>
-          'Received NEG-ERR from mismatched relay: expected ${state.relayUrl}, got $relayUrl');
+      Logger.log.w(
+        () =>
+            'Received NEG-ERR from mismatched relay: expected ${state.relayUrl}, got $relayUrl',
+      );
       return;
     }
 

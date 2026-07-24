@@ -70,7 +70,7 @@ class DbNip01Event {
     tagsIndex = [
       for (final tag in value)
         if (tag.length >= 2 && tag[0].isNotEmpty && tag[1].isNotEmpty)
-          '${tag[0]}:${tag[1].trim().toLowerCase()}'
+          '${tag[0]}:${tag[1].trim().toLowerCase()}',
     ];
   }
 
@@ -97,7 +97,7 @@ class DbNip01Event {
     return [
       for (final tag in list)
         if (tag.isNotEmpty && tag[0] == tagKey && tag.length >= 2)
-          tag[1].trim().toLowerCase()
+          tag[1].trim().toLowerCase(),
     ];
   }
 
@@ -106,13 +106,13 @@ class DbNip01Event {
   List<String> get pTags => getTagValues(tags, "p");
 
   List<String> get replyETags => [
-        for (final tag in tags)
-          if (tag.isNotEmpty &&
-              tag[0] == "e" &&
-              tag.length >= 4 &&
-              tag[3] == "reply")
-            tag[1].trim().toLowerCase()
-      ];
+    for (final tag in tags)
+      if (tag.isNotEmpty &&
+          tag[0] == "e" &&
+          tag.length >= 4 &&
+          tag[3] == "reply")
+        tag[1].trim().toLowerCase(),
+  ];
 
   String? getDtag() {
     for (var tag in tags) {
@@ -129,6 +129,7 @@ class DbNip01Event {
   }
 
   ndk_entities.Nip01Event toNdk() {
+    // ignore: deprecated_member_use
     return ndk_entities.Nip01Event(
       pubKey: pubKey,
       content: content,
@@ -153,6 +154,7 @@ class DbNip01Event {
     dbE.tags = ndkE.tags;
     dbE.sig = ndkE.sig;
     dbE.validSig = ndkE.validSig;
+    // ignore: deprecated_member_use
     dbE.sources = ndkE.sources;
     return dbE;
   }

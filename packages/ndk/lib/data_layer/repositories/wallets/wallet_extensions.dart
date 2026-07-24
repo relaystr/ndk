@@ -49,9 +49,7 @@ extension WalletExtension on Wallet {
     return WalletFactory.fromStorage(
       id: json['id'] as String,
       name: json['name'] as String,
-      type: WalletType.values.firstWhere(
-        (e) => e.toString() == json['type'],
-      ),
+      type: WalletType.values.firstWhere((e) => e.toString() == json['type']),
       supportedUnits: Set<String>.from(json['supportedUnits'] as List),
       metadata: Map<String, dynamic>.from(json['metadata'] as Map? ?? {}),
     );

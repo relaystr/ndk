@@ -34,23 +34,31 @@ void main() async {
       );
 
       bookmarkListKey0 = Nip51List(
-          pubKey: key0.publicKey,
-          kind: Nip51List.kBookmarks,
-          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-          elements: [
-            Nip51ListElement(
-                tag: Nip51List.kPubkey, value: key1.publicKey, private: false)
-          ]);
+        pubKey: key0.publicKey,
+        kind: Nip51List.kBookmarks,
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        elements: [
+          Nip51ListElement(
+            tag: Nip51List.kPubkey,
+            value: key1.publicKey,
+            private: false,
+          ),
+        ],
+      );
 
       favoriteRelaysKey1 = Nip51Set(
-          pubKey: key1.publicKey,
-          kind: Nip51List.kRelaySet,
-          name: "my favorite relays",
-          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-          elements: [
-            Nip51ListElement(
-                tag: Nip51List.kRelay, value: "wss://bla.com", private: true)
-          ]);
+        pubKey: key1.publicKey,
+        kind: Nip51List.kRelaySet,
+        name: "my favorite relays",
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        elements: [
+          Nip51ListElement(
+            tag: Nip51List.kRelay,
+            value: "wss://bla.com",
+            private: true,
+          ),
+        ],
+      );
 
       relay0 = MockRelay(name: "relay 0");
       Nip01Event event0 = await bookmarkListKey0.toEvent(signer0);
@@ -59,8 +67,9 @@ void main() async {
       final signedEvent0 = await signer0.sign(event0);
       final signedEvent1 = await signer1.sign(event1);
 
-      await relay0
-          .startServer(textNotes: {key0: signedEvent0, key1: signedEvent1});
+      await relay0.startServer(
+        textNotes: {key0: signedEvent0, key1: signedEvent1},
+      );
 
       final cache = MemCacheManager();
       final NdkConfig config = NdkConfig(
@@ -88,8 +97,10 @@ void main() async {
       expect(publicList, isNotNull);
       expect(publicList!.kind, Nip51List.kBookmarks);
       expect(publicList.pubKey, key0.publicKey);
-      expect(publicList.elements.any((e) => e.value == 'publicListPubkey'),
-          isTrue);
+      expect(
+        publicList.elements.any((e) => e.value == 'publicListPubkey'),
+        isTrue,
+      );
     });
 
     tearDown(() async {
@@ -98,28 +109,36 @@ void main() async {
 
     test('lists get bookmarks', () async {
       ndk.accounts.loginExternalSigner(signer: signer0);
-      Nip51List? bookmarks =
-          await ndk.lists.getSingleNip51List(Nip51List.kBookmarks);
+      Nip51List? bookmarks = await ndk.lists.getSingleNip51List(
+        Nip51List.kBookmarks,
+      );
       expect(bookmarkListKey0.kind, bookmarks!.kind);
       expect(bookmarkListKey0.elements.length, bookmarks.elements.length);
-      expect(bookmarkListKey0.elements.first.value,
-          bookmarks.elements.first.value);
+      expect(
+        bookmarkListKey0.elements.first.value,
+        bookmarks.elements.first.value,
+      );
     });
 
     test('lists get favorite relays', () async {
       ndk.accounts.loginExternalSigner(signer: signer1);
-      Nip51Set? relays =
-          await ndk.lists.getSingleNip51RelaySet(favoriteRelaysKey1.name);
+      Nip51Set? relays = await ndk.lists.getSingleNip51RelaySet(
+        favoriteRelaysKey1.name,
+      );
       expect(favoriteRelaysKey1.kind, relays!.kind);
       expect(favoriteRelaysKey1.elements.length, relays.elements.length);
       expect(
-          favoriteRelaysKey1.elements.first.value, relays.elements.first.value);
+        favoriteRelaysKey1.elements.first.value,
+        relays.elements.first.value,
+      );
     });
 
     test('lists get bookmarks with forceRefresh', () async {
       ndk.accounts.loginExternalSigner(signer: signer0);
-      Nip51List? bookmarks = await ndk.lists
-          .getSingleNip51List(Nip51List.kBookmarks, forceRefresh: true);
+      Nip51List? bookmarks = await ndk.lists.getSingleNip51List(
+        Nip51List.kBookmarks,
+        forceRefresh: true,
+      );
       expect(bookmarks, isNotNull);
       expect(bookmarkListKey0.kind, bookmarks!.kind);
     });
@@ -135,8 +154,10 @@ void main() async {
     });
 
     test('lists get public sets', () async {
-      final sets = ndk.lists
-          .getPublicSets(kind: Nip51List.kRelaySet, publicKey: key1.publicKey);
+      final sets = ndk.lists.getPublicSets(
+        kind: Nip51List.kRelaySet,
+        publicKey: key1.publicKey,
+      );
       final result = await sets.first;
       expect(result, isNotNull);
       expect(result?.first.name, favoriteRelaysKey1.name);
@@ -145,18 +166,20 @@ void main() async {
     test('addElementToList creates new list if not exists', () async {
       ndk.accounts.loginExternalSigner(signer: signer0);
       final list = await ndk.lists.addElementToList(
-          kind: Nip51List.kBookmarks,
-          tag: Nip51List.kPubkey,
-          value: 'newPubkey123');
+        kind: Nip51List.kBookmarks,
+        tag: Nip51List.kPubkey,
+        value: 'newPubkey123',
+      );
       expect(list.elements.any((e) => e.value == 'newPubkey123'), isTrue);
     });
 
     test('removeElementFromList removes element', () async {
       ndk.accounts.loginExternalSigner(signer: signer0);
       final list = await ndk.lists.removeElementFromList(
-          kind: Nip51List.kBookmarks,
-          tag: Nip51List.kPubkey,
-          value: key1.publicKey);
+        kind: Nip51List.kBookmarks,
+        tag: Nip51List.kPubkey,
+        value: key1.publicKey,
+      );
       expect(list, isNotNull);
       expect(list!.pubKeys, isNot(contains(key1.publicKey)));
     });
@@ -164,15 +187,18 @@ void main() async {
     test('addElementToSet creates new set if not exists', () async {
       ndk.accounts.loginExternalSigner(signer: signer1);
 
-      final setCheck = await ndk.lists
-          .getSetByName(name: 'test-set', kind: Nip51List.kRelaySet);
+      final setCheck = await ndk.lists.getSetByName(
+        name: 'test-set',
+        kind: Nip51List.kRelaySet,
+      );
       expect(setCheck, isNull);
 
       final set = await ndk.lists.addElementToSet(
-          name: 'test-set',
-          tag: Nip51List.kRelay,
-          value: 'wss://test.com',
-          kind: Nip51List.kRelaySet);
+        name: 'test-set',
+        tag: Nip51List.kRelay,
+        value: 'wss://test.com',
+        kind: Nip51List.kRelaySet,
+      );
       expect(set, isNotNull);
       expect(set!.elements.any((e) => e.value == 'wss://test.com'), isTrue);
     });
@@ -180,10 +206,11 @@ void main() async {
     test('removeElementFromSet removes element', () async {
       ndk.accounts.loginExternalSigner(signer: signer1);
       final set = await ndk.lists.removeElementFromSet(
-          name: favoriteRelaysKey1.name,
-          tag: Nip51List.kRelay,
-          value: 'wss://bla.com',
-          kind: Nip51List.kRelaySet);
+        name: favoriteRelaysKey1.name,
+        tag: Nip51List.kRelay,
+        value: 'wss://bla.com',
+        kind: Nip51List.kRelaySet,
+      );
 
       final fetchedSet = await ndk.lists.getSetByName(
         name: favoriteRelaysKey1.name,
@@ -193,32 +220,39 @@ void main() async {
       expect(fetchedSet, isNotNull);
       expect(set!.elements.any((e) => e.value == 'wss://bla.com'), isFalse);
       expect(
-          fetchedSet!.elements.any((e) => e.value == 'wss://bla.com'), isFalse);
+        fetchedSet!.elements.any((e) => e.value == 'wss://bla.com'),
+        isFalse,
+      );
     });
 
     test('setCompleteSet replaces existing set', () async {
       ndk.accounts.loginExternalSigner(signer: signer1);
 
       final newSet = Nip51Set(
-          pubKey: key1.publicKey,
-          kind: Nip51List.kRelaySet,
-          name: "replacement-set",
-          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-          elements: [
-            Nip51ListElement(
-                tag: Nip51List.kRelay,
-                value: "wss://newrelay.com",
-                private: false)
-          ]);
+        pubKey: key1.publicKey,
+        kind: Nip51List.kRelaySet,
+        name: "replacement-set",
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        elements: [
+          Nip51ListElement(
+            tag: Nip51List.kRelay,
+            value: "wss://newrelay.com",
+            private: false,
+          ),
+        ],
+      );
 
       ndk.lists.addElementToSet(
-          name: "replacement-set",
-          tag: Nip51List.kRelay,
-          value: "wss://oldrelay.com",
-          kind: Nip51List.kRelaySet);
+        name: "replacement-set",
+        tag: Nip51List.kRelay,
+        value: "wss://oldrelay.com",
+        kind: Nip51List.kRelaySet,
+      );
 
-      final result = await ndk.lists
-          .setCompleteSet(set: newSet, kind: Nip51List.kRelaySet);
+      final result = await ndk.lists.setCompleteSet(
+        set: newSet,
+        kind: Nip51List.kRelaySet,
+      );
       expect(result.name, "replacement-set");
       expect(result.elements.length, 1);
     });
@@ -247,46 +281,60 @@ void main() async {
 
     test('addElementToList throws without signer', () async {
       expect(
-          () async => await ndk.lists.addElementToList(
-              kind: Nip51List.kBookmarks,
-              tag: Nip51List.kPubkey,
-              value: 'test'),
-          throwsException);
+        () async => await ndk.lists.addElementToList(
+          kind: Nip51List.kBookmarks,
+          tag: Nip51List.kPubkey,
+          value: 'test',
+        ),
+        throwsException,
+      );
     });
 
     test('removeElementFromList throws without signer', () async {
       expect(
-          () async => await ndk.lists.removeElementFromList(
-              kind: Nip51List.kBookmarks,
-              tag: Nip51List.kPubkey,
-              value: 'test'),
-          throwsException);
+        () async => await ndk.lists.removeElementFromList(
+          kind: Nip51List.kBookmarks,
+          tag: Nip51List.kPubkey,
+          value: 'test',
+        ),
+        throwsException,
+      );
     });
 
     test('removeElementFromSet throws without signer', () async {
       expect(
-          () async => await ndk.lists.removeElementFromSet(
-              name: 'test-set',
-              value: 'wss://test.com',
-              tag: Nip51List.kRelay,
-              kind: Nip51List.kRelaySet),
-          throwsException);
+        () async => await ndk.lists.removeElementFromSet(
+          name: 'test-set',
+          value: 'wss://test.com',
+          tag: Nip51List.kRelay,
+          kind: Nip51List.kRelaySet,
+        ),
+        throwsException,
+      );
     });
 
     test('deleteSet throws without signer', () async {
       expect(
-          () async => await ndk.lists
-              .deleteSet(name: 'test-set', kind: Nip51List.kRelaySet),
-          throwsException);
+        () async => await ndk.lists.deleteSet(
+          name: 'test-set',
+          kind: Nip51List.kRelaySet,
+        ),
+        throwsException,
+      );
     });
 
-    test('getSetByName throws when not logged in and no custom signer',
-        () async {
-      expect(
-          () async => await ndk.lists
-              .getSetByName(name: 'test', kind: Nip51List.kRelaySet),
-          throwsException);
-    });
+    test(
+      'getSetByName throws when not logged in and no custom signer',
+      () async {
+        expect(
+          () async => await ndk.lists.getSetByName(
+            name: 'test',
+            kind: Nip51List.kRelaySet,
+          ),
+          throwsException,
+        );
+      },
+    );
 
     test('addElementToList creates new list when none exists', () async {
       ndk.accounts.loginExternalSigner(signer: signer0);
@@ -353,14 +401,15 @@ void main() async {
         pubKey: key1.publicKey,
         kind: Nip51List.kRelaySet,
         name: setName,
-        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000 -
+        createdAt:
+            DateTime.now().millisecondsSinceEpoch ~/ 1000 -
             100, // 100 seconds ago
         elements: [
           Nip51ListElement(
             tag: Nip51List.kRelay,
             value: "wss://old.com",
             private: false,
-          )
+          ),
         ],
       );
 
@@ -375,7 +424,7 @@ void main() async {
             tag: Nip51List.kRelay,
             value: "wss://new.com",
             private: false,
-          )
+          ),
         ],
       );
 
@@ -414,17 +463,20 @@ void main() async {
             tag: Nip51List.kRelay,
             value: "wss://encrypted-relay.com",
             private: true,
-          )
+          ),
         ],
       );
 
       String content = "";
-      List<Nip51ListElement> privateElements =
-          nip04Set.elements.where((element) => element.private).toList();
+      List<Nip51ListElement> privateElements = nip04Set.elements
+          .where((element) => element.private)
+          .toList();
       if (privateElements.isNotEmpty) {
-        String json = jsonEncode(privateElements
-            .map((element) => [element.tag, element.value])
-            .toList());
+        String json = jsonEncode(
+          privateElements
+              .map((element) => [element.tag, element.value])
+              .toList(),
+        );
         content = json;
       }
 
@@ -453,9 +505,7 @@ void main() async {
       );
 
       // Create a new event with NIP-04 encrypted content
-      final nip04Event = eventPlaintext.copyWith(
-        content: nip04Content,
-      );
+      final nip04Event = eventPlaintext.copyWith(content: nip04Content);
 
       final signedNip04Event = await signer1.sign(nip04Event);
 
@@ -470,58 +520,66 @@ void main() async {
     });
 
     test(
-        'fromEvent preserves metadata (title/description/image) alongside private elements',
-        () async {
-      // Regression test for: when a set has encrypted private elements AND
-      // public metadata tags, parsing with a full signer must retain both.
-      // Previously, parseSetTags was called only on the decrypted content
-      // (which never contains title/description/image), so metadata was silently
-      // dropped for any set that had private content.
-      final original = Nip51Set(
-        pubKey: key1.publicKey,
-        kind: Nip51List.kRelaySet,
-        name: "metadata-set",
-        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        title: "My Relay Set",
-        description: "A set with both private relays and metadata",
-        image: "https://example.com/image.png",
-        elements: [
-          Nip51ListElement(
-            tag: Nip51List.kRelay,
-            value: "wss://private-relay.com",
-            private: true,
+      'fromEvent preserves metadata (title/description/image) alongside private elements',
+      () async {
+        // Regression test for: when a set has encrypted private elements AND
+        // public metadata tags, parsing with a full signer must retain both.
+        // Previously, parseSetTags was called only on the decrypted content
+        // (which never contains title/description/image), so metadata was silently
+        // dropped for any set that had private content.
+        final original = Nip51Set(
+          pubKey: key1.publicKey,
+          kind: Nip51List.kRelaySet,
+          name: "metadata-set",
+          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          title: "My Relay Set",
+          description: "A set with both private relays and metadata",
+          image: "https://example.com/image.png",
+          elements: [
+            Nip51ListElement(
+              tag: Nip51List.kRelay,
+              value: "wss://private-relay.com",
+              private: true,
+            ),
+            Nip51ListElement(
+              tag: Nip51List.kRelay,
+              value: "wss://public-relay.com",
+              private: false,
+            ),
+          ],
+        );
+
+        // Serialize: private relay goes into encrypted content, metadata stays
+        // as public tags on the event.
+        final event = await original.toEvent(signer1);
+        final signedEvent = await signer1.sign(event);
+
+        // Deserialize with a full signer (can decrypt).
+        final parsed = await Nip51Set.fromEvent(signedEvent, signer1);
+
+        expect(parsed, isNotNull);
+        // Metadata must survive even though private content was decrypted.
+        expect(parsed!.title, "My Relay Set");
+        expect(
+          parsed.description,
+          "A set with both private relays and metadata",
+        );
+        expect(parsed.image, "https://example.com/image.png");
+        // Both private and public elements must be present.
+        expect(parsed.elements.length, 2);
+        expect(
+          parsed.elements.any(
+            (e) => e.value == "wss://private-relay.com" && e.private,
           ),
-          Nip51ListElement(
-            tag: Nip51List.kRelay,
-            value: "wss://public-relay.com",
-            private: false,
+          isTrue,
+        );
+        expect(
+          parsed.elements.any(
+            (e) => e.value == "wss://public-relay.com" && !e.private,
           ),
-        ],
-      );
-
-      // Serialize: private relay goes into encrypted content, metadata stays
-      // as public tags on the event.
-      final event = await original.toEvent(signer1);
-      final signedEvent = await signer1.sign(event);
-
-      // Deserialize with a full signer (can decrypt).
-      final parsed = await Nip51Set.fromEvent(signedEvent, signer1);
-
-      expect(parsed, isNotNull);
-      // Metadata must survive even though private content was decrypted.
-      expect(parsed!.title, "My Relay Set");
-      expect(parsed.description, "A set with both private relays and metadata");
-      expect(parsed.image, "https://example.com/image.png");
-      // Both private and public elements must be present.
-      expect(parsed.elements.length, 2);
-      expect(
-          parsed.elements
-              .any((e) => e.value == "wss://private-relay.com" && e.private),
-          isTrue);
-      expect(
-          parsed.elements
-              .any((e) => e.value == "wss://public-relay.com" && !e.private),
-          isTrue);
-    });
+          isTrue,
+        );
+      },
+    );
   });
 }

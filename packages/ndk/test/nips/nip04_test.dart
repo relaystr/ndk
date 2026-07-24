@@ -11,8 +11,7 @@ void main() {
   EventSigner eventSignerFactory({
     String? privateKey,
     required String publicKey,
-  }) =>
-      Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
+  }) => Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
 
   group('Nip04', () {
     test('decrypt', () async {
@@ -21,10 +20,7 @@ void main() {
       const pub =
           "b1a5c93edcc8d586566fde53a20bdb50049a97b15483cb763854e57016e0fa3d";
 
-      EventSigner signer = eventSignerFactory(
-        privateKey: priv,
-        publicKey: pub,
-      );
+      EventSigner signer = eventSignerFactory(privateKey: priv, publicKey: pub);
 
       const ciphertext =
           "VezuSvWak++ASjFMRqBPWS3mK5pZ0vRLL325iuIL4S+r8n9z+DuMau5vMElz1tGC/UqCDmbzE2kwplafaFo/FnIZMdEj4pdxgptyBV1ifZpH3TEF6OMjEtqbYRRqnxgIXsuOSXaerWgpi0pm+raHQPseoELQI/SZ1cvtFqEUCXdXpa5AYaSd+quEuthAEw7V1jP+5TDRCEC8jiLosBVhCtaPpLcrm8HydMYJ2XB6Ixs=?iv=/rtV49RFm0XyFEwG62Eo9A==";
@@ -32,12 +28,12 @@ void main() {
       final desiredResult = [
         [
           "p",
-          "9ec7a778167afb1d30c4833de9322da0c08ba71a69e1911d5578d3144bb56437"
+          "9ec7a778167afb1d30c4833de9322da0c08ba71a69e1911d5578d3144bb56437",
         ],
         [
           "p",
-          "8c0da4862130283ff9e67d889df264177a508974e2feb96de139804ea66d6168"
-        ]
+          "8c0da4862130283ff9e67d889df264177a508974e2feb96de139804ea66d6168",
+        ],
       ];
 
       final result = await signer.decrypt(ciphertext, pub);
@@ -52,20 +48,17 @@ void main() {
       const pub =
           "b1a5c93edcc8d586566fde53a20bdb50049a97b15483cb763854e57016e0fa3d";
 
-      EventSigner signer = eventSignerFactory(
-        privateKey: priv,
-        publicKey: pub,
-      );
+      EventSigner signer = eventSignerFactory(privateKey: priv, publicKey: pub);
 
       const clearTextObj = [
         [
           "p",
-          "9ec7a778167afb1d30c4833de9322da0c08ba71a69e1911d5578d3144bb56437"
+          "9ec7a778167afb1d30c4833de9322da0c08ba71a69e1911d5578d3144bb56437",
         ],
         [
           "p",
-          "8c0da4862130283ff9e67d889df264177a508974e2feb96de139804ea66d6168"
-        ]
+          "8c0da4862130283ff9e67d889df264177a508974e2feb96de139804ea66d6168",
+        ],
       ];
 
       const desiredResult =
@@ -81,11 +74,17 @@ void main() {
       KeyPair key1 = Bip340.generatePrivateKey();
       var agreement = Nip04.getAgreement(key1.privateKey!);
       String content = "some content";
-      var encrypted =
-          Nip04.encryptWithAgreement(content, agreement, key1.publicKey);
+      var encrypted = Nip04.encryptWithAgreement(
+        content,
+        agreement,
+        key1.publicKey,
+      );
 
-      var decrypted =
-          Nip04.decryptWithAgreement(encrypted, agreement, key1.publicKey);
+      var decrypted = Nip04.decryptWithAgreement(
+        encrypted,
+        agreement,
+        key1.publicKey,
+      );
       expect(content, decrypted);
     });
   });

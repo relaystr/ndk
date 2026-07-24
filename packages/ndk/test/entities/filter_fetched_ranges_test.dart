@@ -4,10 +4,7 @@ import 'package:ndk/ndk.dart';
 void main() {
   group('TimeRange', () {
     test('constructor initializes correctly', () {
-      final range = TimeRange(
-        since: 1704067200,
-        until: 1704153600,
-      );
+      final range = TimeRange(since: 1704067200, until: 1704153600);
 
       expect(range.since, 1704067200);
       expect(range.until, 1704153600);
@@ -67,10 +64,7 @@ void main() {
     });
 
     test('toJson and fromJson work correctly', () {
-      final range = TimeRange(
-        since: 1704067200,
-        until: 1704153600,
-      );
+      final range = TimeRange(since: 1704067200, until: 1704153600);
 
       final json = range.toJson();
       final restored = TimeRange.fromJson(json);
@@ -120,17 +114,13 @@ void main() {
       final fetchedRangesNotReached = RelayFetchedRanges(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
-        ranges: [
-          TimeRange(since: 100, until: 500),
-        ],
+        ranges: [TimeRange(since: 100, until: 500)],
       );
 
       final fetchedRangesReached = RelayFetchedRanges(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
-        ranges: [
-          TimeRange(since: 0, until: 500),
-        ],
+        ranges: [TimeRange(since: 0, until: 500)],
       );
 
       expect(fetchedRangesNotReached.reachedOldest, isFalse);
@@ -155,9 +145,7 @@ void main() {
       final fetchedRanges = RelayFetchedRanges(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
-        ranges: [
-          TimeRange(since: 200, until: 300),
-        ],
+        ranges: [TimeRange(since: 200, until: 300)],
       );
 
       final gaps = fetchedRanges.findGaps(100, 500);
@@ -197,9 +185,7 @@ void main() {
       final fetchedRanges = RelayFetchedRanges(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
-        ranges: [
-          TimeRange(since: 100, until: 500),
-        ],
+        ranges: [TimeRange(since: 100, until: 500)],
       );
 
       final gaps = fetchedRanges.findGaps(200, 400);
@@ -211,9 +197,7 @@ void main() {
       final fetchedRanges = RelayFetchedRanges(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
-        ranges: [
-          TimeRange(since: 200, until: 300),
-        ],
+        ranges: [TimeRange(since: 200, until: 300)],
       );
 
       final gaps = fetchedRanges.getGaps(100, 500);

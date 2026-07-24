@@ -15,10 +15,12 @@ import 'package:pointycastle/signers/ecdsa_signer.dart';
 import 'package:pointycastle/src/utils.dart' show negativeFlag;
 
 final zero32 = Uint8List.fromList(List.generate(32, (index) => 0));
-final ecGroupOrder = hex
-    .decode('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141');
-final ecP = hex
-    .decode('fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f');
+final ecGroupOrder = hex.decode(
+  'fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141',
+);
+final ecP = hex.decode(
+  'fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f',
+);
 final secp256k1 = ECCurve_secp256k1();
 final n = secp256k1.n;
 final g = secp256k1.G;

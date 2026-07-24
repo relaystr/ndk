@@ -17,8 +17,10 @@ void main() async {
   final ndk = Ndk.emptyBootstrapRelaysConfig();
 
   /// pass your event to the proof of work usecase
-  final minedEvent =
-      await ndk.proofOfWork.minePoW(event: event, targetDifficulty: 10);
+  final minedEvent = await ndk.proofOfWork.minePoW(
+    event: event,
+    targetDifficulty: 10,
+  );
 
   /// the id will start with "000"
   log(minedEvent.id);

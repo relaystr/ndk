@@ -46,9 +46,9 @@ class _AccountsPageState extends State<AccountsPage> {
           const SizedBox(height: 8),
           Text(
             l10n.accountsDescription,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
           ),
           const SizedBox(height: 16),
           if (isLoggedIn)
@@ -73,9 +73,7 @@ class _AccountsPageState extends State<AccountsPage> {
               child: FilledButton.icon(
                 onPressed: _openLoginPopup,
                 icon: const Icon(Icons.person_add),
-                label: Text(
-                  isLoggedIn ? l10n.addAnotherAccount : l10n.logIn,
-                ),
+                label: Text(isLoggedIn ? l10n.addAnotherAccount : l10n.logIn),
               ),
             ),
           ),
