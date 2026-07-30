@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:ndk/ndk.dart';
 import 'package:rxdart/rxdart.dart';
@@ -129,7 +130,16 @@ class Nip55EventSigner with ConcurrencyLimiterMixin implements EventSigner {
         eventJson: Nip01EventModel.fromEntity(event).toJsonString(),
         id: requestId,
       );
-      return event.copyWith(sig: _extractResult(map));
+      final signature = _extractResult(map);
+
+      // Prefer the event the signer actually signed, when it returns one.
+      final signedEventJson = map['event'] as String?;
+      if (signedEventJson == null || signedEventJson.isEmpty) {
+        return event.copyWith(sig: signature);
+      }
+      return Nip01EventModel.fromJson(
+        jsonDecode(signedEventJson) as Map<dynamic, dynamic>,
+      );
     }, event: event);
   }
 
