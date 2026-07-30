@@ -41,9 +41,20 @@ void injectSetupCode() {
         _privkeyHex: privateKeyHex,
         _pubkey: publicKeyHex,
         _hang: false,
+        _stripClientTag: false,
 
         setHang: function(hang) {
           this._hang = hang;
+        },
+
+        setStripClientTag: function(strip) {
+          this._stripClientTag = strip;
+        },
+
+        setAccount: function(privkeyHex) {
+          this._privkeyHex = privkeyHex;
+          this._privkey = hexToBytes(privkeyHex);
+          this._pubkey = getPublicKey(this._privkey);
         },
 
         getPublicKey: function() {
@@ -54,10 +65,13 @@ void injectSetupCode() {
         },
 
         signEvent: async function(event) {
+          const tags = this._stripClientTag
+            ? event.tags.filter(function(tag) { return tag[0] !== 'client'; })
+            : event.tags;
           const eventToSign = {
             kind: event.kind,
             created_at: event.created_at,
-            tags: event.tags,
+            tags: tags,
             content: event.content,
             pubkey: event.pubkey,
           };
@@ -156,6 +170,58 @@ void main() {
       );
 
       final signedEvent = await nip07Signer.sign(event);
+      expect(await Bip340EventVerifier().verify(signedEvent), isTrue);
+    });
+
+    test(
+      'sign returns the event as signed when extension strips client tag',
+      () async {
+        await setupNostrExtension();
+        eval('window.nostr.setStripClientTag(true);');
+
+        final pubkey = await nip07Signer.getPublicKeyAsync();
+        final event = Nip01Event(
+          pubKey: pubkey,
+          kind: 1,
+          tags: [
+            ['client', 'ndk'],
+            ['t', 'nostr'],
+          ],
+          content: 'test content',
+          createdAt: 1234567890,
+        );
+
+        final signedEvent = await nip07Signer.sign(event);
+
+        expect(
+          signedEvent.tags,
+          equals([
+            ['t', 'nostr'],
+          ]),
+        );
+        expect(await Bip340EventVerifier().verify(signedEvent), isTrue);
+      },
+    );
+
+    test('sign returns the event as signed when the account changed', () async {
+      await setupNostrExtension();
+
+      final cachedPubKey = await nip07Signer.getPublicKeyAsync();
+      eval("window.nostr.setAccount('${bip340EventSigner.privateKey}');");
+
+      final event = Nip01Event(
+        pubKey: cachedPubKey,
+        kind: 1,
+        tags: [
+          ['t', 'nostr'],
+        ],
+        content: 'test content',
+        createdAt: 1234567890,
+      );
+
+      final signedEvent = await nip07Signer.sign(event);
+
+      expect(signedEvent.pubKey, equals(bip340EventSigner.publicKey));
       expect(await Bip340EventVerifier().verify(signedEvent), isTrue);
     });
 
