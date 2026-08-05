@@ -233,7 +233,16 @@ class Nip07EventSigner with ConcurrencyLimiterMixin implements EventSigner {
             .toJS;
 
       final signedEvent = await js.nostr!.signEvent(jsEvent).toDart;
-      return event.copyWith(id: signedEvent.id!, sig: signedEvent.sig!);
+
+      return event.copyWith(
+        id: signedEvent.id!,
+        sig: signedEvent.sig!,
+        pubKey: signedEvent.pubkey,
+        createdAt: signedEvent.created_at,
+        kind: signedEvent.kind,
+        content: signedEvent.content,
+        tags: signedEvent.tagsList,
+      );
     }, event: event);
   }
 
