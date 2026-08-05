@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-08-05
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.8.4-dev.15`](#ndk_flutter---v084-dev15)
+
+---
+
+#### `ndk_flutter` - `v0.8.4-dev.15`
+
+ - **FIX**: use the event returned by NIP-07 and NIP-55 signers.
+
+
 ## 2026-07-24
 
 ### Changes
