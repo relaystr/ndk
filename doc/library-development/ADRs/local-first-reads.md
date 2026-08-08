@@ -31,7 +31,7 @@ data, and for a replaceable event that overwrites what was already there.
 ```dart
 class NdkDataResponse<T> {
   /// Emits a `cache` value first, then every newer `relays` value as it
-  /// arrives, even when it holds the same value as the cache.
+  /// arrives, even when it holds the same value as the cache (TBD).
   /// Closes after EOSE or timeout.
   final Stream<NdkValue<T>> stream;
 
@@ -46,6 +46,8 @@ class NdkValue<T> {
 
 enum DataOrigin { cache, relays }
 ```
+
+NOTE: Does not cover ID queries where cache response is sufficient TBD
 
 A `cache` value is always emitted first, even when nothing is cached.
 
@@ -83,3 +85,26 @@ An empty list and no list are different answers:
 | --- | --- |
 | `([], relays)` | the event exists and holds no relay |
 | `(null, relays)` | no kind 10013 event exists |
+
+
+
+## Consequences
+Is a braking change as the query api changes. 
+Could be mitigated with the help of https://github.com/flutter/flutter/blob/master/docs/contributing/Data-driven-Fixes.md (preferred)
+or https://pub.dev/packages/codemod 
+Especially important for external projects depending on NDK
+
+
+
+## Alternative proposals
+
+Instead of 
+```dart
+enum DataOrigin { cache, relays }
+``` 
+use a `Metadata` obj allowing for more flexibility when adding more metadata in the future.
+Depending on the use case, we could also include specialized metadata, e.g., for cache access counts or P2P transmission statistics.
+Because richer metadata will be slower due to DB access, we should keep the default minimal.
+
+
+## Final Notes
