@@ -328,11 +328,18 @@ class Requests {
       writeToCache: request.cacheWrite,
     );
 
-    final networkEvents = <Nip01Event>[];
+    // only the oldest timestamp per relay is needed, buffering the events
+    // themselves would grow unbounded on long-lived subscriptions
+    final oldestNetworkEventByRelay = <String, int>{};
     final trackedNetworkStream = _fetchedRanges == null
         ? preparedNetworkStream
         : preparedNetworkStream.map((event) {
-            networkEvents.add(event);
+            for (final source in event.sources) {
+              final oldest = oldestNetworkEventByRelay[source];
+              if (oldest == null || event.createdAt < oldest) {
+                oldestNetworkEventByRelay[source] = event.createdAt;
+              }
+            }
             return event;
           });
 
@@ -348,7 +355,7 @@ class Requests {
     // network stream has been fully drained. Closing on networkController.done
     // would run before verification finished pushing events downstream.
     state.controller.done.then((_) {
-      _recordFetchedRanges(state, networkEvents);
+      _recordFetchedRanges(state, oldestNetworkEventByRelay);
     });
 
     // cleanup on close
@@ -563,21 +570,16 @@ class Requests {
   /// - If events received: coverage starts at the oldest event received
   /// - If no events: use the filter bounds (0 to now when unbounded)
   ///
-  /// [events] must only contain events received from relays during this
-  /// request. Cache hits would make the recorded range claim coverage the
+  /// [oldestEventByRelay] must only reflect events received from relays during
+  /// this request. Cache hits would make the recorded range claim coverage the
   /// relay never actually served.
-  void _recordFetchedRanges(RequestState state, List<Nip01Event> events) {
+  void _recordFetchedRanges(
+    RequestState state,
+    Map<String, int> oldestEventByRelay,
+  ) {
     if (_fetchedRanges == null) return;
 
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-    // Group events by source relay
-    final eventsByRelay = <String, List<Nip01Event>>{};
-    for (final event in events) {
-      for (final source in event.sources) {
-        eventsByRelay.putIfAbsent(source, () => []).add(event);
-      }
-    }
 
     for (final entry in state.requests.entries) {
       final relayUrl = entry.key;
@@ -585,21 +587,19 @@ class Requests {
 
       if (!relayState.receivedEOSE) continue;
 
-      final relayEvents = eventsByRelay[relayUrl];
+      final oldestEvent = oldestEventByRelay[relayUrl];
 
       // Record fetched range for each filter sent to this relay
       for (final filter in relayState.filters) {
         int since = filter.since ?? 0;
         final int until = filter.until ?? now;
 
-        if (relayEvents != null && relayEvents.isNotEmpty) {
+        if (oldestEvent != null) {
           // A relay can cap a response below the requested limit, or with no
           // limit in the filter at all (NIP-11 max_limit, which we don't read),
           // so a full response is indistinguishable from a truncated one. Only
           // claim coverage down to the oldest event received.
-          since = relayEvents
-              .map((e) => e.createdAt)
-              .reduce((a, b) => a < b ? a : b);
+          since = oldestEvent;
         }
 
         _fetchedRanges!.addRange(
