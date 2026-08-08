@@ -16,9 +16,9 @@ void main() {
       event: metadata.toEvent(),
       privateKey: key.privateKey!,
     );
-    await profileRelay.startServer(metadatas: {
-      key.publicKey: signedMetadataEvent,
-    });
+    await profileRelay.startServer(
+      metadatas: {key.publicKey: signedMetadataEvent},
+    );
 
     final relayList = Nip65.fromMap(key.publicKey, {
       profileRelay.url: ReadWriteMarker.readWrite,
@@ -30,12 +30,14 @@ void main() {
     final relayListBootstrap = MockRelay(name: 'relay list bootstrap');
     await relayListBootstrap.startServer();
 
-    final ndk = Ndk(NdkConfig(
-      eventVerifier: Bip340EventVerifier(),
-      cache: MemCacheManager(),
-      bootstrapRelays: [relayListBootstrap.url],
-      engine: engine,
-    ));
+    final ndk = Ndk(
+      NdkConfig(
+        eventVerifier: Bip340EventVerifier(),
+        cache: MemCacheManager(),
+        bootstrapRelays: [relayListBootstrap.url],
+        engine: engine,
+      ),
+    );
 
     await ndk.relays.seedRelaysConnected;
 
@@ -53,9 +55,7 @@ void main() {
         )
         .broadcastDoneFuture;
 
-    final loaded = await ndk.metadata.loadMetadata(
-      key.publicKey,
-    );
+    final loaded = await ndk.metadata.loadMetadata(key.publicKey);
 
     expect(loaded?.name, equals(metadata.name));
   }
