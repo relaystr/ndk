@@ -52,7 +52,8 @@ void main() async {
         await ndk.relays.seedRelaysConnected;
 
         // Define filter with time bounds
-        final since = DateTime.now()
+        final since =
+            DateTime.now()
                 .subtract(const Duration(days: 1))
                 .millisecondsSinceEpoch ~/
             1000;
@@ -97,7 +98,8 @@ void main() async {
         expect(
           relayFetchedRanges.ranges.first.since,
           equals(textNotes[key1]!.createdAt),
-          reason: 'Range since should start at the oldest event received, the '
+          reason:
+              'Range since should start at the oldest event received, the '
               'relay may have truncated anything older',
         );
         expect(
@@ -353,8 +355,9 @@ void main() async {
           limit: 10,
         );
 
-        final events =
-            await ndk.requests.query(filter: filter, cacheRead: false).future;
+        final events = await ndk.requests
+            .query(filter: filter, cacheRead: false)
+            .future;
 
         await Future.delayed(const Duration(milliseconds: 100));
 
@@ -365,8 +368,9 @@ void main() async {
         expect(relayFetchedRanges!.ranges.length, equals(1));
 
         final range = relayFetchedRanges.ranges.first;
-        final oldestReturned =
-            events.map((e) => e.createdAt).reduce((a, b) => a < b ? a : b);
+        final oldestReturned = events
+            .map((e) => e.createdAt)
+            .reduce((a, b) => a < b ? a : b);
 
         expect(
           oldestReturned,
@@ -376,7 +380,8 @@ void main() async {
         expect(
           range.since,
           equals(oldestReturned),
-          reason: 'range must start at the oldest returned event, the 20 older '
+          reason:
+              'range must start at the oldest returned event, the 20 older '
               'events were never fetched',
         );
         expect(
@@ -461,8 +466,9 @@ void main() async {
           limit: 50,
         );
 
-        final events =
-            await ndk.requests.query(filter: filter, cacheRead: false).future;
+        final events = await ndk.requests
+            .query(filter: filter, cacheRead: false)
+            .future;
 
         expect(
           events.length,
@@ -478,8 +484,9 @@ void main() async {
         expect(relayFetchedRanges, isNotNull);
         expect(relayFetchedRanges!.ranges.length, equals(1));
 
-        final oldestReturned =
-            events.map((e) => e.createdAt).reduce((a, b) => a < b ? a : b);
+        final oldestReturned = events
+            .map((e) => e.createdAt)
+            .reduce((a, b) => a < b ? a : b);
 
         expect(
           oldestReturned,

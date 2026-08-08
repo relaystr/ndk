@@ -61,14 +61,14 @@ class Requests {
     required EventVerifier eventVerifier,
     required List<EventFilter> eventOutFilters,
     required Duration defaultQueryTimeout,
-  })  : _engine = networkEngine,
-        _relayManager = relayManager,
-        _cacheWrite = cacheWrite,
-        _cacheRead = cacheRead,
-        _globalState = globalState,
-        _eventVerifier = eventVerifier,
-        _eventOutFilters = eventOutFilters,
-        _defaultQueryTimeout = defaultQueryTimeout;
+  }) : _engine = networkEngine,
+       _relayManager = relayManager,
+       _cacheWrite = cacheWrite,
+       _cacheRead = cacheRead,
+       _globalState = globalState,
+       _eventVerifier = eventVerifier,
+       _eventOutFilters = eventOutFilters,
+       _defaultQueryTimeout = defaultQueryTimeout;
 
   Stream<Nip01Event> _prepareNetworkStream(
     Stream<Nip01Event> verifiedNetworkStream, {
