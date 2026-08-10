@@ -434,7 +434,7 @@ void main() async {
         defaultQueryTimeout: Duration(seconds: 10),
         globalState: globalState,
         cacheRead: MockCacheRead(cache),
-        cacheWrite: init.cacheWrite,
+        cacheManager: cache,
         networkEngine: init.engine,
         relayManager: init.relayManager,
         eventVerifier: eventVerifier,
