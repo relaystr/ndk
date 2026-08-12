@@ -57,7 +57,10 @@ void main() async {
           });
 
       expect(
-        manager.globalState.relays[relay1.url]!.relay
+        manager
+            .globalState
+            .relays[RelayConnectionKey.anonymous(relay1.url)]!
+            .relay
             .wasLastConnectTryLongerThanSeconds(120),
         false,
       );
@@ -91,7 +94,8 @@ void main() async {
       }
       expect(relay1.connectedClientCount, 1);
 
-      final relayConnectivity = manager.globalState.relays[relay1.url]!;
+      final relayConnectivity =
+          manager.globalState.relays[RelayConnectionKey.anonymous(relay1.url)]!;
       expect(relayConnectivity.stats.connections, 1);
 
       // Backdate the last connect attempt so the reconnect is not suppressed
@@ -120,7 +124,8 @@ void main() async {
       // Keep the teardown from racing another reconnect attempt against the
       // stopped server.
       manager.allowReconnectRelays = false;
-      await manager.globalState.relays[relay1.url]?.close();
+      await manager.globalState.relays[RelayConnectionKey.anonymous(relay1.url)]
+          ?.close();
       await relay1.stopServer();
     });
 

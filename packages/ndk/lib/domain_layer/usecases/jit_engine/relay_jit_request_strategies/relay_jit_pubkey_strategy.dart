@@ -9,6 +9,7 @@ import 'package:ndk/domain_layer/usecases/jit_engine/relay_jit_request_strategie
 
 import '../../../entities/global_state.dart';
 import '../../../entities/jit_engine_relay_connectivity_data.dart';
+import '../../../entities/relay_connection_key.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../../entities/request_state.dart';
 import '../../../entities/connection_source.dart';
@@ -201,7 +202,9 @@ class RelayJitPubkeyStrategy with Logger {
             .then((success) {
               if (success.first) {
                 final myRelayConnectivity =
-                    globalState.relays[relayCandidate.relayUrl]
+                    globalState.relays[RelayConnectionKey.anonymous(
+                          relayCandidate.relayUrl,
+                        )]
                         as RelayConnectivity<JitEngineRelayConnectivityData>;
                 // add assigned pubkeys
                 myRelayConnectivity.specificEngineData!
@@ -252,7 +255,9 @@ class RelayJitPubkeyStrategy with Logger {
 
       if (alreadyConnected) {
         final myRelayConnectivity =
-            globalState.relays[relayCandidate.relayUrl]
+            globalState.relays[RelayConnectionKey.anonymous(
+                  relayCandidate.relayUrl,
+                )]
                 as RelayConnectivity<JitEngineRelayConnectivityData>;
 
         myRelayConnectivity.specificEngineData!.addPubkeysToAssignedPubkeys(

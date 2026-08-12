@@ -17,6 +17,7 @@ import '../entities/filter.dart';
 import '../entities/global_state.dart';
 import '../entities/ndk_request.dart';
 import '../entities/nip_01_event.dart';
+import '../entities/relay_connection_key.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_set.dart';
 import '../entities/request_response.dart';
@@ -67,7 +68,8 @@ class RelaySetsEngine implements NetworkEngine {
       force: false,
     );
     if (connected) {
-      RelayConnectivity? relay = _globalState.relays[request.url];
+      RelayConnectivity? relay =
+          _globalState.relays[RelayConnectionKey.anonymous(request.url)];
       if (relay != null) {
         relay.stats.activeRequests++;
         try {
@@ -369,6 +371,7 @@ class RelaySetsEngine implements NetworkEngine {
         ));
         // make a copy of the keys since connectRelay may mutate the underlying map
         List<String> writeRelaysUrls = _relayManager.globalState.relays.keys
+            .map((key) => key.url)
             .toList();
         if (nip65List.isNotEmpty) {
           writeRelaysUrls = nip65List.first.relays.entries

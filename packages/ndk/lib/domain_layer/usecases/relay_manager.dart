@@ -19,6 +19,7 @@ import '../entities/global_state.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/nostr_message_raw.dart';
 import '../entities/relay.dart';
+import '../entities/relay_connection_key.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_info.dart';
 import '../entities/request_state.dart';
@@ -102,7 +103,10 @@ class RelayManager<T> {
   }
 
   void updateRelayConnectivity() {
-    _relayUpdatesStreamController.add(globalState.relays);
+    _relayUpdatesStreamController.add({
+      for (final connectivity in globalState.relays.values)
+        connectivity.url: connectivity,
+    });
   }
 
   /// This will initialize the manager with bootstrap relays.
@@ -144,12 +148,14 @@ class RelayManager<T> {
 
   /// checks if a relay is connected, avoid using this
   bool isRelayConnected(String url) {
-    return globalState.relays[url]?.relayTransport?.isOpen() ?? false;
+    return globalState.relays[RelayConnectionKey.anonymous(url)]?.relayTransport
+            ?.isOpen() ??
+        false;
   }
 
   /// checks if a relay is connecting
   bool isRelayConnecting(String url) {
-    final relay = globalState.relays[url]?.relay;
+    final relay = globalState.relays[RelayConnectionKey.anonymous(url)]?.relay;
     return relay != null && relay.connecting;
   }
 
@@ -220,17 +226,19 @@ class RelayManager<T> {
       updateRelayConnectivity();
       return Tuple(false, "relay is still connecting");
     }
-    RelayConnectivity? relayConnectivity = globalState.relays[url];
+    final connectionKey = RelayConnectionKey.anonymous(url);
+    RelayConnectivity? relayConnectivity = globalState.relays[connectionKey];
     final connectCompleter = Completer<bool>();
     _connectReadyCompleters[url] = connectCompleter;
 
     try {
       if (relayConnectivity == null) {
         relayConnectivity = RelayConnectivity<T>(
+          key: connectionKey,
           relay: Relay(url: url, connectionSource: connectionSource),
           specificEngineData: engineAdditionalDataFactory?.call(),
         );
-        globalState.relays[url] = relayConnectivity;
+        globalState.relays[connectionKey] = relayConnectivity;
       }
 
       relayConnectivity.relay.tryingToConnect();
@@ -319,7 +327,8 @@ class RelayManager<T> {
       return connected;
     }
 
-    RelayConnectivity? relayConnectivity = globalState.relays[url];
+    RelayConnectivity? relayConnectivity =
+        globalState.relays[RelayConnectionKey.anonymous(url)];
     if (relayConnectivity != null && relayConnectivity.relayTransport != null) {
       try {
         final opened = await _waitForTransportOpen(
@@ -354,7 +363,7 @@ class RelayManager<T> {
         // could not connect
         return false;
       }
-      relayConnectivity = globalState.relays[url];
+      relayConnectivity = globalState.relays[RelayConnectionKey.anonymous(url)];
       if (relayConnectivity == null ||
           relayConnectivity.relayTransport == null ||
           !relayConnectivity.relayTransport!.isOpen()) {
@@ -368,7 +377,7 @@ class RelayManager<T> {
   /// Closes and clears only transport-scoped state for a relay, while keeping
   /// the relay entry and relay-scoped metadata in memory.
   Future<void> resetTransport(String url) async {
-    final connectivity = globalState.relays[url];
+    final connectivity = globalState.relays[RelayConnectionKey.anonymous(url)];
     if (connectivity != null) {
       Logger.log.d(() => "Resetting transport for $url...");
       connectivity.relay.failedToConnect();
@@ -598,7 +607,7 @@ class RelayManager<T> {
         // condition is that the relay is still tracked: deliberate closes cancel
         // the stream subscription first and never reach this handler.
         if (allowReconnectRelays &&
-            globalState.relays[relayConnectivity.url] != null) {
+            globalState.relays[relayConnectivity.key] != null) {
           Logger.log.i(() => "closed ${relayConnectivity.url}. Reconnecting");
           reconnectRelay(
             relayConnectivity.url,
@@ -911,7 +920,8 @@ class RelayManager<T> {
       return;
     }
 
-    final relayConnectivity = globalState.relays[relayUrl];
+    final relayConnectivity =
+        globalState.relays[RelayConnectionKey.anonymous(relayUrl)];
     if (relayConnectivity == null) {
       Logger.log.w(() => "Relay $relayUrl not found for late auth");
       return;
@@ -1263,6 +1273,7 @@ class RelayManager<T> {
     /// if not ignore it and wait for the ones still alive to finish
     final listOfRelaysForThisRequest = state.requests.keys.toList();
     final myNotConnectedRelays = globalState.relays.keys
+        .map((key) => key.url)
         .where((url) => listOfRelaysForThisRequest.contains(url))
         .where((url) => !isRelayConnected(url))
         .toList();
@@ -1282,7 +1293,8 @@ class RelayManager<T> {
 
   /// sends a close message to a relay
   void sendCloseToRelay(String url, String id) {
-    RelayConnectivity? connectivity = globalState.relays[url];
+    RelayConnectivity? connectivity =
+        globalState.relays[RelayConnectionKey.anonymous(url)];
     if (connectivity != null) {
       _sendCloseToRelay(connectivity, id);
     }
@@ -1324,10 +1336,11 @@ class RelayManager<T> {
 
   /// Closes this url transport and removes
   Future<void> closeTransport(String url) async {
-    RelayConnectivity? connectivity = globalState.relays[url];
+    final connectionKey = RelayConnectionKey.anonymous(url);
+    RelayConnectivity? connectivity = globalState.relays[connectionKey];
     if (connectivity != null && connectivity.relayTransport != null) {
       Logger.log.d(() => "Disconnecting $url...");
-      globalState.relays.remove(url);
+      globalState.relays.remove(connectionKey);
       _lastChallengePerRelay.remove(url);
       return connectivity.close();
     }
@@ -1335,9 +1348,11 @@ class RelayManager<T> {
 
   /// Closes all transports
   Future<void> closeAllTransports() async {
-    Iterable<String> keys = globalState.relays.keys.toList();
+    Iterable<String> urls = globalState.relays.keys
+        .map((key) => key.url)
+        .toList();
     try {
-      await Future.wait(keys.map((url) => closeTransport(url)));
+      await Future.wait(urls.map((url) => closeTransport(url)));
     } catch (e) {
       Logger.log.e(() => e);
     }
@@ -1346,7 +1361,7 @@ class RelayManager<T> {
   /// fetches relay info
   /// todo: refactor to use http injector and decouple data from fetching
   Future<RelayInfo?> getRelayInfo(String url) async {
-    if (globalState.relays[url] != null) {
+    if (globalState.relays[RelayConnectionKey.anonymous(url)] != null) {
       return await RelayInfo.get(url);
     }
     return null;
@@ -1354,7 +1369,8 @@ class RelayManager<T> {
 
   /// does relay support given nip
   bool doesRelaySupportNip(String url, int nip) {
-    RelayConnectivity? connectivity = globalState.relays[cleanRelayUrl(url)];
+    RelayConnectivity? connectivity =
+        globalState.relays[RelayConnectionKey.anonymous(url)];
     return connectivity != null &&
         connectivity.relayInfo != null &&
         connectivity.relayInfo!.supportsNip(nip);
@@ -1362,7 +1378,7 @@ class RelayManager<T> {
 
   /// return [RelayConnectivity] by url
   RelayConnectivity? getRelayConnectivity(String url) {
-    return globalState.relays[url];
+    return globalState.relays[RelayConnectionKey.anonymous(url)];
   }
 }
 
