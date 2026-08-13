@@ -43,8 +43,9 @@ class RelayManager<T> {
   /// signer for nip-42 AUTH challenges from relays
   final Accounts? _accounts;
 
-  /// stores the last AUTH challenge per relay for late authentication
-  final Map<String, String> _lastChallengePerRelay = {};
+  /// stores the last AUTH challenge per connection for late authentication;
+  /// each socket gets its own challenge, so this cannot be keyed by relay
+  final Map<RelayConnectionKey, String> _lastChallengePerConnection = {};
 
   /// stores pending AUTH callbacks: authEventId -> callback to execute on AUTH OK
   final Map<String, void Function()> _pendingAuthCallbacks = {};
@@ -54,7 +55,7 @@ class RelayManager<T> {
 
   /// Tracks relay connect attempts that are still finishing setup so callers
   /// can wait for "socket open + listener attached", not just raw socket open.
-  final Map<String, Completer<bool>> _connectReadyCompleters = {};
+  final Map<RelayConnectionKey, Completer<bool>> _connectReadyCompleters = {};
 
   /// timeout for AUTH callbacks (how long to wait for AUTH OK)
   final Duration authCallbackTimeout;
@@ -143,19 +144,24 @@ class RelayManager<T> {
   /// Returns a list of fully connected relays, excluding connecting ones.
   /// DO NOT USE THIS FOR CHECKING A SINGLE RELAY, use [isRelayConnected] INSTEAD
   List<RelayConnectivity> get connectedRelays => globalState.relays.values
-      .where((relay) => isRelayConnected(relay.url))
+      .where((connectivity) => connectivity.isConnected)
       .toList();
 
   /// checks if a relay is connected, avoid using this
-  bool isRelayConnected(String url) {
-    return globalState.relays[RelayConnectionKey.anonymous(url)]?.relayTransport
-            ?.isOpen() ??
-        false;
-  }
+  bool isRelayConnected(String url) =>
+      isConnectionOpen(RelayConnectionKey.anonymous(url));
 
   /// checks if a relay is connecting
-  bool isRelayConnecting(String url) {
-    final relay = globalState.relays[RelayConnectionKey.anonymous(url)]?.relay;
+  bool isRelayConnecting(String url) =>
+      isConnectionConnecting(RelayConnectionKey.anonymous(url));
+
+  /// checks if the connection identified by [key] is open
+  bool isConnectionOpen(RelayConnectionKey key) =>
+      globalState.relays[key]?.relayTransport?.isOpen() ?? false;
+
+  /// checks if the connection identified by [key] is connecting
+  bool isConnectionConnecting(RelayConnectionKey key) {
+    final relay = globalState.relays[key]?.relay;
     return relay != null && relay.connecting;
   }
 
@@ -192,6 +198,7 @@ class RelayManager<T> {
   Future<Tuple<bool, String>> connectRelay({
     required String dirtyUrl,
     required ConnectionSource connectionSource,
+    String? authPubkey,
     int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT,
   }) async {
     String? url = cleanRelayUrl(dirtyUrl);
@@ -204,15 +211,19 @@ class RelayManager<T> {
       return Tuple(false, "relay is blocked");
     }
 
-    if (isRelayConnected(url)) {
-      Logger.log.t(() => "relay already connected: $url");
+    final connectionKey = authPubkey == null
+        ? RelayConnectionKey.anonymous(url)
+        : RelayConnectionKey.authenticated(url, authPubkey);
+
+    if (isConnectionOpen(connectionKey)) {
+      Logger.log.t(() => "relay already connected: $connectionKey");
       updateRelayConnectivity();
       return Tuple(true, "");
     }
 
-    if (isRelayConnecting(url)) {
-      Logger.log.t(() => "relay is already connecting: $url");
-      final inFlightConnect = _connectReadyCompleters[url];
+    if (isConnectionConnecting(connectionKey)) {
+      Logger.log.t(() => "relay is already connecting: $connectionKey");
+      final inFlightConnect = _connectReadyCompleters[connectionKey];
       if (inFlightConnect != null) {
         final connected = await inFlightConnect.future;
         updateRelayConnectivity();
@@ -226,10 +237,9 @@ class RelayManager<T> {
       updateRelayConnectivity();
       return Tuple(false, "relay is still connecting");
     }
-    final connectionKey = RelayConnectionKey.anonymous(url);
     RelayConnectivity? relayConnectivity = globalState.relays[connectionKey];
     final connectCompleter = Completer<bool>();
-    _connectReadyCompleters[url] = connectCompleter;
+    _connectReadyCompleters[connectionKey] = connectCompleter;
 
     try {
       if (relayConnectivity == null) {
@@ -249,8 +259,11 @@ class RelayManager<T> {
         if (!connectCompleter.isCompleted) {
           connectCompleter.complete(false);
         }
-        if (identical(_connectReadyCompleters[url], connectCompleter)) {
-          _connectReadyCompleters.remove(url);
+        if (identical(
+          _connectReadyCompleters[connectionKey],
+          connectCompleter,
+        )) {
+          _connectReadyCompleters.remove(connectionKey);
         }
         updateRelayConnectivity();
         return Tuple(false, "bad relay");
@@ -293,8 +306,8 @@ class RelayManager<T> {
       if (!connectCompleter.isCompleted) {
         connectCompleter.complete(true);
       }
-      if (identical(_connectReadyCompleters[url], connectCompleter)) {
-        _connectReadyCompleters.remove(url);
+      if (identical(_connectReadyCompleters[connectionKey], connectCompleter)) {
+        _connectReadyCompleters.remove(connectionKey);
       }
       updateRelayConnectivity();
       return Tuple(true, "");
@@ -307,8 +320,8 @@ class RelayManager<T> {
     if (!connectCompleter.isCompleted) {
       connectCompleter.complete(false);
     }
-    if (identical(_connectReadyCompleters[url], connectCompleter)) {
-      _connectReadyCompleters.remove(url);
+    if (identical(_connectReadyCompleters[connectionKey], connectCompleter)) {
+      _connectReadyCompleters.remove(connectionKey);
     }
     updateRelayConnectivity();
     return Tuple(false, "could not connect to $url");
@@ -320,7 +333,8 @@ class RelayManager<T> {
     required ConnectionSource connectionSource,
     bool force = false,
   }) async {
-    final inFlightConnect = _connectReadyCompleters[url];
+    final inFlightConnect =
+        _connectReadyCompleters[RelayConnectionKey.anonymous(url)];
     if (inFlightConnect != null) {
       final connected = await inFlightConnect.future;
       updateRelayConnectivity();
@@ -381,7 +395,7 @@ class RelayManager<T> {
     if (connectivity != null) {
       Logger.log.d(() => "Resetting transport for $url...");
       connectivity.relay.failedToConnect();
-      _lastChallengePerRelay.remove(url);
+      _lastChallengePerConnection.remove(connectivity.key);
       await connectivity.close();
       updateRelayConnectivity();
     }
@@ -791,7 +805,7 @@ class RelayManager<T> {
       );
 
       // Store challenge for late authentication (multiple accounts on same connection)
-      _lastChallengePerRelay[relayConnectivity.url] = challenge;
+      _lastChallengePerConnection[relayConnectivity.key] = challenge;
 
       // If not eager auth, don't authenticate now - wait for auth-required
       if (!eagerAuth) {
@@ -912,7 +926,8 @@ class RelayManager<T> {
   /// Authenticates accounts on a relay if we have a stored challenge.
   /// Call this when creating a new subscription with authenticateAs.
   void authenticateIfNeeded(String relayUrl, List<Account> accounts) {
-    final challenge = _lastChallengePerRelay[relayUrl];
+    final challenge =
+        _lastChallengePerConnection[RelayConnectionKey.anonymous(relayUrl)];
     if (challenge == null) {
       Logger.log.t(
         () => "No stored challenge for $relayUrl, skipping late auth",
@@ -1054,7 +1069,7 @@ class RelayManager<T> {
       return;
     }
 
-    final challenge = _lastChallengePerRelay[relayConnectivity.url];
+    final challenge = _lastChallengePerConnection[relayConnectivity.key];
     if (challenge == null) {
       Logger.log.w(
         () =>
@@ -1163,7 +1178,7 @@ class RelayManager<T> {
     String eventId,
     RelayConnectivity relayConnectivity,
   ) {
-    final challenge = _lastChallengePerRelay[relayConnectivity.url];
+    final challenge = _lastChallengePerConnection[relayConnectivity.key];
     if (challenge == null) {
       Logger.log.w(
         () =>
@@ -1341,7 +1356,7 @@ class RelayManager<T> {
     if (connectivity != null && connectivity.relayTransport != null) {
       Logger.log.d(() => "Disconnecting $url...");
       globalState.relays.remove(connectionKey);
-      _lastChallengePerRelay.remove(url);
+      _lastChallengePerConnection.remove(connectionKey);
       return connectivity.close();
     }
   }
