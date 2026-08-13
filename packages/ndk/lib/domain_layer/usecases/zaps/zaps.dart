@@ -39,7 +39,7 @@ class Zaps {
     }
 
     try {
-      return _lnurl.fetchInvoice(
+      return await _lnurl.fetchInvoice(
         lnurlResponse: lnurlResponse,
         amountSats: amountSats,
         zapRequest: zapRequest,

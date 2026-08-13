@@ -97,7 +97,7 @@ class Broadcast {
           nostrEvent,
           responses,
         );
-      } catch (_, __) {}
+      } catch (_) {}
       return responses;
     });
     return NdkBroadcastResponse(
