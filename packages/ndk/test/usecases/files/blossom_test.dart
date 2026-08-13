@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:http/http.dart' as http;
 
 import 'package:ndk/data_layer/data_sources/http_request.dart';
@@ -418,85 +419,79 @@ void main() {
       client: HttpRequestDS(http.Client()),
       fileIO: createFileIO(),
     );
-    test(
-      'getBlobStream should properly stream large files with range requests',
-      () async {
-        // First upload a test file to the mock server
-        final testData = Uint8List.fromList(
-          List.generate(5 * 1024 * 1024, (i) => i % 256),
-        ); // 5MB test file
+    test('getBlobStream should properly stream large files with range requests', () async {
+      // First upload a test file to the mock server
+      final testData = Uint8List.fromList(
+        List.generate(5 * 1024 * 1024, (i) => i % 256),
+      ); // 5MB test file
 
-        // Upload the test file
-        final uploadResponse = await client.uploadBlob(
-          data: testData,
-          serverUrls: ['http://localhost:${server.port}'],
-        );
+      // Upload the test file
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:${server.port}'],
+      );
 
-        expect(uploadResponse.first.success, true);
-        final sha256 = uploadResponse.first.descriptor!.sha256;
+      expect(uploadResponse.first.success, true);
+      final sha256 = uploadResponse.first.descriptor!.sha256;
 
-        // Now test the streaming download
-        final stream = await blossomRepo.getBlobStream(
-          sha256: sha256,
-          serverUrls: ['http://localhost:${server.port}'],
-          chunkSize: 1024 * 1024, // 1MB chunks
-        );
+      // Now test the streaming download
+      final stream = await blossomRepo.getBlobStream(
+        sha256: sha256,
+        serverUrls: ['http://localhost:${server.port}'],
+        chunkSize: 1024 * 1024, // 1MB chunks
+      );
 
-        // Collect all chunks and verify the data
-        final chunks = <Uint8List>[];
-        int totalSize = 0;
+      // Collect all chunks and verify the data
+      final chunks = <Uint8List>[];
+      int totalSize = 0;
 
-        await for (final response in stream) {
-          chunks.add(response.data);
-          totalSize += response.data.length;
+      await for (final response in stream) {
+        chunks.add(response.data);
+        totalSize += response.data.length;
 
-          // Verify chunk metadata
-          expect(response.mimeType, isNotNull);
-          expect(response.contentLength, equals(testData.length));
-          //expect(response.contentRange, matches(RegExp(r'bytes \d+-\d+/\d+')));
-        }
+        // Verify chunk metadata
+        expect(response.mimeType, isNotNull);
+        expect(response.contentLength, equals(testData.length));
+        //expect(response.contentRange, matches(RegExp(r'bytes \d+-\d+/\d+')));
+      }
 
-        // Combine chunks and verify the complete file
-        final resultData = Uint8List(totalSize);
-        int offset = 0;
-        for (final chunk in chunks) {
-          resultData.setRange(offset, offset + chunk.length, chunk);
-          offset += chunk.length;
-        }
+      // Combine chunks and verify the complete file
+      final resultData = Uint8List(totalSize);
+      int offset = 0;
+      for (final chunk in chunks) {
+        resultData.setRange(offset, offset + chunk.length, chunk);
+        offset += chunk.length;
+      }
 
-        expect(resultData, equals(testData));
-        expect(totalSize, equals(testData.length));
-      },
-    );
+      expect(resultData, equals(testData));
+      expect(totalSize, equals(testData.length));
+    });
 
-    test(
-      'getBlobStream should fallback to regular download if range requests not supported',
-      () async {
-        // Upload a smaller test file
-        final testData = Uint8List.fromList(
-          List.generate(1024, (i) => i % 256),
-        ); // 1KB test file
+    test('getBlobStream should fallback to regular download if range requests not supported', () async {
+      // Upload a smaller test file
+      final testData = Uint8List.fromList(
+        List.generate(1024, (i) => i % 256),
+      ); // 1KB test file
 
-        final uploadResponse = await client.uploadBlob(
-          data: testData,
-          serverUrls: ['http://localhost:${server.port}'],
-        );
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:${server.port}'],
+      );
 
-        expect(uploadResponse.first.success, true);
-        final sha256 = uploadResponse.first.descriptor!.sha256;
+      expect(uploadResponse.first.success, true);
+      final sha256 = uploadResponse.first.descriptor!.sha256;
 
-        // Test the streaming download
-        final stream = await blossomRepo.getBlobStream(
-          sha256: sha256,
-          serverUrls: ['http://localhost:${server.port}'],
-        );
+      // Test the streaming download
+      final stream = await blossomRepo.getBlobStream(
+        sha256: sha256,
+        serverUrls: ['http://localhost:${server.port}'],
+      );
 
-        // Should receive exactly one chunk with the complete file
-        final chunks = await stream.toList();
-        expect(chunks.length, equals(1));
-        expect(chunks.first.data, equals(testData));
-      },
-    );
+      // Should receive exactly one chunk with the complete file
+      final chunks = await stream.toList();
+      expect(chunks.length, equals(1));
+      expect(chunks.first.data, equals(testData));
+    });
 
     test('getBlobStream should handle server errors gracefully', () async {
       expect(
@@ -1033,53 +1028,50 @@ void main() {
       },
     );
 
-    test(
-      'uploadBlobFromFile mirrorAfterSuccess reports mirrorsTotal and mirrorsCompleted progression',
-      () async {
-        final testFile = File('${tempDir.path}/test_mirror_progress.txt');
-        await testFile.writeAsString('Mirror progress test');
+    test('uploadBlobFromFile mirrorAfterSuccess reports mirrorsTotal and mirrorsCompleted progression', () async {
+      final testFile = File('${tempDir.path}/test_mirror_progress.txt');
+      await testFile.writeAsString('Mirror progress test');
 
-        final events = <BlobUploadProgress>[];
-        await for (final progress in client.uploadBlobFromFile(
-          filePath: testFile.path,
-          serverUrls: [
-            'http://localhost:$primaryServerPort',
-            'http://localhost:$secondaryServerPort',
-          ],
-          strategy: UploadStrategy.mirrorAfterSuccess,
-        )) {
-          events.add(progress);
-        }
+      final events = <BlobUploadProgress>[];
+      await for (final progress in client.uploadBlobFromFile(
+        filePath: testFile.path,
+        serverUrls: [
+          'http://localhost:$primaryServerPort',
+          'http://localhost:$secondaryServerPort',
+        ],
+        strategy: UploadStrategy.mirrorAfterSuccess,
+      )) {
+        events.add(progress);
+      }
 
-        final mirrorEvents = events
-            .where(
-              (e) =>
-                  e.phase == UploadPhase.mirroring &&
-                  (e.mirrorsTotal > 0 || e.mirrorsCompleted > 0),
-            )
-            .toList();
+      final mirrorEvents = events
+          .where(
+            (e) =>
+                e.phase == UploadPhase.mirroring &&
+                (e.mirrorsTotal > 0 || e.mirrorsCompleted > 0),
+          )
+          .toList();
 
-        expect(mirrorEvents, isNotEmpty);
+      expect(mirrorEvents, isNotEmpty);
 
-        // With 2 servers and first success strategy, only 1 mirror should be needed.
-        expect(mirrorEvents.every((e) => e.mirrorsTotal == 1), isTrue);
+      // With 2 servers and first success strategy, only 1 mirror should be needed.
+      expect(mirrorEvents.every((e) => e.mirrorsTotal == 1), isTrue);
 
-        // Should emit start of mirroring and completion of mirroring.
-        expect(mirrorEvents.any((e) => e.mirrorsCompleted == 0), isTrue);
+      // Should emit start of mirroring and completion of mirroring.
+      expect(mirrorEvents.any((e) => e.mirrorsCompleted == 0), isTrue);
+      expect(
+        mirrorEvents.any((e) => e.mirrorsCompleted == e.mirrorsTotal),
+        isTrue,
+      );
+
+      // Progression should be monotonic.
+      for (var i = 1; i < mirrorEvents.length; i++) {
         expect(
-          mirrorEvents.any((e) => e.mirrorsCompleted == e.mirrorsTotal),
-          isTrue,
+          mirrorEvents[i].mirrorsCompleted,
+          greaterThanOrEqualTo(mirrorEvents[i - 1].mirrorsCompleted),
         );
-
-        // Progression should be monotonic.
-        for (var i = 1; i < mirrorEvents.length; i++) {
-          expect(
-            mirrorEvents[i].mirrorsCompleted,
-            greaterThanOrEqualTo(mirrorEvents[i - 1].mirrorsCompleted),
-          );
-        }
-      },
-    );
+      }
+    });
 
     test('downloadBlobToFile should handle server fallback', () async {
       // Upload to one server

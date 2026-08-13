@@ -6769,32 +6769,30 @@ abstract class _$NdkCacheDatabase extends GeneratedDatabase {
   ];
 }
 
-typedef $$EventsTableCreateCompanionBuilder =
-    EventsCompanion Function({
-      required String id,
-      required String pubKey,
-      required int kind,
-      required int createdAt,
-      required String content,
-      Value<String?> sig,
-      Value<bool?> validSig,
-      required String tagsJson,
-      required String sourcesJson,
-      Value<int> rowid,
-    });
-typedef $$EventsTableUpdateCompanionBuilder =
-    EventsCompanion Function({
-      Value<String> id,
-      Value<String> pubKey,
-      Value<int> kind,
-      Value<int> createdAt,
-      Value<String> content,
-      Value<String?> sig,
-      Value<bool?> validSig,
-      Value<String> tagsJson,
-      Value<String> sourcesJson,
-      Value<int> rowid,
-    });
+typedef $$EventsTableCreateCompanionBuilder = EventsCompanion Function({
+  required String id,
+  required String pubKey,
+  required int kind,
+  required int createdAt,
+  required String content,
+  Value<String?> sig,
+  Value<bool?> validSig,
+  required String tagsJson,
+  required String sourcesJson,
+  Value<int> rowid,
+});
+typedef $$EventsTableUpdateCompanionBuilder = EventsCompanion Function({
+  Value<String> id,
+  Value<String> pubKey,
+  Value<int> kind,
+  Value<int> createdAt,
+  Value<String> content,
+  Value<String?> sig,
+  Value<bool?> validSig,
+  Value<String> tagsJson,
+  Value<String> sourcesJson,
+  Value<int> rowid,
+});
 
 class $$EventsTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $EventsTable> {
@@ -7236,30 +7234,28 @@ typedef $$UserRelayListsTableProcessedTableManager =
       DbUserRelayList,
       PrefetchHooks Function()
     >;
-typedef $$RelaySetsTableCreateCompanionBuilder =
-    RelaySetsCompanion Function({
-      required String id,
-      required String name,
-      required String pubKey,
-      required int relayMinCountPerPubkey,
-      required int direction,
-      required String relaysMapJson,
-      required bool fallbackToBootstrapRelays,
-      required String notCoveredPubkeysJson,
-      Value<int> rowid,
-    });
-typedef $$RelaySetsTableUpdateCompanionBuilder =
-    RelaySetsCompanion Function({
-      Value<String> id,
-      Value<String> name,
-      Value<String> pubKey,
-      Value<int> relayMinCountPerPubkey,
-      Value<int> direction,
-      Value<String> relaysMapJson,
-      Value<bool> fallbackToBootstrapRelays,
-      Value<String> notCoveredPubkeysJson,
-      Value<int> rowid,
-    });
+typedef $$RelaySetsTableCreateCompanionBuilder = RelaySetsCompanion Function({
+  required String id,
+  required String name,
+  required String pubKey,
+  required int relayMinCountPerPubkey,
+  required int direction,
+  required String relaysMapJson,
+  required bool fallbackToBootstrapRelays,
+  required String notCoveredPubkeysJson,
+  Value<int> rowid,
+});
+typedef $$RelaySetsTableUpdateCompanionBuilder = RelaySetsCompanion Function({
+  Value<String> id,
+  Value<String> name,
+  Value<String> pubKey,
+  Value<int> relayMinCountPerPubkey,
+  Value<int> direction,
+  Value<String> relaysMapJson,
+  Value<bool> fallbackToBootstrapRelays,
+  Value<String> notCoveredPubkeysJson,
+  Value<int> rowid,
+});
 
 class $$RelaySetsTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $RelaySetsTable> {
@@ -7501,24 +7497,22 @@ typedef $$RelaySetsTableProcessedTableManager =
       DbRelaySet,
       PrefetchHooks Function()
     >;
-typedef $$Nip05sTableCreateCompanionBuilder =
-    Nip05sCompanion Function({
-      required String pubKey,
-      required String nip05,
-      required bool valid,
-      Value<int?> networkFetchTime,
-      required String relaysJson,
-      Value<int> rowid,
-    });
-typedef $$Nip05sTableUpdateCompanionBuilder =
-    Nip05sCompanion Function({
-      Value<String> pubKey,
-      Value<String> nip05,
-      Value<bool> valid,
-      Value<int?> networkFetchTime,
-      Value<String> relaysJson,
-      Value<int> rowid,
-    });
+typedef $$Nip05sTableCreateCompanionBuilder = Nip05sCompanion Function({
+  required String pubKey,
+  required String nip05,
+  required bool valid,
+  Value<int?> networkFetchTime,
+  required String relaysJson,
+  Value<int> rowid,
+});
+typedef $$Nip05sTableUpdateCompanionBuilder = Nip05sCompanion Function({
+  Value<String> pubKey,
+  Value<String> nip05,
+  Value<bool> valid,
+  Value<int?> networkFetchTime,
+  Value<String> relaysJson,
+  Value<int> rowid,
+});
 
 class $$Nip05sTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $Nip05sTable> {
@@ -9695,18 +9689,16 @@ typedef $$CashuSecretCountersTableProcessedTableManager =
       DbCashuSecretCounter,
       PrefetchHooks Function()
     >;
-typedef $$KeyValuesTableCreateCompanionBuilder =
-    KeyValuesCompanion Function({
-      required String key,
-      Value<String?> value,
-      Value<int> rowid,
-    });
-typedef $$KeyValuesTableUpdateCompanionBuilder =
-    KeyValuesCompanion Function({
-      Value<String> key,
-      Value<String?> value,
-      Value<int> rowid,
-    });
+typedef $$KeyValuesTableCreateCompanionBuilder = KeyValuesCompanion Function({
+  required String key,
+  Value<String?> value,
+  Value<int> rowid,
+});
+typedef $$KeyValuesTableUpdateCompanionBuilder = KeyValuesCompanion Function({
+  Value<String> key,
+  Value<String?> value,
+  Value<int> rowid,
+});
 
 class $$KeyValuesTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $KeyValuesTable> {
@@ -9793,22 +9785,16 @@ class $$KeyValuesTableTableManager
               $$KeyValuesTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$KeyValuesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> key = const Value.absent(),
-                Value<String?> value = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => KeyValuesCompanion(key: key, value: value, rowid: rowid),
-          createCompanionCallback:
-              ({
-                required String key,
-                Value<String?> value = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => KeyValuesCompanion.insert(
-                key: key,
-                value: value,
-                rowid: rowid,
-              ),
+          updateCompanionCallback: ({
+            Value<String> key = const Value.absent(),
+            Value<String?> value = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) => KeyValuesCompanion(key: key, value: value, rowid: rowid),
+          createCompanionCallback: ({
+            required String key,
+            Value<String?> value = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) => KeyValuesCompanion.insert(key: key, value: value, rowid: rowid),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
@@ -9834,24 +9820,22 @@ typedef $$KeyValuesTableProcessedTableManager =
       DbKeyValue,
       PrefetchHooks Function()
     >;
-typedef $$WalletsTableCreateCompanionBuilder =
-    WalletsCompanion Function({
-      required String id,
-      required String name,
-      required String type,
-      required String supportedUnitsJson,
-      required String metadataJson,
-      Value<int> rowid,
-    });
-typedef $$WalletsTableUpdateCompanionBuilder =
-    WalletsCompanion Function({
-      Value<String> id,
-      Value<String> name,
-      Value<String> type,
-      Value<String> supportedUnitsJson,
-      Value<String> metadataJson,
-      Value<int> rowid,
-    });
+typedef $$WalletsTableCreateCompanionBuilder = WalletsCompanion Function({
+  required String id,
+  required String name,
+  required String type,
+  required String supportedUnitsJson,
+  required String metadataJson,
+  Value<int> rowid,
+});
+typedef $$WalletsTableUpdateCompanionBuilder = WalletsCompanion Function({
+  Value<String> id,
+  Value<String> name,
+  Value<String> type,
+  Value<String> supportedUnitsJson,
+  Value<String> metadataJson,
+  Value<int> rowid,
+});
 
 class $$WalletsTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $WalletsTable> {

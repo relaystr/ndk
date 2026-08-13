@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:test/test.dart';
 import 'package:bech32/bech32.dart';
 import 'package:convert/convert.dart';
@@ -294,8 +295,7 @@ void main() {
       test('Naddr.toString should return formatted string', () {
         final naddr = Naddr(
           identifier: 'test-id',
-          pubkey:
-              '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
+          pubkey: '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
           kind: 30023,
           relays: ['wss://relay.example.com'],
         );
@@ -314,10 +314,8 @@ void main() {
 
       test('Nevent.toString should return formatted string', () {
         final nevent = Nevent(
-          eventId:
-              'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43',
-          author:
-              '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29cafa',
+          eventId: 'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43',
+          author: '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29cafa',
           kind: 1,
           relays: ['wss://nos.lol/'],
         );
@@ -341,8 +339,7 @@ void main() {
 
       test('Nprofile.toString should return formatted string', () {
         final nprofile = Nprofile(
-          pubkey:
-              '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177',
+          pubkey: '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177',
           relays: ['wss://relay.example.com'],
         );
 
@@ -373,8 +370,7 @@ void main() {
         final longRelay = 'wss://${'a' * 300}.com';
         expect(
           () => Nip19.encodeNevent(
-            eventId:
-                'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43',
+            eventId: 'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43',
             relays: [longRelay],
           ),
           throwsA(isA<ArgumentError>()),
@@ -385,8 +381,7 @@ void main() {
         // Use valid hex but wrong length (30 bytes instead of 32)
         expect(
           () => Nip19.encodeNevent(
-            eventId:
-                'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43',
+            eventId: 'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43',
             author:
                 '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29',
           ),
@@ -412,8 +407,7 @@ void main() {
         expect(
           () => Nip19.encodeNaddr(
             identifier: 'test',
-            pubkey:
-                '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
+            pubkey: '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
             kind: 30023,
             relays: [longRelay],
           ),
@@ -436,8 +430,7 @@ void main() {
         final longRelay = 'wss://${'a' * 300}.com';
         expect(
           () => Nip19.encodeNprofile(
-            pubkey:
-                '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177',
+            pubkey: '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177',
             relays: [longRelay],
           ),
           throwsA(isA<ArgumentError>()),

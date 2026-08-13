@@ -50,110 +50,112 @@ void main() {
       },
     );
 
-    test("redeem - offline mint should fail immediately on redeem stream", () async {
-      final cache = MemCacheManager();
+    test(
+      "redeem - offline mint should fail immediately on redeem stream",
+      () async {
+        final cache = MemCacheManager();
 
-      // Save mint info so it doesn't try to fetch from network
-      await cache.saveMintInfo(
-        mintInfo: CashuMintInfo(
-          name: 'Test Offline Mint',
-          pubkey: null,
-          version: null,
-          description: null,
-          descriptionLong: null,
-          contact: const [],
-          nuts: const {},
-          motd: null,
-          urls: const ['https://offline.mint.example.com'],
-        ),
-      );
-
-      await cache.saveKeyset(
-        CahsuKeyset(
-          id: 'testKeyset',
-          mintUrl: 'https://offline.mint.example.com',
-          unit: 'sat',
-          active: true,
-          inputFeePPK: 0,
-          fetchedAt:
-              DateTime.now().millisecondsSinceEpoch ~/ 1000, // mark as fresh
-          mintKeyPairs: {
-            CahsuMintKeyPair(amount: 1, pubkey: 'testPubKey-1'),
-            CahsuMintKeyPair(amount: 2, pubkey: 'testPubKey-2'),
-          },
-        ),
-      );
-
-      await cache.saveProofs(
-        proofs: [
-          CashuProof(
-            keysetId: 'testKeyset',
-            amount: 1,
-            secret: 'testSecret-1',
-            unblindedSig: '',
+        // Save mint info so it doesn't try to fetch from network
+        await cache.saveMintInfo(
+          mintInfo: CashuMintInfo(
+            name: 'Test Offline Mint',
+            pubkey: null,
+            version: null,
+            description: null,
+            descriptionLong: null,
+            contact: const [],
+            nuts: const {},
+            motd: null,
+            urls: const ['https://offline.mint.example.com'],
           ),
-          CashuProof(
-            keysetId: 'testKeyset',
+        );
+
+        await cache.saveKeyset(
+          CahsuKeyset(
+            id: 'testKeyset',
+            mintUrl: 'https://offline.mint.example.com',
+            unit: 'sat',
+            active: true,
+            inputFeePPK: 0,
+            fetchedAt:
+                DateTime.now().millisecondsSinceEpoch ~/ 1000, // mark as fresh
+            mintKeyPairs: {
+              CahsuMintKeyPair(amount: 1, pubkey: 'testPubKey-1'),
+              CahsuMintKeyPair(amount: 2, pubkey: 'testPubKey-2'),
+            },
+          ),
+        );
+
+        await cache.saveProofs(
+          proofs: [
+            CashuProof(
+              keysetId: 'testKeyset',
+              amount: 1,
+              secret: 'testSecret-1',
+              unblindedSig: '',
+            ),
+            CashuProof(
+              keysetId: 'testKeyset',
+              amount: 2,
+              secret: 'testSecret-2',
+              unblindedSig: '',
+            ),
+          ],
+          mintUrl: 'https://offline.mint.example.com',
+        );
+
+        final walletsRepo = MemWalletsRepo();
+
+        // Use a Cashu instance with a real HTTP client (not mock) and our custom cache
+        // This will attempt real network calls and timeout quickly
+        final cashu = Cashu(
+          cashuRepo: CashuRepoImpl(client: HttpRequestDS(http.Client())),
+          walletsRepo: walletsRepo,
+          cacheManager: cache,
+          cashuKeyDerivation: DartCashuKeyDerivation(),
+          cashuUserSeedphrase: CashuUserSeedphrase(
+            seedPhrase: "reduce invest lunch step couch traffic measure civil want steel trip jar",
+          ),
+        );
+
+        final draftTransaction = CashuWalletTransaction(
+          id: "test-redeem-offline",
+          mintUrl: 'https://offline.mint.example.com',
+          walletId: 'https://offline.mint.example.com',
+          changeAmount: -2,
+          unit: "sat",
+          walletType: WalletType.CASHU,
+          state: WalletTransactionState.draft,
+          method: "bolt11",
+          qouteMelt: CashuQuoteMelt(
+            quoteId: 'test-quote',
             amount: 2,
-            secret: 'testSecret-2',
-            unblindedSig: '',
+            feeReserve: null,
+            paid: false,
+            expiry: null,
+            mintUrl: 'https://offline.mint.example.com',
+            state: CashuQuoteState.unpaid,
+            unit: 'sat',
+            request: 'lnbc1...',
           ),
-        ],
-        mintUrl: 'https://offline.mint.example.com',
-      );
+        );
 
-      final walletsRepo = MemWalletsRepo();
+        final redeemStream = cashu.redeem(
+          draftRedeemTransaction: draftTransaction,
+        );
 
-      // Use a Cashu instance with a real HTTP client (not mock) and our custom cache
-      // This will attempt real network calls and timeout quickly
-      final cashu = Cashu(
-        cashuRepo: CashuRepoImpl(client: HttpRequestDS(http.Client())),
-        walletsRepo: walletsRepo,
-        cacheManager: cache,
-        cashuKeyDerivation: DartCashuKeyDerivation(),
-        cashuUserSeedphrase: CashuUserSeedphrase(
-          seedPhrase:
-              "reduce invest lunch step couch traffic measure civil want steel trip jar",
-        ),
-      );
+        // The stream should emit pending first, then fail with a failed transaction
+        // This should not hang - it should fail quickly (within timeout period)
+        final transactions = await redeemStream.toList();
 
-      final draftTransaction = CashuWalletTransaction(
-        id: "test-redeem-offline",
-        mintUrl: 'https://offline.mint.example.com',
-        walletId: 'https://offline.mint.example.com',
-        changeAmount: -2,
-        unit: "sat",
-        walletType: WalletType.CASHU,
-        state: WalletTransactionState.draft,
-        method: "bolt11",
-        qouteMelt: CashuQuoteMelt(
-          quoteId: 'test-quote',
-          amount: 2,
-          feeReserve: null,
-          paid: false,
-          expiry: null,
-          mintUrl: 'https://offline.mint.example.com',
-          state: CashuQuoteState.unpaid,
-          unit: 'sat',
-          request: 'lnbc1...',
-        ),
-      );
-
-      final redeemStream = cashu.redeem(
-        draftRedeemTransaction: draftTransaction,
-      );
-
-      // The stream should emit pending first, then fail with a failed transaction
-      // This should not hang - it should fail quickly (within timeout period)
-      final transactions = await redeemStream.toList();
-
-      // Should have at least 2 transactions: pending and failed
-      expect(transactions.length, greaterThanOrEqualTo(2));
-      expect(transactions.first.state, WalletTransactionState.pending);
-      expect(transactions.last.state, WalletTransactionState.failed);
-      expect(transactions.last.completionMsg, isNotNull);
-      expect(transactions.last.completionMsg, contains('failed'));
-    });
+        // Should have at least 2 transactions: pending and failed
+        expect(transactions.length, greaterThanOrEqualTo(2));
+        expect(transactions.first.state, WalletTransactionState.pending);
+        expect(transactions.last.state, WalletTransactionState.failed);
+        expect(transactions.last.completionMsg, isNotNull);
+        expect(transactions.last.completionMsg, contains('failed'));
+      },
+    );
 
     test("invalid mint url", () async {
       final ndk = _ndk();
@@ -259,8 +261,7 @@ void main() {
 
       final cashu = CashuTestTools.mockHttpCashu(
         seedPhrase: CashuUserSeedphrase(
-          seedPhrase:
-              "reduce invest lunch step couch traffic measure civil want steel trip jar",
+          seedPhrase: "reduce invest lunch step couch traffic measure civil want steel trip jar",
         ),
         customMockClient: myHttpMock,
         customCache: cache,
@@ -318,117 +319,118 @@ void main() {
       );
     });
 
-    test("redeem fails after proofs spent on mint - proofs marked as spent", () async {
-      // This test verifies the fix for the broken proofs issue:
-      // When meltTokens() fails AFTER the mint has already spent the proofs,
-      // the proofs should be marked as spent locally (not released back to the wallet).
-      // Without this fix, proofs would be marked as unspent and become "broken" -
-      // appearing available in the wallet but actually already burned on the mint.
+    test(
+      "redeem fails after proofs spent on mint - proofs marked as spent",
+      () async {
+        // This test verifies the fix for the broken proofs issue:
+        // When meltTokens() fails AFTER the mint has already spent the proofs,
+        // the proofs should be marked as spent locally (not released back to the wallet).
+        // Without this fix, proofs would be marked as unspent and become "broken" -
+        // appearing available in the wallet but actually already burned on the mint.
 
-      final cache = MemCacheManager();
-      final myHttpMock = MockCashuHttpClient();
+        final cache = MemCacheManager();
+        final myHttpMock = MockCashuHttpClient();
 
-      // Use the mock repo that simulates melt failure after proofs are spent
-      final mockRepo = CashuRepoMeltFailAfterSpendMock(
-        client: HttpRequestDS(myHttpMock),
-      );
+        // Use the mock repo that simulates melt failure after proofs are spent
+        final mockRepo = CashuRepoMeltFailAfterSpendMock(
+          client: HttpRequestDS(myHttpMock),
+        );
 
-      final cashu = CashuTestTools.mockHttpCashu(
-        seedPhrase: CashuUserSeedphrase(
-          seedPhrase:
-              "reduce invest lunch step couch traffic measure civil want steel trip jar",
-        ),
-        customMockClient: myHttpMock,
-        customCache: cache,
-        customRepo: mockRepo,
-      );
+        final cashu = CashuTestTools.mockHttpCashu(
+          seedPhrase: CashuUserSeedphrase(
+            seedPhrase: "reduce invest lunch step couch traffic measure civil want steel trip jar",
+          ),
+          customMockClient: myHttpMock,
+          customCache: cache,
+          customRepo: mockRepo,
+        );
 
-      // Add test proofs to cache
-      final testProofs = [
-        CashuProof(
-          keysetId: '00c726786980c4d9',
-          amount: 1,
-          secret: 'proof-s-1',
-          unblindedSig: 'sig1',
-        ),
-        CashuProof(
-          keysetId: '00c726786980c4d9',
-          amount: 2,
-          secret: 'proof-s-2',
-          unblindedSig: 'sig2',
-        ),
-        CashuProof(
-          keysetId: '00c726786980c4d9',
-          amount: 4,
-          secret: 'proof-s-4',
-          unblindedSig: 'sig4',
-        ),
-      ];
+        // Add test proofs to cache
+        final testProofs = [
+          CashuProof(
+            keysetId: '00c726786980c4d9',
+            amount: 1,
+            secret: 'proof-s-1',
+            unblindedSig: 'sig1',
+          ),
+          CashuProof(
+            keysetId: '00c726786980c4d9',
+            amount: 2,
+            secret: 'proof-s-2',
+            unblindedSig: 'sig2',
+          ),
+          CashuProof(
+            keysetId: '00c726786980c4d9',
+            amount: 4,
+            secret: 'proof-s-4',
+            unblindedSig: 'sig4',
+          ),
+        ];
 
-      await cache.saveProofs(proofs: testProofs, mintUrl: mockMintUrl);
+        await cache.saveProofs(proofs: testProofs, mintUrl: mockMintUrl);
 
-      // Verify proofs are initially in unspent state
-      final initialProofs = await cache.getProofs(mintUrl: mockMintUrl);
-      expect(
-        initialProofs.every((p) => p.state == CashuProofState.unspend),
-        isTrue,
-        reason: "All proofs should initially be unspent",
-      );
+        // Verify proofs are initially in unspent state
+        final initialProofs = await cache.getProofs(mintUrl: mockMintUrl);
+        expect(
+          initialProofs.every((p) => p.state == CashuProofState.unspend),
+          isTrue,
+          reason: "All proofs should initially be unspent",
+        );
 
-      final meltQuoteTransaction = await cashu.initiateRedeem(
-        mintUrl: mockMintUrl,
-        request: "lnbc1...",
-        unit: "sat",
-        method: "bolt11",
-      );
+        final meltQuoteTransaction = await cashu.initiateRedeem(
+          mintUrl: mockMintUrl,
+          request: "lnbc1...",
+          unit: "sat",
+          method: "bolt11",
+        );
 
-      final redeemStream = cashu.redeem(
-        draftRedeemTransaction: meltQuoteTransaction,
-      );
+        final redeemStream = cashu.redeem(
+          draftRedeemTransaction: meltQuoteTransaction,
+        );
 
-      // Collect all events from the stream
-      final events = await redeemStream.toList();
+        // Collect all events from the stream
+        final events = await redeemStream.toList();
 
-      // Should emit pending then failed
-      expect(events.length, equals(2));
-      expect(events[0].state, equals(WalletTransactionState.pending));
-      expect(events[1].state, equals(WalletTransactionState.failed));
-      expect(
-        events[1].completionMsg,
-        contains("Proofs were spent but melt failed"),
-      );
+        // Should emit pending then failed
+        expect(events.length, equals(2));
+        expect(events[0].state, equals(WalletTransactionState.pending));
+        expect(events[1].state, equals(WalletTransactionState.failed));
+        expect(
+          events[1].completionMsg,
+          contains("Proofs were spent but melt failed"),
+        );
 
-      // CRITICAL ASSERTION: Verify selected proofs are marked as spent (not unspent/broken)
-      // This is the key behavior that prevents broken proofs
-      final spentProofs = await cache.getProofs(
-        mintUrl: mockMintUrl,
-        state: CashuProofState.spend,
-      );
+        // CRITICAL ASSERTION: Verify selected proofs are marked as spent (not unspent/broken)
+        // This is the key behavior that prevents broken proofs
+        final spentProofs = await cache.getProofs(
+          mintUrl: mockMintUrl,
+          state: CashuProofState.spend,
+        );
 
-      // The melt quote has amount=1 + fee_reserve=2 = 3 sats total
-      // With proofs [1, 2, 4], selection should pick 1+2=3, so 2 proofs
-      expect(
-        spentProofs.length,
-        equals(2),
-        reason:
-            "Selected proofs should be marked as spent since they were burned on the mint",
-      );
-      expect(
-        spentProofs.every((p) => p.state == CashuProofState.spend),
-        isTrue,
-        reason: "All selected proofs should be in spent state",
-      );
+        // The melt quote has amount=1 + fee_reserve=2 = 3 sats total
+        // With proofs [1, 2, 4], selection should pick 1+2=3, so 2 proofs
+        expect(
+          spentProofs.length,
+          equals(2),
+          reason: "Selected proofs should be marked as spent since they were burned on the mint",
+        );
+        expect(
+          spentProofs.every((p) => p.state == CashuProofState.spend),
+          isTrue,
+          reason: "All selected proofs should be in spent state",
+        );
 
-      // Verify unselected proofs remain unspent
-      final unspentProofs = await cache.getProofs(
-        mintUrl: mockMintUrl,
-        state: CashuProofState.unspend,
-      );
-      expect(
-        unspentProofs.length,
-        equals(1),
-        reason: "Unselected proofs should remain unspent",
-      );
-    });
+        // Verify unselected proofs remain unspent
+        final unspentProofs = await cache.getProofs(
+          mintUrl: mockMintUrl,
+          state: CashuProofState.unspend,
+        );
+        expect(
+          unspentProofs.length,
+          equals(1),
+          reason: "Unselected proofs should remain unspent",
+        );
+      },
+    );
   });
 }

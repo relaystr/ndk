@@ -175,8 +175,7 @@ void main() {
       final items = [
         NegentropyItem.fromHex(
           timestamp: 1000,
-          idHex:
-              '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+          idHex: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
         ),
       ];
       final msg = NegentropyEncoder.createInitialMessage(
@@ -191,13 +190,11 @@ void main() {
       final items = [
         NegentropyItem.fromHex(
           timestamp: 1000,
-          idHex:
-              '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+          idHex: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
         ),
         NegentropyItem.fromHex(
           timestamp: 2000,
-          idHex:
-              'fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210',
+          idHex: 'fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210',
         ),
       ];
       final msg = NegentropyEncoder.createInitialMessage(
@@ -213,18 +210,15 @@ void main() {
       final items = [
         NegentropyItem.fromHex(
           timestamp: 2000,
-          idHex:
-              'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          idHex: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         ),
         NegentropyItem.fromHex(
           timestamp: 1000,
-          idHex:
-              'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+          idHex: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
         ),
         NegentropyItem.fromHex(
           timestamp: 1000,
-          idHex:
-              'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          idHex: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         ),
       ];
       // createInitialMessage sorts internally
@@ -300,8 +294,7 @@ void main() {
       final relayItems = [
         NegentropyItem.fromHex(
           timestamp: 1000,
-          idHex:
-              '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+          idHex: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
         ),
       ];
 
@@ -322,8 +315,7 @@ void main() {
       final localItems = [
         NegentropyItem.fromHex(
           timestamp: 1000,
-          idHex:
-              '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+          idHex: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
         ),
       ];
 

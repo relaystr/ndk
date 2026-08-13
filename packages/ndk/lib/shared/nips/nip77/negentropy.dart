@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+
 import 'package:crypto/crypto.dart';
 
 /// Negentropy protocol encoder implementation for NIP-77

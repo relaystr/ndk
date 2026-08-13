@@ -334,8 +334,7 @@ void main() async {
         expect(
           fetchedRanges.isEmpty,
           isTrue,
-          reason:
-              'FetchedRanges should NOT be recorded when relay returns CLOSED auth-required',
+          reason: 'FetchedRanges should NOT be recorded when relay returns CLOSED auth-required',
         );
 
         await relay1.stopServer();

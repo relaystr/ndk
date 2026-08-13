@@ -116,8 +116,7 @@ class CashuStateExportImport {
         export['seedPhrase'] = _cashuSeed.getSeedPhrase().sentence;
       } catch (_) {
         Logger.log.w(
-          () =>
-              'Cashu export: no seed phrase set, exporting without it. The export will not be restorable on a new device.',
+          () => 'Cashu export: no seed phrase set, exporting without it. The export will not be restorable on a new device.',
         );
       }
     }

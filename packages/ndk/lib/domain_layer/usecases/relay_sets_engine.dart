@@ -377,8 +377,7 @@ class RelaySetsEngine implements NetworkEngine {
               .toList();
         } else {
           Logger.log.w(
-            () =>
-                "could not find user relay list from nip65, using default bootstrap relays",
+            () => "could not find user relay list from nip65, using default bootstrap relays",
           );
         }
 

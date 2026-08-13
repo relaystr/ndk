@@ -271,8 +271,7 @@ class CashuRestore {
     } else {
       // Fallback: try to match by attempting unblinding with each blinded message
       Logger.log.w(
-        () =>
-            'No outputs in restore response or length mismatch, using fallback matching',
+        () => 'No outputs in restore response or length mismatch, using fallback matching',
       );
 
       final Set<String> usedBlindedMessages = {};
