@@ -125,10 +125,6 @@ class RequestState {
     _remainingTimeout = null;
   }
 
-  /// checks if all requests received EOSE
-  bool get didAllRequestsReceivedEOSE =>
-      !requests.values.any((element) => !element.receivedEOSE);
-
   /// checks if all requests finished (received EOSE or CLOSED)
   bool get didAllRequestsFinish => requests.values.every(
     (element) => element.receivedEOSE || element.receivedClosed,

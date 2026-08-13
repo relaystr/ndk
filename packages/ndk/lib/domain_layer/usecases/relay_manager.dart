@@ -100,9 +100,6 @@ class RelayManager<T> {
   Stream<List<RelayConnectivity>> get relayConnectivityChanges =>
       _relayUpdatesStreamController.stream;
 
-  /// AUTH strategy: eager (on challenge) or lazy (on auth-required)
-  final bool eagerAuth;
-
   /// Creates a new relay manager.
   RelayManager({
     required this.globalState,
@@ -111,7 +108,6 @@ class RelayManager<T> {
     this.engineAdditionalDataFactory,
     List<String>? bootstrapRelays,
     allowReconnect = true,
-    this.eagerAuth = false,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
     this.authChallengeTimeout = RequestDefaults.DEFAULT_AUTH_CHALLENGE_TIMEOUT,
   }) : _accounts = accounts {
