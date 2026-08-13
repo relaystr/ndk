@@ -480,7 +480,13 @@ class RelayManager<T> {
 
     globalState.inFlightRequests.forEach((key, state) {
       state.requests.values
-          .where((req) => req.url == relayConnectivity.url)
+          // by connection, not by relay: replaying a bound request on the
+          // anonymous socket gets it refused, and replaying an anonymous one on
+          // a bound socket makes it attributable. An entry the relay already
+          // refused stays refused, replaying it only retriggers the re-route.
+          .where(
+            (req) => req.key == relayConnectivity.key && !req.receivedClosed,
+          )
           .forEach((req) {
             if (!state.request.closeOnEOSE) {
               List<dynamic> list = ["REQ", state.id];
@@ -675,8 +681,8 @@ class RelayManager<T> {
         if (allowReconnectRelays &&
             globalState.relays[relayConnectivity.key] != null) {
           Logger.log.i(() => "closed ${relayConnectivity.url}. Reconnecting");
-          reconnectRelay(
-            relayConnectivity.url,
+          reconnectConnection(
+            relayConnectivity.key,
             connectionSource: relayConnectivity.relay.connectionSource,
           ).then((connected) {
             updateRelayConnectivity();

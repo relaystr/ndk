@@ -34,7 +34,28 @@ class MockRelay {
   // Track all connected clients with their subscriptions
   final Map<WebSocket, Map<String, List<Filter>>> _clientSubscriptions = {};
 
+  // NIP-42 authentication is per connection, so it is tracked per socket
+  final Map<WebSocket, Set<String>> _authenticatedPubkeys = {};
+
   int get connectedClientCount => _clientSubscriptions.length;
+
+  /// subscription ids carried by connections authenticated as [pubkey]
+  Set<String> subscriptionsAuthenticatedAs(String pubkey) => {
+    for (final entry in _clientSubscriptions.entries)
+      if (_authenticatedPubkeys[entry.key]?.contains(pubkey) ?? false)
+        ...entry.value.keys,
+  };
+
+  /// every REQ received per socket, recorded even when the relay refuses it
+  final Map<WebSocket, Set<String>> _requestedSubscriptions = {};
+
+  /// subscription ids that were requested on a connection which is not
+  /// authenticated as [pubkey], whether or not the relay served them
+  Set<String> subscriptionsRequestedOutside(String pubkey) => {
+    for (final entry in _requestedSubscriptions.entries)
+      if (!(_authenticatedPubkeys[entry.key]?.contains(pubkey) ?? false))
+        ...entry.value,
+  };
 
   int get activeSubscriptionCount => _clientSubscriptions.values.fold<int>(
     0,
@@ -206,7 +227,7 @@ class MockRelay {
         _clientSubscriptions[webSocket] = {};
 
         // NIP-42 authentication belongs to the connection, not to the server
-        Set<String> authenticatedPubkeys = {};
+        final authenticatedPubkeys = _authenticatedPubkeys[webSocket] = {};
 
         if (customWelcomeMessage != null) {
           webSocket.add(customWelcomeMessage!);
@@ -389,6 +410,12 @@ class MockRelay {
                 }
               }
 
+              // recorded before the auth check, so a REQ that gets refused is
+              // still visible to tests
+              _requestedSubscriptions
+                  .putIfAbsent(webSocket, () => {})
+                  .add(requestId);
+
               // Check auth: any authenticated user can access all data
               if (requireAuthForRequests && authenticatedPubkeys.isEmpty) {
                 webSocket.add(
@@ -435,6 +462,8 @@ class MockRelay {
           onDone: () {
             // Clean up when client disconnects
             _clientSubscriptions.remove(webSocket);
+            _authenticatedPubkeys.remove(webSocket);
+            _requestedSubscriptions.remove(webSocket);
             log("MockRelay: Client disconnected");
           },
         );
@@ -805,6 +834,8 @@ class MockRelay {
       await server!.close(force: true);
       server = null;
       _clientSubscriptions.clear();
+      _authenticatedPubkeys.clear();
+      _requestedSubscriptions.clear();
     }
     _releaseReservedPort(_port);
   }
