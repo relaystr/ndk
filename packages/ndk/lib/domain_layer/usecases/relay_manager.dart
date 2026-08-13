@@ -156,6 +156,19 @@ class RelayManager<T> {
       .where((connectivity) => connectivity.isConnected)
       .toList();
 
+  /// Connected connections bound to nobody, one per relay at most.
+  ///
+  /// Engines pick relays, not identities: sending on every connection of a
+  /// relay would duplicate the request, and sending on a bound one would make
+  /// it attributable. An identity is added later, by the re-route, and only on
+  /// the relays that ask for one.
+  List<RelayConnectivity> get connectedAnonymousRelays => globalState
+      .relays
+      .values
+      .where((connectivity) => connectivity.key.isAnonymous)
+      .where((connectivity) => connectivity.isConnected)
+      .toList();
+
   /// checks if a relay is connected, avoid using this
   bool isRelayConnected(String url) =>
       isConnectionOpen(RelayConnectionKey.anonymous(url));

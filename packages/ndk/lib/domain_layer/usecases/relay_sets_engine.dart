@@ -382,8 +382,11 @@ class RelaySetsEngine implements NetworkEngine {
           cacheManager: _cacheManager,
         ));
         // make a copy of the keys since connectRelay may mutate the underlying map
+        // several connections can share a url, and broadcasting twice to the
+        // same relay would duplicate the event
         List<String> writeRelaysUrls = _relayManager.globalState.relays.keys
             .map((key) => key.url)
+            .toSet()
             .toList();
         if (nip65List.isNotEmpty) {
           writeRelaysUrls = nip65List.first.relays.entries

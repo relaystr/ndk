@@ -88,7 +88,7 @@ class JitEngine with Logger implements NetworkEngine {
           requestState: requestState,
           cacheManager: cache,
           filter: filter,
-          connectedRelays: relayManagerLight.connectedRelays
+          connectedRelays: relayManagerLight.connectedAnonymousRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
           bootstrapRelays: bootstrapRelays,
@@ -108,7 +108,7 @@ class JitEngine with Logger implements NetworkEngine {
           requestState: requestState,
           cacheManager: cache,
           filter: filter,
-          connectedRelays: relayManagerLight.connectedRelays
+          connectedRelays: relayManagerLight.connectedAnonymousRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
           bootstrapRelays: bootstrapRelays,
@@ -136,7 +136,7 @@ class JitEngine with Logger implements NetworkEngine {
         relayManager: relayManagerLight,
         requestState: requestState,
         filter: filter,
-        connectedRelays: relayManagerLight.connectedRelays
+        connectedRelays: relayManagerLight.connectedAnonymousRelays
             .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
             .toList(),
         bootstrapRelays: bootstrapRelays,
@@ -190,7 +190,7 @@ class JitEngine with Logger implements NetworkEngine {
           relayManager: relayManagerLight,
           cacheManager: cache,
           eventToPublish: workingNostrEvent,
-          connectedRelays: relayManagerLight.connectedRelays
+          connectedRelays: relayManagerLight.connectedAnonymousRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
         );
@@ -201,7 +201,7 @@ class JitEngine with Logger implements NetworkEngine {
       // default publish to own outbox
       await RelayJitBroadcastOutboxStrategy.broadcast(
         eventToPublish: workingNostrEvent,
-        connectedRelays: relayManagerLight.connectedRelays
+        connectedRelays: relayManagerLight.connectedAnonymousRelays
             .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
             .toList(),
         cacheManager: cache,
@@ -214,7 +214,7 @@ class JitEngine with Logger implements NetworkEngine {
           workingNostrEvent.kind != ContactList.kKind) {
         await RelayJitBroadcastOtherReadStrategy.broadcast(
           eventToPublish: workingNostrEvent,
-          connectedRelays: relayManagerLight.connectedRelays
+          connectedRelays: relayManagerLight.connectedAnonymousRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
           cacheManager: cache,
