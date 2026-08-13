@@ -1377,10 +1377,13 @@ class RelayManager<T> {
     }
   }
 
-  /// sends a close message to a relay
-  void sendCloseToRelay(String url, String id) {
-    RelayConnectivity? connectivity =
-        globalState.relays[RelayConnectionKey.anonymous(url)];
+  /// sends a close message on the anonymous connection to a relay
+  void sendCloseToRelay(String url, String id) =>
+      sendCloseToConnection(RelayConnectionKey.anonymous(url), id);
+
+  /// sends a close message on the connection the subscription was sent on
+  void sendCloseToConnection(RelayConnectionKey key, String id) {
+    RelayConnectivity? connectivity = globalState.relays[key];
     if (connectivity != null) {
       _sendCloseToRelay(connectivity, id);
     }

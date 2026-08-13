@@ -265,7 +265,7 @@ class Requests {
         .where((relay) => connectionKeys.contains(relay.key));
 
     for (final relay in relays) {
-      _relayManager.sendCloseToRelay(relay.url, subId);
+      _relayManager.sendCloseToConnection(relay.key, subId);
     }
 
     final state = _globalState.inFlightRequests[subId];
