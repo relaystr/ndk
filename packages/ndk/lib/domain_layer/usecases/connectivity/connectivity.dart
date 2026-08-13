@@ -8,10 +8,9 @@ class Connectivy {
 
   Connectivy(this._relayManager);
 
-  /// streams connectivity status of all relays \
-  /// key: relay url/identifier
-  /// value: relay connectivity
-  Stream<Map<String, RelayConnectivity>> get relayConnectivityChanges =>
+  /// streams connectivity status of every connection \
+  /// a relay can hold several, so group by [RelayConnectivity.url] if needed
+  Stream<List<RelayConnectivity>> get relayConnectivityChanges =>
       _relayManager.relayConnectivityChanges;
 
   /// forces all relays to reconnect \

@@ -92,10 +92,12 @@ class RelayManager<T> {
 
   /// stream controller for relay updates
   final _relayUpdatesStreamController =
-      BehaviorSubject<Map<String, RelayConnectivity>>();
+      BehaviorSubject<List<RelayConnectivity>>();
 
-  /// stream of relay updates, used to notify connectivity changes, latest value is cached
-  Stream<Map<String, RelayConnectivity>> get relayConnectivityChanges =>
+  /// stream of connection updates, used to notify connectivity changes, latest
+  /// value is cached. A relay can hold several connections, so this cannot be
+  /// indexed by url; group by [RelayConnectivity.url] if you need to.
+  Stream<List<RelayConnectivity>> get relayConnectivityChanges =>
       _relayUpdatesStreamController.stream;
 
   /// AUTH strategy: eager (on challenge) or lazy (on auth-required)
@@ -118,10 +120,7 @@ class RelayManager<T> {
   }
 
   void updateRelayConnectivity() {
-    _relayUpdatesStreamController.add({
-      for (final connectivity in globalState.relays.values)
-        connectivity.url: connectivity,
-    });
+    _relayUpdatesStreamController.add(globalState.relays.values.toList());
   }
 
   /// This will initialize the manager with bootstrap relays.

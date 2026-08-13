@@ -1200,7 +1200,11 @@ Future<void> _waitForRelayConnected({
   }
 
   await ndk.connectivity.relayConnectivityChanges
-      .firstWhere((relays) => relays[relayUrl]?.isConnected == true)
+      .firstWhere(
+        (connections) => connections.any(
+          (connection) => connection.url == relayUrl && connection.isConnected,
+        ),
+      )
       .timeout(timeout);
 }
 
