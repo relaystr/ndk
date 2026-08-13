@@ -199,12 +199,14 @@ class MockRelay {
 
     // Generate challenge once for the entire server lifetime (fixes race condition on reconnect)
     final String challenge = Helpers.getRandomString(10);
-    Set<String> authenticatedPubkeys = {};
 
     stream.listen(
       (webSocket) {
         // Register this client
         _clientSubscriptions[webSocket] = {};
+
+        // NIP-42 authentication belongs to the connection, not to the server
+        Set<String> authenticatedPubkeys = {};
 
         if (customWelcomeMessage != null) {
           webSocket.add(customWelcomeMessage!);

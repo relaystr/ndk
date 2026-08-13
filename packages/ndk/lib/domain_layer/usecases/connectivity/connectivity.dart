@@ -23,8 +23,8 @@ class Connectivy {
     for (final rConnectivity in relayConnectivities) {
       if (!rConnectivity.isConnected) {
         await _relayManager
-            .reconnectRelay(
-              rConnectivity.url,
+            .reconnectConnection(
+              rConnectivity.key,
               connectionSource: rConnectivity.relay.connectionSource,
               force: true,
             )

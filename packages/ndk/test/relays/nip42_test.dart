@@ -448,5 +448,115 @@ void main() async {
         await relay1.stopServer();
       },
     );
+
+    test(
+      'auth-required opens a second connection instead of promoting',
+      () async {
+        MockRelay relay1 = MockRelay(
+          name: "relay 1",
+          explicitPort: 3906,
+          requireAuthForRequests: true,
+          signEvents: false,
+        );
+
+        final note1 = textNote(key1, "note from key1");
+        await relay1.startServer(textNotes: {key1: note1});
+
+        final ndk = Ndk(
+          NdkConfig(
+            eventVerifier: Bip340EventVerifier(),
+            cache: MemCacheManager(),
+            bootstrapRelays: [relay1.url],
+          ),
+        );
+
+        ndk.accounts.loginPrivateKey(
+          pubkey: key1.publicKey,
+          privkey: key1.privateKey!,
+        );
+
+        await Future.delayed(Duration(seconds: 1));
+
+        final response = ndk.requests.query(
+          filter: Filter(
+            kinds: [Nip01Event.kTextNodeKind],
+            authors: [key1.publicKey],
+          ),
+        );
+        expect(await response.future, isNotEmpty);
+
+        final keysForRelay = ndk.relays.globalState.relays.keys
+            .where((key) => key.url == relay1.url)
+            .toList();
+
+        expect(
+          keysForRelay.where((key) => key.isAnonymous),
+          hasLength(1),
+          reason: 'the anonymous connection must stay anonymous',
+        );
+        expect(
+          keysForRelay.where((key) => key.pubkey == key1.publicKey),
+          hasLength(1),
+          reason: 'the request must move to its own authenticated connection',
+        );
+
+        await ndk.destroy();
+        await relay1.stopServer();
+      },
+    );
+
+    test('closing all transports leaves no authenticated connection', () async {
+      MockRelay relay1 = MockRelay(
+        name: "relay 1",
+        explicitPort: 3907,
+        requireAuthForRequests: true,
+        signEvents: false,
+      );
+
+      await relay1.startServer(
+        textNotes: {key1: textNote(key1, "note from key1")},
+      );
+
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: [relay1.url],
+        ),
+      );
+
+      ndk.accounts.loginPrivateKey(
+        pubkey: key1.publicKey,
+        privkey: key1.privateKey!,
+      );
+
+      await Future.delayed(Duration(seconds: 1));
+
+      await ndk.requests
+          .query(
+            filter: Filter(
+              kinds: [Nip01Event.kTextNodeKind],
+              authors: [key1.publicKey],
+            ),
+          )
+          .future;
+
+      expect(
+        ndk.relays.globalState.relays.keys.where((key) => !key.isAnonymous),
+        isNotEmpty,
+        reason: 'the query must have opened an authenticated connection',
+      );
+
+      await ndk.relays.closeAllTransports();
+
+      expect(
+        ndk.relays.globalState.relays,
+        isEmpty,
+        reason: 'an authenticated connection must not survive the close',
+      );
+
+      await ndk.destroy();
+      await relay1.stopServer();
+    });
   });
 }
