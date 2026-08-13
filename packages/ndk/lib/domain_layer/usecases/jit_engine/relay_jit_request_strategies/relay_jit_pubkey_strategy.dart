@@ -338,7 +338,7 @@ void _sendRequestToSocket(
   // link the request id to the relay
   relayManager.registerRelayRequest(
     reqId: requestState.id,
-    relayUrl: connectedRelay.url,
+    connectionKey: connectedRelay.key,
     filters: filters,
   );
 

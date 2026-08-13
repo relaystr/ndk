@@ -214,23 +214,29 @@ void main() async {
         // Register the request with both relays
         manager.registerRelayRequest(
           reqId: requestId,
-          relayUrl: relay1.url,
+          connectionKey: RelayConnectionKey.anonymous(relay1.url),
           filters: testFilters,
         );
         manager.registerRelayRequest(
           reqId: requestId,
-          relayUrl: relay2.url,
+          connectionKey: RelayConnectionKey.anonymous(relay2.url),
           filters: testFilters,
         );
 
         // Verify both relay requests are registered
         expect(manager.globalState.inFlightRequests[requestId], isNotNull);
         expect(
-          manager.globalState.inFlightRequests[requestId]!.requests[relay1.url],
+          manager
+              .globalState
+              .inFlightRequests[requestId]!
+              .requests[RelayConnectionKey.anonymous(relay1.url)],
           isNotNull,
         );
         expect(
-          manager.globalState.inFlightRequests[requestId]!.requests[relay2.url],
+          manager
+              .globalState
+              .inFlightRequests[requestId]!
+              .requests[RelayConnectionKey.anonymous(relay2.url)],
           isNotNull,
         );
 
@@ -277,7 +283,10 @@ void main() async {
 
         // The request should still have relay2's entry, but relay1's should be removed or marked as closed
         expect(
-          manager.globalState.inFlightRequests[requestId]!.requests[relay2.url],
+          manager
+              .globalState
+              .inFlightRequests[requestId]!
+              .requests[RelayConnectionKey.anonymous(relay2.url)],
           isNotNull,
           reason: "Relay2's request entry should still exist",
         );

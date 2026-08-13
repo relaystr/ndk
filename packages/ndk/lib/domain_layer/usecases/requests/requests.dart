@@ -251,9 +251,9 @@ class Requests {
 
   /// Closes a Nostr network subscription
   Future<void> closeSubscription(String subId, {String debugLabel = ""}) async {
-    final relayUrls = _globalState.inFlightRequests[subId]?.requests.keys;
+    final connectionKeys = _globalState.inFlightRequests[subId]?.requests.keys;
 
-    if (relayUrls == null) {
+    if (connectionKeys == null) {
       Logger.log.w(
         () =>
             "no relay urls found for subscription $subId, cannot close :: debug: $debugLabel",
@@ -262,7 +262,7 @@ class Requests {
     }
     Iterable<RelayConnectivity> relays = _relayManager.connectedRelays
         .whereType<RelayConnectivity>()
-        .where((relay) => relayUrls.contains(relay.url));
+        .where((relay) => connectionKeys.contains(relay.key));
 
     for (final relay in relays) {
       _relayManager.sendCloseToRelay(relay.url, subId);
@@ -570,7 +570,7 @@ class Requests {
     }
 
     for (final entry in state.requests.entries) {
-      final relayUrl = entry.key;
+      final relayUrl = entry.key.url;
       final relayState = entry.value;
 
       if (!relayState.receivedEOSE) continue;

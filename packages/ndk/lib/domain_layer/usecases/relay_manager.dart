@@ -515,18 +515,17 @@ class RelayManager<T> {
   /// this is needed so the response from a relay can be tracked back
   void registerRelayRequest({
     required String reqId,
-    required String relayUrl,
+    required RelayConnectionKey connectionKey,
     required List<Filter> filters,
   }) {
     // new tracking
-    if (globalState.inFlightRequests[reqId]!.requests[relayUrl] == null) {
-      globalState.inFlightRequests[reqId]!.requests[relayUrl] =
-          RelayRequestState(relayUrl, filters);
+    if (globalState.inFlightRequests[reqId]!.requests[connectionKey] == null) {
+      globalState.inFlightRequests[reqId]!.requests[connectionKey] =
+          RelayRequestState(connectionKey, filters);
     } else {
       // do not overwrite and add new filters
-      globalState.inFlightRequests[reqId]!.requests[relayUrl]!.filters.addAll(
-        filters,
-      );
+      globalState.inFlightRequests[reqId]!.requests[connectionKey]!.filters
+          .addAll(filters);
     }
   }
 
@@ -822,8 +821,8 @@ class RelayManager<T> {
       // Collect accounts from active requests on this relay
       final accountsToAuth = <Account>{};
       for (final state in globalState.inFlightRequests.values) {
-        final hasRequestOnThisRelay = state.requests.keys.contains(
-          relayConnectivity.url,
+        final hasRequestOnThisRelay = state.requests.containsKey(
+          relayConnectivity.key,
         );
         if (hasRequestOnThisRelay && state.request.authenticateAs != null) {
           accountsToAuth.addAll(state.request.authenticateAs!);
@@ -880,7 +879,7 @@ class RelayManager<T> {
   ) {
     // Pause timeout for all requests on this relay during AUTH signing
     final requestsOnRelay = globalState.inFlightRequests.values
-        .where((state) => state.requests.keys.contains(relayConnectivity.url))
+        .where((state) => state.requests.containsKey(relayConnectivity.key))
         .toList();
     for (final state in requestsOnRelay) {
       state.pauseTimeout();
@@ -968,7 +967,7 @@ class RelayManager<T> {
 
     RequestState? state = globalState.inFlightRequests[requestId];
     if (state != null) {
-      RelayRequestState? request = state.requests[connectivity.url];
+      RelayRequestState? request = state.requests[connectivity.key];
       if (request == null) {
         Logger.log.w(() => "No RelayRequestState found for id $requestId");
         return;
@@ -1002,7 +1001,7 @@ class RelayManager<T> {
         () =>
             "⛁ received EOSE from ${relayConnectivity.url} for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}",
       );
-      RelayRequestState? request = state.requests[relayConnectivity.url];
+      RelayRequestState? request = state.requests[relayConnectivity.key];
       if (request != null) {
         request.receivedEOSE = true;
       }
@@ -1036,7 +1035,7 @@ class RelayManager<T> {
         () =>
             "⛁ received CLOSE from ${relayConnectivity.url} for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}",
       );
-      RelayRequestState? request = state.requests[relayConnectivity.url];
+      RelayRequestState? request = state.requests[relayConnectivity.key];
       if (request != null) {
         request.receivedClosed = true;
       }
@@ -1060,7 +1059,7 @@ class RelayManager<T> {
       return;
     }
 
-    final request = state.requests[relayConnectivity.url];
+    final request = state.requests[relayConnectivity.key];
     if (request == null) {
       Logger.log.w(
         () =>
@@ -1286,18 +1285,17 @@ class RelayManager<T> {
 
     /// check if relays for this request are still connected
     /// if not ignore it and wait for the ones still alive to finish
-    final listOfRelaysForThisRequest = state.requests.keys.toList();
+    final connectionsForThisRequest = state.requests.keys.toList();
     final myNotConnectedRelays = globalState.relays.keys
-        .map((key) => key.url)
-        .where((url) => listOfRelaysForThisRequest.contains(url))
-        .where((url) => !isRelayConnected(url))
+        .where((key) => connectionsForThisRequest.contains(key))
+        .where((key) => !isConnectionOpen(key))
         .toList();
 
     final bool didAllRelaysFinish = state.requests.values.every(
       (element) =>
           element.receivedEOSE ||
           element.receivedClosed ||
-          myNotConnectedRelays.contains(element.url),
+          myNotConnectedRelays.contains(element.key),
     );
 
     if (didAllRelaysFinish) {

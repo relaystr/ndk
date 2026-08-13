@@ -48,7 +48,7 @@ class RelayJitRequestSpecificStrategy {
       /// register request
       relayManager.registerRelayRequest(
         reqId: requestState.id,
-        relayUrl: connectedRelay.url,
+        connectionKey: connectedRelay.key,
         filters: [filter],
       );
       relayManager.send(connectedRelay, clientMsg);

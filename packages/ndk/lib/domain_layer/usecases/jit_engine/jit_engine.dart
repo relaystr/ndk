@@ -147,9 +147,9 @@ class JitEngine with Logger implements NetworkEngine {
     // Late auth for subscriptions with authenticateAs
     if (ndkRequest.authenticateAs != null &&
         ndkRequest.authenticateAs!.isNotEmpty) {
-      for (final relayUrl in requestState.requests.keys) {
+      for (final connectionKey in requestState.requests.keys) {
         relayManagerLight.authenticateIfNeeded(
-          relayUrl,
+          connectionKey.url,
           ndkRequest.authenticateAs!,
         );
       }

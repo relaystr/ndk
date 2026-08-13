@@ -6,16 +6,22 @@ import '../../config/rx_defaults.dart';
 import 'filter.dart';
 import 'ndk_request.dart';
 import 'nip_01_event.dart';
+import 'relay_connection_key.dart';
 
 /// Single relay request state
 class RelayRequestState {
-  String url;
+  /// connection this request was sent on
+  final RelayConnectionKey key;
+
+  /// url of the relay this request was sent to
+  String get url => key.url;
+
   bool receivedEOSE = false;
   bool receivedClosed = false;
   List<Filter> filters;
 
   /// default const
-  RelayRequestState(this.url, this.filters);
+  RelayRequestState(this.key, this.filters);
 }
 
 /// State per request for multiple relays
@@ -47,8 +53,8 @@ class RequestState {
   bool get isSubscription => !request.closeOnEOSE;
 
   ///! our requests tracking obj
-  // key is relay url, value is RelayRequestState
-  Map<String, RelayRequestState> requests = {};
+  // key is the connection the request was sent on, value is RelayRequestState
+  Map<RelayConnectionKey, RelayRequestState> requests = {};
 
   /// the original request
   NdkRequest request;
@@ -129,9 +135,9 @@ class RequestState {
   );
 
   /// Adds single relay request to the state
-  void addRequest(String url, List<Filter> filters) {
-    if (!requests.containsKey(url)) {
-      requests[url] = RelayRequestState(url, filters);
+  void addRequest(RelayConnectionKey key, List<Filter> filters) {
+    if (!requests.containsKey(key)) {
+      requests[key] = RelayRequestState(key, filters);
     }
   }
 

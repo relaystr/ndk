@@ -203,12 +203,18 @@ class RelaySetsEngine implements NetworkEngine {
             "making fallback requests to ${_bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}",
           );
           for (final url in _bootstrapRelays) {
-            state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
+            state.addRequest(
+              RelayConnectionKey.anonymous(url),
+              RelaySet.sliceFilterAuthors(filter),
+            );
           }
         }
       } else {
         for (final url in relaySet.urls) {
-          state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
+          state.addRequest(
+            RelayConnectionKey.anonymous(url),
+            RelaySet.sliceFilterAuthors(filter),
+          );
         }
       }
     }
@@ -217,15 +223,16 @@ class RelaySetsEngine implements NetworkEngine {
     // Late auth for subscriptions with authenticateAs
     if (state.request.authenticateAs != null &&
         state.request.authenticateAs!.isNotEmpty) {
-      for (final relayUrl in state.requests.keys) {
+      for (final connectionKey in state.requests.keys) {
         _relayManager.authenticateIfNeeded(
-          relayUrl,
+          connectionKey.url,
           state.request.authenticateAs!,
         );
       }
     }
 
-    for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
+    for (MapEntry<RelayConnectionKey, RelayRequestState> entry
+        in state.requests.entries) {
       doRelayRequest(state.id, entry.value);
     }
   }
@@ -257,25 +264,26 @@ class RelaySetsEngine implements NetworkEngine {
       for (final filter in state.request.filters) {
         filters.addAll(RelaySet.sliceFilterAuthors(filter));
       }
-      state.addRequest(url, filters);
+      state.addRequest(RelayConnectionKey.anonymous(url), filters);
     }
     _globalState.inFlightRequests[state.id] = state;
 
     // Late auth for subscriptions with authenticateAs
     if (state.request.authenticateAs != null &&
         state.request.authenticateAs!.isNotEmpty) {
-      for (final relayUrl in state.requests.keys) {
+      for (final connectionKey in state.requests.keys) {
         _relayManager.authenticateIfNeeded(
-          relayUrl,
+          connectionKey.url,
           state.request.authenticateAs!,
         );
       }
     }
 
-    for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
+    for (MapEntry<RelayConnectionKey, RelayRequestState> entry
+        in state.requests.entries) {
       doRelayRequest(state.id, entry.value).then((sent) {
         if (!sent) {
-          state.requests.remove(entry.value.url);
+          state.requests.remove(entry.key);
           if (state.requests.isEmpty) {
             state.networkController.close();
           }
@@ -305,14 +313,18 @@ class RelaySetsEngine implements NetworkEngine {
     );
 
     for (var url in urls) {
-      state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
+      state.addRequest(
+        RelayConnectionKey.anonymous(url),
+        RelaySet.sliceFilterAuthors(filter),
+      );
     }
     _globalState.inFlightRequests[state.id] = state;
 
-    for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
+    for (MapEntry<RelayConnectionKey, RelayRequestState> entry
+        in state.requests.entries) {
       doRelayRequest(state.id, entry.value).then((sent) {
         if (!sent) {
-          state.requests.remove(entry.value.url);
+          state.requests.remove(entry.key);
           // start fix
           if (state.requests.isEmpty) {
             state.networkController.close();
