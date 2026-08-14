@@ -488,6 +488,8 @@ class RelayManager<T> {
     );
   }
 
+  /// Puts back on [relayConnectivity] what the socket it replaces still owed us:
+  /// its subscriptions, and the queries that never got their EOSE.
   void reSubscribeInFlightSubscriptions(RelayConnectivity relayConnectivity) {
     final transport = relayConnectivity.relayTransport;
     if (transport == null || !transport.isOpen()) {
@@ -495,6 +497,11 @@ class RelayManager<T> {
     }
 
     globalState.inFlightRequests.forEach((key, state) {
+      // the concurrency check files a request under its filter hash as well,
+      // and one request must not go back up once per alias
+      if (key != state.id) {
+        return;
+      }
       state.requests.values
           // by connection, not by relay: replaying a bound request on the
           // anonymous socket gets it refused, and replaying an anonymous one on
@@ -504,13 +511,12 @@ class RelayManager<T> {
           .where(
             (req) =>
                 req.key == relayConnectivity.key &&
-                (!req.receivedClosed || req.retryingAuth),
+                (!req.receivedClosed || req.retryingAuth) &&
+                // a query is over once this connection answered EOSE, while a
+                // subscription outlives its EOSE and has to go back up
+                (state.isSubscription || !req.receivedEOSE),
           )
-          .forEach((req) {
-            if (!state.request.closeOnEOSE) {
-              _sendRequest(relayConnectivity, state.id, req);
-            }
-          });
+          .forEach((req) => _sendRequest(relayConnectivity, state.id, req));
     });
   }
 

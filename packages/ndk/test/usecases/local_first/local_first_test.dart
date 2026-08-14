@@ -179,7 +179,11 @@ void main() {
           ),
           privateKey: remoteAuthor.privateKey!,
         );
-        ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
+        ndk = await _createNdk(
+          tempDir.path,
+          bootstrapRelays: [relay.url],
+          pendingDeliveryRetryInterval: const Duration(seconds: 1),
+        );
 
         await relay.startServer(textNotes: {remoteAuthor: rootEvent});
 
