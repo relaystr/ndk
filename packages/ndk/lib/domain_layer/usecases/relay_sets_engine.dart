@@ -71,7 +71,6 @@ class RelaySetsEngine implements NetworkEngine {
       RelayConnectivity? relay =
           _globalState.relays[RelayConnectionKey.anonymous(request.url)];
       if (relay != null) {
-        relay.stats.activeRequests++;
         try {
           await _relayManager.sendOrThrow(
             relay,

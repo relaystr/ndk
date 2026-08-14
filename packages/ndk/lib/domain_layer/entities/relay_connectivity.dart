@@ -47,6 +47,8 @@ class RelayConnectivity<T> {
 
     _streamSubscription = null;
     relayTransport = null;
+    // the socket carried them, they die with it
+    stats.activeRequests = 0;
 
     if (streamSubscription != null) {
       await streamSubscription.cancel();

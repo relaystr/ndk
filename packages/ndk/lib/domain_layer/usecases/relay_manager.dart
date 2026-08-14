@@ -508,14 +508,16 @@ class RelayManager<T> {
               List<dynamic> list = ["REQ", state.id];
               list.addAll(req.filters.map((filter) => filter.toMap()));
 
-              relayConnectivity.stats.activeRequests++;
-              _sendRaw(relayConnectivity, transport, jsonEncode(list));
+              if (_sendRaw(relayConnectivity, transport, jsonEncode(list))) {
+                relayConnectivity.stats.activeRequests++;
+              }
             }
           });
     });
   }
 
-  void _sendRaw(
+  /// Writes [data] and tells whether it reached the transport
+  bool _sendRaw(
     RelayConnectivity relayConnectivity,
     NostrTransport transport,
     dynamic data,
@@ -526,10 +528,11 @@ class RelayManager<T> {
         () =>
             "skip send to ${relayConnectivity.url}: transport changed or closed",
       );
-      return;
+      return false;
     }
     transport.send(data);
     Logger.log.d(() => "send message to ${relayConnectivity.url}: $data");
+    return true;
   }
 
   /// Sends a [ClientMsg] and surfaces transport churn/closed-socket failures to
@@ -571,7 +574,19 @@ class RelayManager<T> {
         "transport closed before send: ${relayConnectivity.url}",
       );
     }
-    _sendRaw(relayConnectivity, transport, encodedMsg);
+    if (_sendRaw(relayConnectivity, transport, encodedMsg)) {
+      _countRequest(relayConnectivity, msg.type);
+    }
+  }
+
+  /// Keeps the open request count of a connection on the connection that
+  /// carries them: a REQ re-routed to another one is not accounted here.
+  void _countRequest(RelayConnectivity relayConnectivity, String type) {
+    if (type == ClientMsgType.kReq) {
+      relayConnectivity.stats.activeRequests++;
+    } else if (type == ClientMsgType.kClose) {
+      relayConnectivity.stats.activeRequests--;
+    }
   }
 
   /// sends a [ClientMsg] to relay transport sink, throw an error if relay not connected
@@ -1192,13 +1207,38 @@ class RelayManager<T> {
       );
       RelayRequestState? request = state.requests[relayConnectivity.key];
       if (request != null) {
-        request.receivedClosed = true;
+        _endRequestOnRelay(relayConnectivity, request);
       }
 
       _checkNetworkClose(state, relayConnectivity);
       _logActiveRequests();
     }
     return;
+  }
+
+  /// Sends [request] on [relayConnectivity] and tracks it as open there
+  void _sendRequest(
+    RelayConnectivity relayConnectivity,
+    String reqId,
+    RelayRequestState request,
+  ) {
+    request.receivedClosed = false;
+    send(
+      relayConnectivity,
+      ClientMsg(ClientMsgType.kReq, id: reqId, filters: request.filters),
+    );
+  }
+
+  /// Marks what the relay itself ended with a CLOSED. It stops counting as open
+  /// on that connection, and there is no CLOSE left for us to send.
+  void _endRequestOnRelay(
+    RelayConnectivity relayConnectivity,
+    RelayRequestState request,
+  ) {
+    if (!request.receivedClosed) {
+      request.receivedClosed = true;
+      relayConnectivity.stats.activeRequests--;
+    }
   }
 
   /// Whether [state] is still the request tracked under [reqId]. A request
@@ -1233,12 +1273,14 @@ class RelayManager<T> {
       return;
     }
 
+    // whatever we do next, the relay just closed this one on this connection
+    _endRequestOnRelay(relayConnectivity, request);
+
     if (!key.isAnonymous) {
       if (_authenticatedConnections.contains(key)) {
         // the relay refused us while we were authenticated as the only identity
         // this connection may ever assume, so there is nothing left to try
         Logger.log.w(() => "REQ $reqId refused on authenticated $key");
-        request.receivedClosed = true;
         _checkNetworkClose(state, relayConnectivity);
         return;
       }
@@ -1251,14 +1293,10 @@ class RelayManager<T> {
         }
         state.resumeTimeout();
         if (!authenticated) {
-          request.receivedClosed = true;
           _checkNetworkClose(state, relayConnectivity);
           return;
         }
-        send(
-          relayConnectivity,
-          ClientMsg(ClientMsgType.kReq, id: reqId, filters: request.filters),
-        );
+        _sendRequest(relayConnectivity, reqId, request);
       });
       return;
     }
@@ -1266,17 +1304,12 @@ class RelayManager<T> {
     final account = _accountForRequest(state);
     if (account == null) {
       Logger.log.w(() => "Cannot satisfy auth-required for REQ $reqId on $key");
-      request.receivedClosed = true;
       _checkNetworkClose(state, relayConnectivity);
       return;
     }
 
     final target = RelayConnectionKey.authenticated(key.url, account.pubkey);
-
-    // register the retry before closing the refused entry, otherwise the
-    // request could complete while the bound connection is opening
     state.addRequest(target, request.filters);
-    request.receivedClosed = true;
 
     Logger.log.d(
       () => "AUTH required for REQ $reqId on $key, retrying on $target",
@@ -1304,10 +1337,7 @@ class RelayManager<T> {
       // sent without waiting for the AUTH: a relay that only challenges on
       // demand needs this request as the trigger, and the refusal that may
       // follow lands on the branch above
-      send(
-        bound,
-        ClientMsg(ClientMsgType.kReq, id: reqId, filters: retry.filters),
-      );
+      _sendRequest(bound, reqId, retry);
     });
   }
 
@@ -1478,7 +1508,6 @@ class RelayManager<T> {
   void _sendCloseToRelay(RelayConnectivity relayConnectivity, String id) {
     try {
       send(relayConnectivity, ClientMsg(ClientMsgType.kClose, id: id));
-      relayConnectivity.stats.activeRequests--;
     } catch (e) {
       Logger.log.e(() => e);
     }
