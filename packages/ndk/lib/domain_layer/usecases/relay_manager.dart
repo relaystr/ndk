@@ -499,18 +499,16 @@ class RelayManager<T> {
           // by connection, not by relay: replaying a bound request on the
           // anonymous socket gets it refused, and replaying an anonymous one on
           // a bound socket makes it attributable. An entry the relay already
-          // refused stays refused, replaying it only retriggers the re-route.
+          // refused stays refused, replaying it only retriggers the re-route,
+          // unless it was refused for an authentication that never landed.
           .where(
-            (req) => req.key == relayConnectivity.key && !req.receivedClosed,
+            (req) =>
+                req.key == relayConnectivity.key &&
+                (!req.receivedClosed || req.retryingAuth),
           )
           .forEach((req) {
             if (!state.request.closeOnEOSE) {
-              List<dynamic> list = ["REQ", state.id];
-              list.addAll(req.filters.map((filter) => filter.toMap()));
-
-              if (_sendRaw(relayConnectivity, transport, jsonEncode(list))) {
-                relayConnectivity.stats.activeRequests++;
-              }
+              _sendRequest(relayConnectivity, state.id, req);
             }
           });
     });
@@ -1223,6 +1221,7 @@ class RelayManager<T> {
     RelayRequestState request,
   ) {
     request.receivedClosed = false;
+    request.retryingAuth = false;
     send(
       relayConnectivity,
       ClientMsg(ClientMsgType.kReq, id: reqId, filters: request.filters),
@@ -1287,12 +1286,17 @@ class RelayManager<T> {
 
       Logger.log.d(() => "Authenticating $key to satisfy REQ $reqId");
       state.pauseTimeout();
+      request.retryingAuth = true;
+      final generation = _generationOf(key);
       authenticateConnection(key).then((authenticated) {
         if (!_isStillInFlight(reqId, state)) {
           return;
         }
         state.resumeTimeout();
         if (!authenticated) {
+          // an authentication that died with its socket is not a refusal: stay
+          // on the retry so the replacement replays the request
+          request.retryingAuth = _generationOf(key) != generation;
           _checkNetworkClose(state, relayConnectivity);
           return;
         }
@@ -1473,17 +1477,17 @@ class RelayManager<T> {
     }
 
     /// check if relays for this request are still connected
-    /// if not ignore it and wait for the ones still alive to finish
-    final connectionsForThisRequest = state.requests.keys.toList();
-    final myNotConnectedRelays = globalState.relays.keys
-        .where((key) => connectionsForThisRequest.contains(key))
+    /// if not ignore it and wait for the ones still alive to finish. A
+    /// connection that was dropped entirely counts as gone too, otherwise a
+    /// request left on it would wait for a socket nobody will reopen.
+    final myNotConnectedRelays = state.requests.keys
         .where((key) => !isConnectionOpen(key))
         .toList();
 
     final bool didAllRelaysFinish = state.requests.values.every(
       (element) =>
-          element.receivedEOSE ||
-          element.receivedClosed ||
+          ((element.receivedEOSE || element.receivedClosed) &&
+              !element.retryingAuth) ||
           myNotConnectedRelays.contains(element.key),
     );
 

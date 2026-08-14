@@ -18,6 +18,11 @@ class RelayRequestState {
 
   bool receivedEOSE = false;
   bool receivedClosed = false;
+
+  /// set while this connection authenticates to satisfy the request: the relay
+  /// closed it, but it is on its way back and must not count as finished
+  bool retryingAuth = false;
+
   List<Filter> filters;
 
   /// default const
@@ -127,7 +132,9 @@ class RequestState {
 
   /// checks if all requests finished (received EOSE or CLOSED)
   bool get didAllRequestsFinish => requests.values.every(
-    (element) => element.receivedEOSE || element.receivedClosed,
+    (element) =>
+        (element.receivedEOSE || element.receivedClosed) &&
+        !element.retryingAuth,
   );
 
   /// Adds single relay request to the state
