@@ -8,15 +8,15 @@ import '../../../domain_layer/repositories/event_verifier.dart';
 import '../../../src/rust_lib.dart' as rust_lib;
 
 /// An implementation of [EventVerifier] that uses quantum-secure
-/// CRYSTALS-Dilithium signatures via native Rust FFI.
+/// ML-DSA (FIPS 204) signatures via native Rust FFI.
 class QsRustEventVerifier implements EventVerifier {
-  /// The Dilithium security level (2, 3, or 5).
+  /// The ML-DSA parameter set: 44, 65 or 87.
   final int level;
 
   /// Creates a new instance of [QsRustEventVerifier].
   ///
   /// [level] defaults to 2 (NIST Security Level 2, ~AES-128).
-  QsRustEventVerifier({this.level = 2});
+  QsRustEventVerifier({this.level = 87});
 
   @override
   Future<bool> verify(Nip01Event event) async {
