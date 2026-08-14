@@ -309,6 +309,10 @@ class RelayManager<T> {
         },
         onDisconnect: (code, error, reason) {
           relayConnectivity!.stats.connectionErrors++;
+          // the transport reconnects under us and keeps its message stream
+          // open, so this is the only notice we get that the socket the relay
+          // authenticated died
+          _forgetAuthState(connectionKey);
           updateRelayConnectivity();
         },
       );
