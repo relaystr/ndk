@@ -1143,6 +1143,12 @@ class RelayManager<T> {
     return;
   }
 
+  /// Whether [state] is still the request tracked under [reqId]. A request
+  /// closed while an authentication or a connection was pending must not be
+  /// sent afterwards: nothing tracks it anymore, so nothing would ever CLOSE it.
+  bool _isStillInFlight(String reqId, RequestState state) =>
+      identical(globalState.inFlightRequests[reqId], state);
+
   /// Handles CLOSED auth-required.
   ///
   /// A connection is bound to at most one identity, and that binding never
@@ -1182,6 +1188,9 @@ class RelayManager<T> {
       Logger.log.d(() => "Authenticating $key to satisfy REQ $reqId");
       state.pauseTimeout();
       authenticateConnection(key).then((authenticated) {
+        if (!_isStillInFlight(reqId, state)) {
+          return;
+        }
         state.resumeTimeout();
         if (!authenticated) {
           request.receivedClosed = true;
@@ -1221,6 +1230,9 @@ class RelayManager<T> {
       account,
       connectionSource: relayConnectivity.relay.connectionSource,
     ).then((bound) {
+      if (!_isStillInFlight(reqId, state)) {
+        return;
+      }
       state.resumeTimeout();
       final retry = state.requests[target];
       if (retry == null) {

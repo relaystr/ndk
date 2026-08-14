@@ -57,6 +57,12 @@ class MockRelay {
         ...entry.value,
   };
 
+  /// how many connections carried a REQ for [subscriptionId]
+  int connectionsThatRequested(String subscriptionId) => _requestedSubscriptions
+      .values
+      .where((ids) => ids.contains(subscriptionId))
+      .length;
+
   int get activeSubscriptionCount => _clientSubscriptions.values.fold<int>(
     0,
     (count, subscriptions) => count + subscriptions.length,
