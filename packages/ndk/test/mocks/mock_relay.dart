@@ -41,6 +41,9 @@ class MockRelay {
   /// died, so a re-authentication can be told apart from a surviving one
   int acceptedAuths = 0;
 
+  /// every AUTH the relay received, answered or not
+  int receivedAuths = 0;
+
   int get connectedClientCount => _clientSubscriptions.length;
 
   /// subscription ids carried by connections authenticated as [pubkey]
@@ -91,6 +94,10 @@ class MockRelay {
   String? signEventContentOverride;
   int rejectFirstEventPublishes;
   String rejectEventMessage;
+
+  /// how many AUTH events are left unanswered, the way a relay that goes quiet
+  /// in the middle of an authentication does. The next ones are answered
+  int silenceFirstAuths;
 
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
@@ -170,6 +177,7 @@ class MockRelay {
     this.signEventContentOverride,
     this.rejectFirstEventPublishes = 0,
     this.rejectEventMessage = 'rate-limited: retry later',
+    this.silenceFirstAuths = 0,
     int? explicitPort,
   }) : _nip65s = nip65s,
        _explicitPort = explicitPort,
@@ -275,6 +283,11 @@ class MockRelay {
             var eventJson = json.decode(message);
 
             if (eventJson[0] == "AUTH") {
+              receivedAuths++;
+              if (silenceFirstAuths > 0) {
+                silenceFirstAuths--;
+                return;
+              }
               Nip01Event event = Nip01EventModel.fromJson(eventJson[1]);
               bool authSuccess = false;
               if (verify(event.pubKey, event.id, event.sig!)) {

@@ -457,6 +457,7 @@ class RelayManager<T> {
       connectivity.relay.failedToConnect();
       _forgetAuthState(key);
       await connectivity.close();
+      _endAuthRetriesLeftBehind(key);
       updateRelayConnectivity();
     }
   }
@@ -733,7 +734,24 @@ class RelayManager<T> {
         if (connected) {
           reSubscribeInFlightSubscriptions(relayConnectivity);
         }
+        _endAuthRetriesLeftBehind(relayConnectivity.key);
       });
+      return;
+    }
+    _endAuthRetriesLeftBehind(relayConnectivity.key);
+  }
+
+  /// Gives up on the requests that were still waiting for [key] to replay them.
+  /// A request the replacement socket took back has stopped retrying by now, so
+  /// what is left here is what nothing will send again.
+  void _endAuthRetriesLeftBehind(RelayConnectionKey key) {
+    for (final state in globalState.inFlightRequests.values.toList()) {
+      final request = state.requests[key];
+      if (request == null || !request.retryingAuth) {
+        continue;
+      }
+      request.retryingAuth = false;
+      _checkNetworkClose(state);
     }
   }
 
@@ -1190,7 +1208,7 @@ class RelayManager<T> {
 
       if (state.request.closeOnEOSE) {
         _sendCloseToRelay(relayConnectivity, state.id);
-        _checkNetworkClose(state, relayConnectivity);
+        _checkNetworkClose(state);
         _logActiveRequests();
       }
     }
@@ -1222,7 +1240,7 @@ class RelayManager<T> {
         _endRequestOnRelay(relayConnectivity, request);
       }
 
-      _checkNetworkClose(state, relayConnectivity);
+      _checkNetworkClose(state);
       _logActiveRequests();
     }
     return;
@@ -1294,7 +1312,7 @@ class RelayManager<T> {
         // the relay refused us while we were authenticated as the only identity
         // this connection may ever assume, so there is nothing left to try
         Logger.log.w(() => "REQ $reqId refused on authenticated $key");
-        _checkNetworkClose(state, relayConnectivity);
+        _checkNetworkClose(state);
         return;
       }
 
@@ -1311,7 +1329,7 @@ class RelayManager<T> {
           // an authentication that died with its socket is not a refusal: stay
           // on the retry so the replacement replays the request
           request.retryingAuth = _generationOf(key) != generation;
-          _checkNetworkClose(state, relayConnectivity);
+          _checkNetworkClose(state);
           return;
         }
         _sendRequest(relayConnectivity, reqId, request);
@@ -1322,7 +1340,7 @@ class RelayManager<T> {
     final account = _accountForRequest(state);
     if (account == null) {
       Logger.log.w(() => "Cannot satisfy auth-required for REQ $reqId on $key");
-      _checkNetworkClose(state, relayConnectivity);
+      _checkNetworkClose(state);
       return;
     }
 
@@ -1349,7 +1367,7 @@ class RelayManager<T> {
       }
       if (bound == null) {
         retry.receivedClosed = true;
-        _checkNetworkClose(state, relayConnectivity);
+        _checkNetworkClose(state);
         return;
       }
       // sent without waiting for the AUTH: a relay that only challenges on
@@ -1479,10 +1497,7 @@ class RelayManager<T> {
     });
   }
 
-  void _checkNetworkClose(
-    RequestState state,
-    RelayConnectivity relayConnectivity,
-  ) {
+  void _checkNetworkClose(RequestState state) {
     /// received everything, close the network controller
     if (state.didAllRequestsFinish) {
       state.networkController.close();
@@ -1493,16 +1508,19 @@ class RelayManager<T> {
     /// check if relays for this request are still connected
     /// if not ignore it and wait for the ones still alive to finish. A
     /// connection that was dropped entirely counts as gone too, otherwise a
-    /// request left on it would wait for a socket nobody will reopen.
+    /// request left on it would wait for a socket nobody will reopen. One that
+    /// is retrying its authentication is the exception: its replacement is on
+    /// its way and owes it a replay.
     final myNotConnectedRelays = state.requests.keys
         .where((key) => !isConnectionOpen(key))
         .toList();
 
     final bool didAllRelaysFinish = state.requests.values.every(
       (element) =>
-          ((element.receivedEOSE || element.receivedClosed) &&
-              !element.retryingAuth) ||
-          myNotConnectedRelays.contains(element.key),
+          !element.retryingAuth &&
+          (element.receivedEOSE ||
+              element.receivedClosed ||
+              myNotConnectedRelays.contains(element.key)),
     );
 
     if (didAllRelaysFinish) {
@@ -1571,6 +1589,7 @@ class RelayManager<T> {
     }
     Logger.log.d(() => "Disconnecting $key...");
     _forgetAuthState(key);
+    _endAuthRetriesLeftBehind(key);
     return connectivity.close();
   }
 
