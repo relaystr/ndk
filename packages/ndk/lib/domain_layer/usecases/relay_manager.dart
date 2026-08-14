@@ -1459,16 +1459,18 @@ class RelayManager<T> {
     await Future.wait(_connectionKeysForRelay(url).map(closeConnection));
   }
 
-  /// Closes one connection and forgets it
+  /// Closes one connection and forgets it. An entry that lost its transport, to
+  /// a reset or to a failed connection attempt, is forgotten just the same:
+  /// leaving it behind keeps its auth state alive and makes it reconnect.
   Future<void> closeConnection(RelayConnectionKey key) async {
-    RelayConnectivity? connectivity = globalState.relays[key];
-    if (connectivity != null && connectivity.relayTransport != null) {
-      Logger.log.d(() => "Disconnecting $key...");
-      globalState.relays.remove(key);
-      _authenticatedConnections.remove(key);
-      _lastChallengePerConnection.remove(key);
-      return connectivity.close();
+    final connectivity = globalState.relays.remove(key);
+    if (connectivity == null) {
+      return;
     }
+    Logger.log.d(() => "Disconnecting $key...");
+    _authenticatedConnections.remove(key);
+    _lastChallengePerConnection.remove(key);
+    return connectivity.close();
   }
 
   /// Closes all transports

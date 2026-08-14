@@ -147,6 +147,33 @@ void main() async {
         // success
       }
     });
+    test('closing forgets a connection that lost its transport', () async {
+      MockRelay relay1 = MockRelay(name: "relay 1");
+      await relay1.startServer();
+
+      RelayManager manager = RelayManager(
+        globalState: GlobalState(),
+        bootstrapRelays: [relay1.url],
+        nostrTransportFactory: webSocketNostrTransportFactory,
+      );
+      await manager.connectRelay(
+        dirtyUrl: relay1.url,
+        connectionSource: ConnectionSource.seed,
+      );
+      expect(manager.globalState.relays, isNotEmpty);
+
+      await manager.resetTransport(relay1.url);
+      await manager.closeAllTransports();
+
+      expect(
+        manager.globalState.relays,
+        isEmpty,
+        reason: "a connection without transport must not survive the close",
+      );
+
+      await relay1.stopServer();
+    });
+
     test('Try to connect to wss://brb.io', skip: true, () async {
       RelayManager manager = RelayManager(
         nostrTransportFactory: webSocketNostrTransportFactory,
