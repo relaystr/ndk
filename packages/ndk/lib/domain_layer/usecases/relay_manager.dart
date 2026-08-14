@@ -47,12 +47,14 @@ class RelayManager<T> {
   /// each socket gets its own challenge, so this cannot be keyed by relay
   final Map<RelayConnectionKey, String> _lastChallengePerConnection = {};
 
-  /// stores pending AUTH callbacks: authEventId -> callback run on the relay's
-  /// OK, with whether the relay accepted the AUTH event
-  final Map<String, void Function(bool accepted)> _pendingAuthCallbacks = {};
+  /// AUTH events waiting for their OK, keyed by AUTH event id. The connection
+  /// is part of the entry so a dying transport can fail its own.
+  final Map<String, _PendingAuth> _pendingAuths = {};
 
-  /// stores timers for pending AUTH callbacks to clean them up on timeout
-  final Map<String, Timer> _pendingAuthTimers = {};
+  /// transport generation per connection, bumped whenever a socket dies or is
+  /// replaced. Authentication carries the generation it started on, so nothing
+  /// it produces can land on the socket that took its place.
+  final Map<RelayConnectionKey, int> _transportGenerations = {};
 
   /// waiters for the AUTH challenge of a connection that is being authenticated
   final Map<RelayConnectionKey, Completer<String>> _challengeWaiters = {};
@@ -293,13 +295,15 @@ class RelayManager<T> {
 
       Logger.log.i(() => "connecting to relay $dirtyUrl");
 
+      // a fresh socket for a key we may already know: nothing the previous one
+      // authenticated carries over
+      _forgetAuthState(connectionKey);
       relayConnectivity.relayTransport = nostrTransportFactory(
         url,
         onReconnect: () {
           // the relay accepted our AUTH on the socket that just died, not on
           // this one; the binding survives, the authentication does not
-          _authenticatedConnections.remove(connectionKey);
-          _lastChallengePerConnection.remove(connectionKey);
+          _forgetAuthState(connectionKey);
           reSubscribeInFlightSubscriptions(relayConnectivity!);
           updateRelayConnectivity();
         },
@@ -451,8 +455,7 @@ class RelayManager<T> {
     if (connectivity != null) {
       Logger.log.d(() => "Resetting transport for $key...");
       connectivity.relay.failedToConnect();
-      _authenticatedConnections.remove(key);
-      _lastChallengePerConnection.remove(key);
+      _forgetAuthState(key);
       await connectivity.close();
       updateRelayConnectivity();
     }
@@ -685,8 +688,7 @@ class RelayManager<T> {
           );
         }
         // the socket is gone, so is the AUTH the relay accepted on it
-        _authenticatedConnections.remove(relayConnectivity.key);
-        _lastChallengePerConnection.remove(relayConnectivity.key);
+        _forgetAuthState(relayConnectivity.key);
         updateRelayConnectivity();
         // Reconnect on close. close() above nulls relayTransport, so the only
         // condition is that the relay is still tracked: deliberate closes cancel
@@ -768,17 +770,14 @@ class RelayManager<T> {
       final bool success = eventJson[2] == true;
       final String? msg = eventJson.length > 3 ? eventJson[3] : null;
 
-      // Check if this is an AUTH OK response
-      if (_pendingAuthCallbacks.containsKey(eventId)) {
-        _pendingAuthTimers[eventId]?.cancel();
-        _pendingAuthTimers.remove(eventId);
+      // an AUTH is only answered by the connection it was sent on
+      if (_pendingAuths[eventId]?.key == relayConnectivity.key) {
         if (success) {
           Logger.log.d(() => "AUTH OK for $eventId, executing callback");
         } else {
           Logger.log.e(() => "AUTH failed for $eventId: $msg");
         }
-        final callback = _pendingAuthCallbacks.remove(eventId);
-        callback?.call(success);
+        _resolvePendingAuth(eventId, success);
         return Future.value();
       }
 
@@ -959,10 +958,64 @@ class RelayManager<T> {
     try {
       return await waiter.future.timeout(authChallengeTimeout);
     } catch (_) {
-      _challengeWaiters.remove(key);
+      if (identical(_challengeWaiters[key], waiter)) {
+        _challengeWaiters.remove(key);
+      }
       Logger.log.w(() => "No AUTH challenge from $key");
       return null;
     }
+  }
+
+  int _generationOf(RelayConnectionKey key) => _transportGenerations[key] ?? 0;
+
+  /// Drops everything authentication built on [key]'s current transport and
+  /// moves the connection to its next generation. Call this whenever the socket
+  /// dies or gets replaced: what is still in flight then resolves to false
+  /// instead of landing on the socket that took its place.
+  void _forgetAuthState(RelayConnectionKey key) {
+    _transportGenerations[key] = _generationOf(key) + 1;
+    _authenticatedConnections.remove(key);
+    _lastChallengePerConnection.remove(key);
+    _authenticating.remove(key);
+
+    final waiter = _challengeWaiters.remove(key);
+    if (waiter != null && !waiter.isCompleted) {
+      waiter.completeError(StateError("transport of $key is gone"));
+    }
+
+    final pending = _pendingAuths.entries
+        .where((entry) => entry.value.key == key)
+        .map((entry) => entry.key)
+        .toList();
+    for (final authEventId in pending) {
+      _resolvePendingAuth(authEventId, false);
+    }
+  }
+
+  /// Registers an AUTH event waiting for its OK. [onResult] runs once, with
+  /// what the relay answered or with false if the OK never comes.
+  void _registerPendingAuth({
+    required String authEventId,
+    required RelayConnectionKey key,
+    required void Function(bool accepted) onResult,
+  }) {
+    _pendingAuths[authEventId] = _PendingAuth(
+      key: key,
+      onResult: onResult,
+      timer: Timer(authCallbackTimeout, () {
+        Logger.log.w(() => "AUTH callback timeout for $authEventId on $key");
+        _resolvePendingAuth(authEventId, false);
+      }),
+    );
+  }
+
+  void _resolvePendingAuth(String authEventId, bool accepted) {
+    final pending = _pendingAuths.remove(authEventId);
+    if (pending == null) {
+      return;
+    }
+    pending.timer.cancel();
+    pending.onResult(accepted);
   }
 
   /// Answers the challenge for [key] and completes once the relay accepted the
@@ -978,12 +1031,18 @@ class RelayManager<T> {
     if (inFlight != null) {
       return inFlight;
     }
-    final attempt = _sendAuth(key);
+    final attempt = _sendAuth(key, _generationOf(key));
     _authenticating[key] = attempt;
-    return attempt.whenComplete(() => _authenticating.remove(key));
+    return attempt.whenComplete(() {
+      if (identical(_authenticating[key], attempt)) {
+        _authenticating.remove(key);
+      }
+    });
   }
 
-  Future<bool> _sendAuth(RelayConnectionKey key) async {
+  Future<bool> _sendAuth(RelayConnectionKey key, int generation) async {
+    bool transportGone() => _generationOf(key) != generation;
+
     final connectivity = globalState.relays[key];
     final account = _accounts?.accounts[key.pubkey];
     if (connectivity == null || account == null) {
@@ -997,7 +1056,7 @@ class RelayManager<T> {
     // the relay may send its challenge before or with the refusal, so waiting
     // is safe here: something already asked us to authenticate
     final challenge = await _awaitChallenge(key);
-    if (challenge == null) {
+    if (challenge == null || transportGone()) {
       return false;
     }
 
@@ -1010,26 +1069,25 @@ class RelayManager<T> {
         ],
       ),
     );
+    if (transportGone()) {
+      return false;
+    }
 
     final accepted = Completer<bool>();
-    _pendingAuthCallbacks[signedAuth.id] = (ok) {
-      if (!accepted.isCompleted) {
-        accepted.complete(ok);
-      }
-    };
-    _pendingAuthTimers[signedAuth.id] = Timer(authCallbackTimeout, () {
-      Logger.log.w(() => "AUTH callback timeout for ${signedAuth.id} on $key");
-      _pendingAuthCallbacks.remove(signedAuth.id);
-      _pendingAuthTimers.remove(signedAuth.id);
-      if (!accepted.isCompleted) {
-        accepted.complete(false);
-      }
-    });
+    _registerPendingAuth(
+      authEventId: signedAuth.id,
+      key: key,
+      onResult: (ok) {
+        if (!accepted.isCompleted) {
+          accepted.complete(ok);
+        }
+      },
+    );
 
     send(connectivity, ClientMsg(ClientMsgType.kAuth, event: signedAuth));
     Logger.log.d(() => "AUTH sent on $key");
 
-    if (!await accepted.future) {
+    if (!await accepted.future || transportGone()) {
       return false;
     }
     _authenticatedConnections.add(key);
@@ -1338,32 +1396,29 @@ class RelayManager<T> {
     );
 
     // Sign and send AUTH, then re-send EVENT on OK
+    final generation = _generationOf(relayConnectivity.key);
     account.signer.sign(auth).then((signedAuth) {
-      // Store callback to re-send EVENT after AUTH OK
-      _pendingAuthCallbacks[signedAuth.id] = (accepted) {
-        if (!accepted) {
-          return;
-        }
-        Logger.log.d(
-          () =>
-              "AUTH OK received, re-sending EVENT $eventId to ${relayConnectivity.url}",
-        );
-        // Re-send the EVENT
-        send(
-          relayConnectivity,
-          ClientMsg(ClientMsgType.kEvent, event: eventToResend),
-        );
-      };
+      if (_generationOf(relayConnectivity.key) != generation) {
+        return;
+      }
 
-      // Start timeout timer to clean up orphaned callbacks
-      _pendingAuthTimers[signedAuth.id] = Timer(authCallbackTimeout, () {
-        Logger.log.w(
-          () =>
-              "AUTH callback timeout for ${signedAuth.id} on ${relayConnectivity.url}",
-        );
-        _pendingAuthCallbacks.remove(signedAuth.id);
-        _pendingAuthTimers.remove(signedAuth.id);
-      });
+      _registerPendingAuth(
+        authEventId: signedAuth.id,
+        key: relayConnectivity.key,
+        onResult: (accepted) {
+          if (!accepted) {
+            return;
+          }
+          Logger.log.d(
+            () =>
+                "AUTH OK received, re-sending EVENT $eventId to ${relayConnectivity.url}",
+          );
+          send(
+            relayConnectivity,
+            ClientMsg(ClientMsgType.kEvent, event: eventToResend),
+          );
+        },
+      );
 
       send(
         relayConnectivity,
@@ -1468,8 +1523,7 @@ class RelayManager<T> {
       return;
     }
     Logger.log.d(() => "Disconnecting $key...");
-    _authenticatedConnections.remove(key);
-    _lastChallengePerConnection.remove(key);
+    _forgetAuthState(key);
     return connectivity.close();
   }
 
@@ -1509,4 +1563,17 @@ class RelayManager<T> {
 
 dynamic decodeJson(String jsonString) {
   return json.decode(jsonString);
+}
+
+/// An AUTH event sent to a connection, waiting for the relay's OK
+class _PendingAuth {
+  _PendingAuth({
+    required this.key,
+    required this.onResult,
+    required this.timer,
+  });
+
+  final RelayConnectionKey key;
+  final void Function(bool accepted) onResult;
+  final Timer timer;
 }

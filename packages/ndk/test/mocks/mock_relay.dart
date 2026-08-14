@@ -57,6 +57,11 @@ class MockRelay {
         ...entry.value,
   };
 
+  /// how many live connections are authenticated as [pubkey]
+  int connectionsAuthenticatedAs(String pubkey) => _authenticatedPubkeys.values
+      .where((pubkeys) => pubkeys.contains(pubkey))
+      .length;
+
   /// how many connections carried a REQ for [subscriptionId]
   int connectionsThatRequested(String subscriptionId) => _requestedSubscriptions
       .values
@@ -71,6 +76,9 @@ class MockRelay {
   bool requireAuthForRequests;
   bool requireAuthForEvents;
   bool sendAuthChallenge;
+
+  /// what real relays do: a challenge belongs to a socket, not to the server
+  bool challengePerConnection;
   bool allwaysSendBadJson;
   bool sendMalformedEvents;
   String? customWelcomeMessage;
@@ -149,6 +157,7 @@ class MockRelay {
     this.requireAuthForRequests = false,
     this.requireAuthForEvents = false,
     this.sendAuthChallenge = true,
+    this.challengePerConnection = false,
     this.allwaysSendBadJson = false,
     this.sendMalformedEvents = false,
     this.customWelcomeMessage,
@@ -225,7 +234,7 @@ class MockRelay {
     var stream = server.transform(WebSocketTransformer());
 
     // Generate challenge once for the entire server lifetime (fixes race condition on reconnect)
-    final String challenge = Helpers.getRandomString(10);
+    final String serverChallenge = Helpers.getRandomString(10);
 
     stream.listen(
       (webSocket) {
@@ -234,6 +243,10 @@ class MockRelay {
 
         // NIP-42 authentication belongs to the connection, not to the server
         final authenticatedPubkeys = _authenticatedPubkeys[webSocket] = {};
+
+        final challenge = challengePerConnection
+            ? Helpers.getRandomString(10)
+            : serverChallenge;
 
         if (customWelcomeMessage != null) {
           webSocket.add(customWelcomeMessage!);
