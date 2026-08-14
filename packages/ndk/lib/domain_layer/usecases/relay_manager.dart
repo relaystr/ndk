@@ -677,56 +677,64 @@ class RelayManager<T> {
   }
 
   void _startListeningToSocket(RelayConnectivity relayConnectivity) {
+    final transport = relayConnectivity.relayTransport;
     relayConnectivity.listen(
       (message) {
         _handleIncomingMessage(message, relayConnectivity);
       },
-      onError: (error) async {
+      onError: (error) {
         Logger.log.e(() => "onError ${relayConnectivity.url} on listen $error");
         relayConnectivity.stats.connectionErrors++;
-        try {
-          await relayConnectivity.close();
-        } catch (e) {
-          Logger.log.w(
-            () => "Error closing relay ${relayConnectivity.url}: $e",
-          );
-        }
-        updateRelayConnectivity();
+        _handleTransportGone(relayConnectivity, transport);
       },
-      onDone: () async {
+      onDone: () {
         Logger.log.t(
           () =>
               "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport?.closeCode()} ${relayConnectivity.relayTransport?.closeReason()})",
         );
-
-        try {
-          await relayConnectivity.close();
-        } catch (e) {
-          Logger.log.w(
-            () => "Error closing relay ${relayConnectivity.url}: $e",
-          );
-        }
-        // the socket is gone, so is the AUTH the relay accepted on it
-        _forgetAuthState(relayConnectivity.key);
-        updateRelayConnectivity();
-        // Reconnect on close. close() above nulls relayTransport, so the only
-        // condition is that the relay is still tracked: deliberate closes cancel
-        // the stream subscription first and never reach this handler.
-        if (allowReconnectRelays &&
-            globalState.relays[relayConnectivity.key] != null) {
-          Logger.log.i(() => "closed ${relayConnectivity.url}. Reconnecting");
-          reconnectConnection(
-            relayConnectivity.key,
-            connectionSource: relayConnectivity.relay.connectionSource,
-          ).then((connected) {
-            updateRelayConnectivity();
-            if (connected) {
-              reSubscribeInFlightSubscriptions(relayConnectivity);
-            }
-          });
-        }
+        _handleTransportGone(relayConnectivity, transport);
       },
     );
+  }
+
+  /// Cleans up after [transport] died and brings the connection back. Both ways
+  /// a socket can end land here: an error cancels the stream subscription, so
+  /// the done event that would otherwise follow never arrives.
+  ///
+  /// Runs once per transport, so a late event from a socket that was already
+  /// replaced leaves the current one alone.
+  Future<void> _handleTransportGone(
+    RelayConnectivity relayConnectivity,
+    NostrTransport? transport,
+  ) async {
+    if (!identical(relayConnectivity.relayTransport, transport)) {
+      return;
+    }
+
+    try {
+      await relayConnectivity.close();
+    } catch (e) {
+      Logger.log.w(() => "Error closing relay ${relayConnectivity.url}: $e");
+    }
+    // the socket is gone, so is the AUTH the relay accepted on it
+    _forgetAuthState(relayConnectivity.key);
+    updateRelayConnectivity();
+    // Reconnect on close. close() above nulls relayTransport, so the only
+    // condition is that the relay is still tracked: deliberate closes cancel
+    // the stream subscription first and never reach this handler.
+    if (allowReconnectRelays &&
+        globalState.relays[relayConnectivity.key] != null) {
+      Logger.log.i(() => "closed ${relayConnectivity.url}. Reconnecting");
+      reconnectConnection(
+        relayConnectivity.key,
+        connectionSource: relayConnectivity.relay.connectionSource,
+      ).then((connected) {
+        updateRelayConnectivity();
+        if (connected) {
+          reSubscribeInFlightSubscriptions(relayConnectivity);
+        }
+      });
+    }
   }
 
   // Track processing order per relay so EVENT/EOSE/AUTH/CLOSED ordering stays

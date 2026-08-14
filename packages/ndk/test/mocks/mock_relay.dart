@@ -37,6 +37,10 @@ class MockRelay {
   // NIP-42 authentication is per connection, so it is tracked per socket
   final Map<WebSocket, Set<String>> _authenticatedPubkeys = {};
 
+  /// every AUTH the relay accepted, kept even after the socket that sent it
+  /// died, so a re-authentication can be told apart from a surviving one
+  int acceptedAuths = 0;
+
   int get connectedClientCount => _clientSubscriptions.length;
 
   /// subscription ids carried by connections authenticated as [pubkey]
@@ -278,6 +282,7 @@ class MockRelay {
                 String? eventChallenge = event.getFirstTag("challenge");
                 if (eventChallenge == challenge && relay == url) {
                   authenticatedPubkeys.add(event.pubKey);
+                  acceptedAuths++;
                   authSuccess = true;
                 }
               }
