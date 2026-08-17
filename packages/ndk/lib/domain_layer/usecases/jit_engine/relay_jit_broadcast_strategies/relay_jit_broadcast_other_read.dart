@@ -100,7 +100,7 @@ class RelayJitBroadcastOtherReadStrategy {
         }
 
         try {
-          final relay = relayManager.connectedRelays.firstWhere(
+          final relay = relayManager.connectedAnonymousRelays.firstWhere(
             (element) => element.url == relayUrl,
           );
           sendToRelay(relay: relay);

@@ -251,30 +251,31 @@ class Requests {
 
   /// Closes a Nostr network subscription
   Future<void> closeSubscription(String subId, {String debugLabel = ""}) async {
-    final relayUrls = _globalState.inFlightRequests[subId]?.requests.keys;
+    final state = _globalState.inFlightRequests[subId];
 
-    if (relayUrls == null) {
+    if (state == null) {
       Logger.log.w(
         () =>
             "no relay urls found for subscription $subId, cannot close :: debug: $debugLabel",
       );
       return;
     }
+
     Iterable<RelayConnectivity> relays = _relayManager.connectedRelays
         .whereType<RelayConnectivity>()
-        .where((relay) => relayUrls.contains(relay.url));
+        .where((relay) => state.requests.containsKey(relay.key));
 
     for (final relay in relays) {
-      _relayManager.sendCloseToRelay(relay.url, subId);
-    }
-
-    final state = _globalState.inFlightRequests[subId];
-
-    if (state == null) {
-      Logger.log.w(
-        () => "no request state found for subscription $subId, cannot close",
-      );
-      return;
+      final request = state.requests[relay.key]!;
+      // a request the relay ended itself, with a CLOSED or with the EOSE of a
+      // query, is already closed on its side
+      final endedOnRelay =
+          request.receivedClosed ||
+          (state.request.closeOnEOSE && request.receivedEOSE);
+      if (endedOnRelay) {
+        continue;
+      }
+      _relayManager.sendCloseToConnection(relay.key, subId);
     }
 
     await state.close();
@@ -570,7 +571,7 @@ class Requests {
     }
 
     for (final entry in state.requests.entries) {
-      final relayUrl = entry.key;
+      final relayUrl = entry.key.url;
       final relayState = entry.value;
 
       if (!relayState.receivedEOSE) continue;

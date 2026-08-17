@@ -112,8 +112,7 @@ class Initialization {
   CacheEvictionScheduler? cacheEvictionScheduler;
   late ProofOfWork proofOfWork;
   late TrustedAssertions trustedAssertions;
-  StreamSubscription<Map<String, RelayConnectivity>>?
-  _relayConnectivitySubscription;
+  StreamSubscription<List<RelayConnectivity>>? _relayConnectivitySubscription;
   final Map<String, bool> _relayOpenStates = {};
 
   late Nip05Usecase nip05;
@@ -140,7 +139,6 @@ class Initialization {
           accounts: accounts,
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
-          eagerAuth: _ndkConfig.eagerAuth,
           authCallbackTimeout: _ndkConfig.authCallbackTimeout,
         );
 
@@ -158,7 +156,6 @@ class Initialization {
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
-          eagerAuth: _ndkConfig.eagerAuth,
           authCallbackTimeout: _ndkConfig.authCallbackTimeout,
         );
 
@@ -409,14 +406,22 @@ class Initialization {
     await _relayConnectivitySubscription?.cancel();
   }
 
-  void _handleRelayConnectivityUpdate(Map<String, RelayConnectivity> relays) {
-    for (final entry in relays.entries) {
-      final relayUrl = entry.key;
-      final isOpen = entry.value.relayTransport?.isOpen() ?? false;
-      final wasOpen = _relayOpenStates[relayUrl] ?? false;
-      _relayOpenStates[relayUrl] = isOpen;
+  void _handleRelayConnectivityUpdate(List<RelayConnectivity> connections) {
+    // deliveries are still addressed by relay, so a relay counts as reachable
+    // as soon as one of its connections is open
+    final openByUrl = <String, bool>{};
+    for (final connection in connections) {
+      final isOpen = connection.relayTransport?.isOpen() ?? false;
+      openByUrl[connection.url] =
+          (openByUrl[connection.url] ?? false) || isOpen;
+    }
 
-      if (isOpen && !wasOpen) {
+    for (final entry in openByUrl.entries) {
+      final relayUrl = entry.key;
+      final wasOpen = _relayOpenStates[relayUrl] ?? false;
+      _relayOpenStates[relayUrl] = entry.value;
+
+      if (entry.value && !wasOpen) {
         unawaited(
           pendingBroadcastDelivery.retryInteractiveSigningForTransportRelay(
             relayUrl,
@@ -427,7 +432,7 @@ class Initialization {
     }
 
     final removedUrls = _relayOpenStates.keys
-        .where((relayUrl) => !relays.containsKey(relayUrl))
+        .where((relayUrl) => !openByUrl.containsKey(relayUrl))
         .toList();
     for (final relayUrl in removedUrls) {
       _relayOpenStates.remove(relayUrl);
