@@ -313,6 +313,8 @@ class RelayManager<T> {
           // open, so this is the only notice we get that the socket the relay
           // authenticated died
           _forgetAuthState(connectionKey);
+          // the requests died with that socket too; onReconnect replays them
+          relayConnectivity.stats.openRequestIds.clear();
           updateRelayConnectivity();
         },
       );
@@ -584,17 +586,21 @@ class RelayManager<T> {
       );
     }
     if (_sendRaw(relayConnectivity, transport, encodedMsg)) {
-      _countRequest(relayConnectivity, msg.type);
+      _countRequest(relayConnectivity, msg);
     }
   }
 
-  /// Keeps the open request count of a connection on the connection that
-  /// carries them: a REQ re-routed to another one is not accounted here.
-  void _countRequest(RelayConnectivity relayConnectivity, String type) {
-    if (type == ClientMsgType.kReq) {
-      relayConnectivity.stats.activeRequests++;
-    } else if (type == ClientMsgType.kClose) {
-      relayConnectivity.stats.activeRequests--;
+  /// Keeps the open requests of a connection on the connection that carries
+  /// them: a REQ re-routed to another one is not accounted here.
+  void _countRequest(RelayConnectivity relayConnectivity, ClientMsg msg) {
+    final id = msg.id;
+    if (id == null) {
+      return;
+    }
+    if (msg.type == ClientMsgType.kReq) {
+      relayConnectivity.stats.openRequestIds.add(id);
+    } else if (msg.type == ClientMsgType.kClose) {
+      relayConnectivity.stats.openRequestIds.remove(id);
     }
   }
 
@@ -1241,7 +1247,7 @@ class RelayManager<T> {
       );
       RelayRequestState? request = state.requests[relayConnectivity.key];
       if (request != null) {
-        _endRequestOnRelay(relayConnectivity, request);
+        _endRequestOnRelay(relayConnectivity, id, request);
       }
 
       _checkNetworkClose(state);
@@ -1268,12 +1274,11 @@ class RelayManager<T> {
   /// on that connection, and there is no CLOSE left for us to send.
   void _endRequestOnRelay(
     RelayConnectivity relayConnectivity,
+    String reqId,
     RelayRequestState request,
   ) {
-    if (!request.receivedClosed) {
-      request.receivedClosed = true;
-      relayConnectivity.stats.activeRequests--;
-    }
+    request.receivedClosed = true;
+    relayConnectivity.stats.openRequestIds.remove(reqId);
   }
 
   /// Whether [state] is still the request tracked under [reqId]. A request
@@ -1309,7 +1314,7 @@ class RelayManager<T> {
     }
 
     // whatever we do next, the relay just closed this one on this connection
-    _endRequestOnRelay(relayConnectivity, request);
+    _endRequestOnRelay(relayConnectivity, reqId, request);
 
     if (!key.isAnonymous) {
       if (_authenticatedConnections.contains(key)) {
