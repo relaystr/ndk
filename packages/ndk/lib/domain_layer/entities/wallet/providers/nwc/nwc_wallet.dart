@@ -101,9 +101,11 @@ class NwcWallet extends Wallet {
 
   @override
   bool get canReceive =>
-      _effectivePermissions.contains(NwcMethod.MAKE_INVOICE.name);
+      _effectivePermissions.contains(NwcMethod.MAKE_INVOICE.name) ||
+      _effectivePermissions.contains(NwcMethod.RECEIVE.name);
 
   @override
   bool get canSend =>
-      _effectivePermissions.contains(NwcMethod.PAY_INVOICE.name);
+      _effectivePermissions.contains(NwcMethod.PAY_INVOICE.name) ||
+      _effectivePermissions.contains(NwcMethod.PAY.name);
 }

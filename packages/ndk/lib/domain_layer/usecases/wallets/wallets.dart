@@ -10,6 +10,8 @@ import '../../entities/wallet/wallet_transaction.dart';
 import '../../entities/wallet/wallet_type.dart';
 import '../../repositories/wallets_repo.dart';
 import '../../usecases/nwc/responses/pay_invoice_response.dart';
+import '../../usecases/nwc/responses/pay_response.dart';
+import '../../usecases/nwc/responses/receive_response.dart';
 
 /// Unified wallet system that handles multiple wallet types (NWC, Cashu, etc.)
 /// Uses WalletProvider pattern for pluggability
@@ -583,6 +585,62 @@ class Wallets {
       throw ArgumentError('No provider for wallet type: ${wallet.type}');
     }
     return provider.receive(wallet, amountSats);
+  }
+
+  /// Pays an instruction from a BIP-321 URI using the selected wallet.
+  Future<PayResponse> payBip321({
+    String? walletId,
+    required String payment,
+    int? amountMsat,
+    String? payerNote,
+    Map<String, dynamic>? metadata,
+    Duration? timeout,
+  }) async {
+    await _initializationFuture;
+    walletId ??= _repository.getDefaultWalletIdForSending();
+    if (walletId == null) {
+      throw StateError('No default wallet set');
+    }
+    final wallet = await _getWalletForOperation(walletId);
+    final provider = _providers[wallet.type];
+    if (provider == null) {
+      throw ArgumentError('No provider for wallet type: ${wallet.type}');
+    }
+    return provider.payBip321(
+      wallet,
+      payment: payment,
+      amountMsat: amountMsat,
+      payerNote: payerNote,
+      metadata: metadata,
+      timeout: timeout,
+    );
+  }
+
+  /// Creates a BIP-321 URI using the selected receiving wallet.
+  Future<ReceiveResponse> receiveBip321({
+    String? walletId,
+    int? amountMsat,
+    String? description,
+    Map<String, dynamic>? metadata,
+    Duration? timeout,
+  }) async {
+    await _initializationFuture;
+    walletId ??= _repository.getDefaultWalletIdForReceiving();
+    if (walletId == null) {
+      throw StateError('No default wallet set');
+    }
+    final wallet = await _getWalletForOperation(walletId);
+    final provider = _providers[wallet.type];
+    if (provider == null) {
+      throw ArgumentError('No provider for wallet type: ${wallet.type}');
+    }
+    return provider.receiveBip321(
+      wallet,
+      amountMsat: amountMsat,
+      description: description,
+      metadata: metadata,
+      timeout: timeout,
+    );
   }
 
   Future<Wallet> _getWalletForOperation(String walletId) async {
