@@ -220,7 +220,7 @@ fn hash_event_data_internal(
     hasher.update(serialized_event.as_bytes());
     let result = hasher.finalize();
 
-    format!("{:x}", result)
+    hex::encode(result)
 }
 
 // ── Quantum-Secure ML-DSA (FIPS 204) Functions ─────────────────────────
