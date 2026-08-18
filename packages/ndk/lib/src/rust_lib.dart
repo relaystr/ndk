@@ -147,3 +147,91 @@ external int qsDeriveKeypairFromSeed(
   Pointer<QsBuffer> outPk,
   Pointer<QsBuffer> outSk,
 );
+
+// ── Post-quantum hybrid encryption (ML-KEM-1024) bindings ──────────────
+//
+// The confidentiality half of the post-quantum problem, and the half worth
+// solving now: NIP-44 derives its conversation key from a secp256k1 ECDH
+// secret, so encrypted events archived today become readable the day
+// secp256k1 falls. Unlike forgery, that can be pre-empted.
+
+/// Derives an ML-KEM-1024 keypair from a 64-byte BIP-39 seed.
+///
+/// Sibling of the secp256k1 key, not a child: breaking secp256k1 does not
+/// reach it. Rejects anything that is not exactly 64 bytes, which blocks
+/// passing a secp256k1 private key (that derivation would be circular).
+@Native<
+    Int32 Function(
+      Pointer<Uint8>, // seedPtr
+      IntPtr, // seedLen
+      Uint32, // account
+      Pointer<QsBuffer>, // outPk
+      Pointer<QsBuffer>, // outSk
+    )>(symbol: 'pq_derive_kem_keypair')
+external int pqDeriveKemKeypair(
+  Pointer<Uint8> seedPtr,
+  int seedLen,
+  int account,
+  Pointer<QsBuffer> outPk,
+  Pointer<QsBuffer> outSk,
+);
+
+/// Seals a message into a post-quantum envelope, returning base64 bytes.
+///
+/// [senderPtr]/[recipientPtr] must be 64 lowercase hex characters; they are
+/// bound into the AEAD's associated data so a ciphertext cannot be replayed
+/// into another conversation or have its direction swapped.
+@Native<
+    Int32 Function(
+      Pointer<Uint8>, // kemPkPtr
+      IntPtr, // kemPkLen
+      Pointer<Uint8>, // convPtr
+      IntPtr, // convLen
+      Pointer<Utf8>, // sender
+      Pointer<Utf8>, // recipient
+      Pointer<Uint8>, // msgPtr
+      IntPtr, // msgLen
+      Pointer<QsBuffer>, // out
+    )>(symbol: 'pq_seal')
+external int pqSeal(
+  Pointer<Uint8> kemPkPtr,
+  int kemPkLen,
+  Pointer<Uint8> convPtr,
+  int convLen,
+  Pointer<Utf8> sender,
+  Pointer<Utf8> recipient,
+  Pointer<Uint8> msgPtr,
+  int msgLen,
+  Pointer<QsBuffer> out,
+);
+
+/// Opens a post-quantum envelope. Returns 0 on any failure, without
+/// distinguishing why: telling a caller whether padding or the tag failed
+/// would hand an attacker an oracle.
+@Native<
+    Int32 Function(
+      Pointer<Utf8>, // payload
+      Pointer<Uint8>, // kemSkPtr
+      IntPtr, // kemSkLen
+      Pointer<Uint8>, // convPtr
+      IntPtr, // convLen
+      Pointer<Utf8>, // sender
+      Pointer<Utf8>, // recipient
+      Pointer<QsBuffer>, // out
+    )>(symbol: 'pq_open')
+external int pqOpen(
+  Pointer<Utf8> payload,
+  Pointer<Uint8> kemSkPtr,
+  int kemSkLen,
+  Pointer<Uint8> convPtr,
+  int convLen,
+  Pointer<Utf8> sender,
+  Pointer<Utf8> recipient,
+  Pointer<QsBuffer> out,
+);
+
+/// Cheap check that a payload looks like a post-quantum envelope, so a client
+/// can route an incoming seal without spending a decapsulation on every
+/// ordinary NIP-17 message. A routing hint, not proof.
+@Native<Int32 Function(Pointer<Utf8>)>(symbol: 'pq_is_envelope')
+external int pqIsEnvelope(Pointer<Utf8> payload);
