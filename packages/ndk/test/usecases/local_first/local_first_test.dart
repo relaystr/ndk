@@ -576,7 +576,7 @@ void main() {
             .query(
               filter: Filter(ids: [rootEvent.id]),
               cacheRead: true,
-              cacheWrite: false,
+              cacheWrite: true,
               timeout: const Duration(milliseconds: 300),
             )
             .future;
@@ -590,12 +590,6 @@ void main() {
 
         await relay.stopServer();
       },
-      skip:
-          'Was green only because the last query got merged into the previous '
-          'one by ConcurrencyCheck, whose dedup key ignored the target relays. '
-          'With the key fixed the query runs for real and exposes that '
-          'visibility filtering is skipped when cacheWrite is false, so the '
-          'tombstoned event comes back. See the cacheWrite visibility issue.',
     );
 
     test(
@@ -1223,12 +1217,12 @@ class _ControllableInteractiveSigner implements EventSigner {
     required this.available,
     required this.requiresSignerNetwork,
     Iterable<String> Function()? transportRelayUrls,
-  }) : _transportRelayUrlsProvider =
-           transportRelayUrls ?? (() => const <String>[]),
-       _innerSigner = Bip340EventSigner(
-         privateKey: keyPair.privateKey!,
-         publicKey: keyPair.publicKey,
-       );
+  })  : _transportRelayUrlsProvider =
+            transportRelayUrls ?? (() => const <String>[]),
+        _innerSigner = Bip340EventSigner(
+          privateKey: keyPair.privateKey!,
+          publicKey: keyPair.publicKey,
+        );
 
   @override
   bool get requiresInteractiveSigning => true;
@@ -1251,7 +1245,8 @@ class _ControllableInteractiveSigner implements EventSigner {
   Future<String?> decryptNip44({
     required String ciphertext,
     required String senderPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   Future<void> dispose() async {}
@@ -1264,7 +1259,8 @@ class _ControllableInteractiveSigner implements EventSigner {
   Future<String?> encryptNip44({
     required String plaintext,
     required String recipientPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   String getPublicKey() => keyPair.publicKey;
