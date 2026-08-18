@@ -95,6 +95,13 @@ class MockRelay {
   int rejectFirstEventPublishes;
   String rejectEventMessage;
 
+  /// when set, every REQ is answered with a CLOSED carrying this message
+  String? closeRequestsMessage;
+
+  /// when true a REQ is recorded and left unanswered, the way a relay that goes
+  /// quiet on a request does
+  bool silenceRequests;
+
   /// how many AUTH events are left unanswered, the way a relay that goes quiet
   /// in the middle of an authentication does. The next ones are answered
   int silenceFirstAuths;
@@ -177,6 +184,8 @@ class MockRelay {
     this.signEventContentOverride,
     this.rejectFirstEventPublishes = 0,
     this.rejectEventMessage = 'rate-limited: retry later',
+    this.closeRequestsMessage,
+    this.silenceRequests = false,
     this.silenceFirstAuths = 0,
     int? explicitPort,
   }) : _nip65s = nip65s,
@@ -456,6 +465,19 @@ class MockRelay {
               _requestedSubscriptions
                   .putIfAbsent(webSocket, () => {})
                   .add(requestId);
+
+              final closeMessage = closeRequestsMessage;
+              if (closeMessage != null) {
+                _send(
+                  webSocket,
+                  jsonEncode(["CLOSED", requestId, closeMessage]),
+                );
+                return;
+              }
+
+              if (silenceRequests) {
+                return;
+              }
 
               // Check auth: any authenticated user can access all data
               if (requireAuthForRequests && authenticatedPubkeys.isEmpty) {

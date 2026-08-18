@@ -7,6 +7,7 @@ import 'filter.dart';
 import 'ndk_request.dart';
 import 'nip_01_event.dart';
 import 'relay_connection_key.dart';
+import 'relay_request_outcome.dart';
 
 /// Single relay request state
 class RelayRequestState {
@@ -18,6 +19,12 @@ class RelayRequestState {
 
   bool receivedEOSE = false;
   bool receivedClosed = false;
+
+  /// message the relay sent with its CLOSED, null when it sent none
+  String? closedMessage;
+
+  /// set when the connection was gone before the relay ended the request
+  bool connectionGone = false;
 
   /// set while this connection authenticates to satisfy the request: the relay
   /// closed it, but it is on its way back and must not count as finished
@@ -71,6 +78,13 @@ class RequestState {
   /// timeout duration, closes all streams
   Duration? timeoutDuration;
 
+  /// set when the request ended on its timeout instead of on the relays
+  bool timedOut = false;
+
+  /// request this one was merged into by the concurrency check, when its stream
+  /// got replaced by an identical request already in flight
+  RequestState? servedBy;
+
   /// called when timeout is triggered
   Function(RequestState)? onTimeout;
 
@@ -105,6 +119,7 @@ class RequestState {
   void _startTimeout(Duration duration) {
     _timeoutStartedAt = DateTime.now();
     _timeout = Timer(duration, () {
+      timedOut = true;
       onTimeout?.call(this);
       close();
     });
@@ -136,6 +151,49 @@ class RequestState {
         (element.receivedEOSE || element.receivedClosed) &&
         !element.retryingAuth,
   );
+
+  /// What the request ended with on each relay it was sent to, as it stands now
+  ///
+  /// Keyed by relay url: several connections to one relay collapse into the
+  /// outcome that comes first in [RelayRequestOutcomeType].
+  Map<String, RelayRequestOutcome> get relayOutcomes {
+    final served = servedBy;
+    if (served != null) {
+      return served.relayOutcomes;
+    }
+
+    final outcomes = <String, RelayRequestOutcome>{};
+    for (final request in requests.values) {
+      final outcome = _outcomeOf(request);
+      final current = outcomes[request.url];
+      if (current == null || outcome.type.index < current.type.index) {
+        outcomes[request.url] = outcome;
+      }
+    }
+    return outcomes;
+  }
+
+  RelayRequestOutcome _outcomeOf(RelayRequestState request) {
+    if (request.retryingAuth) {
+      return const RelayRequestOutcome(RelayRequestOutcomeType.pending);
+    }
+    if (request.receivedEOSE) {
+      return const RelayRequestOutcome(RelayRequestOutcomeType.eose);
+    }
+    if (request.receivedClosed) {
+      return RelayRequestOutcome(
+        RelayRequestOutcomeType.closed,
+        message: request.closedMessage,
+      );
+    }
+    if (request.connectionGone) {
+      return const RelayRequestOutcome(RelayRequestOutcomeType.disconnected);
+    }
+    if (timedOut) {
+      return const RelayRequestOutcome(RelayRequestOutcomeType.timedOut);
+    }
+    return const RelayRequestOutcome(RelayRequestOutcomeType.pending);
+  }
 
   /// Adds single relay request to the state
   void addRequest(RelayConnectionKey key, List<Filter> filters) {

@@ -333,7 +333,12 @@ class RelaySetsEngine implements NetworkEngine {
       });
     }
 
-    return NdkResponse(state.id, state.stream);
+    return NdkResponse(
+      state.id,
+      state.stream,
+      relayOutcomes: () => state.relayOutcomes,
+      relayOutcomesDone: state.controller.done.then((_) => state.relayOutcomes),
+    );
   }
 
   @override

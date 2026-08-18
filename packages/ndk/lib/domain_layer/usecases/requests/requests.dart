@@ -14,6 +14,7 @@ import '../../entities/ndk_request.dart';
 import '../../entities/nip_01_event.dart';
 import '../../entities/relay_connectivity.dart';
 import '../../entities/relay_set.dart';
+import '../../entities/relay_request_outcome.dart';
 import '../../entities/request_response.dart';
 import '../../entities/request_state.dart';
 import '../../repositories/event_verifier.dart';
@@ -302,7 +303,12 @@ class Requests {
   NdkResponse requestNostrEvent(NdkRequest request) {
     final state = RequestState(request);
 
-    final response = NdkResponse(state.id, state.stream);
+    final response = NdkResponse(
+      state.id,
+      state.stream,
+      relayOutcomes: () => state.relayOutcomes,
+      relayOutcomesDone: state.controller.done.then((_) => state.relayOutcomes),
+    );
 
     final concurrency = ConcurrencyCheck(_globalState);
 
@@ -409,6 +415,11 @@ class Requests {
     final aggregatedController = ReplaySubject<Nip01Event>();
     final seenEventIds = <String>{};
 
+    // a relay is paginated by its own sequence of requests, so what it ended
+    // with is what its last page ended with
+    final relayOutcomes = <String, RelayRequestOutcome>{};
+    final relayOutcomesDone = Completer<Map<String, RelayRequestOutcome>>();
+
     Future<void> paginate() async {
       final since = filter.since;
 
@@ -432,6 +443,7 @@ class Requests {
       );
 
       final initialEvents = await initialResponse.future;
+      relayOutcomes.addAll(initialResponse.relayOutcomes);
 
       // Emit initial events and discover relays
       final relayState = <String, _RelayPaginationState>{};
@@ -506,7 +518,9 @@ class Requests {
             ),
           );
 
-          return MapEntry(relay, await response.future);
+          final pageEvents = await response.future;
+          relayOutcomes.addAll(response.relayOutcomes);
+          return MapEntry(relay, pageEvents);
         });
 
         final results = await Future.wait(futures);
@@ -545,9 +559,16 @@ class Requests {
     }
 
     // Start pagination asynchronously
-    paginate();
+    paginate().whenComplete(
+      () => relayOutcomesDone.complete(Map.of(relayOutcomes)),
+    );
 
-    return NdkResponse(requestId, aggregatedController.stream);
+    return NdkResponse(
+      requestId,
+      aggregatedController.stream,
+      relayOutcomes: () => Map.of(relayOutcomes),
+      relayOutcomesDone: relayOutcomesDone.future,
+    );
   }
 
   /// Records fetched ranges for each relay that received EOSE

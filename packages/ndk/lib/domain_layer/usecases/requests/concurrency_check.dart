@@ -30,8 +30,10 @@ class ConcurrencyCheck {
 
     // add already running stream to duplicate request
     // When original stream ends, close the duplicate's controller
+    final served = _globalState.inFlightRequests[hash]!;
+    requestState.servedBy = served;
     requestState.controller
-        .addStream(_globalState.inFlightRequests[hash]!.stream)
+        .addStream(served.stream)
         .then((_) => requestState.controller.close());
 
     return true;

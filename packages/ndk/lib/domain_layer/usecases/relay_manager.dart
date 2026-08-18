@@ -1235,7 +1235,7 @@ class RelayManager<T> {
 
     // Check if this is an auth-required CLOSED message
     if (message != null && message.startsWith("auth-required")) {
-      _handleClosedAuthRequired(id, relayConnectivity);
+      _handleClosedAuthRequired(id, relayConnectivity, message);
       return;
     }
 
@@ -1247,7 +1247,7 @@ class RelayManager<T> {
       );
       RelayRequestState? request = state.requests[relayConnectivity.key];
       if (request != null) {
-        _endRequestOnRelay(relayConnectivity, id, request);
+        _endRequestOnRelay(relayConnectivity, id, request, message);
       }
 
       _checkNetworkClose(state);
@@ -1263,6 +1263,7 @@ class RelayManager<T> {
     RelayRequestState request,
   ) {
     request.receivedClosed = false;
+    request.closedMessage = null;
     request.retryingAuth = false;
     send(
       relayConnectivity,
@@ -1276,8 +1277,10 @@ class RelayManager<T> {
     RelayConnectivity relayConnectivity,
     String reqId,
     RelayRequestState request,
+    String? message,
   ) {
     request.receivedClosed = true;
+    request.closedMessage = message;
     relayConnectivity.stats.openRequestIds.remove(reqId);
   }
 
@@ -1295,6 +1298,7 @@ class RelayManager<T> {
   void _handleClosedAuthRequired(
     String reqId,
     RelayConnectivity relayConnectivity,
+    String message,
   ) {
     final state = globalState.inFlightRequests[reqId];
     if (state == null) {
@@ -1314,7 +1318,7 @@ class RelayManager<T> {
     }
 
     // whatever we do next, the relay just closed this one on this connection
-    _endRequestOnRelay(relayConnectivity, reqId, request);
+    _endRequestOnRelay(relayConnectivity, reqId, request, message);
 
     if (!key.isAnonymous) {
       if (_authenticatedConnections.contains(key)) {
@@ -1376,6 +1380,8 @@ class RelayManager<T> {
       }
       if (bound == null) {
         retry.receivedClosed = true;
+        retry.closedMessage =
+            "auth-required: no authenticated connection could be opened";
         _checkNetworkClose(state);
         return;
       }
@@ -1533,6 +1539,12 @@ class RelayManager<T> {
     );
 
     if (didAllRelaysFinish) {
+      for (final key in myNotConnectedRelays) {
+        final request = state.requests[key]!;
+        if (!request.receivedEOSE && !request.receivedClosed) {
+          request.connectionGone = true;
+        }
+      }
       state.networkController.close();
       updateRelayConnectivity();
     }
