@@ -62,12 +62,12 @@ void main() {
 
       expect(
         results[0].map((e) => e.id),
-        contains(noteOnRelay1.id),
+        orderedEquals([noteOnRelay1.id]),
         reason: 'query on relay 1 should return the event stored on relay 1',
       );
       expect(
         results[1].map((e) => e.id),
-        contains(noteOnRelay2.id),
+        unorderedEquals([noteOnRelay2.id]),
         reason: 'query on relay 2 should return the event stored on relay 2',
       );
     },
