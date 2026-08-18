@@ -179,7 +179,11 @@ void main() {
           ),
           privateKey: remoteAuthor.privateKey!,
         );
-        ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
+        ndk = await _createNdk(
+          tempDir.path,
+          bootstrapRelays: [relay.url],
+          pendingDeliveryRetryInterval: const Duration(seconds: 1),
+        );
 
         await relay.startServer(textNotes: {remoteAuthor: rootEvent});
 
@@ -1200,7 +1204,11 @@ Future<void> _waitForRelayConnected({
   }
 
   await ndk.connectivity.relayConnectivityChanges
-      .firstWhere((relays) => relays[relayUrl]?.isConnected == true)
+      .firstWhere(
+        (connections) => connections.any(
+          (connection) => connection.url == relayUrl && connection.isConnected,
+        ),
+      )
       .timeout(timeout);
 }
 

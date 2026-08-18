@@ -57,7 +57,10 @@ void main() async {
           });
 
       expect(
-        manager.globalState.relays[relay1.url]!.relay
+        manager
+            .globalState
+            .relays[RelayConnectionKey.anonymous(relay1.url)]!
+            .relay
             .wasLastConnectTryLongerThanSeconds(120),
         false,
       );
@@ -91,7 +94,8 @@ void main() async {
       }
       expect(relay1.connectedClientCount, 1);
 
-      final relayConnectivity = manager.globalState.relays[relay1.url]!;
+      final relayConnectivity =
+          manager.globalState.relays[RelayConnectionKey.anonymous(relay1.url)]!;
       expect(relayConnectivity.stats.connections, 1);
 
       // Backdate the last connect attempt so the reconnect is not suppressed
@@ -120,7 +124,8 @@ void main() async {
       // Keep the teardown from racing another reconnect attempt against the
       // stopped server.
       manager.allowReconnectRelays = false;
-      await manager.globalState.relays[relay1.url]?.close();
+      await manager.globalState.relays[RelayConnectionKey.anonymous(relay1.url)]
+          ?.close();
       await relay1.stopServer();
     });
 
@@ -142,6 +147,33 @@ void main() async {
         // success
       }
     });
+    test('closing forgets a connection that lost its transport', () async {
+      MockRelay relay1 = MockRelay(name: "relay 1");
+      await relay1.startServer();
+
+      RelayManager manager = RelayManager(
+        globalState: GlobalState(),
+        bootstrapRelays: [relay1.url],
+        nostrTransportFactory: webSocketNostrTransportFactory,
+      );
+      await manager.connectRelay(
+        dirtyUrl: relay1.url,
+        connectionSource: ConnectionSource.seed,
+      );
+      expect(manager.globalState.relays, isNotEmpty);
+
+      await manager.resetTransport(relay1.url);
+      await manager.closeAllTransports();
+
+      expect(
+        manager.globalState.relays,
+        isEmpty,
+        reason: "a connection without transport must not survive the close",
+      );
+
+      await relay1.stopServer();
+    });
+
     test('Try to connect to wss://brb.io', skip: true, () async {
       RelayManager manager = RelayManager(
         nostrTransportFactory: webSocketNostrTransportFactory,
@@ -209,23 +241,29 @@ void main() async {
         // Register the request with both relays
         manager.registerRelayRequest(
           reqId: requestId,
-          relayUrl: relay1.url,
+          connectionKey: RelayConnectionKey.anonymous(relay1.url),
           filters: testFilters,
         );
         manager.registerRelayRequest(
           reqId: requestId,
-          relayUrl: relay2.url,
+          connectionKey: RelayConnectionKey.anonymous(relay2.url),
           filters: testFilters,
         );
 
         // Verify both relay requests are registered
         expect(manager.globalState.inFlightRequests[requestId], isNotNull);
         expect(
-          manager.globalState.inFlightRequests[requestId]!.requests[relay1.url],
+          manager
+              .globalState
+              .inFlightRequests[requestId]!
+              .requests[RelayConnectionKey.anonymous(relay1.url)],
           isNotNull,
         );
         expect(
-          manager.globalState.inFlightRequests[requestId]!.requests[relay2.url],
+          manager
+              .globalState
+              .inFlightRequests[requestId]!
+              .requests[RelayConnectionKey.anonymous(relay2.url)],
           isNotNull,
         );
 
@@ -272,7 +310,10 @@ void main() async {
 
         // The request should still have relay2's entry, but relay1's should be removed or marked as closed
         expect(
-          manager.globalState.inFlightRequests[requestId]!.requests[relay2.url],
+          manager
+              .globalState
+              .inFlightRequests[requestId]!
+              .requests[RelayConnectionKey.anonymous(relay2.url)],
           isNotNull,
           reason: "Relay2's request entry should still exist",
         );

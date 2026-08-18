@@ -15,7 +15,7 @@ class QsRustEventVerifier implements EventVerifier {
 
   /// Creates a new instance of [QsRustEventVerifier].
   ///
-  /// [level] defaults to 2 (NIST Security Level 2, ~AES-128).
+  /// [level] defaults to 87 (~AES-256, the CNSA 2.0 set).
   QsRustEventVerifier({this.level = 87});
 
   @override

@@ -34,7 +34,7 @@ class RelayJitRequestSpecificStrategy {
     await Future.wait(connectFutures);
 
     // filter connected relays && specific relays
-    final specificConnectedRelays = relayManager.connectedRelays
+    final specificConnectedRelays = relayManager.connectedAnonymousRelays
         .where((relay) => specificRelays.contains(relay.url))
         .toList();
 
@@ -48,7 +48,7 @@ class RelayJitRequestSpecificStrategy {
       /// register request
       relayManager.registerRelayRequest(
         reqId: requestState.id,
-        relayUrl: connectedRelay.url,
+        connectionKey: connectedRelay.key,
         filters: [filter],
       );
       relayManager.send(connectedRelay, clientMsg);

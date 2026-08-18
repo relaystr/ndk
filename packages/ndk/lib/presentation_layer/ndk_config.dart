@@ -78,9 +78,10 @@ class NdkConfig {
   /// Disabled by default for performance.
   bool fetchedRangesEnabled;
 
-  /// If true, AUTH immediately when relay sends challenge.
-  /// If false (default), AUTH only after relay responds with auth-required.
-  /// False is more privacy-respecting as it doesn't reveal identity until necessary.
+  /// Has no effect. A connection now carries at most one identity, chosen when
+  /// it is opened: an anonymous connection never answers a challenge and a
+  /// bound one always does, so there is nothing left to choose.
+  @Deprecated('Has no effect, a connection is bound to an identity or to none')
   bool eagerAuth;
 
   /// Timeout for AUTH callbacks (how long to wait for AUTH OK response).
@@ -138,6 +139,7 @@ class NdkConfig {
     this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
     this.cashuUserSeedphrase,
     this.fetchedRangesEnabled = false,
+    // ignore: deprecated_member_use_from_same_package
     this.eagerAuth = false,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
     this.pendingDeliveryRetryInterval = const Duration(seconds: 15),

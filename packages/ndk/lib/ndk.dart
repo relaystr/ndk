@@ -26,6 +26,7 @@ export 'domain_layer/entities/nip_51_list.dart';
 export 'domain_layer/entities/contact_list.dart';
 export 'domain_layer/entities/read_write.dart';
 export 'domain_layer/entities/relay.dart';
+export 'domain_layer/entities/relay_connection_key.dart';
 export 'domain_layer/entities/relay_set.dart';
 export 'domain_layer/entities/metadata.dart';
 export 'domain_layer/entities/event_filter.dart';

@@ -17,6 +17,7 @@ import '../entities/filter.dart';
 import '../entities/global_state.dart';
 import '../entities/ndk_request.dart';
 import '../entities/nip_01_event.dart';
+import '../entities/relay_connection_key.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_set.dart';
 import '../entities/request_response.dart';
@@ -67,9 +68,9 @@ class RelaySetsEngine implements NetworkEngine {
       force: false,
     );
     if (connected) {
-      RelayConnectivity? relay = _globalState.relays[request.url];
+      RelayConnectivity? relay =
+          _globalState.relays[RelayConnectionKey.anonymous(request.url)];
       if (relay != null) {
-        relay.stats.activeRequests++;
         try {
           await _relayManager.sendOrThrow(
             relay,
@@ -201,12 +202,18 @@ class RelaySetsEngine implements NetworkEngine {
             "making fallback requests to ${_bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}",
           );
           for (final url in _bootstrapRelays) {
-            state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
+            state.addRequest(
+              RelayConnectionKey.anonymous(url),
+              RelaySet.sliceFilterAuthors(filter),
+            );
           }
         }
       } else {
         for (final url in relaySet.urls) {
-          state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
+          state.addRequest(
+            RelayConnectionKey.anonymous(url),
+            RelaySet.sliceFilterAuthors(filter),
+          );
         }
       }
     }
@@ -215,15 +222,16 @@ class RelaySetsEngine implements NetworkEngine {
     // Late auth for subscriptions with authenticateAs
     if (state.request.authenticateAs != null &&
         state.request.authenticateAs!.isNotEmpty) {
-      for (final relayUrl in state.requests.keys) {
+      for (final connectionKey in state.requests.keys) {
         _relayManager.authenticateIfNeeded(
-          relayUrl,
+          connectionKey.url,
           state.request.authenticateAs!,
         );
       }
     }
 
-    for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
+    for (MapEntry<RelayConnectionKey, RelayRequestState> entry
+        in state.requests.entries) {
       doRelayRequest(state.id, entry.value);
     }
   }
@@ -255,25 +263,26 @@ class RelaySetsEngine implements NetworkEngine {
       for (final filter in state.request.filters) {
         filters.addAll(RelaySet.sliceFilterAuthors(filter));
       }
-      state.addRequest(url, filters);
+      state.addRequest(RelayConnectionKey.anonymous(url), filters);
     }
     _globalState.inFlightRequests[state.id] = state;
 
     // Late auth for subscriptions with authenticateAs
     if (state.request.authenticateAs != null &&
         state.request.authenticateAs!.isNotEmpty) {
-      for (final relayUrl in state.requests.keys) {
+      for (final connectionKey in state.requests.keys) {
         _relayManager.authenticateIfNeeded(
-          relayUrl,
+          connectionKey.url,
           state.request.authenticateAs!,
         );
       }
     }
 
-    for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
+    for (MapEntry<RelayConnectionKey, RelayRequestState> entry
+        in state.requests.entries) {
       doRelayRequest(state.id, entry.value).then((sent) {
         if (!sent) {
-          state.requests.remove(entry.value.url);
+          state.requests.remove(entry.key);
           if (state.requests.isEmpty) {
             state.networkController.close();
           }
@@ -303,14 +312,18 @@ class RelaySetsEngine implements NetworkEngine {
     );
 
     for (var url in urls) {
-      state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
+      state.addRequest(
+        RelayConnectionKey.anonymous(url),
+        RelaySet.sliceFilterAuthors(filter),
+      );
     }
     _globalState.inFlightRequests[state.id] = state;
 
-    for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
+    for (MapEntry<RelayConnectionKey, RelayRequestState> entry
+        in state.requests.entries) {
       doRelayRequest(state.id, entry.value).then((sent) {
         if (!sent) {
-          state.requests.remove(entry.value.url);
+          state.requests.remove(entry.key);
           // start fix
           if (state.requests.isEmpty) {
             state.networkController.close();
@@ -368,7 +381,11 @@ class RelaySetsEngine implements NetworkEngine {
           cacheManager: _cacheManager,
         ));
         // make a copy of the keys since connectRelay may mutate the underlying map
+        // several connections can share a url, and broadcasting twice to the
+        // same relay would duplicate the event
         List<String> writeRelaysUrls = _relayManager.globalState.relays.keys
+            .map((key) => key.url)
+            .toSet()
             .toList();
         if (nip65List.isNotEmpty) {
           writeRelaysUrls = nip65List.first.relays.entries
