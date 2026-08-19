@@ -28,6 +28,45 @@ void _runEventTests(
     expect(loadedEvent.createdAt, equals(event.createdAt));
   });
 
+  test('saveEventIfAbsent does not overwrite an existing id', () async {
+    final cacheManager = getCacheManager();
+    final original = Nip01Event(
+      pubKey: 'testPubKey',
+      kind: 1,
+      tags: [],
+      content: 'original',
+    );
+    final replacement = original.copyWith(content: 'replacement');
+
+    expect(await cacheManager.saveEventIfAbsent(original), isTrue);
+    expect(await cacheManager.saveEventIfAbsent(replacement), isFalse);
+
+    final loaded = await cacheManager.loadEvent(original.id);
+    expect(loaded, isNotNull);
+    expect(loaded!.content, 'original');
+  });
+
+  test('saveEventIfAbsent atomically inserts one concurrent event', () async {
+    final cacheManager = getCacheManager();
+    final first = Nip01Event(
+      pubKey: 'testPubKey',
+      kind: 1,
+      tags: [],
+      content: 'first',
+    );
+    final second = first.copyWith(content: 'second');
+
+    final results = await Future.wait([
+      cacheManager.saveEventIfAbsent(first),
+      cacheManager.saveEventIfAbsent(second),
+    ]);
+
+    expect(results.where((inserted) => inserted), hasLength(1));
+    final loaded = await cacheManager.loadEvent(first.id);
+    expect(loaded, isNotNull);
+    expect(loaded!.content, isIn(['first', 'second']));
+  });
+
   test('saveEvents batch operation', () async {
     final cacheManager = getCacheManager();
     final events = [

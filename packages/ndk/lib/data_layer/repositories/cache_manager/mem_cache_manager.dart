@@ -795,6 +795,19 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
+  Future<bool> saveEventIfAbsent(Nip01Event event) async {
+    var inserted = false;
+    events.putIfAbsent(event.id, () {
+      inserted = true;
+      return event;
+    });
+    if (inserted) {
+      await _refreshDerivedStateForEvent(event);
+    }
+    return inserted;
+  }
+
+  @override
   Future<void> saveEvents(List<Nip01Event> events) async {
     for (var event in events) {
       this.events[event.id] = event;

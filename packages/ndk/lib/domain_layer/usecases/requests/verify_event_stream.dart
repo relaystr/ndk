@@ -3,6 +3,7 @@ import 'package:rxdart/rxdart.dart';
 import 'verified_event_cache.dart';
 import '../../../shared/logger/logger.dart';
 import '../../entities/nip_01_event.dart';
+import '../../entities/nip_01_utils.dart';
 import '../../repositories/event_verifier.dart';
 
 class VerifyEventStream {
@@ -32,27 +33,30 @@ class VerifyEventStream {
         .shareReplay(maxSize: 1);
   }
 
-  Future<Nip01Event?> _verifyEventDeduped(Nip01Event data) {
-    // signature already checked, either on this object or a previous delivery
+  Future<Nip01Event?> _verifyEventDeduped(Nip01Event data) async {
+    // Never reuse verification state for an id that does not match the
+    // incoming payload. This is intentionally done before signature lookup.
+    if (!Nip01Utils.isIdValid(data)) {
+      Logger.log.w(
+        () => 'WARNING: Event with id ${data.id} has invalid event id',
+      );
+      return null;
+    }
+
+    // validSig is trusted internal provenance, but still seed the exact
+    // id/signature pair so later network copies can be compared safely.
     if (data.validSig == true) {
-      return Future.value(data);
-    }
-    if (_cache.contains(data.id)) {
-      return Future.value(data.copyWith(validSig: true));
+      _cache.markVerified(data.id, data.sig);
+      return data;
     }
 
-    // mark eagerly (before awaiting) so duplicates delivered concurrently
-    // with this one also skip the verifier instead of racing it (the actual event is not!! marked verified == true)
-    _cache.markVerified(data.id);
+    if (_cache.hasVerifiedSignature(data.id, data.sig)) {
+      return data.copyWith(validSig: true);
+    }
 
-    return _verifyEvent(data);
-  }
-
-  Future<Nip01Event?> _verifyEvent(Nip01Event data) async {
-    final valid = await eventVerifier.verify(data);
+    final valid = await _cache.verifyOnce(data, eventVerifier);
 
     if (!valid) {
-      _cache.unmark(data.id);
       Logger.log.w(
         () => 'WARNING: Event with id ${data.id} has invalid signature',
       );

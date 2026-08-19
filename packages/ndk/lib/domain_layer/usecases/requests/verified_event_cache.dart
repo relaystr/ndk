@@ -1,30 +1,70 @@
+import 'dart:async';
 import 'dart:collection';
 
-/// Bounded, in-memory record of event ids whose signature was already
-/// checked, so relay re-deliveries and repeat requests skip the verifier.
+import '../../entities/nip_01_event.dart';
+import '../../repositories/event_verifier.dart';
+
+typedef _VerificationKey = ({String id, String? signature});
+
+/// Bounded, in-memory LRU record of verified event id/signature pairs.
+///
+/// A matching id alone is not sufficient for reuse because an event id does
+/// not commit to its signature. Callers must validate the incoming event id
+/// from its payload before consulting [hasVerifiedSignature].
 class VerifiedEventMemCache {
   final int maxSize;
-  final LinkedHashSet<String> _ids = LinkedHashSet<String>();
+  final LinkedHashSet<_VerificationKey> _verified =
+      LinkedHashSet<_VerificationKey>();
+  final Map<_VerificationKey, Future<bool>> _verificationInFlight =
+      HashMap<_VerificationKey, Future<bool>>();
 
   VerifiedEventMemCache({this.maxSize = 20000});
 
-  /// touches [id] to the front, marking it recently used
-  bool contains(String id) {
-    final found = _ids.remove(id);
+  bool hasVerifiedSignature(String id, String? signature) {
+    final key = (id: id, signature: signature);
+    final found = _verified.remove(key);
     if (found) {
-      _ids.add(id);
+      _verified.add(key);
     }
     return found;
   }
 
-  void markVerified(String id) {
-    _ids.remove(id);
-    _ids.add(id);
-    while (_ids.length > maxSize) {
-      _ids.remove(_ids.first);
-    }
+  void markVerified(String id, String? signature) {
+    final key = (id: id, signature: signature);
+    _verified.remove(key);
+    _verified.add(key);
+    _evictOverflow();
   }
 
-  /// reverts an optimistic [markVerified] once verification actually fails
-  void unmark(String id) => _ids.remove(id);
+  /// Runs at most one verification for the same validated id and signature.
+  Future<bool> verifyOnce(
+    Nip01Event event,
+    EventVerifier verifier,
+  ) {
+    final key = (id: event.id, signature: event.sig);
+    final existing = _verificationInFlight[key];
+    if (existing != null) {
+      return existing;
+    }
+
+    late final Future<bool> future;
+    future = Future<bool>.sync(() => verifier.verify(event)).then((valid) {
+      if (valid) {
+        markVerified(event.id, event.sig);
+      }
+      return valid;
+    }).whenComplete(() {
+      if (identical(_verificationInFlight[key], future)) {
+        _verificationInFlight.remove(key);
+      }
+    });
+    _verificationInFlight[key] = future;
+    return future;
+  }
+
+  void _evictOverflow() {
+    while (_verified.length > maxSize) {
+      _verified.remove(_verified.first);
+    }
+  }
 }

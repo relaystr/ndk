@@ -34,6 +34,13 @@ abstract class CacheManager {
   Future<void> close();
 
   Future<void> saveEvent(Nip01Event event);
+
+  /// Stores [event] only when its id is not already present.
+  ///
+  /// Returns `true` when the event was inserted and `false` when an event with
+  /// the same id already existed. Existing payloads must never be overwritten.
+  Future<bool> saveEventIfAbsent(Nip01Event event);
+
   Future<void> saveEvents(List<Nip01Event> events);
 
   /// Loads the raw stored event by id.

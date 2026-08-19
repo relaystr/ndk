@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:ndk/domain_layer/usecases/requests/verify_event_stream.dart';
+import 'package:ndk/domain_layer/usecases/requests/verified_event_cache.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
@@ -25,17 +28,34 @@ class CountingEventVerifier implements EventVerifier {
   }
 }
 
-class CountingMemCacheManager extends MemCacheManager {
-  final Map<String, int> saveCounts = {};
-
-  int saveCountFor(String id) => saveCounts[id] ?? 0;
-
-  void resetSaveCounts() => saveCounts.clear();
+class ControlledEventVerifier implements EventVerifier {
+  final Completer<void> started = Completer<void>();
+  final Completer<bool> result = Completer<bool>();
 
   @override
-  Future<void> saveEvent(Nip01Event event) async {
-    saveCounts.update(event.id, (count) => count + 1, ifAbsent: () => 1);
-    await super.saveEvent(event);
+  Future<bool> verify(Nip01Event event) {
+    if (!started.isCompleted) {
+      started.complete();
+    }
+    return result.future;
+  }
+}
+
+class CountingMemCacheManager extends MemCacheManager {
+  final Map<String, int> saveIfAbsentCounts = {};
+
+  int saveIfAbsentCountFor(String id) => saveIfAbsentCounts[id] ?? 0;
+
+  void resetSaveIfAbsentCounts() => saveIfAbsentCounts.clear();
+
+  @override
+  Future<bool> saveEventIfAbsent(Nip01Event event) async {
+    saveIfAbsentCounts.update(
+      event.id,
+      (count) => count + 1,
+      ifAbsent: () => 1,
+    );
+    return super.saveEventIfAbsent(event);
   }
 }
 
@@ -113,6 +133,33 @@ void main() async {
   });
 
   group('re-verification of already verified events (issue #715)', () {
+    test('bounds LRU entries by id and signature pair', () {
+      final verificationCache = VerifiedEventMemCache(maxSize: 2);
+
+      verificationCache.markVerified('event-1', 'signature-1');
+      verificationCache.markVerified('event-1', 'signature-2');
+
+      expect(
+        verificationCache.hasVerifiedSignature('event-1', 'signature-1'),
+        isTrue,
+      );
+
+      verificationCache.markVerified('event-2', 'signature-3');
+
+      expect(
+        verificationCache.hasVerifiedSignature('event-1', 'signature-1'),
+        isTrue,
+      );
+      expect(
+        verificationCache.hasVerifiedSignature('event-1', 'signature-2'),
+        isFalse,
+      );
+      expect(
+        verificationCache.hasVerifiedSignature('event-2', 'signature-3'),
+        isTrue,
+      );
+    });
+
     test('does not re-verify an event delivered more than once', () async {
       final event = await signedEvent("duplicate", 1000);
 
@@ -149,6 +196,93 @@ void main() async {
       );
     });
 
+    test(
+      'does not trust a concurrent duplicate before verification rejects it',
+      () async {
+        final event = (await signedEvent('invalid duplicate', 1000)).copyWith(
+          sig: List.filled(128, '0').join(),
+        );
+        final controlledVerifier = ControlledEventVerifier();
+        final localVerifier = CountingEventVerifier(
+          delegate: controlledVerifier,
+        );
+        final emitted = <Nip01Event>[];
+        final errors = <Object>[];
+        final done = Completer<void>();
+
+        VerifyEventStream(
+          unverifiedStreamInput: Stream.fromIterable([event, event]),
+          eventVerifier: localVerifier,
+        )().listen(
+          emitted.add,
+          onError: (Object error) => errors.add(error),
+          onDone: done.complete,
+        );
+
+        await controlledVerifier.started.future;
+        await Future<void>.delayed(Duration.zero);
+
+        expect(localVerifier.countFor(event.id), 1);
+        expect(
+          emitted,
+          isEmpty,
+          reason: 'the duplicate must wait for the shared verification future',
+        );
+
+        controlledVerifier.result.complete(false);
+        await done.future;
+
+        expect(emitted, isEmpty);
+        expect(errors, isEmpty);
+        expect(localVerifier.countFor(event.id), 1);
+      },
+    );
+
+    test(
+      'does not trust a concurrent duplicate when verification throws',
+      () async {
+        final event = (await signedEvent('throwing duplicate', 1000)).copyWith(
+          sig: List.filled(128, '0').join(),
+        );
+        final controlledVerifier = ControlledEventVerifier();
+        final localVerifier = CountingEventVerifier(
+          delegate: controlledVerifier,
+        );
+        final emitted = <Nip01Event>[];
+        final errors = <Object>[];
+        final done = Completer<void>();
+
+        VerifyEventStream(
+          unverifiedStreamInput: Stream.fromIterable([event, event]),
+          eventVerifier: localVerifier,
+        )().listen(
+          emitted.add,
+          onError: (Object error) => errors.add(error),
+          onDone: done.complete,
+        );
+
+        await controlledVerifier.started.future;
+        await Future<void>.delayed(Duration.zero);
+
+        expect(localVerifier.countFor(event.id), 1);
+        expect(
+          emitted,
+          isEmpty,
+          reason: 'the duplicate must not escape while verification is pending',
+        );
+
+        controlledVerifier.result.completeError(
+          StateError('verification failed'),
+        );
+        await done.future;
+
+        expect(emitted, isEmpty);
+        expect(errors, isNotEmpty);
+        expect(errors, everyElement(isA<StateError>()));
+        expect(localVerifier.countFor(event.id), 1);
+      },
+    );
+
     test('verifies an event once when two relays deliver it', () async {
       final event = await signedEvent("shared", 1000);
 
@@ -162,6 +296,7 @@ void main() async {
 
       await ndk.config.cache.clearAll();
       verifier.reset();
+      cache.resetSaveIfAbsentCounts();
 
       final events = await ndk.requests.query(
         filter: Filter(
@@ -177,6 +312,16 @@ void main() async {
         equals(1),
         reason: 'the second copy should be deduplicated before verification',
       );
+      expect(
+        cache.saveIfAbsentCountFor(event.id),
+        1,
+        reason: 'persistence should run once within a single request',
+      );
+      expect(
+        await cache.loadEventSources(event.id),
+        containsAll([relay1.url, relay2.url]),
+        reason: 'persistence deduplication must not discard relay provenance',
+      );
     });
 
     test('does not re-verify an event a previous request verified', () async {
@@ -189,6 +334,7 @@ void main() async {
 
       await ndk.config.cache.clearAll();
       verifier.reset();
+      cache.resetSaveIfAbsentCounts();
 
       final filter = Filter(
         kinds: [Nip01Event.kTextNodeKind],
@@ -215,6 +361,11 @@ void main() async {
         equals(1),
         reason: 'an event verified by a previous request stays verified',
       );
+      expect(
+        cache.saveIfAbsentCountFor(event.id),
+        2,
+        reason: 'each request performs its own insert-if-absent attempt',
+      );
     });
 
     test(
@@ -238,6 +389,11 @@ void main() async {
         expect(cached, isNotNull);
         expect(cached!.content, event.content);
         expect(cached.sig, event.sig);
+        expect(
+          verifier.countFor(event.id),
+          1,
+          reason: 'an invalid id should be rejected before signature checking',
+        );
 
         expect(
           received,
@@ -270,6 +426,11 @@ void main() async {
         expect(cached, isNotNull);
         expect(cached!.content, event.content);
         expect(cached.sig, event.sig);
+        expect(
+          verifier.countFor(event.id),
+          2,
+          reason: 'a different signature must be verified before reuse',
+        );
 
         expect(
           received,
@@ -280,14 +441,14 @@ void main() async {
     );
 
     test(
-      'does not save an already cached valid event delivered by another relay',
+      'checks persistence again for a cached event in a later request',
       () async {
         final event = await signedEvent('valid relay duplicate', 1000);
         await receiveAndCacheFromRelay1(event);
 
         final cachedBefore = await ndk.config.cache.loadEvent(event.id);
         expect(cachedBefore, isNotNull);
-        cache.resetSaveCounts();
+        cache.resetSaveIfAbsentCounts();
 
         relay2.textNotes = {key1: event};
 
@@ -302,9 +463,9 @@ void main() async {
         expect(received, hasLength(1));
         expect(received.single.id, event.id);
         expect(
-          cache.saveCountFor(event.id),
-          0,
-          reason: 'a valid duplicate should only add its relay as a source',
+          cache.saveIfAbsentCountFor(event.id),
+          1,
+          reason: 'the first occurrence in each request checks persistence',
         );
 
         final cachedAfter = await ndk.config.cache.loadEvent(event.id);
@@ -316,5 +477,28 @@ void main() async {
         expect(sources, containsAll([relay1.url, relay2.url]));
       },
     );
+
+    test('stores a verified duplicate again after the cache is cleared',
+        () async {
+      final event = await signedEvent('valid duplicate after clear', 1000);
+      await receiveAndCacheFromRelay1(event);
+
+      await cache.clearAll();
+      cache.resetSaveIfAbsentCounts();
+      relay2.textNotes = {key1: event};
+
+      final received = await ndk.requests
+          .query(
+            filter: Filter(ids: [event.id]),
+            explicitRelays: [relay2.url],
+            cacheRead: false,
+          )
+          .future;
+
+      expect(received, hasLength(1));
+      expect(verifier.countFor(event.id), 1);
+      expect(cache.saveIfAbsentCountFor(event.id), 1);
+      expect(await cache.loadEvent(event.id), isNotNull);
+    });
   });
 }
