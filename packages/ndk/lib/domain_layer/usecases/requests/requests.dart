@@ -61,14 +61,14 @@ class Requests {
     required EventVerifier eventVerifier,
     required List<EventFilter> eventOutFilters,
     required Duration defaultQueryTimeout,
-  }) : _engine = networkEngine,
-       _relayManager = relayManager,
-       _cacheManager = cacheManager,
-       _cacheRead = cacheRead,
-       _globalState = globalState,
-       _eventVerifier = eventVerifier,
-       _eventOutFilters = eventOutFilters,
-       _defaultQueryTimeout = defaultQueryTimeout;
+  })  : _engine = networkEngine,
+        _relayManager = relayManager,
+        _cacheManager = cacheManager,
+        _cacheRead = cacheRead,
+        _globalState = globalState,
+        _eventVerifier = eventVerifier,
+        _eventOutFilters = eventOutFilters,
+        _defaultQueryTimeout = defaultQueryTimeout;
 
   Stream<Nip01Event> _prepareNetworkStream(
     Stream<Nip01Event> verifiedNetworkStream, {
@@ -266,8 +266,7 @@ class Requests {
       final request = state.requests[relay.key]!;
       // a request the relay ended itself, with a CLOSED or with the EOSE of a
       // query, is already closed on its side
-      final endedOnRelay =
-          request.receivedClosed ||
+      final endedOnRelay = request.receivedClosed ||
           (state.request.closeOnEOSE && request.receivedEOSE);
       if (endedOnRelay) {
         continue;

@@ -31,11 +31,11 @@ class CliAccountRecord {
       type == CliAccountType.privateKey || type == CliAccountType.bunker;
 
   Map<String, dynamic> toJson() => {
-    'pubkey': pubkey,
-    'type': type.name,
-    if (privkey != null) 'privkey': privkey,
-    if (bunker != null) 'bunker': bunker,
-  };
+        'pubkey': pubkey,
+        'type': type.name,
+        if (privkey != null) 'privkey': privkey,
+        if (bunker != null) 'bunker': bunker,
+      };
 
   factory CliAccountRecord.fromJson(Map<String, dynamic> json) {
     final type = CliAccountType.values.firstWhere(
@@ -70,8 +70,7 @@ class CliAccountsStore {
   static String defaultPath() {
     final fromEnv = Platform.environment['NDK_ACCOUNTS_FILE'];
     if (fromEnv != null && fromEnv.isNotEmpty) return fromEnv;
-    final home =
-        Platform.environment['HOME'] ??
+    final home = Platform.environment['HOME'] ??
         Platform.environment['USERPROFILE'] ??
         '.';
     return p.join(home, _defaultDirName, _defaultFileName);

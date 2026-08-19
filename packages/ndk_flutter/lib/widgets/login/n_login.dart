@@ -321,8 +321,9 @@ class _NLoginState extends State<NLogin> {
   }
 
   Future<void> loginWithNip05(String nip05) async {
-    if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-        .hasMatch(nip05)) {
+    if (!RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    ).hasMatch(nip05)) {
       controller.nip05LoginError = 1;
       return;
     }

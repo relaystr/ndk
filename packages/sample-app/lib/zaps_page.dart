@@ -60,13 +60,13 @@ class _ZapsPageState extends State<ZapsPage> {
                     onPressed: () {
                       Clipboard.getData(Clipboard.kTextPlain)
                           .then((clipboardData) {
-                            if (clipboardData != null &&
-                                clipboardData.text != null) {
-                              setState(() {
-                                uri.text = clipboardData.text!;
-                              });
-                            }
+                        if (clipboardData != null &&
+                            clipboardData.text != null) {
+                          setState(() {
+                            uri.text = clipboardData.text!;
                           });
+                        }
+                      });
                     },
                     icon: const Icon(Icons.paste),
                   ),
@@ -121,8 +121,7 @@ class _ZapsPageState extends State<ZapsPage> {
           : Container(),
     );
 
-    bool canMakeInvoice =
-        connection != null &&
+    bool canMakeInvoice = connection != null &&
         connection!.info!.methods.contains(NwcMethod.MAKE_INVOICE.name) &&
         amount.text != '' &&
         (int.tryParse(amount.text) ?? 0) > 0;
@@ -164,8 +163,7 @@ class _ZapsPageState extends State<ZapsPage> {
           : Container(),
     );
 
-    bool canPayInvoice =
-        connection != null &&
+    bool canPayInvoice = connection != null &&
         connection!.info!.methods.contains(NwcMethod.PAY_INVOICE.name) &&
         invoice.text != '';
     widgets.add(

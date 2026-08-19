@@ -654,7 +654,9 @@ void main() async {
       expect(kTags.length, 0);
     });
 
-    test('broadcastDeletion with eventAndAllVersions removes all versions from cache', () async {
+    test(
+        'broadcastDeletion with eventAndAllVersions removes all versions from cache',
+        () async {
       ndk.accounts.loginPrivateKey(
         pubkey: key0.publicKey,
         privkey: key0.privateKey!,
@@ -752,8 +754,7 @@ void main() async {
         );
 
         await ndk.broadcast
-            .broadcastDeletion(events: [textNote, repost])
-            .broadcastDoneFuture;
+            .broadcastDeletion(events: [textNote, repost]).broadcastDoneFuture;
 
         List<Nip01Event> deletionEvents = await ndk.config.cache.loadEvents(
           kinds: [5],

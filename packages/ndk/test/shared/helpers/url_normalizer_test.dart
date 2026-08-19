@@ -113,7 +113,9 @@ void main() {
       );
     });
 
-    test('decodes percent-encoded unreserved characters (RFC 3986 Section 6.2.2.2)', () {
+    test(
+        'decodes percent-encoded unreserved characters (RFC 3986 Section 6.2.2.2)',
+        () {
       // %41 = 'A', %7E = '~', %2D = '-'
       expect(
         cleanRelayUrl('wss://relay.damus.io/path%41'),

@@ -117,15 +117,14 @@ void main() async {
             .toList();
         expect(giftWraps.length, greaterThanOrEqualTo(2));
 
-        final recipients = giftWraps
-            .map((e) => e.pTags)
-            .expand((p) => p)
-            .toSet();
+        final recipients =
+            giftWraps.map((e) => e.pTags).expand((p) => p).toSet();
         expect(recipients, containsAll([alice.publicKey, bob.publicKey]));
       },
     );
 
-    test('sendMessage with additional tags keeps the p tag on the rumor', () async {
+    test('sendMessage with additional tags keeps the p tag on the rumor',
+        () async {
       await publishDmRelayList(alice, urls: [relay.url]);
       await publishDmRelayList(bob, urls: [relay.url]);
 

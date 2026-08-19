@@ -35,9 +35,8 @@ class CashuQuoteMelt {
       state: CashuQuoteState.fromValue(json['state'] as String),
       expiry: json['expiry'] as int?,
       paid: json['paid'] != null ? json['paid'] as bool : false,
-      feeReserve: (json['fee_reserve'] != null
-          ? json['fee_reserve'] as int
-          : 0),
+      feeReserve:
+          (json['fee_reserve'] != null ? json['fee_reserve'] as int : 0),
       request:
           request ?? (json['request'] != null ? json['request'] as String : ''),
       mintUrl: mintUrl,

@@ -29,7 +29,8 @@ void singlePartExample() {
       CashuProof(
         amount: 8,
         secret: 'my-secret-proof-data',
-        unblindedSig: '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
+        unblindedSig:
+            '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
         keysetId: '009a1f293253e41e',
       ),
     ],

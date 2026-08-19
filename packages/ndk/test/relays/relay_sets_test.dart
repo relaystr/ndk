@@ -361,7 +361,9 @@ void main() async {
     //   //expect(query, emitsInAnyOrder(key1TextNotes.values));
     // });
 
-    test("calculate best relays for relayMinCountPerPubKey=1 and check that it doesn't use redundant relays", () async {
+    test(
+        "calculate best relays for relayMinCountPerPubKey=1 and check that it doesn't use redundant relays",
+        () async {
       final ndk = Ndk(
         NdkConfig(
           eventVerifier: MockEventVerifier(),
@@ -407,7 +409,9 @@ void main() async {
       await ndk.destroy();
     });
 
-    test("calculate best relays for relayMinCountPerPubKey=2 and check that it doesn't use redundant relays", () async {
+    test(
+        "calculate best relays for relayMinCountPerPubKey=2 and check that it doesn't use redundant relays",
+        () async {
       final ndk = Ndk(
         NdkConfig(
           eventVerifier: MockEventVerifier(),

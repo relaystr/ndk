@@ -14,7 +14,7 @@ class RelayJitBroadcastSpecificRelaysStrategy {
     required Nip01Event eventToPublish,
     required CacheManager cacheManager,
     required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-    connectedRelays,
+        connectedRelays,
     required RelayManager relayManager,
     required List<String> specificRelays,
   }) async {
@@ -71,7 +71,8 @@ class RelayJitBroadcastSpecificRelaysStrategy {
           dirtyUrl: relayUrl,
           connectionSource: ConnectionSource.broadcastSpecific,
           connectTimeout: 1,
-        )).first;
+        ))
+            .first;
         if (!success) {
           relayManager.failBroadcast(
             eventToPublish.id,
@@ -130,10 +131,10 @@ class RelayJitBroadcastSpecificRelaysStrategy {
       kinds: [event.kind],
       tags:
           EventKindClassification.isAddressableKind(event.kind) && dTag != null
-          ? {
-              'd': [dTag],
-            }
-          : null,
+              ? {
+                  'd': [dTag],
+                }
+              : null,
       limit: 1,
     );
 

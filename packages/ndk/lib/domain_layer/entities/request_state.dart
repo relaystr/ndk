@@ -132,10 +132,10 @@ class RequestState {
 
   /// checks if all requests finished (received EOSE or CLOSED)
   bool get didAllRequestsFinish => requests.values.every(
-    (element) =>
-        (element.receivedEOSE || element.receivedClosed) &&
-        !element.retryingAuth,
-  );
+        (element) =>
+            (element.receivedEOSE || element.receivedClosed) &&
+            !element.retryingAuth,
+      );
 
   /// Adds single relay request to the state
   void addRequest(RelayConnectionKey key, List<Filter> filters) {

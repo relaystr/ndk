@@ -6,7 +6,7 @@ class SettleHoldInvoiceRequest extends NwcRequest {
   final String preimage;
 
   const SettleHoldInvoiceRequest({required this.preimage})
-    : super(method: NwcMethod.SETTLE_HOLD_INVOICE);
+      : super(method: NwcMethod.SETTLE_HOLD_INVOICE);
 
   @override
   Map<String, dynamic> toMap() {

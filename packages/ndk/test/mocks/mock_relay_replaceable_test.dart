@@ -18,7 +18,9 @@ void main() {
       await mockRelay.stopServer();
     });
 
-    test('replaceable events (kind 10002) should be replaced by newer version from same author', () async {
+    test(
+        'replaceable events (kind 10002) should be replaced by newer version from same author',
+        () async {
       final keyPair = Bip340.generatePrivateKey();
 
       final ndkWriter = Ndk(
@@ -45,9 +47,9 @@ void main() {
         event: oldEvent,
         privateKey: keyPair.privateKey!,
       );
-      await ndkWriter.broadcast
-          .broadcast(nostrEvent: signedOld, specificRelays: [mockRelay.url])
-          .broadcastDoneFuture;
+      await ndkWriter.broadcast.broadcast(
+          nostrEvent: signedOld,
+          specificRelays: [mockRelay.url]).broadcastDoneFuture;
 
       // Newer version (same author, same kind)
       final newEvent = Nip01Event(
@@ -63,9 +65,9 @@ void main() {
         event: newEvent,
         privateKey: keyPair.privateKey!,
       );
-      await ndkWriter.broadcast
-          .broadcast(nostrEvent: signedNew, specificRelays: [mockRelay.url])
-          .broadcastDoneFuture;
+      await ndkWriter.broadcast.broadcast(
+          nostrEvent: signedNew,
+          specificRelays: [mockRelay.url]).broadcastDoneFuture;
 
       // Query from a fresh client to bypass any local cache
       final ndkReader = Ndk(
@@ -101,7 +103,9 @@ void main() {
       await ndkReader.destroy();
     });
 
-    test('addressable events (kind 30023) should be replaced by newer version with same d-tag', () async {
+    test(
+        'addressable events (kind 30023) should be replaced by newer version with same d-tag',
+        () async {
       final keyPair = Bip340.generatePrivateKey();
 
       final ndkWriter = Ndk(
@@ -129,9 +133,9 @@ void main() {
         event: oldEvent,
         privateKey: keyPair.privateKey!,
       );
-      await ndkWriter.broadcast
-          .broadcast(nostrEvent: signedOld, specificRelays: [mockRelay.url])
-          .broadcastDoneFuture;
+      await ndkWriter.broadcast.broadcast(
+          nostrEvent: signedOld,
+          specificRelays: [mockRelay.url]).broadcastDoneFuture;
 
       // Newer version with same d-tag
       final newEvent = Nip01Event(
@@ -147,9 +151,9 @@ void main() {
         event: newEvent,
         privateKey: keyPair.privateKey!,
       );
-      await ndkWriter.broadcast
-          .broadcast(nostrEvent: signedNew, specificRelays: [mockRelay.url])
-          .broadcastDoneFuture;
+      await ndkWriter.broadcast.broadcast(
+          nostrEvent: signedNew,
+          specificRelays: [mockRelay.url]).broadcastDoneFuture;
 
       final ndkReader = Ndk(
         NdkConfig(
@@ -174,8 +178,7 @@ void main() {
       expect(
         received.length,
         equals(1),
-        reason:
-            'NIP-01 addressable events should keep only the latest '
+        reason: 'NIP-01 addressable events should keep only the latest '
             '(pubkey, kind, d-tag); mock currently returns every version sent.',
       );
       expect(

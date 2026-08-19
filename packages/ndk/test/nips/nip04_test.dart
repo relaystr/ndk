@@ -11,7 +11,8 @@ void main() {
   EventSigner eventSignerFactory({
     String? privateKey,
     required String publicKey,
-  }) => Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
+  }) =>
+      Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
 
   group('Nip04', () {
     test('decrypt', () async {

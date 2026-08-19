@@ -10,15 +10,15 @@ class ZapRequest extends Nip01Event {
   /// returns the zap request \
   /// kind is set to [kZapRequestKind]
   ZapRequest.nip01Event({required Nip01Event event})
-    : super(
-        pubKey: event.pubKey,
-        tags: event.tags,
-        content: event.content,
-        id: event.id,
-        sig: event.sig,
-        kind: kZapRequestKind,
-        validSig: event.validSig,
-      );
+      : super(
+          pubKey: event.pubKey,
+          tags: event.tags,
+          content: event.content,
+          id: event.id,
+          sig: event.sig,
+          kind: kZapRequestKind,
+          validSig: event.validSig,
+        );
 
   /// Zap Request
   ZapRequest._({
