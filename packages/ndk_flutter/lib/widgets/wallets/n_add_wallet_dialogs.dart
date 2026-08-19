@@ -1013,9 +1013,8 @@ Future<bool> showAddWalletTypeDialog(
                 const SizedBox(height: 8),
                 Text(
                   l10n.chooseWalletType,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -1143,9 +1142,8 @@ Future<bool> showNwcConnectionOptionsDialog(
                 const SizedBox(height: 8),
                 Text(
                   l10n.chooseNwcMethod,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),

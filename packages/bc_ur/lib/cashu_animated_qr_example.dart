@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 import 'package:ndk/domain_layer/entities/cashu/cashu_proof.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_token.dart';
+
 import 'cashu_token_ur_encoder.dart';
 
 /// Example demonstrating NUT-16 Animated QR codes using UR encoding
@@ -28,8 +29,7 @@ void singlePartExample() {
       CashuProof(
         amount: 8,
         secret: 'my-secret-proof-data',
-        unblindedSig:
-            '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
+        unblindedSig: '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
         keysetId: '009a1f293253e41e',
       ),
     ],

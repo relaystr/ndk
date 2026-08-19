@@ -1,6 +1,7 @@
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:sembast/sembast.dart' as sembast;
+
 import '../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../shared/nips/nip01/event_eviction_planner.dart';
 import '../../../shared/nips/nip01/helpers.dart';
@@ -1177,9 +1178,8 @@ class SembastCacheManager extends CacheManager {
           .record(pubKey)
           .put(
             _database,
-            UserRelayList.fromNip65(
-              Nip65.fromEvent(latestNip65),
-            ).toJsonForStorage(),
+            UserRelayList.fromNip65(Nip65.fromEvent(latestNip65))
+                .toJsonForStorage(),
           );
       return;
     }
@@ -1189,9 +1189,8 @@ class SembastCacheManager extends CacheManager {
           .record(pubKey)
           .put(
             _database,
-            UserRelayList.fromNip02EventContent(
-              latestContactListWithRelays,
-            ).toJsonForStorage(),
+            UserRelayList.fromNip02EventContent(latestContactListWithRelays)
+                .toJsonForStorage(),
           );
       return;
     }

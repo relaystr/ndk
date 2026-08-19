@@ -1,6 +1,8 @@
 import 'package:ndk/domain_layer/entities/cashu/cashu_proof.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_token.dart';
+
 import '../lib/cashu_token_ur_encoder.dart';
+
 import 'package:test/test.dart';
 
 void main() {
@@ -12,8 +14,7 @@ void main() {
           CashuProof(
             amount: 8,
             secret: 'test-secret-123',
-            unblindedSig:
-                '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
+            unblindedSig: '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
             keysetId: '009a1f293253e41e',
           ),
         ],
@@ -47,8 +48,7 @@ void main() {
           CashuProof(
             amount: 16,
             secret: 'another-secret',
-            unblindedSig:
-                '03b01869f528337e161a6768e480fcf9af32c76ff5dcf90bb4d1993c5c4e6e8e59',
+            unblindedSig: '03b01869f528337e161a6768e480fcf9af32c76ff5dcf90bb4d1993c5c4e6e8e59',
             keysetId: '009a1f293253e41e',
           ),
         ],
@@ -71,22 +71,19 @@ void main() {
           CashuProof(
             amount: 1,
             secret: 'secret-1',
-            unblindedSig:
-                '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
+            unblindedSig: '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
             keysetId: '009a1f293253e41e',
           ),
           CashuProof(
             amount: 2,
             secret: 'secret-2',
-            unblindedSig:
-                '03b01869f528337e161a6768e480fcf9af32c76ff5dcf90bb4d1993c5c4e6e8e59',
+            unblindedSig: '03b01869f528337e161a6768e480fcf9af32c76ff5dcf90bb4d1993c5c4e6e8e59',
             keysetId: '009a1f293253e41e',
           ),
           CashuProof(
             amount: 4,
             secret: 'secret-3',
-            unblindedSig:
-                '02c0ee6e3ecf9f2e6aa06a4b0cf0b9c4c3e6c9b8d0a0f3a4c3d9e8b7a6c5d4e3f2',
+            unblindedSig: '02c0ee6e3ecf9f2e6aa06a4b0cf0b9c4c3e6c9b8d0a0f3a4c3d9e8b7a6c5d4e3f2',
             keysetId: '009a1f293253e41e',
           ),
         ],
@@ -129,8 +126,7 @@ void main() {
         (i) => CashuProof(
           amount: 1 << i, // Powers of 2: 1, 2, 4, 8, 16, etc.
           secret: 'secret-$i-with-some-long-text-to-make-it-larger-${"x" * 50}',
-          unblindedSig:
-              '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
+          unblindedSig: '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
           keysetId: '009a1f293253e41e',
         ),
       );
@@ -159,8 +155,7 @@ void main() {
         (i) => CashuProof(
           amount: 1 << i,
           secret: 'secret-$i-${"x" * 30}',
-          unblindedSig:
-              '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
+          unblindedSig: '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
           keysetId: '009a1f293253e41e',
         ),
       );
@@ -218,8 +213,7 @@ void main() {
         (i) => CashuProof(
           amount: 1 << i,
           secret: 'secret-$i-${"x" * 30}',
-          unblindedSig:
-              '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
+          unblindedSig: '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
           keysetId: '009a1f293253e41e',
         ),
       );
@@ -263,8 +257,7 @@ void main() {
         (i) => CashuProof(
           amount: 1,
           secret: 'secret-$i-${"x" * 30}',
-          unblindedSig:
-              '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
+          unblindedSig: '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
           keysetId: '009a1f293253e41e',
         ),
       );
@@ -300,8 +293,7 @@ void main() {
         (i) => CashuProof(
           amount: 1 << i,
           secret: 'secret-$i-${"x" * 25}',
-          unblindedSig:
-              '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
+          unblindedSig: '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
           keysetId: '009a1f293253e41e',
         ),
       );
@@ -370,8 +362,7 @@ void main() {
           CashuProof(
             amount: 8,
             secret: 'test-secret',
-            unblindedSig:
-                '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
+            unblindedSig: '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
             keysetId: '009a1f293253e41e',
           ),
         ],
@@ -393,8 +384,7 @@ void main() {
           CashuProof(
             amount: 8,
             secret: '特殊字符-🎉-émojis-тест',
-            unblindedSig:
-                '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
+            unblindedSig: '02a9acc1e48c25eeeb9289b5031cc57da9fe72f3fe2861d264bdc074209b107ba2',
             keysetId: '009a1f293253e41e',
           ),
         ],

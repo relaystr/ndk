@@ -4,6 +4,7 @@ import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
 import 'package:ndk/domain_layer/usecases/lnurl/lnurl_response.dart';
 import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/pay_invoice_response.dart';
+
 import '../../wallet.dart';
 import '../../wallet_balance.dart';
 import '../../wallet_provider.dart';

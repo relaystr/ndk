@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'dart:typed_data';
+
 import 'package:ur/cbor_lite.dart';
 import 'package:ur/fountain_utils.dart';
 import 'package:ur/utils.dart';

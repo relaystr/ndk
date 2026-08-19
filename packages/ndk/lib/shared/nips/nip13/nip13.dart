@@ -1,4 +1,5 @@
 import 'dart:math';
+
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../isolates/isolate_manager.dart';
 

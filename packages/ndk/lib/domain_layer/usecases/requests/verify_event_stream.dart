@@ -1,4 +1,5 @@
 import 'package:rxdart/rxdart.dart';
+
 import '../../../shared/logger/logger.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_verifier.dart';

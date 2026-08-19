@@ -270,16 +270,14 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
       children: [
         Text(
           title,
-          style: Theme.of(
-            context,
-          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.headlineSmall
+              ?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(
           description,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: Colors.grey[600]),
         ),
         const SizedBox(height: 12),
         child,

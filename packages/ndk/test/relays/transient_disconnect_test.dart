@@ -240,8 +240,12 @@ void main() {
 const _subId = "sub";
 
 class _SubscribedOnFlakyRelay {
-  _SubscribedOnFlakyRelay(this.manager, this.connectivity, this.transport,
-      this._relay);
+  _SubscribedOnFlakyRelay(
+    this.manager,
+    this.connectivity,
+    this.transport,
+    this._relay,
+  );
 
   final RelayManager manager;
   final RelayConnectivity connectivity;
