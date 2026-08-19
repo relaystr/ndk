@@ -16,9 +16,9 @@ import '../../entities/relay_connectivity.dart';
 import '../../entities/relay_set.dart';
 import '../../entities/request_response.dart';
 import '../../entities/request_state.dart';
+import '../../repositories/cache_manager.dart';
 import '../../repositories/event_verifier.dart';
 import '../cache_read/cache_read.dart';
-import '../cache_write/cache_write.dart';
 import '../fetched_ranges/fetched_ranges.dart';
 import '../engines/network_engine.dart';
 import '../relay_manager.dart';
@@ -37,7 +37,7 @@ class _RelayPaginationState {
 class Requests {
   final GlobalState _globalState;
   final CacheRead _cacheRead;
-  final CacheWrite _cacheWrite;
+  final CacheManager _cacheManager;
   final NetworkEngine _engine;
   final RelayManager _relayManager;
   final EventVerifier _eventVerifier;
@@ -49,13 +49,13 @@ class Requests {
   ///
   /// [globalState] The global state of the application \
   /// [cacheRead] The cache reader for retrieving cached events \
-  /// [cacheWrite] The cache writer for storing events \
+  /// [cacheManager] The cache used to persist network-delivered events \
   /// [networkEngine] The engine for handling network requests \
   /// [eventVerifier] The verifier for validating Nostr events
   Requests({
     required GlobalState globalState,
     required CacheRead cacheRead,
-    required CacheWrite cacheWrite,
+    required CacheManager cacheManager,
     required NetworkEngine networkEngine,
     required RelayManager relayManager,
     required EventVerifier eventVerifier,
@@ -63,7 +63,7 @@ class Requests {
     required Duration defaultQueryTimeout,
   }) : _engine = networkEngine,
        _relayManager = relayManager,
-       _cacheWrite = cacheWrite,
+       _cacheManager = cacheManager,
        _cacheRead = cacheRead,
        _globalState = globalState,
        _eventVerifier = eventVerifier,
@@ -100,9 +100,9 @@ class Requests {
       return event;
     }
 
-    await _cacheWrite.cacheManager.saveEvent(event);
+    await _cacheManager.saveEvent(event);
     if (event.sources.isNotEmpty) {
-      await _cacheWrite.cacheManager.addEventSources(
+      await _cacheManager.addEventSources(
         eventId: event.id,
         relayUrls: event.sources.toSet(),
       );
@@ -112,10 +112,7 @@ class Requests {
       return event;
     }
 
-    final visible = await _cacheWrite.cacheManager.loadEvents(
-      ids: [event.id],
-      limit: 1,
-    );
+    final visible = await _cacheManager.loadEvents(ids: [event.id], limit: 1);
 
     return visible.any((candidate) => candidate.id == event.id) ? event : null;
   }
