@@ -273,18 +273,19 @@ class Initialization {
       accounts: accounts,
     );
 
-    metadatas = Metadatas(
+    userRelayLists = UserRelayLists(
       requests: requests,
       cacheManager: _ndkConfig.cache,
       broadcast: broadcast,
       accounts: accounts,
     );
 
-    userRelayLists = UserRelayLists(
+    metadatas = Metadatas(
       requests: requests,
       cacheManager: _ndkConfig.cache,
       broadcast: broadcast,
       accounts: accounts,
+      userRelayLists: userRelayLists,
     );
 
     lists = Lists(
