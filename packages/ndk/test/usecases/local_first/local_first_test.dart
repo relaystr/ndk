@@ -580,7 +580,7 @@ void main() {
             .query(
               filter: Filter(ids: [rootEvent.id]),
               cacheRead: true,
-              cacheWrite: false,
+              cacheWrite: true,
               timeout: const Duration(milliseconds: 300),
             )
             .future;
@@ -1225,12 +1225,12 @@ class _ControllableInteractiveSigner implements EventSigner {
     required this.available,
     required this.requiresSignerNetwork,
     Iterable<String> Function()? transportRelayUrls,
-  }) : _transportRelayUrlsProvider =
-           transportRelayUrls ?? (() => const <String>[]),
-       _innerSigner = Bip340EventSigner(
-         privateKey: keyPair.privateKey!,
-         publicKey: keyPair.publicKey,
-       );
+  })  : _transportRelayUrlsProvider =
+            transportRelayUrls ?? (() => const <String>[]),
+        _innerSigner = Bip340EventSigner(
+          privateKey: keyPair.privateKey!,
+          publicKey: keyPair.publicKey,
+        );
 
   @override
   bool get requiresInteractiveSigning => true;
@@ -1253,7 +1253,8 @@ class _ControllableInteractiveSigner implements EventSigner {
   Future<String?> decryptNip44({
     required String ciphertext,
     required String senderPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   Future<void> dispose() async {}
@@ -1266,7 +1267,8 @@ class _ControllableInteractiveSigner implements EventSigner {
   Future<String?> encryptNip44({
     required String plaintext,
     required String recipientPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   String getPublicKey() => keyPair.publicKey;
