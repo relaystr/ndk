@@ -25,12 +25,27 @@ class CountingEventVerifier implements EventVerifier {
   }
 }
 
+class CountingMemCacheManager extends MemCacheManager {
+  final Map<String, int> saveCounts = {};
+
+  int saveCountFor(String id) => saveCounts[id] ?? 0;
+
+  void resetSaveCounts() => saveCounts.clear();
+
+  @override
+  Future<void> saveEvent(Nip01Event event) async {
+    saveCounts.update(event.id, (count) => count + 1, ifAbsent: () => 1);
+    await super.saveEvent(event);
+  }
+}
+
 void main() async {
   late KeyPair key1;
   late Bip340EventSigner signer;
   late CountingEventVerifier verifier;
   late MockRelay relay1;
   late MockRelay relay2;
+  late CountingMemCacheManager cache;
   late Ndk ndk;
 
   Future<Nip01Event> signedEvent(String content, int createdAt) => signer.sign(
@@ -73,6 +88,7 @@ void main() async {
       publicKey: key1.publicKey,
     );
     verifier = CountingEventVerifier();
+    cache = CountingMemCacheManager();
 
     relay1 = MockRelay(name: "relay 1", explicitPort: 6090);
     relay2 = MockRelay(name: "relay 2", explicitPort: 6091);
@@ -82,7 +98,7 @@ void main() async {
     ndk = Ndk(
       NdkConfig(
         eventVerifier: verifier,
-        cache: MemCacheManager(),
+        cache: cache,
         bootstrapRelays: [relay1.url, relay2.url],
         logLevel: LogLevel.off,
       ),
@@ -260,6 +276,44 @@ void main() async {
           isEmpty,
           reason: 'a cached id must not validate a different signature',
         );
+      },
+    );
+
+    test(
+      'does not save an already cached valid event delivered by another relay',
+      () async {
+        final event = await signedEvent('valid relay duplicate', 1000);
+        await receiveAndCacheFromRelay1(event);
+
+        final cachedBefore = await ndk.config.cache.loadEvent(event.id);
+        expect(cachedBefore, isNotNull);
+        cache.resetSaveCounts();
+
+        relay2.textNotes = {key1: event};
+
+        final received = await ndk.requests
+            .query(
+              filter: Filter(ids: [event.id]),
+              explicitRelays: [relay2.url],
+              cacheRead: false,
+            )
+            .future;
+
+        expect(received, hasLength(1));
+        expect(received.single.id, event.id);
+        expect(
+          cache.saveCountFor(event.id),
+          0,
+          reason: 'a valid duplicate should only add its relay as a source',
+        );
+
+        final cachedAfter = await ndk.config.cache.loadEvent(event.id);
+        expect(cachedAfter, isNotNull);
+        expect(cachedAfter!.content, cachedBefore!.content);
+        expect(cachedAfter.sig, cachedBefore.sig);
+
+        final sources = await ndk.config.cache.loadEventSources(event.id);
+        expect(sources, containsAll([relay1.url, relay2.url]));
       },
     );
   });
