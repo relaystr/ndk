@@ -18,6 +18,7 @@ import '../../entities/request_response.dart';
 import '../../entities/request_state.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/event_verifier.dart';
+import 'verified_event_cache.dart';
 import '../cache_read/cache_read.dart';
 import '../fetched_ranges/fetched_ranges.dart';
 import '../engines/network_engine.dart';
@@ -45,6 +46,10 @@ class Requests {
   final Duration _defaultQueryTimeout;
   FetchedRanges? _fetchedRanges;
 
+  /// ids of events whose signature was already checked by this [Ndk]
+  /// instance, so repeat delivery across relays/requests skips re-verifying
+  final VerifiedEventMemCache _verifiedEventIds = VerifiedEventMemCache();
+
   /// Creates a new [Requests] instance
   ///
   /// [globalState] The global state of the application \
@@ -61,14 +66,14 @@ class Requests {
     required EventVerifier eventVerifier,
     required List<EventFilter> eventOutFilters,
     required Duration defaultQueryTimeout,
-  }) : _engine = networkEngine,
-       _relayManager = relayManager,
-       _cacheManager = cacheManager,
-       _cacheRead = cacheRead,
-       _globalState = globalState,
-       _eventVerifier = eventVerifier,
-       _eventOutFilters = eventOutFilters,
-       _defaultQueryTimeout = defaultQueryTimeout;
+  })  : _engine = networkEngine,
+        _relayManager = relayManager,
+        _cacheManager = cacheManager,
+        _cacheRead = cacheRead,
+        _globalState = globalState,
+        _eventVerifier = eventVerifier,
+        _eventOutFilters = eventOutFilters,
+        _defaultQueryTimeout = defaultQueryTimeout;
 
   Stream<Nip01Event> _prepareNetworkStream(
     Stream<Nip01Event> verifiedNetworkStream, {
@@ -266,8 +271,7 @@ class Requests {
       final request = state.requests[relay.key]!;
       // a request the relay ended itself, with a CLOSED or with the EOSE of a
       // query, is already closed on its side
-      final endedOnRelay =
-          request.receivedClosed ||
+      final endedOnRelay = request.receivedClosed ||
           (state.request.closeOnEOSE && request.receivedEOSE);
       if (endedOnRelay) {
         continue;
@@ -319,6 +323,7 @@ class Requests {
     final verifiedNetworkStream = VerifyEventStream(
       unverifiedStreamInput: state.networkController.stream,
       eventVerifier: _eventVerifier,
+      verifiedEventCache: _verifiedEventIds,
     )();
 
     final preparedNetworkStream = _prepareNetworkStream(
