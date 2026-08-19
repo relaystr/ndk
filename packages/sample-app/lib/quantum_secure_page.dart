@@ -123,9 +123,8 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
       setState(() {
         _signTimeMs = null;
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error signing events: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error signing events: $e')));
     }
   }
 
@@ -173,9 +172,8 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
         statusMessage += ' ($failedCount failed)';
       }
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(statusMessage)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(statusMessage)));
 
       if (!allValid) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -187,9 +185,8 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
         _verifyTimeMs = null;
         _failedVerifications = null;
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error verifying events: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error verifying events: $e')));
     }
   }
 

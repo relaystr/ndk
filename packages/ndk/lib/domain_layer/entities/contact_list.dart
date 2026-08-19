@@ -134,7 +134,7 @@ class ContactList {
     }).toList();
   }
 
-  List<List<String>> tagListToJson(final List<String> list, String tag) {
+  List<List<String>> tagListToJson(List<String> list, String tag) {
     return list.map((value) {
       List<String> list = [tag, value];
       return list;

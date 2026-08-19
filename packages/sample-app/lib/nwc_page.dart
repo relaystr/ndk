@@ -40,11 +40,9 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
   GetBalanceResponse? balance;
 
   // State variables to hold context from the NIP-47 auth initiation
-  String?
-  _pendingDiscoveryRelayUrl; // The relay specified in the nostr+walletauth URI's 'relay=' param,
+  String? _pendingDiscoveryRelayUrl; // The relay specified in the nostr+walletauth URI's 'relay=' param,
   // where we expect the kind 13194 event to be.
-  String?
-  _pendingAppPubkeyForAuth; // Our app's pubkey that was sent in the nostr+walletauth URI's 'pubkey=' param
+  String? _pendingAppPubkeyForAuth; // Our app's pubkey that was sent in the nostr+walletauth URI's 'pubkey=' param
   // and expected in the 'p' tag of the kind 13194 event.
   MakeInvoiceResponse?
   makeInvoice; // Will store result of normal or hold invoice creation
@@ -52,8 +50,7 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
 
   // MakeInvoiceResponse? makeHoldInvoiceResponse; // Removed, merged into makeInvoice
   String? holdInvoicePreimage;
-  String?
-  holdInvoicePaymentHash; // Still needed to identify the hold invoice for notifications/settle/cancel
+  String? holdInvoicePaymentHash; // Still needed to identify the hold invoice for notifications/settle/cancel
   bool isHoldInvoice = false; // For the checkbox
   bool _currentInvoiceWasHold =
       false; // To track if the current 'makeInvoice' is a hold type
@@ -341,8 +338,7 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
               scheme: 'nostr+walletauth',
               host: nwcAppKey!.publicKey, // Our app's pubkey
               queryParameters: {
-                'relay':
-                    discoveryRelay, // Relay for discovering the kind 13194 event
+                'relay': discoveryRelay, // Relay for discovering the kind 13194 event
                 'name': appName,
                 'request_methods': methods,
                 'icon': appIcon,
@@ -354,8 +350,7 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
 
             // Store the context needed for when onProtocolUrlReceived is called.
             _pendingDiscoveryRelayUrl = discoveryRelay;
-            _pendingAppPubkeyForAuth = nwcAppKey!
-                .publicKey; // This is the pubkey our app uses for this auth flow.
+            _pendingAppPubkeyForAuth = nwcAppKey!.publicKey; // This is the pubkey our app uses for this auth flow.
 
             print(
               "Attempting to launch NIP-47 Auth URI: ${launchUri.toString()}",
@@ -404,16 +399,15 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
                 decoration: InputDecoration(
                   prefixIcon: IconButton(
                     onPressed: () {
-                      Clipboard.getData(Clipboard.kTextPlain).then((
-                        clipboardData,
-                      ) {
-                        if (clipboardData != null &&
-                            clipboardData.text != null) {
-                          setState(() {
-                            uri.text = clipboardData.text!;
+                      Clipboard.getData(Clipboard.kTextPlain)
+                          .then((clipboardData) {
+                            if (clipboardData != null &&
+                                clipboardData.text != null) {
+                              setState(() {
+                                uri.text = clipboardData.text!;
+                              });
+                            }
                           });
-                        }
-                      });
                     },
                     icon: const Icon(Icons.paste),
                   ),
@@ -613,8 +607,7 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
                               makeInvoice =
                                   response; // Store in the unified makeInvoice
                               if (response.errorCode == null) {
-                                holdInvoiceStatusMessage =
-                                    "Hold invoice created. Waiting for acceptance...";
+                                holdInvoiceStatusMessage = "Hold invoice created. Waiting for acceptance...";
                                 _listenForHoldInvoiceAcceptance(paymentHashHex);
                               } else {
                                 holdInvoiceStatusMessage =
@@ -643,8 +636,7 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
                             setState(() {
                               makeInvoice = response;
                               if (response.errorCode == null) {
-                                regularInvoiceStatusMessage =
-                                    "Regular invoice created. Waiting for payment...";
+                                regularInvoiceStatusMessage = "Regular invoice created. Waiting for payment...";
                                 _listenForRegularInvoicePayment(
                                   response.paymentHash,
                                 );

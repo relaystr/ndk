@@ -168,9 +168,7 @@ class NegentropyEncoder {
       throw ArgumentError('Truncated bound ID prefix');
     }
 
-    final idPrefix = Uint8List.fromList(
-      data.sublist(pos, pos + prefixLength),
-    );
+    final idPrefix = Uint8List.fromList(data.sublist(pos, pos + prefixLength));
     pos += prefixLength;
 
     return (timestamp, idPrefix, pos - offset);
@@ -408,9 +406,7 @@ class NegentropyEncoder {
       output.addBound(bound);
       output.addVarint(modeFingerprint);
       output.addBytes(
-        calculateFingerprint([
-          for (var j = curr; j < next; j++) items[j].id,
-        ]),
+        calculateFingerprint([for (var j = curr; j < next; j++) items[j].id]),
       );
 
       curr = next;
@@ -430,7 +426,9 @@ class NegentropyEncoder {
 
     return _Bound(
       curr.timestamp,
-      Uint8List.fromList(curr.id.sublist(0, shared + 1 > idSize ? idSize : shared + 1)),
+      Uint8List.fromList(
+        curr.id.sublist(0, shared + 1 > idSize ? idSize : shared + 1),
+      ),
     );
   }
 
@@ -505,10 +503,7 @@ class NegentropyEncoder {
     return true;
   }
 
-  static final _Bound _infinityBound = _Bound(
-    infiniteTimestamp,
-    Uint8List(0),
-  );
+  static final _Bound _infinityBound = _Bound(infiniteTimestamp, Uint8List(0));
 }
 
 /// Represents an item for negentropy reconciliation

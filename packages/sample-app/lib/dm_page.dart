@@ -55,8 +55,7 @@ class _DmInboxPageState extends State<DmInboxPage> {
     final myPubKey = ndk.accounts.getPublicKey();
     if (myPubKey == null) {
       setState(() {
-        _error =
-            'Log in first. This demo needs a signer and your own kind:10050 DM relay list.';
+        _error = 'Log in first. This demo needs a signer and your own kind:10050 DM relay list.';
       });
       return;
     }
@@ -393,8 +392,7 @@ class _DmConversationPageState extends State<DmConversationPage> {
     final myPubKey = ndk.accounts.getPublicKey();
     if (myPubKey == null) {
       setState(() {
-        _error =
-            'Log in first. This demo needs a signer and your own kind:10050 DM relay list.';
+        _error = 'Log in first. This demo needs a signer and your own kind:10050 DM relay list.';
       });
       return;
     }
@@ -533,9 +531,9 @@ class _DmConversationPageState extends State<DmConversationPage> {
                         child: Card(
                           color: message.isOutgoing
                               ? Theme.of(context).colorScheme.primaryContainer
-                              : Theme.of(
-                                  context,
-                                ).colorScheme.surfaceContainerHighest,
+                              : Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerHighest,
                           child: Padding(
                             padding: const EdgeInsets.all(12),
                             child: IntrinsicWidth(

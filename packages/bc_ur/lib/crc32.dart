@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+
 import 'package:ur/constants.dart';
 
 class CRC32 {

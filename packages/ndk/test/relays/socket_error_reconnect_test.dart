@@ -142,10 +142,7 @@ void main() {
     () async {
       final key = Bip340.generatePrivateKey();
       final accounts = Accounts(const Bip340EventSignerFactory());
-      accounts.loginPrivateKey(
-        pubkey: key.publicKey,
-        privkey: key.privateKey!,
-      );
+      accounts.loginPrivateKey(pubkey: key.publicKey, privkey: key.privateKey!);
 
       final relay = MockRelay(
         name: "relay requiring auth",

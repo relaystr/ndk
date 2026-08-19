@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import '../../../shared/logger/logger.dart';
 import '../../entities/event_filter.dart';
 import '../../entities/nip_01_event.dart';

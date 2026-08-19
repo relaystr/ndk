@@ -96,15 +96,13 @@ void _runClearAllTests(CacheManager Function() getCacheManager) {
       isNotNull,
     );
     expect(
-      (await cacheManager.getKeysets(
-        mintUrl: 'https://clearall.mint.com',
-      )).length,
+      (await cacheManager.getKeysets(mintUrl: 'https://clearall.mint.com'))
+          .length,
       equals(1),
     );
     expect(
-      (await cacheManager.getProofs(
-        mintUrl: 'https://clearall.mint.com',
-      )).length,
+      (await cacheManager.getProofs(mintUrl: 'https://clearall.mint.com'))
+          .length,
       equals(1),
     );
 
@@ -132,15 +130,13 @@ void _runClearAllTests(CacheManager Function() getCacheManager) {
       isNull,
     );
     expect(
-      (await cacheManager.getKeysets(
-        mintUrl: 'https://clearall.mint.com',
-      )).length,
+      (await cacheManager.getKeysets(mintUrl: 'https://clearall.mint.com'))
+          .length,
       equals(0),
     );
     expect(
-      (await cacheManager.getProofs(
-        mintUrl: 'https://clearall.mint.com',
-      )).length,
+      (await cacheManager.getProofs(mintUrl: 'https://clearall.mint.com'))
+          .length,
       equals(0),
     );
   });

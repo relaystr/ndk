@@ -122,7 +122,8 @@ void main() {
       expect(
         relay.subscriptionsRequestedOutside(key.publicKey),
         isNot(contains(subId)),
-        reason: "a bound subscription must not be replayed on another connection",
+        reason:
+            "a bound subscription must not be replayed on another connection",
       );
 
       await ndk.requests.closeSubscription(subId);

@@ -71,9 +71,7 @@ class QsRustEventSigner implements EventSigner {
       final result = rust_lib.qsGenerateKeypair(level, outPk, outSk);
 
       if (result != 1) {
-        throw StateError(
-          'Failed to generate ML-DSA keypair at level $level',
-        );
+        throw StateError('Failed to generate ML-DSA keypair at level $level');
       }
 
       final pkLen = outPk.ref.len;

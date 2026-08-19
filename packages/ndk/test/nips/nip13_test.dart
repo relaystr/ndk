@@ -137,8 +137,7 @@ void main() {
         expect(
           actualDifficulty,
           equals(21),
-          reason:
-              'NIP-13 spec example should have 21 leading zero bits (000006 = 20 + 1 from "6")',
+          reason: 'NIP-13 spec example should have 21 leading zero bits (000006 = 20 + 1 from "6")',
         );
       });
 

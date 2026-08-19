@@ -56,38 +56,33 @@ void main() async {
       },
     );
 
-    test(
-      'NIP92 - should handle malformed server response gracefully - dim 1920x1080',
-      () {
-        final Map<String, dynamic> malformedJson = {
-          "url": '',
-          "sha256": '',
-          "size": "512",
-          "type": "notype",
-          "nip94": {"dim": "1920x1080"},
-        };
+    test('NIP92 - should handle malformed server response gracefully - dim 1920x1080', () {
+      final Map<String, dynamic> malformedJson = {
+        "url": '',
+        "sha256": '',
+        "size": "512",
+        "type": "notype",
+        "nip94": {"dim": "1920x1080"},
+      };
 
-        final Map<String, dynamic> malformedJson2 = {
-          "url": '',
-          "sha256": '',
-          "size": "512",
-          "dim": 100,
-          "type": "notype",
-          "nip94": {"dim": 100},
-        };
+      final Map<String, dynamic> malformedJson2 = {
+        "url": '',
+        "sha256": '',
+        "size": "512",
+        "dim": 100,
+        "type": "notype",
+        "nip94": {"dim": 100},
+      };
 
-        final result = BlobDescriptor.fromJson(malformedJson);
-        final result2 = BlobDescriptor.fromJson(malformedJson2);
+      final result = BlobDescriptor.fromJson(malformedJson);
+      final result2 = BlobDescriptor.fromJson(malformedJson2);
 
-        expect(result.nip94!.dimenssions, equals("1920x1080"));
-        expect(result2.nip94!.dimenssions, equals("100"));
-      },
-    );
+      expect(result.nip94!.dimenssions, equals("1920x1080"));
+      expect(result2.nip94!.dimenssions, equals("100"));
+    });
 
-    test(
-      'NIP92 - should handle multiple repeated fields - image / thumb / fallback',
-      () {
-        final json = '''{
+    test('NIP92 - should handle multiple repeated fields - image / thumb / fallback', () {
+      final json = '''{
               "url": "https://nostr.download/aaaa.mp4",
               "duration": "24.293322",
               "bitrate": "2227033",
@@ -100,20 +95,16 @@ void main() async {
               "fallback": "https://nostr.download/bbbb.mp4"
           }''';
 
-        final obj = jsonDecode(json);
-        final result = BlobNip94.fromJson(obj);
-        expect(result.dimenssions, equals("590x1280"));
-        // replaced by second instance (BAD!!)
-        // https://github.com/hzrd149/blossom/pull/60
-        expect(
-          result.fallback!.first,
-          equals("https://nostr.download/bbbb.mp4"),
-        );
-        expect(
-          result.thumbnail!.first,
-          equals("https://nostr.download/thumb/aaaa.webp"),
-        );
-      },
-    );
+      final obj = jsonDecode(json);
+      final result = BlobNip94.fromJson(obj);
+      expect(result.dimenssions, equals("590x1280"));
+      // replaced by second instance (BAD!!)
+      // https://github.com/hzrd149/blossom/pull/60
+      expect(result.fallback!.first, equals("https://nostr.download/bbbb.mp4"));
+      expect(
+        result.thumbnail!.first,
+        equals("https://nostr.download/thumb/aaaa.webp"),
+      );
+    });
   });
 }
