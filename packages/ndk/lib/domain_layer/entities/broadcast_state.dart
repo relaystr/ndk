@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:rxdart/rxdart.dart';
+
 import 'nip_01_event.dart';
 
 /// hols information about a individual relay broadcast response \

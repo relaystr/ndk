@@ -40,15 +40,25 @@ external int verifyNostrEventNative(
   Pointer<Utf8> signatureHex,
 );
 
-// ── Quantum-Secure Dilithium bindings ──────────────────────────────────
+// ── Quantum-Secure ML-DSA (FIPS 204) bindings ──────────────────────────
+//
+// These were CRYSTALS-Dilithium. NIST altered the algorithm during
+// standardisation, so Dilithium keys and signatures are not interoperable with
+// FIPS 204 ML-DSA. [level] now takes the ML-DSA parameter numbers - 44, 65 or 87 -
+// and the old Dilithium values 2, 3 and 5 are rejected rather than remapped, so a
+// caller that was not updated fails loudly instead of silently getting different
+// security properties than it asked for.
 
 /// Frees a QsBuffer previously returned by the Rust library.
 @Native<Void Function(QsBuffer)>(symbol: 'qs_free_buffer')
 external void qsFreeBuffer(QsBuffer buf);
 
-/// Generates a Dilithium keypair.
+/// Generates a random ML-DSA keypair.
 ///
-/// [level]: security level (2, 3, or 5).
+/// Prefer [qsDeriveKeypairFromSeed] for anything representing an identity: a
+/// random key cannot be restored from a mnemonic, so losing it loses the identity.
+///
+/// [level]: ML-DSA parameter set (44, 65, or 87).
 /// [outPk], [outSk]: pointers to QsBuffer structs that will be filled.
 /// Returns 1 on success, 0 on failure.
 @Native<
@@ -64,9 +74,9 @@ external int qsGenerateKeypair(
   Pointer<QsBuffer> outSk,
 );
 
-/// Signs a message with a Dilithium secret key.
+/// Signs a message with an ML-DSA secret key (empty FIPS 204 context).
 ///
-/// [level]: security level (2, 3, or 5).
+/// [level]: ML-DSA parameter set (44, 65, or 87).
 /// [skPtr]/[skLen]: secret key bytes.
 /// [msgPtr]/[msgLen]: message bytes.
 /// [outSig]: pointer to QsBuffer that will receive the signature.
@@ -90,9 +100,9 @@ external int qsSign(
   Pointer<QsBuffer> outSig,
 );
 
-/// Verifies a Dilithium signature.
+/// Verifies an ML-DSA signature (empty FIPS 204 context).
 ///
-/// [level]: security level (2, 3, or 5).
+/// [level]: ML-DSA parameter set (44, 65, or 87).
 /// Returns 1 if valid, 0 if invalid.
 @Native<
   Int32 Function(
@@ -114,3 +124,122 @@ external int qsVerify(
   Pointer<Uint8> sigPtr,
   int sigLen,
 );
+
+/// Derives an ML-DSA keypair deterministically from a 64-byte BIP-39 seed.
+///
+/// The key is a sibling of the secp256k1 key derived from the same mnemonic, not a
+/// child of it, so one mnemonic restores both and breaking secp256k1 does not reach
+/// this key.
+///
+/// [seedPtr]/[seedLen] must be a 64-byte BIP-39 seed. Passing a 32-byte secp256k1
+/// private key is rejected: deriving from it would be circular.
+/// Returns 1 on success, 0 on failure.
+@Native<
+  Int32 Function(
+    Uint32, // level
+    Pointer<Uint8>, // seedPtr
+    IntPtr, // seedLen
+    Uint32, // account
+    Pointer<QsBuffer>, // outPk
+    Pointer<QsBuffer>, // outSk
+  )
+>(symbol: 'qs_derive_keypair_from_seed')
+external int qsDeriveKeypairFromSeed(
+  int level,
+  Pointer<Uint8> seedPtr,
+  int seedLen,
+  int account,
+  Pointer<QsBuffer> outPk,
+  Pointer<QsBuffer> outSk,
+);
+
+// ── Post-quantum hybrid encryption (ML-KEM-1024) bindings ──────────────
+//
+// The confidentiality half of the post-quantum problem, and the half worth
+// solving now: NIP-44 derives its conversation key from a secp256k1 ECDH
+// secret, so encrypted events archived today become readable the day
+// secp256k1 falls. Unlike forgery, that can be pre-empted.
+
+/// Derives an ML-KEM-1024 keypair from a 64-byte BIP-39 seed.
+///
+/// Sibling of the secp256k1 key, not a child: breaking secp256k1 does not
+/// reach it. Rejects anything that is not exactly 64 bytes, which blocks
+/// passing a secp256k1 private key (that derivation would be circular).
+@Native<
+  Int32 Function(
+    Pointer<Uint8>, // seedPtr
+    IntPtr, // seedLen
+    Uint32, // account
+    Pointer<QsBuffer>, // outPk
+    Pointer<QsBuffer>, // outSk
+  )
+>(symbol: 'pq_derive_kem_keypair')
+external int pqDeriveKemKeypair(
+  Pointer<Uint8> seedPtr,
+  int seedLen,
+  int account,
+  Pointer<QsBuffer> outPk,
+  Pointer<QsBuffer> outSk,
+);
+
+/// Seals a message into a post-quantum envelope, returning base64 bytes.
+///
+/// [senderPtr]/[recipientPtr] must be 64 lowercase hex characters; they are
+/// bound into the AEAD's associated data so a ciphertext cannot be replayed
+/// into another conversation or have its direction swapped.
+@Native<
+  Int32 Function(
+    Pointer<Uint8>, // kemPkPtr
+    IntPtr, // kemPkLen
+    Pointer<Uint8>, // convPtr
+    IntPtr, // convLen
+    Pointer<Utf8>, // sender
+    Pointer<Utf8>, // recipient
+    Pointer<Uint8>, // msgPtr
+    IntPtr, // msgLen
+    Pointer<QsBuffer>, // out
+  )
+>(symbol: 'pq_seal')
+external int pqSeal(
+  Pointer<Uint8> kemPkPtr,
+  int kemPkLen,
+  Pointer<Uint8> convPtr,
+  int convLen,
+  Pointer<Utf8> sender,
+  Pointer<Utf8> recipient,
+  Pointer<Uint8> msgPtr,
+  int msgLen,
+  Pointer<QsBuffer> out,
+);
+
+/// Opens a post-quantum envelope. Returns 0 on any failure, without
+/// distinguishing why: telling a caller whether padding or the tag failed
+/// would hand an attacker an oracle.
+@Native<
+  Int32 Function(
+    Pointer<Utf8>, // payload
+    Pointer<Uint8>, // kemSkPtr
+    IntPtr, // kemSkLen
+    Pointer<Uint8>, // convPtr
+    IntPtr, // convLen
+    Pointer<Utf8>, // sender
+    Pointer<Utf8>, // recipient
+    Pointer<QsBuffer>, // out
+  )
+>(symbol: 'pq_open')
+external int pqOpen(
+  Pointer<Utf8> payload,
+  Pointer<Uint8> kemSkPtr,
+  int kemSkLen,
+  Pointer<Uint8> convPtr,
+  int convLen,
+  Pointer<Utf8> sender,
+  Pointer<Utf8> recipient,
+  Pointer<QsBuffer> out,
+);
+
+/// Cheap check that a payload looks like a post-quantum envelope, so a client
+/// can route an incoming seal without spending a decapsulation on every
+/// ordinary NIP-17 message. A routing hint, not proof.
+@Native<Int32 Function(Pointer<Utf8>)>(symbol: 'pq_is_envelope')
+external int pqIsEnvelope(Pointer<Utf8> payload);

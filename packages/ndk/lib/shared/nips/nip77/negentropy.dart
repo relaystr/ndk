@@ -1,10 +1,12 @@
 import 'dart:typed_data';
+
 import 'package:crypto/crypto.dart';
 
-/// Negentropy protocol encoder implementation for NIP-77
-/// Handles varint encoding, fingerprints, bounds, and message framing
+/// Negentropy Protocol V1 codec, as specified in the NIP-77 appendix.
+///
+/// See https://github.com/hoytech/negentropy/blob/master/docs/negentropy-protocol-v1.md
 class NegentropyEncoder {
-  /// Protocol version byte
+  /// Protocol version byte (version 1)
   static const int protocolVersion = 0x61;
 
   /// Size of event ID in bytes (32 bytes = 64 hex chars)
@@ -18,7 +20,19 @@ class NegentropyEncoder {
   static const int modeFingerprint = 1;
   static const int modeIdList = 2;
 
-  /// Encodes an integer as a varint (base-128, MSB-first)
+  /// Reserved "infinity" timestamp. The spec reserves `2**64 - 1`, which does
+  /// not survive dart2js; this sentinel is the largest exactly representable
+  /// integer on both native and web, and never touches the wire (infinity is
+  /// always encoded as `0`).
+  static const int infiniteTimestamp = 9007199254740991;
+
+  /// Number of sub-ranges a mismatching range is split into
+  static const int _buckets = 16;
+
+  /// Ranges with fewer items than this are sent as an id list instead of split
+  static const int _idListThreshold = _buckets * 2;
+
+  /// Encodes an integer as a varint (base-128, most significant digit first)
   static Uint8List encodeVarint(int value) {
     if (value < 0) {
       throw ArgumentError('Varint value must be non-negative');
@@ -32,11 +46,10 @@ class NegentropyEncoder {
     var remaining = value;
 
     while (remaining > 0) {
-      bytes.insert(0, remaining & 0x7F);
-      remaining >>= 7;
+      bytes.insert(0, remaining % 128);
+      remaining = remaining ~/ 128;
     }
 
-    // Set continuation bits (MSB) on all bytes except the last
     for (var i = 0; i < bytes.length - 1; i++) {
       bytes[i] |= 0x80;
     }
@@ -49,83 +62,116 @@ class NegentropyEncoder {
     Uint8List data, [
     int offset = 0,
   ]) {
-    if (offset >= data.length) {
-      throw ArgumentError('Not enough data to decode varint');
-    }
+    var value = 0;
+    var bytesConsumed = 0;
 
-    int value = 0;
-    int bytesConsumed = 0;
+    while (true) {
+      if (offset + bytesConsumed >= data.length) {
+        throw ArgumentError('Truncated varint');
+      }
 
-    while (offset + bytesConsumed < data.length) {
       final byte = data[offset + bytesConsumed];
-      value = (value << 7) | (byte & 0x7F);
       bytesConsumed++;
 
+      final digit = byte & 0x7F;
+      if (value > (infiniteTimestamp - digit) ~/ 128) {
+        throw ArgumentError('Varint exceeds the supported integer range');
+      }
+      value = value * 128 + digit;
+
       if ((byte & 0x80) == 0) {
-        break;
-      }
-
-      if (bytesConsumed > 9) {
-        throw ArgumentError('Varint too long');
+        return (value, bytesConsumed);
       }
     }
-
-    // Check if we reached end of data with continuation bit still set
-    final lastByte = data[offset + bytesConsumed - 1];
-    if ((lastByte & 0x80) != 0) {
-      throw ArgumentError(
-        'Truncated varint: data ends with continuation bit set',
-      );
-    }
-
-    return (value, bytesConsumed);
   }
 
-  /// Calculates fingerprint from a list of event IDs
-  /// Fingerprint = SHA256(XOR of all IDs || count as little-endian u64)[0:16]
+  /// Calculates the fingerprint of a range: the first 16 bytes of
+  /// `SHA256(sum of the IDs mod 2^256, little-endian || varint(count))`.
   static Uint8List calculateFingerprint(List<Uint8List> ids) {
-    // XOR all IDs together
-    final xorResult = Uint8List(idSize);
+    final accumulator = Uint8List(idSize);
 
     for (final id in ids) {
-      for (var i = 0; i < idSize && i < id.length; i++) {
-        xorResult[i] ^= id[i];
+      var carry = 0;
+      for (var i = 0; i < idSize; i++) {
+        final sum = accumulator[i] + (i < id.length ? id[i] : 0) + carry;
+        accumulator[i] = sum & 0xFF;
+        carry = sum >> 8;
       }
     }
 
-    // Count as little-endian u64 (8 bytes)
-    final countBytes = Uint8List(8);
-    var count = ids.length;
-    for (var i = 0; i < 8; i++) {
-      countBytes[i] = count & 0xFF;
-      count >>= 8;
-    }
-
-    // SHA256 and take first 16 bytes
-    final combined = Uint8List.fromList([...xorResult, ...countBytes]);
-    final digest = sha256.convert(combined);
+    final digest = sha256.convert([
+      ...accumulator,
+      ...encodeVarint(ids.length),
+    ]);
 
     return Uint8List.fromList(digest.bytes.sublist(0, fingerprintSize));
   }
 
-  /// Encodes a bound (timestamp + ID prefix)
-  static Uint8List encodeBound(int timestamp, Uint8List idPrefix) {
-    final timestampBytes = encodeVarint(timestamp);
-    final lengthByte = Uint8List.fromList([idPrefix.length]);
-    return Uint8List.fromList([...timestampBytes, ...lengthByte, ...idPrefix]);
+  /// Encodes a bound. Timestamps are delta encoded against [lastTimestamp],
+  /// which is the timestamp of the previously encoded bound in the same
+  /// message (0 at the start of every message).
+  static Uint8List encodeBound(
+    int timestamp,
+    Uint8List idPrefix, {
+    int lastTimestamp = 0,
+  }) {
+    if (idPrefix.length > idSize) {
+      throw ArgumentError('Bound ID prefix must be at most $idSize bytes');
+    }
+
+    final output = BytesBuilder();
+
+    if (timestamp >= infiniteTimestamp) {
+      output.addByte(0);
+    } else {
+      if (timestamp < lastTimestamp) {
+        throw ArgumentError('Bound timestamps must be non-decreasing');
+      }
+      output.add(encodeVarint(timestamp - lastTimestamp + 1));
+    }
+
+    output.add(encodeVarint(idPrefix.length));
+    output.add(idPrefix);
+
+    return output.toBytes();
   }
 
-  /// Decodes a bound from bytes
+  /// Decodes a bound. [lastTimestamp] is the timestamp of the previously
+  /// decoded bound in the same message (0 at the start of every message).
   static (int timestamp, Uint8List idPrefix, int bytesConsumed) decodeBound(
     Uint8List data, [
     int offset = 0,
+    int lastTimestamp = 0,
   ]) {
-    final (timestamp, tsBytes) = decodeVarint(data, offset);
-    final prefixLength = data[offset + tsBytes];
-    final idPrefix = Uint8List.fromList(
-      data.sublist(offset + tsBytes + 1, offset + tsBytes + 1 + prefixLength),
-    );
-    return (timestamp, idPrefix, tsBytes + 1 + prefixLength);
+    var pos = offset;
+
+    final (encodedTimestamp, timestampBytes) = decodeVarint(data, pos);
+    pos += timestampBytes;
+
+    final int timestamp;
+    if (encodedTimestamp == 0) {
+      timestamp = infiniteTimestamp;
+    } else {
+      timestamp = lastTimestamp + encodedTimestamp - 1;
+      if (timestamp >= infiniteTimestamp) {
+        throw ArgumentError('Bound timestamp out of range');
+      }
+    }
+
+    final (prefixLength, lengthBytes) = decodeVarint(data, pos);
+    pos += lengthBytes;
+
+    if (prefixLength > idSize) {
+      throw ArgumentError('Bound ID prefix too long: $prefixLength');
+    }
+    if (pos + prefixLength > data.length) {
+      throw ArgumentError('Truncated bound ID prefix');
+    }
+
+    final idPrefix = Uint8List.fromList(data.sublist(pos, pos + prefixLength));
+    pos += prefixLength;
+
+    return (timestamp, idPrefix, pos - offset);
   }
 
   /// Parses a hex string to bytes
@@ -141,191 +187,302 @@ class NegentropyEncoder {
   }
 
   /// Converts bytes to hex string
-  static String bytesToHex(Uint8List bytes) {
+  static String bytesToHex(List<int> bytes) {
     return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
   }
 
-  /// Creates an initial client message (NEG-OPEN query payload)
+  /// Creates the initial message an initiator sends in `NEG-OPEN`.
   static Uint8List createInitialMessage(
-    List<NegentropyItem> items,
-    int idSize,
-  ) {
-    items.sort((a, b) {
-      final tsCmp = a.timestamp.compareTo(b.timestamp);
-      if (tsCmp != 0) return tsCmp;
-      return _compareBytes(a.id, b.id);
-    });
+    List<NegentropyItem> items, [
+    int itemIdSize = idSize,
+  ]) {
+    if (itemIdSize != idSize) {
+      throw ArgumentError('Negentropy v1 requires $idSize byte IDs');
+    }
 
-    final output = BytesBuilder();
-    output.addByte(protocolVersion);
-
-    // Single range covering all items with fingerprint
-    // Upper bound - use max timestamp + 1 if we have items, otherwise use a large value
-    final maxTs = items.isEmpty ? 0x7FFFFFFF : items.last.timestamp + 1;
-    output.add(encodeVarint(maxTs));
-    output.addByte(0); // prefix length
-
-    // Always send fingerprint mode (even for empty set)
-    output.addByte(modeFingerprint);
-    final ids = items.map((i) => i.id).toList();
-    output.add(calculateFingerprint(ids));
+    final sorted = _prepare(items);
+    final output = _MessageWriter()..addByte(protocolVersion);
+    _splitRange(sorted, 0, sorted.length, _infinityBound, output);
 
     return output.toBytes();
   }
 
-  /// Reconciles received message and creates response
-  /// Returns (response bytes, need IDs, have IDs)
+  /// Reconciles a message received from the other side as the initiator.
+  ///
+  /// Returns the response to send back plus the IDs discovered so far:
+  /// [needIds] are held by the other side only, [haveIds] by us only. A
+  /// response consisting of nothing but the version byte means the
+  /// reconciliation has converged.
   static (Uint8List response, List<String> needIds, List<String> haveIds)
   reconcile(Uint8List message, List<NegentropyItem> items) {
-    items.sort((a, b) {
-      final tsCmp = a.timestamp.compareTo(b.timestamp);
-      if (tsCmp != 0) return tsCmp;
-      return _compareBytes(a.id, b.id);
-    });
-
-    int offset = 0;
-
-    // Check version
-    if (message.isEmpty || message[0] != protocolVersion) {
-      throw ArgumentError('Invalid protocol version');
-    }
-    offset++;
-
     final needIds = <String>[];
     final haveIds = <String>[];
-    final output = BytesBuilder();
-    output.addByte(protocolVersion);
+    final response = _reconcileAux(
+      message,
+      items,
+      isInitiator: true,
+      needIds: needIds,
+      haveIds: haveIds,
+    );
+    return (response, needIds, haveIds);
+  }
 
+  /// Reconciles a message received from an initiator, as the responding side.
+  ///
+  /// Only the initiator learns the have/need sets, so this returns just the
+  /// response message.
+  static Uint8List respond(Uint8List message, List<NegentropyItem> items) {
+    return _reconcileAux(
+      message,
+      items,
+      isInitiator: false,
+      needIds: [],
+      haveIds: [],
+    );
+  }
+
+  static Uint8List _reconcileAux(
+    Uint8List message,
+    List<NegentropyItem> items, {
+    required bool isInitiator,
+    required List<String> needIds,
+    required List<String> haveIds,
+  }) {
+    if (message.isEmpty) {
+      throw ArgumentError('Empty negentropy message');
+    }
+    if (message[0] != protocolVersion) {
+      throw ArgumentError(
+        'Unsupported negentropy protocol version: '
+        '0x${message[0].toRadixString(16)}',
+      );
+    }
+
+    final sorted = _prepare(items);
+    final output = _MessageWriter()..addByte(protocolVersion);
+
+    var offset = 1;
+    var lastTimestampIn = 0;
     var prevBound = _Bound(0, Uint8List(0));
-    var itemIndex = 0;
+    var prevIndex = 0;
+    var pendingSkip = false;
+
+    // Adjacent skipped ranges are coalesced into one, emitted only once a
+    // range that carries a payload follows.
+    void flushSkip() {
+      if (!pendingSkip) return;
+      pendingSkip = false;
+      output.addBound(prevBound);
+      output.addVarint(modeSkip);
+    }
 
     while (offset < message.length) {
-      // Decode upper bound
-      final (timestamp, idPrefix, boundBytes) = decodeBound(message, offset);
+      final (timestamp, idPrefix, boundBytes) = decodeBound(
+        message,
+        offset,
+        lastTimestampIn,
+      );
       offset += boundBytes;
-
+      lastTimestampIn = timestamp;
       final currBound = _Bound(timestamp, idPrefix);
 
-      // Get items in range [prevBound, currBound)
-      final rangeItems = <NegentropyItem>[];
-      while (itemIndex < items.length) {
-        final item = items[itemIndex];
-        if (_isInRange(item, prevBound, currBound)) {
-          rangeItems.add(item);
-          itemIndex++;
-        } else if (_isBeforeBound(item, currBound)) {
-          itemIndex++;
-        } else {
-          break;
-        }
+      if (offset >= message.length) {
+        throw ArgumentError('Truncated range: missing mode');
       }
+      final (mode, modeBytes) = decodeVarint(message, offset);
+      offset += modeBytes;
 
-      // Decode mode
-      if (offset >= message.length) break;
-      final mode = message[offset++];
+      final lower = prevIndex;
+      final upper = _lowerBound(sorted, prevIndex, currBound);
 
       switch (mode) {
         case modeSkip:
-          // Do nothing, this range is synchronized
-          break;
+          pendingSkip = true;
 
         case modeFingerprint:
-          // Read fingerprint
           if (offset + fingerprintSize > message.length) {
-            throw ArgumentError('Not enough data for fingerprint');
+            throw ArgumentError('Truncated fingerprint');
           }
-          final theirFingerprint = Uint8List.fromList(
-            message.sublist(offset, offset + fingerprintSize),
+          final theirFingerprint = Uint8List.sublistView(
+            message,
+            offset,
+            offset + fingerprintSize,
           );
           offset += fingerprintSize;
 
-          // Calculate our fingerprint for this range
-          final ourIds = rangeItems.map((i) => i.id).toList();
-          final ourFingerprint = calculateFingerprint(ourIds);
+          final ourFingerprint = calculateFingerprint([
+            for (var i = lower; i < upper; i++) sorted[i].id,
+          ]);
 
-          if (!_bytesEqual(theirFingerprint, ourFingerprint)) {
-            // Mismatch - need to split or send IDs
-            if (rangeItems.length <= 2) {
-              // Send our IDs directly
-              output.add(encodeBound(timestamp, idPrefix));
-              output.addByte(modeIdList);
-              output.add(encodeVarint(rangeItems.length));
-              for (final item in rangeItems) {
-                output.add(item.id);
-              }
-            } else {
-              // Split range in half
-              final mid = rangeItems.length ~/ 2;
-              final midItem = rangeItems[mid];
-
-              // First half
-              output.add(encodeBound(midItem.timestamp, midItem.id));
-              output.addByte(modeFingerprint);
-              final firstHalfIds = rangeItems
-                  .sublist(0, mid)
-                  .map((i) => i.id)
-                  .toList();
-              output.add(calculateFingerprint(firstHalfIds));
-
-              // Second half
-              output.add(encodeBound(timestamp, idPrefix));
-              output.addByte(modeFingerprint);
-              final secondHalfIds = rangeItems
-                  .sublist(mid)
-                  .map((i) => i.id)
-                  .toList();
-              output.add(calculateFingerprint(secondHalfIds));
-            }
+          if (_bytesEqual(theirFingerprint, ourFingerprint)) {
+            pendingSkip = true;
+          } else {
+            flushSkip();
+            _splitRange(sorted, lower, upper, currBound, output);
           }
-          break;
 
         case modeIdList:
-          // Read their IDs
           final (count, countBytes) = decodeVarint(message, offset);
           offset += countBytes;
+          if (count > (message.length - offset) ~/ idSize) {
+            throw ArgumentError('Truncated ID list');
+          }
 
-          final theirIds = <Uint8List>[];
+          final theirIds = <String>{};
           for (var i = 0; i < count; i++) {
-            if (offset + idSize > message.length) {
-              throw ArgumentError('Not enough data for ID');
-            }
             theirIds.add(
-              Uint8List.fromList(message.sublist(offset, offset + idSize)),
+              bytesToHex(
+                Uint8List.sublistView(message, offset, offset + idSize),
+              ),
             );
             offset += idSize;
           }
 
-          // Find differences
-          final ourIdSet = rangeItems.map((i) => bytesToHex(i.id)).toSet();
-          final theirIdSet = theirIds.map(bytesToHex).toSet();
-
-          // We need IDs they have that we don't
-          for (final theirId in theirIdSet) {
-            if (!ourIdSet.contains(theirId)) {
-              needIds.add(theirId);
+          if (isInitiator) {
+            for (var i = lower; i < upper; i++) {
+              final ourId = bytesToHex(sorted[i].id);
+              if (!theirIds.remove(ourId)) {
+                haveIds.add(ourId);
+              }
+            }
+            needIds.addAll(theirIds);
+            pendingSkip = true;
+          } else {
+            flushSkip();
+            output.addBound(currBound);
+            output.addVarint(modeIdList);
+            output.addVarint(upper - lower);
+            for (var i = lower; i < upper; i++) {
+              output.addBytes(sorted[i].id);
             }
           }
-
-          // We have IDs that they don't
-          for (final ourId in ourIdSet) {
-            if (!theirIdSet.contains(ourId)) {
-              haveIds.add(ourId);
-            }
-          }
-
-          // Send skip for this range
-          output.add(encodeBound(timestamp, idPrefix));
-          output.addByte(modeSkip);
-          break;
 
         default:
-          throw ArgumentError('Unknown mode: $mode');
+          throw ArgumentError('Unknown negentropy mode: $mode');
       }
 
       prevBound = currBound;
+      prevIndex = upper;
     }
 
-    return (output.toBytes(), needIds, haveIds);
+    // A trailing skip needs no encoding: the spec appends an implicit skip to
+    // infinity after the last range.
+    return output.toBytes();
+  }
+
+  /// Emits [lower, upper) either as an id list or as [_buckets] sub-ranges
+  /// covered by fingerprints, ending on [upperBound].
+  static void _splitRange(
+    List<NegentropyItem> items,
+    int lower,
+    int upper,
+    _Bound upperBound,
+    _MessageWriter output,
+  ) {
+    final numElems = upper - lower;
+
+    if (numElems < _idListThreshold) {
+      output.addBound(upperBound);
+      output.addVarint(modeIdList);
+      output.addVarint(numElems);
+      for (var i = lower; i < upper; i++) {
+        output.addBytes(items[i].id);
+      }
+      return;
+    }
+
+    final itemsPerBucket = numElems ~/ _buckets;
+    final bucketsWithExtra = numElems % _buckets;
+    var curr = lower;
+
+    for (var i = 0; i < _buckets; i++) {
+      final bucketSize = itemsPerBucket + (i < bucketsWithExtra ? 1 : 0);
+      final next = curr + bucketSize;
+
+      final bound = next >= upper
+          ? upperBound
+          : _minimalBound(items[next - 1], items[next]);
+
+      output.addBound(bound);
+      output.addVarint(modeFingerprint);
+      output.addBytes(
+        calculateFingerprint([for (var j = curr; j < next; j++) items[j].id]),
+      );
+
+      curr = next;
+    }
+  }
+
+  /// Shortest bound that separates [prev] from [curr]
+  static _Bound _minimalBound(NegentropyItem prev, NegentropyItem curr) {
+    if (curr.timestamp != prev.timestamp) {
+      return _Bound(curr.timestamp, Uint8List(0));
+    }
+
+    var shared = 0;
+    while (shared < idSize && curr.id[shared] == prev.id[shared]) {
+      shared++;
+    }
+
+    return _Bound(
+      curr.timestamp,
+      Uint8List.fromList(
+        curr.id.sublist(0, shared + 1 > idSize ? idSize : shared + 1),
+      ),
+    );
+  }
+
+  /// Index of the first item at or after [bound], searching from [from]
+  static int _lowerBound(List<NegentropyItem> items, int from, _Bound bound) {
+    var low = from;
+    var high = items.length;
+
+    while (low < high) {
+      final mid = low + ((high - low) >> 1);
+      if (_compareItemToBound(items[mid], bound) < 0) {
+        low = mid + 1;
+      } else {
+        high = mid;
+      }
+    }
+
+    return low;
+  }
+
+  /// Sorts by (timestamp, id) ascending and drops duplicates
+  static List<NegentropyItem> _prepare(List<NegentropyItem> items) {
+    items.sort(_compareItems);
+
+    final prepared = <NegentropyItem>[];
+    for (final item in items) {
+      if (prepared.isNotEmpty && _compareItems(prepared.last, item) == 0) {
+        continue;
+      }
+      prepared.add(item);
+    }
+
+    return prepared;
+  }
+
+  static int _compareItems(NegentropyItem a, NegentropyItem b) {
+    final timestampCmp = a.timestamp.compareTo(b.timestamp);
+    if (timestampCmp != 0) return timestampCmp;
+    return _compareBytes(a.id, b.id);
+  }
+
+  /// Compares an item against a bound whose ID prefix is implicitly
+  /// zero-padded to [idSize] bytes.
+  static int _compareItemToBound(NegentropyItem item, _Bound bound) {
+    if (item.timestamp != bound.timestamp) {
+      return item.timestamp.compareTo(bound.timestamp);
+    }
+    for (var i = 0; i < idSize; i++) {
+      final boundByte = i < bound.idPrefix.length ? bound.idPrefix[i] : 0;
+      if (item.id[i] != boundByte) {
+        return item.id[i].compareTo(boundByte);
+      }
+    }
+    return 0;
   }
 
   static int _compareBytes(Uint8List a, Uint8List b) {
@@ -338,7 +495,7 @@ class NegentropyEncoder {
     return a.length.compareTo(b.length);
   }
 
-  static bool _bytesEqual(Uint8List a, Uint8List b) {
+  static bool _bytesEqual(List<int> a, List<int> b) {
     if (a.length != b.length) return false;
     for (var i = 0; i < a.length; i++) {
       if (a[i] != b[i]) return false;
@@ -346,25 +503,7 @@ class NegentropyEncoder {
     return true;
   }
 
-  static bool _isInRange(NegentropyItem item, _Bound lower, _Bound upper) {
-    // item >= lower AND item < upper
-    return _compareWithBound(item, lower) >= 0 &&
-        _compareWithBound(item, upper) < 0;
-  }
-
-  static bool _isBeforeBound(NegentropyItem item, _Bound bound) {
-    return _compareWithBound(item, bound) < 0;
-  }
-
-  static int _compareWithBound(NegentropyItem item, _Bound bound) {
-    if (item.timestamp != bound.timestamp) {
-      return item.timestamp.compareTo(bound.timestamp);
-    }
-    if (bound.idPrefix.isEmpty) {
-      return -1; // Empty prefix means "end of timestamp bucket"
-    }
-    return _compareBytes(item.id, bound.idPrefix);
-  }
+  static final _Bound _infinityBound = _Bound(infiniteTimestamp, Uint8List(0));
 }
 
 /// Represents an item for negentropy reconciliation
@@ -372,7 +511,17 @@ class NegentropyItem {
   final int timestamp;
   final Uint8List id;
 
-  NegentropyItem({required this.timestamp, required this.id});
+  NegentropyItem({required this.timestamp, required this.id}) {
+    if (id.length != NegentropyEncoder.idSize) {
+      throw ArgumentError(
+        'Negentropy IDs must be ${NegentropyEncoder.idSize} bytes, '
+        'got ${id.length}',
+      );
+    }
+    if (timestamp < 0 || timestamp >= NegentropyEncoder.infiniteTimestamp) {
+      throw ArgumentError('Negentropy timestamp out of range: $timestamp');
+    }
+  }
 
   factory NegentropyItem.fromHex({
     required int timestamp,
@@ -383,6 +532,33 @@ class NegentropyItem {
       id: NegentropyEncoder.hexToBytes(idHex),
     );
   }
+}
+
+/// Accumulates a message while delta encoding bound timestamps against the
+/// previously written bound.
+class _MessageWriter {
+  final BytesBuilder _output = BytesBuilder();
+  int _lastTimestamp = 0;
+
+  void addByte(int byte) => _output.addByte(byte);
+
+  void addBytes(Uint8List bytes) => _output.add(bytes);
+
+  void addVarint(int value) =>
+      _output.add(NegentropyEncoder.encodeVarint(value));
+
+  void addBound(_Bound bound) {
+    _output.add(
+      NegentropyEncoder.encodeBound(
+        bound.timestamp,
+        bound.idPrefix,
+        lastTimestamp: _lastTimestamp,
+      ),
+    );
+    _lastTimestamp = bound.timestamp;
+  }
+
+  Uint8List toBytes() => _output.toBytes();
 }
 
 class _Bound {

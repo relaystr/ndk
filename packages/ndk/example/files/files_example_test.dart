@@ -8,8 +8,7 @@ void main() async {
     final ndk = Ndk.defaultConfig();
 
     final downloadResult = await ndk.files.download(
-      url:
-          "https://cdn.hzrd149.com/b1674191a88ec5cdd733e4240a81803105dc412d6c6708d53ab94fc248f4f553.pdf",
+      url: "https://cdn.hzrd149.com/b1674191a88ec5cdd733e4240a81803105dc412d6c6708d53ab94fc248f4f553.pdf",
     );
 
     print(

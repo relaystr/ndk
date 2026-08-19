@@ -1,5 +1,6 @@
 import 'package:bip340/bip340.dart' as bip340;
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
+
 import 'helpers.dart';
 
 class Bip340 {

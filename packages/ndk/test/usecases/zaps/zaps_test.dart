@@ -38,9 +38,8 @@ void main() {
       final link = 'https://domain.com/.well-known/lnurlp/name';
 
       // Mock the client.get method
-      when(
-        client.get(Uri.parse(link), headers: {"Accept": "application/json"}),
-      ).thenAnswer((_) async => http.Response(jsonEncode(response), 200));
+      when(client.get(Uri.parse(link), headers: {"Accept": "application/json"}))
+          .thenAnswer((_) async => http.Response(jsonEncode(response), 200));
 
       when(
         client.get(

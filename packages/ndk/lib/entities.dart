@@ -23,6 +23,7 @@ export 'domain_layer/entities/pubkey_mapping.dart';
 export 'domain_layer/entities/read_write.dart';
 export 'domain_layer/entities/read_write_marker.dart';
 export 'domain_layer/entities/relay.dart';
+export 'domain_layer/entities/relay_connection_key.dart';
 export 'domain_layer/entities/relay_connectivity.dart';
 export 'domain_layer/entities/relay_info.dart';
 export 'domain_layer/entities/relay_set.dart';

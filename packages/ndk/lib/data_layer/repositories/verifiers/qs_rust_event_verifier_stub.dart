@@ -7,7 +7,7 @@ import '../../../domain_layer/repositories/event_verifier.dart';
 class QsRustEventVerifier implements EventVerifier {
   final int level;
 
-  QsRustEventVerifier({this.level = 2});
+  QsRustEventVerifier({this.level = 87});
 
   @override
   Future<bool> verify(Nip01Event event) {

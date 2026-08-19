@@ -34,7 +34,46 @@ class MockRelay {
   // Track all connected clients with their subscriptions
   final Map<WebSocket, Map<String, List<Filter>>> _clientSubscriptions = {};
 
+  // NIP-42 authentication is per connection, so it is tracked per socket
+  final Map<WebSocket, Set<String>> _authenticatedPubkeys = {};
+
+  /// every AUTH the relay accepted, kept even after the socket that sent it
+  /// died, so a re-authentication can be told apart from a surviving one
+  int acceptedAuths = 0;
+
+  /// every AUTH the relay received, answered or not
+  int receivedAuths = 0;
+
   int get connectedClientCount => _clientSubscriptions.length;
+
+  /// subscription ids carried by connections authenticated as [pubkey]
+  Set<String> subscriptionsAuthenticatedAs(String pubkey) => {
+    for (final entry in _clientSubscriptions.entries)
+      if (_authenticatedPubkeys[entry.key]?.contains(pubkey) ?? false)
+        ...entry.value.keys,
+  };
+
+  /// every REQ received per socket, recorded even when the relay refuses it
+  final Map<WebSocket, Set<String>> _requestedSubscriptions = {};
+
+  /// subscription ids that were requested on a connection which is not
+  /// authenticated as [pubkey], whether or not the relay served them
+  Set<String> subscriptionsRequestedOutside(String pubkey) => {
+    for (final entry in _requestedSubscriptions.entries)
+      if (!(_authenticatedPubkeys[entry.key]?.contains(pubkey) ?? false))
+        ...entry.value,
+  };
+
+  /// how many live connections are authenticated as [pubkey]
+  int connectionsAuthenticatedAs(String pubkey) => _authenticatedPubkeys.values
+      .where((pubkeys) => pubkeys.contains(pubkey))
+      .length;
+
+  /// how many connections carried a REQ for [subscriptionId]
+  int connectionsThatRequested(String subscriptionId) => _requestedSubscriptions
+      .values
+      .where((ids) => ids.contains(subscriptionId))
+      .length;
 
   int get activeSubscriptionCount => _clientSubscriptions.values.fold<int>(
     0,
@@ -44,6 +83,9 @@ class MockRelay {
   bool requireAuthForRequests;
   bool requireAuthForEvents;
   bool sendAuthChallenge;
+
+  /// what real relays do: a challenge belongs to a socket, not to the server
+  bool challengePerConnection;
   bool allwaysSendBadJson;
   bool sendMalformedEvents;
   String? customWelcomeMessage;
@@ -52,6 +94,10 @@ class MockRelay {
   String? signEventContentOverride;
   int rejectFirstEventPublishes;
   String rejectEventMessage;
+
+  /// how many AUTH events are left unanswered, the way a relay that goes quiet
+  /// in the middle of an authentication does. The next ones are answered
+  int silenceFirstAuths;
 
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
@@ -122,6 +168,7 @@ class MockRelay {
     this.requireAuthForRequests = false,
     this.requireAuthForEvents = false,
     this.sendAuthChallenge = true,
+    this.challengePerConnection = false,
     this.allwaysSendBadJson = false,
     this.sendMalformedEvents = false,
     this.customWelcomeMessage,
@@ -130,6 +177,7 @@ class MockRelay {
     this.signEventContentOverride,
     this.rejectFirstEventPublishes = 0,
     this.rejectEventMessage = 'rate-limited: retry later',
+    this.silenceFirstAuths = 0,
     int? explicitPort,
   }) : _nip65s = nip65s,
        _explicitPort = explicitPort,
@@ -198,37 +246,48 @@ class MockRelay {
     var stream = server.transform(WebSocketTransformer());
 
     // Generate challenge once for the entire server lifetime (fixes race condition on reconnect)
-    final String challenge = Helpers.getRandomString(10);
-    Set<String> authenticatedPubkeys = {};
+    final String serverChallenge = Helpers.getRandomString(10);
 
     stream.listen(
       (webSocket) {
         // Register this client
         _clientSubscriptions[webSocket] = {};
 
+        // NIP-42 authentication belongs to the connection, not to the server
+        final authenticatedPubkeys = _authenticatedPubkeys[webSocket] = {};
+
+        final challenge = challengePerConnection
+            ? Helpers.getRandomString(10)
+            : serverChallenge;
+
         if (customWelcomeMessage != null) {
-          webSocket.add(customWelcomeMessage!);
+          _send(webSocket, customWelcomeMessage!);
         }
         if ((requireAuthForRequests || requireAuthForEvents) &&
             sendAuthChallenge) {
-          webSocket.add(jsonEncode(["AUTH", challenge]));
+          _send(webSocket, jsonEncode(["AUTH", challenge]));
         }
         webSocket.listen(
           (message) async {
             if (allwaysSendBadJson) {
-              webSocket.add('{"bad_json":,}');
+              _send(webSocket, '{"bad_json":,}');
               return;
             }
             if (delayResponse != null) {
               await Future.delayed(delayResponse);
             }
             if (message == "ping") {
-              webSocket.add("pong");
+              _send(webSocket, "pong");
               return;
             }
             var eventJson = json.decode(message);
 
             if (eventJson[0] == "AUTH") {
+              receivedAuths++;
+              if (silenceFirstAuths > 0) {
+                silenceFirstAuths--;
+                return;
+              }
               Nip01Event event = Nip01EventModel.fromJson(eventJson[1]);
               bool authSuccess = false;
               if (verify(event.pubKey, event.id, event.sig!)) {
@@ -236,11 +295,13 @@ class MockRelay {
                 String? eventChallenge = event.getFirstTag("challenge");
                 if (eventChallenge == challenge && relay == url) {
                   authenticatedPubkeys.add(event.pubKey);
+                  acceptedAuths++;
                   authSuccess = true;
                 }
               }
 
-              webSocket.add(
+              _send(
+                webSocket,
                 jsonEncode([
                   "OK",
                   event.id,
@@ -256,7 +317,8 @@ class MockRelay {
                 _receivedEvents.add(newEvent);
                 if (rejectFirstEventPublishes > 0) {
                   rejectFirstEventPublishes--;
-                  webSocket.add(
+                  _send(
+                    webSocket,
                     jsonEncode(["OK", newEvent.id, false, rejectEventMessage]),
                   );
                   return;
@@ -265,7 +327,8 @@ class MockRelay {
 
                 // Check auth for events if required (any authenticated user is OK)
                 if (requireAuthForEvents && authenticatedPubkeys.isEmpty) {
-                  webSocket.add(
+                  _send(
+                    webSocket,
                     jsonEncode([
                       "OK",
                       newEvent.id,
@@ -357,9 +420,10 @@ class MockRelay {
                 if (shouldBroadcastToSubscriptions) {
                   _broadcastEventToSubscriptions(newEvent);
                 }
-                webSocket.add(jsonEncode(["OK", newEvent.id, true, ""]));
+                _send(webSocket, jsonEncode(["OK", newEvent.id, true, ""]));
               } else {
-                webSocket.add(
+                _send(
+                  webSocket,
                   jsonEncode(["OK", newEvent.id, false, "invalid signature"]),
                 );
               }
@@ -387,9 +451,16 @@ class MockRelay {
                 }
               }
 
+              // recorded before the auth check, so a REQ that gets refused is
+              // still visible to tests
+              _requestedSubscriptions
+                  .putIfAbsent(webSocket, () => {})
+                  .add(requestId);
+
               // Check auth: any authenticated user can access all data
               if (requireAuthForRequests && authenticatedPubkeys.isEmpty) {
-                webSocket.add(
+                _send(
+                  webSocket,
                   jsonEncode([
                     "CLOSED",
                     requestId,
@@ -408,7 +479,7 @@ class MockRelay {
                 log(
                   "MockRelay: No valid filters provided for REQ $requestId, sending EOSE.",
                 );
-                webSocket.add(jsonEncode(["EOSE", requestId]));
+                _send(webSocket, jsonEncode(["EOSE", requestId]));
               }
               return;
             }
@@ -433,6 +504,8 @@ class MockRelay {
           onDone: () {
             // Clean up when client disconnects
             _clientSubscriptions.remove(webSocket);
+            _authenticatedPubkeys.remove(webSocket);
+            _requestedSubscriptions.remove(webSocket);
             log("MockRelay: Client disconnected");
           },
         );
@@ -448,6 +521,17 @@ class MockRelay {
     return myPromise.future;
   }
 
+  /// Handlers can still be running after the connection was dropped, and
+  /// writing to a closed socket throws. readyState is not a usable guard: it
+  /// still reads as open right after close().
+  void _send(WebSocket socket, Object message) {
+    try {
+      socket.add(message);
+    } on StateError {
+      log('MockRelay: dropped a message for a closed socket');
+    }
+  }
+
   void _respondToRequest(
     WebSocket webSocket,
     List<Filter> filters,
@@ -456,8 +540,8 @@ class MockRelay {
     if (sendMalformedEvents) {
       final malformedEventJson =
           '["EVENT", "$requestId", {"id":null,"pubkey":null,"created_at":${DateTime.now().millisecondsSinceEpoch ~/ 1000},"kind":0,"tags":[],"content":null,"sig":null}]';
-      webSocket.add(malformedEventJson);
-      webSocket.add(jsonEncode(["EOSE", requestId]));
+      _send(webSocket, malformedEventJson);
+      _send(webSocket, jsonEncode(["EOSE", requestId]));
       return;
     }
 
@@ -632,7 +716,8 @@ class MockRelay {
     }
 
     for (final event in eventsToSend) {
-      webSocket.add(
+      _send(
+        webSocket,
         jsonEncode([
           "EVENT",
           requestId,
@@ -641,7 +726,7 @@ class MockRelay {
       );
     }
 
-    webSocket.add(jsonEncode(["EOSE", requestId]));
+    _send(webSocket, jsonEncode(["EOSE", requestId]));
   }
 
   /// Check if event matches since/until time filters
@@ -679,7 +764,10 @@ class MockRelay {
 
     // Send to all connected clients
     for (var clientSocket in _clientSubscriptions.keys) {
-      clientSocket.add(jsonEncode(["EVENT", subId, eventToSendModel.toJson()]));
+      _send(
+        clientSocket,
+        jsonEncode(["EVENT", subId, eventToSendModel.toJson()]),
+      );
     }
   }
 
@@ -687,7 +775,7 @@ class MockRelay {
   void sendClosed(String subId, {String message = ""}) {
     // Send to all connected clients
     for (var clientSocket in _clientSubscriptions.keys) {
-      clientSocket.add(jsonEncode(["CLOSED", subId, message]));
+      _send(clientSocket, jsonEncode(["CLOSED", subId, message]));
     }
   }
 
@@ -726,7 +814,8 @@ class MockRelay {
 
         for (var filter in filters) {
           if (_eventMatchesFilter(event, filter)) {
-            clientSocket.add(
+            _send(
+              clientSocket,
               jsonEncode([
                 "EVENT",
                 subscriptionId,
@@ -790,6 +879,8 @@ class MockRelay {
   /// Closes all connected client sockets while keeping the server running,
   /// simulating a relay-side disconnect.
   Future<void> closeClientSockets() async {
+    // Upgraded sockets are detached from the HttpServer, closing the server
+    // leaves them open, so they have to be closed one by one.
     final sockets = _clientSubscriptions.keys.toList();
     for (final socket in sockets) {
       await socket.close();
@@ -800,9 +891,13 @@ class MockRelay {
   Future<void> stopServer() async {
     if (server != null) {
       log('Closing server on localhost:$url');
+      // stop accepting before dropping the sockets, otherwise a client that
+      // reconnects on its own can come back in between and survive the stop
       await server!.close(force: true);
       server = null;
-      _clientSubscriptions.clear();
+      await closeClientSockets();
+      _authenticatedPubkeys.clear();
+      _requestedSubscriptions.clear();
     }
     _releaseReservedPort(_port);
   }

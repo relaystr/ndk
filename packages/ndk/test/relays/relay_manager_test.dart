@@ -57,7 +57,10 @@ void main() async {
           });
 
       expect(
-        manager.globalState.relays[relay1.url]!.relay
+        manager
+            .globalState
+            .relays[RelayConnectionKey.anonymous(relay1.url)]!
+            .relay
             .wasLastConnectTryLongerThanSeconds(120),
         false,
       );
@@ -91,7 +94,8 @@ void main() async {
       }
       expect(relay1.connectedClientCount, 1);
 
-      final relayConnectivity = manager.globalState.relays[relay1.url]!;
+      final relayConnectivity =
+          manager.globalState.relays[RelayConnectionKey.anonymous(relay1.url)]!;
       expect(relayConnectivity.stats.connections, 1);
 
       // Backdate the last connect attempt so the reconnect is not suppressed
@@ -120,7 +124,8 @@ void main() async {
       // Keep the teardown from racing another reconnect attempt against the
       // stopped server.
       manager.allowReconnectRelays = false;
-      await manager.globalState.relays[relay1.url]?.close();
+      await manager.globalState.relays[RelayConnectionKey.anonymous(relay1.url)]
+          ?.close();
       await relay1.stopServer();
     });
 
@@ -142,6 +147,33 @@ void main() async {
         // success
       }
     });
+    test('closing forgets a connection that lost its transport', () async {
+      MockRelay relay1 = MockRelay(name: "relay 1");
+      await relay1.startServer();
+
+      RelayManager manager = RelayManager(
+        globalState: GlobalState(),
+        bootstrapRelays: [relay1.url],
+        nostrTransportFactory: webSocketNostrTransportFactory,
+      );
+      await manager.connectRelay(
+        dirtyUrl: relay1.url,
+        connectionSource: ConnectionSource.seed,
+      );
+      expect(manager.globalState.relays, isNotEmpty);
+
+      await manager.resetTransport(relay1.url);
+      await manager.closeAllTransports();
+
+      expect(
+        manager.globalState.relays,
+        isEmpty,
+        reason: "a connection without transport must not survive the close",
+      );
+
+      await relay1.stopServer();
+    });
+
     test('Try to connect to wss://brb.io', skip: true, () async {
       RelayManager manager = RelayManager(
         nostrTransportFactory: webSocketNostrTransportFactory,
@@ -160,149 +192,153 @@ void main() async {
       }
     });
 
-    test(
-      'CLOSED message bug - should not remove entire request from inFlightRequests',
-      () async {
-        // This test exposes a bug where receiving a CLOSED message from one relay
-        // removes the entire request from globalState.inFlightRequests, causing
-        // events from other relays to be lost since there's no request entry to handle them.
+    test('CLOSED message bug - should not remove entire request from inFlightRequests', () async {
+      // This test exposes a bug where receiving a CLOSED message from one relay
+      // removes the entire request from globalState.inFlightRequests, causing
+      // events from other relays to be lost since there's no request entry to handle them.
 
-        MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 5050);
-        MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 5051);
+      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 5050);
+      MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 5051);
 
-        await relay1.startServer();
-        await relay2.startServer();
+      await relay1.startServer();
+      await relay2.startServer();
 
-        RelayManager manager = RelayManager(
-          globalState: GlobalState(),
-          bootstrapRelays: [],
-          nostrTransportFactory: webSocketNostrTransportFactory,
-        );
+      RelayManager manager = RelayManager(
+        globalState: GlobalState(),
+        bootstrapRelays: [],
+        nostrTransportFactory: webSocketNostrTransportFactory,
+      );
 
-        // Connect to both relays
-        await manager.connectRelay(
-          dirtyUrl: relay1.url,
-          connectionSource: ConnectionSource.seed,
-        );
-        await manager.connectRelay(
-          dirtyUrl: relay2.url,
-          connectionSource: ConnectionSource.seed,
-        );
+      // Connect to both relays
+      await manager.connectRelay(
+        dirtyUrl: relay1.url,
+        connectionSource: ConnectionSource.seed,
+      );
+      await manager.connectRelay(
+        dirtyUrl: relay2.url,
+        connectionSource: ConnectionSource.seed,
+      );
 
-        // Create test filters for the request
-        final testFilters = [
-          Filter(kinds: [1], limit: 10),
-        ];
-        final requestId = "test_request_123";
+      // Create test filters for the request
+      final testFilters = [
+        Filter(kinds: [1], limit: 10),
+      ];
+      final requestId = "test_request_123";
 
-        // Create a request state in globalState.inFlightRequests
-        final request = NdkRequest.query(
-          requestId,
-          name: "test_request",
-          filters: testFilters,
-          closeOnEOSE: false, // This is a subscription, not a one-time request
-          timeoutDuration: Duration(seconds: 30),
-        );
+      // Create a request state in globalState.inFlightRequests
+      final request = NdkRequest.query(
+        requestId,
+        name: "test_request",
+        filters: testFilters,
+        closeOnEOSE: false, // This is a subscription, not a one-time request
+        timeoutDuration: Duration(seconds: 30),
+      );
 
-        manager.globalState.inFlightRequests[requestId] = RequestState(request);
+      manager.globalState.inFlightRequests[requestId] = RequestState(request);
 
-        // Register the request with both relays
-        manager.registerRelayRequest(
-          reqId: requestId,
-          relayUrl: relay1.url,
-          filters: testFilters,
-        );
-        manager.registerRelayRequest(
-          reqId: requestId,
-          relayUrl: relay2.url,
-          filters: testFilters,
-        );
+      // Register the request with both relays
+      manager.registerRelayRequest(
+        reqId: requestId,
+        connectionKey: RelayConnectionKey.anonymous(relay1.url),
+        filters: testFilters,
+      );
+      manager.registerRelayRequest(
+        reqId: requestId,
+        connectionKey: RelayConnectionKey.anonymous(relay2.url),
+        filters: testFilters,
+      );
 
-        // Verify both relay requests are registered
-        expect(manager.globalState.inFlightRequests[requestId], isNotNull);
-        expect(
-          manager.globalState.inFlightRequests[requestId]!.requests[relay1.url],
-          isNotNull,
-        );
-        expect(
-          manager.globalState.inFlightRequests[requestId]!.requests[relay2.url],
-          isNotNull,
-        );
-
-        // Create a test event that relay2 will send
-        final testEvent = Nip01Event(
-          kind: 1,
-          pubKey: "test_pubkey",
-          content: "Test content from relay2",
-          tags: [],
-          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        );
-
-        final List<Nip01Event> eventsReceived = [];
-
-        // Listen to the request stream to collect events
-        final streamSubscription = manager
+      // Verify both relay requests are registered
+      expect(manager.globalState.inFlightRequests[requestId], isNotNull);
+      expect(
+        manager
             .globalState
             .inFlightRequests[requestId]!
-            .networkController
-            .stream
-            .listen((event) {
-              eventsReceived.add(event);
-            });
+            .requests[RelayConnectionKey.anonymous(relay1.url)],
+        isNotNull,
+      );
+      expect(
+        manager
+            .globalState
+            .inFlightRequests[requestId]!
+            .requests[RelayConnectionKey.anonymous(relay2.url)],
+        isNotNull,
+      );
 
-        // Give a moment for stream setup
-        await Future.delayed(Duration(milliseconds: 50));
+      // Create a test event that relay2 will send
+      final testEvent = Nip01Event(
+        kind: 1,
+        pubKey: "test_pubkey",
+        content: "Test content from relay2",
+        tags: [],
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
 
-        // Step 1: relay1 sends a CLOSED message
-        // This will trigger the bug - the entire request gets removed from inFlightRequests
-        relay1.sendClosed(requestId, message: "rate limited");
+      final List<Nip01Event> eventsReceived = [];
 
-        // Give a moment for the CLOSED message to be processed
-        await Future.delayed(Duration(milliseconds: 100));
+      // Listen to the request stream to collect events
+      final streamSubscription = manager
+          .globalState
+          .inFlightRequests[requestId]!
+          .networkController
+          .stream
+          .listen((event) {
+            eventsReceived.add(event);
+          });
 
-        // CORRECT BEHAVIOR: The request should still exist in inFlightRequests
-        // because relay2 hasn't finished yet. Only relay1's entry should be removed
-        // from the requests map, not the entire request.
-        expect(
-          manager.globalState.inFlightRequests[requestId],
-          isNotNull,
-          reason:
-              "Request should still exist in inFlightRequests after CLOSED from relay1, since relay2 hasn't finished",
-        );
+      // Give a moment for stream setup
+      await Future.delayed(Duration(milliseconds: 50));
 
-        // The request should still have relay2's entry, but relay1's should be removed or marked as closed
-        expect(
-          manager.globalState.inFlightRequests[requestId]!.requests[relay2.url],
-          isNotNull,
-          reason: "Relay2's request entry should still exist",
-        );
+      // Step 1: relay1 sends a CLOSED message
+      // This will trigger the bug - the entire request gets removed from inFlightRequests
+      relay1.sendClosed(requestId, message: "rate limited");
 
-        // Step 2: relay2 tries to send an event
-        // This should work because the request entry should still exist
-        relay2.sendEvent(event: testEvent, subId: requestId);
+      // Give a moment for the CLOSED message to be processed
+      await Future.delayed(Duration(milliseconds: 100));
 
-        // Give time for event processing
-        await Future.delayed(Duration(milliseconds: 100));
+      // CORRECT BEHAVIOR: The request should still exist in inFlightRequests
+      // because relay2 hasn't finished yet. Only relay1's entry should be removed
+      // from the requests map, not the entire request.
+      expect(
+        manager.globalState.inFlightRequests[requestId],
+        isNotNull,
+        reason: "Request should still exist in inFlightRequests after CLOSED from relay1, since relay2 hasn't finished",
+      );
 
-        // CORRECT BEHAVIOR: Events from relay2 should be received
-        expect(
-          eventsReceived.length,
-          equals(1),
-          reason:
-              "Event from relay2 should be received even after relay1 sent CLOSED message",
-        );
+      // The request should still have relay2's entry, but relay1's should be removed or marked as closed
+      expect(
+        manager
+            .globalState
+            .inFlightRequests[requestId]!
+            .requests[RelayConnectionKey.anonymous(relay2.url)],
+        isNotNull,
+        reason: "Relay2's request entry should still exist",
+      );
 
-        expect(
-          eventsReceived.first.content,
-          equals("Test content from relay2"),
-          reason: "The received event should be the one sent by relay2",
-        );
+      // Step 2: relay2 tries to send an event
+      // This should work because the request entry should still exist
+      relay2.sendEvent(event: testEvent, subId: requestId);
 
-        // Clean up
-        await streamSubscription.cancel();
-        await relay1.stopServer();
-        await relay2.stopServer();
-      },
-    );
+      // Give time for event processing
+      await Future.delayed(Duration(milliseconds: 100));
+
+      // CORRECT BEHAVIOR: Events from relay2 should be received
+      expect(
+        eventsReceived.length,
+        equals(1),
+        reason: "Event from relay2 should be received even after relay1 sent CLOSED message",
+      );
+
+      expect(
+        eventsReceived.first.content,
+        equals("Test content from relay2"),
+        reason: "The received event should be the one sent by relay2",
+      );
+
+      // Clean up
+      await streamSubscription.cancel();
+      await relay1.stopServer();
+      await relay2.stopServer();
+    });
   });
 }

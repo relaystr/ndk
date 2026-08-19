@@ -10,7 +10,17 @@ import 'package:test/test.dart';
 import '../mocks/mock_relay.dart';
 
 void main() async {
-  group('NIP-42', () {
+  for (final engine in NdkEngine.values) {
+    nip42Tests(engine);
+  }
+}
+
+/// The AUTH re-route lives under the engines, so both must reach an
+/// authenticated connection the same way.
+void nip42Tests(NdkEngine engine) {
+  final portBase = 3900 + engine.index * 20;
+
+  group('NIP-42 [${engine.name}]', () {
     KeyPair key1 = Bip340.generatePrivateKey();
 
     Map<KeyPair, String> keyNames = {key1: "key1"};
@@ -35,7 +45,7 @@ void main() async {
     test('respond to auth challenge', () async {
       MockRelay relay1 = MockRelay(
         name: "relay 1",
-        explicitPort: 3900,
+        explicitPort: portBase,
         requireAuthForRequests: true,
         signEvents: false,
       );
@@ -47,6 +57,7 @@ void main() async {
           cache: MemCacheManager(),
           // logLevel: Logger.logLevels.trace,
           bootstrapRelays: [relay1.url],
+          engine: engine,
         ),
       );
 
@@ -74,7 +85,7 @@ void main() async {
       () async {
         MockRelay relay1 = MockRelay(
           name: "relay 1",
-          explicitPort: 3900,
+          explicitPort: portBase,
           requireAuthForRequests: true,
         );
         await relay1.startServer(textNotes: key1TextNotes);
@@ -85,6 +96,7 @@ void main() async {
             cache: MemCacheManager(),
             // logLevel: Logger.logLevels.trace,
             bootstrapRelays: [relay1.url],
+            engine: engine,
           ),
         );
 
@@ -103,7 +115,7 @@ void main() async {
     );
   });
 
-  group('NIP-42 authenticateAs', () {
+  group('NIP-42 authenticateAs [${engine.name}]', () {
     KeyPair key1 = Bip340.generatePrivateKey();
     KeyPair key2 = Bip340.generatePrivateKey();
 
@@ -125,7 +137,7 @@ void main() async {
     test('authenticateAs sends AUTH for specified pubkey', () async {
       MockRelay relay1 = MockRelay(
         name: "relay 1",
-        explicitPort: 3901,
+        explicitPort: portBase + 1,
         requireAuthForRequests: true,
         signEvents: false,
       );
@@ -138,6 +150,7 @@ void main() async {
           eventVerifier: Bip340EventVerifier(),
           cache: MemCacheManager(),
           bootstrapRelays: [relay1.url],
+          engine: engine,
         ),
       );
 
@@ -178,7 +191,7 @@ void main() async {
     test('authenticateAs with multiple accounts sends AUTH for all', () async {
       MockRelay relay1 = MockRelay(
         name: "relay 1",
-        explicitPort: 3902,
+        explicitPort: portBase + 2,
         requireAuthForRequests: true,
         signEvents: false,
       );
@@ -192,6 +205,7 @@ void main() async {
           eventVerifier: Bip340EventVerifier(),
           cache: MemCacheManager(),
           bootstrapRelays: [relay1.url],
+          engine: engine,
         ),
       );
 
@@ -246,7 +260,7 @@ void main() async {
       () async {
         MockRelay relay1 = MockRelay(
           name: "relay 1",
-          explicitPort: 3903,
+          explicitPort: portBase + 3,
           requireAuthForRequests: true,
           signEvents: false,
         );
@@ -260,6 +274,7 @@ void main() async {
             eventVerifier: Bip340EventVerifier(),
             cache: MemCacheManager(),
             bootstrapRelays: [relay1.url],
+            engine: engine,
           ),
         );
 
@@ -333,7 +348,7 @@ void main() async {
       () async {
         MockRelay relay1 = MockRelay(
           name: "relay 1",
-          explicitPort: 3905,
+          explicitPort: portBase + 5,
           requireAuthForRequests: true,
           signEvents: false,
         );
@@ -347,6 +362,7 @@ void main() async {
             eventVerifier: Bip340EventVerifier(),
             cache: MemCacheManager(),
             bootstrapRelays: [relay1.url],
+            engine: engine,
           ),
         );
 
@@ -408,7 +424,7 @@ void main() async {
       () async {
         MockRelay relay1 = MockRelay(
           name: "relay 1",
-          explicitPort: 3904,
+          explicitPort: portBase + 4,
           requireAuthForRequests: true,
           signEvents: false,
         );
@@ -421,6 +437,7 @@ void main() async {
             eventVerifier: Bip340EventVerifier(),
             cache: MemCacheManager(),
             bootstrapRelays: [relay1.url],
+            engine: engine,
           ),
         );
 
@@ -448,5 +465,117 @@ void main() async {
         await relay1.stopServer();
       },
     );
+
+    test(
+      'auth-required opens a second connection instead of promoting',
+      () async {
+        MockRelay relay1 = MockRelay(
+          name: "relay 1",
+          explicitPort: portBase + 6,
+          requireAuthForRequests: true,
+          signEvents: false,
+        );
+
+        final note1 = textNote(key1, "note from key1");
+        await relay1.startServer(textNotes: {key1: note1});
+
+        final ndk = Ndk(
+          NdkConfig(
+            eventVerifier: Bip340EventVerifier(),
+            cache: MemCacheManager(),
+            bootstrapRelays: [relay1.url],
+            engine: engine,
+          ),
+        );
+
+        ndk.accounts.loginPrivateKey(
+          pubkey: key1.publicKey,
+          privkey: key1.privateKey!,
+        );
+
+        await Future.delayed(Duration(seconds: 1));
+
+        final response = ndk.requests.query(
+          filter: Filter(
+            kinds: [Nip01Event.kTextNodeKind],
+            authors: [key1.publicKey],
+          ),
+        );
+        expect(await response.future, isNotEmpty);
+
+        final keysForRelay = ndk.relays.globalState.relays.keys
+            .where((key) => key.url == relay1.url)
+            .toList();
+
+        expect(
+          keysForRelay.where((key) => key.isAnonymous),
+          hasLength(1),
+          reason: 'the anonymous connection must stay anonymous',
+        );
+        expect(
+          keysForRelay.where((key) => key.pubkey == key1.publicKey),
+          hasLength(1),
+          reason: 'the request must move to its own authenticated connection',
+        );
+
+        await ndk.destroy();
+        await relay1.stopServer();
+      },
+    );
+
+    test('closing all transports leaves no authenticated connection', () async {
+      MockRelay relay1 = MockRelay(
+        name: "relay 1",
+        explicitPort: portBase + 7,
+        requireAuthForRequests: true,
+        signEvents: false,
+      );
+
+      await relay1.startServer(
+        textNotes: {key1: textNote(key1, "note from key1")},
+      );
+
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: [relay1.url],
+          engine: engine,
+        ),
+      );
+
+      ndk.accounts.loginPrivateKey(
+        pubkey: key1.publicKey,
+        privkey: key1.privateKey!,
+      );
+
+      await Future.delayed(Duration(seconds: 1));
+
+      await ndk.requests
+          .query(
+            filter: Filter(
+              kinds: [Nip01Event.kTextNodeKind],
+              authors: [key1.publicKey],
+            ),
+          )
+          .future;
+
+      expect(
+        ndk.relays.globalState.relays.keys.where((key) => !key.isAnonymous),
+        isNotEmpty,
+        reason: 'the query must have opened an authenticated connection',
+      );
+
+      await ndk.relays.closeAllTransports();
+
+      expect(
+        ndk.relays.globalState.relays,
+        isEmpty,
+        reason: 'an authenticated connection must not survive the close',
+      );
+
+      await ndk.destroy();
+      await relay1.stopServer();
+    });
   });
 }

@@ -26,267 +26,256 @@ void main() {
       await tempDir.delete(recursive: true);
     });
 
-    test(
-      'cache-backed subscription emits cached event first and later continues with live relay updates',
-      () async {
-        final relay = MockRelay(name: 'subscription-relay');
-        final remoteAuthor = Bip340.generatePrivateKey();
-        final cachedEvent = Nip01Utils.signWithPrivateKey(
-          event: Nip01Event(
-            pubKey: remoteAuthor.publicKey,
-            kind: Nip01Event.kTextNodeKind,
-            tags: const [],
-            content: 'cached event',
-            createdAt: 1_700_000_080,
-          ),
-          privateKey: remoteAuthor.privateKey!,
-        );
-        final liveEvent = Nip01Utils.signWithPrivateKey(
-          event: Nip01Event(
-            pubKey: remoteAuthor.publicKey,
-            kind: Nip01Event.kTextNodeKind,
-            tags: const [],
-            content: 'live event',
-            createdAt: 1_700_000_081,
-          ),
-          privateKey: remoteAuthor.privateKey!,
-        );
-        await relay.startServer(textNotes: {remoteAuthor: cachedEvent});
-        ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
-        await ndk.relays.seedRelaysConnected;
+    test('cache-backed subscription emits cached event first and later continues with live relay updates', () async {
+      final relay = MockRelay(name: 'subscription-relay');
+      final remoteAuthor = Bip340.generatePrivateKey();
+      final cachedEvent = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: remoteAuthor.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: const [],
+          content: 'cached event',
+          createdAt: 1_700_000_080,
+        ),
+        privateKey: remoteAuthor.privateKey!,
+      );
+      final liveEvent = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: remoteAuthor.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: const [],
+          content: 'live event',
+          createdAt: 1_700_000_081,
+        ),
+        privateKey: remoteAuthor.privateKey!,
+      );
+      await relay.startServer(textNotes: {remoteAuthor: cachedEvent});
+      ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
+      await ndk.relays.seedRelaysConnected;
 
-        final initiallyCached = await ndk.requests
-            .query(
-              filter: Filter(ids: [cachedEvent.id]),
-              explicitRelays: [relay.url],
-              timeout: const Duration(seconds: 4),
-            )
-            .future;
-        expect(initiallyCached.map((e) => e.id), contains(cachedEvent.id));
+      final initiallyCached = await ndk.requests
+          .query(
+            filter: Filter(ids: [cachedEvent.id]),
+            explicitRelays: [relay.url],
+            timeout: const Duration(seconds: 4),
+          )
+          .future;
+      expect(initiallyCached.map((e) => e.id), contains(cachedEvent.id));
 
-        final receivedEvents = <Nip01Event>[];
-        final cachedSeen = Completer<void>();
-        final liveSeen = Completer<void>();
-        final subscription = ndk.requests.subscription(
-          filter: Filter(
-            authors: [remoteAuthor.publicKey],
-            kinds: [Nip01Event.kTextNodeKind],
-          ),
-          cacheRead: true,
-          cacheWrite: true,
-          explicitRelays: [relay.url],
-        );
-        final sub = subscription.stream.listen((event) {
-          receivedEvents.add(event);
-          if (event.id == cachedEvent.id && !cachedSeen.isCompleted) {
-            cachedSeen.complete();
-          }
-          if (event.id == liveEvent.id && !liveSeen.isCompleted) {
-            liveSeen.complete();
-          }
-        });
-        addTearDown(sub.cancel);
+      final receivedEvents = <Nip01Event>[];
+      final cachedSeen = Completer<void>();
+      final liveSeen = Completer<void>();
+      final subscription = ndk.requests.subscription(
+        filter: Filter(
+          authors: [remoteAuthor.publicKey],
+          kinds: [Nip01Event.kTextNodeKind],
+        ),
+        cacheRead: true,
+        cacheWrite: true,
+        explicitRelays: [relay.url],
+      );
+      final sub = subscription.stream.listen((event) {
+        receivedEvents.add(event);
+        if (event.id == cachedEvent.id && !cachedSeen.isCompleted) {
+          cachedSeen.complete();
+        }
+        if (event.id == liveEvent.id && !liveSeen.isCompleted) {
+          liveSeen.complete();
+        }
+      });
+      addTearDown(sub.cancel);
 
-        await cachedSeen.future.timeout(const Duration(seconds: 2));
+      await cachedSeen.future.timeout(const Duration(seconds: 2));
 
-        await _publishFixtureEventToRelay(relay.url, liveEvent);
-        await liveSeen.future.timeout(const Duration(seconds: 2));
+      await _publishFixtureEventToRelay(relay.url, liveEvent);
+      await liveSeen.future.timeout(const Duration(seconds: 2));
 
-        expect(receivedEvents.map((e) => e.id), contains(cachedEvent.id));
-        expect(receivedEvents.map((e) => e.id), contains(liveEvent.id));
+      expect(receivedEvents.map((e) => e.id), contains(cachedEvent.id));
+      expect(receivedEvents.map((e) => e.id), contains(liveEvent.id));
 
-        await relay.stopServer();
-      },
-    );
+      await relay.stopServer();
+    });
 
-    test(
-      'cache-backed subscription does not emit tombstoned foreign events or resurrect them later',
-      () async {
-        final relay = MockRelay(name: 'subscription-delete-relay');
-        final remoteAuthor = Bip340.generatePrivateKey();
-        final targetEvent = Nip01Utils.signWithPrivateKey(
-          event: Nip01Event(
-            pubKey: remoteAuthor.publicKey,
-            kind: Nip01Event.kTextNodeKind,
-            tags: const [],
-            content: 'deleted target',
-            createdAt: 1_700_000_090,
-          ),
-          privateKey: remoteAuthor.privateKey!,
-        );
-        final deletionEvent = Nip01Utils.signWithPrivateKey(
-          event: Nip01Event(
-            pubKey: remoteAuthor.publicKey,
-            kind: Deletion.kKind,
-            tags: [
-              ['e', targetEvent.id],
-              ['k', targetEvent.kind.toString()],
-            ],
-            content: 'delete target',
-            createdAt: 1_700_000_091,
-          ),
-          privateKey: remoteAuthor.privateKey!,
-        );
-        await relay.startServer(textNotes: {remoteAuthor: targetEvent});
-        ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
-        await ndk.relays.seedRelaysConnected;
+    test('cache-backed subscription does not emit tombstoned foreign events or resurrect them later', () async {
+      final relay = MockRelay(name: 'subscription-delete-relay');
+      final remoteAuthor = Bip340.generatePrivateKey();
+      final targetEvent = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: remoteAuthor.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: const [],
+          content: 'deleted target',
+          createdAt: 1_700_000_090,
+        ),
+        privateKey: remoteAuthor.privateKey!,
+      );
+      final deletionEvent = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: remoteAuthor.publicKey,
+          kind: Deletion.kKind,
+          tags: [
+            ['e', targetEvent.id],
+            ['k', targetEvent.kind.toString()],
+          ],
+          content: 'delete target',
+          createdAt: 1_700_000_091,
+        ),
+        privateKey: remoteAuthor.privateKey!,
+      );
+      await relay.startServer(textNotes: {remoteAuthor: targetEvent});
+      ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
+      await ndk.relays.seedRelaysConnected;
 
-        final cachedTarget = await ndk.requests
-            .query(
-              filter: Filter(ids: [targetEvent.id]),
-              explicitRelays: [relay.url],
-              timeout: const Duration(seconds: 1),
-            )
-            .future;
-        expect(cachedTarget.map((e) => e.id), contains(targetEvent.id));
+      final cachedTarget = await ndk.requests
+          .query(
+            filter: Filter(ids: [targetEvent.id]),
+            explicitRelays: [relay.url],
+            timeout: const Duration(seconds: 1),
+          )
+          .future;
+      expect(cachedTarget.map((e) => e.id), contains(targetEvent.id));
 
-        await _publishFixtureEventToRelay(relay.url, deletionEvent);
-        final syncedDeletion = await ndk.requests
-            .query(
-              filter: Filter(ids: [deletionEvent.id], kinds: [Deletion.kKind]),
-              explicitRelays: [relay.url],
-              timeout: const Duration(seconds: 1),
-            )
-            .future;
-        expect(syncedDeletion.map((e) => e.id), contains(deletionEvent.id));
+      await _publishFixtureEventToRelay(relay.url, deletionEvent);
+      final syncedDeletion = await ndk.requests
+          .query(
+            filter: Filter(ids: [deletionEvent.id], kinds: [Deletion.kKind]),
+            explicitRelays: [relay.url],
+            timeout: const Duration(seconds: 1),
+          )
+          .future;
+      expect(syncedDeletion.map((e) => e.id), contains(deletionEvent.id));
 
-        final emittedEvents = <Nip01Event>[];
-        final subscription = ndk.requests.subscription(
-          filter: Filter(ids: [targetEvent.id]),
-          cacheRead: true,
-          cacheWrite: true,
-          explicitRelays: [relay.url],
-        );
-        final sub = subscription.stream.listen(emittedEvents.add);
-        addTearDown(sub.cancel);
+      final emittedEvents = <Nip01Event>[];
+      final subscription = ndk.requests.subscription(
+        filter: Filter(ids: [targetEvent.id]),
+        cacheRead: true,
+        cacheWrite: true,
+        explicitRelays: [relay.url],
+      );
+      final sub = subscription.stream.listen(emittedEvents.add);
+      addTearDown(sub.cancel);
 
-        await Future<void>.delayed(const Duration(milliseconds: 500));
-        expect(emittedEvents, isEmpty);
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      expect(emittedEvents, isEmpty);
 
-        await _publishFixtureEventToRelay(relay.url, targetEvent);
-        await Future<void>.delayed(const Duration(milliseconds: 500));
+      await _publishFixtureEventToRelay(relay.url, targetEvent);
+      await Future<void>.delayed(const Duration(milliseconds: 500));
 
-        expect(
-          emittedEvents.map((e) => e.id),
-          isNot(contains(targetEvent.id)),
-          reason:
-              'A tombstoned foreign target should stay suppressed on the public reactive stream even if replayed later.',
-        );
+      expect(
+        emittedEvents.map((e) => e.id),
+        isNot(contains(targetEvent.id)),
+        reason: 'A tombstoned foreign target should stay suppressed on the public reactive stream even if replayed later.',
+      );
 
-        await relay.stopServer();
-      },
-    );
+      await relay.stopServer();
+    });
 
-    test(
-      'cache-backed subscription emits cached replaceable winner then newer live replacement but not stale late event',
-      () async {
-        final relay = MockRelay(name: 'subscription-replaceable-relay');
-        final remoteAuthor = Bip340.generatePrivateKey();
-        final writerNdk = Ndk(
-          NdkConfig(
-            cache: MemCacheManager(),
-            eventVerifier: MockEventVerifier(),
-            bootstrapRelays: [relay.url],
-          ),
-        );
-        addTearDown(writerNdk.destroy);
-        final cachedVersion = Nip01Utils.signWithPrivateKey(
-          event: Nip01Event(
-            pubKey: remoteAuthor.publicKey,
-            kind: Metadata.kKind,
-            tags: const [],
-            content: jsonEncode({'name': 'version-1'}),
-            createdAt: 1_700_000_100,
-          ),
-          privateKey: remoteAuthor.privateKey!,
-        );
-        final newerVersion = Nip01Utils.signWithPrivateKey(
-          event: Nip01Event(
-            pubKey: remoteAuthor.publicKey,
-            kind: Metadata.kKind,
-            tags: const [],
-            content: jsonEncode({'name': 'version-2'}),
-            createdAt: 1_700_000_101,
-          ),
-          privateKey: remoteAuthor.privateKey!,
-        );
-        final staleVersion = Nip01Utils.signWithPrivateKey(
-          event: Nip01Event(
-            pubKey: remoteAuthor.publicKey,
-            kind: Metadata.kKind,
-            tags: const [],
-            content: jsonEncode({'name': 'version-0'}),
-            createdAt: 1_700_000_099,
-          ),
-          privateKey: remoteAuthor.privateKey!,
-        );
-        await relay.startServer(
-          metadatas: {remoteAuthor.publicKey: cachedVersion},
-        );
-        ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
-        await ndk.relays.seedRelaysConnected;
+    test('cache-backed subscription emits cached replaceable winner then newer live replacement but not stale late event', () async {
+      final relay = MockRelay(name: 'subscription-replaceable-relay');
+      final remoteAuthor = Bip340.generatePrivateKey();
+      final writerNdk = Ndk(
+        NdkConfig(
+          cache: MemCacheManager(),
+          eventVerifier: MockEventVerifier(),
+          bootstrapRelays: [relay.url],
+        ),
+      );
+      addTearDown(writerNdk.destroy);
+      final cachedVersion = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: remoteAuthor.publicKey,
+          kind: Metadata.kKind,
+          tags: const [],
+          content: jsonEncode({'name': 'version-1'}),
+          createdAt: 1_700_000_100,
+        ),
+        privateKey: remoteAuthor.privateKey!,
+      );
+      final newerVersion = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: remoteAuthor.publicKey,
+          kind: Metadata.kKind,
+          tags: const [],
+          content: jsonEncode({'name': 'version-2'}),
+          createdAt: 1_700_000_101,
+        ),
+        privateKey: remoteAuthor.privateKey!,
+      );
+      final staleVersion = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: remoteAuthor.publicKey,
+          kind: Metadata.kKind,
+          tags: const [],
+          content: jsonEncode({'name': 'version-0'}),
+          createdAt: 1_700_000_099,
+        ),
+        privateKey: remoteAuthor.privateKey!,
+      );
+      await relay.startServer(
+        metadatas: {remoteAuthor.publicKey: cachedVersion},
+      );
+      ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
+      await ndk.relays.seedRelaysConnected;
 
-        final cachedLoad = await ndk.requests
-            .query(
-              filter: Filter(
-                authors: [remoteAuthor.publicKey],
-                kinds: [Metadata.kKind],
-              ),
-              explicitRelays: [relay.url],
-              timeout: const Duration(seconds: 1),
-            )
-            .future;
-        expect(cachedLoad.map((e) => e.id), contains(cachedVersion.id));
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+      final cachedLoad = await ndk.requests
+          .query(
+            filter: Filter(
+              authors: [remoteAuthor.publicKey],
+              kinds: [Metadata.kKind],
+            ),
+            explicitRelays: [relay.url],
+            timeout: const Duration(seconds: 1),
+          )
+          .future;
+      expect(cachedLoad.map((e) => e.id), contains(cachedVersion.id));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
 
-        final receivedContents = <String>[];
-        final cachedSeen = Completer<void>();
-        final newerSeen = Completer<void>();
-        final subscription = ndk.requests.subscription(
-          filter: Filter(
-            authors: [remoteAuthor.publicKey],
-            kinds: [Metadata.kKind],
-          ),
-          cacheRead: true,
-          cacheWrite: true,
-          explicitRelays: [relay.url],
-        );
-        final sub = subscription.stream.listen((event) {
-          receivedContents.add(event.content);
-          if (event.id == cachedVersion.id && !cachedSeen.isCompleted) {
-            cachedSeen.complete();
-          }
-          if (event.id == newerVersion.id && !newerSeen.isCompleted) {
-            newerSeen.complete();
-          }
-        });
-        addTearDown(sub.cancel);
+      final receivedContents = <String>[];
+      final cachedSeen = Completer<void>();
+      final newerSeen = Completer<void>();
+      final subscription = ndk.requests.subscription(
+        filter: Filter(
+          authors: [remoteAuthor.publicKey],
+          kinds: [Metadata.kKind],
+        ),
+        cacheRead: true,
+        cacheWrite: true,
+        explicitRelays: [relay.url],
+      );
+      final sub = subscription.stream.listen((event) {
+        receivedContents.add(event.content);
+        if (event.id == cachedVersion.id && !cachedSeen.isCompleted) {
+          cachedSeen.complete();
+        }
+        if (event.id == newerVersion.id && !newerSeen.isCompleted) {
+          newerSeen.complete();
+        }
+      });
+      addTearDown(sub.cancel);
 
-        await cachedSeen.future.timeout(const Duration(seconds: 2));
-        await Future<void>.delayed(const Duration(milliseconds: 200));
+      await cachedSeen.future.timeout(const Duration(seconds: 2));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
 
-        await writerNdk.broadcast
-            .broadcast(nostrEvent: newerVersion, specificRelays: [relay.url])
-            .broadcastDoneFuture;
-        await newerSeen.future.timeout(const Duration(seconds: 2));
+      await writerNdk.broadcast
+          .broadcast(nostrEvent: newerVersion, specificRelays: [relay.url])
+          .broadcastDoneFuture;
+      await newerSeen.future.timeout(const Duration(seconds: 2));
 
-        await writerNdk.broadcast
-            .broadcast(nostrEvent: staleVersion, specificRelays: [relay.url])
-            .broadcastDoneFuture;
-        await Future<void>.delayed(const Duration(milliseconds: 500));
+      await writerNdk.broadcast
+          .broadcast(nostrEvent: staleVersion, specificRelays: [relay.url])
+          .broadcastDoneFuture;
+      await Future<void>.delayed(const Duration(milliseconds: 500));
 
-        expect(receivedContents, contains(jsonEncode({'name': 'version-1'})));
-        expect(receivedContents, contains(jsonEncode({'name': 'version-2'})));
-        expect(
-          receivedContents,
-          isNot(contains(jsonEncode({'name': 'version-0'}))),
-          reason:
-              'A stale replaceable event that arrives after a newer winner should not be emitted on the local-first reactive stream.',
-        );
+      expect(receivedContents, contains(jsonEncode({'name': 'version-1'})));
+      expect(receivedContents, contains(jsonEncode({'name': 'version-2'})));
+      expect(
+        receivedContents,
+        isNot(contains(jsonEncode({'name': 'version-0'}))),
+        reason: 'A stale replaceable event that arrives after a newer winner should not be emitted on the local-first reactive stream.',
+      );
 
-        await relay.stopServer();
-      },
-    );
+      await relay.stopServer();
+    });
   });
 }
 
