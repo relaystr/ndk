@@ -147,17 +147,17 @@ class TransactionResult extends Equatable {
 
   @override
   List<Object?> get props => [
-    type,
-    invoice,
-    description,
-    descriptionHash,
-    preimage,
-    paymentHash,
-    amount,
-    feesPaid,
-    createdAt,
-    expiresAt,
-    settledAt,
-    metadata,
-  ];
+        type,
+        invoice,
+        description,
+        descriptionHash,
+        preimage,
+        paymentHash,
+        amount,
+        feesPaid,
+        createdAt,
+        expiresAt,
+        settledAt,
+        metadata,
+      ];
 }

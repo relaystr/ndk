@@ -11,7 +11,8 @@ void main() {
       "kind": 1,
       "tags": [],
       "content": "content",
-      "sig": "eff0ae7d37d9739baa920fee76792974bfc0b27219a20c728dd143d8188395abb35ff6b09acbf0049a60f5c73b0a2a154f014bc02e08902c78f07f5c422ae607",
+      "sig":
+          "eff0ae7d37d9739baa920fee76792974bfc0b27219a20c728dd143d8188395abb35ff6b09acbf0049a60f5c73b0a2a154f014bc02e08902c78f07f5c422ae607",
     });
 
     expect(await Bip340EventVerifier().verify(event), isTrue);
@@ -26,7 +27,8 @@ void main() {
       "kind": 1,
       "tags": [],
       "content": "content",
-      "sig": "eff0ae7d37d9739baa920fee76792974bfc0b27219a20c728dd143d8188395abb35ff6b09acbf0049a60f5c73b0a2a154f014bc02e08902c78f07f5c422ae607",
+      "sig":
+          "eff0ae7d37d9739baa920fee76792974bfc0b27219a20c728dd143d8188395abb35ff6b09acbf0049a60f5c73b0a2a154f014bc02e08902c78f07f5c422ae607",
     });
 
     expect(await Bip340EventVerifier().verify(event), isFalse);
@@ -41,7 +43,8 @@ void main() {
       "kind": 1,
       "tags": [],
       "content": "content",
-      "sig": "eff0ae7d37d9739baa920fee76792974bfc0b27219a20c728dd143d8188395abb35ff6b09acbf0049a60f5c73b0a2a154f014bc02e08902c78f07f5c422ae607",
+      "sig":
+          "eff0ae7d37d9739baa920fee76792974bfc0b27219a20c728dd143d8188395abb35ff6b09acbf0049a60f5c73b0a2a154f014bc02e08902c78f07f5c422ae607",
     });
 
     expect(await Bip340EventVerifier().verify(event), isFalse);

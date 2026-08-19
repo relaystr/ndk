@@ -13,8 +13,8 @@ class CashuCacheDecorator implements CacheManager {
   final CacheManager _delegate;
 
   CashuCacheDecorator({required CacheManager cacheManager, MutexSimple? mutex})
-    : _delegate = cacheManager,
-      _mutex = mutex ?? MutexSimple();
+      : _delegate = cacheManager,
+        _mutex = mutex ?? MutexSimple();
 
   @override
   Future<List<CashuMintInfo>?> getMintInfos({List<String>? mintUrls}) async {

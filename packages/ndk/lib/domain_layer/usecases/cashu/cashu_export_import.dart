@@ -40,9 +40,9 @@ class CashuStateExportImport {
     required CashuCacheDecorator cacheManagerCashu,
     required WalletsRepo walletsRepo,
     required CashuSeed cashuSeed,
-  }) : _cacheManagerCashu = cacheManagerCashu,
-       _walletsRepo = walletsRepo,
-       _cashuSeed = cashuSeed;
+  })  : _cacheManagerCashu = cacheManagerCashu,
+        _walletsRepo = walletsRepo,
+        _cashuSeed = cashuSeed;
 
   /// Export all cashu state as a JSON-serializable map.
   ///
@@ -116,7 +116,8 @@ class CashuStateExportImport {
         export['seedPhrase'] = _cashuSeed.getSeedPhrase().sentence;
       } catch (_) {
         Logger.log.w(
-          () => 'Cashu export: no seed phrase set, exporting without it. The export will not be restorable on a new device.',
+          () =>
+              'Cashu export: no seed phrase set, exporting without it. The export will not be restorable on a new device.',
         );
       }
     }
@@ -125,9 +126,8 @@ class CashuStateExportImport {
       final transactions = await _walletsRepo.getTransactions(
         walletType: WalletType.CASHU,
       );
-      export['transactions'] = transactions
-          .map(WalletTransactionModel.toJson)
-          .toList();
+      export['transactions'] =
+          transactions.map(WalletTransactionModel.toJson).toList();
     }
 
     return export;

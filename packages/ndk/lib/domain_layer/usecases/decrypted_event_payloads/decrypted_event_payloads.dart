@@ -29,7 +29,7 @@ class DecryptedEventPayloads {
   final Map<String, MutexSimple> _recordMutexes = {};
 
   DecryptedEventPayloads({required CacheManager cacheManager})
-    : _cacheManager = cacheManager;
+      : _cacheManager = cacheManager;
 
   /// Returns cached plaintext if a ready sidecar already exists.
   Future<String?> loadCachedPlaintext({

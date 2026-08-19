@@ -22,9 +22,9 @@ class Zaps {
 
   /// .
   Zaps({required Requests requests, required Nwc nwc, required Lnurl lnurl})
-    : _requests = requests,
-      _nwc = nwc,
-      _lnurl = lnurl;
+      : _requests = requests,
+        _nwc = nwc,
+        _lnurl = lnurl;
 
   /// creates an invoice with an optional zap request encoded if signer, pubKey & relays are non empty
   Future<InvoiceResponse?> fetchInvoice({

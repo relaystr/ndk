@@ -419,7 +419,8 @@ void main() {
       client: HttpRequestDS(http.Client()),
       fileIO: createFileIO(),
     );
-    test('getBlobStream should properly stream large files with range requests', () async {
+    test('getBlobStream should properly stream large files with range requests',
+        () async {
       // First upload a test file to the mock server
       final testData = Uint8List.fromList(
         List.generate(5 * 1024 * 1024, (i) => i % 256),
@@ -467,7 +468,9 @@ void main() {
       expect(totalSize, equals(testData.length));
     });
 
-    test('getBlobStream should fallback to regular download if range requests not supported', () async {
+    test(
+        'getBlobStream should fallback to regular download if range requests not supported',
+        () async {
       // Upload a smaller test file
       final testData = Uint8List.fromList(
         List.generate(1024, (i) => i % 256),
@@ -1028,7 +1031,9 @@ void main() {
       },
     );
 
-    test('uploadBlobFromFile mirrorAfterSuccess reports mirrorsTotal and mirrorsCompleted progression', () async {
+    test(
+        'uploadBlobFromFile mirrorAfterSuccess reports mirrorsTotal and mirrorsCompleted progression',
+        () async {
       final testFile = File('${tempDir.path}/test_mirror_progress.txt');
       await testFile.writeAsString('Mirror progress test');
 

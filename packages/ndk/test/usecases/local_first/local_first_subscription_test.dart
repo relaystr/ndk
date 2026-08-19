@@ -26,7 +26,9 @@ void main() {
       await tempDir.delete(recursive: true);
     });
 
-    test('cache-backed subscription emits cached event first and later continues with live relay updates', () async {
+    test(
+        'cache-backed subscription emits cached event first and later continues with live relay updates',
+        () async {
       final relay = MockRelay(name: 'subscription-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final cachedEvent = Nip01Utils.signWithPrivateKey(
@@ -96,7 +98,9 @@ void main() {
       await relay.stopServer();
     });
 
-    test('cache-backed subscription does not emit tombstoned foreign events or resurrect them later', () async {
+    test(
+        'cache-backed subscription does not emit tombstoned foreign events or resurrect them later',
+        () async {
       final relay = MockRelay(name: 'subscription-delete-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final targetEvent = Nip01Utils.signWithPrivateKey(
@@ -164,13 +168,16 @@ void main() {
       expect(
         emittedEvents.map((e) => e.id),
         isNot(contains(targetEvent.id)),
-        reason: 'A tombstoned foreign target should stay suppressed on the public reactive stream even if replayed later.',
+        reason:
+            'A tombstoned foreign target should stay suppressed on the public reactive stream even if replayed later.',
       );
 
       await relay.stopServer();
     });
 
-    test('cache-backed subscription emits cached replaceable winner then newer live replacement but not stale late event', () async {
+    test(
+        'cache-backed subscription emits cached replaceable winner then newer live replacement but not stale late event',
+        () async {
       final relay = MockRelay(name: 'subscription-replaceable-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final writerNdk = Ndk(
@@ -256,14 +263,14 @@ void main() {
       await cachedSeen.future.timeout(const Duration(seconds: 2));
       await Future<void>.delayed(const Duration(milliseconds: 200));
 
-      await writerNdk.broadcast
-          .broadcast(nostrEvent: newerVersion, specificRelays: [relay.url])
-          .broadcastDoneFuture;
+      await writerNdk.broadcast.broadcast(
+          nostrEvent: newerVersion,
+          specificRelays: [relay.url]).broadcastDoneFuture;
       await newerSeen.future.timeout(const Duration(seconds: 2));
 
-      await writerNdk.broadcast
-          .broadcast(nostrEvent: staleVersion, specificRelays: [relay.url])
-          .broadcastDoneFuture;
+      await writerNdk.broadcast.broadcast(
+          nostrEvent: staleVersion,
+          specificRelays: [relay.url]).broadcastDoneFuture;
       await Future<void>.delayed(const Duration(milliseconds: 500));
 
       expect(receivedContents, contains(jsonEncode({'name': 'version-1'})));
@@ -271,7 +278,8 @@ void main() {
       expect(
         receivedContents,
         isNot(contains(jsonEncode({'name': 'version-0'}))),
-        reason: 'A stale replaceable event that arrives after a newer winner should not be emitted on the local-first reactive stream.',
+        reason:
+            'A stale replaceable event that arrives after a newer winner should not be emitted on the local-first reactive stream.',
       );
 
       await relay.stopServer();

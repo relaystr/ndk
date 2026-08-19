@@ -70,7 +70,7 @@ import 'sample_app_localizations_zh.dart';
 /// property.
 abstract class SampleAppLocalizations {
   SampleAppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -96,11 +96,11 @@ abstract class SampleAppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -807,16 +807,16 @@ class _SampleAppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) => <String>[
-    'de',
-    'en',
-    'es',
-    'fr',
-    'it',
-    'ja',
-    'pl',
-    'ru',
-    'zh',
-  ].contains(locale.languageCode);
+        'de',
+        'en',
+        'es',
+        'fr',
+        'it',
+        'ja',
+        'pl',
+        'ru',
+        'zh',
+      ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_SampleAppLocalizationsDelegate old) => false;

@@ -131,7 +131,9 @@ void main() {
       );
     });
 
-    test('NIP-17 DM gift wrap and seal timestamps should be randomized in the 2 days before the rumor createdAt', () async {
+    test(
+        'NIP-17 DM gift wrap and seal timestamps should be randomized in the 2 days before the rumor createdAt',
+        () async {
       const twoDaysInSeconds = 172800;
 
       final rumor = Nip01Event(

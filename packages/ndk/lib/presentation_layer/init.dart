@@ -123,8 +123,8 @@ class Initialization {
   Initialization({
     required NdkConfig ndkConfig,
     required GlobalState globalState,
-  }) : _globalState = globalState,
-       _ndkConfig = ndkConfig {
+  })  : _globalState = globalState,
+        _ndkConfig = ndkConfig {
     // Configure global WebSocket User-Agent on dart:io platforms
     configureDefaultUserAgent(ndkConfig.userAgent);
 

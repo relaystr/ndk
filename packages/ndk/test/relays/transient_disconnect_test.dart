@@ -43,7 +43,8 @@ class _FlakyTransport implements NostrTransport {
     void Function(dynamic) onData, {
     Function? onError,
     void Function()? onDone,
-  }) => _inner.listen(onData, onError: onError, onDone: onDone);
+  }) =>
+      _inner.listen(onData, onError: onError, onDone: onDone);
 
   @override
   Future<void> close() => _inner.close();

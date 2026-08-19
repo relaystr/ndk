@@ -36,7 +36,8 @@ Future<void> main() async {
         ['t', 'nostr'],
         ['t', 'bitcoin'],
       ],
-      content: 'Hello Nostr! This is my first cached event using SembastCacheManager 🎉',
+      content:
+          'Hello Nostr! This is my first cached event using SembastCacheManager 🎉',
       createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
 

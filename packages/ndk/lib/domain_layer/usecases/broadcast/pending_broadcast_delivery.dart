@@ -46,10 +46,10 @@ class PendingBroadcastDelivery {
     required BroadcastSender broadcastSender,
     required Accounts accounts,
     Duration signAttemptTimeout = defaultSignAttemptTimeout,
-  }) : _cacheManager = cacheManager,
-       _sender = broadcastSender,
-       _accounts = accounts,
-       _signAttemptTimeout = signAttemptTimeout;
+  })  : _cacheManager = cacheManager,
+        _sender = broadcastSender,
+        _accounts = accounts,
+        _signAttemptTimeout = signAttemptTimeout;
 
   /// Starts periodic due-retry processing.
   ///
@@ -210,8 +210,7 @@ class PendingBroadcastDelivery {
       EventDeliveryRecord(
         eventId: event.id,
         status: existing?.status ?? EventDeliveryStatus.pending,
-        signingState:
-            existing?.signingState ??
+        signingState: existing?.signingState ??
             (requiresInteractiveSigning
                 ? EventSigningState.pending
                 : EventSigningState.notNeeded),
@@ -286,12 +285,12 @@ class PendingBroadcastDelivery {
       final nextState = policy.resolveNextState(response);
       final nextRetryAt = policy.shouldRetryState(nextState)
           ? attemptTimestamp +
-                policy
-                    .retryDelayFor(
-                      state: nextState,
-                      attemptCount: current.attemptCount + 1,
-                    )
-                    .inSeconds
+              policy
+                  .retryDelayFor(
+                    state: nextState,
+                    attemptCount: current.attemptCount + 1,
+                  )
+                  .inSeconds
           : null;
 
       updatedTargets.add(
@@ -340,9 +339,9 @@ class PendingBroadcastDelivery {
     final deliveryStatus = _resolveDeliveryStatus(existing, allTargets);
     final completionTimestamp =
         deliveryStatus == EventDeliveryStatus.delivered ||
-            deliveryStatus == EventDeliveryStatus.failed
-        ? Nip01Event.secondsSinceEpoch()
-        : null;
+                deliveryStatus == EventDeliveryStatus.failed
+            ? Nip01Event.secondsSinceEpoch()
+            : null;
 
     await _cacheManager.saveEventDeliveryRecord(
       existing.copyWith(
@@ -468,9 +467,8 @@ class PendingBroadcastDelivery {
           continue;
         }
 
-        await _sender
-            .broadcast(nostrEvent: event, specificRelays: [relayUrl])
-            .broadcastDoneFuture;
+        await _sender.broadcast(
+            nostrEvent: event, specificRelays: [relayUrl]).broadcastDoneFuture;
       }
     } finally {
       _flushInProgress.remove(relayUrl);
@@ -691,10 +689,10 @@ class PendingBroadcastDelivery {
           nextSignRetryAt: waitingForApproval
               ? null
               : Nip01Event.secondsSinceEpoch() +
-                    _signRetryDelayFor(
-                      attemptCount: attemptingRecord.signAttemptCount,
-                      requiresSignerNetwork: signer.requiresSignerNetwork,
-                    ).inSeconds,
+                  _signRetryDelayFor(
+                    attemptCount: attemptingRecord.signAttemptCount,
+                    requiresSignerNetwork: signer.requiresSignerNetwork,
+                  ).inSeconds,
           lastSignError: waitingForApproval
               ? 'Waiting for signer approval'
               : 'Timed out waiting for signer',
@@ -722,30 +720,28 @@ class PendingBroadcastDelivery {
     required Future<Nip01Event> future,
   }) {
     unawaited(
-      future
-          .then(
-            (signedEvent) async {
-              await _handleSignSuccess(
-                attemptId: attemptId,
-                record: record,
-                event: event,
-                signedEvent: signedEvent,
-              );
-            },
-            onError: (Object error, StackTrace stackTrace) async {
-              await _handleSignFailure(
-                attemptId: attemptId,
-                record: record,
-                event: event,
-                signer: _resolveSignerForEvent(event),
-                error: error,
-                stackTrace: stackTrace,
-              );
-            },
-          )
-          .whenComplete(() {
-            _clearActiveSignAttempt(event.id, attemptId: attemptId);
-          }),
+      future.then(
+        (signedEvent) async {
+          await _handleSignSuccess(
+            attemptId: attemptId,
+            record: record,
+            event: event,
+            signedEvent: signedEvent,
+          );
+        },
+        onError: (Object error, StackTrace stackTrace) async {
+          await _handleSignFailure(
+            attemptId: attemptId,
+            record: record,
+            event: event,
+            signer: _resolveSignerForEvent(event),
+            error: error,
+            stackTrace: stackTrace,
+          );
+        },
+      ).whenComplete(() {
+        _clearActiveSignAttempt(event.id, attemptId: attemptId);
+      }),
     );
   }
 
@@ -806,10 +802,10 @@ class PendingBroadcastDelivery {
     final now = Nip01Event.secondsSinceEpoch();
     final nextRetryAt = outcome == EventSigningState.transientFailure
         ? now +
-              _signRetryDelayFor(
-                attemptCount: record.signAttemptCount,
-                requiresSignerNetwork: signer?.requiresSignerNetwork ?? false,
-              ).inSeconds
+            _signRetryDelayFor(
+              attemptCount: record.signAttemptCount,
+              requiresSignerNetwork: signer?.requiresSignerNetwork ?? false,
+            ).inSeconds
         : null;
 
     await _saveSigningOutcome(
@@ -917,13 +913,12 @@ class PendingBroadcastDelivery {
     final targets = await _cacheManager.loadRelayDeliveryTargets(
       eventId: eventId,
     );
-    final targetRelayUrls =
-        targets
-            .where((target) => connectedRelayUrls.contains(target.relayUrl))
-            .map((target) => target.relayUrl)
-            .toSet()
-            .toList()
-          ..sort();
+    final targetRelayUrls = targets
+        .where((target) => connectedRelayUrls.contains(target.relayUrl))
+        .map((target) => target.relayUrl)
+        .toSet()
+        .toList()
+      ..sort();
 
     for (final relayUrl in targetRelayUrls) {
       await flushForRelay(relayUrl);
@@ -976,8 +971,7 @@ class PendingBroadcastDelivery {
     int? kind,
     List<RelayDeliveryTarget> targets,
   ) async {
-    final isResolved =
-        status == EventDeliveryStatus.delivered ||
+    final isResolved = status == EventDeliveryStatus.delivered ||
         status == EventDeliveryStatus.failed ||
         (status == EventDeliveryStatus.partiallyDelivered &&
             targets.isNotEmpty &&
@@ -1064,7 +1058,8 @@ class PendingBroadcastDelivery {
         EventSigningState.pending => EventDeliveryStatus.pending,
         EventSigningState.notNeeded => EventDeliveryStatus.pending,
         EventSigningState.attempting ||
-        EventSigningState.transientFailure => EventDeliveryStatus.inProgress,
+        EventSigningState.transientFailure =>
+          EventDeliveryStatus.inProgress,
         EventSigningState.signed => EventDeliveryStatus.inProgress,
       };
     }
@@ -1082,9 +1077,8 @@ class PendingBroadcastDelivery {
       return EventDeliveryStatus.needsAction;
     }
 
-    final ackedCount = targets
-        .where((t) => t.state == RelayDeliveryState.acked)
-        .length;
+    final ackedCount =
+        targets.where((t) => t.state == RelayDeliveryState.acked).length;
     final permanentFailureCount = targets
         .where((t) => t.state == RelayDeliveryState.permanentFailure)
         .length;

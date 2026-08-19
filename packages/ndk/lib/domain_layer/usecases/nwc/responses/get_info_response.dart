@@ -36,9 +36,8 @@ class GetInfoResponse extends NwcResponse {
     final methodsList = (result["methods"] as List?) ?? const [];
     final notificationsList = (result["notifications"] as List?) ?? const [];
 
-    List<String> methods = methodsList
-        .map((method) => method.toString())
-        .toList();
+    List<String> methods =
+        methodsList.map((method) => method.toString()).toList();
 
     List<String> notifications = notificationsList
         .map((notification) => notification.toString())
