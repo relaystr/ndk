@@ -351,15 +351,13 @@ class Nip51Set extends Nip51List {
 
     tags.addAll(event.tags);
 
-    final copy = event.copyWith(
+    return Nip01Event(
       pubKey: event.pubKey,
       kind: event.kind,
       tags: castToListOfListOfString(tags),
       content: event.content,
       createdAt: event.createdAt,
     );
-
-    return copy;
   }
 
   void parseSetTags(List tags) {
