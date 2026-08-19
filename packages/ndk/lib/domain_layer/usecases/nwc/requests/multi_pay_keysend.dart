@@ -8,7 +8,7 @@ class MultiPayKeysendRequest extends NwcRequest {
   final List<MultiPayKeysendRequestInvoicesElement> keysends;
 
   const MultiPayKeysendRequest({required this.keysends})
-    : super(method: NwcMethod.MULTI_PAY_KEYSEND);
+      : super(method: NwcMethod.MULTI_PAY_KEYSEND);
 
   @override
   Map<String, dynamic> toMap() {

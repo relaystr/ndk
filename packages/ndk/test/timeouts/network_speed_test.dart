@@ -325,12 +325,10 @@ void main() {
       ),
     );
 
-    final events = await ndk.requests
-        .query(
-          filter: Filter(kinds: [1]),
-          explicitRelays: ['ws://127.0.0.1:59999'],
-        )
-        .future;
+    final events = await ndk.requests.query(
+      filter: Filter(kinds: [1]),
+      explicitRelays: ['ws://127.0.0.1:59999'],
+    ).future;
 
     expect(events, isEmpty);
   });

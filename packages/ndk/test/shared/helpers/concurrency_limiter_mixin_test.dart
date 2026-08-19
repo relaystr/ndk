@@ -8,7 +8,7 @@ class _Limiter with ConcurrencyLimiterMixin {
   @override
   final int maxConcurrentRequests;
   _Limiter(this.maxConcurrentRequests)
-    : assert(maxConcurrentRequests > 0, 'maxConcurrentRequests must be > 0');
+      : assert(maxConcurrentRequests > 0, 'maxConcurrentRequests must be > 0');
 }
 
 /// Mimics the way a real signer (NIP-07, NIP-55, NIP-46) drives the mixin:
@@ -167,9 +167,12 @@ void main() {
         await expectLater(queued, throwsA(isA<StateError>()));
         await inFlight;
 
-        expect(executed, [
-          0,
-        ], reason: 'cancelled task must not run when its slot frees');
+        expect(
+            executed,
+            [
+              0,
+            ],
+            reason: 'cancelled task must not run when its slot frees');
         expect(limiter.inFlightRequests, 0);
       },
     );

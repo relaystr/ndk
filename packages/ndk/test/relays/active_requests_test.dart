@@ -20,9 +20,9 @@ Future<void> _waitUntil(
 }
 
 Map<RelayConnectionKey, int> _activeRequests(Ndk ndk) => {
-  for (final entry in ndk.relays.globalState.relays.entries)
-    entry.key: entry.value.stats.activeRequests,
-};
+      for (final entry in ndk.relays.globalState.relays.entries)
+        entry.key: entry.value.stats.activeRequests,
+    };
 
 void main() {
   test('a query leaves no active request behind', () async {

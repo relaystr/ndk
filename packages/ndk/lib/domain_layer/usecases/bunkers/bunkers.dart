@@ -24,9 +24,9 @@ class Bunkers {
     required Broadcast broadcast,
     required Requests requests,
     required LocalEventSignerFactory eventSignerFactory,
-  }) : _broadcast = broadcast,
-       _requests = requests,
-       _eventSignerFactory = eventSignerFactory;
+  })  : _broadcast = broadcast,
+        _requests = requests,
+        _eventSignerFactory = eventSignerFactory;
 
   /// Connects to a bunker using a bunker URL (bunker://)
   /// authCallback is called with the auth URL if the bunker requires authentication

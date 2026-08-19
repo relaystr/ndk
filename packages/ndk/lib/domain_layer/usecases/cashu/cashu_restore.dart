@@ -122,9 +122,8 @@ class CashuRestore {
 
       // Call restore endpoint
       try {
-        final blindedMessages = blindedMessageItems
-            .map((item) => item.blindedMessage)
-            .toList();
+        final blindedMessages =
+            blindedMessageItems.map((item) => item.blindedMessage).toList();
 
         final (restoredOutputs, signatures) = await cashuRepo.restore(
           mintUrl: mintUrl,
@@ -173,8 +172,7 @@ class CashuRestore {
     }
 
     Logger.log.i(
-      () =>
-          'Restore completed for keyset $keysetId. '
+      () => 'Restore completed for keyset $keysetId. '
           'Found ${allRestoredProofs.length} proofs. '
           'Last used counter: $lastUsedCounter',
     );
@@ -271,7 +269,8 @@ class CashuRestore {
     } else {
       // Fallback: try to match by attempting unblinding with each blinded message
       Logger.log.w(
-        () => 'No outputs in restore response or length mismatch, using fallback matching',
+        () =>
+            'No outputs in restore response or length mismatch, using fallback matching',
       );
 
       final Set<String> usedBlindedMessages = {};

@@ -55,7 +55,8 @@ class _DmInboxPageState extends State<DmInboxPage> {
     final myPubKey = ndk.accounts.getPublicKey();
     if (myPubKey == null) {
       setState(() {
-        _error = 'Log in first. This demo needs a signer and your own kind:10050 DM relay list.';
+        _error =
+            'Log in first. This demo needs a signer and your own kind:10050 DM relay list.';
       });
       return;
     }
@@ -392,7 +393,8 @@ class _DmConversationPageState extends State<DmConversationPage> {
     final myPubKey = ndk.accounts.getPublicKey();
     if (myPubKey == null) {
       setState(() {
-        _error = 'Log in first. This demo needs a signer and your own kind:10050 DM relay list.';
+        _error =
+            'Log in first. This demo needs a signer and your own kind:10050 DM relay list.';
       });
       return;
     }
@@ -532,8 +534,8 @@ class _DmConversationPageState extends State<DmConversationPage> {
                           color: message.isOutgoing
                               ? Theme.of(context).colorScheme.primaryContainer
                               : Theme.of(context)
-                                    .colorScheme
-                                    .surfaceContainerHighest,
+                                  .colorScheme
+                                  .surfaceContainerHighest,
                           child: Padding(
                             padding: const EdgeInsets.all(12),
                             child: IntrinsicWidth(
@@ -590,9 +592,8 @@ class _DmConversationPageState extends State<DmConversationPage> {
               textInputAction: TextInputAction.send,
               onSubmitted: (_) => _sendInlineMessage(),
               decoration: InputDecoration(
-                hintText: myPubKey == null
-                    ? 'Log in to send a message'
-                    : 'Message',
+                hintText:
+                    myPubKey == null ? 'Log in to send a message' : 'Message',
                 border: const OutlineInputBorder(),
               ),
             ),
@@ -789,9 +790,9 @@ class _ConversationUnreadBadge extends StatelessWidget {
           child: Text(
             count > 99 ? '99+' : '$count',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onError,
-              fontWeight: FontWeight.w700,
-            ),
+                  color: Theme.of(context).colorScheme.onError,
+                  fontWeight: FontWeight.w700,
+                ),
           ),
         ),
         const SizedBox(width: 8),

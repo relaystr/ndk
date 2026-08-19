@@ -50,29 +50,29 @@ class Ndk {
 
   /// Creates a new instance of [Ndk] with the given [config]
   Ndk(this.config)
-    : _initialization = Initialization(
-        ndkConfig: config,
-        globalState: _globalState,
-      );
+      : _initialization = Initialization(
+          ndkConfig: config,
+          globalState: _globalState,
+        );
 
   /// Creates a new instance of [Ndk] with default configuration
   Ndk.defaultConfig()
-    : this(
-        NdkConfig(
-          cache: MemCacheManager(),
-          eventVerifier: Bip340EventVerifier(),
-        ),
-      );
+      : this(
+          NdkConfig(
+            cache: MemCacheManager(),
+            eventVerifier: Bip340EventVerifier(),
+          ),
+        );
 
   /// Creates a new instance of [Ndk] with default configuration and empty bootstrap relays
   Ndk.emptyBootstrapRelaysConfig()
-    : this(
-        NdkConfig(
-          cache: MemCacheManager(),
-          eventVerifier: Bip340EventVerifier(),
-          bootstrapRelays: [],
-        ),
-      );
+      : this(
+          NdkConfig(
+            cache: MemCacheManager(),
+            eventVerifier: Bip340EventVerifier(),
+            bootstrapRelays: [],
+          ),
+        );
 
   /// Provides access to low-level Nostr requests.
   ///

@@ -81,8 +81,7 @@ void main() {
       expect(
         events.map((e) => e.content),
         contains("served after the reconnect"),
-        reason:
-            'a request retrying its authentication must outlive the relays '
+        reason: 'a request retrying its authentication must outlive the relays '
             'that finished, and be replayed once its connection is back',
       );
 

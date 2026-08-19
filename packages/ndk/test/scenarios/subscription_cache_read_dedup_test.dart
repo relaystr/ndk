@@ -37,12 +37,12 @@ void main() {
     }
 
     Ndk createNdk() => Ndk(
-      NdkConfig(
-        cache: MemCacheManager(),
-        eventVerifier: MockEventVerifier(),
-        bootstrapRelays: [queryRelay.url, subscriptionRelay.url],
-      ),
-    );
+          NdkConfig(
+            cache: MemCacheManager(),
+            eventVerifier: MockEventVerifier(),
+            bootstrapRelays: [queryRelay.url, subscriptionRelay.url],
+          ),
+        );
 
     test(
       'keeps receiving live events when a query shares its filter',
@@ -89,12 +89,10 @@ void main() {
           privateKey: key.privateKey!,
         );
 
-        await publisher.broadcast
-            .broadcast(
-              nostrEvent: event,
-              specificRelays: [subscriptionRelay.url],
-            )
-            .broadcastDoneFuture;
+        await publisher.broadcast.broadcast(
+          nostrEvent: event,
+          specificRelays: [subscriptionRelay.url],
+        ).broadcastDoneFuture;
 
         final received = await liveEvent.future.timeout(
           const Duration(seconds: 3),

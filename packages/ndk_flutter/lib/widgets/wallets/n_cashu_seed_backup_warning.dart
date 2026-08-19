@@ -94,9 +94,9 @@ class _NCashuSeedBackupWarningState extends State<NCashuSeedBackupWarning> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerHighest,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(

@@ -240,7 +240,9 @@ void main() {
       await controller.close();
     });
 
-    test('should process events from non-closing stream with fewer events than maxConcurrent', () async {
+    test(
+        'should process events from non-closing stream with fewer events than maxConcurrent',
+        () async {
       final controller = StreamController<Nip01Event>();
       final resultList = <Nip01Event>[];
 
@@ -337,7 +339,8 @@ void main() {
             expect(
               resultList.length,
               greaterThan(0),
-              reason: 'Events should be processed continuously, not waiting for stream end',
+              reason:
+                  'Events should be processed continuously, not waiting for stream end',
             );
           }
         }
@@ -355,7 +358,9 @@ void main() {
       },
     );
 
-    test('should not deadlock when maxConcurrent is reached with non-closing stream', () async {
+    test(
+        'should not deadlock when maxConcurrent is reached with non-closing stream',
+        () async {
       final controller = StreamController<Nip01Event>();
       final resultList = <Nip01Event>[];
 

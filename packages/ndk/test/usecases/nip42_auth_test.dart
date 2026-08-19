@@ -21,18 +21,17 @@ void authTests(NdkEngine engine) {
         final key = Bip340.generatePrivateKey();
         final relay = MockRelay(name: "relay", requireAuthForRequests: true);
 
-        final testEvent =
-            await Bip340EventSigner(
-              privateKey: key.privateKey!,
-              publicKey: key.publicKey,
-            ).sign(
-              Nip01Event(
-                pubKey: key.publicKey,
-                kind: Nip01Event.kTextNodeKind,
-                tags: [],
-                content: "test event",
-              ),
-            );
+        final testEvent = await Bip340EventSigner(
+          privateKey: key.privateKey!,
+          publicKey: key.publicKey,
+        ).sign(
+          Nip01Event(
+            pubKey: key.publicKey,
+            kind: Nip01Event.kTextNodeKind,
+            tags: [],
+            content: "test event",
+          ),
+        );
 
         await relay.startServer(textNotes: {key: testEvent});
 
@@ -50,12 +49,10 @@ void authTests(NdkEngine engine) {
           privkey: key.privateKey!,
         );
 
-        final result = await ndk.requests
-            .query(
-              filter: Filter(kinds: [Nip01Event.kTextNodeKind]),
-              explicitRelays: [relay.url],
-            )
-            .future;
+        final result = await ndk.requests.query(
+          filter: Filter(kinds: [Nip01Event.kTextNodeKind]),
+          explicitRelays: [relay.url],
+        ).future;
 
         expect(result, isNotEmpty);
         expect(result.first.content, "test event");
@@ -94,9 +91,8 @@ void authTests(NdkEngine engine) {
           content: "test broadcast",
         );
 
-        final result = await ndk.broadcast
-            .broadcast(nostrEvent: event, specificRelays: [relay.url])
-            .broadcastDoneFuture;
+        final result = await ndk.broadcast.broadcast(
+            nostrEvent: event, specificRelays: [relay.url]).broadcastDoneFuture;
 
         expect(result.any((r) => r.broadcastSuccessful), isTrue);
 
@@ -150,9 +146,9 @@ void authTests(NdkEngine engine) {
           recipientPubkey: recipientKey.publicKey,
         );
 
-        final result = await ndk.broadcast
-            .broadcast(nostrEvent: giftWrap, specificRelays: [relay.url])
-            .broadcastDoneFuture;
+        final result = await ndk.broadcast.broadcast(
+            nostrEvent: giftWrap,
+            specificRelays: [relay.url]).broadcastDoneFuture;
 
         expect(result.any((r) => r.broadcastSuccessful), isTrue);
       },

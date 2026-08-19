@@ -78,7 +78,9 @@ void _runEvictionTests(CacheManager Function() getCacheManager) {
         (await cacheManager.loadEvents(
           pubKeys: ['evict_replaceable_pubkey'],
           kinds: [Metadata.kKind],
-        )).single.content,
+        ))
+            .single
+            .content,
         contains('new'),
       );
     },

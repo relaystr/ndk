@@ -39,10 +39,10 @@ class Blossom {
     required BlossomRepository blossomRepository,
     required Accounts accounts,
     required LocalEventSignerFactory eventSignerFactory,
-  }) : _accounts = accounts,
-       _userServerList = blossomUserServerList,
-       _blossomImpl = blossomRepository,
-       _eventSignerFactory = eventSignerFactory;
+  })  : _accounts = accounts,
+        _userServerList = blossomUserServerList,
+        _blossomImpl = blossomRepository,
+        _eventSignerFactory = eventSignerFactory;
 
   /// Gets the signer to use for blossom operations
   /// Priority: customSigner > logged in account signer > temporary signer

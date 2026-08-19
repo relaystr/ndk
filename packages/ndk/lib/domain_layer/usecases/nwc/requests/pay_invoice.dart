@@ -7,7 +7,7 @@ class PayInvoiceRequest extends NwcRequest {
   final String invoice;
 
   const PayInvoiceRequest({required this.invoice})
-    : super(method: NwcMethod.PAY_INVOICE);
+      : super(method: NwcMethod.PAY_INVOICE);
 
   @override
   Map<String, dynamic> toMap() {

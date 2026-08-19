@@ -23,7 +23,8 @@ void main() {
       seedBytes = Uint8List.fromList(cashuSeed.getSeedBytes());
     });
 
-    group('Version 1: Deprecated BIP32 Derivation (keyset ID 009a1f293253e41e)', () {
+    group('Version 1: Deprecated BIP32 Derivation (keyset ID 009a1f293253e41e)',
+        () {
       const keysetId = "009a1f293253e41e";
       const keysetIdInt = 864559728;
 
@@ -91,32 +92,42 @@ void main() {
         final testCases = [
           {
             'counter': 0,
-            'secret': "485875df74771877439ac06339e284c3acfcd9be7abf3bc20b516faeadfe77ae",
-            'r': "ad00d431add9c673e843d4c2bf9a778a5f402b985b8da2d5550bf39cda41d679",
+            'secret':
+                "485875df74771877439ac06339e284c3acfcd9be7abf3bc20b516faeadfe77ae",
+            'r':
+                "ad00d431add9c673e843d4c2bf9a778a5f402b985b8da2d5550bf39cda41d679",
             'path': "m/129372'/0'/864559728'/0'",
           },
           {
             'counter': 1,
-            'secret': "8f2b39e8e594a4056eb1e6dbb4b0c38ef13b1b2c751f64f810ec04ee35b77270",
-            'r': "967d5232515e10b81ff226ecf5a9e2e2aff92d66ebc3edf0987eb56357fd6248",
+            'secret':
+                "8f2b39e8e594a4056eb1e6dbb4b0c38ef13b1b2c751f64f810ec04ee35b77270",
+            'r':
+                "967d5232515e10b81ff226ecf5a9e2e2aff92d66ebc3edf0987eb56357fd6248",
             'path': "m/129372'/0'/864559728'/1'",
           },
           {
             'counter': 2,
-            'secret': "bc628c79accd2364fd31511216a0fab62afd4a18ff77a20deded7b858c9860c8",
-            'r': "b20f47bb6ae083659f3aa986bfa0435c55c6d93f687d51a01f26862d9b9a4899",
+            'secret':
+                "bc628c79accd2364fd31511216a0fab62afd4a18ff77a20deded7b858c9860c8",
+            'r':
+                "b20f47bb6ae083659f3aa986bfa0435c55c6d93f687d51a01f26862d9b9a4899",
             'path': "m/129372'/0'/864559728'/2'",
           },
           {
             'counter': 3,
-            'secret': "59284fd1650ea9fa17db2b3acf59ecd0f2d52ec3261dd4152785813ff27a33bf",
-            'r': "fb5fca398eb0b1deb955a2988b5ac77d32956155f1c002a373535211a2dfdc29",
+            'secret':
+                "59284fd1650ea9fa17db2b3acf59ecd0f2d52ec3261dd4152785813ff27a33bf",
+            'r':
+                "fb5fca398eb0b1deb955a2988b5ac77d32956155f1c002a373535211a2dfdc29",
             'path': "m/129372'/0'/864559728'/3'",
           },
           {
             'counter': 4,
-            'secret': "576c23393a8b31cc8da6688d9c9a96394ec74b40fdaf1f693a6bb84284334ea0",
-            'r': "5f09bfbfe27c439a597719321e061e2e40aad4a36768bb2bcc3de547c9644bf9",
+            'secret':
+                "576c23393a8b31cc8da6688d9c9a96394ec74b40fdaf1f693a6bb84284334ea0",
+            'r':
+                "5f09bfbfe27c439a597719321e061e2e40aad4a36768bb2bcc3de547c9644bf9",
             'path': "m/129372'/0'/864559728'/4'",
           },
         ];
@@ -143,7 +154,8 @@ void main() {
       });
     });
 
-    group('Version 2: Modern HMAC-SHA256 Derivation (keyset ID 015ba18a...)', () {
+    group('Version 2: Modern HMAC-SHA256 Derivation (keyset ID 015ba18a...)',
+        () {
       const keysetId =
           "015ba18a8adcd02e715a58358eb618da4a4b3791151a4bee5e968bb88406ccf76a";
 
@@ -205,28 +217,38 @@ void main() {
         final testCases = [
           {
             'counter': 0,
-            'secret': "db5561a07a6e6490f8dadeef5be4e92f7cebaecf2f245356b5b2a4ec40687298",
-            'r': "6d26181a3695e32e9f88b80f039ba1ae2ab5a200ad4ce9dbc72c6d3769f2b035",
+            'secret':
+                "db5561a07a6e6490f8dadeef5be4e92f7cebaecf2f245356b5b2a4ec40687298",
+            'r':
+                "6d26181a3695e32e9f88b80f039ba1ae2ab5a200ad4ce9dbc72c6d3769f2b035",
           },
           {
             'counter': 1,
-            'secret': "b70e7b10683da3bf1cdf0411206f8180c463faa16014663f39f2529b2fda922e",
-            'r': "bde4354cee75545bea1a2eee035a34f2d524cee2bb01613823636e998386952e",
+            'secret':
+                "b70e7b10683da3bf1cdf0411206f8180c463faa16014663f39f2529b2fda922e",
+            'r':
+                "bde4354cee75545bea1a2eee035a34f2d524cee2bb01613823636e998386952e",
           },
           {
             'counter': 2,
-            'secret': "78a7ac32ccecc6b83311c6081b89d84bb4128f5a0d0c5e1af081f301c7a513f5",
-            'r': "f40cc1218f085b395c8e1e5aaa25dccc851be3c6c7526a0f4e57108f12d6dac4",
+            'secret':
+                "78a7ac32ccecc6b83311c6081b89d84bb4128f5a0d0c5e1af081f301c7a513f5",
+            'r':
+                "f40cc1218f085b395c8e1e5aaa25dccc851be3c6c7526a0f4e57108f12d6dac4",
           },
           {
             'counter': 3,
-            'secret': "094a2b6c63bfa7970bc09cda0e1cfc9cd3d7c619b8e98fabcfc60aea9e4963e5",
-            'r': "099ed70fc2f7ac769bc20b2a75cb662e80779827b7cc358981318643030577d0",
+            'secret':
+                "094a2b6c63bfa7970bc09cda0e1cfc9cd3d7c619b8e98fabcfc60aea9e4963e5",
+            'r':
+                "099ed70fc2f7ac769bc20b2a75cb662e80779827b7cc358981318643030577d0",
           },
           {
             'counter': 4,
-            'secret': "5e89fc5d30d0bf307ddf0a3ac34aa7a8ee3702169dafa3d3fe1d0cae70ecd5ef",
-            'r': "5550337312d223ba62e3f75cfe2ab70477b046d98e3e71804eade3956c7b98cf",
+            'secret':
+                "5e89fc5d30d0bf307ddf0a3ac34aa7a8ee3702169dafa3d3fe1d0cae70ecd5ef",
+            'r':
+                "5550337312d223ba62e3f75cfe2ab70477b046d98e3e71804eade3956c7b98cf",
           },
         ];
 

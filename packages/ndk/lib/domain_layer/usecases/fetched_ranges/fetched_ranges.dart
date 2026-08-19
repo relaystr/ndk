@@ -7,7 +7,7 @@ class FetchedRanges {
   final CacheManager _cacheManager;
 
   FetchedRanges({required CacheManager cacheManager})
-    : _cacheManager = cacheManager;
+      : _cacheManager = cacheManager;
 
   /// Get fetched ranges for a filter across all relays
   Future<Map<String, RelayFetchedRanges>> getForFilter(Filter filter) async {
@@ -36,9 +36,8 @@ class FetchedRanges {
     // The filterHash is preserved but the filter details are not available
     final result = <RelayFetchedRanges>[];
     for (final entry in grouped.entries) {
-      final relayRecords = entry.value
-          .where((r) => r.relayUrl == relayUrl)
-          .toList();
+      final relayRecords =
+          entry.value.where((r) => r.relayUrl == relayUrl).toList();
       if (relayRecords.isNotEmpty) {
         result.add(
           _buildRelayFetchedRanges(
@@ -205,11 +204,10 @@ class FetchedRanges {
     Filter filter,
     List<FilterFetchedRangeRecord> records,
   ) {
-    final ranges =
-        records
-            .map((r) => TimeRange(since: r.rangeStart, until: r.rangeEnd))
-            .toList()
-          ..sort((a, b) => a.since.compareTo(b.since));
+    final ranges = records
+        .map((r) => TimeRange(since: r.rangeStart, until: r.rangeEnd))
+        .toList()
+      ..sort((a, b) => a.since.compareTo(b.since));
 
     return RelayFetchedRanges(
       relayUrl: relayUrl,

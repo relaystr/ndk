@@ -40,20 +40,20 @@ class SembastCacheManager extends CacheManager {
 
   late final sembast.StoreRef<String, Map<String, Object?>> _eventsStore;
   late final sembast.StoreRef<String, Map<String, Object?>>
-  _eventCacheStateStore;
+      _eventCacheStateStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _eventSourceStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _eventDeliveryStore;
   late final sembast.StoreRef<String, Map<String, Object?>>
-  _relayDeliveryTargetStore;
+      _relayDeliveryTargetStore;
   late final sembast.StoreRef<String, Map<String, Object?>>
-  _decryptedEventPayloadStore;
+      _decryptedEventPayloadStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _metadataStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _contactListStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _relayListStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _nip05Store;
   late final sembast.StoreRef<String, Map<String, Object?>> _relaySetStore;
   late final sembast.StoreRef<String, Map<String, Object?>>
-  _filterFetchedRangeStore;
+      _filterFetchedRangeStore;
 
   late final sembast.StoreRef<String, Map<String, Object?>> _keysetStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _proofStore;
@@ -146,9 +146,10 @@ class SembastCacheManager extends CacheManager {
       finder: sembast.Finder(filter: sembast.Filter.equals('eventId', eventId)),
     );
 
-    final sources =
-        records.map((record) => record.value['relayUrl'] as String).toList()
-          ..sort();
+    final sources = records
+        .map((record) => record.value['relayUrl'] as String)
+        .toList()
+      ..sort();
     return sources;
   }
 
@@ -191,9 +192,8 @@ class SembastCacheManager extends CacheManager {
     int? limit,
   }) async {
     final finder = sembast.Finder(
-      filter: status != null
-          ? sembast.Filter.equals('status', status.name)
-          : null,
+      filter:
+          status != null ? sembast.Filter.equals('status', status.name) : null,
       sortOrders: [sembast.SortOrder('createdAt')],
       limit: limit,
     );
@@ -455,10 +455,10 @@ class SembastCacheManager extends CacheManager {
     }
 
     return plan.toResult().copyWith(
-      removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
-      removedTerminalFailedDeliveries:
-          deliverySweep.removedTerminalFailedDeliveries,
-    );
+          removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
+          removedTerminalFailedDeliveries:
+              deliverySweep.removedTerminalFailedDeliveries,
+        );
   }
 
   @override
@@ -1089,7 +1089,8 @@ class SembastCacheManager extends CacheManager {
       return metadata.matchesSearch(normalizedSearch) ||
           (metadata.about?.toLowerCase().contains(normalizedSearch) ?? false) ||
           (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
-    }).toList()..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
+    }).toList()
+      ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
     return matches.take(limit);
   }
 
@@ -1149,9 +1150,7 @@ class SembastCacheManager extends CacheManager {
       if (contactListEvent == null) {
         await _contactListStore.record(pubKey).delete(_database);
       } else {
-        await _contactListStore
-            .record(pubKey)
-            .put(
+        await _contactListStore.record(pubKey).put(
               _database,
               ContactList.fromEvent(contactListEvent).toJsonForStorage(),
             );
@@ -1186,9 +1185,7 @@ class SembastCacheManager extends CacheManager {
     }
 
     if (latestNip65 != null) {
-      await _relayListStore
-          .record(pubKey)
-          .put(
+      await _relayListStore.record(pubKey).put(
             _database,
             UserRelayList.fromNip65(Nip65.fromEvent(latestNip65))
                 .toJsonForStorage(),
@@ -1197,9 +1194,7 @@ class SembastCacheManager extends CacheManager {
     }
 
     if (latestContactListWithRelays != null) {
-      await _relayListStore
-          .record(pubKey)
-          .put(
+      await _relayListStore.record(pubKey).put(
             _database,
             UserRelayList.fromNip02EventContent(latestContactListWithRelays)
                 .toJsonForStorage(),
@@ -1270,7 +1265,7 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<List<FilterFetchedRangeRecord>>
-  loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
+      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
     final finder = sembast.Finder(
       filter: sembast.Filter.equals('relayUrl', relayUrl),
     );

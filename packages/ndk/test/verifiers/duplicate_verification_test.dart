@@ -213,7 +213,8 @@ void main() async {
         VerifyEventStream(
           unverifiedStreamInput: Stream.fromIterable([event, event]),
           eventVerifier: localVerifier,
-        )().listen(
+        )()
+            .listen(
           emitted.add,
           onError: (Object error) => errors.add(error),
           onDone: done.complete,
@@ -255,7 +256,8 @@ void main() async {
         VerifyEventStream(
           unverifiedStreamInput: Stream.fromIterable([event, event]),
           eventVerifier: localVerifier,
-        )().listen(
+        )()
+            .listen(
           emitted.add,
           onError: (Object error) => errors.add(error),
           onDone: done.complete,

@@ -56,7 +56,9 @@ void main() async {
       },
     );
 
-    test('NIP92 - should handle malformed server response gracefully - dim 1920x1080', () {
+    test(
+        'NIP92 - should handle malformed server response gracefully - dim 1920x1080',
+        () {
       final Map<String, dynamic> malformedJson = {
         "url": '',
         "sha256": '',
@@ -81,7 +83,9 @@ void main() async {
       expect(result2.nip94!.dimenssions, equals("100"));
     });
 
-    test('NIP92 - should handle multiple repeated fields - image / thumb / fallback', () {
+    test(
+        'NIP92 - should handle multiple repeated fields - image / thumb / fallback',
+        () {
       final json = '''{
               "url": "https://nostr.download/aaaa.mp4",
               "duration": "24.293322",

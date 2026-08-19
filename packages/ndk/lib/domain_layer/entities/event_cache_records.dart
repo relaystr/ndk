@@ -210,9 +210,8 @@ class EventDeliveryRecord {
       serializedEventJson: identical(serializedEventJson, _noChange)
           ? this.serializedEventJson
           : serializedEventJson as String?,
-      signedAt: identical(signedAt, _noChange)
-          ? this.signedAt
-          : signedAt as int?,
+      signedAt:
+          identical(signedAt, _noChange) ? this.signedAt : signedAt as int?,
       completedAt: identical(completedAt, _noChange)
           ? this.completedAt
           : completedAt as int?,
@@ -252,16 +251,16 @@ class EventDeliveryRecord {
   factory EventDeliveryRecord.fromJson(Map<String, dynamic> json) {
     final requiresInteractiveSigning =
         json['requiresInteractiveSigning'] as bool? ??
-        json['requiresNetworkSigner'] as bool? ??
-        false;
+            json['requiresNetworkSigner'] as bool? ??
+            false;
     return EventDeliveryRecord(
       eventId: json['eventId'] as String,
       status: EventDeliveryStatus.values.byName(json['status'] as String),
       signingState: json['signingState'] != null
           ? EventSigningState.values.byName(json['signingState'] as String)
           : (requiresInteractiveSigning
-                ? EventSigningState.pending
-                : EventSigningState.notNeeded),
+              ? EventSigningState.pending
+              : EventSigningState.notNeeded),
       createdAt: json['createdAt'] as int,
       updatedAt: json['updatedAt'] as int,
       serializedEventJson: json['serializedEventJson'] as String?,
@@ -492,9 +491,8 @@ class EventCacheStateRecord {
     int? now,
   }) {
     final currentTime = now ?? Nip01Event.secondsSinceEpoch();
-    final deletionEvents = rawEvents
-        .where((event) => event.kind == 5)
-        .toList(growable: false);
+    final deletionEvents =
+        rawEvents.where((event) => event.kind == 5).toList(growable: false);
     final visibleWinners = <String, Nip01Event>{};
 
     for (final event in rawEvents) {

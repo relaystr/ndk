@@ -16,18 +16,17 @@ final class QsBuffer extends Struct {
 /// Verifies a Nostr event signature.
 /// Returns 1 if valid, 0 if invalid.
 @Native<
-  Int32 Function(
-    Pointer<Utf8>, // eventIdHex
-    Pointer<Utf8>, // pubKeyHex
-    Uint64, // createdAt
-    Uint32, // kind
-    Pointer<Pointer<Utf8>>, // tagsData
-    Pointer<Uint32>, // tagsLengths
-    Uint32, // tagsCount
-    Pointer<Utf8>, // content
-    Pointer<Utf8>, // signatureHex
-  )
->(symbol: 'verify_nostr_event')
+    Int32 Function(
+      Pointer<Utf8>, // eventIdHex
+      Pointer<Utf8>, // pubKeyHex
+      Uint64, // createdAt
+      Uint32, // kind
+      Pointer<Pointer<Utf8>>, // tagsData
+      Pointer<Uint32>, // tagsLengths
+      Uint32, // tagsCount
+      Pointer<Utf8>, // content
+      Pointer<Utf8>, // signatureHex
+    )>(symbol: 'verify_nostr_event')
 external int verifyNostrEventNative(
   Pointer<Utf8> eventIdHex,
   Pointer<Utf8> pubKeyHex,
@@ -62,12 +61,11 @@ external void qsFreeBuffer(QsBuffer buf);
 /// [outPk], [outSk]: pointers to QsBuffer structs that will be filled.
 /// Returns 1 on success, 0 on failure.
 @Native<
-  Int32 Function(
-    Uint32, // level
-    Pointer<QsBuffer>, // outPk
-    Pointer<QsBuffer>, // outSk
-  )
->(symbol: 'qs_generate_keypair')
+    Int32 Function(
+      Uint32, // level
+      Pointer<QsBuffer>, // outPk
+      Pointer<QsBuffer>, // outSk
+    )>(symbol: 'qs_generate_keypair')
 external int qsGenerateKeypair(
   int level,
   Pointer<QsBuffer> outPk,
@@ -82,15 +80,14 @@ external int qsGenerateKeypair(
 /// [outSig]: pointer to QsBuffer that will receive the signature.
 /// Returns 1 on success, 0 on failure.
 @Native<
-  Int32 Function(
-    Uint32, // level
-    Pointer<Uint8>, // skPtr
-    IntPtr, // skLen
-    Pointer<Uint8>, // msgPtr
-    IntPtr, // msgLen
-    Pointer<QsBuffer>, // outSig
-  )
->(symbol: 'qs_sign')
+    Int32 Function(
+      Uint32, // level
+      Pointer<Uint8>, // skPtr
+      IntPtr, // skLen
+      Pointer<Uint8>, // msgPtr
+      IntPtr, // msgLen
+      Pointer<QsBuffer>, // outSig
+    )>(symbol: 'qs_sign')
 external int qsSign(
   int level,
   Pointer<Uint8> skPtr,
@@ -105,16 +102,15 @@ external int qsSign(
 /// [level]: ML-DSA parameter set (44, 65, or 87).
 /// Returns 1 if valid, 0 if invalid.
 @Native<
-  Int32 Function(
-    Uint32, // level
-    Pointer<Uint8>, // pkPtr
-    IntPtr, // pkLen
-    Pointer<Uint8>, // msgPtr
-    IntPtr, // msgLen
-    Pointer<Uint8>, // sigPtr
-    IntPtr, // sigLen
-  )
->(symbol: 'qs_verify')
+    Int32 Function(
+      Uint32, // level
+      Pointer<Uint8>, // pkPtr
+      IntPtr, // pkLen
+      Pointer<Uint8>, // msgPtr
+      IntPtr, // msgLen
+      Pointer<Uint8>, // sigPtr
+      IntPtr, // sigLen
+    )>(symbol: 'qs_verify')
 external int qsVerify(
   int level,
   Pointer<Uint8> pkPtr,
@@ -135,15 +131,14 @@ external int qsVerify(
 /// private key is rejected: deriving from it would be circular.
 /// Returns 1 on success, 0 on failure.
 @Native<
-  Int32 Function(
-    Uint32, // level
-    Pointer<Uint8>, // seedPtr
-    IntPtr, // seedLen
-    Uint32, // account
-    Pointer<QsBuffer>, // outPk
-    Pointer<QsBuffer>, // outSk
-  )
->(symbol: 'qs_derive_keypair_from_seed')
+    Int32 Function(
+      Uint32, // level
+      Pointer<Uint8>, // seedPtr
+      IntPtr, // seedLen
+      Uint32, // account
+      Pointer<QsBuffer>, // outPk
+      Pointer<QsBuffer>, // outSk
+    )>(symbol: 'qs_derive_keypair_from_seed')
 external int qsDeriveKeypairFromSeed(
   int level,
   Pointer<Uint8> seedPtr,
@@ -166,14 +161,13 @@ external int qsDeriveKeypairFromSeed(
 /// reach it. Rejects anything that is not exactly 64 bytes, which blocks
 /// passing a secp256k1 private key (that derivation would be circular).
 @Native<
-  Int32 Function(
-    Pointer<Uint8>, // seedPtr
-    IntPtr, // seedLen
-    Uint32, // account
-    Pointer<QsBuffer>, // outPk
-    Pointer<QsBuffer>, // outSk
-  )
->(symbol: 'pq_derive_kem_keypair')
+    Int32 Function(
+      Pointer<Uint8>, // seedPtr
+      IntPtr, // seedLen
+      Uint32, // account
+      Pointer<QsBuffer>, // outPk
+      Pointer<QsBuffer>, // outSk
+    )>(symbol: 'pq_derive_kem_keypair')
 external int pqDeriveKemKeypair(
   Pointer<Uint8> seedPtr,
   int seedLen,
@@ -188,18 +182,17 @@ external int pqDeriveKemKeypair(
 /// bound into the AEAD's associated data so a ciphertext cannot be replayed
 /// into another conversation or have its direction swapped.
 @Native<
-  Int32 Function(
-    Pointer<Uint8>, // kemPkPtr
-    IntPtr, // kemPkLen
-    Pointer<Uint8>, // convPtr
-    IntPtr, // convLen
-    Pointer<Utf8>, // sender
-    Pointer<Utf8>, // recipient
-    Pointer<Uint8>, // msgPtr
-    IntPtr, // msgLen
-    Pointer<QsBuffer>, // out
-  )
->(symbol: 'pq_seal')
+    Int32 Function(
+      Pointer<Uint8>, // kemPkPtr
+      IntPtr, // kemPkLen
+      Pointer<Uint8>, // convPtr
+      IntPtr, // convLen
+      Pointer<Utf8>, // sender
+      Pointer<Utf8>, // recipient
+      Pointer<Uint8>, // msgPtr
+      IntPtr, // msgLen
+      Pointer<QsBuffer>, // out
+    )>(symbol: 'pq_seal')
 external int pqSeal(
   Pointer<Uint8> kemPkPtr,
   int kemPkLen,
@@ -216,17 +209,16 @@ external int pqSeal(
 /// distinguishing why: telling a caller whether padding or the tag failed
 /// would hand an attacker an oracle.
 @Native<
-  Int32 Function(
-    Pointer<Utf8>, // payload
-    Pointer<Uint8>, // kemSkPtr
-    IntPtr, // kemSkLen
-    Pointer<Uint8>, // convPtr
-    IntPtr, // convLen
-    Pointer<Utf8>, // sender
-    Pointer<Utf8>, // recipient
-    Pointer<QsBuffer>, // out
-  )
->(symbol: 'pq_open')
+    Int32 Function(
+      Pointer<Utf8>, // payload
+      Pointer<Uint8>, // kemSkPtr
+      IntPtr, // kemSkLen
+      Pointer<Uint8>, // convPtr
+      IntPtr, // convLen
+      Pointer<Utf8>, // sender
+      Pointer<Utf8>, // recipient
+      Pointer<QsBuffer>, // out
+    )>(symbol: 'pq_open')
 external int pqOpen(
   Pointer<Utf8> payload,
   Pointer<Uint8> kemSkPtr,
