@@ -58,16 +58,15 @@ class _ZapsPageState extends State<ZapsPage> {
                 decoration: InputDecoration(
                   prefixIcon: IconButton(
                     onPressed: () {
-                      Clipboard.getData(Clipboard.kTextPlain).then((
-                        clipboardData,
-                      ) {
-                        if (clipboardData != null &&
-                            clipboardData.text != null) {
-                          setState(() {
-                            uri.text = clipboardData.text!;
+                      Clipboard.getData(Clipboard.kTextPlain)
+                          .then((clipboardData) {
+                            if (clipboardData != null &&
+                                clipboardData.text != null) {
+                              setState(() {
+                                uri.text = clipboardData.text!;
+                              });
+                            }
                           });
-                        }
-                      });
                     },
                     icon: const Icon(Icons.paste),
                   ),

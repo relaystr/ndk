@@ -123,10 +123,7 @@ void main() {
         0xFF,
         0x7F,
       ]);
-      expect(
-        () => NegentropyEncoder.decodeVarint(tooBig),
-        throwsArgumentError,
-      );
+      expect(() => NegentropyEncoder.decodeVarint(tooBig), throwsArgumentError);
     });
   });
 
@@ -277,11 +274,7 @@ void main() {
       );
       expect(encoded, equals([101, 0]));
 
-      final (ts, _, _) = NegentropyEncoder.decodeBound(
-        encoded,
-        0,
-        1700000000,
-      );
+      final (ts, _, _) = NegentropyEncoder.decodeBound(encoded, 0, 1700000000);
       expect(ts, equals(1700000100));
     });
 
@@ -293,11 +286,7 @@ void main() {
       );
       expect(encoded, equals([0, 0]));
 
-      final (ts, _, _) = NegentropyEncoder.decodeBound(
-        encoded,
-        0,
-        1700000000,
-      );
+      final (ts, _, _) = NegentropyEncoder.decodeBound(encoded, 0, 1700000000);
       expect(ts, equals(NegentropyEncoder.infiniteTimestamp));
     });
 
@@ -564,7 +553,9 @@ void main() {
           if (random.nextInt(3) != 0) remote.add(item);
         }
 
-        final localIds = local.map((i) => i.id).map(NegentropyEncoder.bytesToHex);
+        final localIds = local
+            .map((i) => i.id)
+            .map(NegentropyEncoder.bytesToHex);
         final remoteIds = remote
             .map((i) => i.id)
             .map(NegentropyEncoder.bytesToHex);

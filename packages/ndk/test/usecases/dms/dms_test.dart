@@ -125,47 +125,44 @@ void main() async {
       },
     );
 
-    test(
-      'sendMessage with additional tags keeps the p tag on the rumor',
-      () async {
-        await publishDmRelayList(alice, urls: [relay.url]);
-        await publishDmRelayList(bob, urls: [relay.url]);
+    test('sendMessage with additional tags keeps the p tag on the rumor', () async {
+      await publishDmRelayList(alice, urls: [relay.url]);
+      await publishDmRelayList(bob, urls: [relay.url]);
 
-        await ndk.dms.sendMessage(
-          recipientPubKey: bob.publicKey,
-          content: 'with subject',
-          additionalTags: const [
-            ['subject', 'greeting'],
-          ],
-        );
+      await ndk.dms.sendMessage(
+        recipientPubKey: bob.publicKey,
+        content: 'with subject',
+        additionalTags: const [
+          ['subject', 'greeting'],
+        ],
+      );
 
-        // Login as bob and load the conversation to verify the rumor carries the
-        // extra tag through the gift wrap.
-        ndk.accounts.logout();
-        ndk.accounts.loginPrivateKey(
-          pubkey: bob.publicKey,
-          privkey: bob.privateKey!,
-        );
-        await publishDmRelayList(bob, urls: [relay.url]);
+      // Login as bob and load the conversation to verify the rumor carries the
+      // extra tag through the gift wrap.
+      ndk.accounts.logout();
+      ndk.accounts.loginPrivateKey(
+        pubkey: bob.publicKey,
+        privkey: bob.privateKey!,
+      );
+      await publishDmRelayList(bob, urls: [relay.url]);
 
-        final conversations = await ndk.dms.loadConversations(
-          timeout: const Duration(seconds: 10),
-        );
-        expect(conversations, isNotEmpty);
+      final conversations = await ndk.dms.loadConversations(
+        timeout: const Duration(seconds: 10),
+      );
+      expect(conversations, isNotEmpty);
 
-        final aliceConv = conversations.firstWhere(
-          (c) => c.peerPubKey == alice.publicKey,
-        );
-        expect(aliceConv.messages, isNotEmpty);
-        final rumor = aliceConv.messages.first.rumor;
-        expect(
-          rumor.tags.any(
-            (t) => t.length >= 2 && t[0] == 'subject' && t[1] == 'greeting',
-          ),
-          isTrue,
-        );
-      },
-    );
+      final aliceConv = conversations.firstWhere(
+        (c) => c.peerPubKey == alice.publicKey,
+      );
+      expect(aliceConv.messages, isNotEmpty);
+      final rumor = aliceConv.messages.first.rumor;
+      expect(
+        rumor.tags.any(
+          (t) => t.length >= 2 && t[0] == 'subject' && t[1] == 'greeting',
+        ),
+        isTrue,
+      );
+    });
 
     test(
       'sender view keeps outgoing DMs with additional p tags for mentions',

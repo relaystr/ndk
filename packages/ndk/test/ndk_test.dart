@@ -178,33 +178,30 @@ void main() async {
       await relay1.stopServer();
     });
 
-    test(
-      'emptyBootstrapRelaysConfig with non-list welcome message from explicit relay',
-      () async {
-        final welcomeMessage =
-            '{"welcome": {"motd": "test message"}, "type": "welcome"}';
-        MockRelay explicitRelay = MockRelay(
-          name: "explicitRelay",
-          explicitPort: 3963,
-          customWelcomeMessage: welcomeMessage,
-        );
-        await explicitRelay.startServer();
+    test('emptyBootstrapRelaysConfig with non-list welcome message from explicit relay', () async {
+      final welcomeMessage =
+          '{"welcome": {"motd": "test message"}, "type": "welcome"}';
+      MockRelay explicitRelay = MockRelay(
+        name: "explicitRelay",
+        explicitPort: 3963,
+        customWelcomeMessage: welcomeMessage,
+      );
+      await explicitRelay.startServer();
 
-        final ndk = Ndk.emptyBootstrapRelaysConfig();
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
 
-        final query = ndk.requests.query(
-          filters: [
-            Filter(kinds: [0]),
-          ],
-          explicitRelays: [explicitRelay.url],
-        );
+      final query = ndk.requests.query(
+        filters: [
+          Filter(kinds: [0]),
+        ],
+        explicitRelays: [explicitRelay.url],
+      );
 
-        await query.future;
+      await query.future;
 
-        ndk.destroy();
-        await explicitRelay.stopServer();
-      },
-    );
+      ndk.destroy();
+      await explicitRelay.stopServer();
+    });
 
     test(
       'should handle null values in events from relays gracefully',

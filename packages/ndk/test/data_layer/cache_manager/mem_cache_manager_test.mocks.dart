@@ -62,15 +62,10 @@ class MockUserRelayList extends _i1.Mock implements _i6.UserRelayList {
   }
 
   @override
-  String get pubKey =>
-      (super.noSuchMethod(
-            Invocation.getter(#pubKey),
-            returnValue: _i7.dummyValue<String>(
-              this,
-              Invocation.getter(#pubKey),
-            ),
-          )
-          as String);
+  String get pubKey => (super.noSuchMethod(
+    Invocation.getter(#pubKey),
+    returnValue: _i7.dummyValue<String>(this, Invocation.getter(#pubKey)),
+  ) as String);
 
   @override
   int get createdAt =>
@@ -78,20 +73,16 @@ class MockUserRelayList extends _i1.Mock implements _i6.UserRelayList {
           as int);
 
   @override
-  int get refreshedTimestamp =>
-      (super.noSuchMethod(
-            Invocation.getter(#refreshedTimestamp),
-            returnValue: 0,
-          )
-          as int);
+  int get refreshedTimestamp => (super.noSuchMethod(
+    Invocation.getter(#refreshedTimestamp),
+    returnValue: 0,
+  ) as int);
 
   @override
-  Map<String, _i8.ReadWriteMarker> get relays =>
-      (super.noSuchMethod(
-            Invocation.getter(#relays),
-            returnValue: <String, _i8.ReadWriteMarker>{},
-          )
-          as Map<String, _i8.ReadWriteMarker>);
+  Map<String, _i8.ReadWriteMarker> get relays => (super.noSuchMethod(
+    Invocation.getter(#relays),
+    returnValue: <String, _i8.ReadWriteMarker>{},
+  ) as Map<String, _i8.ReadWriteMarker>);
 
   @override
   Iterable<String> get urls =>
@@ -128,12 +119,10 @@ class MockUserRelayList extends _i1.Mock implements _i6.UserRelayList {
   );
 
   @override
-  _i2.Nip65 toNip65() =>
-      (super.noSuchMethod(
-            Invocation.method(#toNip65, []),
-            returnValue: _FakeNip65_0(this, Invocation.method(#toNip65, [])),
-          )
-          as _i2.Nip65);
+  _i2.Nip65 toNip65() => (super.noSuchMethod(
+    Invocation.method(#toNip65, []),
+    returnValue: _FakeNip65_0(this, Invocation.method(#toNip65, [])),
+  ) as _i2.Nip65);
 }
 
 /// A class which mocks [RelaySet].
@@ -145,12 +134,10 @@ class MockRelaySet extends _i1.Mock implements _i9.RelaySet {
   }
 
   @override
-  String get id =>
-      (super.noSuchMethod(
-            Invocation.getter(#id),
-            returnValue: _i7.dummyValue<String>(this, Invocation.getter(#id)),
-          )
-          as String);
+  String get id => (super.noSuchMethod(
+    Invocation.getter(#id),
+    returnValue: _i7.dummyValue<String>(this, Invocation.getter(#id)),
+  ) as String);
 
   @override
   Iterable<String> get urls =>
@@ -158,63 +145,46 @@ class MockRelaySet extends _i1.Mock implements _i9.RelaySet {
           as Iterable<String>);
 
   @override
-  String get name =>
-      (super.noSuchMethod(
-            Invocation.getter(#name),
-            returnValue: _i7.dummyValue<String>(this, Invocation.getter(#name)),
-          )
-          as String);
+  String get name => (super.noSuchMethod(
+    Invocation.getter(#name),
+    returnValue: _i7.dummyValue<String>(this, Invocation.getter(#name)),
+  ) as String);
 
   @override
-  String get pubKey =>
-      (super.noSuchMethod(
-            Invocation.getter(#pubKey),
-            returnValue: _i7.dummyValue<String>(
-              this,
-              Invocation.getter(#pubKey),
-            ),
-          )
-          as String);
+  String get pubKey => (super.noSuchMethod(
+    Invocation.getter(#pubKey),
+    returnValue: _i7.dummyValue<String>(this, Invocation.getter(#pubKey)),
+  ) as String);
 
   @override
-  int get relayMinCountPerPubkey =>
-      (super.noSuchMethod(
-            Invocation.getter(#relayMinCountPerPubkey),
-            returnValue: 0,
-          )
-          as int);
+  int get relayMinCountPerPubkey => (super.noSuchMethod(
+    Invocation.getter(#relayMinCountPerPubkey),
+    returnValue: 0,
+  ) as int);
 
   @override
-  _i10.RelayDirection get direction =>
-      (super.noSuchMethod(
-            Invocation.getter(#direction),
-            returnValue: _i10.RelayDirection.inbox,
-          )
-          as _i10.RelayDirection);
+  _i10.RelayDirection get direction => (super.noSuchMethod(
+    Invocation.getter(#direction),
+    returnValue: _i10.RelayDirection.inbox,
+  ) as _i10.RelayDirection);
 
   @override
-  Map<String, List<_i11.PubkeyMapping>> get relaysMap =>
-      (super.noSuchMethod(
-            Invocation.getter(#relaysMap),
-            returnValue: <String, List<_i11.PubkeyMapping>>{},
-          )
-          as Map<String, List<_i11.PubkeyMapping>>);
+  Map<String, List<_i11.PubkeyMapping>> get relaysMap => (super.noSuchMethod(
+    Invocation.getter(#relaysMap),
+    returnValue: <String, List<_i11.PubkeyMapping>>{},
+  ) as Map<String, List<_i11.PubkeyMapping>>);
 
   @override
-  bool get fallbackToBootstrapRelays =>
-      (super.noSuchMethod(
-            Invocation.getter(#fallbackToBootstrapRelays),
-            returnValue: false,
-          )
-          as bool);
+  bool get fallbackToBootstrapRelays => (super.noSuchMethod(
+    Invocation.getter(#fallbackToBootstrapRelays),
+    returnValue: false,
+  ) as bool);
 
   @override
-  List<_i9.NotCoveredPubKey> get notCoveredPubkeys =>
-      (super.noSuchMethod(
-            Invocation.getter(#notCoveredPubkeys),
-            returnValue: <_i9.NotCoveredPubKey>[],
-          )
-          as List<_i9.NotCoveredPubKey>);
+  List<_i9.NotCoveredPubKey> get notCoveredPubkeys => (super.noSuchMethod(
+    Invocation.getter(#notCoveredPubkeys),
+    returnValue: <_i9.NotCoveredPubKey>[],
+  ) as List<_i9.NotCoveredPubKey>);
 
   @override
   set name(String? value) => super.noSuchMethod(
@@ -286,15 +256,10 @@ class MockContactList extends _i1.Mock implements _i14.ContactList {
   }
 
   @override
-  String get pubKey =>
-      (super.noSuchMethod(
-            Invocation.getter(#pubKey),
-            returnValue: _i7.dummyValue<String>(
-              this,
-              Invocation.getter(#pubKey),
-            ),
-          )
-          as String);
+  String get pubKey => (super.noSuchMethod(
+    Invocation.getter(#pubKey),
+    returnValue: _i7.dummyValue<String>(this, Invocation.getter(#pubKey)),
+  ) as String);
 
   @override
   List<String> get contacts =>
@@ -302,12 +267,10 @@ class MockContactList extends _i1.Mock implements _i14.ContactList {
           as List<String>);
 
   @override
-  List<String> get contactRelays =>
-      (super.noSuchMethod(
-            Invocation.getter(#contactRelays),
-            returnValue: <String>[],
-          )
-          as List<String>);
+  List<String> get contactRelays => (super.noSuchMethod(
+    Invocation.getter(#contactRelays),
+    returnValue: <String>[],
+  ) as List<String>);
 
   @override
   List<String> get petnames =>
@@ -315,28 +278,22 @@ class MockContactList extends _i1.Mock implements _i14.ContactList {
           as List<String>);
 
   @override
-  List<String> get followedTags =>
-      (super.noSuchMethod(
-            Invocation.getter(#followedTags),
-            returnValue: <String>[],
-          )
-          as List<String>);
+  List<String> get followedTags => (super.noSuchMethod(
+    Invocation.getter(#followedTags),
+    returnValue: <String>[],
+  ) as List<String>);
 
   @override
-  List<String> get followedCommunities =>
-      (super.noSuchMethod(
-            Invocation.getter(#followedCommunities),
-            returnValue: <String>[],
-          )
-          as List<String>);
+  List<String> get followedCommunities => (super.noSuchMethod(
+    Invocation.getter(#followedCommunities),
+    returnValue: <String>[],
+  ) as List<String>);
 
   @override
-  List<String> get followedEvents =>
-      (super.noSuchMethod(
-            Invocation.getter(#followedEvents),
-            returnValue: <String>[],
-          )
-          as List<String>);
+  List<String> get followedEvents => (super.noSuchMethod(
+    Invocation.getter(#followedEvents),
+    returnValue: <String>[],
+  ) as List<String>);
 
   @override
   int get createdAt =>
@@ -409,31 +366,23 @@ class MockContactList extends _i1.Mock implements _i14.ContactList {
   );
 
   @override
-  List<List<String>> contactsToJson() =>
-      (super.noSuchMethod(
-            Invocation.method(#contactsToJson, []),
-            returnValue: <List<String>>[],
-          )
-          as List<List<String>>);
+  List<List<String>> contactsToJson() => (super.noSuchMethod(
+    Invocation.method(#contactsToJson, []),
+    returnValue: <List<String>>[],
+  ) as List<List<String>>);
 
   @override
   List<List<String>> tagListToJson(List<String>? list, String? tag) =>
       (super.noSuchMethod(
-            Invocation.method(#tagListToJson, [list, tag]),
-            returnValue: <List<String>>[],
-          )
-          as List<List<String>>);
+        Invocation.method(#tagListToJson, [list, tag]),
+        returnValue: <List<String>>[],
+      ) as List<List<String>>);
 
   @override
-  _i3.Nip01Event toEvent() =>
-      (super.noSuchMethod(
-            Invocation.method(#toEvent, []),
-            returnValue: _FakeNip01Event_1(
-              this,
-              Invocation.method(#toEvent, []),
-            ),
-          )
-          as _i3.Nip01Event);
+  _i3.Nip01Event toEvent() => (super.noSuchMethod(
+    Invocation.method(#toEvent, []),
+    returnValue: _FakeNip01Event_1(this, Invocation.method(#toEvent, [])),
+  ) as _i3.Nip01Event);
 }
 
 /// A class which mocks [Metadata].
@@ -445,23 +394,16 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
   }
 
   @override
-  String get pubKey =>
-      (super.noSuchMethod(
-            Invocation.getter(#pubKey),
-            returnValue: _i7.dummyValue<String>(
-              this,
-              Invocation.getter(#pubKey),
-            ),
-          )
-          as String);
+  String get pubKey => (super.noSuchMethod(
+    Invocation.getter(#pubKey),
+    returnValue: _i7.dummyValue<String>(this, Invocation.getter(#pubKey)),
+  ) as String);
 
   @override
-  Map<String, dynamic> get content =>
-      (super.noSuchMethod(
-            Invocation.getter(#content),
-            returnValue: <String, dynamic>{},
-          )
-          as Map<String, dynamic>);
+  Map<String, dynamic> get content => (super.noSuchMethod(
+    Invocation.getter(#content),
+    returnValue: <String, dynamic>{},
+  ) as Map<String, dynamic>);
 
   @override
   List<String> get sources =>
@@ -469,12 +411,10 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
           as List<String>);
 
   @override
-  List<List<String>> get tags =>
-      (super.noSuchMethod(
-            Invocation.getter(#tags),
-            returnValue: <List<String>>[],
-          )
-          as List<List<String>>);
+  List<List<String>> get tags => (super.noSuchMethod(
+    Invocation.getter(#tags),
+    returnValue: <List<String>>[],
+  ) as List<List<String>>);
 
   @override
   set pubKey(String? value) => super.noSuchMethod(
@@ -567,23 +507,16 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
   );
 
   @override
-  Map<String, dynamic> toJson() =>
-      (super.noSuchMethod(
-            Invocation.method(#toJson, []),
-            returnValue: <String, dynamic>{},
-          )
-          as Map<String, dynamic>);
+  Map<String, dynamic> toJson() => (super.noSuchMethod(
+    Invocation.method(#toJson, []),
+    returnValue: <String, dynamic>{},
+  ) as Map<String, dynamic>);
 
   @override
-  _i3.Nip01Event toEvent() =>
-      (super.noSuchMethod(
-            Invocation.method(#toEvent, []),
-            returnValue: _FakeNip01Event_1(
-              this,
-              Invocation.method(#toEvent, []),
-            ),
-          )
-          as _i3.Nip01Event);
+  _i3.Nip01Event toEvent() => (super.noSuchMethod(
+    Invocation.method(#toEvent, []),
+    returnValue: _FakeNip01Event_1(this, Invocation.method(#toEvent, [])),
+  ) as _i3.Nip01Event);
 
   @override
   void setCustomField(String? key, dynamic value) => super.noSuchMethod(
@@ -596,23 +529,16 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
       super.noSuchMethod(Invocation.method(#getCustomField, [key]));
 
   @override
-  String getName() =>
-      (super.noSuchMethod(
-            Invocation.method(#getName, []),
-            returnValue: _i7.dummyValue<String>(
-              this,
-              Invocation.method(#getName, []),
-            ),
-          )
-          as String);
+  String getName() => (super.noSuchMethod(
+    Invocation.method(#getName, []),
+    returnValue: _i7.dummyValue<String>(this, Invocation.method(#getName, [])),
+  ) as String);
 
   @override
-  bool matchesSearch(String? str) =>
-      (super.noSuchMethod(
-            Invocation.method(#matchesSearch, [str]),
-            returnValue: false,
-          )
-          as bool);
+  bool matchesSearch(String? str) => (super.noSuchMethod(
+    Invocation.method(#matchesSearch, [str]),
+    returnValue: false,
+  ) as bool);
 
   @override
   _i4.Metadata copyWith({
@@ -631,47 +557,45 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
     List<String>? sources,
     List<List<String>>? tags,
     Map<String, dynamic>? content,
-  }) =>
-      (super.noSuchMethod(
-            Invocation.method(#copyWith, [], {
-              #pubKey: pubKey,
-              #name: name,
-              #displayName: displayName,
-              #picture: picture,
-              #banner: banner,
-              #website: website,
-              #about: about,
-              #nip05: nip05,
-              #lud16: lud16,
-              #lud06: lud06,
-              #updatedAt: updatedAt,
-              #refreshedTimestamp: refreshedTimestamp,
-              #sources: sources,
-              #tags: tags,
-              #content: content,
-            }),
-            returnValue: _FakeMetadata_2(
-              this,
-              Invocation.method(#copyWith, [], {
-                #pubKey: pubKey,
-                #name: name,
-                #displayName: displayName,
-                #picture: picture,
-                #banner: banner,
-                #website: website,
-                #about: about,
-                #nip05: nip05,
-                #lud16: lud16,
-                #lud06: lud06,
-                #updatedAt: updatedAt,
-                #refreshedTimestamp: refreshedTimestamp,
-                #sources: sources,
-                #tags: tags,
-                #content: content,
-              }),
-            ),
-          )
-          as _i4.Metadata);
+  }) => (super.noSuchMethod(
+    Invocation.method(#copyWith, [], {
+      #pubKey: pubKey,
+      #name: name,
+      #displayName: displayName,
+      #picture: picture,
+      #banner: banner,
+      #website: website,
+      #about: about,
+      #nip05: nip05,
+      #lud16: lud16,
+      #lud06: lud06,
+      #updatedAt: updatedAt,
+      #refreshedTimestamp: refreshedTimestamp,
+      #sources: sources,
+      #tags: tags,
+      #content: content,
+    }),
+    returnValue: _FakeMetadata_2(
+      this,
+      Invocation.method(#copyWith, [], {
+        #pubKey: pubKey,
+        #name: name,
+        #displayName: displayName,
+        #picture: picture,
+        #banner: banner,
+        #website: website,
+        #about: about,
+        #nip05: nip05,
+        #lud16: lud16,
+        #lud06: lud06,
+        #updatedAt: updatedAt,
+        #refreshedTimestamp: refreshedTimestamp,
+        #sources: sources,
+        #tags: tags,
+        #content: content,
+      }),
+    ),
+  ) as _i4.Metadata);
 }
 
 /// A class which mocks [Nip01Event].
@@ -683,23 +607,16 @@ class MockNip01Event extends _i1.Mock implements _i3.Nip01Event {
   }
 
   @override
-  String get id =>
-      (super.noSuchMethod(
-            Invocation.getter(#id),
-            returnValue: _i7.dummyValue<String>(this, Invocation.getter(#id)),
-          )
-          as String);
+  String get id => (super.noSuchMethod(
+    Invocation.getter(#id),
+    returnValue: _i7.dummyValue<String>(this, Invocation.getter(#id)),
+  ) as String);
 
   @override
-  String get pubKey =>
-      (super.noSuchMethod(
-            Invocation.getter(#pubKey),
-            returnValue: _i7.dummyValue<String>(
-              this,
-              Invocation.getter(#pubKey),
-            ),
-          )
-          as String);
+  String get pubKey => (super.noSuchMethod(
+    Invocation.getter(#pubKey),
+    returnValue: _i7.dummyValue<String>(this, Invocation.getter(#pubKey)),
+  ) as String);
 
   @override
   int get createdAt =>
@@ -711,23 +628,16 @@ class MockNip01Event extends _i1.Mock implements _i3.Nip01Event {
       (super.noSuchMethod(Invocation.getter(#kind), returnValue: 0) as int);
 
   @override
-  List<List<String>> get tags =>
-      (super.noSuchMethod(
-            Invocation.getter(#tags),
-            returnValue: <List<String>>[],
-          )
-          as List<List<String>>);
+  List<List<String>> get tags => (super.noSuchMethod(
+    Invocation.getter(#tags),
+    returnValue: <List<String>>[],
+  ) as List<List<String>>);
 
   @override
-  String get content =>
-      (super.noSuchMethod(
-            Invocation.getter(#content),
-            returnValue: _i7.dummyValue<String>(
-              this,
-              Invocation.getter(#content),
-            ),
-          )
-          as String);
+  String get content => (super.noSuchMethod(
+    Invocation.getter(#content),
+    returnValue: _i7.dummyValue<String>(this, Invocation.getter(#content)),
+  ) as String);
 
   @override
   List<String> get sources =>
@@ -745,12 +655,10 @@ class MockNip01Event extends _i1.Mock implements _i3.Nip01Event {
           as List<String>);
 
   @override
-  List<String> get replyETags =>
-      (super.noSuchMethod(
-            Invocation.getter(#replyETags),
-            returnValue: <String>[],
-          )
-          as List<String>);
+  List<String> get replyETags => (super.noSuchMethod(
+    Invocation.getter(#replyETags),
+    returnValue: <String>[],
+  ) as List<String>);
 
   @override
   set id(String? value) => super.noSuchMethod(
@@ -775,43 +683,39 @@ class MockNip01Event extends _i1.Mock implements _i3.Nip01Event {
     String? sig,
     bool? validSig,
     List<String>? sources,
-  }) =>
-      (super.noSuchMethod(
-            Invocation.method(#copyWith, [], {
-              #id: id,
-              #pubKey: pubKey,
-              #createdAt: createdAt,
-              #kind: kind,
-              #tags: tags,
-              #content: content,
-              #sig: sig,
-              #validSig: validSig,
-              #sources: sources,
-            }),
-            returnValue: _FakeNip01Event_1(
-              this,
-              Invocation.method(#copyWith, [], {
-                #id: id,
-                #pubKey: pubKey,
-                #createdAt: createdAt,
-                #kind: kind,
-                #tags: tags,
-                #content: content,
-                #sig: sig,
-                #validSig: validSig,
-                #sources: sources,
-              }),
-            ),
-          )
-          as _i3.Nip01Event);
+  }) => (super.noSuchMethod(
+    Invocation.method(#copyWith, [], {
+      #id: id,
+      #pubKey: pubKey,
+      #createdAt: createdAt,
+      #kind: kind,
+      #tags: tags,
+      #content: content,
+      #sig: sig,
+      #validSig: validSig,
+      #sources: sources,
+    }),
+    returnValue: _FakeNip01Event_1(
+      this,
+      Invocation.method(#copyWith, [], {
+        #id: id,
+        #pubKey: pubKey,
+        #createdAt: createdAt,
+        #kind: kind,
+        #tags: tags,
+        #content: content,
+        #sig: sig,
+        #validSig: validSig,
+        #sources: sources,
+      }),
+    ),
+  ) as _i3.Nip01Event);
 
   @override
-  List<String> getTags(String? tag) =>
-      (super.noSuchMethod(
-            Invocation.method(#getTags, [tag]),
-            returnValue: <String>[],
-          )
-          as List<String>);
+  List<String> getTags(String? tag) => (super.noSuchMethod(
+    Invocation.method(#getTags, [tag]),
+    returnValue: <String>[],
+  ) as List<String>);
 
   @override
   String? getFirstTag(String? name) =>
@@ -827,26 +731,16 @@ class MockNip05 extends _i1.Mock implements _i5.Nip05 {
   }
 
   @override
-  String get pubKey =>
-      (super.noSuchMethod(
-            Invocation.getter(#pubKey),
-            returnValue: _i7.dummyValue<String>(
-              this,
-              Invocation.getter(#pubKey),
-            ),
-          )
-          as String);
+  String get pubKey => (super.noSuchMethod(
+    Invocation.getter(#pubKey),
+    returnValue: _i7.dummyValue<String>(this, Invocation.getter(#pubKey)),
+  ) as String);
 
   @override
-  String get nip05 =>
-      (super.noSuchMethod(
-            Invocation.getter(#nip05),
-            returnValue: _i7.dummyValue<String>(
-              this,
-              Invocation.getter(#nip05),
-            ),
-          )
-          as String);
+  String get nip05 => (super.noSuchMethod(
+    Invocation.getter(#nip05),
+    returnValue: _i7.dummyValue<String>(this, Invocation.getter(#nip05)),
+  ) as String);
 
   @override
   bool get valid =>
@@ -890,25 +784,23 @@ class MockNip05 extends _i1.Mock implements _i5.Nip05 {
     bool? valid,
     int? networkFetchTime,
     List<String>? relays,
-  }) =>
-      (super.noSuchMethod(
-            Invocation.method(#copyWith, [], {
-              #pubKey: pubKey,
-              #nip05: nip05,
-              #valid: valid,
-              #networkFetchTime: networkFetchTime,
-              #relays: relays,
-            }),
-            returnValue: _FakeNip05_3(
-              this,
-              Invocation.method(#copyWith, [], {
-                #pubKey: pubKey,
-                #nip05: nip05,
-                #valid: valid,
-                #networkFetchTime: networkFetchTime,
-                #relays: relays,
-              }),
-            ),
-          )
-          as _i5.Nip05);
+  }) => (super.noSuchMethod(
+    Invocation.method(#copyWith, [], {
+      #pubKey: pubKey,
+      #nip05: nip05,
+      #valid: valid,
+      #networkFetchTime: networkFetchTime,
+      #relays: relays,
+    }),
+    returnValue: _FakeNip05_3(
+      this,
+      Invocation.method(#copyWith, [], {
+        #pubKey: pubKey,
+        #nip05: nip05,
+        #valid: valid,
+        #networkFetchTime: networkFetchTime,
+        #relays: relays,
+      }),
+    ),
+  ) as _i5.Nip05);
 }

@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:elliptic/ecdh.dart';
 import 'package:elliptic/elliptic.dart';
 import 'package:meta/meta.dart';
+
 import 'utils.dart';
 
 /// NIP-44 encryption and decryption functions.

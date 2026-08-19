@@ -697,9 +697,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
         }
 
         final response = await client.get(
-          url: Uri.parse(
-            '$url/list/$pubkey',
-          ).replace(queryParameters: queryParams),
+          url: Uri.parse('$url/list/$pubkey')
+              .replace(queryParameters: queryParams),
           headers: headers,
         );
 
