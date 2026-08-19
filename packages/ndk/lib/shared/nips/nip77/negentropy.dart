@@ -214,7 +214,7 @@ class NegentropyEncoder {
   /// response consisting of nothing but the version byte means the
   /// reconciliation has converged.
   static (Uint8List response, List<String> needIds, List<String> haveIds)
-  reconcile(Uint8List message, List<NegentropyItem> items) {
+      reconcile(Uint8List message, List<NegentropyItem> items) {
     final needIds = <String>[];
     final haveIds = <String>[];
     final response = _reconcileAux(

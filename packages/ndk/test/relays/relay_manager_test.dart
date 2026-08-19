@@ -32,8 +32,8 @@ void main() async {
           )
           .then((value) {})
           .onError((error, stackTrace) async {
-            await relay1.stopServer();
-          });
+        await relay1.stopServer();
+      });
       await relay1.stopServer();
     });
 
@@ -53,14 +53,12 @@ void main() async {
           )
           .then((value) {})
           .onError((error, stackTrace) async {
-            await relay1.stopServer();
-          });
+        await relay1.stopServer();
+      });
 
       expect(
         manager
-            .globalState
-            .relays[RelayConnectionKey.anonymous(relay1.url)]!
-            .relay
+            .globalState.relays[RelayConnectionKey.anonymous(relay1.url)]!.relay
             .wasLastConnectTryLongerThanSeconds(120),
         false,
       );
@@ -192,7 +190,9 @@ void main() async {
       }
     });
 
-    test('CLOSED message bug - should not remove entire request from inFlightRequests', () async {
+    test(
+        'CLOSED message bug - should not remove entire request from inFlightRequests',
+        () async {
       // This test exposes a bug where receiving a CLOSED message from one relay
       // removes the entire request from globalState.inFlightRequests, causing
       // events from other relays to be lost since there's no request entry to handle them.
@@ -251,16 +251,12 @@ void main() async {
       // Verify both relay requests are registered
       expect(manager.globalState.inFlightRequests[requestId], isNotNull);
       expect(
-        manager
-            .globalState
-            .inFlightRequests[requestId]!
+        manager.globalState.inFlightRequests[requestId]!
             .requests[RelayConnectionKey.anonymous(relay1.url)],
         isNotNull,
       );
       expect(
-        manager
-            .globalState
-            .inFlightRequests[requestId]!
+        manager.globalState.inFlightRequests[requestId]!
             .requests[RelayConnectionKey.anonymous(relay2.url)],
         isNotNull,
       );
@@ -278,13 +274,10 @@ void main() async {
 
       // Listen to the request stream to collect events
       final streamSubscription = manager
-          .globalState
-          .inFlightRequests[requestId]!
-          .networkController
-          .stream
+          .globalState.inFlightRequests[requestId]!.networkController.stream
           .listen((event) {
-            eventsReceived.add(event);
-          });
+        eventsReceived.add(event);
+      });
 
       // Give a moment for stream setup
       await Future.delayed(Duration(milliseconds: 50));
@@ -302,14 +295,13 @@ void main() async {
       expect(
         manager.globalState.inFlightRequests[requestId],
         isNotNull,
-        reason: "Request should still exist in inFlightRequests after CLOSED from relay1, since relay2 hasn't finished",
+        reason:
+            "Request should still exist in inFlightRequests after CLOSED from relay1, since relay2 hasn't finished",
       );
 
       // The request should still have relay2's entry, but relay1's should be removed or marked as closed
       expect(
-        manager
-            .globalState
-            .inFlightRequests[requestId]!
+        manager.globalState.inFlightRequests[requestId]!
             .requests[RelayConnectionKey.anonymous(relay2.url)],
         isNotNull,
         reason: "Relay2's request entry should still exist",
@@ -326,7 +318,8 @@ void main() async {
       expect(
         eventsReceived.length,
         equals(1),
-        reason: "Event from relay2 should be received even after relay1 sent CLOSED message",
+        reason:
+            "Event from relay2 should be received even after relay1 sent CLOSED message",
       );
 
       expect(

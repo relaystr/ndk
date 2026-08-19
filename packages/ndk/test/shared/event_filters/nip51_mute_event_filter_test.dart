@@ -241,7 +241,9 @@ void main() {
       expect(trie.check("world"), isTrue);
     });
 
-    test('TrieTree: should find a word that is a prefix of another word if marked as done', () {
+    test(
+        'TrieTree: should find a word that is a prefix of another word if marked as done',
+        () {
       final trie = filter.buildTrieTree([
         "hell".codeUnits,
         "hello".codeUnits,

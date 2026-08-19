@@ -94,9 +94,8 @@ Options (common):
     final pubKey = parsed.pubkey ?? _resolvePubkeyFromAccount(ndk);
     if (wantZap && pubKey != null && ndk.accounts.canSign) {
       final signer = ndk.accounts.getLoggedAccount()!.signer;
-      final relays = parsed.relays.isNotEmpty
-          ? parsed.relays
-          : _defaultZapRelays(ndk);
+      final relays =
+          parsed.relays.isNotEmpty ? parsed.relays : _defaultZapRelays(ndk);
       zapRequest = await ndk.zaps.createZapRequest(
         amountSats: amount,
         signer: signer,
@@ -153,9 +152,8 @@ Options (common):
     }
 
     final pubKey = parsed.pubkey ?? _resolvePubkeyFromAccount(ndk);
-    final relays = parsed.relays.isNotEmpty
-        ? parsed.relays
-        : _defaultZapRelays(ndk);
+    final relays =
+        parsed.relays.isNotEmpty ? parsed.relays : _defaultZapRelays(ndk);
 
     stdout.writeln('Connecting to NWC wallet ${wallet.id} ...');
     final connection = await ndk.nwc.connect(nwcUrl, doGetInfoMethod: false);
@@ -450,8 +448,7 @@ Options (common):
 
     if (result.positional.length < requirePositional) {
       return _ZapsArgs(
-        error:
-            'Expected $requirePositional positional argument(s), '
+        error: 'Expected $requirePositional positional argument(s), '
             'got ${result.positional.length}.',
       );
     }

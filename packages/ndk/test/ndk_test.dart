@@ -178,7 +178,9 @@ void main() async {
       await relay1.stopServer();
     });
 
-    test('emptyBootstrapRelaysConfig with non-list welcome message from explicit relay', () async {
+    test(
+        'emptyBootstrapRelaysConfig with non-list welcome message from explicit relay',
+        () async {
       final welcomeMessage =
           '{"welcome": {"motd": "test message"}, "type": "welcome"}';
       MockRelay explicitRelay = MockRelay(

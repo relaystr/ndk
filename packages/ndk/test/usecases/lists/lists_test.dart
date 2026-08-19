@@ -401,8 +401,7 @@ void main() async {
         pubKey: key1.publicKey,
         kind: Nip51List.kRelaySet,
         name: setName,
-        createdAt:
-            DateTime.now().millisecondsSinceEpoch ~/ 1000 -
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000 -
             100, // 100 seconds ago
         elements: [
           Nip51ListElement(
@@ -468,9 +467,8 @@ void main() async {
       );
 
       String content = "";
-      List<Nip51ListElement> privateElements = nip04Set.elements
-          .where((element) => element.private)
-          .toList();
+      List<Nip51ListElement> privateElements =
+          nip04Set.elements.where((element) => element.private).toList();
       if (privateElements.isNotEmpty) {
         String json = jsonEncode(
           privateElements
@@ -519,7 +517,9 @@ void main() async {
       expect(parsedSet.elements.first.private, true);
     });
 
-    test('fromEvent preserves metadata (title/description/image) alongside private elements', () async {
+    test(
+        'fromEvent preserves metadata (title/description/image) alongside private elements',
+        () async {
       // Regression test for: when a set has encrypted private elements AND
       // public metadata tags, parsing with a full signer must retain both.
       // Previously, parseSetTags was called only on the decrypted content

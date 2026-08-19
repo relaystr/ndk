@@ -11,10 +11,11 @@ List<NegentropyItem> _items(
   int count, {
   int baseTimestamp = 1700000000,
   int step = 17,
-}) => [
-  for (var i = 0; i < count; i++)
-    NegentropyItem(timestamp: baseTimestamp + i * step, id: _id(i)),
-];
+}) =>
+    [
+      for (var i = 0; i < count; i++)
+        NegentropyItem(timestamp: baseTimestamp + i * step, id: _id(i)),
+    ];
 
 /// Drives a full reconciliation to convergence and returns what the initiator
 /// learned.
@@ -553,12 +554,10 @@ void main() {
           if (random.nextInt(3) != 0) remote.add(item);
         }
 
-        final localIds = local
-            .map((i) => i.id)
-            .map(NegentropyEncoder.bytesToHex);
-        final remoteIds = remote
-            .map((i) => i.id)
-            .map(NegentropyEncoder.bytesToHex);
+        final localIds =
+            local.map((i) => i.id).map(NegentropyEncoder.bytesToHex);
+        final remoteIds =
+            remote.map((i) => i.id).map(NegentropyEncoder.bytesToHex);
 
         final result = _syncToCompletion(local, remote);
 

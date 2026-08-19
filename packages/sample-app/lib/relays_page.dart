@@ -247,22 +247,22 @@ class _RelaysPageState extends State<RelaysPage>
         }
 
         final entry = entries[index - 1];
-        final transport =
-            ndk.relays.getRelayConnectivity(entry.key)?.relayTransport
-                as WebSocketClientNostrTransport?;
+        final transport = ndk.relays
+            .getRelayConnectivity(entry.key)
+            ?.relayTransport as WebSocketClientNostrTransport?;
         final stateColor = transport != null
             ? transport.isConnecting()
-                  ? Colors.orange
-                  : transport.isOpen()
-                  ? Colors.green
-                  : Colors.red
+                ? Colors.orange
+                : transport.isOpen()
+                    ? Colors.green
+                    : Colors.red
             : Colors.grey;
         final stateLabel = transport != null
             ? transport.isConnecting()
-                  ? l10n.relayStateConnecting
-                  : transport.isOpen()
-                  ? l10n.relayStateOnline
-                  : l10n.relayStateOffline
+                ? l10n.relayStateConnecting
+                : transport.isOpen()
+                    ? l10n.relayStateOnline
+                    : l10n.relayStateOffline
             : l10n.relayStateUnknown;
 
         return _buildRelayCard(

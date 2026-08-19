@@ -9,6 +9,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+        with:
+          # Pin to the Dart version bundled with Flutter stable (3.47.0).
+          # Unpinned "latest" breaks analyze/test whenever a new Dart
+          # stable changes diagnostics or formatter output.
+          sdk: 3.13.0
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -40,6 +45,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+        with:
+          # Pin to the Dart version bundled with Flutter stable (3.47.0).
+          sdk: 3.13.0
       - uses: subosito/flutter-action@v2
         with:
           channel: stable

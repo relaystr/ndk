@@ -67,10 +67,10 @@ class Nip77 {
     required RelayManager relayManager,
     required CacheManager cacheManager,
   }) : _internal = _Nip77Internal(
-         globalState: globalState,
-         relayManager: relayManager,
-         cacheManager: cacheManager,
-       );
+          globalState: globalState,
+          relayManager: relayManager,
+          cacheManager: cacheManager,
+        );
 
   /// Default timeout for reconciliation
   static const Duration defaultTimeout = Duration(seconds: 30);

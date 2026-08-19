@@ -114,7 +114,8 @@ void main() {
           cacheManager: cache,
           cashuKeyDerivation: DartCashuKeyDerivation(),
           cashuUserSeedphrase: CashuUserSeedphrase(
-            seedPhrase: "reduce invest lunch step couch traffic measure civil want steel trip jar",
+            seedPhrase:
+                "reduce invest lunch step couch traffic measure civil want steel trip jar",
           ),
         );
 
@@ -261,7 +262,8 @@ void main() {
 
       final cashu = CashuTestTools.mockHttpCashu(
         seedPhrase: CashuUserSeedphrase(
-          seedPhrase: "reduce invest lunch step couch traffic measure civil want steel trip jar",
+          seedPhrase:
+              "reduce invest lunch step couch traffic measure civil want steel trip jar",
         ),
         customMockClient: myHttpMock,
         customCache: cache,
@@ -338,7 +340,8 @@ void main() {
 
         final cashu = CashuTestTools.mockHttpCashu(
           seedPhrase: CashuUserSeedphrase(
-            seedPhrase: "reduce invest lunch step couch traffic measure civil want steel trip jar",
+            seedPhrase:
+                "reduce invest lunch step couch traffic measure civil want steel trip jar",
           ),
           customMockClient: myHttpMock,
           customCache: cache,
@@ -412,7 +415,8 @@ void main() {
         expect(
           spentProofs.length,
           equals(2),
-          reason: "Selected proofs should be marked as spent since they were burned on the mint",
+          reason:
+              "Selected proofs should be marked as spent since they were burned on the mint",
         );
         expect(
           spentProofs.every((p) => p.state == CashuProofState.spend),

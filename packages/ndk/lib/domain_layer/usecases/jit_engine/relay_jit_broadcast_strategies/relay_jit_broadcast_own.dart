@@ -14,7 +14,7 @@ class RelayJitBroadcastOutboxStrategy {
   static Future broadcast({
     required Nip01Event eventToPublish,
     required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-    connectedRelays,
+        connectedRelays,
     required CacheManager cacheManager,
     required RelayManager relayManager,
     required List<String> bootstrapRelays,

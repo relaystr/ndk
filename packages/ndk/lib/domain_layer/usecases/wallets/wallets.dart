@@ -37,22 +37,22 @@ class Wallets {
       BehaviorSubject<List<WalletBalance>>();
 
   final BehaviorSubject<List<WalletTransaction>>
-  _combinedPendingTransactionsSubject =
+      _combinedPendingTransactionsSubject =
       BehaviorSubject<List<WalletTransaction>>();
 
   final BehaviorSubject<List<WalletTransaction>>
-  _combinedRecentTransactionsSubject =
+      _combinedRecentTransactionsSubject =
       BehaviorSubject<List<WalletTransaction>>();
 
   /// individual wallet streams - created on demand
   final Map<String, BehaviorSubject<List<WalletBalance>>>
-  _walletBalanceStreams = {};
+      _walletBalanceStreams = {};
 
   final Map<String, BehaviorSubject<List<WalletTransaction>>>
-  _walletPendingTransactionStreams = {};
+      _walletPendingTransactionStreams = {};
 
   final Map<String, BehaviorSubject<List<WalletTransaction>>>
-  _walletRecentTransactionStreams = {};
+      _walletRecentTransactionStreams = {};
 
   /// stream subscriptions for cleanup
   final Map<String, List<StreamSubscription>> _subscriptions = {};
@@ -63,8 +63,8 @@ class Wallets {
     required List<WalletProvider> providers,
     required WalletsRepo repository,
     this.latestTransactionCount = 10,
-  }) : _providers = {for (final p in providers) p.type: p},
-       _repository = repository {
+  })  : _providers = {for (final p in providers) p.type: p},
+        _repository = repository {
     _initializationFuture = _initialize();
   }
 
@@ -173,12 +173,12 @@ class Wallets {
     _walletsUsecaseSubscription =
         Rx.merge(_providers.values.map((p) => p.discoveredWallets))
             .listen((wallets) {
-              for (final wallet in wallets) {
-                if (!_wallets.any((w) => w.id == wallet.id)) {
-                  addWallet(wallet);
-                }
-              }
-            });
+      for (final wallet in wallets) {
+        if (!_wallets.any((w) => w.id == wallet.id)) {
+          addWallet(wallet);
+        }
+      }
+    });
 
     if (_isDisposed) {
       return;
@@ -189,9 +189,8 @@ class Wallets {
 
   void _updateCombinedStreams() {
     // combine all wallet balances
-    final allBalances = _walletsBalances.values
-        .expand((balances) => balances)
-        .toList();
+    final allBalances =
+        _walletsBalances.values.expand((balances) => balances).toList();
     if (!_combinedBalancesSubject.isClosed) {
       _combinedBalancesSubject.add(allBalances);
     }
@@ -383,18 +382,16 @@ class Wallets {
           final provider = _providers[wallet.type];
           if (provider != null) {
             subscriptions.add(
-              provider
-                  .getBalances(wallet)
-                  .listen(
-                    (balances) {
-                      _walletsBalances[id] = balances;
-                      _walletBalanceStreams[id]?.add(balances);
-                      _updateCombinedStreams();
-                    },
-                    onError: (error) {
-                      _walletBalanceStreams[id]?.add([]);
-                    },
-                  ),
+              provider.getBalances(wallet).listen(
+                (balances) {
+                  _walletsBalances[id] = balances;
+                  _walletBalanceStreams[id]?.add(balances);
+                  _updateCombinedStreams();
+                },
+                onError: (error) {
+                  _walletBalanceStreams[id]?.add([]);
+                },
+              ),
             );
           }
         }
@@ -419,21 +416,18 @@ class Wallets {
           final provider = _providers[wallet.type];
           if (provider != null) {
             subscriptions.add(
-              provider
-                  .getRecentTransactions(wallet)
-                  .listen(
-                    (transactions) {
-                      transactions = transactions
-                          .where((tx) => tx.state.isDone)
-                          .toList();
-                      _walletsRecentTransactions[id] = transactions;
-                      _walletRecentTransactionStreams[id]?.add(transactions);
-                      _updateCombinedStreams();
-                    },
-                    onError: (error) {
-                      _walletRecentTransactionStreams[id]?.add([]);
-                    },
-                  ),
+              provider.getRecentTransactions(wallet).listen(
+                (transactions) {
+                  transactions =
+                      transactions.where((tx) => tx.state.isDone).toList();
+                  _walletsRecentTransactions[id] = transactions;
+                  _walletRecentTransactionStreams[id]?.add(transactions);
+                  _updateCombinedStreams();
+                },
+                onError: (error) {
+                  _walletRecentTransactionStreams[id]?.add([]);
+                },
+              ),
             );
           }
         }
@@ -458,21 +452,18 @@ class Wallets {
           final provider = _providers[wallet.type];
           if (provider != null) {
             subscriptions.add(
-              provider
-                  .getPendingTransactions(wallet)
-                  .listen(
-                    (transactions) {
-                      transactions = transactions
-                          .where((tx) => tx.state.isPending)
-                          .toList();
-                      _walletsPendingTransactions[id] = transactions;
-                      _walletPendingTransactionStreams[id]?.add(transactions);
-                      _updateCombinedStreams();
-                    },
-                    onError: (error) {
-                      _walletPendingTransactionStreams[id]?.add([]);
-                    },
-                  ),
+              provider.getPendingTransactions(wallet).listen(
+                (transactions) {
+                  transactions =
+                      transactions.where((tx) => tx.state.isPending).toList();
+                  _walletsPendingTransactions[id] = transactions;
+                  _walletPendingTransactionStreams[id]?.add(transactions);
+                  _updateCombinedStreams();
+                },
+                onError: (error) {
+                  _walletPendingTransactionStreams[id]?.add([]);
+                },
+              ),
             );
           }
         }

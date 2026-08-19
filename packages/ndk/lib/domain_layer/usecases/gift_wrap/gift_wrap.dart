@@ -321,8 +321,7 @@ class GiftWrap {
       tags.addAll(additionalTags);
     }
 
-    final giftWrapCreatedAt =
-        createdAt ??
+    final giftWrapCreatedAt = createdAt ??
         (randomizeCreatedAtBefore != null
             ? _randomCreatedAtBefore(randomizeCreatedAtBefore)
             : sealEvent.createdAt);

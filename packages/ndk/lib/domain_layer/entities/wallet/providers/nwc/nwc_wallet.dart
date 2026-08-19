@@ -33,14 +33,14 @@ class NwcWallet extends Wallet {
     required this.nwcUrl,
     Set<String> cachedPermissions = const {},
     Map<String, dynamic>? metadata,
-  }) : cachedPermissions = Set.unmodifiable(cachedPermissions),
-       super(
-         metadata: Map.unmodifiable({
-           ...(metadata ?? const {}),
-           'nwcUrl': nwcUrl,
-           kPermissionsMetadataKey: cachedPermissions.toList(),
-         }),
-       );
+  })  : cachedPermissions = Set.unmodifiable(cachedPermissions),
+        super(
+          metadata: Map.unmodifiable({
+            ...(metadata ?? const {}),
+            'nwcUrl': nwcUrl,
+            kPermissionsMetadataKey: cachedPermissions.toList(),
+          }),
+        );
 
   @override
   Map<String, dynamic> toMetadata() => metadata;
@@ -96,8 +96,8 @@ class NwcWallet extends Wallet {
 
   Set<String> get _effectivePermissions =>
       connection?.permissions.isNotEmpty == true
-      ? connection!.permissions
-      : cachedPermissions;
+          ? connection!.permissions
+          : cachedPermissions;
 
   @override
   bool get canReceive =>

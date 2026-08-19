@@ -38,12 +38,12 @@ class Dms {
     required GiftWrap giftWrap,
     required UserRelayLists userRelayLists,
     required CacheManager cacheManager,
-  }) : _accounts = accounts,
-       _requests = requests,
-       _broadcast = broadcast,
-       _giftWrap = giftWrap,
-       _userRelayLists = userRelayLists,
-       _cacheManager = cacheManager;
+  })  : _accounts = accounts,
+        _requests = requests,
+        _broadcast = broadcast,
+        _giftWrap = giftWrap,
+        _userRelayLists = userRelayLists,
+        _cacheManager = cacheManager;
 
   /// Sends a direct message to [recipientPubKey].
   ///
@@ -267,7 +267,8 @@ class Dms {
         peerPubKey: entry.key,
         messages: List.unmodifiable(peerMessages),
       );
-    }).toList()..sort((a, b) => b.latestCreatedAt.compareTo(a.latestCreatedAt));
+    }).toList()
+      ..sort((a, b) => b.latestCreatedAt.compareTo(a.latestCreatedAt));
 
     return conversations;
   }

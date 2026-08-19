@@ -168,7 +168,9 @@ void main() {
       );
     });
 
-    test('periodic retry forces reconnect for disconnected relays with due targets', () async {
+    test(
+        'periodic retry forces reconnect for disconnected relays with due targets',
+        () async {
       final now = Nip01Event.secondsSinceEpoch();
       await cacheManager.saveRelayDeliveryTarget(
         RelayDeliveryTarget(
@@ -249,7 +251,8 @@ void main() {
       },
     );
 
-    test('keeps ephemeral event cached while delivery is not yet terminal', () async {
+    test('keeps ephemeral event cached while delivery is not yet terminal',
+        () async {
       final ephemeralEvent = Nip01Event(
         id: 'ephemeral-auth',
         pubKey: 'pubkey',
@@ -346,7 +349,9 @@ void main() {
       expect(broadcast.broadcastedEvents.single.sig, 'remote-sig');
     });
 
-    test('replays pending delivery from serialized record when event row is missing', () async {
+    test(
+        'replays pending delivery from serialized record when event row is missing',
+        () async {
       final serializedRecord = EventDeliveryRecord(
         eventId: event.id,
         status: EventDeliveryStatus.pending,
@@ -426,7 +431,9 @@ void main() {
       },
     );
 
-    test('timed out signing attempt does not block a later retry forever if the original future never completes', () async {
+    test(
+        'timed out signing attempt does not block a later retry forever if the original future never completes',
+        () async {
       await pendingDelivery.stop();
       pendingDelivery = PendingBroadcastDelivery(
         cacheManager: cacheManager,
@@ -561,7 +568,9 @@ void main() {
       },
     );
 
-    test('transport relay opening retries network signing and immediately flushes connected targets', () async {
+    test(
+        'transport relay opening retries network signing and immediately flushes connected targets',
+        () async {
       pendingDelivery.startPeriodicRetry(
         connectedRelayUrls: () => const <String>{
           'wss://bunker-relay.example',
@@ -741,7 +750,9 @@ void main() {
       },
     );
 
-    test('non-network interactive signer transient failure uses faster retry backoff', () async {
+    test(
+        'non-network interactive signer transient failure uses faster retry backoff',
+        () async {
       final unsignedEvent = Nip01Event(
         id: 'event-local-backoff',
         pubKey: 'local-backoff-pubkey',
@@ -794,15 +805,15 @@ class RecordingBroadcastSender extends BroadcastSender {
   final List<Nip01Event> broadcastedEvents = [];
 
   RecordingBroadcastSender({required MemCacheManager cacheManager})
-    : super(
-        globalState: GlobalState(),
-        cacheManager: cacheManager,
-        networkEngine: _ThrowingNetworkEngine(),
-        accounts: Accounts(_DummySignerFactory()),
-        considerDonePercent: 1,
-        timeout: const Duration(seconds: 1),
-        saveToCache: true,
-      );
+      : super(
+          globalState: GlobalState(),
+          cacheManager: cacheManager,
+          networkEngine: _ThrowingNetworkEngine(),
+          accounts: Accounts(_DummySignerFactory()),
+          considerDonePercent: 1,
+          timeout: const Duration(seconds: 1),
+          saveToCache: true,
+        );
 
   @override
   NdkBroadcastResponse broadcast({
@@ -883,7 +894,8 @@ class _DummySigner implements EventSigner {
   Future<String?> decryptNip44({
     required String ciphertext,
     required String senderPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   Future<void> dispose() async {}
@@ -896,7 +908,8 @@ class _DummySigner implements EventSigner {
   Future<String?> encryptNip44({
     required String plaintext,
     required String recipientPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   String getPublicKey() => pubKey;
@@ -926,9 +939,9 @@ class _RemoteTestSigner implements EventSigner {
     bool requiresSignerNetwork = false,
     List<String>? transportRelayUrls,
     List<PendingSignerRequest>? pendingRequests,
-  }) : _pendingRequests = pendingRequests ?? [],
-       _requiresSignerNetwork = requiresSignerNetwork,
-       _transportRelayUrls = transportRelayUrls ?? const [];
+  })  : _pendingRequests = pendingRequests ?? [],
+        _requiresSignerNetwork = requiresSignerNetwork,
+        _transportRelayUrls = transportRelayUrls ?? const [];
 
   @override
   bool get requiresInteractiveSigning => true;
@@ -954,7 +967,8 @@ class _RemoteTestSigner implements EventSigner {
   Future<String?> decryptNip44({
     required String ciphertext,
     required String senderPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   Future<void> dispose() async {}
@@ -967,7 +981,8 @@ class _RemoteTestSigner implements EventSigner {
   Future<String?> encryptNip44({
     required String plaintext,
     required String recipientPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   String getPublicKey() => pubKey;

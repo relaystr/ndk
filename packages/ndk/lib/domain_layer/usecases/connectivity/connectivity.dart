@@ -16,23 +16,23 @@ class Connectivy {
   /// forces all relays to reconnect \
   /// use this for faster reconnects based on your application/os connectivity \
   Future<void> tryReconnect() async {
-    final relayConnectivities = _relayManager.globalState.relays.values
-        .toList();
+    final relayConnectivities =
+        _relayManager.globalState.relays.values.toList();
 
     for (final rConnectivity in relayConnectivities) {
       if (!rConnectivity.isConnected) {
         await _relayManager
             .reconnectConnection(
-              rConnectivity.key,
-              connectionSource: rConnectivity.relay.connectionSource,
-              force: true,
-            )
+          rConnectivity.key,
+          connectionSource: rConnectivity.relay.connectionSource,
+          force: true,
+        )
             .then((connected) {
-              _relayManager.updateRelayConnectivity();
-              if (connected) {
-                _relayManager.reSubscribeInFlightSubscriptions(rConnectivity);
-              }
-            });
+          _relayManager.updateRelayConnectivity();
+          if (connected) {
+            _relayManager.reSubscribeInFlightSubscriptions(rConnectivity);
+          }
+        });
       }
     }
   }

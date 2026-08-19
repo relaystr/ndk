@@ -157,9 +157,8 @@ void main() async {
           authors: [key1.publicKey],
         );
 
-        final events = await ndk.requests
-            .query(filter: filter, explicitRelays: [relay1.url, relay2.url])
-            .future;
+        final events = await ndk.requests.query(
+            filter: filter, explicitRelays: [relay1.url, relay2.url]).future;
 
         expect(events, isNotEmpty);
         final eventId = events.first.id;
@@ -288,7 +287,8 @@ void main() async {
       }
     });
 
-    test('Subscription processes events immediately without stream closing', () async {
+    test('Subscription processes events immediately without stream closing',
+        () async {
       // This test would FAIL with the previous VerifyEventStream implementation
       // because events would remain stuck in buffer until stream closes
       MockRelay relay1 = MockRelay(name: "relay 1");
@@ -325,7 +325,8 @@ void main() async {
         expect(
           receivedEvents.length,
           equals(1),
-          reason: 'Subscription should process events immediately without waiting for stream to close',
+          reason:
+              'Subscription should process events immediately without waiting for stream to close',
         );
         expect(receivedEvents[0].content, contains('key1'));
       } finally {

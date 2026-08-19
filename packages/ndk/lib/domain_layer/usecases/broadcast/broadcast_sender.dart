@@ -26,13 +26,13 @@ class BroadcastSender {
     required double considerDonePercent,
     required Duration timeout,
     required bool saveToCache,
-  }) : _accounts = accounts,
-       _cacheManager = cacheManager,
-       _engine = networkEngine,
-       _globalState = globalState,
-       _considerDonePercent = considerDonePercent,
-       _timeout = timeout,
-       _saveToCache = saveToCache;
+  })  : _accounts = accounts,
+        _cacheManager = cacheManager,
+        _engine = networkEngine,
+        _globalState = globalState,
+        _considerDonePercent = considerDonePercent,
+        _timeout = timeout,
+        _saveToCache = saveToCache;
 
   bool isEventInFlight(String eventId) {
     return _globalState.inFlightBroadcasts.containsKey(eventId);
@@ -93,9 +93,8 @@ class BroadcastSender {
         ? _checkSinger(customSigner: customSigner)
         : null;
 
-    final cleanedSpecificRelays = specificRelays != null
-        ? cleanRelayUrls(specificRelays.toList())
-        : null;
+    final cleanedSpecificRelays =
+        specificRelays != null ? cleanRelayUrls(specificRelays.toList()) : null;
 
     return _engine.handleEventBroadcast(
       nostrEvent: nostrEvent,

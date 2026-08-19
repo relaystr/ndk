@@ -26,8 +26,7 @@ class CashuMeltResponse {
       mintUrl: mintUrl,
       state: CashuQuoteState.fromValue(map['state'] as String),
       paymentPreimage: map['payment_preimage'] as String?,
-      change:
-          (map['change'] as List<dynamic>?)
+      change: (map['change'] as List<dynamic>?)
               ?.map(
                 (e) => CashuBlindedSignature.fromServerMap(
                   e as Map<String, dynamic>,

@@ -25,10 +25,10 @@ class StreamResponseCleaner {
     required List<Stream<Nip01Event>> inputStreams,
     required StreamController<Nip01Event> outController,
     required List<EventFilter> eventOutFilters,
-  }) : _trackingSet = trackingSet,
-       _outController = outController,
-       _inputStreams = inputStreams,
-       _eventOutFilters = eventOutFilters;
+  })  : _trackingSet = trackingSet,
+        _outController = outController,
+        _inputStreams = inputStreams,
+        _eventOutFilters = eventOutFilters;
 
   void call() {
     for (final stream in _inputStreams) {
