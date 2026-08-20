@@ -11,6 +11,41 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - [`ndk` - `v0.8.4`](#ndk---v084)
+ - [`ndk_drift` - `v0.1.1`](#ndk_drift---v011)
+ - [`ndk_flutter` - `v0.8.4`](#ndk_flutter---v084)
+ - [`ndk_objectbox` - `v0.2.12`](#ndk_objectbox---v0212)
+
+Packages with other changes:
+
+ - There are no other changes in this release.
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `ndk` - `v0.8.4`
+ - `ndk_drift` - `v0.1.1`
+ - `ndk_flutter` - `v0.8.4`
+ - `ndk_objectbox` - `v0.2.12`
+
+---
+
+#### `ndk` - `v0.8.4`
+
+#### `ndk_drift` - `v0.1.1`
+
+#### `ndk_flutter` - `v0.8.4`
+
+#### `ndk_objectbox` - `v0.2.12`
+
+
+## 2026-08-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - [`ndk` - `v0.8.4-dev.12`](#ndk---v084-dev12)
 
 Packages with other changes:
