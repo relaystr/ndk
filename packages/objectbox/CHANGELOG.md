@@ -1,3 +1,18 @@
+## 0.2.12+1
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+## 0.2.12
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.2.12-dev.12
+
+ - Update a dependency to the latest release.
+
 ## 0.2.12-dev.11
 
  - **FIX**: dart format with standalone SDK 3.12.2 (match CI).

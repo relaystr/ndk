@@ -1,3 +1,14 @@
+## 0.1.1+1
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+
+## 0.1.1-dev.14
+
+ - Update a dependency to the latest release.
+
 ## 0.1.1-dev.13
 
  - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
