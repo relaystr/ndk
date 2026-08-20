@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../config/request_defaults.dart';
+import '../../../shared/helpers/bounded_lru_set.dart';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../shared/nips/nip01/helpers.dart';
@@ -18,6 +19,7 @@ import '../../entities/request_response.dart';
 import '../../entities/request_state.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/event_verifier.dart';
+import 'verified_event_cache.dart';
 import '../cache_read/cache_read.dart';
 import '../fetched_ranges/fetched_ranges.dart';
 import '../engines/network_engine.dart';
@@ -35,6 +37,8 @@ class _RelayPaginationState {
 
 /// A class that handles low-level Nostr network requests and subscriptions.
 class Requests {
+  static const int _persistedEventIdsMaxSize = 20000;
+
   final GlobalState _globalState;
   final CacheRead _cacheRead;
   final CacheManager _cacheManager;
@@ -44,6 +48,10 @@ class Requests {
   final List<EventFilter> _eventOutFilters;
   final Duration _defaultQueryTimeout;
   FetchedRanges? _fetchedRanges;
+
+  /// ids of events whose signature was already checked by this [Ndk]
+  /// instance, so repeat delivery across relays/requests skips re-verifying
+  final VerifiedEventMemCache _verifiedEventIds = VerifiedEventMemCache();
 
   /// Creates a new [Requests] instance
   ///
@@ -70,6 +78,9 @@ class Requests {
         _eventOutFilters = eventOutFilters,
         _defaultQueryTimeout = defaultQueryTimeout;
 
+  /// Clears signature-verification reuse state owned by this NDK instance.
+  void clearVerifiedEventCache() => _verifiedEventIds.clear();
+
   Stream<Nip01Event> _prepareNetworkStream(
     Stream<Nip01Event> verifiedNetworkStream, {
     required bool writeToCache,
@@ -78,18 +89,30 @@ class Requests {
       return verifiedNetworkStream;
     }
 
+    final persistedEventIds = BoundedLruSet<String>(
+      maxSize: _persistedEventIdsMaxSize,
+    );
+    final persistenceInFlight = <String, Future<void>>{};
+
     return verifiedNetworkStream
         .flatMap(
-          (event) =>
-              Stream.fromFuture(_persistAndFilterVisibleNetworkEvent(event)),
+          (event) => Stream.fromFuture(
+            _persistAndFilterVisibleNetworkEvent(
+              event,
+              persistedEventIds: persistedEventIds,
+              persistenceInFlight: persistenceInFlight,
+            ),
+          ),
         )
         .whereType<Nip01Event>()
         .shareReplay(maxSize: 1);
   }
 
   Future<Nip01Event?> _persistAndFilterVisibleNetworkEvent(
-    Nip01Event event,
-  ) async {
+    Nip01Event event, {
+    required BoundedLruSet<String> persistedEventIds,
+    required Map<String, Future<void>> persistenceInFlight,
+  }) async {
     // Ephemeral events (NIP-01 kinds 20000-29999) are non-persistent by
     // definition. They must not be written to cache — relays don't store them
     // either. Inbound events flow through to the subscriber but are not
@@ -100,7 +123,27 @@ class Requests {
       return event;
     }
 
-    await _cacheManager.saveEvent(event);
+    final existingPersistence = persistenceInFlight[event.id];
+    if (existingPersistence != null) {
+      await existingPersistence;
+    } else if (persistedEventIds.add(event.id)) {
+      final persistence = Future<void>.sync(
+        () async {
+          await _cacheManager.saveEventIfAbsent(event);
+        },
+      );
+      persistenceInFlight[event.id] = persistence;
+      try {
+        await persistence;
+      } catch (_) {
+        persistedEventIds.remove(event.id);
+        rethrow;
+      } finally {
+        if (identical(persistenceInFlight[event.id], persistence)) {
+          persistenceInFlight.remove(event.id);
+        }
+      }
+    }
     if (event.sources.isNotEmpty) {
       await _cacheManager.addEventSources(
         eventId: event.id,
@@ -318,6 +361,7 @@ class Requests {
     final verifiedNetworkStream = VerifyEventStream(
       unverifiedStreamInput: state.networkController.stream,
       eventVerifier: _eventVerifier,
+      verifiedEventCache: _verifiedEventIds,
     )();
 
     final preparedNetworkStream = _prepareNetworkStream(

@@ -890,6 +890,18 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
+  Future<bool> saveEventIfAbsent(Nip01Event event) async {
+    final insertedKey = await _eventsStore
+        .record(event.id)
+        .add(_database, event.toJsonForStorage());
+    final inserted = insertedKey != null;
+    if (inserted) {
+      await _refreshDerivedStateForEvent(event);
+    }
+    return inserted;
+  }
+
+  @override
   Future<void> saveEvents(List<Nip01Event> events) async {
     final keys = events.map((e) => e.id).toList();
     final values = events.map((e) => e.toJsonForStorage()).toList();

@@ -77,6 +77,28 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   }
 
   @override
+  Future<bool> saveEventIfAbsent(Nip01Event event) async {
+    final inserted = await _db
+        .into(_db.events)
+        .insertReturningOrNull(
+          EventsCompanion.insert(
+            id: event.id,
+            pubKey: event.pubKey,
+            kind: event.kind,
+            createdAt: event.createdAt,
+            content: event.content,
+            sig: Value(event.sig),
+            validSig: Value(event.validSig),
+            tagsJson: jsonEncode(event.tags),
+            // ignore: deprecated_member_use
+            sourcesJson: jsonEncode(event.sources),
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
+    return inserted != null;
+  }
+
+  @override
   Future<void> saveEvents(List<Nip01Event> events) async {
     await _db.batch((batch) {
       batch.insertAllOnConflictUpdate(
