@@ -9,7 +9,6 @@ dev_dependencies:
 
 
 workspace:
-  - packages/bip32_keys
   - packages/ndk
   - packages/ndk_cache_manager_test_suite
   - packages/objectbox
