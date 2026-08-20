@@ -49,6 +49,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: "3.47.0"
           cache: true
           cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
           cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
@@ -58,6 +59,7 @@ jobs:
         uses: bluefireteam/melos-action@v3
         with:
           run-versioning: false
+          melos-version: "8.3.0"
           run-versioning-prerelease: true
           publish-dry-run: true
           create-pr: true
