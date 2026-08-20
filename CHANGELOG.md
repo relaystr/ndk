@@ -3,6 +3,68 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-08-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.8.4-dev.12`](#ndk---v084-dev12)
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.8.4-dev.15`](#ndk_flutter---v084-dev15)
+ - [`ndk_objectbox` - `v0.2.12-dev.12`](#ndk_objectbox---v0212-dev12)
+ - [`ndk_drift` - `v0.1.1-dev.14`](#ndk_drift---v011-dev14)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.12`
+ - `ndk_drift` - `v0.1.1-dev.14`
+
+---
+
+#### `ndk` - `v0.8.4-dev.12`
+
+ - **REFACTOR**: key request state by connection instead of relay url.
+ - **REFACTOR**: key the connect path by connection instead of relay url.
+ - **REFACTOR**: key relay connections by RelayConnectionKey.
+ - **REFACTOR**: drop the CacheWrite usecase in favor of CacheManager.
+ - **FIX**: recompute event id when building a NIP-51 set event.
+ - **FIX**: mem cache for event verification.
+ - **FIX**: index relay connectivity by list, not by url.
+ - **FIX**: unblock dart analyze on Dart 3.13.
+ - **FIX**: test lacl first test cacheWrite.
+ - **FIX**: encode negentropy messages per protocol v1.
+ - **FIX**: count the requests open on a connection by id.
+ - **FIX**: drop authentication state on a transient disconnect.
+ - **FIX**: keep a request alive while its authentication reconnects.
+ - **FIX**: route socket errors through the same disconnect handler as onDone.
+ - **FIX**: replay a query whose socket died before its EOSE.
+ - **FIX**: replay a request whose authentication died with its socket.
+ - **FIX**: account active requests where they are sent.
+ - **FIX**: scope authentication state to a transport generation.
+ - **FIX**: forget connections that have no transport left.
+ - **FIX**: do not send REQ for a request that was closed.
+ - **FIX**: engines pick relays, so they must see one connection per relay.
+ - **FIX**: replay subscriptions on their own connection only.
+ - **FIX**: send CLOSE on the connection the subscription was sent on.
+ - **FIX**: include target relays and request lifetime in the request dedup key.
+ - **FEAT**: add post-quantum hybrid encryption for direct messages (ML-KEM-1024).
+ - **FEAT**: bind each connection to at most one identity.
+ - **FEAT**: add RelayConnectionKey to identify a relay connection.
+ - **BREAKING** **FIX**: replace GPL-3.0-only crystals-dilithium with fips204 (ML-DSA).
+ - **BREAKING** **FEAT**: stream relay connections as a list instead of a url keyed map.
+
+#### `ndk_flutter` - `v0.8.4-dev.15`
+
+ - **FIX**: use the event returned by NIP-07 and NIP-55 signers.
+
+
 ## 2026-07-24
 
 ### Changes
