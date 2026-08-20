@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.5.2.829067039104">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.840554798057">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.5.2">
+    <meta name="generator" content="Retype 4.6.0">
 
     <!-- Primary Meta Tags -->
     <title>User relay lists</title>
@@ -37,12 +37,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.5.2.829067039104" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.840554798057" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.5.2" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.5.2.829067039104" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.840554798057" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -161,17 +161,30 @@
 <h2 id="example">Example</h2>
 <div id="example-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">final response = await ndk.userRelayLists.getSingleUserRelayList(
-    '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177');
+  '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177',
+);
 
 // read entity
 print(&quot;RELAYS:&quot;);
-print(response?.relays.length ?? &quot;no relays&quot;);
-print(response!.toNip65());</code></pre>
+print(response?.relays.length ?? &quot;no relays&quot;);</code></pre>
 </doc-codeblock></div>
 <h2 id="when-to-use">When to use</h2>
 <p>User relay lists provides you with the relays for a given user. <br />
 It orients itself on nip65 but also uses data from nip02 in case nip65 is not available. <br />
 It&#x27;s used by inbox/outbox; only use this if you are doing something custom that is not directly handled by inbox/outbox.</p>
+<h2 id="current-behavior">Current behavior</h2>
+<p>User relay list resolution combines relay information from:</p>
+<ul>
+<li>NIP-65 relay list events</li>
+<li>contact-list relay content when needed</li>
+</ul>
+<p>Behavior:</p>
+<ul>
+<li>the cache stores a computed user relay list projection</li>
+<li>that projection is refreshed from authoritative events when needed</li>
+<li>repeated reads can return cached projections</li>
+</ul>
+<p>For DM relay lists, <code translate="no" v-pre>getDmRelays()</code> reads the latest visible relay list event for the user and can refresh from relays when requested.</p>
 
                 
                 <!-- Required only on API pages -->

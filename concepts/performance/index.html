@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.5.2.829067039104">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.840554798057">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.5.2">
+    <meta name="generator" content="Retype 4.6.0">
 
     <!-- Primary Meta Tags -->
     <title>Performance</title>
@@ -37,11 +37,11 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.5.2.829067039104" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.840554798057" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.5.2" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -162,7 +162,8 @@ Even splitting the users filters into smaller relay tailored filters if we know 
 <p><strong>compute</strong><br />
 Right now the most compute intensive operation is verifying signatures. <br />
 We use the cache to determine if we have already seen the event and only if it is unknown signature verification is done. <br />
-To make the operation as optimized as possible we strongly recommend using <code translate="no" v-pre>RustEventVerifier()</code> because it uses a separate thread for verification.</p>
+To make the operation as optimized as possible we strongly recommend using <code translate="no" v-pre>NdkEventVerifier</code> from the <code translate="no" v-pre>ndk_flutter</code> package. It automatically selects the fastest verifier for the current platform (<code translate="no" v-pre>WebEventVerifier</code> on web, <code translate="no" v-pre>RustEventVerifier</code> on native).</p>
+<p>For pure Dart applications (without Flutter), use <code translate="no" v-pre>RustEventVerifier()</code> directly on native platforms.</p>
 
                 
                 <!-- Required only on API pages -->

@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.5.2.829067039104">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.840554798057">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.5.2">
+    <meta name="generator" content="Retype 4.6.0">
 
     <!-- Primary Meta Tags -->
     <title>Lists</title>
@@ -37,12 +37,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.5.2.829067039104" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.840554798057" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.5.2" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.5.2.829067039104" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.840554798057" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -179,145 +179,189 @@ print(&quot;received a set with ${myset.elements.length} elements&quot;);</code>
 <li><strong>Sets</strong>: Named collections identified by kind + name/d-tag (e.g., relay sets, follow sets)</li>
 </ul>
 <p>Both can have public and private (encrypted) elements.</p>
+<h2 id="current-behavior">Current behavior</h2>
+<p>For public list/set content:</p>
+<ul>
+<li>reads use the latest visible event for the relevant list or set</li>
+<li>cached results are reused on later reads</li>
+</ul>
+<p>For private list/set content:</p>
+<ul>
+<li>the original event content stays encrypted</li>
+<li>decrypted private tags can be loaded through NDK&#x27;s decrypted payload cache</li>
+<li>repeated reads can reuse cached plaintext instead of decrypting again</li>
+</ul>
 <h3 id="lists-methods">Lists Methods</h3>
 <h4 id="getsinglenip51list">getSingleNip51List</h4>
 <p>Retrieves a NIP-51 list by kind.</p>
 <div id="getsinglenip51list-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// Returns a NIP-51 list by the given kind.
-///
-/// Retrieves the most recent list event for the specified kind.
-/// First checks cache unless [forceRefresh] is true, then queries relays.
-///
-/// [kind] the kind of NIP-51 list to retrieve \
-/// [forceRefresh] if true, bypass cache and query relays directly \
-/// [timeout] maximum duration to wait for relay responses
-///
-/// Returns the list if found, null otherwise.
-Future&lt;Nip51List?&gt; getSingleNip51List(
-  int kind, {
-  bool forceRefresh = false,
-  Duration timeout = const Duration(seconds: 5),
-}) async {
-  if (_eventSigner == null) {
-    throw Exception(&quot;cannot get nip51 list without a signer&quot;);</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">  return _decryptedEventPayloads.loadOrDecrypt(
+    event: event,
+    viewerPubKey: signer.getPublicKey(),
+    scheme:
+        isNip04 ? DecryptedPayloadScheme.nip04 : DecryptedPayloadScheme.nip44,
+    decrypt: () =&gt; isNip04
+        // ignore: deprecated_member_use_from_same_package
+        ? signer.decrypt(event.content, signer.getPublicKey())
+        : signer.decryptNip44(
+            ciphertext: event.content,
+            senderPubKey: signer.getPublicKey(),
+          ),
+  );
+}
+
+Future&lt;void&gt; _applyPrivateTags({
+  required Nip01Event event,</code></pre>
 </doc-codeblock></div>
 <h4 id="addelementtolist">addElementToList</h4>
 <p>Adds an element to a list. Creates the list if it doesn&#x27;t exist.</p>
 <div id="addelementtolist-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">}
 
-/// Returns a NIP-51 list by kind for a given public key.
-///
-/// Retrieves the most recent list event for the specified kind and public key.
-/// Unlike [getSingleNip51List], this works with any public key, not just
-/// the logged-in user.
-///
-/// [kind] the kind of NIP-51 list to retrieve \
-/// [publicKey] the public key of the user whose list to retrieve \
-/// [forceRefresh] if true, bypass cache and query relays directly \
-/// [timeout] maximum duration to wait for relay responses
-///
-/// Returns the list if found, null otherwise.
-Future&lt;Nip51List?&gt; getPublicList({
-  required int kind,
-  required String publicKey,
-  bool forceRefresh = false,
-  Duration timeout = const Duration(seconds: 5),
-}) async {</code></pre>
+Future&lt;Nip51Set?&gt; _parseSetEvent(
+  Nip01Event event,
+  EventSigner? signer,
+) async {
+  final set = await Nip51Set.fromEvent(event, null);
+  if (set != null &amp;&amp; signer != null) {
+    await _applyPrivateTags(event: event, signer: signer, list: set);
+  }
+  return set;
+}
+
+///* lists *///
+
+Future&lt;Nip51List?&gt; _getCachedNip51List(int kind, EventSigner signer) async {
+  List&lt;Nip01Event&gt;? events = await _cacheManager.loadEvents(
+    pubKeys: [signer.getPublicKey()],
+    kinds: [kind],
+  );</code></pre>
 </doc-codeblock></div>
 <h4 id="removeelementfromlist">removeElementFromList</h4>
 <p>Removes an element from a list.</p>
 <div id="removeelementfromlist-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// Returns the updated list.\
-/// Throws an exception if no event signer is available.
-Future&lt;Nip51List&gt; addElementToList({
-  required int kind,
-  required String tag,
-  required String value,
-  Iterable&lt;String&gt;? broadcastRelays,
-  bool private = false,
-}) async {
-  if (_eventSigner == null) {
-    throw Exception(
-        &quot;cannot broadcast private nip51 list without a signer that can sign&quot;);
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">    ).stream) {
+      if (refreshedList == null ||
+          refreshedList.createdAt &lt;= event.createdAt) {
+        refreshedList = await _parseListEvent(event, signer);
+        // if (Helpers.isNotBlank(event.content)) {
+        //   Nip51List? decryptedList = await Nip51List.fromEvent(event, signer);
+        //   refreshedList = decryptedList;
+        // }
+        await _cacheManager.saveEvent(event);
+      }
+    }
+    return refreshedList;
   }
-  Nip51List? list = await getSingleNip51List(
-    kind,
-    forceRefresh: true,
-  );
-  list ??= Nip51List(</code></pre>
+  return list;
+}
+
+/// Returns a NIP-51 list by kind for a given public key.
+///</code></pre>
 </doc-codeblock></div>
 <h3 id="sets-methods">Sets Methods</h3>
 <h4 id="getsetbyname">getSetByName</h4>
 <p>Gets a specific set by name (d-tag) and kind.</p>
 <div id="getsetbyname-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">}
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// [tag] the tag type of the element to remove \
+/// [value] the value to remove from the list \
+/// [broadcastRelays] optional specific relays to broadcast to
+///
+/// Returns the updated list, or null if the list doesn't exist.\
+/// Throws an exception if no event signer is available.
+Future&lt;Nip51List?&gt; removeElementFromList({
+  required int kind,
+  required String tag,
+  required String value,
+  Iterable&lt;String&gt;? broadcastRelays,
+}) async {
+  if (_eventSigner == null) {
+    throw Exception(
+      &quot;cannot broadcast private nip51 list without a signer that can sign&quot;,
+    );
+  }
+  Nip51List? list = await getSingleNip51List(kind, forceRefresh: true);</code></pre>
+</doc-codeblock></div>
+<h4 id="getpublicsets">getPublicSets</h4>
+<p>Returns a stream of all public sets for a given public key and kind.</p>
+<div id="getpublicsets-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">    kinds: [kind],
+  );
+  events = events.where((event) {
+    if (event.getDtag() != null &amp;&amp; event.getDtag() == name) {
+      return true;
+    }
+    return false;
+  }).toList();
+  events.sort((a, b) =&gt; b.createdAt.compareTo(a.createdAt));
+  return events.isNotEmpty
+      ? await _parseSetEvent(events.first, signer)
+      : null;
+}
 
-/// get a nip51 set
-Stream&lt;Iterable&lt;Nip51Set&gt;?&gt; _getSets(
-  int kind,
-  EventSigner signer, {
-  bool forceRefresh = false,
-}) {
+/// get a nip51 set</code></pre>
+</doc-codeblock></div>
+<h4 id="addelementtoset">addElementToSet</h4>
+<p>Adds an element to a named set. Creates the set if it doesn&#x27;t exist.</p>
+<div id="addelementtoset-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">}) {
   final relaySets = &lt;String, Nip51Set&gt;{};
 
   return _requests
       .query(
         filters: [
-          Filter(
-            authors: [signer.getPublicKey()],
-            kinds: [kind],
-          )
-        ],</code></pre>
-</doc-codeblock></div>
-<h4 id="getpublicsets">getPublicSets</h4>
-<p>Returns a stream of all public sets for a given public key and kind.</p>
-<div id="getpublicsets-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">if (_eventSigner == null) {
-  throw Exception(&quot;getSetByName() no account&quot;);
-}
-signer = _eventSigner!;
+          Filter(authors: [signer.getPublicKey()], kinds: [kind]),
+        ],
+        cacheRead: !forceRefresh,
+      )
+      .stream
+      .where((event) =&gt; event.getDtag() != null)
+      .asyncMap((event) async {
+        final dtag = event.getDtag()!;
+        final existingSet = relaySets[dtag];
 
-Nip51Set? relaySet = await _getCachedSetByName(name, signer, kind);
-if (relaySet == null || forceRefresh) {
-  Nip51Set? newRelaySet;
-  await for (final event in _requests.query(filters: [
-    Filter(
-      authors: [signer.getPublicKey()],
-      kinds: [kind],
-      tags: {
-        &quot;#d&quot;: [name]
-      },</code></pre>
-</doc-codeblock></div>
-<h4 id="addelementtoset">addElementToSet</h4>
-<p>Adds an element to a named set. Creates the set if it doesn&#x27;t exist.</p>
-<div id="addelementtoset-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">          newRelaySet = await Nip51Set.fromEvent(event, signer);
-          await _cacheManager.saveEvent(event);
-        } else if (Helpers.isNotBlank(event.content)) {
-          Nip51Set? decryptedRelaySet =
-              await Nip51Set.fromEvent(event, signer);
-          if (decryptedRelaySet != null &amp;&amp; decryptedRelaySet.name == name) {
-            newRelaySet = decryptedRelaySet;
+        if (existingSet == null || existingSet.createdAt &lt; event.createdAt) {
+          final newSet = await _parseSetEvent(event, signer);
+          if (newSet != null) {
             await _cacheManager.saveEvent(event);
-          }
-        }
-      }
-    }
-    return newRelaySet;
-  }
-  return relaySet;
-}
-
-/// Returns a stream of public sets for a given public key, default is pubkey of logged in user.
-///
-/// Queries relays for all sets of the specified kind belonging to the
-/// given public key. Only public (non-encrypted) sets are returned.</code></pre>
+            relaySets[newSet.name] = newSet;</code></pre>
 </doc-codeblock></div>
 <h4 id="removeelementfromset">removeElementFromSet</h4>
 <p>Removes an element from a named set.</p>
 <div id="removeelementfromset-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">///
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">if (relaySet == null || forceRefresh) {
+  Nip51Set? newRelaySet;
+  await for (final event in _requests.query(
+    filters: [
+      Filter(
+        authors: [signer.getPublicKey()],
+        kinds: [kind],
+        tags: {
+          &quot;#d&quot;: [name],
+        },
+      ),
+    ],
+    cacheRead: !forceRefresh,
+  ).stream) {
+    if (newRelaySet == null || newRelaySet.createdAt &lt; event.createdAt) {
+      if (event.getDtag() != null &amp;&amp; event.getDtag() == name) {
+        newRelaySet = await _parseSetEvent(event, signer);
+        await _cacheManager.saveEvent(event);
+      } else if (Helpers.isNotBlank(event.content)) {
+        Nip51Set? decryptedRelaySet = await _parseSetEvent(event, signer);
+        if (decryptedRelaySet != null &amp;&amp; decryptedRelaySet.name == name) {
+          newRelaySet = decryptedRelaySet;</code></pre>
+</doc-codeblock></div>
+<h4 id="setcompleteset">setCompleteSet</h4>
+<p>Overwrites or creates a complete set. <strong>Warning:</strong> This replaces the entire set.</p>
+<div id="setcompleteset-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// [name] name of the set (d tag identifier) \
+/// [tag] the tag type for the element (e.g., 'relay', 'p', 'e') \
+/// [value] the value to add to the set \
+/// [kind] kind of the set \
+/// [private] if true, encrypt the element in the set content \
+/// [specificRelays] optional specific relays to broadcast to
+///
 /// Returns the updated set.
 Future&lt;Nip51Set?&gt; addElementToSet({
   required String name,
@@ -325,58 +369,26 @@ Future&lt;Nip51Set?&gt; addElementToSet({
   required String value,
   required int kind,
   bool private = false,
-  Iterable&lt;String&gt;? specificRelays,
-}) async {
-  Nip51Set? set =
-      await getSetByName(name: name, kind: kind, forceRefresh: true);
-  set ??= Nip51Set(
-      name: name,
-      pubKey: _eventSigner!.getPublicKey(),
-      kind: Nip51List.kRelaySet,
-      createdAt: Helpers.now,
-      elements: []);
-  set.addElement(tag, value, private);
-  set.createdAt = Helpers.now;
-  Nip01Event event = await set.toEvent(_eventSigner);
-</code></pre>
-</doc-codeblock></div>
-<h4 id="setcompleteset">setCompleteSet</h4>
-<p>Overwrites or creates a complete set. <strong>Warning:</strong> This replaces the entire set.</p>
-<div id="setcompleteset-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">  throw Exception(
-      &quot;cannot broadcast private nip51 list without a signer that can sign&quot;);
-}
-Nip51Set? mySet = await getSetByName(
-  name: name,
-  kind: kind,
-  forceRefresh: true,
-);
-if ((mySet == null || mySet.allRelays.isEmpty)) {
-  mySet = Nip51Set(
-      name: name,
-      kind: Nip51List.kRelaySet,
-      pubKey: _eventSigner!.getPublicKey(),
-      createdAt: Helpers.now,
-      elements: []);</code></pre>
+  Iterable&lt;String&gt;? specificRelays,</code></pre>
 </doc-codeblock></div>
 <h4 id="deleteset">deleteSet</h4>
 <p>Deletes a set by name and broadcasts a deletion event.</p>
 <div id="deleteset-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">
-/// Overwrites or creates a complete NIP-51 set.
-///
-/// **Warning:** This replaces the entire set. Consider using
-/// [addElementToSet] or [removeElementFromSet] for incremental updates.
-///
-/// [set] the complete set to broadcast \
-/// [kind] kind of the set \
-/// [specificRelays] optional specific relays to broadcast to
-///
-/// Returns the set after broadcasting.
-Future&lt;Nip51Set&gt; setCompleteSet({
-  required Nip51Set set,
-  required int kind,
-  Iterable&lt;String&gt;? specificRelays,</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">  events = events.where((event) {
+    if (event.getDtag() != null &amp;&amp; event.getDtag() == name) {
+      return true;
+    }
+    return false;
+  }).toList();
+  for (final event in events) {
+    _cacheManager.removeEvent(event.id);
+  }
+
+  await _cacheManager.saveEvent(event);
+  return set;
+}
+
+/// Removes an element from a NIP-51 set.</code></pre>
 </doc-codeblock></div>
 <h2 id="common-use-cases">Common Use Cases</h2>
 <h3 id="relay-sets">Relay Sets</h3>

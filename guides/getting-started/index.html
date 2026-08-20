@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.5.2.829067039104">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.840554798057">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.5.2">
+    <meta name="generator" content="Retype 4.6.0">
 
     <!-- Primary Meta Tags -->
     <title>Getting started</title>
     <meta name="title" content="Getting started">
-    <meta name="description" content="Ndk has a core package ndk and optional packages like amber and objectbox">
+    <meta name="description" content="NDK ships as two packages that work together:">
 
     <!-- Canonical -->
     <link rel="canonical" href="https://dart-nostr.com/guides/getting-started/">
@@ -22,7 +22,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dart-nostr.com/guides/getting-started/">
     <meta property="og:title" content="Getting started">
-    <meta property="og:description" content="Ndk has a core package ndk and optional packages like amber and objectbox">
+    <meta property="og:description" content="NDK ships as two packages that work together:">
     <meta property="og:site_name" content="NDK">
     <meta property="og:locale" content="en_US">
 
@@ -30,21 +30,19 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://dart-nostr.com/guides/getting-started/">
     <meta name="twitter:title" content="Getting started">
-    <meta name="twitter:description" content="Ndk has a core package ndk and optional packages like amber and objectbox">
+    <meta name="twitter:description" content="NDK ships as two packages that work together:">
 
     <!-- Alternate Markdown -->
     <link rel="alternate" type="text/markdown" href="https://dart-nostr.com/guides/getting-started.md">
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.5.2.829067039104" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.840554798057" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.5.2" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.5.2.829067039104" defer></script>
-    <link href="../../resources/css/katex.css?v=4.5.2" rel="stylesheet">
-    <script id="katex-js" data-cfasync="false" src="../../resources/js/katex.js?v=4.5.2" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.840554798057" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -157,16 +155,54 @@
 
                 <!-- Page content  -->
 <h1 id="getting-started-with-ndk">Getting started with NDK</h1>
-<h2 id="install">Install</h2>
-<p>Ndk has a core package <code translate="no" v-pre>ndk</code> and optional packages like <code translate="no" v-pre>amber</code> and <code translate="no" v-pre>objectbox</code></p>
+<p>NDK ships as two packages that work together:</p>
+<ul>
+<li><strong><code translate="no" v-pre>ndk</code></strong> — the core library: relay gossip (inbox/outbox), requests, caching, signers, and high-level usecases. Pure Dart, no Flutter dependency.</li>
+<li><strong><code translate="no" v-pre>ndk_flutter</code></strong> — Flutter integration on top of <code translate="no" v-pre>ndk</code>: a platform-aware event verifier, Flutter signers, login persistence, and ready-to-use widgets.</li>
+</ul>
+<p>If you are building a <strong>Flutter app</strong> (the common case), start with <code translate="no" v-pre>ndk_flutter</code> — it depends on <code translate="no" v-pre>ndk</code> and gives you the best defaults for each platform automatically. Use the core <code translate="no" v-pre>ndk</code> package alone only for pure-Dart projects (CLIs, servers).</p>
+<div class="flex mb-6">
+    <div class="shrink-0 w-1.5 rounded-tl-lg rounded-bl-lg bg-callout-primary"></div>
+    <div class="flex w-full py-4 border border-l-0 rounded-tr-lg rounded-br-lg doc-callout bg-callout-base-bg border-callout-base-border" role="alert">
+        <div class="flex items-center ml-4 h-7">
+            <svg xmlns="http://www.w3.org/2000/svg" class="block text-callout-primary" width="22" height="22" viewBox="0 0 24 24" role="presentation">
+                <g fill="currentColor"><g>
+                    <path d="M12 1C5.93 1 1 5.93 1 12s4.93 11 11 11 11-4.93 11-11S18.07 1 12 1zm0 20c-4.96 0-9-4.04-9-9s4.04-9 9-9 9 4.04 9 9-4.04 9-9 9z"></path>
+                    <path d="M12 11c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1s1-.45 1-1v-4c0-.55-.45-1-1-1zM12.01 7c-.56 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"></path>
+                    <path fill="none" d="M0 0h24v24H0z"></path>
+                </g></g>
+            </svg>
+        </div>
+        <div class="pr-5 ml-3 w-full">
+<p>Looking for a ready-to-run tool instead of a library? NDK also ships a prebuilt <strong>CLI</strong> for querying relays and managing wallets. See <a href="./cli.md">the CLI guide</a>.</p>
+        </div>
+    </div>
+</div>
+<h2 id="flutter-apps-recommended">Flutter apps (recommended)</h2>
+<h3 id="install">Install</h3>
 <div id="install-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-bash"><code v-pre class="language-bash">flutter pub add ndk</code></pre>
+<pre translate="no" class="language-bash"><code v-pre class="language-bash">flutter pub add ndk ndk_flutter</code></pre>
 </doc-codeblock></div>
-<h2 id="import">Import</h2>
+<h3 id="import">Import</h3>
 <div id="import-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">import 'package:ndk/ndk.dart';</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">import 'package:ndk/ndk.dart';
+import 'package:ndk_flutter/ndk_flutter.dart';</code></pre>
 </doc-codeblock></div>
-<h2 id="usage">Usage</h2>
+<h3 id="initialize">Initialize</h3>
+<p><code translate="no" v-pre>NdkEventVerifier</code> (from <code translate="no" v-pre>ndk_flutter</code>) is the recommended verifier for Flutter apps. It automatically selects the best backend for the current platform:</p>
+<ul>
+<li><strong>Web</strong> → <code translate="no" v-pre>WebEventVerifier</code> (native Web Crypto APIs)</li>
+<li><strong>Android / iOS / desktop</strong> → <code translate="no" v-pre>RustEventVerifier</code> (offloaded to a separate thread)</li>
+</ul>
+<p>This means you write one line and get the optimal verifier everywhere, with no conditional imports or platform checks.</p>
+<div id="initialize-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">final ndk = Ndk(
+  NdkConfig(
+    eventVerifier: NdkEventVerifier(),
+    cache: MemCacheManager(),
+  ),
+);</code></pre>
+</doc-codeblock></div>
 <div class="flex mb-6">
     <div class="shrink-0 w-1.5 rounded-tl-lg rounded-bl-lg bg-callout-primary"></div>
     <div class="flex w-full py-4 border border-l-0 rounded-tr-lg rounded-br-lg doc-callout bg-callout-base-bg border-callout-base-border" role="alert">
@@ -184,33 +220,14 @@
         </div>
     </div>
 </div>
-<div class="flex mb-6">
-    <div class="shrink-0 w-1.5 rounded-tl-lg rounded-bl-lg bg-callout-primary"></div>
-    <div class="flex w-full py-4 border border-l-0 rounded-tr-lg rounded-br-lg doc-callout bg-callout-base-bg border-callout-base-border" role="alert">
-        <div class="flex items-center ml-4 h-7">
-            <svg xmlns="http://www.w3.org/2000/svg" class="block text-callout-primary" width="22" height="22" viewBox="0 0 24 24" role="presentation">
-                <g fill="currentColor"><g>
-                    <path d="M12 1C5.93 1 1 5.93 1 12s4.93 11 11 11 11-4.93 11-11S18.07 1 12 1zm0 20c-4.96 0-9-4.04-9-9s4.04-9 9-9 9 4.04 9 9-4.04 9-9 9z"></path>
-                    <path d="M12 11c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1s1-.45 1-1v-4c0-.55-.45-1-1-1zM12.01 7c-.56 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"></path>
-                    <path fill="none" d="M0 0h24v24H0z"></path>
-                </g></g>
-            </svg>
-        </div>
-        <div class="pr-5 ml-3 w-full">
-<p>We strongly recommend using <code translate="no" v-pre>RustEventVerifier()</code> for client applications. It uses a separate thread for signature verification and is therefore more performant. \</p>
-        </div>
-    </div>
-</div>
-<h3 id="prerequisites-for-using-the-rust-verifier">Prerequisites for using the rust verifier</h3>
-<ul>
-<li>rust ( + toolchain for target)</li>
-</ul>
+<h4 id="prerequisites-for-native-platforms">Prerequisites for native platforms</h4>
+<p>On native platforms <code translate="no" v-pre>NdkEventVerifier</code> uses the Rust verifier, which requires the Rust toolchain. <strong>On web, no Rust toolchain is needed</strong> — it falls back to Web Crypto.</p>
 <p>Install Rust:</p>
-<div id="prerequisites-for-using-the-rust-verifier-code-1" class="codeblock-wrapper"><doc-codeblock>
+<div id="prerequisites-for-native-platforms-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-bash"><code v-pre class="language-bash">curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh</code></pre>
 </doc-codeblock></div>
 <p>Rust toolchain android:</p>
-<div id="prerequisites-for-using-the-rust-verifier-code-2" class="codeblock-wrapper"><doc-codeblock>
+<div id="prerequisites-for-native-platforms-code-2" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-bash"><code v-pre class="language-bash">rustup target add \
     aarch64-linux-android \
     armv7-linux-androideabi \
@@ -218,7 +235,7 @@
     i686-linux-android</code></pre>
 </doc-codeblock></div>
 <p>Rust toolchain ios:</p>
-<div id="prerequisites-for-using-the-rust-verifier-code-3" class="codeblock-wrapper"><doc-codeblock>
+<div id="prerequisites-for-native-platforms-code-3" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-bash"><code v-pre class="language-bash"># 64 bit targets (real device &amp; simulator):
 rustup target add aarch64-apple-ios x86_64-apple-ios
 # New simulator target for Xcode 12 and later
@@ -226,34 +243,18 @@ rustup target add aarch64-apple-ios-sim
 # 32 bit targets (you probably don't need these):
 rustup target add armv7-apple-ios i386-apple-ios</code></pre>
 </doc-codeblock></div>
-<h2 id="install-1">Install</h2>
-<div id="install-1-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-bash"><code v-pre class="language-bash">flutter pub add ndk_rust_verifier
-flutter pub add ndk_amber</code></pre>
-</doc-codeblock></div>
-<div id="install-1-code-2" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">import 'package:ndk/ndk.dart';
-
-// init
-final ndk = Ndk(
-  NdkConfig(
-    eventVerifier: RustEventVerifier(),
-    cache: MemCacheManager(),
-  ),
-);
-
-// usecase - query
-final response = ndk.requests.query(
+<h3 id="query-events">Query events</h3>
+<div id="query-events-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">final response = ndk.requests.query(
   filters: [
     Filter(
-      authors: ['hexPubkey']
-      kinds: [Nip01Event.TEXT_NODE_KIND],
+      authors: ['hexPubkey'],
+      kinds: [Nip01Event.kTextNodeKind],
       limit: 10,
     ),
   ],
 );
 
-// result
 await for (final event in response.stream) {
   print(event);
 }</code></pre>
@@ -272,15 +273,104 @@ await for (final event in response.stream) {
     <a href="../../usecases/accounts/" class="absolute block inset-0"></a>
 </div>
 </p>
-<p><span class="math">~~~~~~~~~~~</span></p>
-<h2 id="install-2">Install</h2>
-<div id="install-2-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-bash"><code v-pre class="language-bash">flutter pub add ndk_amber</code></pre>
+<h3 id="widgets--login-persistence">Widgets &amp; login persistence</h3>
+<p><code translate="no" v-pre>ndk_flutter</code> gives you ready-to-use Nostr widgets and helpers so you don&#x27;t have to wire accounts/signers yourself:</p>
+<ul>
+<li><code translate="no" v-pre>NdkFlutter.restoreAccountsState()</code> / <code translate="no" v-pre>saveAccountsState()</code> — persist and restore logged accounts to <code translate="no" v-pre>flutter_secure_storage</code></li>
+<li>Widgets: <code translate="no" v-pre>NLogin</code>, <code translate="no" v-pre>NUserProfile</code>, <code translate="no" v-pre>NName</code>, <code translate="no" v-pre>NPicture</code>, <code translate="no" v-pre>NBanner</code>, <code translate="no" v-pre>NSwitchAccount</code>, ...</li>
+</ul>
+<p>The widgets rely on Flutter&#x27;s internationalization. Add the delegate to your <code translate="no" v-pre>MaterialApp</code>:</p>
+<div id="widgets--login-persistence-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">import 'package:ndk_flutter/l10n/app_localizations.dart' as ndk_flutter;
+
+MaterialApp(
+  localizationsDelegates: [
+    ndk_flutter.AppLocalizations.delegate,
+  ],
+);</code></pre>
 </doc-codeblock></div>
-<h2 id="import-1">Import</h2>
-<div id="import-1-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">import 'package:ndk_amber/ndk_amber.dart';</code></pre>
+<p>Then wrap <code translate="no" v-pre>ndk</code> and restore saved accounts (typically before <code translate="no" v-pre>runApp</code>), and save again whenever the auth state changes:</p>
+<div id="widgets--login-persistence-code-2" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">final ndkFlutter = NdkFlutter(ndk: ndk);
+
+await ndkFlutter.restoreAccountsState();
+
+// ...later, whenever login/logout/switch happens:
+await ndkFlutter.saveAccountsState();</code></pre>
 </doc-codeblock></div>
+<div id="widgets--login-persistence-code-3" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">// available widgets
+NLogin(ndkFlutter: ndkFlutter);
+NUserProfile(ndkFlutter: ndkFlutter);
+NName(ndkFlutter: ndkFlutter);
+NPicture(ndkFlutter: ndkFlutter);
+NBanner(ndkFlutter: ndkFlutter);
+NSwitchAccount(ndkFlutter: ndkFlutter);</code></pre>
+</doc-codeblock></div>
+<p>By default these widgets target the logged-in user; pass a <code translate="no" v-pre>pubkey</code> to render any other user.</p>
+<p>
+<div class="mb-6 px-5 py-4 flex justify-between relative border border-base-border hover:border-base-border-hover rounded transition-colors duration-150">
+    <div class="flex items-center text-base-500">
+        <span class="inline-flex items-center justify-center leading-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="block shrink-0" width="20" height="20" viewBox="0 0 24 24" role="presentation" fill="currentColor"><path fill="none" d="M0 0h24v24H0z"/><path d="M19.92 12.38a1 1 0 00-.22-1.09l-7-7a.996.996 0 10-1.41 1.41l5.3 5.3H5c-.55 0-1 .45-1 1s.45 1 1 1h11.59l-5.29 5.29a.996.996 0 000 1.41c.19.2.44.3.7.3s.51-.1.71-.29l7-7c.09-.09.16-.21.21-.33z"/></svg>
+        </span>
+        <span class="inline-block font-medium ml-2">widgets</span>
+    </div>
+    <div class="flex items-center text-xs text-gray-400 dark:text-dark-400">
+        <span>https://pub.dev/packages/ndk_flutter</span>
+    </div>
+    <a href="https://pub.dev/packages/ndk_flutter" class="absolute block inset-0"></a>
+</div>
+</p>
+<hr>
+<h2 id="pure-dart-non-flutter">Pure Dart (non-Flutter)</h2>
+<p>For Dart CLIs, servers, or any project without a Flutter dependency, use only the core <code translate="no" v-pre>ndk</code> package.</p>
+<h3 id="install-1">Install</h3>
+<div id="install-1-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-bash"><code v-pre class="language-bash">dart pub add ndk</code></pre>
+</doc-codeblock></div>
+<h3 id="usage">Usage</h3>
+<div id="usage-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">import 'package:ndk/ndk.dart';
+
+final ndk = Ndk(
+  NdkConfig(
+    eventVerifier: RustEventVerifier(),
+    cache: MemCacheManager(),
+  ),
+);
+
+final response = ndk.requests.query(
+  filters: [
+    Filter(
+      authors: ['hexPubkey'],
+      kinds: [Nip01Event.kTextNodeKind],
+      limit: 10,
+    ),
+  ],
+);
+
+await for (final event in response.stream) {
+  print(event);
+}</code></pre>
+</doc-codeblock></div>
+<div class="flex mb-6">
+    <div class="shrink-0 w-1.5 rounded-tl-lg rounded-bl-lg bg-callout-primary"></div>
+    <div class="flex w-full py-4 border border-l-0 rounded-tr-lg rounded-br-lg doc-callout bg-callout-base-bg border-callout-base-border" role="alert">
+        <div class="flex items-center ml-4 h-7">
+            <svg xmlns="http://www.w3.org/2000/svg" class="block text-callout-primary" width="22" height="22" viewBox="0 0 24 24" role="presentation">
+                <g fill="currentColor"><g>
+                    <path d="M12 1C5.93 1 1 5.93 1 12s4.93 11 11 11 11-4.93 11-11S18.07 1 12 1zm0 20c-4.96 0-9-4.04-9-9s4.04-9 9-9 9 4.04 9 9-4.04 9-9 9z"></path>
+                    <path d="M12 11c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1s1-.45 1-1v-4c0-.55-.45-1-1-1zM12.01 7c-.56 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"></path>
+                    <path fill="none" d="M0 0h24v24H0z"></path>
+                </g></g>
+            </svg>
+        </div>
+        <div class="pr-5 ml-3 w-full">
+<p><code translate="no" v-pre>RustEventVerifier()</code> requires the Rust toolchain (see the prerequisites above). For a pure-Dart setup with no native dependencies, use <code translate="no" v-pre>Bip340EventVerifier()</code> instead — it is slower but needs no Rust.</p>
+        </div>
+    </div>
+</div>
 
                 
                 <!-- Required only on API pages -->
@@ -347,6 +437,6 @@ await for (final event in response.stream) {
 
     <div id="retype-overlay-target"></div>
 
-        <script data-cfasync="false">window.__DOCS__ = { "title": "Getting started with NDK", level: 2, icon: "file", hasPrism: true, hasInstagram: false, hasMermaid: false, hasMath: true, tocDepth: 23, "md": "/guides/getting-started.md" }</script>
+        <script data-cfasync="false">window.__DOCS__ = { "title": "Getting started with NDK", level: 2, icon: "file", hasPrism: true, hasInstagram: false, hasMermaid: false, hasMath: false, tocDepth: 23, "md": "/guides/getting-started.md" }</script>
 </body>
 </html>

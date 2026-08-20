@@ -1,5 +1,7 @@
 [!badge variant="primary" text="low level"]
 
+[!badge text="CLI"](/guides/cli/blossom.md) — `ndk blossom upload|download|delete|list|mirror|check|servers`
+
 ## Example
 
 :::code source="../../packages/ndk/example/files/blossom_example_test.dart" language="dart" range="10-19" title="" :::

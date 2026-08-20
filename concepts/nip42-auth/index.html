@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.5.2.829067039104">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.840554798057">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.5.2">
+    <meta name="generator" content="Retype 4.6.0">
 
     <!-- Primary Meta Tags -->
     <title>NIP-42 Authentication</title>
@@ -37,12 +37,11 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.5.2.829067039104" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.840554798057" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.5.2" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.5.2.829067039104" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -156,34 +155,6 @@
                 <!-- Page content  -->
 <h1 id="nip-42-authentication">NIP-42 Authentication</h1>
 <p>NDK handles NIP-42 relay authentication automatically. When a relay requires authentication, NDK will sign and send AUTH events, then retry the original request.</p>
-<h2 id="auth-strategies">Auth Strategies</h2>
-<p>NDK supports two authentication strategies:</p>
-<h3 id="lazy-auth-default">Lazy Auth (default)</h3>
-<div id="lazy-auth-default-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">final ndk = Ndk(NdkConfig(
-  eventVerifier: Bip340EventVerifier(),
-  cache: MemCacheManager(),
-  // eagerAuth: false (default)
-));</code></pre>
-</doc-codeblock></div>
-<ul>
-<li>AUTH is sent <strong>only after</strong> the relay responds with <code translate="no" v-pre>auth-required</code></li>
-<li>More privacy-respecting: doesn&#x27;t reveal identity until necessary</li>
-<li>Flow: <code translate="no" v-pre>REQ</code> → <code translate="no" v-pre>CLOSED auth-required</code> → <code translate="no" v-pre>AUTH</code> → <code translate="no" v-pre>OK</code> → <code translate="no" v-pre>REQ</code> (retry)</li>
-</ul>
-<h3 id="eager-auth">Eager Auth</h3>
-<div id="eager-auth-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">final ndk = Ndk(NdkConfig(
-  eventVerifier: Bip340EventVerifier(),
-  cache: MemCacheManager(),
-  eagerAuth: true,
-));</code></pre>
-</doc-codeblock></div>
-<ul>
-<li>AUTH is sent <strong>immediately</strong> when the relay sends a challenge</li>
-<li>Faster for relays that always require auth</li>
-<li>Flow: <code translate="no" v-pre>AUTH challenge</code> → <code translate="no" v-pre>AUTH</code> → <code translate="no" v-pre>OK</code> → <code translate="no" v-pre>REQ</code></li>
-</ul>
 
                 
                 <!-- Required only on API pages -->
@@ -250,6 +221,6 @@
 
     <div id="retype-overlay-target"></div>
 
-        <script data-cfasync="false">window.__DOCS__ = { "title": "NIP-42 Authentication", level: 2, icon: "file", hasPrism: true, hasInstagram: false, hasMermaid: false, hasMath: false, tocDepth: 23, "md": "/concepts/nip42-auth.md" }</script>
+        <script data-cfasync="false">window.__DOCS__ = { "title": "NIP-42 Authentication", level: 2, icon: "file", hasPrism: false, hasInstagram: false, hasMermaid: false, hasMath: false, tocDepth: 23, "md": "/concepts/nip42-auth.md" }</script>
 </body>
 </html>

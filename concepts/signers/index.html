@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.5.2.829067039104">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.840554798057">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.5.2">
+    <meta name="generator" content="Retype 4.6.0">
 
     <!-- Primary Meta Tags -->
     <title>Signers</title>
@@ -37,12 +37,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.5.2.829067039104" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.840554798057" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.5.2" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.5.2.829067039104" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.840554798057" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -157,6 +157,14 @@
 <h1 id="signers">Signers</h1>
 <p>Signers are responsible for cryptographic operations: signing events, encrypting and decrypting messages. NDK supports multiple signer types with a unified API.</p>
 <h2 id="signer-types">Signer Types</h2>
+<retype-table copy-text="| Type | Description | Pending Requests |
+|------|-------------|------------------|
+| `Bip340EventSigner` | Local signer with private key (pure Dart) | No (instant) |
+| `WebEventSigner` | Fast local signer for web (JS crypto) | No (instant) |
+| `NdkEventSigner` | Automatic platform selection (web/native) | No (instant) |
+| `Nip46EventSigner` | Remote signer via NIP-46 bunker | Yes |
+| `Nip07EventSigner` | Browser extension (NIP-07) | Yes |
+| `Nip55EventSigner` | Android NIP-55 external signer app | Yes |">
 <div class="table-wrapper scrollbar overflow-hidden">
 <table class="comfortable">
 <thead>
@@ -169,7 +177,17 @@
 <tbody>
 <tr>
 <td><code translate="no" v-pre>Bip340EventSigner</code></td>
-<td>Local signer with private key</td>
+<td>Local signer with private key (pure Dart)</td>
+<td>No (instant)</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>WebEventSigner</code></td>
+<td>Fast local signer for web (JS crypto)</td>
+<td>No (instant)</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>NdkEventSigner</code></td>
+<td>Automatic platform selection (web/native)</td>
 <td>No (instant)</td>
 </tr>
 <tr>
@@ -183,15 +201,16 @@
 <td>Yes</td>
 </tr>
 <tr>
-<td><code translate="no" v-pre>AmberEventSigner</code></td>
-<td>Android Amber app</td>
+<td><code translate="no" v-pre>Nip55EventSigner</code></td>
+<td>Android NIP-55 external signer app</td>
 <td>Yes</td>
 </tr>
 </tbody>
 </table>
 </div>
+</retype-table>
 <h2 id="pending-requests">Pending Requests</h2>
-<p>External signers (NIP-46, NIP-07, Amber) require user approval for operations. The unified pending requests API allows your UI to:</p>
+<p>External signers (NIP-46, NIP-07, NIP-55) require user approval for operations. The unified pending requests API allows your UI to:</p>
 <ul>
 <li>Display pending operations to the user</li>
 <li>Cancel pending requests</li>
@@ -248,7 +267,7 @@ if (cancelled) {
 }</code></pre>
 </doc-codeblock></div>
 <h3 id="handling-remote-rejections">Handling Remote Rejections</h3>
-<p>When the user rejects a request on the remote signer (bunker, browser extension, Amber), the caller receives a <code translate="no" v-pre>SignerRequestRejectedException</code>:</p>
+<p>When the user rejects a request on the remote signer (bunker, browser extension, NIP-55 signer app), the caller receives a <code translate="no" v-pre>SignerRequestRejectedException</code>:</p>
 <div id="handling-remote-rejections-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">try {
   await signer.sign(event);
@@ -259,6 +278,10 @@ if (cancelled) {
   print('User cancelled locally: ${e.requestId}');
 }</code></pre>
 </doc-codeblock></div>
+<retype-table copy-text="| Exception | When thrown |
+|-----------|-------------|
+| `SignerRequestCancelledException` | `cancelRequest()` called locally |
+| `SignerRequestRejectedException` | User rejected on remote signer |">
 <div class="table-wrapper scrollbar overflow-hidden">
 <table class="comfortable">
 <thead>
@@ -279,6 +302,7 @@ if (cancelled) {
 </tbody>
 </table>
 </div>
+</retype-table>
 <h2 id="ui-example">UI Example</h2>
 <div id="ui-example-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">StreamBuilder&lt;List&lt;PendingSignerRequest&gt;&gt;(
@@ -307,6 +331,43 @@ if (cancelled) {
   },
 )</code></pre>
 </doc-codeblock></div>
+<h2 id="web-crypto">Web Crypto</h2>
+<p>On web platforms, pure Dart elliptic curve operations are slow. <code translate="no" v-pre>WebEventSigner</code> uses <code translate="no" v-pre>@noble/curves</code> and the Web Crypto API via JS interop for fast BIP-340 signing, NIP-04 and NIP-44 encryption.</p>
+<div id="web-crypto-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">import 'package:ndk_flutter/signers/web_event_signer.dart';
+
+final signer = WebEventSigner(
+  privateKey: myPrivkey,
+  publicKey: myPubkey,
+);</code></pre>
+</doc-codeblock></div>
+<p><code translate="no" v-pre>WebEventSigner</code> is only available on web. Use <code translate="no" v-pre>Bip340EventSigner</code> for native platforms.</p>
+<h2 id="platform-selection">Platform Selection</h2>
+<p><code translate="no" v-pre>NdkEventSigner</code> automatically picks the best implementation for the current platform:</p>
+<ul>
+<li><strong>Web</strong>: uses <code translate="no" v-pre>WebEventSigner</code> (fast JS crypto)</li>
+<li><strong>Native</strong>: uses <code translate="no" v-pre>Bip340EventSigner</code> (pure Dart)</li>
+</ul>
+<div id="platform-selection-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">import 'package:ndk_flutter/ndk_flutter.dart';
+
+final signer = NdkEventSigner(
+  privateKey: myPrivkey,
+  publicKey: myPubkey,
+);</code></pre>
+</doc-codeblock></div>
+<p>To wire it into NDK so it is used everywhere internally (accounts, bunkers,
+ephemeral signers, etc.), pass the matching factory to <code translate="no" v-pre>NdkConfig</code>:</p>
+<div id="platform-selection-code-2" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">final ndk = Ndk(
+  NdkConfig(
+    eventVerifier: NdkEventVerifier(),
+    cache: MemCacheManager(),
+    eventSignerFactory: const NdkEventSignerFactory(),
+  ),
+);</code></pre>
+</doc-codeblock></div>
+<p>This is the recommended setup for Flutter apps that target both mobile and web.</p>
 <h2 id="disposing-accounts">Disposing Accounts</h2>
 <p>Always dispose accounts when done to avoid memory leaks:</p>
 <div id="disposing-accounts-code-1" class="codeblock-wrapper"><doc-codeblock>

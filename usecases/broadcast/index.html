@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.5.2.829067039104">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.840554798057">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.5.2">
+    <meta name="generator" content="Retype 4.6.0">
 
     <!-- Primary Meta Tags -->
     <title>Broadcast</title>
@@ -37,12 +37,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.5.2.829067039104" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.840554798057" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.5.2" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.5.2.829067039104" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.840554798057" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -198,6 +198,73 @@ If you want to use the outbox model, check out the <a href="../../guides/enablin
 <p>Broadcast should be used when your use case has no broadcasting method. <br />
 Signing is done automatically, and you can specify a custom signer just for one broadcast. <br />
 By default, the inbox/outbox model is used for broadcasting looking at the event data (e.g. if it&#x27;s a reply) you can also specify specific relays to broadcast to.</p>
+<h2 id="local-first-behavior">Local-first behavior</h2>
+<p>NDK keeps delivery state for locally created events in the configured cache backend.</p>
+<p>That means:</p>
+<ul>
+<li>an event may be visible locally before every relay accepts it</li>
+<li>pending delivery can survive app restarts when the cache backend is persistent</li>
+<li>if signing is delayed by an external signer, the unsigned event can still stay queued locally</li>
+<li>retries can continue later when relays are reachable again</li>
+<li>replaceable events only keep retrying the newest visible version</li>
+</ul>
+<p>With <code translate="no" v-pre>MemCacheManager</code>, this state exists while the process is alive. With a persistent <code translate="no" v-pre>CacheManager</code>, it also survives restarts.</p>
+<h2 id="retry-behavior">Retry behavior</h2>
+<p>Background delivery retries are not identical for every event.</p>
+<p>Current behavior includes:</p>
+<ul>
+<li>replaceable events retry as latest-state-only delivery</li>
+<li>ephemeral events are not kept for retry</li>
+<li>some control-style events can use faster retry behavior</li>
+<li>relay responses classified as permanent failure stop retry for that relay target</li>
+<li>relay responses classified as transient failure remain retryable</li>
+<li>external signer flows can also be retried in the background before relay delivery continues</li>
+</ul>
+<h2 id="external-signer-retry-behavior">External signer retry behavior</h2>
+<p>When you broadcast through an external signer such as <code translate="no" v-pre>Nip46EventSigner</code>,
+<code translate="no" v-pre>Nip07EventSigner</code>, or <code translate="no" v-pre>Nip55EventSigner</code>, signing and relay delivery are treated
+as separate steps.</p>
+<p>Current behavior:</p>
+<ul>
+<li>if the signer does not complete immediately, the event can remain queued locally</li>
+<li>once signing succeeds later, NDK can continue relay delivery for that same event</li>
+<li>if the signer depends on network transport, retries are biased toward moments when the signer transport looks reachable again</li>
+<li>if the signer succeeds while some target relays are still offline, delivery to those relays can still continue later</li>
+</ul>
+<p>In practice this means apps can treat delayed external signing as part of the same
+local-first publish flow instead of having to rebuild the publish manually.</p>
+<h2 id="delivery-policy">Delivery policy</h2>
+<p>NDK uses an internal <code translate="no" v-pre>DeliveryPolicy</code> for local-first broadcast retry handling.</p>
+<p>Current policy selection is automatic:</p>
+<ul>
+<li>ephemeral events use <code translate="no" v-pre>doNotRetry</code></li>
+<li>deletion events use <code translate="no" v-pre>highPriorityControl</code></li>
+<li>replaceable and addressable events use <code translate="no" v-pre>latestStateOnly</code></li>
+<li>other events use <code translate="no" v-pre>persistentEventual</code></li>
+</ul>
+<p>This policy is currently <strong>not configurable</strong> through <code translate="no" v-pre>ndk.broadcast.broadcast()</code>,
+<code translate="no" v-pre>NdkConfig</code>, or a per-event override.</p>
+<p>That means:</p>
+<ul>
+<li>you cannot choose a custom retry/backoff profile for one broadcast</li>
+<li>you cannot inject your own delivery policy classifier</li>
+<li>the practical way to influence policy today is through the event kind you publish</li>
+</ul>
+<p>Examples:</p>
+<ul>
+<li><code translate="no" v-pre>kind:5</code> deletions get faster control-style retries</li>
+<li>replaceable kinds only keep retrying the newest visible version</li>
+<li>ephemeral kinds are not persisted for background retry</li>
+</ul>
+<h2 id="relay-targeting">Relay targeting</h2>
+<p>Broadcast targeting can include more than author outbox relays.</p>
+<p>Depending on the event, NDK may target:</p>
+<ul>
+<li>explicit relays</li>
+<li>author write relays</li>
+<li>inbox/read relays needed for replies and reactions</li>
+</ul>
+<p>Delivery targets are tracked separately from source provenance.</p>
 
                 
                 <!-- Required only on API pages -->

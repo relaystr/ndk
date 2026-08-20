@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.5.2.829067039104">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.840554798057">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.5.2">
+    <meta name="generator" content="Retype 4.6.0">
 
     <!-- Primary Meta Tags -->
     <title>Follows</title>
@@ -37,12 +37,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.5.2.829067039104" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.840554798057" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.5.2" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.5.2.829067039104" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.840554798057" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -161,17 +161,32 @@
 <h2 id="example">Example</h2>
 <div id="example-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">final response = await ndk.follows.getContactList(
-    '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d');
+  '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d',
+);
 
 // read entity
-print(&quot;CONTACTS:&quot;);
-print(response?.contacts.length ?? &quot;no contacts&quot;);</code></pre>
+print(&quot;CONTACTS:&quot;);</code></pre>
 </doc-codeblock></div>
 <h2 id="how-to-use">How to use</h2>
 <p>Gives you the list of contacts for a given pubKey.</p>
 <p>Use <code translate="no" v-pre>broadcastSetContactList()</code> to set the list initially (e.g. on signup) <br />
 <code translate="no" v-pre>broadcastAddContact()</code> to add a contact to the list <br />
 <code translate="no" v-pre>broadcastRemoveContact()</code> to remove a contact from the list</p>
+<h2 id="current-behavior">Current behavior</h2>
+<p>Contact lists behave as replaceable event state.</p>
+<p>That means:</p>
+<ul>
+<li>reads return the latest visible contact list for the pubkey</li>
+<li>expired or deleted older versions are not returned</li>
+<li>repeated reads can return cached results</li>
+<li><code translate="no" v-pre>forceRefresh</code> refreshes from relays</li>
+</ul>
+<p>When mutating the logged-in user&#x27;s contact list:</p>
+<ul>
+<li>NDK refreshes first when needed to avoid overwriting newer remote state</li>
+<li>NDK publishes a newer replaceable version of the full contact list</li>
+<li>the resulting event is cached for later reads</li>
+</ul>
 
                 
                 <!-- Required only on API pages -->

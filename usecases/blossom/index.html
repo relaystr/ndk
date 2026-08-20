@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.5.2.829067039104">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.840554798057">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.5.2">
+    <meta name="generator" content="Retype 4.6.0">
 
     <!-- Primary Meta Tags -->
     <title>Blossom</title>
     <meta name="title" content="Blossom">
-    <meta name="description" content="For a simpler, more generic API, check out Blossom">
+    <meta name="description" content="— ndk blossom upload|download|delete|list|mirror|check|servers">
 
     <!-- Canonical -->
     <link rel="canonical" href="https://dart-nostr.com/usecases/blossom/">
@@ -22,7 +22,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dart-nostr.com/usecases/blossom/">
     <meta property="og:title" content="Blossom">
-    <meta property="og:description" content="For a simpler, more generic API, check out Blossom">
+    <meta property="og:description" content="— ndk blossom upload|download|delete|list|mirror|check|servers">
     <meta property="og:site_name" content="NDK">
     <meta property="og:locale" content="en_US">
 
@@ -30,19 +30,19 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://dart-nostr.com/usecases/blossom/">
     <meta name="twitter:title" content="Blossom">
-    <meta name="twitter:description" content="For a simpler, more generic API, check out Blossom">
+    <meta name="twitter:description" content="— ndk blossom upload|download|delete|list|mirror|check|servers">
 
     <!-- Alternate Markdown -->
     <link rel="alternate" type="text/markdown" href="https://dart-nostr.com/usecases/blossom.md">
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.5.2.829067039104" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.840554798057" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.5.2" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.5.2.829067039104" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.840554798057" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -158,6 +158,9 @@
 <p><span class="no-link inline-flex align-middle items-center justify-center font-medium leading-none whitespace-nowrap text-badge-primary-text bg-badge-primary border border-badge-primary-border h-6 px-2 text-xs rounded-md">
     <span>low level</span>
 </span></p>
+<p><a href="../../guides/cli/blossom/" class="no-link inline-flex align-middle items-center justify-center font-medium leading-none whitespace-nowrap text-badge-primary-text bg-badge-primary border border-badge-primary-border hover:text-badge-primary-text-hover hover:bg-badge-primary-hover hover:border-badge-primary-border-hover transition-colors duration-200 ease-out h-6 px-2 text-xs rounded-md">
+    <span>CLI</span>
+</a> — <code translate="no" v-pre>ndk blossom upload|download|delete|list|mirror|check|servers</code></p>
 <h2 id="example">Example</h2>
 <div id="example-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">final downloadResult = await ndk.blossom.getBlob(
@@ -195,7 +198,10 @@ print(
 <h4 id="uploadblob">uploadBlob</h4>
 <p>upload a blob, if serverMediaOptimisation is set to <code translate="no" v-pre>true</code> the <code translate="no" v-pre>/media</code> endpoint is used.</p>
 <div id="uploadblob-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">EventSigner _getSigner(EventSigner? customSigner) {
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">
+/// Gets the signer to use for blossom operations
+/// Priority: customSigner &gt; logged in account signer &gt; temporary signer
+EventSigner _getSigner(EventSigner? customSigner) {
   if (customSigner != null) return customSigner;
 
   if (_accounts.canSign) {
@@ -204,23 +210,20 @@ print(
 
   // Create a temporary signer if no account is logged in
   final keyPair = Bip340.generatePrivateKey();
-  return Bip340EventSigner(
-    privateKey: keyPair.privateKey,
-    publicKey: keyPair.publicKey,
-  );</code></pre>
+  return _eventSignerFactory.create(</code></pre>
 </doc-codeblock></div>
 <h4 id="getblob">getBlob</h4>
 <p>Download the blob and use fallback if the blob is not found or the server is offline.</p>
 <div id="getblob-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">serverUrls ??= await _userServerList
-    .getUserServerList(pubkeys: [signer.getPublicKey()]);
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">    [&quot;x&quot;, dataSha256],
+    [&quot;expiration&quot;, &quot;${now + BLOSSOM_AUTH_EXPIRATION.inMilliseconds}&quot;],
+  ],
+);
 
-if (serverUrls == null) {
-  throw Exception(&quot;User has no server list&quot;);
-}
+final signedAuthorization = await signer.sign(myAuthorization);
 
-final stream = _blossomImpl.uploadBlob(
-  dataStreamFactory: () =&gt; Stream.value(data),</code></pre>
+serverUrls ??= await _userServerList.getUserServerList(
+  pubkeys: [signer.getPublicKey()],</code></pre>
 </doc-codeblock></div>
 <h4 id="checkblob">checkBlob</h4>
 <div class="flex mb-6">
@@ -241,82 +244,82 @@ final stream = _blossomImpl.uploadBlob(
     </div>
 </div>
 <div id="checkblob-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">    completedUploads: const [],
-    phase: UploadPhase.hashing,
-    progressPhase: hashProgress.progress,
-  );
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-  if (hashProgress.isComplete &amp;&amp; hashProgress.hash != null) {
-    fileHash = hashProgress.hash;
-  }
-}
+final signer = _getSigner(customSigner);
+
+String? fileHash = precomputedSha256;
 
 if (fileHash == null) {
-  throw Exception('Failed to compute file hash');</code></pre>
+  // Compute file hash without loading entire file into memory
+  await for (final hashProgress in _blossomImpl.computeFileHash(filePath)) {
+    yield BlobUploadProgress(
+      currentServer: '',
+      sentBytes: hashProgress.processedBytes,</code></pre>
 </doc-codeblock></div>
 <h4 id="getblobstream">getBlobStream</h4>
 <p>Similar to <code translate="no" v-pre>getBlob</code>, it streams the data, which is helpful for video files.</p>
 <div id="getblobstream-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// Throws an [Exception] if no SHA256 hash is detected in the URL
-Future&lt;List&lt;BlobUploadResult&gt;&gt; mirrorToServers({
-  required Uri blossomUrl,
-  required List&lt;String&gt; targetServerUrls,
-  EventSigner? customSigner,
-}) async {
-  final signer = _getSigner(customSigner);
-
-  // Extract sha256 from the URL
-  final sha256Match = sha256Regex.firstMatch(blossomUrl.toString());</code></pre>
-</doc-codeblock></div>
-<h4 id="listblobs">listBlobs</h4>
-<div id="listblobs-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">Future&lt;BlobResponse&gt; getBlob({
-  required String sha256,
-  bool useAuth = false,
-  List&lt;String&gt;? serverUrls,
-  String? pubkeyToFetchUserServerList,
-  EventSigner? customSigner,
-}) async {
-  Nip01Event? myAuthorization;
-  Nip01Event? signedAuthorization;
-
-  if (useAuth) {</code></pre>
-</doc-codeblock></div>
-<h4 id="deleteblob">deleteBlob</h4>
-<div id="deleteblob-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">  );
-}
-
-/// Downloads a blob directly to a file path (without loading into memory)
-/// For native platforms (Windows, macOS, Linux, Android, iOS): uses actual file system paths
-/// For web: triggers browser download dialog to save the file
-///
-/// if [serverUrls] is null, the userServerList is fetched from nostr. \</code></pre>
-</doc-codeblock></div>
-<h4 id="directdownload">directDownload</h4>
-<div id="directdownload-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">if (pubkeyToFetchUserServerList == null) {
-  throw Exception(
-      &quot;pubkeyToFetchUserServerList is null and serverUrls is null&quot;);
-}</code></pre>
-</doc-codeblock></div>
-<h4 id="report">report</h4>
-<div id="report-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">  }
-
-  if (serverUrls == null) {
-    throw Exception(&quot;User has no server list&quot;);
-  }
-
-  return _blossomImpl.downloadBlobToFile(
-    sha256: sha256,
-    outputPath: outputPath,
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">    serverUrls: serverUrls,
     authorization: signedAuthorization,
-    serverUrls: serverUrls,
+    contentType: contentType,
+    strategy: strategy,
+    mediaOptimisation: serverMediaOptimisation,
   );
 }
 
-/// checks if the blob exists on the server without downloading, useful to check before streaming a video via url \</code></pre>
+/// Mirror a blob from a blossom URL to specified servers using the blossom /mirror endpoint
+///</code></pre>
+</doc-codeblock></div>
+<h4 id="listblobs">listBlobs</h4>
+<div id="listblobs-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">  targetServerUrls.map(
+    (serverUrl) =&gt; _blossomImpl.mirrorToServer(
+      fileUrl: blossomUrl.toString(),
+      serverUrl: serverUrl,
+      sha256: sha256,
+      authorization: signedAuthorization,
+    ),
+  ),
+);
+
+return results;</code></pre>
+</doc-codeblock></div>
+<h4 id="deleteblob">deleteBlob</h4>
+<div id="deleteblob-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">  throw Exception(
+    &quot;pubkeyToFetchUserServerList is null and serverUrls is null&quot;,
+  );
+}
+
+serverUrls ??= await _userServerList.getUserServerList(
+  pubkeys: [pubkeyToFetchUserServerList],
+);</code></pre>
+</doc-codeblock></div>
+<h4 id="directdownload">directDownload</h4>
+<div id="directdownload-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">
+final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+myAuthorization = Nip01Utils.createEventCalculateId(
+  content: &quot;get&quot;,</code></pre>
+</doc-codeblock></div>
+<h4 id="report">report</h4>
+<div id="report-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">    tags: [
+      [&quot;t&quot;, &quot;get&quot;],
+      [&quot;x&quot;, sha256],
+      [&quot;expiration&quot;, &quot;${now + BLOSSOM_AUTH_EXPIRATION.inMilliseconds}&quot;],
+    ],
+  );
+
+  signedAuthorization = await signer.sign(myAuthorization);
+}
+
+if (serverUrls == null) {
+  if (pubkeyToFetchUserServerList == null) {
+    throw Exception(
+      &quot;pubkeyToFetchUserServerList is null and serverUrls is null&quot;,
+    );</code></pre>
 </doc-codeblock></div>
 <h3 id="methods---blossomuserserverlist">methods - BlossomUserServerList</h3>
 <p>To get and set the user server list e.g. on settings page, you can use <code translate="no" v-pre>BlossomUserServerList</code></p>
@@ -331,11 +334,11 @@ Future&lt;List&lt;String&gt;?&gt; getUserServerList({
 </doc-codeblock></div>
 <h4 id="publishuserserverlist">publishUserServerList</h4>
 <div id="publishuserserverlist-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// Publish user server list \
-/// order of [serverUrlsOrdered] is important, the first server is the most trusted server
-Future&lt;List&lt;RelayBroadcastResponse&gt;&gt; publishUserServerList({
-  required List&lt;String&gt; serverUrlsOrdered,
-}) async {</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">  required List&lt;String&gt; serverUrlsOrdered,
+}) async {
+  if (serverUrlsOrdered.isEmpty) {
+    throw Exception(&quot;serverUrlsOrdered is empty&quot;);
+  }</code></pre>
 </doc-codeblock></div>
 
                 

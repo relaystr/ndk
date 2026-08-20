@@ -1,5 +1,7 @@
 [!badge variant="primary" text="high level"]
 
+[!badge text="CLI"](/guides/cli/files.md) — `ndk files upload|download|delete|check`
+
 ## Example
 
 :::code source="../../packages/ndk/example/files/files_example_test.dart" language="dart" range="10-15" title="blossom" :::

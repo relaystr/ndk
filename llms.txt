@@ -5,37 +5,58 @@
 - [Dart Nostr Development Kit (NDK)](https://dart-nostr.com/index.md): Dart Nostr Development Kit (NDK)
 - [Guides](https://dart-nostr.com/guides/index.md)
 - [Use Cases](https://dart-nostr.com/usecases/index.md)
+- [ndk_flutter](https://dart-nostr.com/ndk_flutter/index.md): The optional ndk_flutter package adds Flutter-only building blocks on top of ndk: ready-made widgets, secure storage, and platform helpers.
 - [Concepts](https://dart-nostr.com/concepts/index.md)
 - [Common terminology](https://dart-nostr.com/common-terminology.md): term
 - [Library development 🏗️](https://dart-nostr.com/library-development/index.md): Install prerequisites
 
 ## Guides
 
-- [Getting started](https://dart-nostr.com/guides/getting-started.md): Ndk has a core package ndk and optional packages like amber and objectbox
+- [Getting started](https://dart-nostr.com/guides/getting-started.md): NDK ships as two packages that work together:
 - [Enabling gossip](https://dart-nostr.com/guides/enabling-gossip.md): The simplest way to enable inbox/outbox (gossip) is to use the JIT engine, as it does everything automatically.
 - [Persistence](https://dart-nostr.com/guides/persistence.md): Ndk comes with several database offerings. The simplest is the MemCacheManager which is an in-memory cache. This is useful for testing and small applications.
+- [Cache Behavior](https://dart-nostr.com/guides/cache-behavior.md): NDK's cache persists event data, delivery state, and decrypted payload sidecars used by app-facing reads and writes.
+- [Local-First Behavior](https://dart-nostr.com/guides/local-first.md): NDK treats app writes and reads as local-first when the relevant data is stored in the configured cache backend.
+- [Decrypted Payload Caching](https://dart-nostr.com/guides/decrypted-payloads.md): NDK can cache decrypted plaintext separately from the original encrypted event.
+
+### NDK CLI
+
+- [NDK CLI](https://dart-nostr.com/guides/cli/index.md): NDK ships a standalone command line interface for querying relays, managing identities, publishing events, and operating Lightning/Cashu wallets — without writing any Dart code.
+- [blossom](https://dart-nostr.com/guides/cli/blossom.md): Direct access to the Blossom protocol (BUD-*) and the user server list (kind 10063). Use this when you need control that files doesn't expose. See the blossom usecase.
+- [files](https://dart-nostr.com/guides/cli/files.md): A convenience wrapper over Blossom that auto-resolves user server lists and handles sha256-in-URL detection transparently. See the files usecase. For lower-level control, use the blossom command.
+- [zaps](https://dart-nostr.com/guides/cli/zaps.md): Send and inspect Lightning zaps. The zap sub-command pays from a stored NWC wallet (see wallets add nwc); invoice only fetches a BOLT11 invoice and needs no wallet; receipts reads kind 9735 zap receipts.
+- [wallets](https://dart-nostr.com/guides/cli/wallets.md): Wallet operations for NIP-47 (NWC) and Cashu wallets.
+- [accounts](https://dart-nostr.com/guides/cli/accounts.md): Login, persist and switch between Nostr identities. Identities are stored in plaintext at ~/.ndk/accounts.json (file mode 0600) so that subsequent commands (broadcast, etc.) can reuse the active signer.
+- [broadcast](https://dart-nostr.com/guides/cli/broadcast.md): Publishes one event to the given relays and prints a per-relay result (OK, REJECTED, or NO-RESPONSE). Accepts three kinds of input:
+- [req](https://dart-nostr.com/guides/cli/req.md): Fetches events from one or more relays. Defaults to one JSON object per line; use --output summary for a compact one-line-per-event view.
 - [Tips](https://dart-nostr.com/guides/tips.md): If you have a relatively simple app you can initialize ndk in your main method and pass down ndk on the widget tree. For more more complex applications we recommend using riverpod or simmilar packages/methods (get_it, singletons etc).
 
 ## Use Cases
 
 - [Trusted Assertions (NIP-85)](https://dart-nostr.com/usecases/trusted-assertions.md): Trusted assertions are data events computed by a provider. It's useful when certain operations might be too expensive (bandwidth, compute) on the edge device.
 - [Accounts](https://dart-nostr.com/usecases/accounts.md): Store the BunkerConnection details locally to re-establish the connection in future sessions. Use bunkerConnection.toJson() to serialize and BunkerConnection.fromJson() to restore.
-- [Blossom](https://dart-nostr.com/usecases/blossom.md): For a simpler, more generic API, check out Blossom
+- [Blossom](https://dart-nostr.com/usecases/blossom.md): — ndk blossom upload|download|delete|list|mirror|check|servers
 - [Broadcast](https://dart-nostr.com/usecases/broadcast.md): You might encounter a warning about missing nip65 data. You can ignore this warning to use NDK with your specified/default relays. If you want to use the outbox model, check out the enabling gossip guide (recommended).
 - [cashu - eCash](https://dart-nostr.com/usecases/cashu.md): DO NOT USE IN PRODUCTION!
 - [Connectivity](https://dart-nostr.com/usecases/connectivity.md): Ndk uses exponential backoff to reconnect to relays. The reconnect interval might be too long when the app is in the background and then resumed. You can instantly reconnect using the tryReconnect() method, as shown in the example above.
+- [DM](https://dart-nostr.com/usecases/dms.md): Use ndk.dms for direct-message style conversations based on NIP-17 gift-wrapped messages.
 - [Domain verification (nip05)](https://dart-nostr.com/usecases/domain-verification-(nip05).md): Uses caching so there are no repeated network requests if you call this multiple times. Use this when you need to verify a domain. If you call this, the result is automatically used as inbox/outbox information.
-- [Files](https://dart-nostr.com/usecases/files.md): Files uses blossom under the hood to get, upload and delete files. The default user server list, specified by kind 10063 is used for upload and delete
+- [Files](https://dart-nostr.com/usecases/files.md): — ndk files upload|download|delete|check
 - [Follows](https://dart-nostr.com/usecases/follows.md): Gives you the list of contacts for a given pubKey.
 - [Gift Wrap](https://dart-nostr.com/usecases/gift-wrap.md): Gift Wrap depends on the logged in user (accounts usecase) make sure you are logged in with the right user
 - [Lists](https://dart-nostr.com/usecases/lists.md): We distinguish between lists and sets:
 - [Metadata](https://dart-nostr.com/usecases/metadata.md): Gives you the metadata for a given pubkey. Uses caching, so repeated calls are ok.
+- [Negentropy](https://dart-nostr.com/usecases/negentropy.md): ✅ Good for:
 - [Nwc](https://dart-nostr.com/usecases/nwc.md): You need a nostr+walletconnect://... uri from your NWC wallet service provider.
 - [Relay sets](https://dart-nostr.com/usecases/relay-sets.md): Calculates the best relays for a given set of pubkeys. It's used by inbox/outbox. This allows for granular control in the relaySets engine. E.g. calculating the best relays for a thread view.
 - [Requests](https://dart-nostr.com/usecases/requests.md): Relays can misbehave and return events that do not match your query filters.
 - [User relay lists](https://dart-nostr.com/usecases/user-relay-lists.md): User relay lists provides you with the relays for a given user. It orients itself on nip65 but also uses data from nip02 in case nip65 is not available. It's used by inbox/outbox; only use this if you are doing something custom that is not directly handled by inbox/outbox.
 - [Wallets](https://dart-nostr.com/usecases/wallets.md): DO NOT USE IN PRODUCTION!
-- [Zaps](https://dart-nostr.com/usecases/zaps.md): You need a nostr+walletconnect://... uri from your NWC wallet service provider.
+- [Zaps](https://dart-nostr.com/usecases/zaps.md): — ndk zaps invoice|zap|receipts
+
+## ndk_flutter
+
+- [QR scanner](https://dart-nostr.com/ndk_flutter/qr-scanner.md): Some ndk_flutter widgets can read a value from a QR code. For example, the wallet widgets let the user scan an NWC connection URI (nostr+walletconnect://...) instead of typing it.
 
 ## Concepts
 
@@ -51,9 +72,11 @@
 ## Library Development
 
 - [Contributing to NDK](https://dart-nostr.com/library-development/contributing.md): We love your input! We want to make contributing to this project as easy and transparent as possible, whether it's:
+- [Publishing](https://dart-nostr.com/library-development/publish.md): Create a tag git tag -a v1.2.3 -m Release v1.2.3
 
 ### ADRs
 
 - [ADRs](https://dart-nostr.com/library-development/adrs/index.md)
 - [Architecture Decision Record: Layered Architecture](https://dart-nostr.com/library-development/adrs/layerd-architecture.md): Title: Layered Architecture - folder structure
+- [Architecture Decision Record: Package Structure dart, flutter](https://dart-nostr.com/library-development/adrs/reduce-packages.md): Title: Package Structure dart, flutter
 - [Architecture Decision Record: Wallet Cashu API](https://dart-nostr.com/library-development/adrs/wallet-cashu.md): Title: Wallet Cashu - api design

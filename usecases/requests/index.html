@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.5.2.829067039104">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.840554798057">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.5.2">
+    <meta name="generator" content="Retype 4.6.0">
 
     <!-- Primary Meta Tags -->
     <title>Requests</title>
@@ -37,12 +37,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.5.2.829067039104" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.840554798057" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.5.2" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.5.2.829067039104" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.840554798057" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -183,7 +183,7 @@
     Filter(
       // Query for fiatjaf npub180cvv07tjdrrgpa0j7j7tmnyl2yr6yr7l8j4s3evf6u64th6gkwsyjh6w6
       authors: [
-        '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d'
+        '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d',
       ],
       // Query for text note events (kind 1)
       kinds: [Nip01Event.kTextNodeKind],
@@ -212,6 +212,7 @@ There is <code translate="no" v-pre>.query</code> and <code translate="no" v-pre
   pubkey: myPubkey,
   type: AccountType.privateKey,
   signer: Bip340EventSigner(privateKey: myPrivkey, publicKey: myPubkey),
+  // Use NdkEventSigner from ndk_flutter for automatic web/native selection
 );
 
 ndk.accounts.addAccount(pubkey: account.pubkey, type: account.type, signer: account.signer);
@@ -235,6 +236,15 @@ final response = ndk.requests.query(
 );</code></pre>
 </doc-codeblock></div>
 <p>If <code translate="no" v-pre>authenticateAs</code> is not specified, NDK falls back to the currently logged-in account.</p>
+<h2 id="event-sources">Event sources</h2>
+<p>When events are cached, NDK may also persist source relay information.</p>
+<p>Current behavior:</p>
+<ul>
+<li>source relays are optional provenance data</li>
+<li>they answer where an event was observed</li>
+<li>they are separate from relay delivery targets</li>
+</ul>
+<p>For most apps, normal request and usecase APIs are enough and you do not need to access source relay data directly.</p>
 
                 
                 <!-- Required only on API pages -->

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.840554798057">
+
+    <!-- See retype.com -->
+    <meta name="generator" content="Retype 4.6.0">
+
+    <!-- Primary Meta Tags -->
+    <title>NDK CLI</title>
+    <meta name="title" content="NDK CLI">
+    <meta name="description" content="NDK ships a standalone command line interface for querying relays, managing identities, publishing events, and operating Lightning/Cashu wallets — without writing any Dart code.">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://dart-nostr.com/guides/cli/">
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="https://dart-nostr.com/sitemap.xml">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dart-nostr.com/guides/cli/">
+    <meta property="og:title" content="NDK CLI">
+    <meta property="og:description" content="NDK ships a standalone command line interface for querying relays, managing identities, publishing events, and operating Lightning/Cashu wallets — without writing any Dart code.">
+    <meta property="og:site_name" content="NDK">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://dart-nostr.com/guides/cli/">
+    <meta name="twitter:title" content="NDK CLI">
+    <meta name="twitter:description" content="NDK ships a standalone command line interface for querying relays, managing identities, publishing events, and operating Lightning/Cashu wallets — without writing any Dart code.">
+
+    <!-- Alternate Markdown -->
+    <link rel="alternate" type="text/markdown" href="https://dart-nostr.com/guides/cli/index.md">
+
+    <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
+
+    <link href="../../resources/css/retype.css?v=4.6.0.840554798057" rel="stylesheet">
+
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.840554798057" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.840554798057" defer></script>
+</head>
+<body>
+    <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
+    <div class="absolute bottom-0 left-0" style="top: 5rem; right: 50%"></div>
+
+    <header id="retype-header" class="sticky top-0 z-30 flex w-full h-16 bg-header-bg border-b border-header-border md:h-20">
+        <div class="container relative flex items-center justify-between pr-6 grow md:justify-start">
+            <!-- Mobile menu button skeleton -->
+            <button v-cloak class="skeleton retype-mobile-menu-button flex items-center justify-center shrink-0 overflow-hidden dark:text-white focus:outline-hidden rounded-full w-10 h-10 ml-3.5 md:hidden"><svg xmlns="http://www.w3.org/2000/svg" class="mb-px shrink-0" width="24" height="24" viewBox="0 0 24 24" role="presentation" style="margin-bottom: 0px;"><g fill="currentColor"><path d="M2 4h20v2H2zM2 11h20v2H2zM2 18h20v2H2z"></path></g></svg></button>
+            <div v-cloak id="retype-sidebar-left-toggle-button"></div>
+    
+            <!-- Logo -->
+            <div class="flex items-center justify-between h-full py-2 md:w-75">
+                <div class="flex items-center px-2 md:px-6">
+                    <a id="retype-branding-logo" href="https://dart-nostr.com/" class="flex items-center leading-snug text-2xl">
+                        <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
+                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.8.1</span>
+                </div>
+    
+                <span class="hidden h-8 border-r md:inline-block border-base-border"></span>
+            </div>
+    
+            <div class="flex justify-between md:grow">
+                <!-- Top Nav -->
+                <nav id="retype-header-nav" class="hidden md:flex">
+                    <ul class="flex flex-col mb-4 md:pl-16 md:mb-0 md:flex-row md:items-center">
+                        <li class="mr-6">
+                            <a class="py-2 md:mb-0 inline-flex items-center text-sm whitespace-nowrap transition-colors duration-200 ease-linear md:text-header-text font-header-text hover:text-header-text-hover" href="https://pub.dev/packages/ndk">pub.dev</a>
+                        </li>
+                        <li class="mr-6">
+                            <a class="py-2 md:mb-0 inline-flex items-center text-sm whitespace-nowrap transition-colors duration-200 ease-linear md:text-header-text font-header-text hover:text-header-text-hover" href="https://github.com/nostr-protocol/nips/?tab=readme-ov-file#event-kinds">nips</a>
+                        </li>
+    
+                    </ul>
+                </nav>
+    
+                <div v-cloak class="flex justify-end grow">
+                    <div id="retype-mobile-search-button"></div>
+                    <doc-search-desktop></doc-search-desktop>
+    
+                    <doc-theme-switch class="lg:ml-2"></doc-theme-switch>
+                    <doc-history></doc-history>
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+    <div id="retype-container" class="container relative flex bg-white">
+        <!-- Sidebar Skeleton -->
+        <div v-cloak class="fixed flex flex-col shrink-0 duration-300 ease-in-out bg-sidebar-left-bg border-sidebar-left-border sidebar top-20 w-75 border-r h-screen md:sticky transition-transform skeleton">
+        
+            <div class="flex items-center h-16 px-6">
+                <input id="retype-filter-input-mock" class="w-full h-10 pl-8 px-3 py-2 transition-colors duration-200 ease-linear bg-filter-bg border border-filter-border rounded-lg shadow-none md:text-sm hover:border-filter-border-hover focus:outline-hidden focus:border-filter-border-focus placeholder-filter-placeholder" type="text">
+            </div>
+        
+            <div class="pl-6 mt-1 mb-4">
+                <div class="w-32 h-3 mb-4 bg-skeleton-bg rounded-full loading"></div>
+                <div class="w-48 h-3 mb-4 bg-skeleton-bg rounded-full loading"></div>
+                <div class="w-40 h-3 mb-4 bg-skeleton-bg rounded-full loading"></div>
+                <div class="w-32 h-3 mb-4 bg-skeleton-bg rounded-full loading"></div>
+                <div class="w-48 h-3 mb-4 bg-skeleton-bg rounded-full loading"></div>
+                <div class="w-40 h-3 mb-4 bg-skeleton-bg rounded-full loading"></div>
+            </div>
+        
+            <div class="shrink-0 mt-auto bg-transparent dark:border-base-border">
+                <a class="flex items-center justify-center flex-nowrap h-16 text-gray-350 dark:text-dark-400 hover:text-gray-600 dark:hover:text-dark-300 transition-colors duration-150 ease-in docs-powered-by" target="_blank" href="https://retype.com/" rel="noopener">
+                    <span class="text-xs whitespace-nowrap">Powered by</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="ml-2" fill="currentColor" width="96" height="20" overflow="visible"><path d="M0 0v20h13.59V0H0zm11.15 17.54H2.44V2.46h8.71v15.08zM15.8 20h2.44V4.67L15.8 2.22zM20.45 6.89V20h2.44V9.34z"/><g><path d="M40.16 8.44c0 1.49-.59 2.45-1.75 2.88l2.34 3.32h-2.53l-2.04-2.96h-1.43v2.96h-2.06V5.36h3.5c1.43 0 2.46.24 3.07.73s.9 1.27.9 2.35zm-2.48 1.1c.26-.23.38-.59.38-1.09 0-.5-.13-.84-.4-1.03s-.73-.28-1.39-.28h-1.54v2.75h1.5c.72 0 1.2-.12 1.45-.35zM51.56 5.36V7.2h-4.59v1.91h4.13v1.76h-4.13v1.92h4.74v1.83h-6.79V5.36h6.64zM60.09 7.15v7.48h-2.06V7.15h-2.61V5.36h7.28v1.79h-2.61zM70.81 14.64h-2.06v-3.66l-3.19-5.61h2.23l1.99 3.45 1.99-3.45H74l-3.19 5.61v3.66zM83.99 6.19c.65.55.97 1.4.97 2.55s-.33 1.98-1 2.51-1.68.8-3.04.8h-1.23v2.59h-2.06V5.36h3.26c1.42 0 2.45.28 3.1.83zm-1.51 3.65c.25-.28.37-.69.37-1.22s-.16-.92-.48-1.14c-.32-.23-.82-.34-1.5-.34H79.7v3.12h1.38c.68 0 1.15-.14 1.4-.42zM95.85 5.36V7.2h-4.59v1.91h4.13v1.76h-4.13v1.92H96v1.83h-6.79V5.36h6.64z"/></g></svg>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Sidebar component -->
+        <doc-sidebar v-cloak>
+            <template #sidebar-footer>
+                <div class="shrink-0 mt-auto border-t md:bg-transparent md:border-none dark:border-base-border">
+        
+                    <div class="py-3 px-6 md:hidden border-b dark:border-base-border">
+                        <nav>
+                            <ul class="flex flex-wrap justify-center items-center">
+                                <li class="mr-6">
+                                    <a class="block py-1 inline-flex items-center text-sm whitespace-nowrap transition-colors duration-200 ease-linear md:text-header-text font-header-text hover:text-header-text-hover" href="https://pub.dev/packages/ndk">pub.dev</a>
+                                </li>
+                                <li class="mr-6">
+                                    <a class="block py-1 inline-flex items-center text-sm whitespace-nowrap transition-colors duration-200 ease-linear md:text-header-text font-header-text hover:text-header-text-hover" href="https://github.com/nostr-protocol/nips/?tab=readme-ov-file#event-kinds">nips</a>
+                                </li>
+        
+                            </ul>
+                        </nav>
+                    </div>
+        
+                    <a class="flex items-center justify-center flex-nowrap h-16 text-gray-350 dark:text-dark-400 hover:text-gray-600 dark:hover:text-dark-300 transition-colors duration-150 ease-in docs-powered-by" target="_blank" href="https://retype.com/" rel="noopener">
+                        <span class="text-xs whitespace-nowrap">Powered by</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="ml-2" fill="currentColor" width="96" height="20" overflow="visible"><path d="M0 0v20h13.59V0H0zm11.15 17.54H2.44V2.46h8.71v15.08zM15.8 20h2.44V4.67L15.8 2.22zM20.45 6.89V20h2.44V9.34z"/><g><path d="M40.16 8.44c0 1.49-.59 2.45-1.75 2.88l2.34 3.32h-2.53l-2.04-2.96h-1.43v2.96h-2.06V5.36h3.5c1.43 0 2.46.24 3.07.73s.9 1.27.9 2.35zm-2.48 1.1c.26-.23.38-.59.38-1.09 0-.5-.13-.84-.4-1.03s-.73-.28-1.39-.28h-1.54v2.75h1.5c.72 0 1.2-.12 1.45-.35zM51.56 5.36V7.2h-4.59v1.91h4.13v1.76h-4.13v1.92h4.74v1.83h-6.79V5.36h6.64zM60.09 7.15v7.48h-2.06V7.15h-2.61V5.36h7.28v1.79h-2.61zM70.81 14.64h-2.06v-3.66l-3.19-5.61h2.23l1.99 3.45 1.99-3.45H74l-3.19 5.61v3.66zM83.99 6.19c.65.55.97 1.4.97 2.55s-.33 1.98-1 2.51-1.68.8-3.04.8h-1.23v2.59h-2.06V5.36h3.26c1.42 0 2.45.28 3.1.83zm-1.51 3.65c.25-.28.37-.69.37-1.22s-.16-.92-.48-1.14c-.32-.23-.82-.34-1.5-.34H79.7v3.12h1.38c.68 0 1.15-.14 1.4-.42zM95.85 5.36V7.2h-4.59v1.91h4.13v1.76h-4.13v1.92H96v1.83h-6.79V5.36h6.64z"/></g></svg>
+                    </a>
+                </div>
+            </template>
+        </doc-sidebar>
+
+        <div class="grow min-w-0 bg-body-bg">
+            <!-- Render "toolbar" template here on api pages --><!-- Render page content -->
+<div class="flex">
+    <div id="retype-main" class="min-w-0 p-4 grow md:px-16">
+        <main class="relative pb-12 lg:pt-2">
+            <div class="relative retype-markdown" id="retype-content">
+                <!-- Rendered if sidebar right is enabled -->
+                <div id="retype-sidebar-right-toggle"></div>
+                <doc-page-actions></doc-page-actions>
+
+                <!-- Page content  -->
+<h1 id="ndk-cli">NDK CLI</h1>
+<p>NDK ships a standalone command line interface for querying relays, managing
+identities, publishing events, and operating Lightning/Cashu wallets — without
+writing any Dart code. It is a prebuilt binary — no Dart or Flutter toolchain
+required.</p>
+<h2 id="commands">Commands</h2>
+<retype-table copy-text="| Command | Description |
+|---------|-------------|
+| [`req`](req.md) | Query relays for events |
+| [`broadcast`](broadcast.md) | Publish events to relays |
+| [`accounts`](accounts.md) | Manage local identities (login, logout, list, switch, whoami) |
+| [`wallets`](wallets.md) | Lightning / Cashu wallet operations |
+| [`zaps`](zaps.md) | NIP-57 zap operations (invoice, zap, receipts) |
+| [`files`](files.md) | High-level file management (upload, download, delete, check) |
+| [`blossom`](blossom.md) | Low-level Blossom operations (upload, download, delete, list, mirror, check, servers) |">
+<div class="table-wrapper scrollbar overflow-hidden">
+<table class="comfortable">
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="req/"><code translate="no" v-pre>req</code></a></td>
+<td>Query relays for events</td>
+</tr>
+<tr>
+<td><a href="broadcast/"><code translate="no" v-pre>broadcast</code></a></td>
+<td>Publish events to relays</td>
+</tr>
+<tr>
+<td><a href="accounts/"><code translate="no" v-pre>accounts</code></a></td>
+<td>Manage local identities (login, logout, list, switch, whoami)</td>
+</tr>
+<tr>
+<td><a href="wallets/"><code translate="no" v-pre>wallets</code></a></td>
+<td>Lightning / Cashu wallet operations</td>
+</tr>
+<tr>
+<td><a href="zaps/"><code translate="no" v-pre>zaps</code></a></td>
+<td>NIP-57 zap operations (invoice, zap, receipts)</td>
+</tr>
+<tr>
+<td><a href="files/"><code translate="no" v-pre>files</code></a></td>
+<td>High-level file management (upload, download, delete, check)</td>
+</tr>
+<tr>
+<td><a href="blossom/"><code translate="no" v-pre>blossom</code></a></td>
+<td>Low-level Blossom operations (upload, download, delete, list, mirror, check, servers)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</retype-table>
+<h2 id="install">Install</h2>
+<h3 id="single-command-linux--macos">Single command (Linux / macOS)</h3>
+<div id="single-command-linux--macos-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-bash"><code v-pre class="language-bash">curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/refs/heads/master/install.sh | bash</code></pre>
+</doc-codeblock></div>
+<p>By default this installs the <code translate="no" v-pre>ndk</code> binary to <code translate="no" v-pre>~/.local/bin/ndk</code> and its shared libraries to <code translate="no" v-pre>~/.local/lib</code> (user mode).</p>
+<h3 id="install-options">Install options</h3>
+<div id="install-options-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-bash"><code v-pre class="language-bash"># system-wide install (/usr/bin/ndk) — may require sudo
+curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/refs/heads/master/install.sh | bash -s -- --system
+
+# pin a specific version
+NDK_VERSION=v0.8.3 curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/refs/heads/master/install.sh | bash
+
+# latest pre-release
+NDK_VERSION=latest-pre curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/refs/heads/master/install.sh | bash</code></pre>
+</doc-codeblock></div>
+<h3 id="environment-variables">Environment variables</h3>
+<retype-table copy-text="| Variable | Default | Description |
+|----------|---------|-------------|
+| `NDK_VERSION` | `latest` | Version tag, `latest`, or `latest-pre` |
+| `NDK_PRERELEASE` | `0` | When `1` and `NDK_VERSION=latest`, picks the latest pre-release |
+| `NDK_INSTALL_MODE` | `user` | `user` or `system` |
+| `NDK_INSTALL_DIR` | `~/.local/bin` | Binary destination (user mode) |
+| `NDK_USER_LIB_DIR` | `~/.local/lib` | Shared libraries destination (user mode) |
+| `NDK_SYSTEM_BIN_DIR` | `/usr/bin` | Binary destination (system mode) |
+| `NDK_SYSTEM_LIB_DIR` | `/usr/lib` | Shared libraries destination (system mode) |">
+<div class="table-wrapper scrollbar overflow-hidden">
+<table class="comfortable">
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code translate="no" v-pre>NDK_VERSION</code></td>
+<td><code translate="no" v-pre>latest</code></td>
+<td>Version tag, <code translate="no" v-pre>latest</code>, or <code translate="no" v-pre>latest-pre</code></td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>NDK_PRERELEASE</code></td>
+<td><code translate="no" v-pre>0</code></td>
+<td>When <code translate="no" v-pre>1</code> and <code translate="no" v-pre>NDK_VERSION=latest</code>, picks the latest pre-release</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>NDK_INSTALL_MODE</code></td>
+<td><code translate="no" v-pre>user</code></td>
+<td><code translate="no" v-pre>user</code> or <code translate="no" v-pre>system</code></td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>NDK_INSTALL_DIR</code></td>
+<td><code translate="no" v-pre>~/.local/bin</code></td>
+<td>Binary destination (user mode)</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>NDK_USER_LIB_DIR</code></td>
+<td><code translate="no" v-pre>~/.local/lib</code></td>
+<td>Shared libraries destination (user mode)</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>NDK_SYSTEM_BIN_DIR</code></td>
+<td><code translate="no" v-pre>/usr/bin</code></td>
+<td>Binary destination (system mode)</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>NDK_SYSTEM_LIB_DIR</code></td>
+<td><code translate="no" v-pre>/usr/lib</code></td>
+<td>Shared libraries destination (system mode)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</retype-table>
+<h3 id="path">PATH</h3>
+<p>If <code translate="no" v-pre>~/.local/bin</code> is not in your <code translate="no" v-pre>PATH</code>, add it to your shell profile:</p>
+<div id="path-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-bash"><code v-pre class="language-bash">export PATH=&quot;$PATH:$HOME/.local/bin&quot;</code></pre>
+</doc-codeblock></div>
+<p>Verify the installation:</p>
+<div id="path-code-2" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-bash"><code v-pre class="language-bash">ndk --version</code></pre>
+</doc-codeblock></div>
+<p>See <a href="https://github.com/relaystr/ndk/releases">releases</a> for available versions.</p>
+<h2 id="usage">Usage</h2>
+<div id="usage-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-none"><code v-pre class="language-none">ndk [global options] &lt;command&gt; [args]</code></pre>
+</doc-codeblock></div>
+<p>Global options (must come before the command name):</p>
+<retype-table copy-text="| Option | Description |
+|--------|-------------|
+| `--version` | Show the package version |
+| `-v` | Warning-level logging |
+| `-vv` | Info-level logging |
+| `-vvv` | Debug-level logging |
+| `-h`, `--help` | Show help |">
+<div class="table-wrapper scrollbar overflow-hidden">
+<table class="comfortable">
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code translate="no" v-pre>--version</code></td>
+<td>Show the package version</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>-v</code></td>
+<td>Warning-level logging</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>-vv</code></td>
+<td>Info-level logging</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>-vvv</code></td>
+<td>Debug-level logging</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>-h</code>, <code translate="no" v-pre>--help</code></td>
+<td>Show help</td>
+</tr>
+</tbody>
+</table>
+</div>
+</retype-table>
+<p>Run <code translate="no" v-pre>ndk</code> with no arguments, or <code translate="no" v-pre>ndk --help</code>, to list all commands.</p>
+<h2 id="persistence--local-state">Persistence &amp; local state</h2>
+<p>The CLI stores the following files in your working directory (or the
+locations noted):</p>
+<retype-table copy-text="| File | Purpose |
+|------|---------|
+| `~/.ndk/accounts.json` | Persisted identities (private keys / bunker connections). Override with `NDK_ACCOUNTS_FILE`. |
+| `wallets_db.db` | Wallet definitions and transaction history. |
+| `ndk_cache.db` | Event cache, Cashu proofs/keysets/mint infos. |
+| `NDK_CASHU_SEED` | Environment variable supplying the Cashu seed phrase. |">
+<div class="table-wrapper scrollbar overflow-hidden">
+<table class="comfortable">
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code translate="no" v-pre>~/.ndk/accounts.json</code></td>
+<td>Persisted identities (private keys / bunker connections). Override with <code translate="no" v-pre>NDK_ACCOUNTS_FILE</code>.</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>wallets_db.db</code></td>
+<td>Wallet definitions and transaction history.</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>ndk_cache.db</code></td>
+<td>Event cache, Cashu proofs/keysets/mint infos.</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>NDK_CASHU_SEED</code></td>
+<td>Environment variable supplying the Cashu seed phrase.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</retype-table>
+
+                
+                <!-- Required only on API pages -->
+                <doc-toolbar-member-filter-no-results></doc-toolbar-member-filter-no-results>
+            </div>
+            <footer id="retype-content-footer" class="clear-both">
+            
+                <nav id="retype-nextprev" class="print:hidden flex mt-14">
+                    <div class="w-1/2">
+                        <a class="px-5 py-4 h-full flex items-center break-normal font-medium text-body-link border border-base-border hover:border-base-border-hover rounded-l-lg transition-colors duration-150 relative hover:z-5" href="../../guides/decrypted-payloads/">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="mr-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19 11H7.41l5.29-5.29a.996.996 0 10-1.41-1.41l-7 7a1 1 0 000 1.42l7 7a1.024 1.024 0 001.42-.01.996.996 0 000-1.41L7.41 13H19c.55 0 1-.45 1-1s-.45-1-1-1z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
+                            <span>
+                                <span class="block text-xs font-normal text-base-text-muted">Previous</span>
+                                <span class="block mt-1">Decrypted Payload Caching</span>
+                            </span>
+                        </a>
+                    </div>
+            
+                    <div class="w-1/2">
+                        <a class="px-5 py-4 -mx-px h-full flex items-center justify-end break-normal font-medium text-body-link border border-base-border hover:border-base-border-hover rounded-r-lg transition-colors duration-150 relative hover:z-5" href="../../guides/cli/blossom/">
+                            <span>
+                                <span class="block text-xs font-normal text-right text-base-text-muted">Next</span>
+                                <span class="block mt-1">blossom</span>
+                            </span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="ml-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19.92 12.38a1 1 0 00-.22-1.09l-7-7a.996.996 0 10-1.41 1.41l5.3 5.3H5c-.55 0-1 .45-1 1s.45 1 1 1h11.59l-5.29 5.29a.996.996 0 000 1.41c.19.2.44.3.7.3s.51-.1.71-.29l7-7c.09-.09.16-.21.21-.33z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
+                        </a>
+                    </div>
+                </nav>
+            </footer>
+        </main>
+
+        <div id="retype-page-footer" class="print:border-none border-t border-base-border pt-6 mb-8">
+            <footer class="flex flex-wrap items-center justify-between print:justify-center">
+                <div id="retype-footer-links" class="print:hidden">
+                    <ul class="flex flex-wrap items-center text-sm">
+                    </ul>
+                </div>
+                <div id="retype-copyright" class="print:justify-center py-2 text-footer-text font-footer-link text-sm leading-relaxed"><p>© Copyright 2026. All rights reserved.</p></div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Rendered if sidebar right is enabled -->
+    <!-- Sidebar right skeleton-->
+    <div v-cloak class="fixed top-0 bottom-0 right-0 translate-x-full bg-sidebar-right-bg border-sidebar-right-border lg:sticky lg:border-l lg:shrink-0 lg:pt-6 lg:translate-x-0 sm:w-1/2 lg:w-64 lg:z-0 md:w-104 sidebar-right skeleton">
+        <div class="pl-5">
+            <div class="w-32 h-3 mb-4 bg-skeleton-bg rounded-full loading"></div>
+            <div class="w-48 h-3 mb-4 bg-skeleton-bg rounded-full loading"></div>
+            <div class="w-40 h-3 mb-4 bg-skeleton-bg rounded-full loading"></div>
+        </div>
+    </div>
+
+    <!-- User should be able to hide sidebar right -->
+    <doc-sidebar-right v-cloak></doc-sidebar-right>
+</div>
+
+        </div>
+    </div>
+
+    <doc-search-mobile></doc-search-mobile>
+    <doc-back-to-top></doc-back-to-top>
+</div>
+
+
+    <div id="retype-overlay-target"></div>
+
+        <script data-cfasync="false">window.__DOCS__ = { "title": "NDK CLI", level: 2, icon: "file", hasPrism: true, hasInstagram: false, hasMermaid: false, hasMath: false, tocDepth: 23, "md": "/guides/cli/index.md" }</script>
+</body>
+</html>

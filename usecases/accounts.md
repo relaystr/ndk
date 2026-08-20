@@ -6,7 +6,7 @@
 
 ### External Signer (web)
 
-:::code source="../../packages/nip07_event_signer/example/nip07_event_signer_example.dart" language="dart"  title="" :::
+:::code source="../../packages/ndk_flutter/example/nip07_event_signer_example.dart" language="dart"  title="" :::
 
 ### External Signer (nip-46 bunker)
 
