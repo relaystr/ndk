@@ -1,3 +1,7 @@
+## 0.2.12-dev.12
+
+ - Update a dependency to the latest release.
+
 ## 0.2.12-dev.11
 
  - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
