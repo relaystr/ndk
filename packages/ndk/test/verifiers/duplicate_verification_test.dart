@@ -160,6 +160,37 @@ void main() async {
       );
     });
 
+    test('clear prevents pending verification from repopulating the cache',
+        () async {
+      final verificationCache = VerifiedEventMemCache();
+      verificationCache.markVerified('existing-id', 'existing-signature');
+
+      final event = await signedEvent('pending during clear', 1000);
+      final controlledVerifier = ControlledEventVerifier();
+      final verification = verificationCache.verifyOnce(
+        event,
+        controlledVerifier,
+      );
+      await controlledVerifier.started.future;
+
+      verificationCache.clear();
+
+      expect(
+        verificationCache.hasVerifiedSignature(
+          'existing-id',
+          'existing-signature',
+        ),
+        isFalse,
+      );
+
+      controlledVerifier.result.complete(true);
+      expect(await verification, isTrue);
+      expect(
+        verificationCache.hasVerifiedSignature(event.id, event.sig),
+        isFalse,
+      );
+    });
+
     test('does not re-verify an event delivered more than once', () async {
       final event = await signedEvent("duplicate", 1000);
 

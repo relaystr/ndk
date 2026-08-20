@@ -207,6 +207,8 @@ class Ndk {
 
   /// Close all transports on relay manager
   Future<void> destroy() async {
+    _initialization.requests.clearVerifiedEventCache();
+
     final allFutures = [
       _initialization.dispose(),
       Future(() => _initialization.closeAllNip77Negotiations()),
@@ -219,5 +221,6 @@ class Ndk {
     ];
 
     await Future.wait(allFutures);
+    _initialization.requests.clearVerifiedEventCache();
   }
 }

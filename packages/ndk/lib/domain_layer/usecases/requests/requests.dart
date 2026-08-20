@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../config/request_defaults.dart';
+import '../../../shared/helpers/bounded_lru_set.dart';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../shared/nips/nip01/helpers.dart';
@@ -36,6 +37,8 @@ class _RelayPaginationState {
 
 /// A class that handles low-level Nostr network requests and subscriptions.
 class Requests {
+  static const int _persistedEventIdsMaxSize = 20000;
+
   final GlobalState _globalState;
   final CacheRead _cacheRead;
   final CacheManager _cacheManager;
@@ -75,6 +78,9 @@ class Requests {
         _eventOutFilters = eventOutFilters,
         _defaultQueryTimeout = defaultQueryTimeout;
 
+  /// Clears signature-verification reuse state owned by this NDK instance.
+  void clearVerifiedEventCache() => _verifiedEventIds.clear();
+
   Stream<Nip01Event> _prepareNetworkStream(
     Stream<Nip01Event> verifiedNetworkStream, {
     required bool writeToCache,
@@ -83,7 +89,9 @@ class Requests {
       return verifiedNetworkStream;
     }
 
-    final persistedEventIds = <String>{};
+    final persistedEventIds = BoundedLruSet<String>(
+      maxSize: _persistedEventIdsMaxSize,
+    );
     final persistenceInFlight = <String, Future<void>>{};
 
     return verifiedNetworkStream
@@ -102,7 +110,7 @@ class Requests {
 
   Future<Nip01Event?> _persistAndFilterVisibleNetworkEvent(
     Nip01Event event, {
-    required Set<String> persistedEventIds,
+    required BoundedLruSet<String> persistedEventIds,
     required Map<String, Future<void>> persistenceInFlight,
   }) async {
     // Ephemeral events (NIP-01 kinds 20000-29999) are non-persistent by
