@@ -38,6 +38,10 @@ enum ErrorCode {
   ),
   unauthorized('UNAUTHORIZED', 'This public key has no wallet connected.'),
   internal('INTERNAL', 'An internal error.'),
+  feeLimitExceeded(
+    'FEE_LIMIT_EXCEEDED',
+    'No route fit the max_fee budget and no payment was attempted.',
+  ),
   other('OTHER', 'Other error.');
 
   final String value;

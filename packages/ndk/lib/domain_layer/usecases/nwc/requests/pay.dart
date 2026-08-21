@@ -10,6 +10,9 @@ class PayRequest extends NwcRequest {
   /// The amount to pay in millisatoshis when the instruction has no amount.
   final int? amountMsat;
 
+  /// The maximum routing fee the sender is willing to pay, in millisatoshis.
+  final int? maxFeeMsat;
+
   /// An optional message from the payer.
   final String? payerNote;
 
@@ -19,6 +22,7 @@ class PayRequest extends NwcRequest {
   const PayRequest({
     required this.payment,
     this.amountMsat,
+    this.maxFeeMsat,
     this.payerNote,
     this.metadata,
   }) : super(method: NwcMethod.PAY);
@@ -30,6 +34,7 @@ class PayRequest extends NwcRequest {
       'params': {
         'payment': payment,
         if (amountMsat != null) 'amount': amountMsat,
+        if (maxFeeMsat != null) 'max_fee': maxFeeMsat,
         if (payerNote != null) 'payer_note': payerNote,
         if (metadata != null) 'metadata': metadata,
       },

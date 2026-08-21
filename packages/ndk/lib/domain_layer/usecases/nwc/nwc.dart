@@ -526,6 +526,7 @@ class Nwc {
     NwcConnection connection, {
     required String payment,
     int? amountMsat,
+    int? maxFeeMsat,
     String? payerNote,
     Map<String, dynamic>? metadata,
     Duration? timeout,
@@ -535,6 +536,7 @@ class Nwc {
       PayRequest(
         payment: payment,
         amountMsat: amountMsat,
+        maxFeeMsat: maxFeeMsat,
         payerNote: payerNote,
         metadata: metadata,
       ),
