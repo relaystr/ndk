@@ -506,11 +506,12 @@ class Nwc {
   Future<PayInvoiceResponse> payInvoice(
     NwcConnection connection, {
     required String invoice,
+    int? maxFeeMsat,
     Duration? timeout,
   }) async {
     return _executeRequest<PayInvoiceResponse>(
       connection,
-      PayInvoiceRequest(invoice: invoice),
+      PayInvoiceRequest(invoice: invoice, maxFeeMsat: maxFeeMsat),
       timeout: timeout,
     );
   }
