@@ -26,6 +26,7 @@ export 'domain_layer/entities/relay.dart';
 export 'domain_layer/entities/relay_connection_key.dart';
 export 'domain_layer/entities/relay_connectivity.dart';
 export 'domain_layer/entities/relay_info.dart';
+export 'domain_layer/entities/relay_request_outcome.dart';
 export 'domain_layer/entities/relay_set.dart';
 export 'domain_layer/entities/relay_stats.dart';
 export 'domain_layer/entities/request_response.dart';
