@@ -57,6 +57,7 @@ export 'domain_layer/entities/wallet/wallet.dart';
 export 'domain_layer/entities/wallet/wallet_transaction.dart';
 export 'domain_layer/entities/wallet/wallet_type.dart';
 export 'domain_layer/entities/wallet/wallet_balance.dart';
+export 'domain_layer/entities/wallet/bip321.dart';
 export 'domain_layer/entities/wallet/wallet_factory.dart';
 export 'domain_layer/entities/wallet/providers/cashu/cashu_wallet.dart';
 export 'domain_layer/entities/wallet/providers/nwc/nwc_wallet.dart';

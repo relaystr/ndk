@@ -17,6 +17,7 @@ void main() async {
 
   if (connection.info != null) {
     print("alias: ${connection.info!.alias}");
+    print("methods: ${connection.info!.methods}");
     if (connection.info!.pubkey != null) {
       print("pubkey: ${connection.info!.pubkey}");
     }

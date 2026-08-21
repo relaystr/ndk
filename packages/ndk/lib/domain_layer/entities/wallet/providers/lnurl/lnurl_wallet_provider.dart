@@ -4,7 +4,9 @@ import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
 import 'package:ndk/domain_layer/usecases/lnurl/lnurl_response.dart';
 import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/pay_invoice_response.dart';
-
+import 'package:ndk/domain_layer/usecases/nwc/responses/pay_response.dart';
+import 'package:ndk/domain_layer/usecases/nwc/responses/receive_response.dart';
+import '../../bip321.dart';
 import '../../wallet.dart';
 import '../../wallet_balance.dart';
 import '../../wallet_provider.dart';
@@ -164,6 +166,57 @@ class LnurlWalletProvider implements WalletProvider {
     }
 
     return invoiceResponse.invoice;
+  }
+
+  @override
+  Future<PayResponse> payBip321(
+    Wallet wallet, {
+    required String payment,
+    int? amountMsat,
+    String? payerNote,
+    Map<String, dynamic>? metadata,
+    Duration? timeout,
+  }) async {
+    throw UnsupportedError(
+      'LNURL wallet is receive-only and cannot pay BIP-321 instructions',
+    );
+  }
+
+  @override
+  Future<ReceiveResponse> receiveBip321(
+    Wallet wallet, {
+    int? amountMsat,
+    String? description,
+    Map<String, dynamic>? metadata,
+    Duration? timeout,
+  }) async {
+    if (amountMsat == null) {
+      throw UnsupportedError(
+        'LNURL does not support variable-amount BOLT11 invoices',
+      );
+    }
+    if (amountMsat <= 0 || amountMsat % 1000 != 0) {
+      throw ArgumentError.value(
+        amountMsat,
+        'amountMsat',
+        'LNURL requires a positive whole-satoshi amount',
+      );
+    }
+    if (description?.isNotEmpty == true) {
+      throw UnsupportedError(
+        'LNURL does not support overriding the BOLT11 description',
+      );
+    }
+
+    var invoiceFuture = receive(wallet, amountMsat ~/ 1000);
+    if (timeout != null) {
+      invoiceFuture = invoiceFuture.timeout(timeout);
+    }
+    final invoice = await invoiceFuture;
+    return ReceiveResponse(
+      resultType: 'receive',
+      bip321: Bip321.fromBolt11(invoice),
+    );
   }
 
   @override
