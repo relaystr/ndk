@@ -473,6 +473,7 @@ class Nwc {
     String? descriptionHash,
     int? expiry,
     required String paymentHash,
+    Duration? timeout,
   }) async {
     return _executeRequest<MakeInvoiceResponse>(
       connection,
@@ -483,6 +484,7 @@ class Nwc {
         expiry: expiry,
         paymentHash: paymentHash,
       ),
+      timeout: timeout,
     );
   }
 
