@@ -104,7 +104,7 @@ jobs:
           dpkg-deb --build "$deb_root" "build/ndk-cli-linux-x64.deb"
 
       - name: Upload CLI executable to release
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -115,7 +115,7 @@ jobs:
 
       - name: Upload Linux DEB to release
         if: matrix.target == 'linux_x64'
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -188,7 +188,7 @@ jobs:
 
       # APK
       - name: Upload APK to release
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -197,7 +197,7 @@ jobs:
           asset_name: ndk_demo-${{ github.ref_name }}-android-universal.apk
           asset_content_type: application/zip
       - name: Upload APK to release
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -206,7 +206,7 @@ jobs:
           asset_name: ndk_demo-${{ github.ref_name }}-android-arm64-v8a.apk
           asset_content_type: application/zip
       - name: Upload APK to release
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -215,7 +215,7 @@ jobs:
           asset_name: ndk_demo-${{ github.ref_name }}-android-armeabi-v7a.apk
           asset_content_type: application/zip
       - name: Upload APK to release
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -270,7 +270,7 @@ jobs:
 #      # LINUX APPIMAGE
 #      - name: Upload appImage to release
 #        id: upload-release-asset-appimage
-#        uses: actions/upload-release-asset@v1
+#        uses: actions/upload-release-asset@v2
 #        env:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #        with:
@@ -281,7 +281,7 @@ jobs:
 #      # LINUX DEB
 #      - name: Upload deb to release
 #        id: upload-release-asset-deb
-#        uses: actions/upload-release-asset@v1
+#        uses: actions/upload-release-asset@v2
 #        env:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #        with:
