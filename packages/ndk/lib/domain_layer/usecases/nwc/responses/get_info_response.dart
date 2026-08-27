@@ -1,6 +1,7 @@
 // ignore_for_file: camel_case_types
 
 import 'package:ndk/domain_layer/usecases/nwc/consts/bitcoin_network.dart';
+import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_extension.dart';
 
 import 'nwc_response.dart';
 
@@ -15,6 +16,9 @@ class GetInfoResponse extends NwcResponse {
   final List<String> methods;
   final List<String> notifications;
 
+  /// Optional NWC extensions supported by this connection.
+  final Set<NwcExtension> extensions;
+
   GetInfoResponse({
     required super.resultType,
     required this.alias,
@@ -25,7 +29,13 @@ class GetInfoResponse extends NwcResponse {
     required this.blockHash,
     required this.methods,
     required this.notifications,
+    this.extensions = const <NwcExtension>{},
   });
+
+  /// Whether the wallet service advertises support for [extension].
+  bool supportsExtension(NwcExtension extension) {
+    return extensions.contains(extension);
+  }
 
   factory GetInfoResponse.deserialize(Map<String, dynamic> input) {
     if (!input.containsKey('result')) {
@@ -35,6 +45,7 @@ class GetInfoResponse extends NwcResponse {
     Map<String, dynamic> result = input['result'] as Map<String, dynamic>;
     final methodsList = (result["methods"] as List?) ?? const [];
     final notificationsList = (result["notifications"] as List?) ?? const [];
+    final extensionsList = (result["extensions"] as List?) ?? const [];
 
     List<String> methods =
         methodsList.map((method) => method.toString()).toList();
@@ -53,6 +64,9 @@ class GetInfoResponse extends NwcResponse {
       blockHash: result['block_hash'] as String?,
       methods: methods,
       notifications: notifications,
+      extensions: NwcExtension.fromIdentifiers(
+        extensionsList.map((extension) => extension.toString()),
+      ),
     );
   }
 }
