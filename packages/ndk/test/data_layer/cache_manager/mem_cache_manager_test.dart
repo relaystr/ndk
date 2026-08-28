@@ -117,6 +117,23 @@ void main() {
       expect(result, equals(event));
     });
 
+    test('saveEventIfAbsent does not overwrite an existing id', () async {
+      final original = Nip01Event(
+        pubKey: 'testPubKey',
+        kind: 1,
+        tags: [],
+        content: 'original',
+      );
+      final replacement = original.copyWith(content: 'replacement');
+
+      expect(await cacheManager.saveEventIfAbsent(original), isTrue);
+      expect(await cacheManager.saveEventIfAbsent(replacement), isFalse);
+
+      final loaded = await cacheManager.loadEvent(original.id);
+      expect(loaded, isNotNull);
+      expect(loaded!.content, 'original');
+    });
+
     test('removeEvent', () async {
       final event = Nip01Event(
         pubKey: 'testPubKey',

@@ -1,6 +1,5 @@
 ignore:
   - "**/*.g.dart"
-  - "../bip32_keys/lib/**"
 coverage:
   status:
     project:
@@ -10,4 +9,3 @@ coverage:
     patch:
       default:
         target: 80%          # only require 80% of NEW lines to be covere
-

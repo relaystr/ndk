@@ -645,6 +645,25 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   }
 
   @override
+  Future<bool> saveEventIfAbsent(Nip01Event event) async {
+    await dbRdy;
+    return _objectBox.store.runInTransaction(TxMode.write, () {
+      final eventBox = _objectBox.store.box<DbNip01Event>();
+      final query =
+          eventBox.query(DbNip01Event_.nostrId.equals(event.id)).build();
+      try {
+        if (query.findFirst() != null) {
+          return false;
+        }
+        eventBox.put(DbNip01Event.fromNdk(event), mode: PutMode.insert);
+        return true;
+      } finally {
+        query.close();
+      }
+    });
+  }
+
+  @override
   Future<void> saveEvents(List<Nip01Event> events) async {
     await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
