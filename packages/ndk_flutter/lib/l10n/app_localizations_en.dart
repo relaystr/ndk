@@ -780,6 +780,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
 
   @override
+  String get noCompatibleReceivingWalletsDescription =>
+      'Add or connect another wallet that can receive a payment supported by this wallet.';
+
+  @override
   String get destinationWallet => 'Destination wallet';
 
   @override

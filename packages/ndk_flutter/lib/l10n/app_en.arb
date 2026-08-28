@@ -1018,6 +1018,7 @@
   "sendToWallet": "Send to Wallet",
   "sendToWalletDescription": "Transfer to another compatible wallet",
   "noCompatibleReceivingWallets": "No compatible receiving wallets",
+  "noCompatibleReceivingWalletsDescription": "Add or connect another wallet that can receive a payment supported by this wallet.",
   "destinationWallet": "Destination wallet",
   "walletTransferSubmitted": "Payment sent to {walletName}",
   "@walletTransferSubmitted": {

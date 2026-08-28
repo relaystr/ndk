@@ -1637,6 +1637,12 @@ abstract class AppLocalizations {
   /// **'No compatible receiving wallets'**
   String get noCompatibleReceivingWallets;
 
+  /// No description provided for @noCompatibleReceivingWalletsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Add or connect another wallet that can receive a payment supported by this wallet.'**
+  String get noCompatibleReceivingWalletsDescription;
+
   /// No description provided for @destinationWallet.
   ///
   /// In en, this message translates to:

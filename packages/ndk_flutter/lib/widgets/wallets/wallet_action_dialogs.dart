@@ -455,11 +455,12 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
     final destinations = wallets
         .where(
           (destination) =>
+              destination.id != wallet.id &&
               ndkFlutter.ndk.wallets.compatibleTransferProtocol(
-                source: wallet,
-                destination: destination,
-              ) !=
-              null,
+                    source: wallet,
+                    destination: destination,
+                  ) !=
+                  null,
         )
         .toList();
 
@@ -507,7 +508,6 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                 ),
               ],
               ListTile(
-                enabled: destinations.isNotEmpty,
                 leading: const Icon(Icons.swap_horiz),
                 title: Text(l10n.sendToWallet),
                 subtitle: Text(
@@ -515,12 +515,8 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                       ? l10n.noCompatibleReceivingWallets
                       : l10n.sendToWalletDescription,
                 ),
-                onTap: destinations.isEmpty
-                    ? null
-                    : () => Navigator.pop(
-                        sheetContext,
-                        _WalletSendAction.transfer,
-                      ),
+                onTap: () =>
+                    Navigator.pop(sheetContext, _WalletSendAction.transfer),
               ),
               const SizedBox(height: 16),
             ],
@@ -536,8 +532,29 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
       case _WalletSendAction.invoice:
         _showPayInvoiceDialog(context, wallet);
       case _WalletSendAction.transfer:
-        await _showWalletTransferDialog(context, wallet, destinations);
+        if (destinations.isEmpty) {
+          await _showNoCompatibleWalletsDialog(context);
+        } else {
+          await _showWalletTransferDialog(context, wallet, destinations);
+        }
     }
+  }
+
+  Future<void> _showNoCompatibleWalletsDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.noCompatibleReceivingWallets),
+        content: Text(l10n.noCompatibleReceivingWalletsDescription),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.close),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _showWalletTransferDialog(
