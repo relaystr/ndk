@@ -260,35 +260,28 @@ class Wallets {
 
   /// Add a new wallet to the system
   Future<void> addWallet(Wallet wallet) async {
-    await _repository.storeWallet(wallet);
-    await _addWalletToMemory(wallet);
-
-    // Initialize with provider
+    // Initialize before persisting so failed setup (for example, an
+    // unreachable LNURL endpoint) cannot leave a partially added wallet.
     final provider = _providers[wallet.type];
+    var walletToStore = wallet;
     if (provider != null) {
       final updatedWallet = await provider.initialize(wallet);
       if (updatedWallet != null) {
-        // Replace old wallet with updated one while preserving order
-        final list = _wallets.toList();
-        final existingIndex = list.indexWhere((w) => w.id == wallet.id);
-        if (existingIndex >= 0) {
-          list[existingIndex] = updatedWallet;
-          _wallets.clear();
-          _wallets.addAll(list);
-          _safeAddWallets(list);
-        }
-        // Also update in repository (addWallet handles updates too)
-        await _repository.storeWallet(updatedWallet);
+        walletToStore = updatedWallet;
       }
     }
 
-    if (wallet.canReceive &&
+    await _repository.storeWallet(walletToStore);
+    await _addWalletToMemory(walletToStore);
+
+    if (walletToStore.canReceive &&
         _repository.getDefaultWalletIdForReceiving() == null) {
-      _repository.setDefaultWalletForReceiving(wallet.id);
+      _repository.setDefaultWalletForReceiving(walletToStore.id);
     }
 
-    if (wallet.canSend && _repository.getDefaultWalletIdForSending() == null) {
-      _repository.setDefaultWalletForSending(wallet.id);
+    if (walletToStore.canSend &&
+        _repository.getDefaultWalletIdForSending() == null) {
+      _repository.setDefaultWalletForSending(walletToStore.id);
     }
 
     _updateCombinedStreams();

@@ -5,7 +5,11 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/lnurl_http_impl.dart';
+import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
+import 'package:ndk/domain_layer/entities/wallet/providers/lnurl/lnurl_wallet_provider.dart';
+import 'package:ndk/domain_layer/entities/wallet/wallet_type.dart';
 import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
+import 'package:ndk/domain_layer/usecases/wallets/wallets.dart';
 import 'package:test/test.dart';
 
 import 'lnurl_test.mocks.dart';
@@ -57,6 +61,36 @@ void main() {
 
       var lnurlResponse = await lnurl.getLnurlResponse(link);
       expect(lnurlResponse, isNull);
+    });
+
+    test('failed metadata fetch does not add an LNURL wallet', () async {
+      final client = MockClient();
+      final transport = LnurlTransportHttpImpl(HttpRequestDS(client));
+      final lnurl = Lnurl(transport: transport);
+      final repository = MemWalletsRepo();
+      final wallets = Wallets(
+        providers: [LnurlWalletProvider(lnurl)],
+        repository: repository,
+      );
+      addTearDown(wallets.dispose);
+      await wallets.getWallets();
+
+      const identifier = 'name@domain.com';
+      final link = Lnurl.getLud16LinkFromLud16(identifier)!;
+      when(client.get(Uri.parse(link), headers: {'Accept': 'application/json'}))
+          .thenAnswer((_) async => http.Response('not found', 404));
+
+      final wallet = wallets.createWallet(
+        id: 'lnurl-wallet',
+        name: identifier,
+        type: WalletType.LNURL,
+        supportedUnits: {'sat'},
+        metadata: {'identifier': identifier},
+      );
+
+      await expectLater(wallets.addWallet(wallet), throwsException);
+      expect(await repository.getWallets(), isEmpty);
+      expect(await wallets.getWallets(), isEmpty);
     });
 
     test('getAmountFromBolt11 returns correct amount for valid input', () {
