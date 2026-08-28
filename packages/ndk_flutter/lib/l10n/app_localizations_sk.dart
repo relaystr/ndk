@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -773,6 +772,23 @@ class AppLocalizationsSk extends AppLocalizations {
   String get payInvoiceTitle => 'Zaplatiť faktúru';
 
   @override
+  String get sendToWallet => 'Send to Wallet';
+
+  @override
+  String get sendToWalletDescription => 'Transfer to another compatible wallet';
+
+  @override
+  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
+
+  @override
+  String get destinationWallet => 'Destination wallet';
+
+  @override
+  String walletTransferSubmitted(String walletName) {
+    return 'Payment sent to $walletName';
+  }
+
+  @override
   String get invoice => 'Faktúra';
 
   @override
@@ -1134,4 +1150,83 @@ class AppLocalizationsSk extends AppLocalizations {
   String restoreSuccess(int count) {
     return 'Obnovených $count dôkazov zo zálohy';
   }
+
+  @override
+  String get bolt12Wallet => 'BOLT12 Wallet';
+
+  @override
+  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
+
+  @override
+  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
+
+  @override
+  String get anyAmount => 'Any amount';
+
+  @override
+  String get blindedRoute => 'Blinded';
+
+  @override
+  String fromAmountSats(String amount) {
+    return 'From $amount sats';
+  }
+
+  @override
+  String fromAmountMsats(String amount) {
+    return 'From $amount msats';
+  }
+
+  @override
+  String fromCurrencyAmount(String amount, String currency) {
+    return 'From $amount $currency';
+  }
+
+  @override
+  String bolt12Expires(String date) {
+    return 'Expires $date';
+  }
+
+  @override
+  String get bolt12WalletTypeTitle => 'BOLT12 Offer';
+
+  @override
+  String get bolt12WalletTypeSubtitle =>
+      'Receive-only wallet using a reusable offer';
+
+  @override
+  String get addBolt12WalletTitle => 'Add BOLT12 Wallet';
+
+  @override
+  String get enterBolt12Input =>
+      'Enter or scan an lno offer, a bitcoin:?lno=... URI, or a BIP353 address.';
+
+  @override
+  String get bolt12Input => 'BOLT12 payment target';
+
+  @override
+  String get bolt12InputHint => 'lno1..., bitcoin:?lno=..., or user@domain.com';
+
+  @override
+  String get walletNameOptional => 'Wallet name (optional)';
+
+  @override
+  String get scanBolt12QrCodeTitle => 'Scan BOLT12 QR code';
+
+  @override
+  String get invalidBolt12QrCode =>
+      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
+
+  @override
+  String get pleaseEnterBolt12Input =>
+      'Please enter a BOLT12 offer or BIP353 address.';
+
+  @override
+  String get bolt12WalletAdded => 'BOLT12 wallet added successfully!';
+
+  @override
+  String get bolt12OfferTitle => 'Receive with BOLT12';
+
+  @override
+  String get bolt12OfferInstructions =>
+      'Share this reusable offer to receive a Lightning payment.';
 }

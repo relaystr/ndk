@@ -94,18 +94,51 @@ class NwcWallet extends Wallet {
     return {};
   }
 
-  Set<String> get _effectivePermissions =>
+  /// Permissions advertised by the live connection, falling back to the
+  /// persisted capability snapshot while the connection initializes.
+  Set<String> get effectivePermissions =>
       connection?.permissions.isNotEmpty == true
           ? connection!.permissions
           : cachedPermissions;
 
+  bool supportsMethod(NwcMethod method) =>
+      effectivePermissions.contains(method.name);
+
   @override
   bool get canReceive =>
-      _effectivePermissions.contains(NwcMethod.MAKE_INVOICE.name) ||
-      _effectivePermissions.contains(NwcMethod.RECEIVE.name);
+      supportsMethod(NwcMethod.MAKE_INVOICE) ||
+      supportsMethod(NwcMethod.RECEIVE);
 
   @override
   bool get canSend =>
-      _effectivePermissions.contains(NwcMethod.PAY_INVOICE.name) ||
-      _effectivePermissions.contains(NwcMethod.PAY.name);
+      supportsMethod(NwcMethod.PAY_INVOICE) || supportsMethod(NwcMethod.PAY);
+
+  @override
+  Set<WalletPaymentProtocol> get sendPaymentProtocols => {
+        if (supportsMethod(NwcMethod.PAY_INVOICE) ||
+            supportsMethod(NwcMethod.PAY))
+          WalletPaymentProtocol.bolt11,
+        if (supportsMethod(NwcMethod.PAY)) WalletPaymentProtocol.bolt12,
+      };
+
+  @override
+  Set<WalletPaymentProtocol> get receivePaymentProtocols => {
+        if (supportsMethod(NwcMethod.MAKE_INVOICE) ||
+            supportsMethod(NwcMethod.RECEIVE))
+          WalletPaymentProtocol.bolt11,
+        if (supportsMethod(NwcMethod.RECEIVE)) WalletPaymentProtocol.bolt12,
+      };
+
+  @override
+  bool get supportsBip321Pay => supportsMethod(NwcMethod.PAY);
+
+  @override
+  bool get supportsBip321Receive => supportsMethod(NwcMethod.RECEIVE);
+
+  @override
+  bool get supportsBolt11InvoicePay => supportsMethod(NwcMethod.PAY_INVOICE);
+
+  @override
+  bool get supportsBolt11InvoiceReceive =>
+      supportsMethod(NwcMethod.MAKE_INVOICE);
 }

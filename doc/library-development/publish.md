@@ -8,6 +8,10 @@ order: 100
 
 ## publish to github
 
+make sure ndk version.dart is up to date with version from pubspec.yaml, if not run:
+
+`dart run build_runner build --delete-conflicting-outputs`
+
 Create a tag
 `git tag -a v1.2.3 -m "Release v1.2.3"`
 

@@ -76,9 +76,7 @@ abstract class SampleAppLocalizations {
 
   static SampleAppLocalizations? of(BuildContext context) {
     return Localizations.of<SampleAppLocalizations>(
-      context,
-      SampleAppLocalizations,
-    );
+        context, SampleAppLocalizations);
   }
 
   static const LocalizationsDelegate<SampleAppLocalizations> delegate =
@@ -112,7 +110,7 @@ abstract class SampleAppLocalizations {
     Locale('ja'),
     Locale('pl'),
     Locale('ru'),
-    Locale('zh'),
+    Locale('zh')
   ];
 
   /// No description provided for @appName.
@@ -801,8 +799,7 @@ class _SampleAppLocalizationsDelegate
   @override
   Future<SampleAppLocalizations> load(Locale locale) {
     return SynchronousFuture<SampleAppLocalizations>(
-      lookupSampleAppLocalizations(locale),
-    );
+        lookupSampleAppLocalizations(locale));
   }
 
   @override
@@ -815,7 +812,7 @@ class _SampleAppLocalizationsDelegate
         'ja',
         'pl',
         'ru',
-        'zh',
+        'zh'
       ].contains(locale.languageCode);
 
   @override
@@ -846,9 +843,8 @@ SampleAppLocalizations lookupSampleAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-    'SampleAppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
-  );
+      'SampleAppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

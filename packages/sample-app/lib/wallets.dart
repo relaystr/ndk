@@ -3,6 +3,7 @@ import 'package:ndk_demo/l10n/app_localizations_context.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 import 'main.dart';
+import 'bolt12_qr_scanner.dart';
 import 'nwc_qr_scanner.dart';
 
 class WalletsPage extends StatefulWidget {
@@ -73,6 +74,7 @@ class WalletsPageState extends State<WalletsPage> with WidgetsBindingObserver {
         key: _walletsKey,
         ndkFlutter: ndkFlutter,
         nwcUriScanner: scanNwcUri,
+        bolt12InputScanner: scanBolt12Input,
       ),
     );
   }

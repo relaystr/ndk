@@ -22,6 +22,9 @@ const String _dialogBackResult = '__back__';
 /// Opens a host-provided NWC QR scanner and returns the scanned URI.
 typedef NwcUriScanner = Future<String?> Function(BuildContext context);
 
+/// Opens a host-provided scanner and returns a BOLT12, BIP321, or BIP353 input.
+typedef Bolt12InputScanner = Future<String?> Function(BuildContext context);
+
 enum AlbyGoConnectMethod { walletAuth, nostrNwcCallback }
 
 const List<NwcMethod> _defaultAlbyGoRequestMethods = [
@@ -968,7 +971,219 @@ class _AddLnurlWalletDialogState extends State<_AddLnurlWalletDialog> {
   }
 }
 
-/// Shows a dialog to choose wallet type (Cashu, NWC, or LNURL).
+/// Shows a dialog to add a receive-only BOLT12 offer wallet.
+Future<Bolt12Wallet?> showAddBolt12WalletDialog(
+  BuildContext context,
+  NdkFlutter ndkFlutter, {
+  bool returnToWalletType = false,
+  AlbyGoConnectConfig albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
+  NwcWalletAuthCoordinator? nwcWalletAuthCoordinator,
+  NwcUriScanner? nwcUriScanner,
+  Bolt12InputScanner? bolt12InputScanner,
+}) {
+  return showDialog<Bolt12Wallet?>(
+    context: context,
+    builder: (dialogContext) => _AddBolt12WalletDialog(
+      ndkFlutter: ndkFlutter,
+      parentContext: context,
+      returnToWalletType: returnToWalletType,
+      albyGoConnectConfig: albyGoConnectConfig,
+      nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
+      nwcUriScanner: nwcUriScanner,
+      bolt12InputScanner: bolt12InputScanner,
+    ),
+  );
+}
+
+class _AddBolt12WalletDialog extends StatefulWidget {
+  final NdkFlutter ndkFlutter;
+  final BuildContext parentContext;
+  final bool returnToWalletType;
+  final AlbyGoConnectConfig albyGoConnectConfig;
+  final NwcWalletAuthCoordinator? nwcWalletAuthCoordinator;
+  final NwcUriScanner? nwcUriScanner;
+  final Bolt12InputScanner? bolt12InputScanner;
+
+  const _AddBolt12WalletDialog({
+    required this.ndkFlutter,
+    required this.parentContext,
+    required this.returnToWalletType,
+    required this.albyGoConnectConfig,
+    required this.nwcWalletAuthCoordinator,
+    required this.nwcUriScanner,
+    required this.bolt12InputScanner,
+  });
+
+  @override
+  State<_AddBolt12WalletDialog> createState() => _AddBolt12WalletDialogState();
+}
+
+class _AddBolt12WalletDialogState extends State<_AddBolt12WalletDialog> {
+  final _inputController = TextEditingController();
+  final _nameController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _inputController.dispose();
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _scan() async {
+    final scanner = widget.bolt12InputScanner;
+    if (scanner == null) return;
+    final value = await scanner(context);
+    if (!mounted || value == null) return;
+
+    if (Bolt12WalletProvider.isSupportedInput(value)) {
+      _inputController.text = value.trim();
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.invalidBolt12QrCode),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  Future<void> _add() async {
+    final l10n = AppLocalizations.of(context)!;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final input = _inputController.text.trim();
+    if (input.isEmpty) {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.pleaseEnterBolt12Input),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      final resolved = await Bolt12WalletProvider.resolveInput(input);
+      final requestedName = _nameController.text.trim();
+      final description = resolved.decoded['offer_description'] as String?;
+      final name = requestedName.isNotEmpty
+          ? requestedName
+          : resolved.bip353Address ?? description ?? l10n.bolt12Wallet;
+      final wallet =
+          widget.ndkFlutter.ndk.wallets.createWallet(
+                id: 'bolt12-${DateTime.now().microsecondsSinceEpoch}',
+                name: name,
+                type: WalletType.BOLT12,
+                supportedUnits: {'sat'},
+                metadata: resolved.toMetadata(),
+              )
+              as Bolt12Wallet;
+      await widget.ndkFlutter.ndk.wallets.addWallet(wallet);
+
+      if (!mounted) return;
+      Navigator.of(context).pop(wallet);
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.bolt12WalletAdded),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (error) {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text(error.toString()), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Row(
+        children: [
+          IconButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              if (widget.returnToWalletType && widget.parentContext.mounted) {
+                await showAddWalletTypeDialog(
+                  widget.parentContext,
+                  widget.ndkFlutter,
+                  albyGoConnectConfig: widget.albyGoConnectConfig,
+                  nwcWalletAuthCoordinator: widget.nwcWalletAuthCoordinator,
+                  nwcUriScanner: widget.nwcUriScanner,
+                  bolt12InputScanner: widget.bolt12InputScanner,
+                );
+              }
+            },
+            icon: const Icon(Icons.arrow_back),
+          ),
+          Expanded(child: Text(l10n.addBolt12WalletTitle)),
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close),
+          ),
+        ],
+      ),
+      content: SizedBox(
+        width: 520,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.enterBolt12Input),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _inputController,
+              minLines: 2,
+              maxLines: 4,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText: l10n.bolt12Input,
+                hintText: l10n.bolt12InputHint,
+                suffixIcon: widget.bolt12InputScanner == null
+                    ? null
+                    : IconButton(
+                        onPressed: _scan,
+                        icon: const Icon(Icons.qr_code_scanner),
+                        tooltip: l10n.scanBolt12QrCodeTitle,
+                      ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText: l10n.walletNameOptional,
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        TextButton(
+          onPressed: _isLoading ? null : _add,
+          child: _isLoading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(l10n.add),
+        ),
+      ],
+    );
+  }
+}
+
+/// Shows a dialog to choose wallet type.
 ///
 /// Returns true if a wallet type was selected, false if cancelled.
 /// Use [albyGoConnectConfig] to override Alby Go app metadata.
@@ -978,6 +1193,7 @@ Future<bool> showAddWalletTypeDialog(
   AlbyGoConnectConfig albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
   NwcWalletAuthCoordinator? nwcWalletAuthCoordinator,
   NwcUriScanner? nwcUriScanner,
+  Bolt12InputScanner? bolt12InputScanner,
 }) async {
   final l10n = AppLocalizations.of(context)!;
 
@@ -1053,6 +1269,25 @@ Future<bool> showAddWalletTypeDialog(
                           albyGoConnectConfig: albyGoConnectConfig,
                           nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
                           nwcUriScanner: nwcUriScanner,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _WalletTypeListOption(
+                      icon: Icons.electric_bolt,
+                      title: l10n.bolt12WalletTypeTitle,
+                      subtitle: l10n.bolt12WalletTypeSubtitle,
+                      infoUrl: 'https://bolt12.org/',
+                      onTap: () async {
+                        Navigator.of(dialogContext).pop(true);
+                        await showAddBolt12WalletDialog(
+                          context,
+                          ndkFlutter,
+                          returnToWalletType: true,
+                          albyGoConnectConfig: albyGoConnectConfig,
+                          nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
+                          nwcUriScanner: nwcUriScanner,
+                          bolt12InputScanner: bolt12InputScanner,
                         );
                       },
                     ),

@@ -1,4 +1,5 @@
 import 'package:ndk/domain_layer/entities/wallet/providers/nwc/nwc_wallet.dart';
+import 'package:ndk/domain_layer/entities/wallet/wallet.dart';
 import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_method.dart';
 import 'package:test/test.dart';
 
@@ -64,6 +65,16 @@ void main() {
 
       expect(wallet.canSend, isTrue);
       expect(wallet.canReceive, isTrue);
+      expect(wallet.supportsBip321Pay, isTrue);
+      expect(wallet.supportsBip321Receive, isTrue);
+      expect(
+        wallet.sendPaymentProtocols,
+        containsAll(WalletPaymentProtocol.values),
+      );
+      expect(
+        wallet.receivePaymentProtocols,
+        containsAll(WalletPaymentProtocol.values),
+      );
     });
   });
 }

@@ -58,6 +58,9 @@ class NWalletCard extends StatefulWidget {
   /// Custom icon configuration for LNURL wallets
   final WalletIconConfig? lnurlIcon;
 
+  /// Custom icon configuration for BOLT12 wallets
+  final WalletIconConfig? bolt12Icon;
+
   const NWalletCard({
     super.key,
     required this.wallet,
@@ -73,6 +76,7 @@ class NWalletCard extends StatefulWidget {
     this.cashuIcon,
     this.nwcIcon,
     this.lnurlIcon,
+    this.bolt12Icon,
   });
 
   @override
@@ -247,6 +251,7 @@ class _NWalletCardState extends State<NWalletCard>
     final bool isCashu = widget.wallet is CashuWallet;
     final bool isNwc = widget.wallet is NwcWallet;
     final bool isLnurl = widget.wallet is LnurlWallet;
+    final bool isBolt12 = widget.wallet is Bolt12Wallet;
     final nwcPermissions = isNwc
         ? _nwcPermissions(widget.wallet as NwcWallet)
         : const <String>{};
@@ -267,6 +272,8 @@ class _NWalletCardState extends State<NWalletCard>
       walletName = (widget.wallet as NwcWallet).name;
     } else if (isLnurl) {
       walletName = (widget.wallet as LnurlWallet).name;
+    } else if (isBolt12) {
+      walletName = (widget.wallet as Bolt12Wallet).name;
     } else {
       walletName = l10n.unknownWalletType;
     }
@@ -284,6 +291,14 @@ class _NWalletCardState extends State<NWalletCard>
       subtitle = lnurlWallet.identifier == lnurlWallet.name
           ? ''
           : lnurlWallet.identifier;
+    } else if (isBolt12) {
+      final bolt12Wallet = widget.wallet as Bolt12Wallet;
+      subtitle =
+          _nonEmpty(bolt12Wallet.bip353Address) ??
+          _nonEmpty(bolt12Wallet.issuer) ??
+          (bolt12Wallet.hasBlindedPaths
+              ? l10n.bolt12PrivateOfferSubtitle
+              : l10n.bolt12WalletSubtitle);
     } else {
       subtitle = '';
     }
@@ -303,7 +318,12 @@ class _NWalletCardState extends State<NWalletCard>
             .toColor();
         gradientColors = [color, lighterColor];
       } else {
-        gradientColors = _getDefaultGradientColors(isCashu, isNwc, isLnurl);
+        gradientColors = _getDefaultGradientColors(
+          isCashu,
+          isNwc,
+          isLnurl,
+          isBolt12,
+        );
       }
     }
     final Color shadowColor = gradientColors[0];
@@ -324,6 +344,10 @@ class _NWalletCardState extends State<NWalletCard>
       iconConfig = widget.lnurlIcon ?? const WalletIconConfig();
       defaultAssetName = null; // LNURL uses bolt icon, not PNG
       fallbackIcon = Icons.bolt;
+    } else if (isBolt12) {
+      iconConfig = widget.bolt12Icon ?? const WalletIconConfig();
+      defaultAssetName = null;
+      fallbackIcon = Icons.electric_bolt;
     } else {
       iconConfig = const WalletIconConfig();
       defaultAssetName = 'wallet.png';
@@ -477,6 +501,11 @@ class _NWalletCardState extends State<NWalletCard>
                           ? _buildLnurlInfo(
                               context,
                               widget.wallet as LnurlWallet,
+                            )
+                          : isBolt12
+                          ? _buildBolt12Info(
+                              context,
+                              widget.wallet as Bolt12Wallet,
                             )
                           : (canShowNwcBalance
                                 ? _buildBalance(context)
@@ -805,6 +834,7 @@ class _NWalletCardState extends State<NWalletCard>
     bool isCashu,
     bool isNwc,
     bool isLnurl,
+    bool isBolt12,
   ) {
     if (isCashu) {
       return [const Color(0xFF7F38CA), const Color(0xFF9B5AD8)];
@@ -815,6 +845,8 @@ class _NWalletCardState extends State<NWalletCard>
       ];
     } else if (isLnurl) {
       return [const Color(0xFFFFB300), const Color(0xFFFFC107)];
+    } else if (isBolt12) {
+      return [const Color(0xFF1B5E20), const Color(0xFF43A047)];
     } else {
       return [Colors.grey[700]!, Colors.grey[400]!];
     }
@@ -1018,6 +1050,26 @@ class _NWalletCardState extends State<NWalletCard>
             metadataFetchedAt: w.metadataFetchedAt,
             metadata: updatedMetadata,
           );
+        } else if (widget.wallet is Bolt12Wallet) {
+          final w = widget.wallet as Bolt12Wallet;
+          updatedWallet = Bolt12Wallet(
+            id: w.id,
+            name: w.name,
+            supportedUnits: w.supportedUnits,
+            offer: w.offer,
+            source: w.source,
+            bip353Address: w.bip353Address,
+            description: w.description,
+            nodeId: w.nodeId,
+            offerId: w.offerId,
+            amount: w.amount,
+            issuer: w.issuer,
+            currency: w.currency,
+            expiresAt: w.expiresAt,
+            quantityMax: w.quantityMax,
+            hasBlindedPaths: w.hasBlindedPaths,
+            metadata: updatedMetadata,
+          );
         } else {
           throw UnsupportedError('Unknown wallet type');
         }
@@ -1066,6 +1118,79 @@ class _NWalletCardState extends State<NWalletCard>
       l10n.limitsUnavailable,
       style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 12),
     );
+  }
+
+  Widget _buildBolt12Info(BuildContext context, Bolt12Wallet wallet) {
+    final l10n = AppLocalizations.of(context)!;
+    final description = _nonEmpty(wallet.description);
+    final summary = <String>[
+      l10n.receiveOnlyWallet,
+      _formatBolt12Amount(context, wallet),
+      if (wallet.hasBlindedPaths) l10n.blindedRoute,
+      if (wallet.expiresAt != null)
+        l10n.bolt12Expires(
+          DateFormat.yMd(Localizations.localeOf(context).toString()).format(
+            DateTime.fromMillisecondsSinceEpoch(
+              wallet.expiresAt! * 1000,
+              isUtc: true,
+            ).toLocal(),
+          ),
+        ),
+    ].join(' · ');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          description ?? _shortBolt12Offer(wallet.offer),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          summary,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 12),
+        ),
+      ],
+    );
+  }
+
+  String _formatBolt12Amount(BuildContext context, Bolt12Wallet wallet) {
+    final l10n = AppLocalizations.of(context)!;
+    final rawAmount = _nonEmpty(wallet.amount);
+    final amount = rawAmount == null ? null : int.tryParse(rawAmount);
+    if (rawAmount == null || amount == 0) return l10n.anyAmount;
+
+    final formatter = NumberFormat.decimalPattern(
+      Localizations.localeOf(context).toString(),
+    );
+    final formattedAmount = amount == null
+        ? rawAmount
+        : formatter.format(amount);
+    final currency = _nonEmpty(wallet.currency);
+    if (currency != null) {
+      return l10n.fromCurrencyAmount(formattedAmount, currency.toUpperCase());
+    }
+    if (amount != null && amount % 1000 == 0) {
+      return l10n.fromAmountSats(formatter.format(amount ~/ 1000));
+    }
+    return l10n.fromAmountMsats(formattedAmount);
+  }
+
+  String _shortBolt12Offer(String offer) {
+    if (offer.length <= 18) return offer;
+    return '${offer.substring(0, 9)}…${offer.substring(offer.length - 6)}';
+  }
+
+  String? _nonEmpty(String? value) {
+    final normalized = value?.trim();
+    return normalized == null || normalized.isEmpty ? null : normalized;
   }
 
   Widget _buildBalance(BuildContext context) {

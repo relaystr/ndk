@@ -67,6 +67,9 @@ class NWallets extends StatefulWidget {
   /// Optional host-provided scanner for NWC QR codes.
   final NwcUriScanner? nwcUriScanner;
 
+  /// Optional host-provided scanner for BOLT12/BIP321/BIP353 QR codes.
+  final Bolt12InputScanner? bolt12InputScanner;
+
   /// Custom icon configuration for Cashu wallets
   final WalletIconConfig? cashuIcon;
 
@@ -75,6 +78,9 @@ class NWallets extends StatefulWidget {
 
   /// Custom icon configuration for LNURL wallets
   final WalletIconConfig? lnurlIcon;
+
+  /// Custom icon configuration for BOLT12 wallets
+  final WalletIconConfig? bolt12Icon;
 
   const NWallets({
     super.key,
@@ -98,9 +104,11 @@ class NWallets extends StatefulWidget {
     this.albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
     this.nwcWalletAuthCoordinator,
     this.nwcUriScanner,
+    this.bolt12InputScanner,
     this.cashuIcon,
     this.nwcIcon,
     this.lnurlIcon,
+    this.bolt12Icon,
   });
 
   @override
@@ -181,6 +189,7 @@ class NWalletsState extends State<NWallets> {
                 cashuIcon: widget.cashuIcon,
                 nwcIcon: widget.nwcIcon,
                 lnurlIcon: widget.lnurlIcon,
+                bolt12Icon: widget.bolt12Icon,
               ),
             ),
           ],
@@ -216,6 +225,7 @@ class NWalletsState extends State<NWallets> {
                 cashuIcon: widget.cashuIcon,
                 nwcIcon: widget.nwcIcon,
                 lnurlIcon: widget.lnurlIcon,
+                bolt12Icon: widget.bolt12Icon,
               ),
             ),
             if (showActionsSection) ...[
@@ -269,6 +279,7 @@ class NWalletsState extends State<NWallets> {
       albyGoConnectConfig: widget.albyGoConnectConfig,
       nwcWalletAuthCoordinator: _nwcWalletAuthCoordinator,
       nwcUriScanner: widget.nwcUriScanner,
+      bolt12InputScanner: widget.bolt12InputScanner,
     );
   }
 }

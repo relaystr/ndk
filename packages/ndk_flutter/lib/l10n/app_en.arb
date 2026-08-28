@@ -1015,6 +1015,18 @@
     "description": "Description for send by Lightning option"
   },
   "payInvoiceTitle": "Pay Invoice",
+  "sendToWallet": "Send to Wallet",
+  "sendToWalletDescription": "Transfer to another compatible wallet",
+  "noCompatibleReceivingWallets": "No compatible receiving wallets",
+  "destinationWallet": "Destination wallet",
+  "walletTransferSubmitted": "Payment sent to {walletName}",
+  "@walletTransferSubmitted": {
+    "placeholders": {
+      "walletName": {
+        "type": "String"
+      }
+    }
+  },
   "@payInvoiceTitle": {
     "description": "Title for pay invoice dialog"
   },
@@ -1496,5 +1508,58 @@
         "description": "Number of restored proofs"
       }
     }
-  }
+  },
+  "bolt12Wallet": "BOLT12 Wallet",
+  "bolt12WalletSubtitle": "Reusable Lightning offer",
+  "bolt12PrivateOfferSubtitle": "Reusable private offer",
+  "anyAmount": "Any amount",
+  "blindedRoute": "Blinded",
+  "fromAmountSats": "From {amount} sats",
+  "@fromAmountSats": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "fromAmountMsats": "From {amount} msats",
+  "@fromAmountMsats": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "fromCurrencyAmount": "From {amount} {currency}",
+  "@fromCurrencyAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bolt12Expires": "Expires {date}",
+  "@bolt12Expires": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bolt12WalletTypeTitle": "BOLT12 Offer",
+  "bolt12WalletTypeSubtitle": "Receive-only wallet using a reusable offer",
+  "addBolt12WalletTitle": "Add BOLT12 Wallet",
+  "enterBolt12Input": "Enter or scan an lno offer, a bitcoin:?lno=... URI, or a BIP353 address.",
+  "bolt12Input": "BOLT12 payment target",
+  "bolt12InputHint": "lno1..., bitcoin:?lno=..., or user@domain.com",
+  "walletNameOptional": "Wallet name (optional)",
+  "scanBolt12QrCodeTitle": "Scan BOLT12 QR code",
+  "invalidBolt12QrCode": "The QR code is not a BOLT12, BIP321, or BIP353 payment target.",
+  "pleaseEnterBolt12Input": "Please enter a BOLT12 offer or BIP353 address.",
+  "bolt12WalletAdded": "BOLT12 wallet added successfully!",
+  "bolt12OfferTitle": "Receive with BOLT12",
+  "bolt12OfferInstructions": "Share this reusable offer to receive a Lightning payment."
 }
