@@ -1,3 +1,9 @@
+## 0.9.1-dev.1
+
+ - **FEAT**: publishDmRelays.
+ - **FEAT**: allow explicit dm relay discovery.
+ - **FEAT**: add explicit legacy nip04 dms.
+
 ## 0.9.1-dev.0
 
  - **FEAT**: publishDmRelays.
