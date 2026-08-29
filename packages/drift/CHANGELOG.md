@@ -1,3 +1,7 @@
+## 0.1.1-dev.0+2
+
+ - Update a dependency to the latest release.
+
 ## 0.1.1+1
 
  - **FIX**: dart format with standalone SDK 3.12.2 (match CI).

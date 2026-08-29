@@ -1,3 +1,8 @@
+## 0.9.1-dev.0
+
+ - **FEAT**: publishDmRelays.
+ - **FEAT**: nip17 file message.
+
 ## 0.9.0
 
 > Note: This release has breaking changes.
