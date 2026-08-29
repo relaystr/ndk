@@ -353,6 +353,7 @@ class Initialization {
       giftWrap: giftWrap,
       userRelayLists: userRelayLists,
       cacheManager: _ndkConfig.cache,
+      eventVerifier: _ndkConfig.eventVerifier,
     );
 
     connectivity = Connectivy(relayManager);

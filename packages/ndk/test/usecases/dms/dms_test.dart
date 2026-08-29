@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:test/test.dart';
 
 import '../../mocks/mock_relay.dart';
@@ -130,6 +131,101 @@ void main() async {
         ndk.dms.sendMessage(recipientPubKey: bob.publicKey, content: 'hi'),
         throwsA(isA<Exception>()),
       );
+    });
+
+    test('legacy NIP-04 is explicit and works without NIP-17 relay lists',
+        () async {
+      await ndk.dms.sendLegacyNip04Message(
+        recipientPubKey: bob.publicKey,
+        content: 'legacy compatibility text',
+        rendezvousRelays: [relay.url],
+      );
+
+      final event = relay.receivedEvents.singleWhere(
+        (event) => event.kind == Dms.kLegacyNip04MessageKind,
+      );
+      expect(event.pubKey, alice.publicKey);
+      expect(event.pTags, [bob.publicKey]);
+      expect(event.content, isNot(contains('legacy compatibility text')));
+      expect(event.tags, hasLength(1));
+      expect(event.sig, isNotNull);
+      expect(
+        event.id,
+        Nip01Utils.calculateEventIdSync(
+          pubKey: event.pubKey,
+          createdAt: event.createdAt,
+          kind: event.kind,
+          tags: event.tags,
+          content: event.content,
+        ),
+      );
+
+      ndk.accounts.logout();
+      ndk.accounts.loginPrivateKey(
+        pubkey: bob.publicKey,
+        privkey: bob.privateKey!,
+      );
+      // Keep this test deterministic: relay-query behaviour itself is covered
+      // by the request usecase, while the DM usecase must also parse cached
+      // legacy events after a restart/account switch.
+      await ndk.config.cache.saveEvent(event);
+      final messages = await ndk.dms.loadLegacyNip04Conversation(
+        peerPubKey: alice.publicKey,
+        rendezvousRelays: [relay.url],
+        timeout: const Duration(seconds: 10),
+      );
+      expect(messages, hasLength(1));
+      expect(messages.single.content, 'legacy compatibility text');
+      expect(messages.single.peerPubKey, alice.publicKey);
+      expect(messages.single.isOutgoing, isFalse);
+    });
+
+    test('legacy NIP-04 requires an explicit rendezvous relay', () async {
+      expect(
+        () => ndk.dms.sendLegacyNip04Message(
+          recipientPubKey: bob.publicKey,
+          content: 'not sent',
+          rendezvousRelays: const [],
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('legacy NIP-04 rejects a cached event with an invalid signature',
+        () async {
+      final ciphertext = Nip04.encrypt(
+        alice.privateKey!,
+        bob.publicKey,
+        'must not be decrypted',
+      );
+      final signed = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: alice.publicKey,
+          kind: Dms.kLegacyNip04MessageKind,
+          content: ciphertext,
+          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          tags: [
+            ['p', bob.publicKey],
+          ],
+        ),
+        privateKey: alice.privateKey!,
+      );
+      await ndk.config.cache.saveEvent(
+        signed.copyWith(sig: '0' * 128),
+      );
+
+      ndk.accounts.logout();
+      final bobSigner = _CountingBip340EventSigner(
+        privateKey: bob.privateKey!,
+        pubkey: bob.publicKey,
+      );
+      ndk.accounts.loginExternalSigner(signer: bobSigner);
+      final messages = await ndk.dms.loadLegacyNip04Conversation(
+        peerPubKey: alice.publicKey,
+        rendezvousRelays: [relay.url],
+      );
+      expect(messages, isEmpty);
+      expect(bobSigner.nip04DecryptCalls, isZero);
     });
 
     test(
@@ -620,4 +716,21 @@ void main() async {
       expect(Dms.kMessageKind, 14);
     });
   });
+}
+
+class _CountingBip340EventSigner extends Bip340EventSigner {
+  int nip04DecryptCalls = 0;
+
+  _CountingBip340EventSigner({
+    required String privateKey,
+    required String pubkey,
+  }) : super(privateKey: privateKey, publicKey: pubkey);
+
+  @override
+  // ignore: deprecated_member_use
+  Future<String?> decrypt(String msg, String destPubKey) {
+    nip04DecryptCalls++;
+    // ignore: deprecated_member_use
+    return super.decrypt(msg, destPubKey);
+  }
 }
