@@ -84,6 +84,37 @@ void main() async {
       );
     });
 
+    test('publishDmRelays normalizes, signs, and publishes kind 10050',
+        () async {
+      await ndk.dms.publishDmRelays(
+        relayUrlsOrdered: [relay.url, '${relay.url}/'],
+        broadcastRelays: [relay.url],
+      );
+
+      final event = relay.receivedEvents
+          .where((event) => event.kind == Nip51List.kDmRelays)
+          .single;
+      expect(event.pubKey, alice.publicKey);
+      expect(event.sig, isNotEmpty);
+      expect(event.content, isEmpty);
+      expect(event.tags, [
+        ['relay', relay.url],
+      ]);
+    });
+
+    test('publishDmRelays rejects invalid and empty relay lists', () async {
+      expect(
+        () => ndk.dms.publishDmRelays(
+          relayUrlsOrdered: const ['https://not-a-relay.example'],
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => ndk.dms.publishDmRelays(relayUrlsOrdered: const []),
+        throwsArgumentError,
+      );
+    });
+
     test('sendMessage throws when sender has no DM relays', () async {
       // Alice logged in but has no kind 10050 anywhere
       await expectLater(

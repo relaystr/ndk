@@ -1,4 +1,7 @@
+import '../../../shared/helpers/relay_helper.dart';
+import '../../entities/broadcast_state.dart';
 import '../../entities/filter.dart';
+import '../../entities/nip_51_list.dart';
 import '../../entities/nip_17_conversation.dart';
 import '../../entities/nip_17_file_message.dart';
 import '../../entities/nip_01_event.dart';
@@ -78,6 +81,51 @@ class Dms {
       recipientPubKey: recipientPubKey,
       senderPubKey: senderPubKey,
     );
+  }
+
+  /// Publishes the logged-in account's ordered NIP-17 inbox relay list as a
+  /// replaceable kind-10050 event.
+  ///
+  /// [broadcastRelays] controls where this discovery event is published. When
+  /// omitted, NDK's normal outbox routing is used; it does not change the inbox
+  /// relays being advertised.
+  Future<List<RelayBroadcastResponse>> publishDmRelays({
+    required List<String> relayUrlsOrdered,
+    Iterable<String>? broadcastRelays,
+  }) async {
+    final owner = _accounts.getLoggedAccount();
+    if (owner == null) {
+      throw Exception('Cannot publish DM relays without a logged-in account.');
+    }
+
+    final cleaned = <String>[];
+    for (final raw in relayUrlsOrdered) {
+      final relay = cleanRelayUrl(raw);
+      if (relay == null) {
+        throw ArgumentError.value(raw, 'relayUrlsOrdered', 'Invalid relay URL');
+      }
+      if (!cleaned.contains(relay)) cleaned.add(relay);
+    }
+    if (cleaned.isEmpty) {
+      throw ArgumentError.value(
+        relayUrlsOrdered,
+        'relayUrlsOrdered',
+        'At least one DM relay is required',
+      );
+    }
+
+    final event = Nip01Event(
+      pubKey: owner.pubkey,
+      kind: Nip51List.kDmRelays,
+      createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      content: '',
+      tags: [
+        for (final relay in cleaned) [Nip51List.kRelay, relay],
+      ],
+    );
+    return _broadcast
+        .broadcast(nostrEvent: event, specificRelays: broadcastRelays)
+        .broadcastDoneFuture;
   }
 
   /// Sends an already-uploaded encrypted file as a NIP-17 kind-15 message.
@@ -239,6 +287,7 @@ class Dms {
     final response = _requests.query(
       name: 'dm-conversations',
       explicitRelays: dmRelays,
+      authenticateAs: [_accounts.getLoggedAccount()!],
       cacheRead: !forceRefresh,
       cacheWrite: true,
       timeout: timeout,
