@@ -1,3 +1,7 @@
+## 0.9.0-dev.1
+
+ - **FIX**: use the event returned by NIP-07 and NIP-55 signers.
+
 ## 0.9.0-dev.0+1
 
  - Update a dependency to the latest release.
