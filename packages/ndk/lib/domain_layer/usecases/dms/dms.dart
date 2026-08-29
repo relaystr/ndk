@@ -64,6 +64,7 @@ class Dms {
     required String recipientPubKey,
     required String content,
     List<List<String>> additionalTags = const [],
+    Iterable<String>? recipientDmRelayDiscoveryRelays,
   }) async {
     final senderPubKey = _requireLoggedPubKey();
 
@@ -80,6 +81,7 @@ class Dms {
       rumor: rumor,
       recipientPubKey: recipientPubKey,
       senderPubKey: senderPubKey,
+      recipientDmRelayDiscoveryRelays: recipientDmRelayDiscoveryRelays,
     );
   }
 
@@ -137,6 +139,7 @@ class Dms {
     required String recipientPubKey,
     required Nip17FileMetadata metadata,
     List<List<String>> additionalTags = const [],
+    Iterable<String>? recipientDmRelayDiscoveryRelays,
   }) async {
     final senderPubKey = _requireLoggedPubKey();
     final rumor = await _giftWrap.createRumor(
@@ -153,6 +156,7 @@ class Dms {
       rumor: rumor,
       recipientPubKey: recipientPubKey,
       senderPubKey: senderPubKey,
+      recipientDmRelayDiscoveryRelays: recipientDmRelayDiscoveryRelays,
     );
   }
 
@@ -160,6 +164,7 @@ class Dms {
     required Nip01Event rumor,
     required String recipientPubKey,
     required String senderPubKey,
+    Iterable<String>? recipientDmRelayDiscoveryRelays,
   }) async {
     final senderDmRelays = await _userRelayLists.getDmRelays(senderPubKey);
     if (senderDmRelays == null || senderDmRelays.isEmpty) {
@@ -171,6 +176,7 @@ class Dms {
     final recipientDmRelays = await _userRelayLists.getDmRelays(
       recipientPubKey,
       forceRefresh: true,
+      discoveryRelays: recipientDmRelayDiscoveryRelays,
     );
     if (recipientDmRelays == null || recipientDmRelays.isEmpty) {
       throw Exception('Recipient has no NIP-17 DM relays (kind 10050).');
