@@ -8,6 +8,7 @@ import '../../entities/nip_01_event.dart';
 import '../../entities/nip_01_utils.dart';
 import '../../entities/nip_17_message.dart';
 import '../../repositories/cache_manager.dart';
+import '../../repositories/event_verifier.dart';
 import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../gift_wrap/gift_wrap.dart';
@@ -44,6 +45,7 @@ class Dms {
   final GiftWrap _giftWrap;
   final UserRelayLists _userRelayLists;
   final CacheManager _cacheManager;
+  final EventVerifier _eventVerifier;
 
   /// Creates the direct-messages usecase.
   Dms({
@@ -53,12 +55,14 @@ class Dms {
     required GiftWrap giftWrap,
     required UserRelayLists userRelayLists,
     required CacheManager cacheManager,
+    required EventVerifier eventVerifier,
   })  : _accounts = accounts,
         _requests = requests,
         _broadcast = broadcast,
         _giftWrap = giftWrap,
         _userRelayLists = userRelayLists,
-        _cacheManager = cacheManager;
+        _cacheManager = cacheManager,
+        _eventVerifier = eventVerifier;
 
   /// Sends a direct message to [recipientPubKey].
   ///
@@ -204,7 +208,7 @@ class Dms {
     final byId = <String, LegacyNip04Message>{};
     for (final event in responses.expand((events) => events)) {
       final isOutgoing = event.pubKey == me;
-      if (!_isWellFormedLegacyNip04(
+      if (!await _isWellFormedLegacyNip04(
         event,
         senderPubKey: isOutgoing ? me : peerPubKey,
         recipientPubKey: isOutgoing ? peerPubKey : me,
@@ -682,15 +686,16 @@ class Dms {
     return cleaned;
   }
 
-  bool _isWellFormedLegacyNip04(
+  Future<bool> _isWellFormedLegacyNip04(
     Nip01Event event, {
     required String senderPubKey,
     required String recipientPubKey,
-  }) {
+  }) async {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final recipientTags =
         event.tags.where((tag) => tag.length >= 2 && tag.first == 'p').toList();
-    return event.kind == kLegacyNip04MessageKind &&
+    return await _eventVerifier.verify(event) &&
+        event.kind == kLegacyNip04MessageKind &&
         event.pubKey == senderPubKey &&
         event.sig != null &&
         _hasCanonicalId(event) &&

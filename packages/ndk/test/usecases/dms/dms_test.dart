@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:test/test.dart';
 
 import '../../mocks/mock_relay.dart';
@@ -188,6 +189,43 @@ void main() async {
         ),
         throwsArgumentError,
       );
+    });
+
+    test('legacy NIP-04 rejects a cached event with an invalid signature',
+        () async {
+      final ciphertext = Nip04.encrypt(
+        alice.privateKey!,
+        bob.publicKey,
+        'must not be decrypted',
+      );
+      final signed = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: alice.publicKey,
+          kind: Dms.kLegacyNip04MessageKind,
+          content: ciphertext,
+          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          tags: [
+            ['p', bob.publicKey],
+          ],
+        ),
+        privateKey: alice.privateKey!,
+      );
+      await ndk.config.cache.saveEvent(
+        signed.copyWith(sig: '0' * 128),
+      );
+
+      ndk.accounts.logout();
+      final bobSigner = _CountingBip340EventSigner(
+        privateKey: bob.privateKey!,
+        pubkey: bob.publicKey,
+      );
+      ndk.accounts.loginExternalSigner(signer: bobSigner);
+      final messages = await ndk.dms.loadLegacyNip04Conversation(
+        peerPubKey: alice.publicKey,
+        rendezvousRelays: [relay.url],
+      );
+      expect(messages, isEmpty);
+      expect(bobSigner.nip04DecryptCalls, isZero);
     });
 
     test(
@@ -678,4 +716,21 @@ void main() async {
       expect(Dms.kMessageKind, 14);
     });
   });
+}
+
+class _CountingBip340EventSigner extends Bip340EventSigner {
+  int nip04DecryptCalls = 0;
+
+  _CountingBip340EventSigner({
+    required String privateKey,
+    required String pubkey,
+  }) : super(privateKey: privateKey, publicKey: pubkey);
+
+  @override
+  // ignore: deprecated_member_use
+  Future<String?> decrypt(String msg, String destPubKey) {
+    nip04DecryptCalls++;
+    // ignore: deprecated_member_use
+    return super.decrypt(msg, destPubKey);
+  }
 }
