@@ -31,6 +31,13 @@ class Dms {
   /// Encrypted file rumor kind defined by NIP-17.
   static const int kFileMessageKind = 15;
 
+  /// Legacy NIP-04 encrypted direct-message event kind.
+  ///
+  /// NIP-04 is obsolete and deliberately not used by [sendMessage]. It is
+  /// exposed only as an explicit compatibility escape hatch for applications
+  /// that must interoperate with a peer that has no NIP-17 inbox relay list.
+  static const int kLegacyNip04MessageKind = 4;
+
   final Accounts _accounts;
   final Requests _requests;
   final Broadcast _broadcast;
@@ -81,6 +88,147 @@ class Dms {
       recipientPubKey: recipientPubKey,
       senderPubKey: senderPubKey,
     );
+  }
+
+  /// Sends a legacy NIP-04 text DM through explicitly supplied rendezvous
+  /// relays.
+  ///
+  /// This is intentionally separate from [sendMessage]: callers must make a
+  /// conscious privacy downgrade and choose relays both parties can use. NIP-04
+  /// exposes the sender, recipient, timestamp and kind to those relays, has no
+  /// sender-history copy, and only carries text. Do not use it for files,
+  /// credentials, invoices, preimages, or commands that change application
+  /// state.
+  Future<void> sendLegacyNip04Message({
+    required String recipientPubKey,
+    required String content,
+    required Iterable<String> rendezvousRelays,
+  }) async {
+    final account = _accounts.getLoggedAccount();
+    if (account == null || !account.signer.canSign()) {
+      throw Exception('NIP-04 requires a logged-in signing account.');
+    }
+    if (!_hexPubKey.hasMatch(recipientPubKey)) {
+      throw ArgumentError.value(recipientPubKey, 'recipientPubKey');
+    }
+    if (content.trim().isEmpty) {
+      throw ArgumentError.value(content, 'content');
+    }
+    final relays = _cleanExplicitRelays(rendezvousRelays);
+    if (relays.isEmpty) {
+      throw ArgumentError.value(
+        rendezvousRelays,
+        'rendezvousRelays',
+        'At least one explicit rendezvous relay is required',
+      );
+    }
+
+    // ignore: deprecated_member_use
+    final encrypted = await account.signer.encrypt(content, recipientPubKey);
+    if (encrypted == null || encrypted.isEmpty) {
+      throw StateError('The signer did not produce a NIP-04 ciphertext.');
+    }
+    final event = Nip01Event(
+      pubKey: account.pubkey,
+      kind: kLegacyNip04MessageKind,
+      createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      content: encrypted,
+      tags: [
+        ['p', recipientPubKey],
+      ],
+    );
+    await _broadcast
+        .broadcast(nostrEvent: event, specificRelays: relays)
+        .broadcastDoneFuture;
+  }
+
+  /// Loads and decrypts legacy NIP-04 messages with [peerPubKey] from the
+  /// explicitly supplied rendezvous relays.
+  ///
+  /// This method never discovers or falls back to arbitrary relays. The caller
+  /// must make the legacy transport boundary explicit.
+  Future<List<LegacyNip04Message>> loadLegacyNip04Conversation({
+    required String peerPubKey,
+    required Iterable<String> rendezvousRelays,
+    bool forceRefresh = false,
+    Duration timeout = const Duration(seconds: 5),
+  }) async {
+    final account = _accounts.getLoggedAccount();
+    if (account == null || !account.signer.canSign()) {
+      throw Exception('NIP-04 requires a logged-in signing account.');
+    }
+    if (!_hexPubKey.hasMatch(peerPubKey)) {
+      throw ArgumentError.value(peerPubKey, 'peerPubKey');
+    }
+    final relays = _cleanExplicitRelays(rendezvousRelays);
+    if (relays.isEmpty) {
+      throw ArgumentError.value(
+        rendezvousRelays,
+        'rendezvousRelays',
+        'At least one explicit rendezvous relay is required',
+      );
+    }
+
+    final me = account.pubkey;
+    final responses = await Future.wait([
+      _requests
+          .query(
+            name: 'legacy-nip04-outgoing',
+            explicitRelays: relays,
+            authenticateAs: [account],
+            cacheRead: !forceRefresh,
+            cacheWrite: true,
+            timeout: timeout,
+            filter: Filter(
+              kinds: const [kLegacyNip04MessageKind],
+              authors: [me],
+            ),
+          )
+          .future,
+      _requests
+          .query(
+            name: 'legacy-nip04-incoming',
+            explicitRelays: relays,
+            authenticateAs: [account],
+            cacheRead: !forceRefresh,
+            cacheWrite: true,
+            timeout: timeout,
+            filter: Filter(
+              kinds: const [kLegacyNip04MessageKind],
+              authors: [peerPubKey],
+            ),
+          )
+          .future,
+    ]);
+
+    final byId = <String, LegacyNip04Message>{};
+    for (final event in responses.expand((events) => events)) {
+      final isOutgoing = event.pubKey == me;
+      if (!_isWellFormedLegacyNip04(
+        event,
+        senderPubKey: isOutgoing ? me : peerPubKey,
+        recipientPubKey: isOutgoing ? peerPubKey : me,
+      )) {
+        continue;
+      }
+      try {
+        // ignore: deprecated_member_use
+        final plaintext =
+            await account.signer.decrypt(event.content, peerPubKey);
+        if (plaintext == null) continue;
+        byId[event.id] = LegacyNip04Message(
+          event: event,
+          peerPubKey: peerPubKey,
+          isOutgoing: isOutgoing,
+          content: plaintext,
+        );
+      } catch (_) {
+        // A malformed legacy message must not make a conversation unusable.
+      }
+    }
+    final messages = byId.values.toList()
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    return messages;
   }
 
   /// Publishes the logged-in account's ordered NIP-17 inbox relay list as a
@@ -522,6 +670,37 @@ class Dms {
     return pubKey;
   }
 
+  List<String> _cleanExplicitRelays(Iterable<String> relayUrls) {
+    final cleaned = <String>[];
+    for (final raw in relayUrls) {
+      final relay = cleanRelayUrl(raw);
+      if (relay == null) {
+        throw ArgumentError.value(raw, 'rendezvousRelays', 'Invalid relay URL');
+      }
+      if (!cleaned.contains(relay)) cleaned.add(relay);
+    }
+    return cleaned;
+  }
+
+  bool _isWellFormedLegacyNip04(
+    Nip01Event event, {
+    required String senderPubKey,
+    required String recipientPubKey,
+  }) {
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final recipientTags =
+        event.tags.where((tag) => tag.length >= 2 && tag.first == 'p').toList();
+    return event.kind == kLegacyNip04MessageKind &&
+        event.pubKey == senderPubKey &&
+        event.sig != null &&
+        _hasCanonicalId(event) &&
+        event.createdAt > 0 &&
+        event.createdAt <= now + _maximumFutureSkewSeconds &&
+        recipientTags.length == 1 &&
+        recipientTags.single[1] == recipientPubKey &&
+        event.content.isNotEmpty;
+  }
+
   static const int _parseConcurrencyLimit = 8;
   static const int _maximumFutureSkewSeconds = 10 * 60;
   static final RegExp _hexPubKey = RegExp(r'^[0-9a-f]{64}$');
@@ -554,6 +733,28 @@ class Dms {
 
     return results.cast<R>();
   }
+}
+
+/// A decrypted legacy NIP-04 message returned by
+/// [Dms.loadLegacyNip04Conversation].
+///
+/// Its relay-visible envelope is intentionally retained so applications can
+/// clearly distinguish this compatibility transport from private NIP-17 DMs.
+class LegacyNip04Message {
+  final Nip01Event event;
+  final String peerPubKey;
+  final bool isOutgoing;
+  final String content;
+
+  const LegacyNip04Message({
+    required this.event,
+    required this.peerPubKey,
+    required this.isOutgoing,
+    required this.content,
+  });
+
+  String get id => event.id;
+  int get createdAt => event.createdAt;
 }
 
 /// App-facing alias for the direct-messages usecase.

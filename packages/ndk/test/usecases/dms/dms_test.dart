@@ -132,6 +132,64 @@ void main() async {
       );
     });
 
+    test('legacy NIP-04 is explicit and works without NIP-17 relay lists',
+        () async {
+      await ndk.dms.sendLegacyNip04Message(
+        recipientPubKey: bob.publicKey,
+        content: 'legacy compatibility text',
+        rendezvousRelays: [relay.url],
+      );
+
+      final event = relay.receivedEvents.singleWhere(
+        (event) => event.kind == Dms.kLegacyNip04MessageKind,
+      );
+      expect(event.pubKey, alice.publicKey);
+      expect(event.pTags, [bob.publicKey]);
+      expect(event.content, isNot(contains('legacy compatibility text')));
+      expect(event.tags, hasLength(1));
+      expect(event.sig, isNotNull);
+      expect(
+        event.id,
+        Nip01Utils.calculateEventIdSync(
+          pubKey: event.pubKey,
+          createdAt: event.createdAt,
+          kind: event.kind,
+          tags: event.tags,
+          content: event.content,
+        ),
+      );
+
+      ndk.accounts.logout();
+      ndk.accounts.loginPrivateKey(
+        pubkey: bob.publicKey,
+        privkey: bob.privateKey!,
+      );
+      // Keep this test deterministic: relay-query behaviour itself is covered
+      // by the request usecase, while the DM usecase must also parse cached
+      // legacy events after a restart/account switch.
+      await ndk.config.cache.saveEvent(event);
+      final messages = await ndk.dms.loadLegacyNip04Conversation(
+        peerPubKey: alice.publicKey,
+        rendezvousRelays: [relay.url],
+        timeout: const Duration(seconds: 10),
+      );
+      expect(messages, hasLength(1));
+      expect(messages.single.content, 'legacy compatibility text');
+      expect(messages.single.peerPubKey, alice.publicKey);
+      expect(messages.single.isOutgoing, isFalse);
+    });
+
+    test('legacy NIP-04 requires an explicit rendezvous relay', () async {
+      expect(
+        () => ndk.dms.sendLegacyNip04Message(
+          recipientPubKey: bob.publicKey,
+          content: 'not sent',
+          rendezvousRelays: const [],
+        ),
+        throwsArgumentError,
+      );
+    });
+
     test(
       'sendMessage broadcasts a wrapped copy to each side\'s DM relays',
       () async {
