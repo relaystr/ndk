@@ -1,6 +1,8 @@
 import '../../entities/filter.dart';
 import '../../entities/nip_17_conversation.dart';
+import '../../entities/nip_17_file_message.dart';
 import '../../entities/nip_01_event.dart';
+import '../../entities/nip_01_utils.dart';
 import '../../entities/nip_17_message.dart';
 import '../../repositories/cache_manager.dart';
 import '../accounts/accounts.dart';
@@ -22,6 +24,9 @@ import '../user_relay_lists/user_relay_lists.dart';
 class Dms {
   /// Message rumor kind used by this DM usecase.
   static const int kMessageKind = 14;
+
+  /// Encrypted file rumor kind defined by NIP-17.
+  static const int kFileMessageKind = 15;
 
   final Accounts _accounts;
   final Requests _requests;
@@ -59,6 +64,55 @@ class Dms {
   }) async {
     final senderPubKey = _requireLoggedPubKey();
 
+    final rumor = await _giftWrap.createRumor(
+      content: content,
+      kind: kMessageKind,
+      tags: [
+        ['p', recipientPubKey],
+        ...additionalTags,
+      ],
+    );
+
+    await _sendRumor(
+      rumor: rumor,
+      recipientPubKey: recipientPubKey,
+      senderPubKey: senderPubKey,
+    );
+  }
+
+  /// Sends an already-uploaded encrypted file as a NIP-17 kind-15 message.
+  ///
+  /// The URL, hashes, MIME type, key and nonce are placed only in the encrypted
+  /// rumor. Uploading the ciphertext is deliberately separate so applications
+  /// can choose the appropriate standard Blossom kind-10063 server list.
+  Future<void> sendFileMessage({
+    required String recipientPubKey,
+    required Nip17FileMetadata metadata,
+    List<List<String>> additionalTags = const [],
+  }) async {
+    final senderPubKey = _requireLoggedPubKey();
+    final rumor = await _giftWrap.createRumor(
+      content: metadata.url.toString(),
+      kind: kFileMessageKind,
+      tags: [
+        ['p', recipientPubKey],
+        ...metadata.toTags(),
+        ...additionalTags,
+      ],
+    );
+
+    await _sendRumor(
+      rumor: rumor,
+      recipientPubKey: recipientPubKey,
+      senderPubKey: senderPubKey,
+    );
+  }
+
+  Future<void> _sendRumor({
+    required Nip01Event rumor,
+    required String recipientPubKey,
+    required String senderPubKey,
+  }) async {
     final senderDmRelays = await _userRelayLists.getDmRelays(senderPubKey);
     if (senderDmRelays == null || senderDmRelays.isEmpty) {
       throw Exception(
@@ -73,15 +127,6 @@ class Dms {
     if (recipientDmRelays == null || recipientDmRelays.isEmpty) {
       throw Exception('Recipient has no NIP-17 DM relays (kind 10050).');
     }
-
-    final rumor = await _giftWrap.createRumor(
-      content: content,
-      kind: kMessageKind,
-      tags: [
-        ['p', recipientPubKey],
-        ...additionalTags,
-      ],
-    );
 
     final recipientWrap = await _giftWrap.toGiftWrap(
       rumor: rumor,
@@ -294,16 +339,42 @@ class Dms {
     required bool cacheOnly,
   }) async {
     try {
-      final cachedRumor = await _giftWrap.tryFromGiftWrapFromCache(
+      if (cacheOnly) {
+        final cachedRumor = await _giftWrap.tryFromGiftWrapFromCache(
+          giftWrap: wrappedEvent,
+        );
+        if (cachedRumor == null) {
+          return null;
+        }
+      }
+
+      final result = await _giftWrap.fromGiftWrapWithInfo(
         giftWrap: wrappedEvent,
       );
-      final rumor = cacheOnly
-          ? cachedRumor
-          : cachedRumor ?? await _giftWrap.fromGiftWrap(giftWrap: wrappedEvent);
-      if (rumor == null) {
+      final rumor = result.rumor;
+
+      if (!result.isCryptographicallyValid ||
+          !_hasExactlyOneRecipient(
+            wrappedEvent,
+            expectedRecipient: myPubKey,
+          ) ||
+          result.seal.kind != GiftWrap.kSealEventKind ||
+          result.seal.tags.isNotEmpty ||
+          rumor.sig != null ||
+          !_hasCanonicalId(rumor) ||
+          !_hasValidTimestamps(
+            giftWrap: wrappedEvent,
+            seal: result.seal,
+            rumor: rumor,
+          ) ||
+          !_hasWellFormedParticipants(rumor)) {
         return null;
       }
-      if (rumor.kind != kMessageKind) {
+      if (rumor.kind != kMessageKind && rumor.kind != kFileMessageKind) {
+        return null;
+      }
+      if (rumor.kind == kFileMessageKind &&
+          Nip17FileMetadata.tryParse(rumor) == null) {
         return null;
       }
 
@@ -321,6 +392,52 @@ class Dms {
     } catch (_) {
       return null;
     }
+  }
+
+  bool _hasExactlyOneRecipient(
+    Nip01Event giftWrap, {
+    required String expectedRecipient,
+  }) {
+    final recipientTags =
+        giftWrap.tags.where((tag) => tag.isNotEmpty && tag[0] == 'p').toList();
+    return recipientTags.length == 1 &&
+        recipientTags.single.length >= 2 &&
+        recipientTags.single[1] == expectedRecipient;
+  }
+
+  bool _hasCanonicalId(Nip01Event rumor) {
+    final expectedId = Nip01Utils.calculateEventIdSync(
+      pubKey: rumor.pubKey,
+      createdAt: rumor.createdAt,
+      kind: rumor.kind,
+      tags: rumor.tags,
+      content: rumor.content,
+    );
+    return rumor.id == expectedId;
+  }
+
+  bool _hasValidTimestamps({
+    required Nip01Event giftWrap,
+    required Nip01Event seal,
+    required Nip01Event rumor,
+  }) {
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final latestAccepted = now + _maximumFutureSkewSeconds;
+    return giftWrap.createdAt > 0 &&
+        seal.createdAt > 0 &&
+        rumor.createdAt > 0 &&
+        giftWrap.createdAt <= latestAccepted &&
+        seal.createdAt <= latestAccepted &&
+        rumor.createdAt <= latestAccepted;
+  }
+
+  bool _hasWellFormedParticipants(Nip01Event rumor) {
+    final participantTags =
+        rumor.tags.where((tag) => tag.isNotEmpty && tag[0] == 'p').toList();
+    return participantTags.isNotEmpty &&
+        participantTags.every(
+          (tag) => tag.length >= 2 && _hexPubKey.hasMatch(tag[1]),
+        );
   }
 
   String? _resolvePeerPubKey({
@@ -357,6 +474,8 @@ class Dms {
   }
 
   static const int _parseConcurrencyLimit = 8;
+  static const int _maximumFutureSkewSeconds = 10 * 60;
+  static final RegExp _hexPubKey = RegExp(r'^[0-9a-f]{64}$');
 
   Future<List<R>> _mapConcurrent<T, R>(
     List<T> items,

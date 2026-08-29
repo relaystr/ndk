@@ -1,4 +1,5 @@
 import 'nip_01_event.dart';
+import 'nip_17_file_message.dart';
 
 /// Parsed direct-message item produced by the NIP-17 DM usecase.
 ///
@@ -30,4 +31,7 @@ class Nip17Message {
 
   /// Message creation timestamp from the decrypted rumor event.
   int get createdAt => rumor.createdAt;
+
+  /// Parsed file metadata for kind-15 messages, otherwise `null`.
+  Nip17FileMetadata? get fileMetadata => Nip17FileMetadata.tryParse(rumor);
 }
