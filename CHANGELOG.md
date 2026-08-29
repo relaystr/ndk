@@ -15,6 +15,42 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk_drift` - `v0.1.1-dev.3`](#ndk_drift---v011-dev3)
+ - [`ndk_objectbox` - `v0.2.12-dev.3`](#ndk_objectbox---v0212-dev3)
+
+---
+
+#### `ndk_drift` - `v0.1.1-dev.3`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_objectbox` - `v0.2.12-dev.3`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-08-29
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk_drift` - `v0.1.1-dev.2`](#ndk_drift---v011-dev2)
  - [`ndk_objectbox` - `v0.2.12-dev.2`](#ndk_objectbox---v0212-dev2)
 
