@@ -56,6 +56,10 @@ class DeliveryPolicy {
     'policy violation',
   ];
 
+  static final RegExp _kindNotAllowedPattern = RegExp(
+    r'\bkind(?:\s+\d+)?\s+is\s+not\s+allowed\b',
+  );
+
   final DeliveryPolicyKind kind;
 
   const DeliveryPolicy._(this.kind);
@@ -177,7 +181,8 @@ class DeliveryPolicy {
       }
     }
 
-    return _permanentFailureMarkers.any(normalized.contains);
+    return _permanentFailureMarkers.any(normalized.contains) ||
+        _kindNotAllowedPattern.hasMatch(normalized);
   }
 
   static String? _machineReadablePrefix(String normalizedMessage) {
