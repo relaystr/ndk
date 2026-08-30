@@ -77,6 +77,36 @@ void main() {
       expect(broadcast.broadcastedEvents, isEmpty);
     });
 
+    test('persists a permanent result across relay URL spelling variants',
+        () async {
+      await cacheManager.saveRelayDeliveryTarget(
+        RelayDeliveryTarget(
+          eventId: event.id,
+          relayUrl: 'wss://relay.example/',
+          reason: RelayDeliveryReason.explicit,
+        ),
+      );
+
+      await pendingDelivery.persistSpecificRelayBroadcastResult(
+        event,
+        [
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: true,
+            broadcastSuccessful: false,
+            msg: 'kind 1059 is not allowed on this relay',
+          ),
+        ],
+      );
+
+      final targets = await cacheManager.loadRelayDeliveryTargets(
+        eventId: event.id,
+      );
+      expect(targets, hasLength(1));
+      expect(targets.single.state, RelayDeliveryState.permanentFailure);
+      expect(targets.single.nextRetryAt, isNull);
+    });
+
     test(
       'does not rebroadcast auth-required targets before next retry time',
       () async {
