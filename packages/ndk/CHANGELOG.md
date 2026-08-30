@@ -1,3 +1,7 @@
+## 0.9.1-dev.2
+
+ - **FIX**: kind not allowed is a permanet failure.
+
 ## 0.9.1-dev.1
 
  - **FEAT**: publishDmRelays.
