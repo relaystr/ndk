@@ -252,6 +252,29 @@ void main() async {
       },
     );
 
+    test('sendMessage throws when every recipient relay rejects the wrap',
+        () async {
+      await publishDmRelayList(alice, urls: [relay.url]);
+      await publishDmRelayList(bob, urls: [relay.url]);
+      relay
+        ..rejectFirstEventPublishes = 2
+        ..rejectEventMessage = 'kind 1059 is not allowed on this relay';
+
+      await expectLater(
+        ndk.dms.sendMessage(
+          recipientPubKey: bob.publicKey,
+          content: 'must not report false success',
+        ),
+        throwsA(
+          predicate(
+            (error) => error.toString().contains(
+                  'No recipient DM relay accepted the NIP-17 message',
+                ),
+          ),
+        ),
+      );
+    });
+
     test('sendMessage with additional tags keeps the p tag on the rumor',
         () async {
       await publishDmRelayList(alice, urls: [relay.url]);
