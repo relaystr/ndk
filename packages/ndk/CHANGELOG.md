@@ -1,5 +1,6 @@
 ## 0.9.1-dev.1
 
+ - **FIX**: isolate relay, request, broadcast, and authentication state per NDK instance.
  - **FEAT**: publishDmRelays.
  - **FEAT**: allow explicit dm relay discovery.
  - **FEAT**: add explicit legacy nip04 dms.
