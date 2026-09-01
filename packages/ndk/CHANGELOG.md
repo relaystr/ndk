@@ -1,3 +1,9 @@
+## 0.9.1-dev.2
+
+ - **FIX**: clean relay url.
+ - **FIX**: more dms.
+ - **FIX**: kind not allowed is a permanet failure.
+
 ## 0.9.1-dev.1
 
  - **FEAT**: publishDmRelays.
