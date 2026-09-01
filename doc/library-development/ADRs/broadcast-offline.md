@@ -130,5 +130,5 @@ Monolithc archetecture with a broadcast manager that encapsulates most of the re
 
 ## Final Notes
 
-
-
+Proposal Accepted.
+https://github.com/relaystr/ndk/pull/679
