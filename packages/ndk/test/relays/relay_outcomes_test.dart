@@ -22,8 +22,8 @@ void collapseTests() {
     final filter = Filter(kinds: [Nip01Event.kTextNodeKind]);
 
     ndk_entities.RequestState buildState() => ndk_entities.RequestState(
-      NdkRequest.subscription("outcome-test", filters: [filter]),
-    );
+          NdkRequest.subscription("outcome-test", filters: [filter]),
+        );
 
     test('a connection that went away reports disconnected', () {
       final state = buildState();
@@ -76,33 +76,33 @@ void relayOutcomesTests(NdkEngine engine) {
     late Ndk ndk;
 
     Nip01Event textNote(KeyPair key) => Nip01Utils.signWithPrivateKey(
-      event: Nip01Event(
-        kind: Nip01Event.kTextNodeKind,
-        pubKey: key.publicKey,
-        content: "some note from key1",
-        tags: [],
-        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      ),
-      privateKey: key.privateKey!,
-    );
+          event: Nip01Event(
+            kind: Nip01Event.kTextNodeKind,
+            pubKey: key.publicKey,
+            content: "some note from key1",
+            tags: [],
+            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          ),
+          privateKey: key.privateKey!,
+        );
 
     Ndk buildNdk() => Ndk(
-      NdkConfig(
-        eventVerifier: MockEventVerifier(),
-        cache: MemCacheManager(),
-        engine: engine,
-        bootstrapRelays: [relay1.url],
-      ),
-    );
+          NdkConfig(
+            eventVerifier: MockEventVerifier(),
+            cache: MemCacheManager(),
+            engine: engine,
+            bootstrapRelays: [relay1.url],
+          ),
+        );
 
     NdkResponse queryKey1({Duration? timeout}) => ndk.requests.query(
-      filter: Filter(
-        kinds: [Nip01Event.kTextNodeKind],
-        authors: [key1.publicKey],
-      ),
-      cacheRead: false,
-      timeout: timeout,
-    );
+          filter: Filter(
+            kinds: [Nip01Event.kTextNodeKind],
+            authors: [key1.publicKey],
+          ),
+          cacheRead: false,
+          timeout: timeout,
+        );
 
     tearDown(() async {
       await ndk.destroy();
@@ -124,7 +124,8 @@ void relayOutcomesTests(NdkEngine engine) {
       expect(await response.relayOutcomesDone, response.relayOutcomes);
     });
 
-    test('a request merged into an identical one reports its outcomes', () async {
+    test('a request merged into an identical one reports its outcomes',
+        () async {
       relay1 = MockRelay(name: "relay 1", signEvents: false);
       await relay1.startServer(textNotes: {key1: textNote(key1)});
       ndk = buildNdk();

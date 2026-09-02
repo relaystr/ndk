@@ -46,10 +46,9 @@ class NdkResponse {
     this.stream, {
     Map<String, RelayRequestOutcome> Function()? relayOutcomes,
     Future<Map<String, RelayRequestOutcome>>? relayOutcomesDone,
-  }) : _relayOutcomes = relayOutcomes ?? _noOutcomes,
-       _relayOutcomesDone =
-           relayOutcomesDone ??
-           Future.value(const <String, RelayRequestOutcome>{});
+  })  : _relayOutcomes = relayOutcomes ?? _noOutcomes,
+        _relayOutcomesDone = relayOutcomesDone ??
+            Future.value(const <String, RelayRequestOutcome>{});
 
   static Map<String, RelayRequestOutcome> _noOutcomes() =>
       const <String, RelayRequestOutcome>{};
