@@ -60,6 +60,20 @@ class NwcConnection {
   List<String> supportedVersions = ["0.0"];
   List<String> supportedEncryptions = ["nip04"];
 
+  /// Optional NWC extension specifications advertised by the wallet service.
+  Set<NwcExtension> supportedExtensions = {};
+
+  /// Adds extension identifiers advertised by an info event or `get_info`.
+  /// Unknown identifiers are ignored for forward compatibility.
+  void addSupportedExtensions(Iterable<String> identifiers) {
+    supportedExtensions.addAll(NwcExtension.fromIdentifiers(identifiers));
+  }
+
+  /// Whether the wallet service advertises support for [extension].
+  bool supportsExtension(NwcExtension extension) {
+    return supportedExtensions.contains(extension);
+  }
+
   Set<String> permissions = {};
   final LocalEventSignerFactory eventSignerFactory;
 

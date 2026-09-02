@@ -41,6 +41,7 @@ export 'domain_layer/usecases/nwc/responses/lookup_invoice_response.dart';
 export 'domain_layer/usecases/nwc/nwc_connection.dart';
 export 'domain_layer/usecases/nwc/nostr_wallet_connect_uri.dart';
 export 'domain_layer/usecases/nwc/consts/nwc_method.dart';
+export 'domain_layer/usecases/nwc/consts/nwc_extension.dart';
 export 'domain_layer/usecases/nwc/consts/budget_renewal_period.dart';
 export 'domain_layer/entities/blossom_blobs.dart';
 export 'domain_layer/entities/blossom_strategies.dart';
