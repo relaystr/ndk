@@ -761,6 +761,46 @@ void nip42Tests(NdkEngine engine) {
       await relay1.stopServer();
     });
 
+    test('allow does not authenticate to a relay that never refuses', () async {
+      // challenges on connect, but serves requests to anyone
+      final relay1 = MockRelay(
+        name: "relay 1",
+        explicitPort: portBase + 15,
+        requireAuthForEvents: true,
+        signEvents: false,
+      );
+      await relay1.startServer(
+        textNotes: {key1: textNote(key1, "note from key1")},
+      );
+
+      final ndk = ndkFor(relay1);
+      final account1 = signableAccount(key1);
+      ndk.accounts.addAccount(
+        pubkey: account1.pubkey,
+        type: account1.type,
+        signer: account1.signer,
+      );
+
+      await Future.delayed(Duration(seconds: 1));
+
+      final response = ndk.requests.query(
+        filter: notesOf(key1),
+        auth: RelayAuth.allow(account1),
+      );
+
+      expect(await response.future, isNotEmpty);
+      // an eager authentication is fire and forget, so leave it time to land
+      await Future.delayed(Duration(seconds: 1));
+      expect(
+        relay1.receivedAuths,
+        0,
+        reason: 'allow reveals the identity only once a relay refuses',
+      );
+
+      await ndk.destroy();
+      await relay1.stopServer();
+    });
+
     test('require sends the REQ only on the bound connection', () async {
       final relay1 = MockRelay(
         name: "relay 1",

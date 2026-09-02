@@ -212,14 +212,6 @@ class RelaySetsEngine implements NetworkEngine {
     }
     _globalState.inFlightRequests[state.id] = state;
 
-    // Late auth for subscriptions that name an identity
-    final authAccount = state.request.auth?.account;
-    if (authAccount != null) {
-      for (final connectionKey in state.requests.keys) {
-        _relayManager.authenticateIfNeeded(connectionKey.url, [authAccount]);
-      }
-    }
-
     for (MapEntry<RelayConnectionKey, RelayRequestState> entry
         in state.requests.entries) {
       doRelayRequest(state.id, entry.value);
@@ -256,14 +248,6 @@ class RelaySetsEngine implements NetworkEngine {
       state.addRequestForRelay(url, filters);
     }
     _globalState.inFlightRequests[state.id] = state;
-
-    // Late auth for subscriptions that name an identity
-    final authAccount = state.request.auth?.account;
-    if (authAccount != null) {
-      for (final connectionKey in state.requests.keys) {
-        _relayManager.authenticateIfNeeded(connectionKey.url, [authAccount]);
-      }
-    }
 
     for (MapEntry<RelayConnectionKey, RelayRequestState> entry
         in state.requests.entries) {

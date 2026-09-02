@@ -1180,6 +1180,11 @@ class RelayManager<T> {
 
   /// Opens the bound connections a subscription will need, so the re-route on
   /// auth-required does not have to open a socket first.
+  @Deprecated(
+    'A request opens the connection it needs itself. This authenticates before '
+    'any relay asked for it, revealing an identity nobody requested. It will be '
+    'removed in a future version.',
+  )
   void authenticateIfNeeded(String relayUrl, List<Account> accounts) {
     for (final account in accounts.where((a) => a.signer.canSign())) {
       unawaited(openConnectionAs(relayUrl, account));
