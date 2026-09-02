@@ -18,6 +18,9 @@ class NdkResponse {
 
   final Map<String, RelayRequestOutcome> Function() _relayOutcomes;
 
+  final Stream<Map<String, RelayRequestOutcome>> Function()
+      _relayOutcomesStream;
+
   final Future<Map<String, RelayRequestOutcome>> _relayOutcomesDone;
 
   /// A future that resolves to a list of all [Nip01Event] objects
@@ -32,6 +35,14 @@ class NdkResponse {
   /// live subscription shows for as long as it runs.
   Map<String, RelayRequestOutcome> get relayOutcomes => _relayOutcomes();
 
+  /// [relayOutcomes] again on every change, starting with what it holds when
+  /// the stream is listened to, and closed once the request is over.
+  ///
+  /// This is what a live subscription is watched with: it reports each relay
+  /// answering, where [relayOutcomes] only says where things stand on read.
+  Stream<Map<String, RelayRequestOutcome>> get relayOutcomesStream =>
+      _relayOutcomesStream();
+
   /// [relayOutcomes] once the request is over, either because every relay
   /// ended it or because it ran into its timeout.
   ///
@@ -45,13 +56,18 @@ class NdkResponse {
     this.requestId,
     this.stream, {
     Map<String, RelayRequestOutcome> Function()? relayOutcomes,
+    Stream<Map<String, RelayRequestOutcome>> Function()? relayOutcomesStream,
     Future<Map<String, RelayRequestOutcome>>? relayOutcomesDone,
   })  : _relayOutcomes = relayOutcomes ?? _noOutcomes,
+        _relayOutcomesStream = relayOutcomesStream ?? _noOutcomesStream,
         _relayOutcomesDone = relayOutcomesDone ??
             Future.value(const <String, RelayRequestOutcome>{});
 
   static Map<String, RelayRequestOutcome> _noOutcomes() =>
       const <String, RelayRequestOutcome>{};
+
+  static Stream<Map<String, RelayRequestOutcome>> _noOutcomesStream() =>
+      const Stream<Map<String, RelayRequestOutcome>>.empty();
 }
 
 // coverage:ignore-end

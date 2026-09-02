@@ -52,6 +52,51 @@ void collapseTests() {
       });
     });
 
+    test('a connection sent again after it went away is pending once more', () {
+      final state = buildState();
+      final key = RelayConnectionKey.anonymous(url);
+      state.addRequest(key, [filter]);
+      state.requests[key]!.connectionGone = true;
+
+      // what a subscription replayed on a replacement socket goes through
+      state.requests[key]!.markSent();
+
+      expect(state.relayOutcomes, {
+        url: RelayRequestOutcome(RelayRequestOutcomeType.pending),
+      });
+    });
+
+    test('the stream reports a change once and a repeat not at all', () async {
+      final state = buildState();
+      final key = RelayConnectionKey.anonymous(url);
+      state.addRequest(key, [filter]);
+
+      final seen = <Map<String, RelayRequestOutcome>>[];
+      final subscription = state.relayOutcomesStream.listen(seen.add);
+      await Future.delayed(Duration.zero);
+
+      state.requests[key]!.receivedEOSE = true;
+      state.requests[key]!.receivedEOSE = true;
+      await Future.delayed(Duration.zero);
+      await subscription.cancel();
+
+      expect(seen, [
+        {url: RelayRequestOutcome(RelayRequestOutcomeType.pending)},
+        {url: RelayRequestOutcome(RelayRequestOutcomeType.eose)},
+      ]);
+    });
+
+    test('a late listener gets the outcomes it was not there for', () async {
+      final state = buildState();
+      final key = RelayConnectionKey.anonymous(url);
+      state.addRequest(key, [filter]);
+      state.requests[key]!.receivedEOSE = true;
+
+      expect(await state.relayOutcomesStream.first, {
+        url: RelayRequestOutcome(RelayRequestOutcomeType.eose),
+      });
+    });
+
     test('a connection retrying its authentication stays pending', () {
       final state = buildState();
       final key = RelayConnectionKey.anonymous(url);
@@ -145,6 +190,62 @@ void relayOutcomesTests(NdkEngine engine) {
       });
     });
 
+    test('the stream ends on the request, on its final outcomes', () async {
+      relay1 = MockRelay(name: "relay 1", signEvents: false);
+      await relay1.startServer(textNotes: {key1: textNote(key1)});
+      ndk = buildNdk();
+
+      final response = queryKey1();
+      final streamed = response.relayOutcomesStream.toList();
+      await response.future;
+
+      final outcomes = await streamed;
+      expect(outcomes.last, {
+        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.eose),
+      });
+      expect(outcomes.last, await response.relayOutcomesDone);
+    });
+
+    test('the stream still ends when it is asked for too late', () async {
+      relay1 = MockRelay(name: "relay 1", signEvents: false);
+      await relay1.startServer(textNotes: {key1: textNote(key1)});
+      ndk = buildNdk();
+
+      final response = queryKey1();
+      await response.future;
+
+      // nothing is left to close a subject created this late, and it stays a
+      // broadcast stream, so a second listener is served just like the first
+      final stream = response.relayOutcomesStream;
+      final ended = {
+        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.eose),
+      };
+      expect((await stream.toList()).last, ended);
+      expect((await stream.toList()).last, ended);
+    });
+
+    test('a merged request streams the outcomes of the one serving it',
+        () async {
+      relay1 = MockRelay(name: "relay 1", signEvents: false);
+      await relay1.startServer(textNotes: {key1: textNote(key1)});
+      ndk = buildNdk();
+
+      final filter = Filter(
+        kinds: [Nip01Event.kTextNodeKind],
+        authors: [key1.publicKey],
+      );
+      final first = ndk.requests.query(filter: filter);
+      final duplicate = ndk.requests.query(filter: filter);
+      final streamed = duplicate.relayOutcomesStream.toList();
+
+      await first.future;
+      await duplicate.future;
+
+      expect((await streamed).last, {
+        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.eose),
+      });
+    });
+
     test('a relay that closes the request reports closed and why', () async {
       relay1 = MockRelay(
         name: "relay 1",
@@ -207,6 +308,32 @@ void relayOutcomesTests(NdkEngine engine) {
       await ndk.requests.closeSubscription(response.requestId);
 
       expect(await response.relayOutcomesDone, {
+        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.pending),
+      });
+    });
+
+    test('a subscription streams its relays until it is closed', () async {
+      relay1 = MockRelay(
+        name: "relay 1",
+        signEvents: false,
+        silenceRequests: true,
+      );
+      await relay1.startServer(textNotes: {key1: textNote(key1)});
+      ndk = buildNdk();
+
+      final response = ndk.requests.subscription(
+        filter: Filter(
+          kinds: [Nip01Event.kTextNodeKind],
+          authors: [key1.publicKey],
+        ),
+        cacheRead: false,
+      );
+      final streamed = response.relayOutcomesStream.toList();
+      await Future.delayed(Duration(seconds: 1));
+
+      await ndk.requests.closeSubscription(response.requestId);
+
+      expect((await streamed).last, {
         relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.pending),
       });
     });

@@ -346,6 +346,7 @@ class Requests {
       state.id,
       state.stream,
       relayOutcomes: () => state.relayOutcomes,
+      relayOutcomesStream: () => state.relayOutcomesStream,
       relayOutcomesDone: state.controller.done.then((_) => state.relayOutcomes),
     );
 
@@ -476,6 +477,15 @@ class Requests {
     // with is what its last page ended with
     final relayOutcomes = <String, RelayRequestOutcome>{};
     final relayOutcomesDone = Completer<Map<String, RelayRequestOutcome>>();
+    final relayOutcomesSubject =
+        BehaviorSubject<Map<String, RelayRequestOutcome>>.seeded(const {});
+
+    void mergeRelayOutcomes(Map<String, RelayRequestOutcome> page) {
+      relayOutcomes.addAll(page);
+      if (!relayOutcomesSubject.isClosed) {
+        relayOutcomesSubject.add(Map.unmodifiable(relayOutcomes));
+      }
+    }
 
     Future<void> paginate() async {
       final since = filter.since;
@@ -500,7 +510,7 @@ class Requests {
       );
 
       final initialEvents = await initialResponse.future;
-      relayOutcomes.addAll(initialResponse.relayOutcomes);
+      mergeRelayOutcomes(initialResponse.relayOutcomes);
 
       // Emit initial events and discover relays
       final relayState = <String, _RelayPaginationState>{};
@@ -576,7 +586,7 @@ class Requests {
           );
 
           final pageEvents = await response.future;
-          relayOutcomes.addAll(response.relayOutcomes);
+          mergeRelayOutcomes(response.relayOutcomes);
           return MapEntry(relay, pageEvents);
         });
 
@@ -616,14 +626,16 @@ class Requests {
     }
 
     // Start pagination asynchronously
-    paginate().whenComplete(
-      () => relayOutcomesDone.complete(Map.of(relayOutcomes)),
-    );
+    paginate().whenComplete(() {
+      relayOutcomesDone.complete(Map.of(relayOutcomes));
+      relayOutcomesSubject.close();
+    });
 
     return NdkResponse(
       requestId,
       aggregatedController.stream,
       relayOutcomes: () => Map.of(relayOutcomes),
+      relayOutcomesStream: () => relayOutcomesSubject.stream,
       relayOutcomesDone: relayOutcomesDone.future,
     );
   }

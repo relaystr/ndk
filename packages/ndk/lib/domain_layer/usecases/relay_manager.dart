@@ -621,15 +621,11 @@ class RelayManager<T> {
     required RelayConnectionKey connectionKey,
     required List<Filter> filters,
   }) {
-    // new tracking
-    if (globalState.inFlightRequests[reqId]!.requests[connectionKey] == null) {
-      globalState.inFlightRequests[reqId]!.requests[connectionKey] =
-          RelayRequestState(connectionKey, filters);
-    } else {
-      // do not overwrite and add new filters
-      globalState.inFlightRequests[reqId]!.requests[connectionKey]!.filters
-          .addAll(filters);
-    }
+    // new tracking, existing one does not get overwritten but gets the filters
+    globalState.inFlightRequests[reqId]!.registerRequest(
+      connectionKey,
+      filters,
+    );
   }
 
   /// use this to register your broadcast against a relay, \
@@ -1261,9 +1257,7 @@ class RelayManager<T> {
     String reqId,
     RelayRequestState request,
   ) {
-    request.receivedClosed = false;
-    request.closedMessage = null;
-    request.retryingAuth = false;
+    request.markSent();
     send(
       relayConnectivity,
       ClientMsg(ClientMsgType.kReq, id: reqId, filters: request.filters),
@@ -1278,8 +1272,7 @@ class RelayManager<T> {
     RelayRequestState request,
     String? message,
   ) {
-    request.receivedClosed = true;
-    request.closedMessage = message;
+    request.markClosed(message);
     relayConnectivity.stats.openRequestIds.remove(reqId);
   }
 
@@ -1378,9 +1371,9 @@ class RelayManager<T> {
         return;
       }
       if (bound == null) {
-        retry.receivedClosed = true;
-        retry.closedMessage =
-            "auth-required: no authenticated connection could be opened";
+        retry.markClosed(
+          "auth-required: no authenticated connection could be opened",
+        );
         _checkNetworkClose(state);
         return;
       }
