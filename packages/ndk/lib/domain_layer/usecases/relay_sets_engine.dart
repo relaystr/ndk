@@ -61,15 +61,14 @@ class RelaySetsEngine implements NetworkEngine {
       return false;
     }
 
-    final connected = await _relayManager.reconnectRelay(
-      request.url,
+    final connected = await _relayManager.reconnectConnection(
+      request.key,
       connectionSource:
           ConnectionSource.explicit, // TODO improve this connection source
       force: false,
     );
     if (connected) {
-      RelayConnectivity? relay =
-          _globalState.relays[RelayConnectionKey.anonymous(request.url)];
+      RelayConnectivity? relay = _globalState.relays[request.key];
       if (relay != null) {
         try {
           await _relayManager.sendOrThrow(
@@ -202,18 +201,12 @@ class RelaySetsEngine implements NetworkEngine {
             "making fallback requests to ${_bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}",
           );
           for (final url in _bootstrapRelays) {
-            state.addRequest(
-              RelayConnectionKey.anonymous(url),
-              RelaySet.sliceFilterAuthors(filter),
-            );
+            state.addRequestForRelay(url, RelaySet.sliceFilterAuthors(filter));
           }
         }
       } else {
         for (final url in relaySet.urls) {
-          state.addRequest(
-            RelayConnectionKey.anonymous(url),
-            RelaySet.sliceFilterAuthors(filter),
-          );
+          state.addRequestForRelay(url, RelaySet.sliceFilterAuthors(filter));
         }
       }
     }
@@ -260,7 +253,7 @@ class RelaySetsEngine implements NetworkEngine {
       for (final filter in state.request.filters) {
         filters.addAll(RelaySet.sliceFilterAuthors(filter));
       }
-      state.addRequest(RelayConnectionKey.anonymous(url), filters);
+      state.addRequestForRelay(url, filters);
     }
     _globalState.inFlightRequests[state.id] = state;
 
@@ -306,10 +299,7 @@ class RelaySetsEngine implements NetworkEngine {
     );
 
     for (var url in urls) {
-      state.addRequest(
-        RelayConnectionKey.anonymous(url),
-        RelaySet.sliceFilterAuthors(filter),
-      );
+      state.addRequestForRelay(url, RelaySet.sliceFilterAuthors(filter));
     }
     _globalState.inFlightRequests[state.id] = state;
 

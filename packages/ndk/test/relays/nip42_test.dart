@@ -260,7 +260,7 @@ void nip42Tests(NdkEngine engine) {
     test('auth wins over authenticateAs', () async {
       MockRelay relay1 = MockRelay(
         name: "relay 1",
-        explicitPort: portBase + 7,
+        explicitPort: portBase + 8,
         requireAuthForRequests: true,
         signEvents: false,
       );
@@ -646,5 +646,305 @@ void nip42Tests(NdkEngine engine) {
       await ndk.destroy();
       await relay1.stopServer();
     });
+  });
+
+  group('NIP-42 RelayAuth [${engine.name}]', () {
+    final key1 = Bip340.generatePrivateKey();
+
+    Nip01Event textNote(KeyPair key, String content) {
+      final event = Nip01Event(
+        kind: Nip01Event.kTextNodeKind,
+        pubKey: key.publicKey,
+        content: content,
+        tags: [],
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
+      return Nip01Utils.signWithPrivateKey(
+        event: event,
+        privateKey: key.privateKey!,
+      );
+    }
+
+    Account signableAccount(KeyPair key) => Account(
+          pubkey: key.publicKey,
+          type: AccountType.privateKey,
+          signer: Bip340EventSigner(
+            privateKey: key.privateKey!,
+            publicKey: key.publicKey,
+          ),
+        );
+
+    Ndk ndkFor(MockRelay relay) => Ndk(
+          NdkConfig(
+            eventVerifier: Bip340EventVerifier(),
+            cache: MemCacheManager(),
+            bootstrapRelays: [relay.url],
+            engine: engine,
+          ),
+        );
+
+    Filter notesOf(KeyPair key) =>
+        Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key.publicKey]);
+
+    test('never stays unattributable even when a relay refuses', () async {
+      final relay1 = MockRelay(
+        name: "relay 1",
+        explicitPort: portBase + 9,
+        requireAuthForRequests: true,
+        signEvents: false,
+      );
+      await relay1.startServer(
+        textNotes: {key1: textNote(key1, "note from key1")},
+      );
+
+      final ndk = ndkFor(relay1);
+      // logged in, so the only thing keeping the identity hidden is the policy
+      ndk.accounts.loginPrivateKey(
+        pubkey: key1.publicKey,
+        privkey: key1.privateKey!,
+      );
+
+      await Future.delayed(Duration(seconds: 1));
+
+      final response = ndk.requests.query(
+        filter: notesOf(key1),
+        auth: const RelayAuth.never(),
+      );
+
+      expect(await response.future, isEmpty);
+      expect(relay1.receivedAuths, 0);
+      expect(
+        ndk.relays.globalState.relays.keys.where((key) => !key.isAnonymous),
+        isEmpty,
+        reason: 'never must not open a connection bound to any identity',
+      );
+
+      await ndk.destroy();
+      await relay1.stopServer();
+    });
+
+    test('allow authenticates once the relay refuses', () async {
+      final relay1 = MockRelay(
+        name: "relay 1",
+        explicitPort: portBase + 10,
+        requireAuthForRequests: true,
+        signEvents: false,
+      );
+      await relay1.startServer(
+        textNotes: {key1: textNote(key1, "note from key1")},
+      );
+
+      final ndk = ndkFor(relay1);
+      final account1 = signableAccount(key1);
+      ndk.accounts.addAccount(
+        pubkey: account1.pubkey,
+        type: account1.type,
+        signer: account1.signer,
+      );
+
+      await Future.delayed(Duration(seconds: 1));
+
+      final response = ndk.requests.query(
+        filter: notesOf(key1),
+        auth: RelayAuth.allow(account1),
+      );
+
+      expect(await response.future, isNotEmpty);
+      expect(relay1.connectionsAuthenticatedAs(key1.publicKey), 1);
+      expect(
+        ndk.relays.globalState.relays.keys.where((key) => key.isAnonymous),
+        hasLength(1),
+        reason: 'allow starts anonymous and leaves that connection anonymous',
+      );
+
+      await ndk.destroy();
+      await relay1.stopServer();
+    });
+
+    test('require sends the REQ only on the bound connection', () async {
+      final relay1 = MockRelay(
+        name: "relay 1",
+        explicitPort: portBase + 11,
+        requireAuthForRequests: true,
+        signEvents: false,
+      );
+      await relay1.startServer(
+        textNotes: {key1: textNote(key1, "note from key1")},
+      );
+
+      final ndk = ndkFor(relay1);
+      final account1 = signableAccount(key1);
+      ndk.accounts.addAccount(
+        pubkey: account1.pubkey,
+        type: account1.type,
+        signer: account1.signer,
+      );
+
+      await Future.delayed(Duration(seconds: 1));
+
+      const requestId = 'require-bound-refusing';
+      final response = ndk.requests.requestNostrEvent(
+        NdkRequest.query(
+          requestId,
+          filters: [notesOf(key1)],
+          timeoutDuration: Duration(seconds: 5),
+          auth: RelayAuth.require(account1),
+        ),
+      );
+
+      expect(await response.future, isNotEmpty);
+      expect(
+        relay1.subscriptionsRequestedOutside(key1.publicKey),
+        isNot(contains(requestId)),
+        reason: 'the REQ must never be written to an unauthenticated socket',
+      );
+      expect(relay1.connectionsThatRequested(requestId), 1);
+
+      await ndk.destroy();
+      await relay1.stopServer();
+    },
+        skip: engine == NdkEngine.JIT
+            ? 'require lands in the jit engine next'
+            : null);
+
+    test('require binds even when the relay never refuses', () async {
+      // challenges on connect, but serves requests to anyone
+      final relay1 = MockRelay(
+        name: "relay 1",
+        explicitPort: portBase + 12,
+        requireAuthForEvents: true,
+        signEvents: false,
+      );
+      await relay1.startServer(
+        textNotes: {key1: textNote(key1, "note from key1")},
+      );
+
+      final ndk = ndkFor(relay1);
+      final account1 = signableAccount(key1);
+      ndk.accounts.addAccount(
+        pubkey: account1.pubkey,
+        type: account1.type,
+        signer: account1.signer,
+      );
+
+      await Future.delayed(Duration(seconds: 1));
+
+      const requestId = 'require-bound-quiet';
+      final response = ndk.requests.requestNostrEvent(
+        NdkRequest.query(
+          requestId,
+          filters: [notesOf(key1)],
+          timeoutDuration: Duration(seconds: 5),
+          auth: RelayAuth.require(account1),
+        ),
+      );
+
+      expect(await response.future, isNotEmpty);
+      expect(
+        relay1.subscriptionsRequestedOutside(key1.publicKey),
+        isNot(contains(requestId)),
+        reason: 'require must not wait for a refusal to bind the connection',
+      );
+      expect(relay1.connectionsThatRequested(requestId), 1);
+
+      await ndk.destroy();
+      await relay1.stopServer();
+    },
+        skip: engine == NdkEngine.JIT
+            ? 'require lands in the jit engine next'
+            : null);
+
+    test('require serves a relay that never challenges, unattributed',
+        () async {
+      // NIP-42 has no way to authenticate unprompted, so a relay that never
+      // challenges never learns who asked. The connection is still bound: it is
+      // the only identity that socket may ever assume.
+      final relay1 = MockRelay(
+        name: "relay 1",
+        explicitPort: portBase + 14,
+        signEvents: false,
+      );
+      await relay1.startServer(
+        textNotes: {key1: textNote(key1, "note from key1")},
+      );
+
+      // no bootstrap relay, so every connection relay 1 sees comes from the
+      // request itself
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: [],
+          engine: engine,
+        ),
+      );
+      final account1 = signableAccount(key1);
+      ndk.accounts.addAccount(
+        pubkey: account1.pubkey,
+        type: account1.type,
+        signer: account1.signer,
+      );
+
+      final response = ndk.requests.query(
+        filter: notesOf(key1),
+        explicitRelays: [relay1.url],
+        auth: RelayAuth.require(account1),
+      );
+
+      expect(await response.future, isNotEmpty);
+      expect(
+        relay1.connectedClientCount,
+        1,
+        reason: 'the request must not open an anonymous connection of its own',
+      );
+      expect(
+        ndk.relays.globalState.relays.keys.single.pubkey,
+        key1.publicKey,
+        reason: 'that single connection is the bound one',
+      );
+      expect(relay1.receivedAuths, 0);
+
+      await ndk.destroy();
+      await relay1.stopServer();
+    },
+        skip: engine == NdkEngine.JIT
+            ? 'require lands in the jit engine next'
+            : null);
+
+    test('require with an account that cannot sign sends nothing', () async {
+      final relay1 = MockRelay(
+        name: "relay 1",
+        explicitPort: portBase + 13,
+        signEvents: false,
+      );
+      await relay1.startServer(
+        textNotes: {key1: textNote(key1, "note from key1")},
+      );
+
+      final ndk = ndkFor(relay1);
+      final watchOnly = Account(
+        pubkey: key1.publicKey,
+        type: AccountType.publicKey,
+        signer: Bip340EventSigner(privateKey: null, publicKey: key1.publicKey),
+      );
+
+      await Future.delayed(Duration(seconds: 1));
+
+      // no connection can carry it, so it ends on its timeout
+      final response = ndk.requests.query(
+        filter: notesOf(key1),
+        auth: RelayAuth.require(watchOnly),
+        timeout: Duration(seconds: 2),
+      );
+
+      expect(await response.future, isEmpty);
+      expect(relay1.receivedAuths, 0);
+
+      await ndk.destroy();
+      await relay1.stopServer();
+    },
+        skip: engine == NdkEngine.JIT
+            ? 'require lands in the jit engine next'
+            : null);
   });
 }
