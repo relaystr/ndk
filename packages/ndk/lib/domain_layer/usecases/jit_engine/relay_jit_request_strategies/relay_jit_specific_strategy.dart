@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../entities/connection_source.dart';
 import '../../../entities/filter.dart';
+import '../../../entities/relay_connectivity.dart';
 import '../../../entities/request_state.dart';
 import '../../../entities/tuple.dart';
 import '../../relay_manager.dart';
@@ -39,19 +42,33 @@ class RelayJitRequestSpecificStrategy {
         .toList();
 
     for (final connectedRelay in specificConnectedRelays) {
-      final clientMsg = ClientMsg(
-        ClientMsgType.kReq,
-        id: requestState.id,
-        filters: [filter],
-      );
-
-      /// register request
-      relayManager.registerRelayRequest(
-        reqId: requestState.id,
-        connectionKey: connectedRelay.key,
-        filters: [filter],
-      );
-      relayManager.send(connectedRelay, clientMsg);
+      unawaited(_sendTo(connectedRelay, requestState, filter, relayManager));
     }
+  }
+
+  static Future<void> _sendTo(
+    RelayConnectivity connectedRelay,
+    RequestState requestState,
+    Filter filter,
+    RelayManager relayManager,
+  ) async {
+    final target = await relayManager.connectionForRequest(
+      requestState,
+      connectedRelay,
+    );
+    if (target == null) {
+      return;
+    }
+
+    /// register request
+    relayManager.registerRelayRequest(
+      reqId: requestState.id,
+      connectionKey: target.key,
+      filters: [filter],
+    );
+    relayManager.send(
+      target,
+      ClientMsg(ClientMsgType.kReq, id: requestState.id, filters: [filter]),
+    );
   }
 }

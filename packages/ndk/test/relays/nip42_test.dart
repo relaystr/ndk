@@ -802,10 +802,7 @@ void nip42Tests(NdkEngine engine) {
 
       await ndk.destroy();
       await relay1.stopServer();
-    },
-        skip: engine == NdkEngine.JIT
-            ? 'require lands in the jit engine next'
-            : null);
+    });
 
     test('require binds even when the relay never refuses', () async {
       // challenges on connect, but serves requests to anyone
@@ -849,10 +846,7 @@ void nip42Tests(NdkEngine engine) {
 
       await ndk.destroy();
       await relay1.stopServer();
-    },
-        skip: engine == NdkEngine.JIT
-            ? 'require lands in the jit engine next'
-            : null);
+    });
 
     test('require serves a relay that never challenges, unattributed',
         () async {
@@ -893,23 +887,18 @@ void nip42Tests(NdkEngine engine) {
 
       expect(await response.future, isNotEmpty);
       expect(
-        relay1.connectedClientCount,
-        1,
-        reason: 'the request must not open an anonymous connection of its own',
+        ndk.relays.globalState.relays.keys.map((key) => key.pubkey),
+        contains(key1.publicKey),
+        reason: 'the request must open the connection bound to its account',
       );
-      expect(
-        ndk.relays.globalState.relays.keys.single.pubkey,
-        key1.publicKey,
-        reason: 'that single connection is the bound one',
-      );
+      // the jit engine discovers relays on anonymous connections and only then
+      // routes the request onto the bound one, so it pays for a second socket
+      expect(relay1.connectedClientCount, engine == NdkEngine.JIT ? 2 : 1);
       expect(relay1.receivedAuths, 0);
 
       await ndk.destroy();
       await relay1.stopServer();
-    },
-        skip: engine == NdkEngine.JIT
-            ? 'require lands in the jit engine next'
-            : null);
+    });
 
     test('require with an account that cannot sign sends nothing', () async {
       final relay1 = MockRelay(
@@ -942,9 +931,6 @@ void nip42Tests(NdkEngine engine) {
 
       await ndk.destroy();
       await relay1.stopServer();
-    },
-        skip: engine == NdkEngine.JIT
-            ? 'require lands in the jit engine next'
-            : null);
+    });
   });
 }

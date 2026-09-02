@@ -1001,6 +1001,35 @@ class RelayManager<T> {
     return connectivity;
   }
 
+  /// The connection [state] must go out on towards the relay an engine picked.
+  ///
+  /// [picked] is that relay's anonymous connection, which is how engines
+  /// discover relays. A request that requires an identity gets its own bound
+  /// connection instead, opened if it is not there yet. Null means the request
+  /// must not be sent to that relay at all: falling back to [picked] is exactly
+  /// what the caller ruled out.
+  Future<RelayConnectivity?> connectionForRequest(
+    RequestState state,
+    RelayConnectivity picked, {
+    ConnectionSource connectionSource = ConnectionSource.explicit,
+  }) async {
+    final auth = state.request.auth;
+    if (auth is! RelayAuthRequire) {
+      return picked;
+    }
+    if (!auth.account.signer.canSign()) {
+      Logger.log.w(
+        () => "${state.id} requires ${auth.account.pubkey}, which cannot sign",
+      );
+      return null;
+    }
+    return openConnectionAs(
+      picked.url,
+      auth.account,
+      connectionSource: connectionSource,
+    );
+  }
+
   /// Waits for the AUTH challenge of [key]. Only call this once something has
   /// asked for authentication, otherwise a relay that only challenges on demand
   /// would never answer. Returns null if it never arrives.
