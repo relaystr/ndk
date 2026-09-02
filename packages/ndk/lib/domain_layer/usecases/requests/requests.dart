@@ -369,17 +369,34 @@ class Requests {
       writeToCache: request.cacheWrite,
     );
 
+    // only the oldest timestamp per relay is needed, buffering the events
+    // themselves would grow unbounded on long-lived subscriptions
+    final oldestNetworkEventByRelay = <String, int>{};
+    final trackedNetworkStream = _fetchedRanges == null
+        ? preparedNetworkStream
+        : preparedNetworkStream.map((event) {
+            for (final source in event.sources) {
+              final oldest = oldestNetworkEventByRelay[source];
+              if (oldest == null || event.createdAt < oldest) {
+                oldestNetworkEventByRelay[source] = event.createdAt;
+              }
+            }
+            return event;
+          });
+
     // register listener
     StreamResponseCleaner(
-      inputStreams: [preparedNetworkStream, state.cacheController.stream],
+      inputStreams: [trackedNetworkStream, state.cacheController.stream],
       trackingSet: state.returnedIds,
       outController: state.controller,
       eventOutFilters: _eventOutFilters,
     )();
 
-    // Record fetched ranges when network requests complete (EOSE received)
-    state.networkController.done.then((_) {
-      _recordFetchedRanges(state);
+    // Record fetched ranges once the response stream is closed, meaning the
+    // network stream has been fully drained. Closing on networkController.done
+    // would run before verification finished pushing events downstream.
+    state.controller.done.then((_) {
+      _recordFetchedRanges(state, oldestNetworkEventByRelay);
     });
 
     // cleanup on close
@@ -591,24 +608,19 @@ class Requests {
   }
 
   /// Records fetched ranges for each relay that received EOSE
-  /// - If events received: use min/max of event timestamps
-  /// - If no events + filter has since/until: use filter bounds
-  /// - If no events + no bounds: use 0 to now
-  void _recordFetchedRanges(RequestState state) {
+  /// - If events received: coverage starts at the oldest event received
+  /// - If no events: use the filter bounds (0 to now when unbounded)
+  ///
+  /// [oldestEventByRelay] must only reflect events received from relays during
+  /// this request. Cache hits would make the recorded range claim coverage the
+  /// relay never actually served.
+  void _recordFetchedRanges(
+    RequestState state,
+    Map<String, int> oldestEventByRelay,
+  ) {
     if (_fetchedRanges == null) return;
 
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-    // Get all events from the replay subject
-    final events = state.controller.values.toList();
-
-    // Group events by source relay
-    final eventsByRelay = <String, List<Nip01Event>>{};
-    for (final event in events) {
-      for (final source in event.sources) {
-        eventsByRelay.putIfAbsent(source, () => []).add(event);
-      }
-    }
 
     for (final entry in state.requests.entries) {
       final relayUrl = entry.key.url;
@@ -616,27 +628,19 @@ class Requests {
 
       if (!relayState.receivedEOSE) continue;
 
-      final relayEvents = eventsByRelay[relayUrl];
+      final oldestEvent = oldestEventByRelay[relayUrl];
 
       // Record fetched range for each filter sent to this relay
       for (final filter in relayState.filters) {
-        int since;
-        int until;
+        int since = filter.since ?? 0;
+        final int until = filter.until ?? now;
 
-        if (relayEvents != null && relayEvents.isNotEmpty) {
-          // Use oldest event timestamp for since, filter.until or now for until
-          // EOSE means relay has no more events, so fetched range extends to query end
-          final timestamps = relayEvents.map((e) => e.createdAt).toList();
-          since = timestamps.reduce((a, b) => a < b ? a : b);
-          until = filter.until ?? now;
-        } else if (filter.since != null || filter.until != null) {
-          // No events but filter has explicit bounds
-          since = filter.since ?? 0;
-          until = filter.until ?? now;
-        } else {
-          // No events, no bounds - relay has nothing, record 0 to now
-          since = 0;
-          until = now;
+        if (oldestEvent != null) {
+          // A relay can cap a response below the requested limit, or with no
+          // limit in the filter at all (NIP-11 max_limit, which we don't read),
+          // so a full response is indistinguishable from a truncated one. Only
+          // claim coverage down to the oldest event received.
+          since = oldestEvent;
         }
 
         _fetchedRanges!.addRange(
