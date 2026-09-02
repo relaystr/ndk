@@ -959,15 +959,29 @@ void nip42Tests(NdkEngine engine) {
 
       await Future.delayed(Duration(seconds: 1));
 
-      // no connection can carry it, so it ends on its timeout
+      var timedOut = false;
+      final stopwatch = Stopwatch()..start();
       final response = ndk.requests.query(
         filter: notesOf(key1),
         auth: RelayAuth.require(watchOnly),
-        timeout: Duration(seconds: 2),
+        timeout: Duration(seconds: 10),
+        timeoutCallback: () => timedOut = true,
       );
 
       expect(await response.future, isEmpty);
+      stopwatch.stop();
+
       expect(relay1.receivedAuths, 0);
+      expect(
+        timedOut,
+        isFalse,
+        reason: 'an impossible request is known before any relay is contacted',
+      );
+      expect(
+        stopwatch.elapsedMilliseconds,
+        lessThan(1000),
+        reason: 'it must not wait for its timeout to answer',
+      );
 
       await ndk.destroy();
       await relay1.stopServer();

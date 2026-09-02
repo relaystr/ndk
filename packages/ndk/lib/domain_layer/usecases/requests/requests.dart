@@ -445,6 +445,20 @@ class Requests {
         state.cacheController.close();
       }
 
+      // a request that requires an identity nobody can sign for has no
+      // connection to go out on, and its timeout would only delay the same
+      // empty answer. The cache already had its say above
+      final auth = state.request.auth;
+      if (auth is RelayAuthRequire && !auth.account.signer.canSign()) {
+        Logger.log.w(
+          () =>
+              "${state.id} requires ${auth.account.pubkey}, which cannot sign",
+        );
+        state.cancelTimeout();
+        await state.networkController.close();
+        return;
+      }
+
       /// if there are any more filters left (not served by cacheRead)
       if (state.request.filters.isNotEmpty) {
         /// handle request
