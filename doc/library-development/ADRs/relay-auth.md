@@ -4,9 +4,9 @@ Title: Relay authentication - who a query, subscription or broadcast authenticat
 
 ## status
 
-proposed
+accepted
 
-Updated on 2026-08-24
+Updated on 2026-09-02
 
 ## contributors
 
