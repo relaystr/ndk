@@ -24,8 +24,10 @@ final int computeIsolatePoolSize = math.max(
   ),
 );
 
-typedef StreamComputeTask<Q, P> =
-    FutureOr<void> Function(Q argument, void Function(P progress) emit);
+typedef StreamComputeTask<Q, P> = FutureOr<void> Function(
+  Q argument,
+  void Function(P progress) emit,
+);
 
 class IsolateConfig {
   Isolate isolate;

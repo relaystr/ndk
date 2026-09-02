@@ -4,8 +4,10 @@ import '../../entities/nip_01_event.dart';
 import '../../repositories/cache_manager.dart';
 
 typedef EventPayloadDecryptor = Future<String?> Function();
-typedef DecryptedPayloadFailureClassifier =
-    DecryptedPayloadStatus? Function(Object error, StackTrace stackTrace);
+typedef DecryptedPayloadFailureClassifier = DecryptedPayloadStatus? Function(
+  Object error,
+  StackTrace stackTrace,
+);
 
 /// Read-through cache for decrypted payload sidecars.
 ///
@@ -27,7 +29,7 @@ class DecryptedEventPayloads {
   final Map<String, MutexSimple> _recordMutexes = {};
 
   DecryptedEventPayloads({required CacheManager cacheManager})
-    : _cacheManager = cacheManager;
+      : _cacheManager = cacheManager;
 
   /// Returns cached plaintext if a ready sidecar already exists.
   Future<String?> loadCachedPlaintext({

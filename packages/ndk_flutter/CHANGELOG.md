@@ -1,3 +1,23 @@
+## 0.9.0-dev.1
+
+ - Update a dependency to the latest release.
+
+## 0.9.0-dev.0+1
+
+ - Update a dependency to the latest release.
+
+## 0.9.0
+
+ - **FIX**: use the event returned by NIP-07 and NIP-55 signers.
+
+## 0.8.4
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.8.4-dev.15
+
+ - **FIX**: use the event returned by NIP-07 and NIP-55 signers.
+
 ## 0.8.4-dev.14
 
  - **FIX**: dart format with standalone SDK 3.12.2 (match CI).

@@ -5,7 +5,9 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
+
 import 'dart:developer' as developer;
+
 import '../../mocks/mock_event_verifier.dart';
 
 void main() async {
@@ -40,9 +42,8 @@ void main() async {
 
       var responseList = await contactsResponse.stream.toList();
 
-      List<ContactList> contactLists = responseList
-          .map((event) => ContactList.fromEvent(event))
-          .toList();
+      List<ContactList> contactLists =
+          responseList.map((event) => ContactList.fromEvent(event)).toList();
 
       await cacheManager.saveEvents(
         contactLists.map((contactList) => contactList.toEvent()).toList(),
@@ -66,12 +67,10 @@ void main() async {
       await cacheManager.saveEvents(nip65events);
 
       //UserRelayList.fromNip65(Nip65.fromEvent(nip65events))
-      final List<Nip65> nip65List = nip65events
-          .map((event) => Nip65.fromEvent(event))
-          .toList();
-      final List<UserRelayList> userRelayLists = nip65List
-          .map((nip65) => UserRelayList.fromNip65(nip65))
-          .toList();
+      final List<Nip65> nip65List =
+          nip65events.map((event) => Nip65.fromEvent(event)).toList();
+      final List<UserRelayList> userRelayLists =
+          nip65List.map((nip65) => UserRelayList.fromNip65(nip65)).toList();
 
       await cacheManager.saveUserRelayLists(userRelayLists);
 
@@ -181,15 +180,11 @@ void main() async {
       );
     }, timeout: const Timeout.factor(10));
 
-    test(
-      'Love is Bitcoin (3k follows) feed best relays',
-      () async {
-        await calculateBestRelaysForNpubContactsFeed(
-          "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx",
-          relayMinCountPerPubKey: 2,
-        );
-      },
-      timeout: const Timeout.factor(10),
-    );
+    test('Love is Bitcoin (3k follows) feed best relays', () async {
+      await calculateBestRelaysForNpubContactsFeed(
+        "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx",
+        relayMinCountPerPubKey: 2,
+      );
+    }, timeout: const Timeout.factor(10));
   });
 }

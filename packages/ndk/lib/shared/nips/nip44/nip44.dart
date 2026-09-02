@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:elliptic/ecdh.dart';
 import 'package:elliptic/elliptic.dart';
 import 'package:meta/meta.dart';
+
 import 'utils.dart';
 
 /// NIP-44 encryption and decryption functions.
@@ -16,8 +18,7 @@ class Nip44 {
     Uint8List? customConversationKey,
   }) async {
     // Step 1: Compute Shared Secret
-    final sharedSecret =
-        customConversationKey ??
+    final sharedSecret = customConversationKey ??
         computeSharedSecret(senderPrivateKey, recipientPublicKey);
 
     // Step 2: Derive Conversation Key
@@ -57,8 +58,7 @@ class Nip44 {
     Uint8List? customConversationKey,
   }) async {
     // Step 1: Compute Shared Secret
-    final sharedSecret =
-        customConversationKey ??
+    final sharedSecret = customConversationKey ??
         computeSharedSecret(recipientPrivateKey, senderPublicKey);
 
     // Step 2: Derive Conversation Key

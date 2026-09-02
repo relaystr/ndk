@@ -123,9 +123,8 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
       setState(() {
         _signTimeMs = null;
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error signing events: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error signing events: $e')));
     }
   }
 
@@ -173,9 +172,8 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
         statusMessage += ' ($failedCount failed)';
       }
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(statusMessage)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(statusMessage)));
 
       if (!allValid) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -187,9 +185,8 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
         _verifyTimeMs = null;
         _failedVerifications = null;
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error verifying events: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error verifying events: $e')));
     }
   }
 
@@ -240,7 +237,9 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
                         child: Text(
                           'This is an experiment to test the feasibility of Dilithium in Nostr.\n\n'
                           'Please note that the ID is still generated the conventional way.',
-                          style: Theme.of(context).textTheme.bodyMedium
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
                               ?.copyWith(color: Colors.grey[700], height: 1.5),
                         ),
                       ),

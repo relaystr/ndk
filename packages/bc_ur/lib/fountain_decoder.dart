@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+
 import 'package:ur/fountain_encoder.dart';
 import 'package:ur/fountain_utils.dart';
 import 'package:ur/utils.dart';
@@ -121,9 +122,8 @@ class FountainDecoder {
   }
 
   void reduceBy(FountainDecoderPart p) {
-    var reducedParts = mixedParts.values
-        .map((value) => reducePartByPart(value, p))
-        .toList();
+    var reducedParts =
+        mixedParts.values.map((value) => reducePartByPart(value, p)).toList();
 
     var newMixed = <Set<int>, FountainDecoderPart>{};
     for (var reducedPart in reducedParts) {

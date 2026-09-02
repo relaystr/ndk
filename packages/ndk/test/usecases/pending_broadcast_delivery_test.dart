@@ -77,6 +77,36 @@ void main() {
       expect(broadcast.broadcastedEvents, isEmpty);
     });
 
+    test('persists a permanent result across relay URL spelling variants',
+        () async {
+      await cacheManager.saveRelayDeliveryTarget(
+        RelayDeliveryTarget(
+          eventId: event.id,
+          relayUrl: 'wss://relay.example/',
+          reason: RelayDeliveryReason.explicit,
+        ),
+      );
+
+      await pendingDelivery.persistSpecificRelayBroadcastResult(
+        event,
+        [
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: true,
+            broadcastSuccessful: false,
+            msg: 'kind 1059 is not allowed on this relay',
+          ),
+        ],
+      );
+
+      final targets = await cacheManager.loadRelayDeliveryTargets(
+        eventId: event.id,
+      );
+      expect(targets, hasLength(1));
+      expect(targets.single.state, RelayDeliveryState.permanentFailure);
+      expect(targets.single.nextRetryAt, isNull);
+    });
+
     test(
       'does not rebroadcast auth-required targets before next retry time',
       () async {
@@ -169,33 +199,32 @@ void main() {
     });
 
     test(
-      'periodic retry forces reconnect for disconnected relays with due targets',
-      () async {
-        final now = Nip01Event.secondsSinceEpoch();
-        await cacheManager.saveRelayDeliveryTarget(
-          RelayDeliveryTarget(
-            eventId: event.id,
-            relayUrl: 'wss://relay.example',
-            reason: RelayDeliveryReason.explicit,
-            state: RelayDeliveryState.pending,
-            attemptCount: 0,
-            lastAttemptAt: now - 60,
-            nextRetryAt: now - 1,
-          ),
-        );
+        'periodic retry forces reconnect for disconnected relays with due targets',
+        () async {
+      final now = Nip01Event.secondsSinceEpoch();
+      await cacheManager.saveRelayDeliveryTarget(
+        RelayDeliveryTarget(
+          eventId: event.id,
+          relayUrl: 'wss://relay.example',
+          reason: RelayDeliveryReason.explicit,
+          state: RelayDeliveryState.pending,
+          attemptCount: 0,
+          lastAttemptAt: now - 60,
+          nextRetryAt: now - 1,
+        ),
+      );
 
-        await pendingDelivery.retryDueDeliveries(
-          connectedRelayUrls: () => const <String>[],
-          reconnectRelay: (relayUrl) async {
-            reconnectAttempts.add(relayUrl);
-            return true;
-          },
-        );
+      await pendingDelivery.retryDueDeliveries(
+        connectedRelayUrls: () => const <String>[],
+        reconnectRelay: (relayUrl) async {
+          reconnectAttempts.add(relayUrl);
+          return true;
+        },
+      );
 
-        expect(reconnectAttempts, ['wss://relay.example']);
-        expect(broadcast.broadcastedEvents.map((e) => e.id), [event.id]);
-      },
-    );
+      expect(reconnectAttempts, ['wss://relay.example']);
+      expect(broadcast.broadcastedEvents.map((e) => e.id), [event.id]);
+    });
 
     test(
       'purges ephemeral event and sidecars once delivery is complete',
@@ -227,14 +256,16 @@ void main() {
           ),
         );
 
-        await pendingDelivery
-            .persistSpecificRelayBroadcastResult(ephemeralEvent, [
-              RelayBroadcastResponse(
-                relayUrl: 'wss://relay.example',
-                okReceived: true,
-                broadcastSuccessful: true,
-              ),
-            ]);
+        await pendingDelivery.persistSpecificRelayBroadcastResult(
+          ephemeralEvent,
+          [
+            RelayBroadcastResponse(
+              relayUrl: 'wss://relay.example',
+              okReceived: true,
+              broadcastSuccessful: true,
+            ),
+          ],
+        );
 
         expect(await cacheManager.loadEvent(ephemeralEvent.id), isNull);
         expect(
@@ -250,56 +281,56 @@ void main() {
       },
     );
 
-    test(
-      'keeps ephemeral event cached while delivery is not yet terminal',
-      () async {
-        final ephemeralEvent = Nip01Event(
-          id: 'ephemeral-auth',
-          pubKey: 'pubkey',
-          createdAt: 1700000000,
-          kind: 21000,
-          tags: const [],
-          content: 'ephemeral awaiting auth',
-          sig: 'sig',
-        );
-        await cacheManager.saveEvent(ephemeralEvent);
-        await cacheManager.saveEventDeliveryRecord(
-          EventDeliveryRecord(
-            eventId: ephemeralEvent.id,
-            status: EventDeliveryStatus.pending,
-            createdAt: ephemeralEvent.createdAt,
-            updatedAt: ephemeralEvent.createdAt,
-          ),
-        );
-        await cacheManager.saveRelayDeliveryTarget(
-          RelayDeliveryTarget(
-            eventId: ephemeralEvent.id,
+    test('keeps ephemeral event cached while delivery is not yet terminal',
+        () async {
+      final ephemeralEvent = Nip01Event(
+        id: 'ephemeral-auth',
+        pubKey: 'pubkey',
+        createdAt: 1700000000,
+        kind: 21000,
+        tags: const [],
+        content: 'ephemeral awaiting auth',
+        sig: 'sig',
+      );
+      await cacheManager.saveEvent(ephemeralEvent);
+      await cacheManager.saveEventDeliveryRecord(
+        EventDeliveryRecord(
+          eventId: ephemeralEvent.id,
+          status: EventDeliveryStatus.pending,
+          createdAt: ephemeralEvent.createdAt,
+          updatedAt: ephemeralEvent.createdAt,
+        ),
+      );
+      await cacheManager.saveRelayDeliveryTarget(
+        RelayDeliveryTarget(
+          eventId: ephemeralEvent.id,
+          relayUrl: 'wss://relay.example',
+          reason: RelayDeliveryReason.explicit,
+          state: RelayDeliveryState.pending,
+        ),
+      );
+
+      // auth-required is a non-terminal outcome (status -> needsAction), so the
+      // event and its delivery state must survive for a later auth-gated retry.
+      await pendingDelivery.persistSpecificRelayBroadcastResult(
+        ephemeralEvent,
+        [
+          RelayBroadcastResponse(
             relayUrl: 'wss://relay.example',
-            reason: RelayDeliveryReason.explicit,
-            state: RelayDeliveryState.pending,
+            okReceived: false,
+            broadcastSuccessful: false,
+            msg: 'auth-required: need to authenticate',
           ),
-        );
+        ],
+      );
 
-        // auth-required is a non-terminal outcome (status -> needsAction), so the
-        // event and its delivery state must survive for a later auth-gated retry.
-        await pendingDelivery
-            .persistSpecificRelayBroadcastResult(ephemeralEvent, [
-              RelayBroadcastResponse(
-                relayUrl: 'wss://relay.example',
-                okReceived: false,
-                broadcastSuccessful: false,
-                msg: 'auth-required: need to authenticate',
-              ),
-            ]);
-
-        expect(await cacheManager.loadEvent(ephemeralEvent.id), isNotNull);
-        final record = await cacheManager.loadEventDeliveryRecord(
-          ephemeralEvent.id,
-        );
-        expect(record, isNotNull);
-        expect(record!.status, EventDeliveryStatus.needsAction);
-      },
-    );
+      expect(await cacheManager.loadEvent(ephemeralEvent.id), isNotNull);
+      final record = await cacheManager.loadEventDeliveryRecord(
+        ephemeralEvent.id,
+      );
+      expect(record, isNotNull);
+      expect(record!.status, EventDeliveryStatus.needsAction);
+    });
 
     test('signs remote-signer events before broadcasting', () async {
       final unsignedEvent = Nip01Event(
@@ -349,32 +380,31 @@ void main() {
     });
 
     test(
-      'replays pending delivery from serialized record when event row is missing',
-      () async {
-        final serializedRecord = EventDeliveryRecord(
-          eventId: event.id,
-          status: EventDeliveryStatus.pending,
-          createdAt: event.createdAt,
-          updatedAt: event.createdAt,
-          serializedEventJson: Nip01EventModel.fromEntity(event).toJsonString(),
-        );
-        await cacheManager.saveEventDeliveryRecord(serializedRecord);
-        await cacheManager.saveRelayDeliveryTarget(
-          const RelayDeliveryTarget(
-            eventId: 'event-1',
-            relayUrl: 'wss://relay.example',
-            reason: RelayDeliveryReason.explicit,
-          ),
-        );
-        cacheManager.events.remove(event.id);
+        'replays pending delivery from serialized record when event row is missing',
+        () async {
+      final serializedRecord = EventDeliveryRecord(
+        eventId: event.id,
+        status: EventDeliveryStatus.pending,
+        createdAt: event.createdAt,
+        updatedAt: event.createdAt,
+        serializedEventJson: Nip01EventModel.fromEntity(event).toJsonString(),
+      );
+      await cacheManager.saveEventDeliveryRecord(serializedRecord);
+      await cacheManager.saveRelayDeliveryTarget(
+        const RelayDeliveryTarget(
+          eventId: 'event-1',
+          relayUrl: 'wss://relay.example',
+          reason: RelayDeliveryReason.explicit,
+        ),
+      );
+      cacheManager.events.remove(event.id);
 
-        await pendingDelivery.flushForRelay('wss://relay.example');
+      await pendingDelivery.flushForRelay('wss://relay.example');
 
-        expect(broadcast.broadcastedEvents.map((e) => e.id), [event.id]);
-        final restoredEvent = await cacheManager.loadEvent(event.id);
-        expect(restoredEvent?.content, event.content);
-      },
-    );
+      expect(broadcast.broadcastedEvents.map((e) => e.id), [event.id]);
+      final restoredEvent = await cacheManager.loadEvent(event.id);
+      expect(restoredEvent?.content, event.content);
+    });
 
     test(
       'rejected remote signing becomes needsAction and does not broadcast',
@@ -432,84 +462,81 @@ void main() {
     );
 
     test(
-      'timed out signing attempt does not block a later retry forever if the original future never completes',
-      () async {
-        await pendingDelivery.stop();
-        pendingDelivery = PendingBroadcastDelivery(
-          cacheManager: cacheManager,
-          broadcastSender: broadcast,
-          accounts: accounts,
-          signAttemptTimeout: const Duration(milliseconds: 20),
-        );
+        'timed out signing attempt does not block a later retry forever if the original future never completes',
+        () async {
+      await pendingDelivery.stop();
+      pendingDelivery = PendingBroadcastDelivery(
+        cacheManager: cacheManager,
+        broadcastSender: broadcast,
+        accounts: accounts,
+        signAttemptTimeout: const Duration(milliseconds: 20),
+      );
 
-        final hangingCompleter = Completer<Nip01Event>();
-        var signAttempts = 0;
-        final unsignedEvent = Nip01Event(
-          id: 'event-remote-timeout-stall',
-          pubKey: 'remote-timeout-stall-pubkey',
-          createdAt: 1700000250,
-          kind: Nip01Event.kTextNodeKind,
-          tags: const [],
-          content: 'first sign hangs forever',
-        );
-        final signer = _RemoteTestSigner(
-          pubKey: unsignedEvent.pubKey,
-          onSign: (event) {
-            signAttempts += 1;
-            if (signAttempts == 1) {
-              return hangingCompleter.future;
-            }
-            return Future.value(event.copyWith(sig: 'signed-after-retry'));
-          },
-        );
-        accounts.loginExternalSigner(signer: signer);
+      final hangingCompleter = Completer<Nip01Event>();
+      var signAttempts = 0;
+      final unsignedEvent = Nip01Event(
+        id: 'event-remote-timeout-stall',
+        pubKey: 'remote-timeout-stall-pubkey',
+        createdAt: 1700000250,
+        kind: Nip01Event.kTextNodeKind,
+        tags: const [],
+        content: 'first sign hangs forever',
+      );
+      final signer = _RemoteTestSigner(
+        pubKey: unsignedEvent.pubKey,
+        onSign: (event) {
+          signAttempts += 1;
+          if (signAttempts == 1) {
+            return hangingCompleter.future;
+          }
+          return Future.value(event.copyWith(sig: 'signed-after-retry'));
+        },
+      );
+      accounts.loginExternalSigner(signer: signer);
 
-        await cacheManager.saveEvent(unsignedEvent);
-        await cacheManager.saveEventDeliveryRecord(
-          EventDeliveryRecord(
-            eventId: unsignedEvent.id,
-            status: EventDeliveryStatus.pending,
-            signingState: EventSigningState.pending,
-            createdAt: unsignedEvent.createdAt,
-            updatedAt: unsignedEvent.createdAt,
-            requiresInteractiveSigning: true,
-          ),
-        );
-        await cacheManager.saveRelayDeliveryTarget(
-          const RelayDeliveryTarget(
-            eventId: 'event-remote-timeout-stall',
-            relayUrl: 'wss://relay.example',
-            reason: RelayDeliveryReason.explicit,
-          ),
-        );
+      await cacheManager.saveEvent(unsignedEvent);
+      await cacheManager.saveEventDeliveryRecord(
+        EventDeliveryRecord(
+          eventId: unsignedEvent.id,
+          status: EventDeliveryStatus.pending,
+          signingState: EventSigningState.pending,
+          createdAt: unsignedEvent.createdAt,
+          updatedAt: unsignedEvent.createdAt,
+          requiresInteractiveSigning: true,
+        ),
+      );
+      await cacheManager.saveRelayDeliveryTarget(
+        const RelayDeliveryTarget(
+          eventId: 'event-remote-timeout-stall',
+          relayUrl: 'wss://relay.example',
+          reason: RelayDeliveryReason.explicit,
+        ),
+      );
 
-        await pendingDelivery.flushForRelay('wss://relay.example');
+      await pendingDelivery.flushForRelay('wss://relay.example');
 
-        final afterTimeoutRecord = await cacheManager.loadEventDeliveryRecord(
-          unsignedEvent.id,
-        );
-        expect(
-          afterTimeoutRecord?.signingState,
-          EventSigningState.transientFailure,
-        );
-        expect(signer.signCallCount, 1);
-        expect(broadcast.broadcastedEvents, isEmpty);
+      final afterTimeoutRecord = await cacheManager.loadEventDeliveryRecord(
+        unsignedEvent.id,
+      );
+      expect(
+        afterTimeoutRecord?.signingState,
+        EventSigningState.transientFailure,
+      );
+      expect(signer.signCallCount, 1);
+      expect(broadcast.broadcastedEvents, isEmpty);
 
-        await pendingDelivery.flushForRelay('wss://relay.example');
+      await pendingDelivery.flushForRelay('wss://relay.example');
 
-        final savedEvent = await cacheManager.loadEvent(unsignedEvent.id);
-        final savedRecord = await cacheManager.loadEventDeliveryRecord(
-          unsignedEvent.id,
-        );
+      final savedEvent = await cacheManager.loadEvent(unsignedEvent.id);
+      final savedRecord = await cacheManager.loadEventDeliveryRecord(
+        unsignedEvent.id,
+      );
 
-        expect(signer.signCallCount, 2);
-        expect(savedEvent?.sig, 'signed-after-retry');
-        expect(savedRecord?.signingState, EventSigningState.signed);
-        expect(broadcast.broadcastedEvents.map((e) => e.id), [
-          unsignedEvent.id,
-        ]);
-      },
-    );
+      expect(signer.signCallCount, 2);
+      expect(savedEvent?.sig, 'signed-after-retry');
+      expect(savedRecord?.signingState, EventSigningState.signed);
+      expect(broadcast.broadcastedEvents.map((e) => e.id), [unsignedEvent.id]);
+    });
 
     test(
       'skips network signer attempt while signer transport relays are offline',
@@ -572,70 +599,67 @@ void main() {
     );
 
     test(
-      'transport relay opening retries network signing and immediately flushes connected targets',
-      () async {
-        pendingDelivery.startPeriodicRetry(
-          connectedRelayUrls: () => const <String>{
-            'wss://bunker-relay.example',
-            'wss://target-relay.example',
-          },
-          reconnectRelay: (_) async => false,
-          retryInterval: const Duration(hours: 1),
-        );
-
-        final unsignedEvent = Nip01Event(
-          id: 'event-bunker-online',
-          pubKey: 'bunker-online-pubkey',
-          createdAt: 1700000400,
-          kind: Nip01Event.kTextNodeKind,
-          tags: const [],
-          content: 'online bunker',
-        );
-        final signer = _RemoteTestSigner(
-          pubKey: unsignedEvent.pubKey,
-          requiresSignerNetwork: true,
-          transportRelayUrls: const ['wss://bunker-relay.example'],
-          onSign: (event) async => event.copyWith(sig: 'bunker-sig'),
-        );
-        accounts.loginExternalSigner(signer: signer);
-
-        await cacheManager.saveEvent(unsignedEvent);
-        await cacheManager.saveEventDeliveryRecord(
-          EventDeliveryRecord(
-            eventId: unsignedEvent.id,
-            status: EventDeliveryStatus.pending,
-            signingState: EventSigningState.pending,
-            createdAt: unsignedEvent.createdAt,
-            updatedAt: unsignedEvent.createdAt,
-            requiresInteractiveSigning: true,
-          ),
-        );
-        await cacheManager.saveRelayDeliveryTarget(
-          const RelayDeliveryTarget(
-            eventId: 'event-bunker-online',
-            relayUrl: 'wss://target-relay.example',
-            reason: RelayDeliveryReason.explicit,
-          ),
-        );
-
-        await pendingDelivery.retryInteractiveSigningForTransportRelay(
+        'transport relay opening retries network signing and immediately flushes connected targets',
+        () async {
+      pendingDelivery.startPeriodicRetry(
+        connectedRelayUrls: () => const <String>{
           'wss://bunker-relay.example',
-        );
+          'wss://target-relay.example',
+        },
+        reconnectRelay: (_) async => false,
+        retryInterval: const Duration(hours: 1),
+      );
 
-        final savedEvent = await cacheManager.loadEvent(unsignedEvent.id);
-        final savedRecord = await cacheManager.loadEventDeliveryRecord(
-          unsignedEvent.id,
-        );
+      final unsignedEvent = Nip01Event(
+        id: 'event-bunker-online',
+        pubKey: 'bunker-online-pubkey',
+        createdAt: 1700000400,
+        kind: Nip01Event.kTextNodeKind,
+        tags: const [],
+        content: 'online bunker',
+      );
+      final signer = _RemoteTestSigner(
+        pubKey: unsignedEvent.pubKey,
+        requiresSignerNetwork: true,
+        transportRelayUrls: const ['wss://bunker-relay.example'],
+        onSign: (event) async => event.copyWith(sig: 'bunker-sig'),
+      );
+      accounts.loginExternalSigner(signer: signer);
 
-        expect(signer.signCallCount, 1);
-        expect(savedEvent?.sig, 'bunker-sig');
-        expect(savedRecord?.signingState, EventSigningState.signed);
-        expect(broadcast.broadcastedEvents.map((e) => e.id), [
-          unsignedEvent.id,
-        ]);
-        expect(broadcast.broadcastedEvents.single.sig, 'bunker-sig');
-      },
-    );
+      await cacheManager.saveEvent(unsignedEvent);
+      await cacheManager.saveEventDeliveryRecord(
+        EventDeliveryRecord(
+          eventId: unsignedEvent.id,
+          status: EventDeliveryStatus.pending,
+          signingState: EventSigningState.pending,
+          createdAt: unsignedEvent.createdAt,
+          updatedAt: unsignedEvent.createdAt,
+          requiresInteractiveSigning: true,
+        ),
+      );
+      await cacheManager.saveRelayDeliveryTarget(
+        const RelayDeliveryTarget(
+          eventId: 'event-bunker-online',
+          relayUrl: 'wss://target-relay.example',
+          reason: RelayDeliveryReason.explicit,
+        ),
+      );
+
+      await pendingDelivery.retryInteractiveSigningForTransportRelay(
+        'wss://bunker-relay.example',
+      );
+
+      final savedEvent = await cacheManager.loadEvent(unsignedEvent.id);
+      final savedRecord = await cacheManager.loadEventDeliveryRecord(
+        unsignedEvent.id,
+      );
+
+      expect(signer.signCallCount, 1);
+      expect(savedEvent?.sig, 'bunker-sig');
+      expect(savedRecord?.signingState, EventSigningState.signed);
+      expect(broadcast.broadcastedEvents.map((e) => e.id), [unsignedEvent.id]);
+      expect(broadcast.broadcastedEvents.single.sig, 'bunker-sig');
+    });
 
     test(
       'non-matching transport relay opening does not retry network signer',
@@ -757,54 +781,53 @@ void main() {
     );
 
     test(
-      'non-network interactive signer transient failure uses faster retry backoff',
-      () async {
-        final unsignedEvent = Nip01Event(
-          id: 'event-local-backoff',
-          pubKey: 'local-backoff-pubkey',
-          createdAt: 1700000700,
-          kind: Nip01Event.kTextNodeKind,
-          tags: const [],
-          content: 'backoff local',
-        );
-        final signer = _RemoteTestSigner(
-          pubKey: unsignedEvent.pubKey,
-          requiresSignerNetwork: false,
-          onSign: (_) => Future.error(Exception('temporary local failure')),
-        );
-        accounts.loginExternalSigner(signer: signer);
+        'non-network interactive signer transient failure uses faster retry backoff',
+        () async {
+      final unsignedEvent = Nip01Event(
+        id: 'event-local-backoff',
+        pubKey: 'local-backoff-pubkey',
+        createdAt: 1700000700,
+        kind: Nip01Event.kTextNodeKind,
+        tags: const [],
+        content: 'backoff local',
+      );
+      final signer = _RemoteTestSigner(
+        pubKey: unsignedEvent.pubKey,
+        requiresSignerNetwork: false,
+        onSign: (_) => Future.error(Exception('temporary local failure')),
+      );
+      accounts.loginExternalSigner(signer: signer);
 
-        await cacheManager.saveEvent(unsignedEvent);
-        await cacheManager.saveEventDeliveryRecord(
-          EventDeliveryRecord(
-            eventId: unsignedEvent.id,
-            status: EventDeliveryStatus.pending,
-            signingState: EventSigningState.pending,
-            createdAt: unsignedEvent.createdAt,
-            updatedAt: unsignedEvent.createdAt,
-            requiresInteractiveSigning: true,
-          ),
-        );
-        await cacheManager.saveRelayDeliveryTarget(
-          const RelayDeliveryTarget(
-            eventId: 'event-local-backoff',
-            relayUrl: 'wss://target-relay.example',
-            reason: RelayDeliveryReason.explicit,
-          ),
-        );
+      await cacheManager.saveEvent(unsignedEvent);
+      await cacheManager.saveEventDeliveryRecord(
+        EventDeliveryRecord(
+          eventId: unsignedEvent.id,
+          status: EventDeliveryStatus.pending,
+          signingState: EventSigningState.pending,
+          createdAt: unsignedEvent.createdAt,
+          updatedAt: unsignedEvent.createdAt,
+          requiresInteractiveSigning: true,
+        ),
+      );
+      await cacheManager.saveRelayDeliveryTarget(
+        const RelayDeliveryTarget(
+          eventId: 'event-local-backoff',
+          relayUrl: 'wss://target-relay.example',
+          reason: RelayDeliveryReason.explicit,
+        ),
+      );
 
-        await pendingDelivery.flushForRelay('wss://target-relay.example');
+      await pendingDelivery.flushForRelay('wss://target-relay.example');
 
-        final savedRecord = await cacheManager.loadEventDeliveryRecord(
-          unsignedEvent.id,
-        );
+      final savedRecord = await cacheManager.loadEventDeliveryRecord(
+        unsignedEvent.id,
+      );
 
-        expect(savedRecord?.signingState, EventSigningState.transientFailure);
-        expect(savedRecord, isNotNull);
-        expect(savedRecord!.nextSignRetryAt, isNotNull);
-        expect(savedRecord.nextSignRetryAt! - savedRecord.updatedAt, 5);
-      },
-    );
+      expect(savedRecord?.signingState, EventSigningState.transientFailure);
+      expect(savedRecord, isNotNull);
+      expect(savedRecord!.nextSignRetryAt, isNotNull);
+      expect(savedRecord.nextSignRetryAt! - savedRecord.updatedAt, 5);
+    });
   });
 }
 
@@ -812,15 +835,15 @@ class RecordingBroadcastSender extends BroadcastSender {
   final List<Nip01Event> broadcastedEvents = [];
 
   RecordingBroadcastSender({required MemCacheManager cacheManager})
-    : super(
-        globalState: GlobalState(),
-        cacheManager: cacheManager,
-        networkEngine: _ThrowingNetworkEngine(),
-        accounts: Accounts(_DummySignerFactory()),
-        considerDonePercent: 1,
-        timeout: const Duration(seconds: 1),
-        saveToCache: true,
-      );
+      : super(
+          globalState: GlobalState(),
+          cacheManager: cacheManager,
+          networkEngine: _ThrowingNetworkEngine(),
+          accounts: Accounts(_DummySignerFactory()),
+          considerDonePercent: 1,
+          timeout: const Duration(seconds: 1),
+          saveToCache: true,
+        );
 
   @override
   NdkBroadcastResponse broadcast({
@@ -901,7 +924,8 @@ class _DummySigner implements EventSigner {
   Future<String?> decryptNip44({
     required String ciphertext,
     required String senderPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   Future<void> dispose() async {}
@@ -914,7 +938,8 @@ class _DummySigner implements EventSigner {
   Future<String?> encryptNip44({
     required String plaintext,
     required String recipientPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   String getPublicKey() => pubKey;
@@ -944,9 +969,9 @@ class _RemoteTestSigner implements EventSigner {
     bool requiresSignerNetwork = false,
     List<String>? transportRelayUrls,
     List<PendingSignerRequest>? pendingRequests,
-  }) : _pendingRequests = pendingRequests ?? [],
-       _requiresSignerNetwork = requiresSignerNetwork,
-       _transportRelayUrls = transportRelayUrls ?? const [];
+  })  : _pendingRequests = pendingRequests ?? [],
+        _requiresSignerNetwork = requiresSignerNetwork,
+        _transportRelayUrls = transportRelayUrls ?? const [];
 
   @override
   bool get requiresInteractiveSigning => true;
@@ -972,7 +997,8 @@ class _RemoteTestSigner implements EventSigner {
   Future<String?> decryptNip44({
     required String ciphertext,
     required String senderPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   Future<void> dispose() async {}
@@ -985,7 +1011,8 @@ class _RemoteTestSigner implements EventSigner {
   Future<String?> encryptNip44({
     required String plaintext,
     required String recipientPubKey,
-  }) async => null;
+  }) async =>
+      null;
 
   @override
   String getPublicKey() => pubKey;

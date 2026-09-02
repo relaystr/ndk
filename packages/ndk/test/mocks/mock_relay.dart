@@ -48,10 +48,10 @@ class MockRelay {
 
   /// subscription ids carried by connections authenticated as [pubkey]
   Set<String> subscriptionsAuthenticatedAs(String pubkey) => {
-    for (final entry in _clientSubscriptions.entries)
-      if (_authenticatedPubkeys[entry.key]?.contains(pubkey) ?? false)
-        ...entry.value.keys,
-  };
+        for (final entry in _clientSubscriptions.entries)
+          if (_authenticatedPubkeys[entry.key]?.contains(pubkey) ?? false)
+            ...entry.value.keys,
+      };
 
   /// every REQ received per socket, recorded even when the relay refuses it
   final Map<WebSocket, Set<String>> _requestedSubscriptions = {};
@@ -59,10 +59,10 @@ class MockRelay {
   /// subscription ids that were requested on a connection which is not
   /// authenticated as [pubkey], whether or not the relay served them
   Set<String> subscriptionsRequestedOutside(String pubkey) => {
-    for (final entry in _requestedSubscriptions.entries)
-      if (!(_authenticatedPubkeys[entry.key]?.contains(pubkey) ?? false))
-        ...entry.value,
-  };
+        for (final entry in _requestedSubscriptions.entries)
+          if (!(_authenticatedPubkeys[entry.key]?.contains(pubkey) ?? false))
+            ...entry.value,
+      };
 
   /// how many live connections are authenticated as [pubkey]
   int connectionsAuthenticatedAs(String pubkey) => _authenticatedPubkeys.values
@@ -70,15 +70,15 @@ class MockRelay {
       .length;
 
   /// how many connections carried a REQ for [subscriptionId]
-  int connectionsThatRequested(String subscriptionId) => _requestedSubscriptions
-      .values
-      .where((ids) => ids.contains(subscriptionId))
-      .length;
+  int connectionsThatRequested(String subscriptionId) =>
+      _requestedSubscriptions.values
+          .where((ids) => ids.contains(subscriptionId))
+          .length;
 
   int get activeSubscriptionCount => _clientSubscriptions.values.fold<int>(
-    0,
-    (count, subscriptions) => count + subscriptions.length,
-  );
+        0,
+        (count, subscriptions) => count + subscriptions.length,
+      );
   bool signEvents;
   bool requireAuthForRequests;
   bool requireAuthForEvents;
@@ -188,9 +188,9 @@ class MockRelay {
     this.silenceRequests = false,
     this.silenceFirstAuths = 0,
     int? explicitPort,
-  }) : _nip65s = nip65s,
-       _explicitPort = explicitPort,
-       _port = explicitPort ?? _pickRandomPort();
+  })  : _nip65s = nip65s,
+        _explicitPort = explicitPort,
+        _port = explicitPort ?? _pickRandomPort();
 
   Future<void> startServer({
     Map<KeyPair, Nip65>? nip65s,
@@ -611,8 +611,7 @@ class MockRelay {
           _nip85Assertions.values.where((e) {
             bool kindMatches = filter.kinds!.contains(e.kind);
             bool authorMatches = filter.authors!.contains(e.pubKey);
-            bool dTagMatches =
-                filter.dTags == null ||
+            bool dTagMatches = filter.dTags == null ||
                 filter.dTags!.isEmpty ||
                 filter.dTags!.contains(e.getDtag());
             return kindMatches && authorMatches && dTagMatches;
@@ -625,8 +624,7 @@ class MockRelay {
           _storedEvents.where((event) {
             bool kindMatches =
                 filter.kinds == null || filter.kinds!.contains(event.kind);
-            bool authorMatches =
-                filter.authors == null ||
+            bool authorMatches = filter.authors == null ||
                 filter.authors!.contains(event.pubKey);
             bool idsMatches =
                 filter.ids == null || filter.ids!.contains(event.id);
@@ -640,8 +638,7 @@ class MockRelay {
             textNotes!.values.where((event) {
               bool kindMatches =
                   filter.kinds == null || filter.kinds!.contains(event.kind);
-              bool authorMatches =
-                  filter.authors == null ||
+              bool authorMatches = filter.authors == null ||
                   filter.authors!.contains(event.pubKey);
               bool idsMatches =
                   filter.ids == null || filter.ids!.contains(event.id);
@@ -658,8 +655,8 @@ class MockRelay {
           if (filter.authors != null &&
               filter.authors!.contains(entry.key.publicKey) &&
               (filter.kinds == null || filter.kinds!.contains(Nip65.kKind))) {
-            Nip01Event eventToAdd = entry.value
-                .toEvent(); // Creates a new event instance
+            Nip01Event eventToAdd =
+                entry.value.toEvent(); // Creates a new event instance
             if (!_matchesTimeFilter(eventToAdd, filter)) continue;
             final Nip01Event? eventToAddSigned;
             if (signEvents && entry.key.privateKey != null) {
@@ -684,11 +681,9 @@ class MockRelay {
       // For now, ensuring signing is handled correctly if events are matched here.
       if (textNotes != null) {
         for (final entry in textNotes!.entries) {
-          bool authorsMatch =
-              filter.authors != null &&
+          bool authorsMatch = filter.authors != null &&
               filter.authors!.contains(entry.key.publicKey);
-          bool kindsMatch =
-              filter.kinds == null ||
+          bool kindsMatch = filter.kinds == null ||
               filter.kinds!.contains(entry.value.kind) ||
               (entry.value.kind == Nip01Event.kTextNodeKind &&
                   filter.kinds!.contains(Nip01Event.kTextNodeKind)) ||
@@ -1055,7 +1050,7 @@ class MockRelay {
             content: signEventContentOverride ?? eventData["content"] ?? "",
             createdAt:
                 (eventData["created_at"] ?? eventData["createdAt"] ?? 0) +
-                signEventCreatedAtOffsetSeconds,
+                    signEventCreatedAtOffsetSeconds,
           );
 
           final Nip01Event signedEvent = Nip01Utils.signWithPrivateKey(

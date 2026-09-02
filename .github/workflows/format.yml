@@ -2,8 +2,13 @@ name: format
 
 on:
   push:
+    branches: [master]
   pull_request:
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   dart-format:
@@ -14,5 +19,17 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Dart
         uses: dart-lang/setup-dart@v1
+        with:
+          # Pin to the Dart version bundled with Flutter stable so CI
+          # formatting matches local dev. Unpinned "latest" breaks CI
+          # whenever a new Dart stable changes formatter output.
+          sdk: 3.13.0
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Resolve workspace packages
+        run: flutter pub get
       - name: Check Dart formatting
         run: dart format --set-exit-if-changed --output=none .

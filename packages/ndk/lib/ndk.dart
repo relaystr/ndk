@@ -42,6 +42,7 @@ export 'domain_layer/usecases/nwc/responses/lookup_invoice_response.dart';
 export 'domain_layer/usecases/nwc/nwc_connection.dart';
 export 'domain_layer/usecases/nwc/nostr_wallet_connect_uri.dart';
 export 'domain_layer/usecases/nwc/consts/nwc_method.dart';
+export 'domain_layer/usecases/nwc/consts/nwc_extension.dart';
 export 'domain_layer/usecases/nwc/consts/budget_renewal_period.dart';
 export 'domain_layer/entities/blossom_blobs.dart';
 export 'domain_layer/entities/blossom_strategies.dart';
@@ -51,6 +52,8 @@ export 'domain_layer/entities/cache_eviction.dart';
 export 'domain_layer/entities/event_cache_records.dart';
 export 'domain_layer/entities/event_delivery_inspection.dart';
 export 'domain_layer/entities/nip_17_conversation.dart';
+export 'domain_layer/entities/nip_17_message.dart';
+export 'domain_layer/entities/nip_17_file_message.dart';
 export '';
 
 export 'domain_layer/entities/account.dart';

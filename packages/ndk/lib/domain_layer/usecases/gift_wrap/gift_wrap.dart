@@ -160,6 +160,8 @@ class GiftWrap {
       throw Exception("Event is not a gift wrap (kind:1059)");
     }
 
+    final isGiftWrapSignatureValid = await eventVerifier.verify(giftWrap);
+
     final sealEvent = await unwrapEvent(
       wrappedEvent: giftWrap,
       customSigner: customSigner,
@@ -176,7 +178,9 @@ class GiftWrap {
     );
 
     return GiftWrapUnwrapResult(
+      isGiftWrapSignatureValid: isGiftWrapSignatureValid,
       isSealSignatureValid: isSealSignatureValid,
+      giftWrap: giftWrap,
       seal: sealEvent,
       rumor: rumor,
     );
@@ -321,8 +325,7 @@ class GiftWrap {
       tags.addAll(additionalTags);
     }
 
-    final giftWrapCreatedAt =
-        createdAt ??
+    final giftWrapCreatedAt = createdAt ??
         (randomizeCreatedAtBefore != null
             ? _randomCreatedAtBefore(randomizeCreatedAtBefore)
             : sealEvent.createdAt);

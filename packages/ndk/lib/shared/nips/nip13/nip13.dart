@@ -1,4 +1,5 @@
 import 'dart:math';
+
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../isolates/isolate_manager.dart';
 
@@ -46,13 +47,13 @@ class Nip13 {
   }) async {
     return await IsolateManager.instance
         .runInComputeIsolate<_MiningParams, Nip01Event>(
-          _mineEventInIsolate,
-          _MiningParams(
-            event: event,
-            targetDifficulty: targetDifficulty,
-            maxIterations: maxIterations ?? 1000000,
-          ),
-        );
+      _mineEventInIsolate,
+      _MiningParams(
+        event: event,
+        targetDifficulty: targetDifficulty,
+        maxIterations: maxIterations ?? 1000000,
+      ),
+    );
   }
 
   static Nip01Event _mineEventInIsolate(_MiningParams params) {

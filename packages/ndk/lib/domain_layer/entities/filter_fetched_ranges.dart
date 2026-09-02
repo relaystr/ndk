@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+
 import 'package:crypto/crypto.dart';
 
 import 'filter.dart';
@@ -184,11 +185,11 @@ class FilterFetchedRangeRecord {
       'FilterFetchedRangeRecord($filterHash, $relayUrl, $rangeStart-$rangeEnd)';
 
   Map<String, dynamic> toJson() => {
-    'filterHash': filterHash,
-    'relayUrl': relayUrl,
-    'rangeStart': rangeStart,
-    'rangeEnd': rangeEnd,
-  };
+        'filterHash': filterHash,
+        'relayUrl': relayUrl,
+        'rangeStart': rangeStart,
+        'rangeEnd': rangeEnd,
+      };
 
   factory FilterFetchedRangeRecord.fromJson(Map<String, dynamic> json) =>
       FilterFetchedRangeRecord(

@@ -1,9 +1,10 @@
 import 'dart:typed_data';
 import 'dart:convert';
+
 import 'package:crypto/crypto.dart';
 
 import 'package:convert/convert.dart';
-import 'package:ndk_bip32_keys/ndk_bip32_keys.dart';
+import 'package:bip32_keys/bip32_keys.dart';
 
 import '../../../domain_layer/repositories/cashu_key_derivation.dart';
 import '../../../domain_layer/usecases/cashu/cashu_seed.dart';

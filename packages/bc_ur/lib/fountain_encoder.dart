@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'dart:typed_data';
+
 import 'package:ur/cbor_lite.dart';
 import 'package:ur/fountain_utils.dart';
 import 'package:ur/utils.dart';
@@ -69,22 +70,22 @@ class FountainEncoder {
     int maxFragmentLen, {
     int firstSeqNum = 0,
     int minFragmentLen = 10,
-  }) : messageLen = message.length,
-       checksum = crc32Int(message),
-       fragmentLen = findNominalFragmentLength(
-         message.length,
-         minFragmentLen,
-         maxFragmentLen,
-       ),
-       fragments = partitionMessage(
-         message,
-         findNominalFragmentLength(
-           message.length,
-           minFragmentLen,
-           maxFragmentLen,
-         ),
-       ),
-       seqNum = firstSeqNum {
+  })  : messageLen = message.length,
+        checksum = crc32Int(message),
+        fragmentLen = findNominalFragmentLength(
+          message.length,
+          minFragmentLen,
+          maxFragmentLen,
+        ),
+        fragments = partitionMessage(
+          message,
+          findNominalFragmentLength(
+            message.length,
+            minFragmentLen,
+            maxFragmentLen,
+          ),
+        ),
+        seqNum = firstSeqNum {
     assert(message.length <= MAX_UINT32);
   }
 
@@ -99,11 +100,9 @@ class FountainEncoder {
     int maxFragmentCount = messageLen ~/ minFragmentLen;
     int fragmentLen = messageLen;
 
-    for (
-      int fragmentCount = 1;
-      fragmentCount <= maxFragmentCount;
-      fragmentCount++
-    ) {
+    for (int fragmentCount = 1;
+        fragmentCount <= maxFragmentCount;
+        fragmentCount++) {
       fragmentLen = (messageLen / fragmentCount).ceil();
       if (fragmentLen <= maxFragmentLen) {
         break;

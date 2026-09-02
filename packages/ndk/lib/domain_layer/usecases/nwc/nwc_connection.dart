@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:ndk/ndk.dart';
+
 import 'nwc_notification.dart';
 
 import 'responses/nwc_response.dart';
@@ -22,19 +23,19 @@ class NwcConnection {
   StreamController<NwcNotification> notificationStream =
       StreamController<NwcNotification>.broadcast();
 
-  Stream<NwcNotification> get paymentsReceivedStream => notificationStream
-      .stream
-      .where((notification) => notification.isPaymentReceived)
-      .asBroadcastStream();
+  Stream<NwcNotification> get paymentsReceivedStream =>
+      notificationStream.stream
+          .where((notification) => notification.isPaymentReceived)
+          .asBroadcastStream();
 
   Stream<NwcNotification> get paymentsSentStream => notificationStream.stream
       .where((notification) => notification.isPaymentSent)
       .asBroadcastStream();
 
-  Stream<NwcNotification> get holdInvoiceStateStream => notificationStream
-      .stream
-      .where((notification) => notification.isHoldInvoiceAccepted)
-      .asBroadcastStream();
+  Stream<NwcNotification> get holdInvoiceStateStream =>
+      notificationStream.stream
+          .where((notification) => notification.isHoldInvoiceAccepted)
+          .asBroadcastStream();
 
   /// listen
   void listen(void Function(Nip01Event event)? onData) {
@@ -58,6 +59,20 @@ class NwcConnection {
 
   List<String> supportedVersions = ["0.0"];
   List<String> supportedEncryptions = ["nip04"];
+
+  /// Optional NWC extension specifications advertised by the wallet service.
+  Set<NwcExtension> supportedExtensions = {};
+
+  /// Adds extension identifiers advertised by an info event or `get_info`.
+  /// Unknown identifiers are ignored for forward compatibility.
+  void addSupportedExtensions(Iterable<String> identifiers) {
+    supportedExtensions.addAll(NwcExtension.fromIdentifiers(identifiers));
+  }
+
+  /// Whether the wallet service advertises support for [extension].
+  bool supportsExtension(NwcExtension extension) {
+    return supportedExtensions.contains(extension);
+  }
 
   Set<String> permissions = {};
   final LocalEventSignerFactory eventSignerFactory;

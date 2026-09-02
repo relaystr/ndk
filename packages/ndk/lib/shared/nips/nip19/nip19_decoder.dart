@@ -125,8 +125,7 @@ class Nip19Decoder {
           break;
         case 3: // kind
           if (t.value.length == 4) {
-            kind =
-                (t.value[0] << 24) |
+            kind = (t.value[0] << 24) |
                 (t.value[1] << 16) |
                 (t.value[2] << 8) |
                 t.value[3];
@@ -193,8 +192,7 @@ class Nip19Decoder {
           break;
         case 3: // kind
           if (t.value.length == 4) {
-            kind =
-                (t.value[0] << 24) |
+            kind = (t.value[0] << 24) |
                 (t.value[1] << 16) |
                 (t.value[2] << 8) |
                 t.value[3];

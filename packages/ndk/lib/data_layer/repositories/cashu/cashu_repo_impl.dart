@@ -73,14 +73,13 @@ class CashuRepoImpl implements CashuRepo {
   }) async {
     final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'keysets');
 
-    final response = await client
-        .get(url: Uri.parse(url), headers: headers)
-        .timeout(
-          CashuConfig.NETWORK_TIMEOUT,
-          onTimeout: () => throw Exception(
-            'Network timeout: Unable to reach mint at $mintUrl. The mint may be offline.',
-          ),
-        );
+    final response =
+        await client.get(url: Uri.parse(url), headers: headers).timeout(
+              CashuConfig.NETWORK_TIMEOUT,
+              onTimeout: () => throw Exception(
+                'Network timeout: Unable to reach mint at $mintUrl. The mint may be offline.',
+              ),
+            );
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -117,14 +116,13 @@ class CashuRepoImpl implements CashuRepo {
       url = baseUrl;
     }
 
-    final response = await client
-        .get(url: Uri.parse(url), headers: headers)
-        .timeout(
-          CashuConfig.NETWORK_TIMEOUT,
-          onTimeout: () => throw Exception(
-            'Network timeout: Unable to reach mint at $mintUrl. The mint may be offline.',
-          ),
-        );
+    final response =
+        await client.get(url: Uri.parse(url), headers: headers).timeout(
+              CashuConfig.NETWORK_TIMEOUT,
+              onTimeout: () => throw Exception(
+                'Network timeout: Unable to reach mint at $mintUrl. The mint may be offline.',
+              ),
+            );
     if (response.statusCode != 200) {
       throw Exception(
         'Error fetching keys: ${response.statusCode}, ${response.body}',

@@ -77,11 +77,11 @@ class RelayManager<T> {
 
   /// Handler for NIP-77 NEG-MSG messages
   void Function(String subscriptionId, String relayUrl, String payload)?
-  onNegMsg;
+      onNegMsg;
 
   /// Handler for NIP-77 NEG-ERR messages
   void Function(String subscriptionId, String relayUrl, String errorMsg)?
-  onNegErr;
+      onNegErr;
 
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
@@ -164,12 +164,11 @@ class RelayManager<T> {
   /// relay would duplicate the request, and sending on a bound one would make
   /// it attributable. An identity is added later, by the re-route, and only on
   /// the relays that ask for one.
-  List<RelayConnectivity> get connectedAnonymousRelays => globalState
-      .relays
-      .values
-      .where((connectivity) => connectivity.key.isAnonymous)
-      .where((connectivity) => connectivity.isConnected)
-      .toList();
+  List<RelayConnectivity> get connectedAnonymousRelays =>
+      globalState.relays.values
+          .where((connectivity) => connectivity.key.isAnonymous)
+          .where((connectivity) => connectivity.isConnected)
+          .toList();
 
   /// checks if a relay is connected, avoid using this
   bool isRelayConnected(String url) =>
@@ -368,11 +367,12 @@ class RelayManager<T> {
     String url, {
     required ConnectionSource connectionSource,
     bool force = false,
-  }) => reconnectConnection(
-    RelayConnectionKey.anonymous(url),
-    connectionSource: connectionSource,
-    force: force,
-  );
+  }) =>
+      reconnectConnection(
+        RelayConnectionKey.anonymous(url),
+        connectionSource: connectionSource,
+        force: force,
+      );
 
   /// Reconnects the connection identified by [key], if it is closed. An
   /// authenticated connection comes back authenticated or not at all.
@@ -433,7 +433,8 @@ class RelayManager<T> {
       if (!(await connectRelay(
         dirtyUrl: key.url,
         connectionSource: connectionSource,
-      )).first) {
+      ))
+          .first) {
         // could not connect
         return false;
       }
@@ -783,9 +784,9 @@ class RelayManager<T> {
     try {
       nostrMsg = await IsolateManager.instance
           .runInEncodingIsolate<String, NostrMessageRaw>(
-            decodeNostrMsg,
-            message,
-          );
+        decodeNostrMsg,
+        message,
+      );
     } catch (e) {
       // Isolates not available on web
       nostrMsg = decodeNostrMsg(message);
@@ -843,14 +844,13 @@ class RelayManager<T> {
         // Check if this is auth-required for a broadcast - don't mark as done, will retry
         if (msg != null && msg.startsWith("auth-required")) {
           _handleBroadcastAuthRequired(eventId, relayConnectivity);
-          return Future.value(); // Don't add to network controller yet, wait for retry result
+          return Future
+              .value(); // Don't add to network controller yet, wait for retry result
         }
       }
       if (globalState.inFlightBroadcasts[eventId] != null &&
           !globalState
-              .inFlightBroadcasts[eventId]!
-              .networkController
-              .isClosed) {
+              .inFlightBroadcasts[eventId]!.networkController.isClosed) {
         globalState.inFlightBroadcasts[eventId]?.networkController.add(
           RelayBroadcastResponse(
             relayUrl: relayConnectivity.url,
@@ -876,8 +876,7 @@ class RelayManager<T> {
       // Check if this is a negentropy-related error
       // Look for various patterns relays might use to reject NEG commands
       final noticeLower = noticeMsg.toLowerCase();
-      final isNegentropyError =
-          noticeLower.contains('negentropy') ||
+      final isNegentropyError = noticeLower.contains('negentropy') ||
           noticeLower.contains('neg-') ||
           noticeLower.contains('unsupported') ||
           noticeLower.contains('unknown command') ||
@@ -1526,9 +1525,8 @@ class RelayManager<T> {
     /// request left on it would wait for a socket nobody will reopen. One that
     /// is retrying its authentication is the exception: its replacement is on
     /// its way and owes it a replay.
-    final myNotConnectedRelays = state.requests.keys
-        .where((key) => !isConnectionOpen(key))
-        .toList();
+    final myNotConnectedRelays =
+        state.requests.keys.where((key) => !isConnectionOpen(key)).toList();
 
     final bool didAllRelaysFinish = state.requests.values.every(
       (element) =>

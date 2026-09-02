@@ -27,12 +27,12 @@ class CacheEvictionScheduler {
     required Duration interval,
     required bool runOnStartup,
     void Function(EvictionResult result)? onRunCompleted,
-  }) : _cacheManager = cacheManager,
-       _policy = policy,
-       _startupDelay = startupDelay,
-       _interval = interval,
-       _runOnStartup = runOnStartup,
-       _onRunCompleted = onRunCompleted;
+  })  : _cacheManager = cacheManager,
+        _policy = policy,
+        _startupDelay = startupDelay,
+        _interval = interval,
+        _runOnStartup = runOnStartup,
+        _onRunCompleted = onRunCompleted;
 
   /// Starts startup and periodic timers.
   void start() {

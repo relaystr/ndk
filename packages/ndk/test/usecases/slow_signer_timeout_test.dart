@@ -64,18 +64,17 @@ void main() {
       final key = Bip340.generatePrivateKey();
       final relay = MockRelay(name: "relay", requireAuthForRequests: true);
 
-      final testEvent =
-          await Bip340EventSigner(
-            privateKey: key.privateKey!,
-            publicKey: key.publicKey,
-          ).sign(
-            Nip01Event(
-              pubKey: key.publicKey,
-              kind: Nip01Event.kTextNodeKind,
-              tags: [],
-              content: "test event",
-            ),
-          );
+      final testEvent = await Bip340EventSigner(
+        privateKey: key.privateKey!,
+        publicKey: key.publicKey,
+      ).sign(
+        Nip01Event(
+          pubKey: key.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: [],
+          content: "test event",
+        ),
+      );
 
       await relay.startServer(textNotes: {key: testEvent});
 

@@ -1,9 +1,12 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:test/test.dart';
 
-import '../../mocks/mock_event_verifier.dart';
 import '../../mocks/mock_relay.dart';
 
 /// Tests for the NIP-17 [Dms] usecase.
@@ -30,7 +33,7 @@ void main() async {
 
       final cache = MemCacheManager();
       final config = NdkConfig(
-        eventVerifier: MockEventVerifier(),
+        eventVerifier: Bip340EventVerifier(useIsolate: false),
         cache: cache,
         engine: NdkEngine.RELAY_SETS,
         bootstrapRelays: [relay.url],
@@ -82,6 +85,37 @@ void main() async {
       );
     });
 
+    test('publishDmRelays normalizes, signs, and publishes kind 10050',
+        () async {
+      await ndk.dms.publishDmRelays(
+        relayUrlsOrdered: [relay.url, '${relay.url}/'],
+        broadcastRelays: [relay.url],
+      );
+
+      final event = relay.receivedEvents
+          .where((event) => event.kind == Nip51List.kDmRelays)
+          .single;
+      expect(event.pubKey, alice.publicKey);
+      expect(event.sig, isNotEmpty);
+      expect(event.content, isEmpty);
+      expect(event.tags, [
+        ['relay', relay.url],
+      ]);
+    });
+
+    test('publishDmRelays rejects invalid and empty relay lists', () async {
+      expect(
+        () => ndk.dms.publishDmRelays(
+          relayUrlsOrdered: const ['https://not-a-relay.example'],
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => ndk.dms.publishDmRelays(relayUrlsOrdered: const []),
+        throwsArgumentError,
+      );
+    });
+
     test('sendMessage throws when sender has no DM relays', () async {
       // Alice logged in but has no kind 10050 anywhere
       await expectLater(
@@ -97,6 +131,101 @@ void main() async {
         ndk.dms.sendMessage(recipientPubKey: bob.publicKey, content: 'hi'),
         throwsA(isA<Exception>()),
       );
+    });
+
+    test('legacy NIP-04 is explicit and works without NIP-17 relay lists',
+        () async {
+      await ndk.dms.sendLegacyNip04Message(
+        recipientPubKey: bob.publicKey,
+        content: 'legacy compatibility text',
+        rendezvousRelays: [relay.url],
+      );
+
+      final event = relay.receivedEvents.singleWhere(
+        (event) => event.kind == Dms.kLegacyNip04MessageKind,
+      );
+      expect(event.pubKey, alice.publicKey);
+      expect(event.pTags, [bob.publicKey]);
+      expect(event.content, isNot(contains('legacy compatibility text')));
+      expect(event.tags, hasLength(1));
+      expect(event.sig, isNotNull);
+      expect(
+        event.id,
+        Nip01Utils.calculateEventIdSync(
+          pubKey: event.pubKey,
+          createdAt: event.createdAt,
+          kind: event.kind,
+          tags: event.tags,
+          content: event.content,
+        ),
+      );
+
+      ndk.accounts.logout();
+      ndk.accounts.loginPrivateKey(
+        pubkey: bob.publicKey,
+        privkey: bob.privateKey!,
+      );
+      // Keep this test deterministic: relay-query behaviour itself is covered
+      // by the request usecase, while the DM usecase must also parse cached
+      // legacy events after a restart/account switch.
+      await ndk.config.cache.saveEvent(event);
+      final messages = await ndk.dms.loadLegacyNip04Conversation(
+        peerPubKey: alice.publicKey,
+        rendezvousRelays: [relay.url],
+        timeout: const Duration(seconds: 10),
+      );
+      expect(messages, hasLength(1));
+      expect(messages.single.content, 'legacy compatibility text');
+      expect(messages.single.peerPubKey, alice.publicKey);
+      expect(messages.single.isOutgoing, isFalse);
+    });
+
+    test('legacy NIP-04 requires an explicit rendezvous relay', () async {
+      expect(
+        () => ndk.dms.sendLegacyNip04Message(
+          recipientPubKey: bob.publicKey,
+          content: 'not sent',
+          rendezvousRelays: const [],
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('legacy NIP-04 rejects a cached event with an invalid signature',
+        () async {
+      final ciphertext = Nip04.encrypt(
+        alice.privateKey!,
+        bob.publicKey,
+        'must not be decrypted',
+      );
+      final signed = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: alice.publicKey,
+          kind: Dms.kLegacyNip04MessageKind,
+          content: ciphertext,
+          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          tags: [
+            ['p', bob.publicKey],
+          ],
+        ),
+        privateKey: alice.privateKey!,
+      );
+      await ndk.config.cache.saveEvent(
+        signed.copyWith(sig: '0' * 128),
+      );
+
+      ndk.accounts.logout();
+      final bobSigner = _CountingBip340EventSigner(
+        privateKey: bob.privateKey!,
+        pubkey: bob.publicKey,
+      );
+      ndk.accounts.loginExternalSigner(signer: bobSigner);
+      final messages = await ndk.dms.loadLegacyNip04Conversation(
+        peerPubKey: alice.publicKey,
+        rendezvousRelays: [relay.url],
+      );
+      expect(messages, isEmpty);
+      expect(bobSigner.nip04DecryptCalls, isZero);
     });
 
     test(
@@ -117,55 +246,74 @@ void main() async {
             .toList();
         expect(giftWraps.length, greaterThanOrEqualTo(2));
 
-        final recipients = giftWraps
-            .map((e) => e.pTags)
-            .expand((p) => p)
-            .toSet();
+        final recipients =
+            giftWraps.map((e) => e.pTags).expand((p) => p).toSet();
         expect(recipients, containsAll([alice.publicKey, bob.publicKey]));
       },
     );
 
-    test(
-      'sendMessage with additional tags keeps the p tag on the rumor',
-      () async {
-        await publishDmRelayList(alice, urls: [relay.url]);
-        await publishDmRelayList(bob, urls: [relay.url]);
+    test('sendMessage throws when every recipient relay rejects the wrap',
+        () async {
+      await publishDmRelayList(alice, urls: [relay.url]);
+      await publishDmRelayList(bob, urls: [relay.url]);
+      relay
+        ..rejectFirstEventPublishes = 2
+        ..rejectEventMessage = 'kind 1059 is not allowed on this relay';
 
-        await ndk.dms.sendMessage(
+      await expectLater(
+        ndk.dms.sendMessage(
           recipientPubKey: bob.publicKey,
-          content: 'with subject',
-          additionalTags: const [
-            ['subject', 'greeting'],
-          ],
-        );
-
-        // Login as bob and load the conversation to verify the rumor carries the
-        // extra tag through the gift wrap.
-        ndk.accounts.logout();
-        ndk.accounts.loginPrivateKey(
-          pubkey: bob.publicKey,
-          privkey: bob.privateKey!,
-        );
-        await publishDmRelayList(bob, urls: [relay.url]);
-
-        final conversations = await ndk.dms.loadConversations(
-          timeout: const Duration(seconds: 10),
-        );
-        expect(conversations, isNotEmpty);
-
-        final aliceConv = conversations.firstWhere(
-          (c) => c.peerPubKey == alice.publicKey,
-        );
-        expect(aliceConv.messages, isNotEmpty);
-        final rumor = aliceConv.messages.first.rumor;
-        expect(
-          rumor.tags.any(
-            (t) => t.length >= 2 && t[0] == 'subject' && t[1] == 'greeting',
+          content: 'must not report false success',
+        ),
+        throwsA(
+          predicate(
+            (error) => error.toString().contains(
+                  'No recipient DM relay accepted the NIP-17 message',
+                ),
           ),
-          isTrue,
-        );
-      },
-    );
+        ),
+      );
+    });
+
+    test('sendMessage with additional tags keeps the p tag on the rumor',
+        () async {
+      await publishDmRelayList(alice, urls: [relay.url]);
+      await publishDmRelayList(bob, urls: [relay.url]);
+
+      await ndk.dms.sendMessage(
+        recipientPubKey: bob.publicKey,
+        content: 'with subject',
+        additionalTags: const [
+          ['subject', 'greeting'],
+        ],
+      );
+
+      // Login as bob and load the conversation to verify the rumor carries the
+      // extra tag through the gift wrap.
+      ndk.accounts.logout();
+      ndk.accounts.loginPrivateKey(
+        pubkey: bob.publicKey,
+        privkey: bob.privateKey!,
+      );
+      await publishDmRelayList(bob, urls: [relay.url]);
+
+      final conversations = await ndk.dms.loadConversations(
+        timeout: const Duration(seconds: 10),
+      );
+      expect(conversations, isNotEmpty);
+
+      final aliceConv = conversations.firstWhere(
+        (c) => c.peerPubKey == alice.publicKey,
+      );
+      expect(aliceConv.messages, isNotEmpty);
+      final rumor = aliceConv.messages.first.rumor;
+      expect(
+        rumor.tags.any(
+          (t) => t.length >= 2 && t[0] == 'subject' && t[1] == 'greeting',
+        ),
+        isTrue,
+      );
+    });
 
     test(
       'sender view keeps outgoing DMs with additional p tags for mentions',
@@ -193,6 +341,60 @@ void main() async {
         expect(messages.single.peerPubKey, bob.publicKey);
       },
     );
+
+    test('kind-15 files keep URL, hashes and keys inside the rumor', () async {
+      await publishDmRelayList(alice, urls: [relay.url]);
+      await publishDmRelayList(bob, urls: [relay.url]);
+      final encrypted = await Nip17FileCrypto.encrypt(
+        Uint8List.fromList(utf8.encode('private image bytes')),
+      );
+      final metadata = Nip17FileMetadata.fromEncryptedFile(
+        url: Uri.parse(
+          'https://blossom.example/${encrypted.encryptedSha256}.bin',
+        ),
+        mimeType: 'image/jpeg',
+        encryptedFile: encrypted,
+      );
+
+      await ndk.dms.sendFileMessage(
+        recipientPubKey: bob.publicKey,
+        metadata: metadata,
+        additionalTags: const [
+          ['a', '38383:coordinator:offer-id'],
+          ['case', 'private-case-id'],
+        ],
+      );
+
+      final wraps = relay.receivedEvents
+          .where((event) => event.kind == GiftWrap.kGiftWrapEventkind)
+          .toList();
+      expect(wraps, hasLength(2));
+      for (final wrap in wraps) {
+        expect(wrap.tags.map((tag) => tag.first), everyElement('p'));
+        expect(wrap.content, isNot(contains(metadata.url.toString())));
+        expect(wrap.content, isNot(contains(encrypted.key)));
+        expect(wrap.content, isNot(contains('offer-id')));
+        expect(wrap.content, isNot(contains('private-case-id')));
+      }
+
+      final messages = await ndk.dms.loadConversation(
+        peerPubKey: bob.publicKey,
+        timeout: const Duration(seconds: 10),
+      );
+      expect(messages, hasLength(1));
+      expect(messages.single.rumor.kind, Dms.kFileMessageKind);
+      expect(messages.single.fileMetadata?.encryptedSha256,
+          encrypted.encryptedSha256);
+      expect(
+        messages.single.rumor.tags.any(
+          (tag) =>
+              tag.length == 2 &&
+              tag[0] == 'a' &&
+              tag[1] == '38383:coordinator:offer-id',
+        ),
+        isTrue,
+      );
+    });
 
     test('loadConversations throws when not logged in', () async {
       ndk.accounts.logout();
@@ -363,8 +565,12 @@ void main() async {
       await publishDmRelayList(bob, urls: [relay.url]);
 
       // Bob authors a DM rumor and wraps it for alice.
+      ndk.accounts.logout();
+      ndk.accounts.loginPrivateKey(
+        pubkey: bob.publicKey,
+        privkey: bob.privateKey!,
+      );
       final rumor = await ndk.giftWrap.createRumor(
-        customPubkey: bob.publicKey,
         content: 'hi alice',
         kind: Dms.kMessageKind,
         tags: [
@@ -376,11 +582,131 @@ void main() async {
         recipientPubkey: alice.publicKey,
       );
 
+      ndk.accounts.logout();
+      ndk.accounts.loginPrivateKey(
+        pubkey: alice.publicKey,
+        privkey: alice.privateKey!,
+      );
+
       final parsed = await ndk.dms.parseWrappedMessage(wrappedEvent: wrap);
       expect(parsed, isNotNull);
       expect(parsed!.content, 'hi alice');
       expect(parsed.peerPubKey, bob.publicKey);
       expect(parsed.isOutgoing, isFalse);
+    });
+
+    test('parseWrappedMessage rejects a seal/rumor author mismatch', () async {
+      final impersonatedRumor = await ndk.giftWrap.createRumor(
+        customPubkey: bob.publicKey,
+        content: 'forged sender',
+        kind: Dms.kMessageKind,
+        tags: [
+          ['p', alice.publicKey],
+        ],
+      );
+      final wrap = await ndk.giftWrap.toGiftWrap(
+        rumor: impersonatedRumor,
+        recipientPubkey: alice.publicKey,
+      );
+
+      final parsed = await ndk.dms.parseWrappedMessage(wrappedEvent: wrap);
+      expect(parsed, isNull);
+    });
+
+    test('parseWrappedMessage rejects an invalid outer signature', () async {
+      ndk.accounts.logout();
+      ndk.accounts.loginPrivateKey(
+        pubkey: bob.publicKey,
+        privkey: bob.privateKey!,
+      );
+      final rumor = await ndk.giftWrap.createRumor(
+        content: 'valid content',
+        kind: Dms.kMessageKind,
+        tags: [
+          ['p', alice.publicKey],
+        ],
+      );
+      final wrap = await ndk.giftWrap.toGiftWrap(
+        rumor: rumor,
+        recipientPubkey: alice.publicKey,
+      );
+      final tamperedWrap = wrap.copyWith(createdAt: wrap.createdAt + 1);
+
+      ndk.accounts.logout();
+      ndk.accounts.loginPrivateKey(
+        pubkey: alice.publicKey,
+        privkey: alice.privateKey!,
+      );
+
+      final parsed = await ndk.dms.parseWrappedMessage(
+        wrappedEvent: tamperedWrap,
+      );
+      expect(parsed, isNull);
+    });
+
+    test('parseWrappedMessage rejects multiple outer recipients', () async {
+      ndk.accounts.logout();
+      ndk.accounts.loginPrivateKey(
+        pubkey: bob.publicKey,
+        privkey: bob.privateKey!,
+      );
+      final rumor = await ndk.giftWrap.createRumor(
+        content: 'ambiguous recipient',
+        kind: Dms.kMessageKind,
+        tags: [
+          ['p', alice.publicKey],
+        ],
+      );
+      final seal = await ndk.giftWrap.sealRumor(
+        rumor: rumor,
+        recipientPubkey: alice.publicKey,
+      );
+      final wrap = await GiftWrap.wrapEvent(
+        recipientPublicKey: alice.publicKey,
+        sealEvent: seal,
+        additionalTags: [
+          ['p', bob.publicKey],
+        ],
+        eventSignerFactory: ndk.config.eventSignerFactory,
+      );
+
+      ndk.accounts.logout();
+      ndk.accounts.loginPrivateKey(
+        pubkey: alice.publicKey,
+        privkey: alice.privateKey!,
+      );
+
+      final parsed = await ndk.dms.parseWrappedMessage(wrappedEvent: wrap);
+      expect(parsed, isNull);
+    });
+
+    test('parseWrappedMessage rejects a non-canonical rumor id', () async {
+      ndk.accounts.logout();
+      ndk.accounts.loginPrivateKey(
+        pubkey: bob.publicKey,
+        privkey: bob.privateKey!,
+      );
+      final original = await ndk.giftWrap.createRumor(
+        content: 'original',
+        kind: Dms.kMessageKind,
+        tags: [
+          ['p', alice.publicKey],
+        ],
+      );
+      final forged = original.copyWith(content: 'changed after id creation');
+      final wrap = await ndk.giftWrap.toGiftWrap(
+        rumor: forged,
+        recipientPubkey: alice.publicKey,
+      );
+
+      ndk.accounts.logout();
+      ndk.accounts.loginPrivateKey(
+        pubkey: alice.publicKey,
+        privkey: alice.privateKey!,
+      );
+
+      final parsed = await ndk.dms.parseWrappedMessage(wrappedEvent: wrap);
+      expect(parsed, isNull);
     });
 
     test(
@@ -413,4 +739,21 @@ void main() async {
       expect(Dms.kMessageKind, 14);
     });
   });
+}
+
+class _CountingBip340EventSigner extends Bip340EventSigner {
+  int nip04DecryptCalls = 0;
+
+  _CountingBip340EventSigner({
+    required String privateKey,
+    required String pubkey,
+  }) : super(privateKey: privateKey, publicKey: pubkey);
+
+  @override
+  // ignore: deprecated_member_use
+  Future<String?> decrypt(String msg, String destPubKey) {
+    nip04DecryptCalls++;
+    // ignore: deprecated_member_use
+    return super.decrypt(msg, destPubKey);
+  }
 }

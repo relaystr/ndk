@@ -1,9 +1,12 @@
 import 'dart:convert';
+
 import 'package:ndk/shared/nips/nip44/nip44.dart';
 import 'package:ndk/shared/nips/nip44/utils.dart';
 import 'package:test/test.dart';
 import 'package:elliptic/elliptic.dart' as elliptic;
+
 import 'dart:typed_data';
+
 import 'package:crypto/crypto.dart';
 
 Uint8List hexToBytes(String hex) {

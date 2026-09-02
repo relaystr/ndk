@@ -89,10 +89,7 @@ class PqEncryption {
         sk,
       );
       if (ok != 1) throw StateError('Post-quantum key derivation failed');
-      return PqKeyPair(
-        publicKey: _copyOut(pk),
-        secretKey: _copyOut(sk),
-      );
+      return PqKeyPair(publicKey: _copyOut(pk), secretKey: _copyOut(sk));
     } finally {
       // Wipe our copy of the seed before releasing it.
       seedPtr.asTypedList(seed.length).fillRange(0, seed.length, 0);

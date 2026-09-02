@@ -1,3 +1,86 @@
+## 0.9.1-dev.1
+
+ - **FEAT**: publishDmRelays.
+ - **FEAT**: allow explicit dm relay discovery.
+ - **FEAT**: add explicit legacy nip04 dms.
+
+## 0.9.1-dev.0
+
+ - **FEAT**: publishDmRelays.
+ - **FEAT**: nip17 file message.
+
+## 0.9.0
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: key request state by connection instead of relay url.
+ - **REFACTOR**: key the connect path by connection instead of relay url.
+ - **REFACTOR**: key relay connections by RelayConnectionKey.
+ - **REFACTOR**: drop the CacheWrite usecase in favor of CacheManager.
+ - **FIX**: recompute event id when building a NIP-51 set event.
+ - **FIX**: mem cache for event verification.
+ - **FIX**: index relay connectivity by list, not by url.
+ - **FIX**: unblock dart analyze on Dart 3.13.
+ - **FIX**: test lacl first test cacheWrite.
+ - **FIX**: encode negentropy messages per protocol v1.
+ - **FIX**: count the requests open on a connection by id.
+ - **FIX**: drop authentication state on a transient disconnect.
+ - **FIX**: keep a request alive while its authentication reconnects.
+ - **FIX**: route socket errors through the same disconnect handler as onDone.
+ - **FIX**: replay a query whose socket died before its EOSE.
+ - **FIX**: replay a request whose authentication died with its socket.
+ - **FIX**: account active requests where they are sent.
+ - **FIX**: scope authentication state to a transport generation.
+ - **FIX**: forget connections that have no transport left.
+ - **FIX**: do not send REQ for a request that was closed.
+ - **FIX**: engines pick relays, so they must see one connection per relay.
+ - **FIX**: replay subscriptions on their own connection only.
+ - **FIX**: send CLOSE on the connection the subscription was sent on.
+ - **FIX**: include target relays and request lifetime in the request dedup key.
+ - **FEAT**: add post-quantum hybrid encryption for direct messages (ML-KEM-1024).
+ - **FEAT**: bind each connection to at most one identity.
+ - **FEAT**: add RelayConnectionKey to identify a relay connection.
+ - **BREAKING** **FIX**: replace GPL-3.0-only crystals-dilithium with fips204 (ML-DSA).
+ - **BREAKING** **FEAT**: stream relay connections as a list instead of a url keyed map.
+
+## 0.8.4
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.8.4-dev.12
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: key request state by connection instead of relay url.
+ - **REFACTOR**: key the connect path by connection instead of relay url.
+ - **REFACTOR**: key relay connections by RelayConnectionKey.
+ - **REFACTOR**: drop the CacheWrite usecase in favor of CacheManager.
+ - **FIX**: recompute event id when building a NIP-51 set event.
+ - **FIX**: mem cache for event verification.
+ - **FIX**: index relay connectivity by list, not by url.
+ - **FIX**: unblock dart analyze on Dart 3.13.
+ - **FIX**: test lacl first test cacheWrite.
+ - **FIX**: encode negentropy messages per protocol v1.
+ - **FIX**: count the requests open on a connection by id.
+ - **FIX**: drop authentication state on a transient disconnect.
+ - **FIX**: keep a request alive while its authentication reconnects.
+ - **FIX**: route socket errors through the same disconnect handler as onDone.
+ - **FIX**: replay a query whose socket died before its EOSE.
+ - **FIX**: replay a request whose authentication died with its socket.
+ - **FIX**: account active requests where they are sent.
+ - **FIX**: scope authentication state to a transport generation.
+ - **FIX**: forget connections that have no transport left.
+ - **FIX**: do not send REQ for a request that was closed.
+ - **FIX**: engines pick relays, so they must see one connection per relay.
+ - **FIX**: replay subscriptions on their own connection only.
+ - **FIX**: send CLOSE on the connection the subscription was sent on.
+ - **FIX**: include target relays and request lifetime in the request dedup key.
+ - **FEAT**: add post-quantum hybrid encryption for direct messages (ML-KEM-1024).
+ - **FEAT**: bind each connection to at most one identity.
+ - **FEAT**: add RelayConnectionKey to identify a relay connection.
+ - **BREAKING** **FIX**: replace GPL-3.0-only crystals-dilithium with fips204 (ML-DSA).
+ - **BREAKING** **FEAT**: stream relay connections as a list instead of a url keyed map.
+
 ## 0.8.4-dev.11
 
  - **FIX**: dart format with standalone SDK 3.12.2 (match CI).

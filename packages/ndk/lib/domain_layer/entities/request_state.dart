@@ -147,10 +147,10 @@ class RequestState {
 
   /// checks if all requests finished (received EOSE or CLOSED)
   bool get didAllRequestsFinish => requests.values.every(
-    (element) =>
-        (element.receivedEOSE || element.receivedClosed) &&
-        !element.retryingAuth,
-  );
+        (element) =>
+            (element.receivedEOSE || element.receivedClosed) &&
+            !element.retryingAuth,
+      );
 
   /// What the request ended with on each relay it was sent to, as it stands now
   ///

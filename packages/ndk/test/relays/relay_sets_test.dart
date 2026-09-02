@@ -362,100 +362,98 @@ void main() async {
     // });
 
     test(
-      "calculate best relays for relayMinCountPerPubKey=1 and check that it doesn't use redundant relays",
-      () async {
-        final ndk = Ndk(
-          NdkConfig(
-            eventVerifier: MockEventVerifier(),
-            cache: MemCacheManager(),
-            engine: NdkEngine.RELAY_SETS,
-            bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
-          ),
-        );
+        "calculate best relays for relayMinCountPerPubKey=1 and check that it doesn't use redundant relays",
+        () async {
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: MockEventVerifier(),
+          cache: MemCacheManager(),
+          engine: NdkEngine.RELAY_SETS,
+          bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
+        ),
+      );
 
-        ndk.accounts.loginPrivateKey(
-          pubkey: key1.publicKey,
-          privkey: key1.privateKey!,
-        );
+      ndk.accounts.loginPrivateKey(
+        pubkey: key1.publicKey,
+        privkey: key1.privateKey!,
+      );
 
-        // relayMinCountPerPubKey: 1
-        RelaySet relaySet = await ndk.relaySets.calculateRelaySet(
-          name: "feed",
-          ownerPubKey: "ownerPubKey",
-          pubKeys: [
-            key1.publicKey,
-            key2.publicKey,
-            key3.publicKey,
-            key4.publicKey,
-          ],
-          direction: RelayDirection.outbox,
-          relayMinCountPerPubKey: 1,
-          onProgress: (stepName, count, total) {
-            if (count % 100 == 0 || (total - count) < 10) {
-              print("[PROGRESS] $stepName: $count/$total");
-            }
-          },
-        );
-        print("BEST ${relaySet.relaysMap.length} RELAYS:");
-        relaySet.relaysMap.forEach((url, pubKeyMappings) {
-          print("  $url => has ${pubKeyMappings.length} follows");
-        });
+      // relayMinCountPerPubKey: 1
+      RelaySet relaySet = await ndk.relaySets.calculateRelaySet(
+        name: "feed",
+        ownerPubKey: "ownerPubKey",
+        pubKeys: [
+          key1.publicKey,
+          key2.publicKey,
+          key3.publicKey,
+          key4.publicKey,
+        ],
+        direction: RelayDirection.outbox,
+        relayMinCountPerPubKey: 1,
+        onProgress: (stepName, count, total) {
+          if (count % 100 == 0 || (total - count) < 10) {
+            print("[PROGRESS] $stepName: $count/$total");
+          }
+        },
+      );
+      print("BEST ${relaySet.relaysMap.length} RELAYS:");
+      relaySet.relaysMap.forEach((url, pubKeyMappings) {
+        print("  $url => has ${pubKeyMappings.length} follows");
+      });
 
-        expect(relaySet.urls.contains(relay1.url), true);
-        expect(relaySet.urls.contains(relay2.url), false);
-        expect(relaySet.urls.contains(relay3.url), false);
-        expect(relaySet.urls.contains(relay4.url), true);
-        expect(relaySet.notCoveredPubkeys.isEmpty, true);
-        await ndk.destroy();
-      },
-    );
+      expect(relaySet.urls.contains(relay1.url), true);
+      expect(relaySet.urls.contains(relay2.url), false);
+      expect(relaySet.urls.contains(relay3.url), false);
+      expect(relaySet.urls.contains(relay4.url), true);
+      expect(relaySet.notCoveredPubkeys.isEmpty, true);
+      await ndk.destroy();
+    });
 
     test(
-      "calculate best relays for relayMinCountPerPubKey=2 and check that it doesn't use redundant relays",
-      () async {
-        final ndk = Ndk(
-          NdkConfig(
-            eventVerifier: MockEventVerifier(),
-            cache: MemCacheManager(),
-            engine: NdkEngine.RELAY_SETS,
-            bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
-          ),
-        );
+        "calculate best relays for relayMinCountPerPubKey=2 and check that it doesn't use redundant relays",
+        () async {
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: MockEventVerifier(),
+          cache: MemCacheManager(),
+          engine: NdkEngine.RELAY_SETS,
+          bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
+        ),
+      );
 
-        ndk.accounts.loginPrivateKey(
-          pubkey: key1.publicKey,
-          privkey: key1.privateKey!,
-        );
+      ndk.accounts.loginPrivateKey(
+        pubkey: key1.publicKey,
+        privkey: key1.privateKey!,
+      );
 
-        RelaySet relaySet = await ndk.relaySets.calculateRelaySet(
-          name: "feed",
-          ownerPubKey: "ownerPubKey",
-          pubKeys: [
-            key1.publicKey,
-            key2.publicKey,
-            key3.publicKey,
-            key4.publicKey,
-          ],
-          direction: RelayDirection.outbox,
-          relayMinCountPerPubKey: 2,
-          onProgress: (stepName, count, total) {
-            if (count % 100 == 0 || (total - count) < 10) {
-              print("[PROGRESS] $stepName: $count/$total");
-            }
-          },
-        );
-        print("BEST ${relaySet.relaysMap.length} RELAYS:");
-        relaySet.relaysMap.forEach((url, pubKeyMappings) {
-          print("  $url => has ${pubKeyMappings.length} follows");
-        });
+      RelaySet relaySet = await ndk.relaySets.calculateRelaySet(
+        name: "feed",
+        ownerPubKey: "ownerPubKey",
+        pubKeys: [
+          key1.publicKey,
+          key2.publicKey,
+          key3.publicKey,
+          key4.publicKey,
+        ],
+        direction: RelayDirection.outbox,
+        relayMinCountPerPubKey: 2,
+        onProgress: (stepName, count, total) {
+          if (count % 100 == 0 || (total - count) < 10) {
+            print("[PROGRESS] $stepName: $count/$total");
+          }
+        },
+      );
+      print("BEST ${relaySet.relaysMap.length} RELAYS:");
+      relaySet.relaysMap.forEach((url, pubKeyMappings) {
+        print("  $url => has ${pubKeyMappings.length} follows");
+      });
 
-        expect(relaySet.urls.contains(relay1.url), true);
-        expect(relaySet.urls.contains(relay2.url), true);
-        expect(relaySet.urls.contains(relay3.url), false);
-        expect(relaySet.urls.contains(relay4.url), true);
-        await ndk.destroy();
-      },
-    );
+      expect(relaySet.urls.contains(relay1.url), true);
+      expect(relaySet.urls.contains(relay2.url), true);
+      expect(relaySet.urls.contains(relay3.url), false);
+      expect(relaySet.urls.contains(relay4.url), true);
+      await ndk.destroy();
+    });
   });
   group("misc", () {
     // test('nwc info', () async {
@@ -715,17 +713,13 @@ void main() async {
       );
     }, timeout: const Timeout.factor(10));
 
-    test(
-      'Love is Bitcoin (3k follows) feed best relays',
-      () async {
-        await calculateBestRelaysForNpubContactsFeed(
-          "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx",
-          iterations: 1,
-          relayMinCountPerPubKey: 2,
-        );
-      },
-      timeout: const Timeout.factor(10),
-    );
+    test('Love is Bitcoin (3k follows) feed best relays', () async {
+      await calculateBestRelaysForNpubContactsFeed(
+        "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx",
+        iterations: 1,
+        relayMinCountPerPubKey: 2,
+      );
+    }, timeout: const Timeout.factor(10));
   });
   // test('testing not timing out on subscriptions', () async {
   //   RelayManager manager = RelayManager();

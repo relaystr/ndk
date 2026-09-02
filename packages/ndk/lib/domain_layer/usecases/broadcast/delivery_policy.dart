@@ -56,6 +56,10 @@ class DeliveryPolicy {
     'policy violation',
   ];
 
+  static final RegExp _kindNotAllowedPattern = RegExp(
+    r'\bkind(?:\s+\d+)?\s+is\s+not\s+allowed\b',
+  );
+
   final DeliveryPolicyKind kind;
 
   const DeliveryPolicy._(this.kind);
@@ -136,26 +140,26 @@ class DeliveryPolicy {
 
     final retrySeconds = switch (kind) {
       DeliveryPolicyKind.highPriorityControl => switch (attemptCount) {
-        <= 1 => 2,
-        2 => 5,
-        3 => 15,
-        4 => 60,
-        _ => 300,
-      },
+          <= 1 => 2,
+          2 => 5,
+          3 => 15,
+          4 => 60,
+          _ => 300,
+        },
       DeliveryPolicyKind.persistentEventual => switch (attemptCount) {
-        <= 1 => 5,
-        2 => 15,
-        3 => 60,
-        4 => 300,
-        _ => 900,
-      },
+          <= 1 => 5,
+          2 => 15,
+          3 => 60,
+          4 => 300,
+          _ => 900,
+        },
       DeliveryPolicyKind.latestStateOnly => switch (attemptCount) {
-        <= 1 => 5,
-        2 => 15,
-        3 => 60,
-        4 => 300,
-        _ => 900,
-      },
+          <= 1 => 5,
+          2 => 15,
+          3 => 60,
+          4 => 300,
+          _ => 900,
+        },
       DeliveryPolicyKind.doNotRetry => 0,
     };
     return Duration(seconds: retrySeconds);
@@ -177,7 +181,8 @@ class DeliveryPolicy {
       }
     }
 
-    return _permanentFailureMarkers.any(normalized.contains);
+    return _permanentFailureMarkers.any(normalized.contains) ||
+        _kindNotAllowedPattern.hasMatch(normalized);
   }
 
   static String? _machineReadablePrefix(String normalizedMessage) {

@@ -45,9 +45,9 @@ class RelaySetsEngine implements NetworkEngine {
     required CacheManager cacheManager,
     required List<String>? bootstrapRelays,
     GlobalState? globalState,
-  }) : _cacheManager = cacheManager,
-       _relayManager = relayManager,
-       _bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS {
+  })  : _cacheManager = cacheManager,
+        _relayManager = relayManager,
+        _bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS {
     _globalState = globalState ?? GlobalState();
   }
 
@@ -168,10 +168,10 @@ class RelaySetsEngine implements NetworkEngine {
       kinds: [event.kind],
       tags:
           EventKindClassification.isAddressableKind(event.kind) && dTag != null
-          ? {
-              'd': [dTag],
-            }
-          : null,
+              ? {
+                  'd': [dTag],
+                }
+              : null,
       limit: 1,
     );
 

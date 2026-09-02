@@ -9,8 +9,8 @@ class Search {
   final Requests _requests;
 
   Search({required CacheManager cacheManager, required Requests requests})
-    : _cacheManager = cacheManager,
-      _requests = requests;
+      : _cacheManager = cacheManager,
+        _requests = requests;
 
   /// Search for metadata \
   /// [query] can be pubkey, name, nip05
@@ -30,17 +30,17 @@ class Search {
   /// [limit] limit of results \
   /// [cacheOnly] if true only cache is used (a lot faster but no network fetch)
   Future<Iterable<Nip01Event>> searchEvents({
-    final List<String>? ids,
-    final List<String>? authors,
-    final List<int>? kinds,
-    final Map<String, List<String>>? tags,
-    final int? since,
-    final int? until,
-    final String? search,
-    final int limit = 100,
+    List<String>? ids,
+    List<String>? authors,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+    String? search,
+    int limit = 100,
 
     /// cache only is much faster but does not fetch from the network
-    final bool cacheOnly = false,
+    bool cacheOnly = false,
   }) async {
     final localEvents = _cacheManager.searchEvents(
       ids: ids,

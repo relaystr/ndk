@@ -267,7 +267,8 @@ class MemCacheManager implements CacheManager {
       return metadata.matchesSearch(normalizedSearch) ||
           (metadata.about?.toLowerCase().contains(normalizedSearch) ?? false) ||
           (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
-    }).toList()..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
+    }).toList()
+      ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
     return matches.take(limit);
   }
 
@@ -321,12 +322,11 @@ class MemCacheManager implements CacheManager {
   @override
   Future<List<String>> loadEventSources(String eventId) async {
     final prefix = '$eventId|';
-    final result =
-        eventSources.entries
-            .where((entry) => entry.key.startsWith(prefix))
-            .map((entry) => entry.value)
-            .toList()
-          ..sort();
+    final result = eventSources.entries
+        .where((entry) => entry.key.startsWith(prefix))
+        .map((entry) => entry.value)
+        .toList()
+      ..sort();
     return result;
   }
 
@@ -362,7 +362,8 @@ class MemCacheManager implements CacheManager {
   }) async {
     var records = eventDeliveryRecords.values.where((record) {
       return status == null || record.status == status;
-    }).toList()..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    }).toList()
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     if (limit != null && limit < records.length) {
       records = records.take(limit).toList();
@@ -411,29 +412,29 @@ class MemCacheManager implements CacheManager {
     bool excludeAcked = false,
     int? limit,
   }) async {
-    var records =
-        relayDeliveryTargets.values.where((target) {
-          if (eventId != null && target.eventId != eventId) {
-            return false;
-          }
-          if (relayUrl != null && target.relayUrl != relayUrl) {
-            return false;
-          }
-          if (state != null && target.state != state) {
-            return false;
-          }
-          if (excludeAcked && target.state == RelayDeliveryState.acked) {
-            return false;
-          }
-          return true;
-        }).toList()..sort((a, b) {
-          final retryA = a.nextRetryAt ?? 0;
-          final retryB = b.nextRetryAt ?? 0;
-          if (retryA != retryB) {
-            return retryA.compareTo(retryB);
-          }
-          return a.key.compareTo(b.key);
-        });
+    var records = relayDeliveryTargets.values.where((target) {
+      if (eventId != null && target.eventId != eventId) {
+        return false;
+      }
+      if (relayUrl != null && target.relayUrl != relayUrl) {
+        return false;
+      }
+      if (state != null && target.state != state) {
+        return false;
+      }
+      if (excludeAcked && target.state == RelayDeliveryState.acked) {
+        return false;
+      }
+      return true;
+    }).toList()
+      ..sort((a, b) {
+        final retryA = a.nextRetryAt ?? 0;
+        final retryB = b.nextRetryAt ?? 0;
+        if (retryA != retryB) {
+          return retryA.compareTo(retryB);
+        }
+        return a.key.compareTo(b.key);
+      });
 
     if (limit != null && limit < records.length) {
       records = records.take(limit).toList();
@@ -583,10 +584,10 @@ class MemCacheManager implements CacheManager {
     }
 
     return plan.toResult().copyWith(
-      removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
-      removedTerminalFailedDeliveries:
-          deliverySweep.removedTerminalFailedDeliveries,
-    );
+          removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
+          removedTerminalFailedDeliveries:
+              deliverySweep.removedTerminalFailedDeliveries,
+        );
   }
 
   @override
@@ -757,9 +758,8 @@ class MemCacheManager implements CacheManager {
       until: until,
       applyVisibilityRules: false,
     );
-    final eventIdsToRemove = rawEventsToRemove
-        .map((event) => event.id)
-        .toList();
+    final eventIdsToRemove =
+        rawEventsToRemove.map((event) => event.id).toList();
     final eventIdSet = eventIdsToRemove.toSet();
     events.removeWhere((key, value) => eventIdSet.contains(key));
     _removeEventSidecarsByIds(eventIdsToRemove);
@@ -792,6 +792,19 @@ class MemCacheManager implements CacheManager {
   Future<void> saveEvent(Nip01Event event) async {
     events[event.id] = event;
     await _refreshDerivedStateForEvent(event);
+  }
+
+  @override
+  Future<bool> saveEventIfAbsent(Nip01Event event) async {
+    var inserted = false;
+    events.putIfAbsent(event.id, () {
+      inserted = true;
+      return event;
+    });
+    if (inserted) {
+      await _refreshDerivedStateForEvent(event);
+    }
+    return inserted;
   }
 
   @override
@@ -978,7 +991,7 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<List<FilterFetchedRangeRecord>>
-  loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
+      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
     return filterFetchedRangeRecords.values
         .where((r) => r.relayUrl == relayUrl)
         .toList();

@@ -31,7 +31,6 @@ import '../domain_layer/usecases/broadcast/pending_broadcast_delivery.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/cache_eviction/cache_eviction_scheduler.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
-import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/cashu/cashu.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/decrypted_event_payloads/decrypted_event_payloads.dart';
@@ -83,7 +82,6 @@ class Initialization {
   /// use cases
 
   late RelayManager relayManager;
-  late CacheWrite cacheWrite;
   late CacheRead cacheRead;
   late Requests requests;
   late Accounts accounts;
@@ -125,8 +123,8 @@ class Initialization {
   Initialization({
     required NdkConfig ndkConfig,
     required GlobalState globalState,
-  }) : _globalState = globalState,
-       _ndkConfig = ndkConfig {
+  })  : _globalState = globalState,
+        _ndkConfig = ndkConfig {
     // Configure global WebSocket User-Agent on dart:io platforms
     configureDefaultUserAgent(ndkConfig.userAgent);
 
@@ -182,7 +180,6 @@ class Initialization {
     final CashuRepo cashuRepo = CashuRepoImpl(client: _httpRequestDS);
 
     ///   use cases
-    cacheWrite = CacheWrite(_ndkConfig.cache);
     cacheRead = CacheRead(_ndkConfig.cache);
     decryptedEventPayloads = DecryptedEventPayloads(
       cacheManager: _ndkConfig.cache,
@@ -192,7 +189,7 @@ class Initialization {
       defaultQueryTimeout: _ndkConfig.defaultQueryTimeout,
       globalState: _globalState,
       cacheRead: cacheRead,
-      cacheWrite: cacheWrite,
+      cacheManager: _ndkConfig.cache,
       networkEngine: engine,
       relayManager: relayManager,
       eventVerifier: _ndkConfig.eventVerifier,
@@ -356,6 +353,7 @@ class Initialization {
       giftWrap: giftWrap,
       userRelayLists: userRelayLists,
       cacheManager: _ndkConfig.cache,
+      eventVerifier: _ndkConfig.eventVerifier,
     );
 
     connectivity = Connectivy(relayManager);

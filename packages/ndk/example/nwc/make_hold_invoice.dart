@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
+
 import 'package:crypto/crypto.dart';
 import 'package:convert/convert.dart';
 import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
@@ -68,19 +69,17 @@ void main() async {
       //   print("\nOr copy Bolt11 invoice:\n$invoice\n");
       // }
 
-      final duration =
-          makeResponse.expiresAt! -
+      final duration = makeResponse.expiresAt! -
           DateTime.now().millisecondsSinceEpoch ~/ 1000;
       print(
         "Waiting for hold invoice acceptance notification (max $duration seconds)...",
       );
       try {
-        final acceptedNotification = await connection.holdInvoiceStateStream
-            .firstWhere((notification) {
-              return notification.notificationType ==
-                  NwcNotification.kHoldInvoiceAccepted;
-            })
-            .timeout(Duration(seconds: duration.toInt()));
+        final acceptedNotification =
+            await connection.holdInvoiceStateStream.firstWhere((notification) {
+          return notification.notificationType ==
+              NwcNotification.kHoldInvoiceAccepted;
+        }).timeout(Duration(seconds: duration.toInt()));
 
         print(
           "Hold invoice accepted by wallet! (Notification: ${acceptedNotification.notificationType}, Settle deadline: ${acceptedNotification.settleDeadline})",

@@ -87,18 +87,12 @@ void main() async {
 
       await _waitForRelayConnectionState(ndk, relay1.url, true);
       expect(
-        ndk
-            .relays
-            .globalState
-            .relays[RelayConnectionKey.anonymous(relay0.url)]
+        ndk.relays.globalState.relays[RelayConnectionKey.anonymous(relay0.url)]
             ?.isConnected,
         true,
       );
       expect(
-        ndk
-            .relays
-            .globalState
-            .relays[RelayConnectionKey.anonymous(relay1.url)]
+        ndk.relays.globalState.relays[RelayConnectionKey.anonymous(relay1.url)]
             ?.isConnected,
         true,
       );
@@ -107,18 +101,12 @@ void main() async {
 
       await _waitForRelayConnectionState(ndk, relay1.url, false);
       expect(
-        ndk
-            .relays
-            .globalState
-            .relays[RelayConnectionKey.anonymous(relay0.url)]
+        ndk.relays.globalState.relays[RelayConnectionKey.anonymous(relay0.url)]
             ?.isConnected,
         true,
       );
       expect(
-        ndk
-            .relays
-            .globalState
-            .relays[RelayConnectionKey.anonymous(relay1.url)]
+        ndk.relays.globalState.relays[RelayConnectionKey.anonymous(relay1.url)]
             ?.isConnected,
         false,
       );
@@ -126,18 +114,12 @@ void main() async {
       await ndk.connectivity.tryReconnect();
       await _waitForRelayConnectionState(ndk, relay1.url, true);
       expect(
-        ndk
-            .relays
-            .globalState
-            .relays[RelayConnectionKey.anonymous(relay0.url)]
+        ndk.relays.globalState.relays[RelayConnectionKey.anonymous(relay0.url)]
             ?.isConnected,
         true,
       );
       expect(
-        ndk
-            .relays
-            .globalState
-            .relays[RelayConnectionKey.anonymous(relay1.url)]
+        ndk.relays.globalState.relays[RelayConnectionKey.anonymous(relay1.url)]
             ?.isConnected,
         true,
       );
@@ -153,10 +135,7 @@ Future<void> _waitForRelayConnectionState(
   final deadline = DateTime.now().add(const Duration(seconds: 5));
 
   while (DateTime.now().isBefore(deadline)) {
-    if (ndk
-            .relays
-            .globalState
-            .relays[RelayConnectionKey.anonymous(relayUrl)]
+    if (ndk.relays.globalState.relays[RelayConnectionKey.anonymous(relayUrl)]
             ?.isConnected ==
         expectedState) {
       return;

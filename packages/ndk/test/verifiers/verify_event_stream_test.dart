@@ -241,38 +241,37 @@ void main() {
     });
 
     test(
-      'should process events from non-closing stream with fewer events than maxConcurrent',
-      () async {
-        final controller = StreamController<Nip01Event>();
-        final resultList = <Nip01Event>[];
+        'should process events from non-closing stream with fewer events than maxConcurrent',
+        () async {
+      final controller = StreamController<Nip01Event>();
+      final resultList = <Nip01Event>[];
 
-        final verifyStream = VerifyEventStream(
-          unverifiedStreamInput: controller.stream,
-          eventVerifier: mockVerifier,
-          maxConcurrent: 10,
-        );
+      final verifyStream = VerifyEventStream(
+        unverifiedStreamInput: controller.stream,
+        eventVerifier: mockVerifier,
+        maxConcurrent: 10,
+      );
 
-        final subscription = verifyStream().listen((event) {
-          resultList.add(event);
-        });
+      final subscription = verifyStream().listen((event) {
+        resultList.add(event);
+      });
 
-        controller.add(createMockEvent('1'));
-        controller.add(createMockEvent('2'));
-        controller.add(createMockEvent('3'));
+      controller.add(createMockEvent('1'));
+      controller.add(createMockEvent('2'));
+      controller.add(createMockEvent('3'));
 
-        await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(Duration(milliseconds: 100));
 
-        expect(
-          resultList.length,
-          equals(3),
-          reason:
-              'All events should be processed even when count < maxConcurrent',
-        );
+      expect(
+        resultList.length,
+        equals(3),
+        reason:
+            'All events should be processed even when count < maxConcurrent',
+      );
 
-        await subscription.cancel();
-        await controller.close();
-      },
-    );
+      await subscription.cancel();
+      await controller.close();
+    });
 
     test('should process events as they complete, not in order', () async {
       final controller = StreamController<Nip01Event>();
@@ -315,49 +314,8 @@ void main() {
       await controller.close();
     });
 
-    test('should handle continuous stream of events without blocking', () async {
-      final controller = StreamController<Nip01Event>();
-      final resultList = <Nip01Event>[];
-
-      final verifyStream = VerifyEventStream(
-        unverifiedStreamInput: controller.stream,
-        eventVerifier: mockVerifier,
-        maxConcurrent: 3,
-      );
-
-      final subscription = verifyStream().listen((event) {
-        resultList.add(event);
-      });
-
-      for (int i = 0; i < 10; i++) {
-        controller.add(createMockEvent('$i'));
-
-        await Future.delayed(Duration(milliseconds: 10));
-
-        if (i >= 2) {
-          expect(
-            resultList.length,
-            greaterThan(0),
-            reason:
-                'Events should be processed continuously, not waiting for stream end',
-          );
-        }
-      }
-
-      await Future.delayed(Duration(milliseconds: 100));
-
-      expect(
-        resultList.length,
-        equals(10),
-        reason: 'All events should be processed from continuous stream',
-      );
-
-      await subscription.cancel();
-      await controller.close();
-    });
-
     test(
-      'should not deadlock when maxConcurrent is reached with non-closing stream',
+      'should handle continuous stream of events without blocking',
       () async {
         final controller = StreamController<Nip01Event>();
         final resultList = <Nip01Event>[];
@@ -365,30 +323,73 @@ void main() {
         final verifyStream = VerifyEventStream(
           unverifiedStreamInput: controller.stream,
           eventVerifier: mockVerifier,
-          maxConcurrent: 2,
+          maxConcurrent: 3,
         );
 
         final subscription = verifyStream().listen((event) {
           resultList.add(event);
         });
 
-        controller.add(createMockEvent('1'));
-        controller.add(createMockEvent('2'));
-        controller.add(createMockEvent('3'));
-        controller.add(createMockEvent('4'));
+        for (int i = 0; i < 10; i++) {
+          controller.add(createMockEvent('$i'));
 
-        await Future.delayed(Duration(milliseconds: 200));
+          await Future.delayed(Duration(milliseconds: 10));
+
+          if (i >= 2) {
+            expect(
+              resultList.length,
+              greaterThan(0),
+              reason:
+                  'Events should be processed continuously, not waiting for stream end',
+            );
+          }
+        }
+
+        await Future.delayed(Duration(milliseconds: 100));
 
         expect(
           resultList.length,
-          equals(4),
-          reason: 'Should process all events without deadlocking',
+          equals(10),
+          reason: 'All events should be processed from continuous stream',
         );
 
         await subscription.cancel();
         await controller.close();
       },
     );
+
+    test(
+        'should not deadlock when maxConcurrent is reached with non-closing stream',
+        () async {
+      final controller = StreamController<Nip01Event>();
+      final resultList = <Nip01Event>[];
+
+      final verifyStream = VerifyEventStream(
+        unverifiedStreamInput: controller.stream,
+        eventVerifier: mockVerifier,
+        maxConcurrent: 2,
+      );
+
+      final subscription = verifyStream().listen((event) {
+        resultList.add(event);
+      });
+
+      controller.add(createMockEvent('1'));
+      controller.add(createMockEvent('2'));
+      controller.add(createMockEvent('3'));
+      controller.add(createMockEvent('4'));
+
+      await Future.delayed(Duration(milliseconds: 200));
+
+      expect(
+        resultList.length,
+        equals(4),
+        reason: 'Should process all events without deadlocking',
+      );
+
+      await subscription.cancel();
+      await controller.close();
+    });
 
     test(
       'should yield events immediately upon verification completion',

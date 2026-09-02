@@ -128,8 +128,7 @@ void main() {
 
     test('login with bunker URL should connect successfully', () async {
       // Create bunker URL with mock relay's remote signer
-      final bunkerUrl =
-          'bunker://${MockRelay.remoteSignerPublicKey}'
+      final bunkerUrl = 'bunker://${MockRelay.remoteSignerPublicKey}'
           '?relay=${mockRelay.url}'
           '&secret=test-secret-123';
 
@@ -180,8 +179,7 @@ void main() {
 
     test('loginWithBunkerUrl should set up account correctly', () async {
       // Create bunker URL with mock relay's remote signer
-      final bunkerUrl =
-          'bunker://${MockRelay.remoteSignerPublicKey}'
+      final bunkerUrl = 'bunker://${MockRelay.remoteSignerPublicKey}'
           '?relay=${mockRelay.url}'
           '&secret=bunker-url-test-secret';
 

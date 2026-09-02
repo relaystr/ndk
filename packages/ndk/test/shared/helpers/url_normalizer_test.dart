@@ -114,23 +114,22 @@ void main() {
     });
 
     test(
-      'decodes percent-encoded unreserved characters (RFC 3986 Section 6.2.2.2)',
-      () {
-        // %41 = 'A', %7E = '~', %2D = '-'
-        expect(
-          cleanRelayUrl('wss://relay.damus.io/path%41'),
-          'wss://relay.damus.io/pathA',
-        );
-        expect(
-          cleanRelayUrl('wss://relay.damus.io/path%7E'),
-          'wss://relay.damus.io/path~',
-        );
-        expect(
-          cleanRelayUrl('wss://relay.damus.io/path%2D'),
-          'wss://relay.damus.io/path-',
-        );
-      },
-    );
+        'decodes percent-encoded unreserved characters (RFC 3986 Section 6.2.2.2)',
+        () {
+      // %41 = 'A', %7E = '~', %2D = '-'
+      expect(
+        cleanRelayUrl('wss://relay.damus.io/path%41'),
+        'wss://relay.damus.io/pathA',
+      );
+      expect(
+        cleanRelayUrl('wss://relay.damus.io/path%7E'),
+        'wss://relay.damus.io/path~',
+      );
+      expect(
+        cleanRelayUrl('wss://relay.damus.io/path%2D'),
+        'wss://relay.damus.io/path-',
+      );
+    });
 
     test(
       'uppercases hex digits in percent-encoding (RFC 3986 Section 6.2.2.2)',

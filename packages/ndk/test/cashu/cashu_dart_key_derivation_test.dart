@@ -7,6 +7,7 @@ import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cas
 import 'package:test/test.dart';
 
 import 'package:ndk/domain_layer/usecases/cashu/cashu_seed.dart';
+
 import '../tools/simple_profiler.dart';
 
 void main() {
@@ -22,7 +23,8 @@ void main() {
       seedBytes = Uint8List.fromList(cashuSeed.getSeedBytes());
     });
 
-    group('Version 1: Deprecated BIP32 Derivation (keyset ID 009a1f293253e41e)', () {
+    group('Version 1: Deprecated BIP32 Derivation (keyset ID 009a1f293253e41e)',
+        () {
       const keysetId = "009a1f293253e41e";
       const keysetIdInt = 864559728;
 
@@ -152,7 +154,8 @@ void main() {
       });
     });
 
-    group('Version 2: Modern HMAC-SHA256 Derivation (keyset ID 015ba18a...)', () {
+    group('Version 2: Modern HMAC-SHA256 Derivation (keyset ID 015ba18a...)',
+        () {
       const keysetId =
           "015ba18a8adcd02e715a58358eb618da4a4b3791151a4bee5e968bb88406ccf76a";
 

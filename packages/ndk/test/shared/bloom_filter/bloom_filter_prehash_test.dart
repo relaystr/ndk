@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
+
 import 'package:ndk/entities.dart';
 import 'package:ndk/shared/bloom_filter/bloom_filter_prehash.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -119,10 +120,10 @@ void main() {
       // Deserialize
       final deserializedFilter =
           BloomFilterPrehash.fromNumHashFunctionsAndByteArray(
-            numHashFunctions: originalFilter.numHashFunctions,
-            byteArray: base64Decode(serialized),
-            size: originalFilter.size,
-          );
+        numHashFunctions: originalFilter.numHashFunctions,
+        byteArray: base64Decode(serialized),
+        size: originalFilter.size,
+      );
 
       // Check that deserialized filter behaves the same
       expect(

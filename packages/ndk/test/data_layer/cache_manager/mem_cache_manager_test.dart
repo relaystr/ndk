@@ -117,6 +117,23 @@ void main() {
       expect(result, equals(event));
     });
 
+    test('saveEventIfAbsent does not overwrite an existing id', () async {
+      final original = Nip01Event(
+        pubKey: 'testPubKey',
+        kind: 1,
+        tags: [],
+        content: 'original',
+      );
+      final replacement = original.copyWith(content: 'replacement');
+
+      expect(await cacheManager.saveEventIfAbsent(original), isTrue);
+      expect(await cacheManager.saveEventIfAbsent(replacement), isFalse);
+
+      final loaded = await cacheManager.loadEvent(original.id);
+      expect(loaded, isNotNull);
+      expect(loaded!.content, 'original');
+    });
+
     test('removeEvent', () async {
       final event = Nip01Event(
         pubKey: 'testPubKey',
@@ -215,9 +232,8 @@ void main() {
       final mockRelaySet = MockRelaySet();
       when(mockRelaySet.name).thenReturn('testName');
       when(mockRelaySet.pubKey).thenReturn('testPubKey');
-      when(
-        mockRelaySet.id,
-      ).thenReturn(RelaySet.buildId('testName', 'testPubKey'));
+      when(mockRelaySet.id)
+          .thenReturn(RelaySet.buildId('testName', 'testPubKey'));
 
       await cacheManager.saveRelaySet(mockRelaySet);
       final result = await cacheManager.loadRelaySet('testName', 'testPubKey');
@@ -229,9 +245,8 @@ void main() {
       final mockRelaySet = MockRelaySet();
       when(mockRelaySet.name).thenReturn('testName');
       when(mockRelaySet.pubKey).thenReturn('testPubKey');
-      when(
-        mockRelaySet.id,
-      ).thenReturn(RelaySet.buildId('testName', 'testPubKey'));
+      when(mockRelaySet.id)
+          .thenReturn(RelaySet.buildId('testName', 'testPubKey'));
 
       await cacheManager.saveRelaySet(mockRelaySet);
       await cacheManager.removeRelaySet('testName', 'testPubKey');
@@ -245,14 +260,12 @@ void main() {
       final mockRelaySet2 = MockRelaySet();
       when(mockRelaySet1.name).thenReturn('testName1');
       when(mockRelaySet1.pubKey).thenReturn('testPubKey1');
-      when(
-        mockRelaySet1.id,
-      ).thenReturn(RelaySet.buildId('testName1', 'testPubKey1'));
+      when(mockRelaySet1.id)
+          .thenReturn(RelaySet.buildId('testName1', 'testPubKey1'));
       when(mockRelaySet2.name).thenReturn('testName2');
       when(mockRelaySet2.pubKey).thenReturn('testPubKey2');
-      when(
-        mockRelaySet2.id,
-      ).thenReturn(RelaySet.buildId('testName2', 'testPubKey2'));
+      when(mockRelaySet2.id)
+          .thenReturn(RelaySet.buildId('testName2', 'testPubKey2'));
 
       await cacheManager.saveRelaySet(mockRelaySet1);
       await cacheManager.saveRelaySet(mockRelaySet2);

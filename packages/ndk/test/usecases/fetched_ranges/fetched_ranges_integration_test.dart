@@ -52,8 +52,7 @@ void main() async {
         await ndk.relays.seedRelaysConnected;
 
         // Define filter with time bounds
-        final since =
-            DateTime.now()
+        final since = DateTime.now()
                 .subtract(const Duration(days: 1))
                 .millisecondsSinceEpoch ~/
             1000;
@@ -97,8 +96,10 @@ void main() async {
         );
         expect(
           relayFetchedRanges.ranges.first.since,
-          equals(since),
-          reason: 'Range since should match filter since',
+          equals(textNotes[key1]!.createdAt),
+          reason:
+              'Range since should start at the oldest event received, the '
+              'relay may have truncated anything older',
         );
         expect(
           relayFetchedRanges.ranges.first.until,
@@ -294,6 +295,221 @@ void main() async {
 
         await relay1.stopServer();
         await ndk.destroy();
+      },
+    );
+
+    test(
+      'limited query only records the range actually covered by the returned events',
+      timeout: const Timeout(Duration(seconds: 30)),
+      () async {
+        MockRelay relay1 = MockRelay(
+          name: "relay limit test",
+          explicitPort: 4204,
+        );
+        await relay1.startServer();
+
+        final ndk = Ndk(
+          NdkConfig(
+            eventVerifier: Bip340EventVerifier(),
+            cache: MemCacheManager(),
+            bootstrapRelays: [relay1.url],
+            fetchedRangesEnabled: true,
+          ),
+        );
+        addTearDown(() async {
+          await relay1.stopServer();
+          await ndk.destroy();
+        });
+
+        final author = Bip340.generatePrivateKey();
+        ndk.accounts.loginPrivateKey(
+          privkey: author.privateKey!,
+          pubkey: author.publicKey,
+        );
+
+        await ndk.relays.seedRelaysConnected;
+
+        // 30 events, one per second, oldest first
+        final baseCreatedAt =
+            (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 1000;
+        final createdAts = List.generate(30, (i) => baseCreatedAt + i);
+
+        for (final createdAt in createdAts) {
+          final broadcast = ndk.broadcast.broadcast(
+            nostrEvent: Nip01Event(
+              pubKey: author.publicKey,
+              kind: Nip01Event.kTextNodeKind,
+              content: "note $createdAt",
+              tags: [],
+              createdAt: createdAt,
+            ),
+            specificRelays: [relay1.url],
+          );
+          await broadcast.broadcastDoneFuture;
+        }
+
+        final filter = Filter(
+          kinds: [Nip01Event.kTextNodeKind],
+          authors: [author.publicKey],
+          limit: 10,
+        );
+
+        final events = await ndk.requests
+            .query(filter: filter, cacheRead: false)
+            .future;
+
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        final fetchedRanges = await ndk.fetchedRanges.getForFilter(filter);
+        final relayFetchedRanges = fetchedRanges[relay1.url];
+
+        expect(relayFetchedRanges, isNotNull);
+        expect(relayFetchedRanges!.ranges.length, equals(1));
+
+        final range = relayFetchedRanges.ranges.first;
+        final oldestReturned = events
+            .map((e) => e.createdAt)
+            .reduce((a, b) => a < b ? a : b);
+
+        expect(
+          oldestReturned,
+          equals(createdAts[20]),
+          reason: 'the 10 newest events are the ones returned',
+        );
+        expect(
+          range.since,
+          equals(oldestReturned),
+          reason:
+              'range must start at the oldest returned event, the 20 older '
+              'events were never fetched',
+        );
+        expect(
+          range.until,
+          greaterThanOrEqualTo(createdAts.last),
+          reason: 'range must cover up to the newest event',
+        );
+        expect(
+          relayFetchedRanges.reachedOldest,
+          isFalse,
+          reason: 'a limited query does not prove we reached the oldest event',
+        );
+
+        final gaps = await ndk.fetchedRanges.findGaps(
+          filter: filter,
+          since: createdAts.first,
+          until: createdAts.last,
+        );
+
+        expect(gaps.length, equals(1), reason: 'the 20 older events are a gap');
+        expect(gaps.first.since, equals(createdAts.first));
+        expect(gaps.first.until, equals(oldestReturned - 1));
+      },
+    );
+
+    test(
+      'relay capping below the requested limit still records the covered range only',
+      timeout: const Timeout(Duration(seconds: 30)),
+      () async {
+        // Relay serves at most 20 events, well below the 50 we ask for, the
+        // way a relay enforces its own NIP-11 max_limit
+        MockRelay relay1 = MockRelay(
+          name: "relay max limit test",
+          explicitPort: 4205,
+          maxEventsPerRequest: 20,
+        );
+        await relay1.startServer();
+
+        final ndk = Ndk(
+          NdkConfig(
+            eventVerifier: Bip340EventVerifier(),
+            cache: MemCacheManager(),
+            bootstrapRelays: [relay1.url],
+            fetchedRangesEnabled: true,
+          ),
+        );
+        addTearDown(() async {
+          await relay1.stopServer();
+          await ndk.destroy();
+        });
+
+        final author = Bip340.generatePrivateKey();
+        ndk.accounts.loginPrivateKey(
+          privkey: author.privateKey!,
+          pubkey: author.publicKey,
+        );
+
+        await ndk.relays.seedRelaysConnected;
+
+        // 60 events, one per second, oldest first
+        final baseCreatedAt =
+            (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 1000;
+        final createdAts = List.generate(60, (i) => baseCreatedAt + i);
+
+        for (final createdAt in createdAts) {
+          final broadcast = ndk.broadcast.broadcast(
+            nostrEvent: Nip01Event(
+              pubKey: author.publicKey,
+              kind: Nip01Event.kTextNodeKind,
+              content: "note $createdAt",
+              tags: [],
+              createdAt: createdAt,
+            ),
+            specificRelays: [relay1.url],
+          );
+          await broadcast.broadcastDoneFuture;
+        }
+
+        final filter = Filter(
+          kinds: [Nip01Event.kTextNodeKind],
+          authors: [author.publicKey],
+          limit: 50,
+        );
+
+        final events = await ndk.requests
+            .query(filter: filter, cacheRead: false)
+            .future;
+
+        expect(
+          events.length,
+          equals(20),
+          reason: 'the relay caps the response below the requested limit',
+        );
+
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        final fetchedRanges = await ndk.fetchedRanges.getForFilter(filter);
+        final relayFetchedRanges = fetchedRanges[relay1.url];
+
+        expect(relayFetchedRanges, isNotNull);
+        expect(relayFetchedRanges!.ranges.length, equals(1));
+
+        final oldestReturned = events
+            .map((e) => e.createdAt)
+            .reduce((a, b) => a < b ? a : b);
+
+        expect(
+          oldestReturned,
+          equals(createdAts[40]),
+          reason: 'the 20 newest events are the ones returned',
+        );
+        expect(
+          relayFetchedRanges.ranges.first.since,
+          equals(oldestReturned),
+          reason:
+              'getting fewer events than the requested limit does not mean the '
+              'response was complete, the relay may cap it on its own',
+        );
+        expect(relayFetchedRanges.reachedOldest, isFalse);
+
+        final gaps = await ndk.fetchedRanges.findGaps(
+          filter: filter,
+          since: createdAts.first,
+          until: createdAts.last,
+        );
+
+        expect(gaps.length, equals(1), reason: 'the 40 older events are a gap');
+        expect(gaps.first.since, equals(createdAts.first));
+        expect(gaps.first.until, equals(oldestReturned - 1));
       },
     );
 

@@ -37,7 +37,7 @@ class QsRustEventSigner implements EventSigner {
   ///
   /// Use [QsRustEventSigner.generate] to create a new keypair first.
   QsRustEventSigner({required QsKeypair keypair, this.level = 87})
-    : _keypair = keypair;
+      : _keypair = keypair;
 
   @override
   bool get requiresInteractiveSigning => false;
@@ -71,9 +71,7 @@ class QsRustEventSigner implements EventSigner {
       final result = rust_lib.qsGenerateKeypair(level, outPk, outSk);
 
       if (result != 1) {
-        throw StateError(
-          'Failed to generate ML-DSA keypair at level $level',
-        );
+        throw StateError('Failed to generate ML-DSA keypair at level $level');
       }
 
       final pkLen = outPk.ref.len;

@@ -7,7 +7,7 @@ permissions:
   contents: write
 
 env:
-  FLUTTER_VERSION: "3.41.4"
+  FLUTTER_VERSION: "3.47.0"
   JAVA_VERSION: "17"
   FLUTTER_RUST_BRIDGE_VERSION: "1.80.1"
   RUST_VERSION: "1.93"
@@ -22,18 +22,22 @@ jobs:
         include:
           - os: ubuntu-latest
             target: linux_x64
+            architecture: x64
             platform_name: linux-x64
             content_type: application/gzip
           - os: macos-latest
             target: macos_arm64
+            architecture: arm64
             platform_name: macos-arm64
             content_type: application/gzip
           - os: macos-latest
             target: macos_x64
+            architecture: x64
             platform_name: macos-x64
             content_type: application/gzip
           - os: windows-latest
             target: windows_x64
+            architecture: x64
             platform_name: windows-x64
             content_type: application/gzip
     defaults:
@@ -44,23 +48,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Dart
-        if: matrix.target != 'macos_x64'
-        uses: dart-lang/setup-dart@v1
+      - name: Install Rosetta
+        if: matrix.target == 'macos_x64' && runner.arch == 'ARM64'
+        run: softwareupdate --install-rosetta --agree-to-license
 
-      - name: Set up Dart (x86_64 SDK)
-        if: matrix.target == 'macos_x64'
-        run: |
-          curl -fsSL "https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-macos-x64-release.zip" -o dart-sdk.zip
-          unzip -q dart-sdk.zip
-          echo "$PWD/dart-sdk/bin" >> $GITHUB_PATH
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          architecture: ${{ matrix.architecture }}
+          cache: true
 
       - name: Install dependencies
-        run: dart pub get
-
-      - name: Install Rosetta
-        if: matrix.target == 'macos_x64'
-        run: softwareupdate --install-rosetta --agree-to-license
+        run: flutter pub get
 
       - name: Build CLI executable (x64 via Rosetta)
         run: |

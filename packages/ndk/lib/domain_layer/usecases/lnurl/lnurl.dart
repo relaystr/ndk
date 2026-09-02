@@ -73,9 +73,8 @@ class Lnurl {
         zapRequest != null &&
         zapRequest.sig != null &&
         zapRequest.sig!.isNotEmpty) {
-      final zapRequstString = Nip01EventModel.fromEntity(
-        zapRequest,
-      ).toJsonString();
+      final zapRequstString =
+          Nip01EventModel.fromEntity(zapRequest).toJsonString();
       final eventStr = Uri.encodeQueryComponent(zapRequstString);
       callback += "&nostr=$eventStr";
     }

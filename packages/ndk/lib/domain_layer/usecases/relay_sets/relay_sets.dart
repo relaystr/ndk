@@ -23,10 +23,10 @@ class RelaySets {
     required RelayManager relayManager,
     required UserRelayLists userRelayLists,
     required Set<String> blockedRelays,
-  }) : _userRelayLists = userRelayLists,
-       _relayManager = relayManager,
-       _cacheManager = cacheManager,
-       _blockedRelays = blockedRelays;
+  })  : _userRelayLists = userRelayLists,
+        _relayManager = relayManager,
+        _cacheManager = cacheManager,
+        _blockedRelays = blockedRelays;
 
   /// relay -> list of pubKey mappings
   Future<RelaySet> calculateRelaySet({
@@ -128,7 +128,8 @@ class RelaySets {
       bool connectable = (await _relayManager.connectRelay(
         dirtyUrl: url,
         connectionSource: ConnectionSource.connectionProbe,
-      )).first;
+      ))
+          .first;
       Logger.log.d(() => "tried to reconnect to $url = $connectable");
       if (!connectable) {
         continue;
@@ -221,22 +222,23 @@ class RelaySets {
     );
 
     /// sort by pubKeys count for each relay descending
-    List<MapEntry<String, Set<PubkeyMapping>>>
-    sortedEntries = pubKeysByRelayUrl.entries.toList()
-      /// todo: use more stuff to improve sorting
-      ..sort((a, b) {
-        int rr = b.value.length.compareTo(a.value.length);
-        if (rr == 0) {
-          // if amount of pubKeys is equal check for webSocket connected, and prioritize connected
-          bool aC = _relayManager.isRelayConnected(a.key);
-          bool bC = _relayManager.isRelayConnected(b.key);
-          if (aC != bC) {
-            return aC ? -1 : 1;
-          }
-          return 0;
-        }
-        return rr;
-      });
+    List<MapEntry<String, Set<PubkeyMapping>>> sortedEntries =
+        pubKeysByRelayUrl.entries.toList()
+
+          /// todo: use more stuff to improve sorting
+          ..sort((a, b) {
+            int rr = b.value.length.compareTo(a.value.length);
+            if (rr == 0) {
+              // if amount of pubKeys is equal check for webSocket connected, and prioritize connected
+              bool aC = _relayManager.isRelayConnected(a.key);
+              bool bC = _relayManager.isRelayConnected(b.key);
+              if (aC != bC) {
+                return aC ? -1 : 1;
+              }
+              return 0;
+            }
+            return rr;
+          });
 
     return Map<String, Set<PubkeyMapping>>.fromEntries(sortedEntries);
   }

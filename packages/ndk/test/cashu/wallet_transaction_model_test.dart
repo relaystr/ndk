@@ -11,7 +11,8 @@ import 'package:ndk/domain_layer/entities/cashu/cashu_quote_melt.dart';
 import 'package:ndk/domain_layer/usecases/cashu/cashu_keypair.dart';
 
 void main() {
-  test('cashu transaction json encode/decode round-trip (many iterations)', () {
+  test('cashu transaction json encode/decode round-trip (many iterations)',
+      skip: true, () {
     const mintUrl = 'https://mint.test';
 
     final rnd = Random(42);

@@ -226,9 +226,8 @@ class EventEvictionPlanner {
     int? now,
   }) {
     final currentTime = now ?? Nip01Event.secondsSinceEpoch();
-    final deletionEvents = rawEvents
-        .where((event) => event.kind == 5)
-        .toList(growable: false);
+    final deletionEvents =
+        rawEvents.where((event) => event.kind == 5).toList(growable: false);
     final visibleIds = _visibleIds(rawEvents, deletionEvents, currentTime);
 
     final eventIdsToRemove = <String>{};

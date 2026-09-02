@@ -128,8 +128,7 @@ void main() {
 
     await _waitUntil(
       () => connectivity.stats.connections >= 2,
-      reason:
-          'a socket that ended with an error must be reconnected, like one '
+      reason: 'a socket that ended with an error must be reconnected, like one '
           'that closed cleanly',
     );
 
@@ -142,10 +141,7 @@ void main() {
     () async {
       final key = Bip340.generatePrivateKey();
       final accounts = Accounts(const Bip340EventSignerFactory());
-      accounts.loginPrivateKey(
-        pubkey: key.publicKey,
-        privkey: key.privateKey!,
-      );
+      accounts.loginPrivateKey(pubkey: key.publicKey, privkey: key.privateKey!);
 
       final relay = MockRelay(
         name: "relay requiring auth",
@@ -174,8 +170,7 @@ void main() {
 
       await _waitUntil(
         () => relay.acceptedAuths == 2,
-        reason:
-            'the replacement socket never answered its own challenge: the '
+        reason: 'the replacement socket never answered its own challenge: the '
             'AUTH the relay accepted on the socket that broke was kept',
       );
       expect(relay.connectionsAuthenticatedAs(key.publicKey), 1);

@@ -43,7 +43,8 @@ class _FlakyTransport implements NostrTransport {
     void Function(dynamic) onData, {
     Function? onError,
     void Function()? onDone,
-  }) => _inner.listen(onData, onError: onError, onDone: onDone);
+  }) =>
+      _inner.listen(onData, onError: onError, onDone: onDone);
 
   @override
   Future<void> close() => _inner.close();
@@ -240,8 +241,12 @@ void main() {
 const _subId = "sub";
 
 class _SubscribedOnFlakyRelay {
-  _SubscribedOnFlakyRelay(this.manager, this.connectivity, this.transport,
-      this._relay);
+  _SubscribedOnFlakyRelay(
+    this.manager,
+    this.connectivity,
+    this.transport,
+    this._relay,
+  );
 
   final RelayManager manager;
   final RelayConnectivity connectivity;

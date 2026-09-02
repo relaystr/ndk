@@ -50,9 +50,9 @@ class Nwc {
     required Requests requests,
     required Broadcast broadcast,
     required LocalEventSignerFactory eventSignerFactory,
-  }) : _requests = requests,
-       _broadcast = broadcast,
-       _eventSignerFactory = eventSignerFactory;
+  })  : _requests = requests,
+        _broadcast = broadcast,
+        _eventSignerFactory = eventSignerFactory;
 
   final Map<String, Completer<NwcResponse>> _inflighRequests = {};
   final Map<String, Timer> _inflighRequestTimers = {};
@@ -105,9 +105,8 @@ class Nwc {
       connection.permissions = event.content.split(" ").toSet();
 
       if (connection.permissions.length == 1) {
-        connection.permissions = connection.permissions.first
-            .split(",")
-            .toSet();
+        connection.permissions =
+            connection.permissions.first.split(",").toSet();
       }
 
       List<String> versionTags = event.getTags('v');
@@ -118,6 +117,7 @@ class Nwc {
       if (encryptions.isNotEmpty) {
         connection.supportedEncryptions = encryptions.first.split(" ");
       }
+      connection.addSupportedExtensions(event.getTags('extensions'));
 
       await _subscribeToNotificationsAndResponses(connection);
 
@@ -125,9 +125,7 @@ class Nwc {
           (ignoreCapabilitiesCheck ||
               connection.permissions.contains(NwcMethod.GET_INFO.name))) {
         try {
-          await getInfo(connection, timeout: timeout).then((info) {
-            connection.info = info;
-          });
+          await getInfo(connection, timeout: timeout);
         } catch (e) {
           onError?.call("timeout get_info");
         }
@@ -159,9 +157,8 @@ class Nwc {
 
     connection.subscription = _requests.subscription(
       name: "nwc-sub-${connection.useETagForEachRequest ? "notifs-only" : ""}",
-      explicitRelays: connection.uri.relays
-          .map((r) => Uri.decodeFull(r))
-          .toList(),
+      explicitRelays:
+          connection.uri.relays.map((r) => Uri.decodeFull(r)).toList(),
       filters: [
         Filter(
           kinds: kindsToSubscribe,
@@ -336,9 +333,8 @@ class Nwc {
       );
       dedicatedResponse = _requests.subscription(
         name: "nwc-response-",
-        explicitRelays: connection.uri.relays
-            .map((r) => Uri.decodeFull(r))
-            .toList(),
+        explicitRelays:
+            connection.uri.relays.map((r) => Uri.decodeFull(r)).toList(),
         filters: [responseFilter],
         cacheRead: false,
         cacheWrite: false,
@@ -368,15 +364,14 @@ class Nwc {
 
     final bResponse = _broadcast.broadcast(
       nostrEvent: event,
-      specificRelays: connection.uri.relays
-          .map((r) => Uri.decodeFull(r))
-          .toList(),
+      specificRelays:
+          connection.uri.relays.map((r) => Uri.decodeFull(r)).toList(),
       customSigner: connection.signer,
     );
     await bResponse.broadcastDoneFuture;
 
-    _inflighRequestTimers[event
-        .id] = Timer(timeout ?? Duration(seconds: 5), () async {
+    _inflighRequestTimers[event.id] =
+        Timer(timeout ?? Duration(seconds: 5), () async {
       if (!completer.isCompleted) {
         final error =
             "Timed out while executing NWC request ${request.method.name} with relay ${connection.uri.relays.map((r) => Uri.decodeFull(r)).toList()} and eventId ${event.id}"; // Added event.id to log
@@ -420,11 +415,14 @@ class Nwc {
     NwcConnection connection, {
     Duration? timeout,
   }) async {
-    return _executeRequest<GetInfoResponse>(
+    final info = await _executeRequest<GetInfoResponse>(
       connection,
       GetInfoRequest(),
       timeout: timeout,
     );
+    connection.info = info;
+    connection.supportedExtensions.addAll(info.extensions);
+    return info;
   }
 
   /// Does a `get_balance` request
@@ -471,6 +469,7 @@ class Nwc {
     String? descriptionHash,
     int? expiry,
     required String paymentHash,
+    Duration? timeout,
   }) async {
     return _executeRequest<MakeInvoiceResponse>(
       connection,
@@ -481,6 +480,7 @@ class Nwc {
         expiry: expiry,
         paymentHash: paymentHash,
       ),
+      timeout: timeout,
     );
   }
 
@@ -510,11 +510,12 @@ class Nwc {
   Future<PayInvoiceResponse> payInvoice(
     NwcConnection connection, {
     required String invoice,
+    int? maxFeeMsat,
     Duration? timeout,
   }) async {
     return _executeRequest<PayInvoiceResponse>(
       connection,
-      PayInvoiceRequest(invoice: invoice),
+      PayInvoiceRequest(invoice: invoice, maxFeeMsat: maxFeeMsat),
       timeout: timeout,
     );
   }

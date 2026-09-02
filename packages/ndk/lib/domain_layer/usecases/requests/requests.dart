@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../config/request_defaults.dart';
+import '../../../shared/helpers/bounded_lru_set.dart';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../shared/nips/nip01/helpers.dart';
@@ -17,9 +18,10 @@ import '../../entities/relay_set.dart';
 import '../../entities/relay_request_outcome.dart';
 import '../../entities/request_response.dart';
 import '../../entities/request_state.dart';
+import '../../repositories/cache_manager.dart';
 import '../../repositories/event_verifier.dart';
+import 'verified_event_cache.dart';
 import '../cache_read/cache_read.dart';
-import '../cache_write/cache_write.dart';
 import '../fetched_ranges/fetched_ranges.dart';
 import '../engines/network_engine.dart';
 import '../relay_manager.dart';
@@ -36,9 +38,11 @@ class _RelayPaginationState {
 
 /// A class that handles low-level Nostr network requests and subscriptions.
 class Requests {
+  static const int _persistedEventIdsMaxSize = 20000;
+
   final GlobalState _globalState;
   final CacheRead _cacheRead;
-  final CacheWrite _cacheWrite;
+  final CacheManager _cacheManager;
   final NetworkEngine _engine;
   final RelayManager _relayManager;
   final EventVerifier _eventVerifier;
@@ -46,30 +50,37 @@ class Requests {
   final Duration _defaultQueryTimeout;
   FetchedRanges? _fetchedRanges;
 
+  /// ids of events whose signature was already checked by this [Ndk]
+  /// instance, so repeat delivery across relays/requests skips re-verifying
+  final VerifiedEventMemCache _verifiedEventIds = VerifiedEventMemCache();
+
   /// Creates a new [Requests] instance
   ///
   /// [globalState] The global state of the application \
   /// [cacheRead] The cache reader for retrieving cached events \
-  /// [cacheWrite] The cache writer for storing events \
+  /// [cacheManager] The cache used to persist network-delivered events \
   /// [networkEngine] The engine for handling network requests \
   /// [eventVerifier] The verifier for validating Nostr events
   Requests({
     required GlobalState globalState,
     required CacheRead cacheRead,
-    required CacheWrite cacheWrite,
+    required CacheManager cacheManager,
     required NetworkEngine networkEngine,
     required RelayManager relayManager,
     required EventVerifier eventVerifier,
     required List<EventFilter> eventOutFilters,
     required Duration defaultQueryTimeout,
-  }) : _engine = networkEngine,
-       _relayManager = relayManager,
-       _cacheWrite = cacheWrite,
-       _cacheRead = cacheRead,
-       _globalState = globalState,
-       _eventVerifier = eventVerifier,
-       _eventOutFilters = eventOutFilters,
-       _defaultQueryTimeout = defaultQueryTimeout;
+  })  : _engine = networkEngine,
+        _relayManager = relayManager,
+        _cacheManager = cacheManager,
+        _cacheRead = cacheRead,
+        _globalState = globalState,
+        _eventVerifier = eventVerifier,
+        _eventOutFilters = eventOutFilters,
+        _defaultQueryTimeout = defaultQueryTimeout;
+
+  /// Clears signature-verification reuse state owned by this NDK instance.
+  void clearVerifiedEventCache() => _verifiedEventIds.clear();
 
   Stream<Nip01Event> _prepareNetworkStream(
     Stream<Nip01Event> verifiedNetworkStream, {
@@ -79,18 +90,30 @@ class Requests {
       return verifiedNetworkStream;
     }
 
+    final persistedEventIds = BoundedLruSet<String>(
+      maxSize: _persistedEventIdsMaxSize,
+    );
+    final persistenceInFlight = <String, Future<void>>{};
+
     return verifiedNetworkStream
         .flatMap(
-          (event) =>
-              Stream.fromFuture(_persistAndFilterVisibleNetworkEvent(event)),
+          (event) => Stream.fromFuture(
+            _persistAndFilterVisibleNetworkEvent(
+              event,
+              persistedEventIds: persistedEventIds,
+              persistenceInFlight: persistenceInFlight,
+            ),
+          ),
         )
         .whereType<Nip01Event>()
         .shareReplay(maxSize: 1);
   }
 
   Future<Nip01Event?> _persistAndFilterVisibleNetworkEvent(
-    Nip01Event event,
-  ) async {
+    Nip01Event event, {
+    required BoundedLruSet<String> persistedEventIds,
+    required Map<String, Future<void>> persistenceInFlight,
+  }) async {
     // Ephemeral events (NIP-01 kinds 20000-29999) are non-persistent by
     // definition. They must not be written to cache — relays don't store them
     // either. Inbound events flow through to the subscriber but are not
@@ -101,9 +124,29 @@ class Requests {
       return event;
     }
 
-    await _cacheWrite.cacheManager.saveEvent(event);
+    final existingPersistence = persistenceInFlight[event.id];
+    if (existingPersistence != null) {
+      await existingPersistence;
+    } else if (persistedEventIds.add(event.id)) {
+      final persistence = Future<void>.sync(
+        () async {
+          await _cacheManager.saveEventIfAbsent(event);
+        },
+      );
+      persistenceInFlight[event.id] = persistence;
+      try {
+        await persistence;
+      } catch (_) {
+        persistedEventIds.remove(event.id);
+        rethrow;
+      } finally {
+        if (identical(persistenceInFlight[event.id], persistence)) {
+          persistenceInFlight.remove(event.id);
+        }
+      }
+    }
     if (event.sources.isNotEmpty) {
-      await _cacheWrite.cacheManager.addEventSources(
+      await _cacheManager.addEventSources(
         eventId: event.id,
         relayUrls: event.sources.toSet(),
       );
@@ -113,10 +156,7 @@ class Requests {
       return event;
     }
 
-    final visible = await _cacheWrite.cacheManager.loadEvents(
-      ids: [event.id],
-      limit: 1,
-    );
+    final visible = await _cacheManager.loadEvents(ids: [event.id], limit: 1);
 
     return visible.any((candidate) => candidate.id == event.id) ? event : null;
   }
@@ -270,8 +310,7 @@ class Requests {
       final request = state.requests[relay.key]!;
       // a request the relay ended itself, with a CLOSED or with the EOSE of a
       // query, is already closed on its side
-      final endedOnRelay =
-          request.receivedClosed ||
+      final endedOnRelay = request.receivedClosed ||
           (state.request.closeOnEOSE && request.receivedEOSE);
       if (endedOnRelay) {
         continue;
@@ -328,6 +367,7 @@ class Requests {
     final verifiedNetworkStream = VerifyEventStream(
       unverifiedStreamInput: state.networkController.stream,
       eventVerifier: _eventVerifier,
+      verifiedEventCache: _verifiedEventIds,
     )();
 
     final preparedNetworkStream = _prepareNetworkStream(
@@ -335,17 +375,34 @@ class Requests {
       writeToCache: request.cacheWrite,
     );
 
+    // only the oldest timestamp per relay is needed, buffering the events
+    // themselves would grow unbounded on long-lived subscriptions
+    final oldestNetworkEventByRelay = <String, int>{};
+    final trackedNetworkStream = _fetchedRanges == null
+        ? preparedNetworkStream
+        : preparedNetworkStream.map((event) {
+            for (final source in event.sources) {
+              final oldest = oldestNetworkEventByRelay[source];
+              if (oldest == null || event.createdAt < oldest) {
+                oldestNetworkEventByRelay[source] = event.createdAt;
+              }
+            }
+            return event;
+          });
+
     // register listener
     StreamResponseCleaner(
-      inputStreams: [preparedNetworkStream, state.cacheController.stream],
+      inputStreams: [trackedNetworkStream, state.cacheController.stream],
       trackingSet: state.returnedIds,
       outController: state.controller,
       eventOutFilters: _eventOutFilters,
     )();
 
-    // Record fetched ranges when network requests complete (EOSE received)
-    state.networkController.done.then((_) {
-      _recordFetchedRanges(state);
+    // Record fetched ranges once the response stream is closed, meaning the
+    // network stream has been fully drained. Closing on networkController.done
+    // would run before verification finished pushing events downstream.
+    state.controller.done.then((_) {
+      _recordFetchedRanges(state, oldestNetworkEventByRelay);
     });
 
     // cleanup on close
@@ -572,24 +629,19 @@ class Requests {
   }
 
   /// Records fetched ranges for each relay that received EOSE
-  /// - If events received: use min/max of event timestamps
-  /// - If no events + filter has since/until: use filter bounds
-  /// - If no events + no bounds: use 0 to now
-  void _recordFetchedRanges(RequestState state) {
+  /// - If events received: coverage starts at the oldest event received
+  /// - If no events: use the filter bounds (0 to now when unbounded)
+  ///
+  /// [oldestEventByRelay] must only reflect events received from relays during
+  /// this request. Cache hits would make the recorded range claim coverage the
+  /// relay never actually served.
+  void _recordFetchedRanges(
+    RequestState state,
+    Map<String, int> oldestEventByRelay,
+  ) {
     if (_fetchedRanges == null) return;
 
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-    // Get all events from the replay subject
-    final events = state.controller.values.toList();
-
-    // Group events by source relay
-    final eventsByRelay = <String, List<Nip01Event>>{};
-    for (final event in events) {
-      for (final source in event.sources) {
-        eventsByRelay.putIfAbsent(source, () => []).add(event);
-      }
-    }
 
     for (final entry in state.requests.entries) {
       final relayUrl = entry.key.url;
@@ -597,27 +649,19 @@ class Requests {
 
       if (!relayState.receivedEOSE) continue;
 
-      final relayEvents = eventsByRelay[relayUrl];
+      final oldestEvent = oldestEventByRelay[relayUrl];
 
       // Record fetched range for each filter sent to this relay
       for (final filter in relayState.filters) {
-        int since;
-        int until;
+        int since = filter.since ?? 0;
+        final int until = filter.until ?? now;
 
-        if (relayEvents != null && relayEvents.isNotEmpty) {
-          // Use oldest event timestamp for since, filter.until or now for until
-          // EOSE means relay has no more events, so fetched range extends to query end
-          final timestamps = relayEvents.map((e) => e.createdAt).toList();
-          since = timestamps.reduce((a, b) => a < b ? a : b);
-          until = filter.until ?? now;
-        } else if (filter.since != null || filter.until != null) {
-          // No events but filter has explicit bounds
-          since = filter.since ?? 0;
-          until = filter.until ?? now;
-        } else {
-          // No events, no bounds - relay has nothing, record 0 to now
-          since = 0;
-          until = now;
+        if (oldestEvent != null) {
+          // A relay can cap a response below the requested limit, or with no
+          // limit in the filter at all (NIP-11 max_limit, which we don't read),
+          // so a full response is indistinguishable from a truncated one. Only
+          // claim coverage down to the oldest event received.
+          since = oldestEvent;
         }
 
         _fetchedRanges!.addRange(

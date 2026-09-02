@@ -6,7 +6,7 @@ class CancelHoldInvoiceRequest extends NwcRequest {
   final String paymentHash;
 
   const CancelHoldInvoiceRequest({required this.paymentHash})
-    : super(method: NwcMethod.CANCEL_HOLD_INVOICE);
+      : super(method: NwcMethod.CANCEL_HOLD_INVOICE);
 
   @override
   Map<String, dynamic> toMap() {

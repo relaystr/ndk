@@ -6,6 +6,7 @@ import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../entities/cache_eviction.dart';
 import '../../entities/event_cache_records.dart';
+import '../../entities/nip_01_event.dart';
 import '../../repositories/cache_manager.dart';
 
 class CashuCacheDecorator implements CacheManager {
@@ -13,8 +14,13 @@ class CashuCacheDecorator implements CacheManager {
   final CacheManager _delegate;
 
   CashuCacheDecorator({required CacheManager cacheManager, MutexSimple? mutex})
-    : _delegate = cacheManager,
-      _mutex = mutex ?? MutexSimple();
+      : _delegate = cacheManager,
+        _mutex = mutex ?? MutexSimple();
+
+  @override
+  Future<bool> saveEventIfAbsent(Nip01Event event) {
+    return _mutex.synchronized(() => _delegate.saveEventIfAbsent(event));
+  }
 
   @override
   Future<List<CashuMintInfo>?> getMintInfos({List<String>? mintUrls}) async {

@@ -24,10 +24,10 @@ class Broadcast {
     required Accounts accounts,
     required CacheManager cacheManager,
     required PendingBroadcastDelivery pendingDelivery,
-  }) : _sender = broadcastSender,
-       _accounts = accounts,
-       _cacheManager = cacheManager,
-       _pendingDelivery = pendingDelivery;
+  })  : _sender = broadcastSender,
+        _accounts = accounts,
+        _cacheManager = cacheManager,
+        _pendingDelivery = pendingDelivery;
 
   /// [throws] if the default signer and the custom signer are null \
   /// [returns] the signer that is not null, if both are provided returns [customSigner]
@@ -54,9 +54,8 @@ class Broadcast {
     bool? saveToCache,
   }) {
     // prep for pending delivery enrollment
-    final cleanedSpecificRelays = specificRelays != null
-        ? cleanRelayUrls(specificRelays.toList())
-        : null;
+    final cleanedSpecificRelays =
+        specificRelays != null ? cleanRelayUrls(specificRelays.toList()) : null;
     final signer = nostrEvent.sig == null
         ? _checkSinger(customSigner: customSigner)
         : null;
@@ -97,7 +96,7 @@ class Broadcast {
           nostrEvent,
           responses,
         );
-      } catch (_, __) {}
+      } catch (_) {}
       return responses;
     });
     return NdkBroadcastResponse(
