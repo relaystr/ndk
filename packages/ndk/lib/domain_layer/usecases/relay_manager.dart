@@ -19,6 +19,7 @@ import '../entities/global_state.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/nostr_message_raw.dart';
 import '../entities/relay.dart';
+import '../entities/relay_auth.dart';
 import '../entities/relay_connection_key.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_info.dart';
@@ -1385,20 +1386,21 @@ class RelayManager<T> {
     });
   }
 
-  /// Account a request authenticates as: the first one it asks for that can
-  /// sign, otherwise the logged one.
+  /// Account a request authenticates as, null when it must stay unattributable.
   Account? _accountForRequest(RequestState state) {
-    final requested = state.request.authenticateAs;
-    if (requested != null && requested.isNotEmpty) {
-      for (final account in requested) {
-        if (account.signer.canSign()) {
-          return account;
-        }
-      }
-      return null;
+    final auth = state.request.auth;
+    switch (auth) {
+      case RelayAuthNever():
+        return null;
+      case RelayAuthAllow(:final account):
+      case RelayAuthRequire(:final account):
+        return account.signer.canSign() ? account : null;
+      case null:
+        // a request that says nothing still authenticates as the logged
+        // account, so the relay decides when that identity is revealed
+        final logged = _accounts?.getLoggedAccount();
+        return logged != null && logged.signer.canSign() ? logged : null;
     }
-    final logged = _accounts?.getLoggedAccount();
-    return logged != null && logged.signer.canSign() ? logged : null;
   }
 
   /// Handles OK auth-required for broadcasts by authenticating and re-sending the EVENT

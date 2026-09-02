@@ -144,14 +144,13 @@ class JitEngine with Logger implements NetworkEngine {
       );
     }
 
-    // Late auth for subscriptions with authenticateAs
-    if (ndkRequest.authenticateAs != null &&
-        ndkRequest.authenticateAs!.isNotEmpty) {
+    // Late auth for subscriptions that name an identity
+    final authAccount = ndkRequest.auth?.account;
+    if (authAccount != null) {
       for (final connectionKey in requestState.requests.keys) {
-        relayManagerLight.authenticateIfNeeded(
-          connectionKey.url,
-          ndkRequest.authenticateAs!,
-        );
+        relayManagerLight.authenticateIfNeeded(connectionKey.url, [
+          authAccount,
+        ]);
       }
     }
   }

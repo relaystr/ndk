@@ -188,7 +188,7 @@ void nip42Tests(NdkEngine engine) {
       await relay1.stopServer();
     });
 
-    test('authenticateAs with multiple accounts sends AUTH for all', () async {
+    test('authenticateAs uses the first signable account', () async {
       MockRelay relay1 = MockRelay(
         name: "relay 1",
         explicitPort: portBase + 2,
@@ -250,6 +250,75 @@ void nip42Tests(NdkEngine engine) {
 
       List<Nip01Event> events = await response.future;
       expect(events.length, equals(2));
+      // one request, one identity: the second account is never revealed
+      expect(relay1.connectionsAuthenticatedAs(key2.publicKey), 0);
+
+      await ndk.destroy();
+      await relay1.stopServer();
+    });
+
+    test('auth wins over authenticateAs', () async {
+      MockRelay relay1 = MockRelay(
+        name: "relay 1",
+        explicitPort: portBase + 7,
+        requireAuthForRequests: true,
+        signEvents: false,
+      );
+
+      final note1 = textNote(key1, "note from key1");
+      await relay1.startServer(textNotes: {key1: note1});
+
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: [relay1.url],
+          engine: engine,
+        ),
+      );
+
+      final account1 = Account(
+        pubkey: key1.publicKey,
+        type: AccountType.privateKey,
+        signer: Bip340EventSigner(
+          privateKey: key1.privateKey!,
+          publicKey: key1.publicKey,
+        ),
+      );
+      final account2 = Account(
+        pubkey: key2.publicKey,
+        type: AccountType.privateKey,
+        signer: Bip340EventSigner(
+          privateKey: key2.privateKey!,
+          publicKey: key2.publicKey,
+        ),
+      );
+      ndk.accounts.addAccount(
+        pubkey: account1.pubkey,
+        type: account1.type,
+        signer: account1.signer,
+      );
+      ndk.accounts.addAccount(
+        pubkey: account2.pubkey,
+        type: account2.type,
+        signer: account2.signer,
+      );
+
+      await Future.delayed(Duration(seconds: 1));
+
+      final response = ndk.requests.query(
+        filter: Filter(
+          kinds: [Nip01Event.kTextNodeKind],
+          authors: [key1.publicKey],
+        ),
+        auth: RelayAuth.allow(account1),
+        authenticateAs: [account2],
+      );
+
+      List<Nip01Event> events = await response.future;
+      expect(events, isNotEmpty);
+      expect(relay1.connectionsAuthenticatedAs(key1.publicKey), 1);
+      expect(relay1.connectionsAuthenticatedAs(key2.publicKey), 0);
 
       await ndk.destroy();
       await relay1.stopServer();
@@ -420,7 +489,7 @@ void nip42Tests(NdkEngine engine) {
     );
 
     test(
-      'fallback to logged account when authenticateAs not specified',
+      'fallback to logged account when no auth is specified',
       () async {
         MockRelay relay1 = MockRelay(
           name: "relay 1",
@@ -449,7 +518,7 @@ void nip42Tests(NdkEngine engine) {
 
         await Future.delayed(Duration(seconds: 1));
 
-        // Query without authenticateAs - should fallback to logged account
+        // Query without auth, should fallback to the logged account
         final response = ndk.requests.query(
           filter: Filter(
             kinds: [Nip01Event.kTextNodeKind],

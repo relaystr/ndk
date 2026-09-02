@@ -219,14 +219,11 @@ class RelaySetsEngine implements NetworkEngine {
     }
     _globalState.inFlightRequests[state.id] = state;
 
-    // Late auth for subscriptions with authenticateAs
-    if (state.request.authenticateAs != null &&
-        state.request.authenticateAs!.isNotEmpty) {
+    // Late auth for subscriptions that name an identity
+    final authAccount = state.request.auth?.account;
+    if (authAccount != null) {
       for (final connectionKey in state.requests.keys) {
-        _relayManager.authenticateIfNeeded(
-          connectionKey.url,
-          state.request.authenticateAs!,
-        );
+        _relayManager.authenticateIfNeeded(connectionKey.url, [authAccount]);
       }
     }
 
@@ -267,14 +264,11 @@ class RelaySetsEngine implements NetworkEngine {
     }
     _globalState.inFlightRequests[state.id] = state;
 
-    // Late auth for subscriptions with authenticateAs
-    if (state.request.authenticateAs != null &&
-        state.request.authenticateAs!.isNotEmpty) {
+    // Late auth for subscriptions that name an identity
+    final authAccount = state.request.auth?.account;
+    if (authAccount != null) {
       for (final connectionKey in state.requests.keys) {
-        _relayManager.authenticateIfNeeded(
-          connectionKey.url,
-          state.request.authenticateAs!,
-        );
+        _relayManager.authenticateIfNeeded(connectionKey.url, [authAccount]);
       }
     }
 
