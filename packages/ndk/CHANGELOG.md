@@ -1,3 +1,10 @@
+## 0.9.1-dev.2
+
+ - **FIX**: clean relay url.
+ - **FIX**: more dms.
+ - **FIX**: kind not allowed is a permanet failure.
+ - **FEAT**(nwc): add optional maxFeeMsat to pay_invoice (NIP-47 max_fee).
+
 ## 0.9.1-dev.1
 
  - **FEAT**: publishDmRelays.
