@@ -1477,7 +1477,10 @@ class RelayManager<T> {
         // enters this method with the bound key and authenticates below.
         if (relayConnectivity.key != boundKey &&
             !_authenticatedConnections.contains(boundKey)) {
-          send(bound, ClientMsg(ClientMsgType.kEvent, event: eventToResend));
+          await sendOrThrow(
+            bound,
+            ClientMsg(ClientMsgType.kEvent, event: eventToResend),
+          );
           return;
         }
 
@@ -1496,7 +1499,10 @@ class RelayManager<T> {
           );
           return;
         }
-        send(bound, ClientMsg(ClientMsgType.kEvent, event: eventToResend));
+        await sendOrThrow(
+          bound,
+          ClientMsg(ClientMsgType.kEvent, event: eventToResend),
+        );
       } catch (error, stackTrace) {
         Logger.log.e(
           () => "Broadcast auth retry failed for $eventId",
