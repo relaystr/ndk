@@ -66,6 +66,11 @@ class RelayManager<T> {
   /// connections whose AUTH event the relay accepted
   final Set<RelayConnectionKey> _authenticatedConnections = {};
 
+  /// the account a connection was opened as, for identities the caller handed
+  /// over instead of registering. A challenge can arrive long after whatever
+  /// asked for that identity is gone, so the connection has to keep it
+  final Map<RelayConnectionKey, Account> _boundAccounts = {};
+
   /// Tracks relay connect attempts that are still finishing setup so callers
   /// can wait for "socket open + listener attached", not just raw socket open.
   final Map<RelayConnectionKey, Completer<bool>> _connectReadyCompleters = {};
@@ -377,10 +382,15 @@ class RelayManager<T> {
 
   /// Reconnects the connection identified by [key], if it is closed. An
   /// authenticated connection comes back authenticated or not at all.
+  ///
+  /// [as] is the identity to open a bound connection as, for a caller that has
+  /// it in hand. Without it the account is looked up, which only works for a
+  /// registered one.
   Future<bool> reconnectConnection(
     RelayConnectionKey key, {
     required ConnectionSource connectionSource,
     bool force = false,
+    Account? as,
   }) async {
     final inFlightConnect = _connectReadyCompleters[key];
     if (inFlightConnect != null) {
@@ -418,7 +428,7 @@ class RelayManager<T> {
       }
 
       if (!key.isAnonymous) {
-        final account = _accounts?.accounts[key.pubkey];
+        final account = as ?? _accountFor(key);
         if (account == null) {
           Logger.log.w(() => "No account left to reconnect $key");
           return false;
@@ -983,6 +993,7 @@ class RelayManager<T> {
       return null;
     }
     final key = RelayConnectionKey.authenticated(url, account.pubkey);
+    _boundAccounts[key] = account;
 
     if (isConnectionOpen(key)) {
       return globalState.relays[key];
@@ -1029,6 +1040,14 @@ class RelayManager<T> {
       connectionSource: connectionSource,
     );
   }
+
+  /// The account [key] authenticates as. A registered account wins, because
+  /// [Accounts] owns its signer's lifetime; otherwise it is the one the caller
+  /// handed to [RelayAuth], which never had to be registered. Both carry
+  /// [RelayConnectionKey.pubkey], so this only picks a signer, never an
+  /// identity.
+  Account? _accountFor(RelayConnectionKey key) =>
+      _accounts?.accounts[key.pubkey] ?? _boundAccounts[key];
 
   /// Waits for the AUTH challenge of [key]. Only call this once something has
   /// asked for authentication, otherwise a relay that only challenges on demand
@@ -1128,8 +1147,12 @@ class RelayManager<T> {
     bool transportGone() => _generationOf(key) != generation;
 
     final connectivity = globalState.relays[key];
-    final account = _accounts?.accounts[key.pubkey];
-    if (connectivity == null || account == null) {
+    final account = _accountFor(key);
+    if (connectivity == null) {
+      return false;
+    }
+    if (account == null) {
+      Logger.log.w(() => "Cannot authenticate $key, no account for its pubkey");
       return false;
     }
     if (!account.signer.canSign()) {
@@ -1631,6 +1654,7 @@ class RelayManager<T> {
       return;
     }
     Logger.log.d(() => "Disconnecting $key...");
+    _boundAccounts.remove(key);
     _forgetAuthState(key);
     _endAuthRetriesLeftBehind(key);
     return connectivity.close();

@@ -32,9 +32,8 @@ final account = Account(
   // Use NdkEventSigner from ndk_flutter for automatic web/native selection
 );
 
-// the account must be registered, that is where the AUTH gets signed
-ndk.accounts.addAccount(pubkey: account.pubkey, type: account.type, signer: account.signer);
-
+// the account does not have to be one of ndk.accounts: handing it over is
+// enough, and it can differ from the one that is logged in
 final response = ndk.requests.query(
   filter: Filter(kinds: [1059], authors: [myPubkey]),
   auth: RelayAuth.allow(account),

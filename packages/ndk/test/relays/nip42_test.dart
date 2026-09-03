@@ -940,6 +940,113 @@ void nip42Tests(NdkEngine engine) {
       await relay1.stopServer();
     });
 
+    test('authenticates as an account that was never registered', () async {
+      final relay1 = MockRelay(
+        name: "relay 1",
+        explicitPort: portBase + 16,
+        requireAuthForRequests: true,
+        signEvents: false,
+      );
+      await relay1.startServer(
+        textNotes: {key1: textNote(key1, "note from key1")},
+      );
+
+      final ndk = ndkFor(relay1);
+      // another identity is logged in, and key1 is not known to accounts at all
+      final other = Bip340.generatePrivateKey();
+      ndk.accounts.loginPrivateKey(
+        pubkey: other.publicKey,
+        privkey: other.privateKey!,
+      );
+
+      await Future.delayed(Duration(seconds: 1));
+
+      final response = ndk.requests.query(
+        filter: notesOf(key1),
+        auth: RelayAuth.require(signableAccount(key1)),
+      );
+
+      expect(await response.future, isNotEmpty);
+      expect(relay1.connectionsAuthenticatedAs(key1.publicKey), 1);
+      expect(
+        relay1.connectionsAuthenticatedAs(other.publicKey),
+        0,
+        reason: 'the logged account is not the one the request asked for',
+      );
+
+      await ndk.destroy();
+      await relay1.stopServer();
+    });
+
+    test('allow authenticates as an unregistered account too', () async {
+      final relay1 = MockRelay(
+        name: "relay 1",
+        explicitPort: portBase + 17,
+        requireAuthForRequests: true,
+        signEvents: false,
+      );
+      await relay1.startServer(
+        textNotes: {key1: textNote(key1, "note from key1")},
+      );
+
+      final ndk = ndkFor(relay1);
+
+      await Future.delayed(Duration(seconds: 1));
+
+      final response = ndk.requests.query(
+        filter: notesOf(key1),
+        auth: RelayAuth.allow(signableAccount(key1)),
+      );
+
+      expect(await response.future, isNotEmpty);
+      expect(relay1.connectionsAuthenticatedAs(key1.publicKey), 1);
+
+      await ndk.destroy();
+      await relay1.stopServer();
+    });
+
+    test('a relay set whose relays all fail does not wait for the timeout',
+        () async {
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: [],
+          engine: engine,
+        ),
+      );
+
+      var timedOut = false;
+      final stopwatch = Stopwatch()..start();
+      final response = ndk.requests.query(
+        filter: notesOf(key1),
+        relaySet: RelaySet(
+          name: 'unreachable',
+          pubKey: key1.publicKey,
+          relaysMap: {'ws://localhost:${portBase + 18}': []},
+          direction: RelayDirection.outbox,
+          fallbackToBootstrapRelays: false,
+        ),
+        timeout: Duration(seconds: 10),
+        timeoutCallback: () => timedOut = true,
+      );
+
+      expect(await response.future, isEmpty);
+      stopwatch.stop();
+
+      expect(timedOut, isFalse);
+      expect(
+        stopwatch.elapsedMilliseconds,
+        lessThan(5000),
+        reason: 'a request no relay could carry must end when they all failed',
+      );
+
+      await ndk.destroy();
+    },
+        skip: engine == NdkEngine.JIT
+            ? 'the jit engine ignores relaySet and picks its relays itself'
+            : null);
+
     test('require with an account that cannot sign sends nothing', () async {
       final relay1 = MockRelay(
         name: "relay 1",
