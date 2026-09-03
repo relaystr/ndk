@@ -63,6 +63,11 @@ class RequestState {
   // key is the connection the request was sent on, value is RelayRequestState
   Map<RelayConnectionKey, RelayRequestState> requests = {};
 
+  /// send paths still working out which connection to use, before they show up
+  /// in [requests]. The relay that answers first must not look like the only
+  /// one this request ever had, or the stream closes on the others
+  int pendingConnections = 0;
+
   /// the original request
   NdkRequest request;
 
@@ -133,7 +138,9 @@ class RequestState {
   }
 
   /// checks if all requests finished (received EOSE or CLOSED)
-  bool get didAllRequestsFinish => requests.values.every(
+  bool get didAllRequestsFinish =>
+      pendingConnections == 0 &&
+      requests.values.every(
         (element) =>
             (element.receivedEOSE || element.receivedClosed) &&
             !element.retryingAuth,

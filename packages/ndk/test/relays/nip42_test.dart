@@ -18,7 +18,7 @@ void main() async {
 /// The AUTH re-route lives under the engines, so both must reach an
 /// authenticated connection the same way.
 void nip42Tests(NdkEngine engine) {
-  final portBase = 3900 + engine.index * 20;
+  final portBase = 3900 + engine.index * 30;
 
   group('NIP-42 [${engine.name}]', () {
     KeyPair key1 = Bip340.generatePrivateKey();
@@ -1079,6 +1079,72 @@ void nip42Tests(NdkEngine engine) {
 
       await ndk.destroy();
       await relay1.stopServer();
+    });
+
+    test('a relay still connecting does not lose its events', () async {
+      final relayA = MockRelay(
+        name: "relay A",
+        explicitPort: portBase + 20,
+        requireAuthForRequests: true,
+        signEvents: false,
+      );
+      final relayB = MockRelay(
+        name: "relay B",
+        explicitPort: portBase + 21,
+        requireAuthForRequests: true,
+        signEvents: false,
+      );
+      final noteA = textNote(key1, "note on A");
+      final noteB = textNote(key1, "note on B");
+      await relayA.startServer(textNotes: {key1: noteA});
+      await relayB.startServer(textNotes: {key1: noteB});
+
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: [],
+          engine: engine,
+        ),
+      );
+      final account1 = signableAccount(key1);
+      ndk.accounts.addAccount(
+        pubkey: account1.pubkey,
+        type: account1.type,
+        signer: account1.signer,
+      );
+
+      // warm up A only, so the real query finds A's bound connection ready and
+      // has to open B's, which is what puts the two send paths out of step
+      await ndk.requests
+          .query(
+            filter: notesOf(key1),
+            explicitRelays: [relayA.url],
+            auth: RelayAuth.require(account1),
+            cacheRead: false,
+            cacheWrite: false,
+          )
+          .future;
+
+      final events = await ndk.requests
+          .query(
+            filter: notesOf(key1),
+            explicitRelays: [relayA.url, relayB.url],
+            auth: RelayAuth.require(account1),
+            cacheRead: false,
+            cacheWrite: false,
+          )
+          .future;
+
+      expect(
+        events.map((event) => event.content),
+        containsAll(['note on A', 'note on B']),
+        reason: 'the stream must not close on the relay still connecting',
+      );
+
+      await ndk.destroy();
+      await relayA.stopServer();
+      await relayB.stopServer();
     });
 
     test('require with an account that cannot sign sends nothing', () async {

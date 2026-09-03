@@ -340,26 +340,31 @@ Future<void> _sendRequestToSocket(
     globalState.inFlightRequests[requestState.id] = requestState;
   }
 
-  final target = await relayManager.connectionForRequest(
-    requestState,
-    connectedRelay,
-  );
-  if (target == null || !relayManager.isStillInFlight(requestState)) {
-    return;
+  relayManager.beginPendingConnection(requestState);
+  try {
+    final target = await relayManager.connectionForRequest(
+      requestState,
+      connectedRelay,
+    );
+    if (target == null || !relayManager.isStillInFlight(requestState)) {
+      return;
+    }
+
+    // link the request id to the relay
+    relayManager.registerRelayRequest(
+      reqId: requestState.id,
+      connectionKey: target.key,
+      filters: filters,
+    );
+
+    // send out the request
+    relayManager.send(
+      target,
+      ClientMsg(ClientMsgType.kReq, id: requestState.id, filters: filters),
+    );
+  } finally {
+    relayManager.endPendingConnection(requestState);
   }
-
-  // link the request id to the relay
-  relayManager.registerRelayRequest(
-    reqId: requestState.id,
-    connectionKey: target.key,
-    filters: filters,
-  );
-
-  // send out the request
-  relayManager.send(
-    target,
-    ClientMsg(ClientMsgType.kReq, id: requestState.id, filters: filters),
-  );
 }
 
 Filter _splitFilter(Filter filter, List<String> pubkeysToInclude) {

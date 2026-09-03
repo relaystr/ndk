@@ -61,13 +61,26 @@ class RelaySetsEngine implements NetworkEngine {
       return false;
     }
 
-    final connected = await _relayManager.reconnectConnection(
-      request.key,
-      connectionSource:
-          ConnectionSource.explicit, // TODO improve this connection source
-      force: false,
-      as: _globalState.inFlightRequests[id]?.request.auth?.account,
-    );
+    // a connection that is still opening is not one that is gone, and
+    // _checkNetworkClose cannot tell them apart on its own
+    final state = _globalState.inFlightRequests[id];
+    if (state != null) {
+      _relayManager.beginPendingConnection(state);
+    }
+    final bool connected;
+    try {
+      connected = await _relayManager.reconnectConnection(
+        request.key,
+        connectionSource:
+            ConnectionSource.explicit, // TODO improve this connection source
+        force: false,
+        as: state?.request.auth?.account,
+      );
+    } finally {
+      if (state != null) {
+        _relayManager.endPendingConnection(state);
+      }
+    }
     if (connected) {
       RelayConnectivity? relay = _globalState.relays[request.key];
       if (relay == null) {

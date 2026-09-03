@@ -52,23 +52,28 @@ class RelayJitRequestSpecificStrategy {
     Filter filter,
     RelayManager relayManager,
   ) async {
-    final target = await relayManager.connectionForRequest(
-      requestState,
-      connectedRelay,
-    );
-    if (target == null || !relayManager.isStillInFlight(requestState)) {
-      return;
-    }
+    relayManager.beginPendingConnection(requestState);
+    try {
+      final target = await relayManager.connectionForRequest(
+        requestState,
+        connectedRelay,
+      );
+      if (target == null || !relayManager.isStillInFlight(requestState)) {
+        return;
+      }
 
-    /// register request
-    relayManager.registerRelayRequest(
-      reqId: requestState.id,
-      connectionKey: target.key,
-      filters: [filter],
-    );
-    relayManager.send(
-      target,
-      ClientMsg(ClientMsgType.kReq, id: requestState.id, filters: [filter]),
-    );
+      /// register request
+      relayManager.registerRelayRequest(
+        reqId: requestState.id,
+        connectionKey: target.key,
+        filters: [filter],
+      );
+      relayManager.send(
+        target,
+        ClientMsg(ClientMsgType.kReq, id: requestState.id, filters: [filter]),
+      );
+    } finally {
+      relayManager.endPendingConnection(requestState);
+    }
   }
 }

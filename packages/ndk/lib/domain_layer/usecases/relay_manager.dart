@@ -1349,6 +1349,20 @@ class RelayManager<T> {
   /// [Requests.closeSubscription] may have ended the request in between.
   bool isStillInFlight(RequestState state) => _isStillInFlight(state.id, state);
 
+  /// Announces a send path that has yet to work out which connection to use,
+  /// so a relay answering meanwhile does not look like the only one this
+  /// request ever had. Pair every call with [endPendingConnection].
+  void beginPendingConnection(RequestState state) => state.pendingConnections++;
+
+  /// Ends what [beginPendingConnection] announced, and reconsiders closing the
+  /// request. A path that gave up without registering anything is the last
+  /// thing that can notice: nothing else runs when a connection simply never
+  /// opened.
+  void endPendingConnection(RequestState state) {
+    state.pendingConnections--;
+    _checkNetworkClose(state);
+  }
+
   /// Handles CLOSED auth-required.
   ///
   /// A connection is bound to at most one identity, and that binding never
@@ -1570,6 +1584,13 @@ class RelayManager<T> {
   }
 
   void _checkNetworkClose(RequestState state) {
+    // a send path is still working out which connection to use, so the relays
+    // registered so far are not all this request will ever have. Both branches
+    // below would read that as finished
+    if (state.pendingConnections > 0) {
+      return;
+    }
+
     /// received everything, close the network controller
     if (state.didAllRequestsFinish) {
       state.networkController.close();
