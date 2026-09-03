@@ -166,11 +166,28 @@ class RelayJitPubkeyStrategy with Logger {
   }) async {
     /// ### resolve not covered pubkeys ###
     // look in nip65 data for not covered pubkeys
-    List<UserRelayList> nip65Data =
-        await UserRelayLists.getUserRelayListCacheLatest(
-      pubkeys: coveragePubkeys.map((e) => e.pubkey).toList(),
-      cacheManager: cacheManager,
-    );
+    late final List<UserRelayList> nip65Data;
+    try {
+      nip65Data = await UserRelayLists.getUserRelayListCacheLatest(
+        pubkeys: coveragePubkeys.map((e) => e.pubkey).toList(),
+        cacheManager: cacheManager,
+      );
+    } catch (error, stackTrace) {
+      Logger.log.w(
+        () => "Could not load relay lists; falling back to bootstrap relays",
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return coveragePubkeys
+          .map(
+            (pubkey) => CoveragePubkey(
+              pubkey.pubkey,
+              pubkey.desiredCoverage,
+              pubkey.missingCoverage,
+            ),
+          )
+          .toList();
+    }
 
     // by finding the best relays to connect and send out the request
     RelayRankingResult relayRanking = rankRelays(

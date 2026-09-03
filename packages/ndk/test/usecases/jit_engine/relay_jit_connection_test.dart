@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
+import 'package:ndk/domain_layer/entities/connection_source.dart';
 import 'package:ndk/domain_layer/entities/global_state.dart';
+import 'package:ndk/domain_layer/entities/jit_engine_relay_connectivity_data.dart';
+import 'package:ndk/domain_layer/entities/relay_connectivity.dart';
 import 'package:ndk/domain_layer/entities/request_state.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/domain_layer/repositories/nostr_transport.dart';
@@ -290,7 +293,67 @@ void main() async {
       delayedTransport.open();
       await handling;
     });
+
+    test('blasts to bootstrap relays when relay-list cache throws', () async {
+      final fallbackUrl = 'ws://fallback.example';
+      final fallbackTransport = _ControlledTransport(open: true);
+      final factory = _ControlledTransportFactory({
+        fallbackUrl: fallbackTransport,
+      });
+      addTearDown(fallbackTransport.close);
+
+      final globalState = GlobalState();
+      final relayManager = RelayManager<JitEngineRelayConnectivityData>(
+        bootstrapRelays: const [],
+        globalState: globalState,
+        nostrTransportFactory: factory,
+        engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
+      );
+      final connected = await relayManager.connectRelay(
+        dirtyUrl: fallbackUrl,
+        connectionSource: ConnectionSource.pubkeyStrategy,
+      );
+      expect(connected.first, isTrue);
+
+      final requestState = RequestState(
+        NdkRequest.query(
+          'cache-error-fallback',
+          timeoutDuration: const Duration(seconds: 2),
+          filters: [
+            Filter(authors: [key1.publicKey])
+          ],
+        ),
+      );
+      globalState.inFlightRequests[requestState.id] = requestState;
+
+      await RelayJitPubkeyStrategy.handleRequest(
+        requestState: requestState,
+        globalState: globalState,
+        filter: requestState.unresolvedFilters.single,
+        connectedRelays: relayManager.connectedAnonymousRelays
+            .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
+            .toList(),
+        bootstrapRelays: [fallbackUrl],
+        cacheManager: _ThrowingUserRelayListCache(),
+        desiredCoverage: 1,
+        closeOnEOSE: true,
+        direction: ReadWriteMarker.writeOnly,
+        ignoreRelays: const [],
+        relayManager: relayManager,
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(fallbackTransport.sentData, hasLength(1));
+      expect(fallbackTransport.sentData.single, contains('"REQ"'));
+      expect(fallbackTransport.sentData.single, contains(key1.publicKey));
+    });
   });
+}
+
+class _ThrowingUserRelayListCache extends MemCacheManager {
+  @override
+  Future<UserRelayList?> loadUserRelayList(String pubKey) =>
+      Future.error(StateError('cache unavailable'));
 }
 
 class _ControlledTransportFactory implements NostrTransportFactory {
@@ -313,6 +376,7 @@ class _ControlledTransportFactory implements NostrTransportFactory {
 class _ControlledTransport implements NostrTransport {
   final StreamController<dynamic> _messages = StreamController.broadcast();
   final Completer<void> _ready = Completer<void>();
+  final List<dynamic> sentData = [];
   bool _open;
 
   _ControlledTransport({required bool open}) : _open = open {
@@ -364,5 +428,5 @@ class _ControlledTransport implements NostrTransport {
       _messages.stream.listen(onData, onError: onError, onDone: onDone);
 
   @override
-  void send(dynamic data) {}
+  void send(dynamic data) => sentData.add(data);
 }

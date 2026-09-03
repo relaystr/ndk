@@ -108,6 +108,10 @@ void main() {
               .lastConnectTry = 0;
           await relay.closeClientSockets();
           await _waitUntil(
+            () => relay.connectedClientCount == 0,
+            reason: 'the relay never observed the closed client sockets',
+          );
+          await _waitUntil(
             () =>
                 relay.connectedClientCount == 1 &&
                 relay.activeSubscriptionCount == 1,
