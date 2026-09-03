@@ -39,6 +39,17 @@ external int verifyNostrEventNative(
   Pointer<Utf8> signatureHex,
 );
 
+/// Verifies a Nostr Schnorr signature from one packed ASCII buffer containing
+/// event id (64 bytes), pubkey (64 bytes), and signature (128 bytes).
+@Native<Int32 Function(Pointer<Uint8>, IntPtr)>(
+  symbol: 'verify_schnorr_signature_packed',
+  isLeaf: true,
+)
+external int verifySchnorrSignaturePackedNative(
+  Pointer<Uint8> packed,
+  int packedLength,
+);
+
 // ── Quantum-Secure ML-DSA (FIPS 204) bindings ──────────────────────────
 //
 // These were CRYSTALS-Dilithium. NIST altered the algorithm during

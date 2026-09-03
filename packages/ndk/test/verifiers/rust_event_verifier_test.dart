@@ -179,5 +179,46 @@ void main() {
       final result = await verifier.verify(event);
       expect(result, isTrue);
     });
+
+    test('rejects malformed fixed-size signature fields', () async {
+      final event = Nip01Event(
+        id: 'z' * 64,
+        pubKey: keyPair.publicKey,
+        kind: 1,
+        tags: const [],
+        content: '',
+        sig: '0' * 128,
+      );
+
+      expect(await verifier.verify(event), isFalse);
+    });
+
+    test('repeatedly verifies an event with many large tags', () async {
+      final createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final tags = List.generate(
+        200,
+        (index) => ['x', '$index-${'a' * 1024}'],
+      );
+      final id = Nip01Utils.calculateEventIdSync(
+        pubKey: keyPair.publicKey,
+        createdAt: createdAt,
+        kind: 1,
+        tags: tags,
+        content: 'large tagged event',
+      );
+      final event = Nip01Event(
+        id: id,
+        pubKey: keyPair.publicKey,
+        createdAt: createdAt,
+        kind: 1,
+        tags: tags,
+        content: 'large tagged event',
+        sig: Bip340.sign(id, keyPair.privateKey!),
+      );
+
+      for (var iteration = 0; iteration < 100; iteration++) {
+        expect(await verifier.verify(event), isTrue);
+      }
+    });
   });
 }
