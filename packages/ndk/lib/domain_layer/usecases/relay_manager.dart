@@ -1451,33 +1451,65 @@ class RelayManager<T> {
     );
 
     Future<void> retryOnBoundConnection() async {
-      final bound = await openConnectionAs(
-        relayConnectivity.url,
-        account!,
-        connectionSource: relayConnectivity.relay.connectionSource,
-      );
-      if (bound == null ||
-          globalState.inFlightBroadcasts[eventId] != broadcastState) {
-        failBroadcast(eventId, relayConnectivity.url, 'auth connection failed');
-        return;
-      }
+      try {
+        final bound = await openConnectionAs(
+          relayConnectivity.url,
+          account!,
+          connectionSource: relayConnectivity.relay.connectionSource,
+        );
+        if (!identical(
+          globalState.inFlightBroadcasts[eventId],
+          broadcastState,
+        )) {
+          return;
+        }
+        if (bound == null) {
+          failBroadcast(
+            eventId,
+            relayConnectivity.url,
+            'auth connection failed',
+          );
+          return;
+        }
 
-      // Some relays challenge immediately; others only after seeing EVENT on
-      // the bound socket. Trigger the latter, then the next auth-required OK
-      // enters this method with the bound key and authenticates below.
-      if (relayConnectivity.key != boundKey &&
-          !_authenticatedConnections.contains(boundKey)) {
+        // Some relays challenge immediately; others only after seeing EVENT on
+        // the bound socket. Trigger the latter, then the next auth-required OK
+        // enters this method with the bound key and authenticates below.
+        if (relayConnectivity.key != boundKey &&
+            !_authenticatedConnections.contains(boundKey)) {
+          send(bound, ClientMsg(ClientMsgType.kEvent, event: eventToResend));
+          return;
+        }
+
+        final accepted = await authenticateConnection(boundKey);
+        if (!identical(
+          globalState.inFlightBroadcasts[eventId],
+          broadcastState,
+        )) {
+          return;
+        }
+        if (!accepted) {
+          failBroadcast(
+            eventId,
+            relayConnectivity.url,
+            'authentication failed',
+          );
+          return;
+        }
         send(bound, ClientMsg(ClientMsgType.kEvent, event: eventToResend));
-        return;
+      } catch (error, stackTrace) {
+        Logger.log.e(
+          () => "Broadcast auth retry failed for $eventId",
+          error: error,
+          stackTrace: stackTrace,
+        );
+        if (identical(
+          globalState.inFlightBroadcasts[eventId],
+          broadcastState,
+        )) {
+          failBroadcast(eventId, relayConnectivity.url, 'auth retry failed');
+        }
       }
-
-      final accepted = await authenticateConnection(boundKey);
-      if (!accepted ||
-          globalState.inFlightBroadcasts[eventId] != broadcastState) {
-        failBroadcast(eventId, relayConnectivity.url, 'authentication failed');
-        return;
-      }
-      send(bound, ClientMsg(ClientMsgType.kEvent, event: eventToResend));
     }
 
     unawaited(retryOnBoundConnection());

@@ -196,57 +196,63 @@ class RelayJitPubkeyStrategy with Logger {
       }
     }
 
-    // connect to the new found relays and send out the request
+    // Start every candidate immediately. Awaiting inside this loop would make
+    // an unreachable relay consume the full connection timeout before the next
+    // useful candidate is even attempted.
+    final connectionAttempts = <Future<void>>[];
     for (final relayCandidate in relayRanking.ranking) {
       if (relayCandidate.score <= 0) {
         continue;
       }
-      // check if the relayCandidate is already connected
-      bool alreadyConnected = connectedRelays.any(
-        (element) => element.url == relayCandidate.relayUrl,
-      );
-
-      if (!alreadyConnected) {
-        final success = await relayManger.connectRelay(
-          dirtyUrl: relayCandidate.relayUrl,
-          connectionSource: ConnectionSource.pubkeyStrategy,
+      connectionAttempts.add(() async {
+        // check if the relayCandidate is already connected
+        final alreadyConnected = connectedRelays.any(
+          (element) => element.url == relayCandidate.relayUrl,
         );
-        if (!success.first) {
-          markCandidateUnavailable(relayCandidate);
-          Logger.log.w(
-            () =>
-                "Could not connect to relay: ${relayCandidate.relayUrl} - errorHandling",
+
+        if (!alreadyConnected) {
+          final success = await relayManger.connectRelay(
+            dirtyUrl: relayCandidate.relayUrl,
+            connectionSource: ConnectionSource.pubkeyStrategy,
           );
-          continue;
+          if (!success.first) {
+            markCandidateUnavailable(relayCandidate);
+            Logger.log.w(
+              () =>
+                  "Could not connect to relay: ${relayCandidate.relayUrl} - errorHandling",
+            );
+            return;
+          }
         }
-      }
 
-      final myRelayConnectivity = globalState
-          .relays[RelayConnectionKey.anonymous(relayCandidate.relayUrl)];
-      if (myRelayConnectivity
-          is! RelayConnectivity<JitEngineRelayConnectivityData>) {
-        markCandidateUnavailable(relayCandidate);
-        continue;
-      }
+        final myRelayConnectivity = globalState
+            .relays[RelayConnectionKey.anonymous(relayCandidate.relayUrl)];
+        if (myRelayConnectivity
+            is! RelayConnectivity<JitEngineRelayConnectivityData>) {
+          markCandidateUnavailable(relayCandidate);
+          return;
+        }
 
-      myRelayConnectivity.specificEngineData!.addPubkeysToAssignedPubkeys(
-        relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
-        direction,
-      );
+        myRelayConnectivity.specificEngineData!.addPubkeysToAssignedPubkeys(
+          relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
+          direction,
+        );
 
-      _sendRequestToSocket(
-        myRelayConnectivity,
-        requestState,
-        [
-          _splitFilter(
-            filter,
-            relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
-          ),
-        ],
-        globalState,
-        relayManger,
-      );
+        _sendRequestToSocket(
+          myRelayConnectivity,
+          requestState,
+          [
+            _splitFilter(
+              filter,
+              relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
+            ),
+          ],
+          globalState,
+          relayManger,
+        );
+      }());
     }
+    await Future.wait(connectionAttempts);
 
     return unresolvedByPubkey.values
         .where((pubkey) => pubkey.missingCoverage > 0)
