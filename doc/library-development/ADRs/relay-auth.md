@@ -73,3 +73,9 @@ Configured once on the NDK config, consulted only for `allow` and `require`. Wit
 both authenticate automatically.
 
 Returning `null` means do not authenticate.
+
+
+## Final Notes
+
+Proposal Accepted
+by: frnandu, 1leo, nogringo
