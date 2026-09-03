@@ -487,6 +487,19 @@ class Requests {
       }
     }
 
+    /// Awaits a page, merging what its relays answer while it is still running
+    /// so the aggregated stream reports a pending relay instead of only the
+    /// pages that ended.
+    Future<List<Nip01Event>> awaitPage(NdkResponse page) async {
+      final outcomes = page.relayOutcomesStream.listen(mergeRelayOutcomes);
+      try {
+        return await page.future;
+      } finally {
+        await outcomes.cancel();
+        mergeRelayOutcomes(page.relayOutcomes);
+      }
+    }
+
     Future<void> paginate() async {
       final since = filter.since;
 
@@ -509,8 +522,7 @@ class Requests {
         ),
       );
 
-      final initialEvents = await initialResponse.future;
-      mergeRelayOutcomes(initialResponse.relayOutcomes);
+      final initialEvents = await awaitPage(initialResponse);
 
       // Emit initial events and discover relays
       final relayState = <String, _RelayPaginationState>{};
@@ -585,8 +597,7 @@ class Requests {
             ),
           );
 
-          final pageEvents = await response.future;
-          mergeRelayOutcomes(response.relayOutcomes);
+          final pageEvents = await awaitPage(response);
           return MapEntry(relay, pageEvents);
         });
 

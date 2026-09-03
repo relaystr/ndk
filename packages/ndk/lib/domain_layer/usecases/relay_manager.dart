@@ -742,10 +742,14 @@ class RelayManager<T> {
           reSubscribeInFlightSubscriptions(relayConnectivity);
         }
         _endAuthRetriesLeftBehind(relayConnectivity.key);
+        if (!connected) {
+          _endRequestsLeftBehind(relayConnectivity.key);
+        }
       });
       return;
     }
     _endAuthRetriesLeftBehind(relayConnectivity.key);
+    _endRequestsLeftBehind(relayConnectivity.key);
   }
 
   /// Gives up on the requests that were still waiting for [key] to replay them.
@@ -758,6 +762,23 @@ class RelayManager<T> {
         continue;
       }
       request.retryingAuth = false;
+      _checkNetworkClose(state);
+    }
+  }
+
+  /// Gives up on the requests [key] still owed us once nothing will bring that
+  /// connection back. They are reported as disconnected right away instead of
+  /// waiting for a completion event no relay will send, or for the timeout.
+  void _endRequestsLeftBehind(RelayConnectionKey key) {
+    for (final state in globalState.inFlightRequests.values.toList()) {
+      final request = state.requests[key];
+      if (request == null ||
+          request.retryingAuth ||
+          request.receivedEOSE ||
+          request.receivedClosed) {
+        continue;
+      }
+      request.connectionGone = true;
       _checkNetworkClose(state);
     }
   }

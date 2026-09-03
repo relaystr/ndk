@@ -1,6 +1,9 @@
+import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
+import 'package:ndk/domain_layer/usecases/relay_manager.dart';
 import 'package:ndk/entities.dart' as ndk_entities;
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk/shared/nips/nip01/client_msg.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
 
@@ -12,6 +15,81 @@ void main() {
     relayOutcomesTests(engine);
   }
   collapseTests();
+  deadConnectionTests();
+}
+
+/// Polls [condition] so a test does not depend on connect or reconnect timings.
+Future<void> _waitUntil(
+  bool Function() condition, {
+  Duration timeout = const Duration(seconds: 10),
+  String reason = 'condition never became true',
+}) async {
+  final deadline = DateTime.now().add(timeout);
+  while (DateTime.now().isBefore(deadline)) {
+    if (condition()) return;
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+  }
+  fail(reason);
+}
+
+/// A socket that dies for good, which only the plain transport can be made to
+/// do: the reconnecting one keeps its message stream open across a drop.
+void deadConnectionTests() {
+  group('relay outcomes on a dead connection', () {
+    test('a request nothing will send again reports disconnected', () async {
+      final relay = MockRelay(
+        name: "relay 1",
+        signEvents: false,
+        silenceRequests: true,
+      );
+      await relay.startServer();
+
+      final manager = RelayManager(
+        globalState: ndk_entities.GlobalState(),
+        bootstrapRelays: [relay.url],
+        nostrTransportFactory: WebSocketNostrTransportFactory(),
+      );
+      await manager.connectRelay(
+        dirtyUrl: relay.url,
+        connectionSource: ndk_entities.ConnectionSource.seed,
+      );
+
+      final filter = Filter(kinds: [Nip01Event.kTextNodeKind]);
+      final state = ndk_entities.RequestState(
+        NdkRequest.query(
+          "dead-connection-test",
+          filters: [filter],
+          // long enough that the timeout cannot be what ends the request
+          timeoutDuration: Duration(seconds: 60),
+        ),
+      );
+      final key = RelayConnectionKey.anonymous(relay.url);
+      state.addRequest(key, [filter]);
+      manager.globalState.inFlightRequests[state.id] = state;
+      await manager.sendOrThrow(
+        manager.globalState.relays[key]!,
+        ClientMsg(ClientMsgType.kReq, id: state.id, filters: [filter]),
+      );
+      await _waitUntil(
+        () => relay.connectedClientCount == 1,
+        reason: 'the request never reached the relay',
+      );
+
+      // nothing will bring the socket back, so nothing owes the request a reply
+      manager.allowReconnectRelays = false;
+      await relay.closeClientSockets();
+
+      await _waitUntil(
+        () =>
+            state.relayOutcomes[relay.url]?.type ==
+            RelayRequestOutcomeType.disconnected,
+        reason: 'the request stayed on a socket nobody will reopen',
+      );
+      expect(state.networkController.isClosed, true);
+
+      await relay.stopServer();
+    });
+  });
 }
 
 /// What no relay can be made to do on demand: a connection that goes away, and
@@ -280,6 +358,39 @@ void relayOutcomesTests(NdkEngine engine) {
 
       expect(response.relayOutcomes, {
         relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.timedOut),
+      });
+    });
+
+    test('a paginated query streams a relay while its page is running',
+        () async {
+      relay1 = MockRelay(name: "relay 1", signEvents: false);
+      await relay1.startServer(
+        textNotes: {key1: textNote(key1)},
+        delayResponse: Duration(seconds: 1),
+      );
+      ndk = buildNdk();
+
+      final response = ndk.requests.query(
+        filter: Filter(
+          kinds: [Nip01Event.kTextNodeKind],
+          authors: [key1.publicKey],
+        ),
+        cacheRead: false,
+        paginate: true,
+      );
+      final streamed = response.relayOutcomesStream.toList();
+      await response.future;
+
+      final outcomes = await streamed;
+      expect(
+        outcomes,
+        anyElement(equals({
+          relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.pending),
+        })),
+        reason: 'a page still running must show its relay as pending',
+      );
+      expect(outcomes.last, {
+        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.eose),
       });
     });
 
