@@ -1344,6 +1344,11 @@ class RelayManager<T> {
   bool _isStillInFlight(String reqId, RequestState state) =>
       identical(globalState.inFlightRequests[reqId], state);
 
+  /// Whether [state] is still tracked, see [_isStillInFlight]. Engines must ask
+  /// before sending anything they resolved across an await: a timeout or a
+  /// [Requests.closeSubscription] may have ended the request in between.
+  bool isStillInFlight(RequestState state) => _isStillInFlight(state.id, state);
+
   /// Handles CLOSED auth-required.
   ///
   /// A connection is bound to at most one identity, and that binding never

@@ -344,7 +344,7 @@ Future<void> _sendRequestToSocket(
     requestState,
     connectedRelay,
   );
-  if (target == null) {
+  if (target == null || !relayManager.isStillInFlight(requestState)) {
     return;
   }
 

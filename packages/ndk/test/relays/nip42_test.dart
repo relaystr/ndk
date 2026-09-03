@@ -1047,6 +1047,40 @@ void nip42Tests(NdkEngine engine) {
             ? 'the jit engine ignores relaySet and picks its relays itself'
             : null);
 
+    test('closing a subscription while its connection opens is not an error',
+        () async {
+      final relay1 = MockRelay(
+        name: "relay 1",
+        explicitPort: portBase + 19,
+        requireAuthForRequests: true,
+        signEvents: false,
+      );
+      await relay1.startServer(
+        textNotes: {key1: textNote(key1, "note from key1")},
+      );
+
+      final ndk = ndkFor(relay1);
+
+      await Future.delayed(Duration(seconds: 1));
+
+      const subId = 'closed-while-connecting';
+      ndk.requests.subscription(
+        id: subId,
+        filter: notesOf(key1),
+        explicitRelays: [relay1.url],
+        auth: RelayAuth.require(signableAccount(key1)),
+      );
+
+      // the strategy is still opening the bound connection, and what it
+      // resolves must not be registered against a request nobody tracks
+      await Future.delayed(Duration(milliseconds: 1));
+      await ndk.requests.closeSubscription(subId);
+      await Future.delayed(Duration(seconds: 1));
+
+      await ndk.destroy();
+      await relay1.stopServer();
+    });
+
     test('require with an account that cannot sign sends nothing', () async {
       final relay1 = MockRelay(
         name: "relay 1",

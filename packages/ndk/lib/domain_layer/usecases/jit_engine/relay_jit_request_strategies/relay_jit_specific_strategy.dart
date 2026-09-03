@@ -56,7 +56,7 @@ class RelayJitRequestSpecificStrategy {
       requestState,
       connectedRelay,
     );
-    if (target == null) {
+    if (target == null || !relayManager.isStillInFlight(requestState)) {
       return;
     }
 
