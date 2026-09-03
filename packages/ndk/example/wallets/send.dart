@@ -7,7 +7,8 @@ import 'package:ndk/domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import 'package:ndk/ndk.dart';
 
 Future<void> main() async {
-  final invoice = Platform.environment['INVOICE']!;
+  final payment = Platform.environment['PAYMENT']!;
+  final amountSats = int.parse(Platform.environment['AMOUNT'] ?? '1000');
 
   final ndk = Ndk(
     NdkConfig(
@@ -29,10 +30,11 @@ Future<void> main() async {
 
     final walletId = Platform.environment['WALLET_ID'] ?? wallets.first.id;
 
-    final result = await ndk.wallets.send(walletId: walletId, invoice: invoice);
+    final result = await ndk.wallets.payBip321(walletId: walletId, payment: payment, amountMsat: amountSats * 1000);
 
     print('Payment result:');
     print('- preimage: ${result.preimage}');
+    print('- payerProof: ${result.payerProof}');
     print('- fees paid: ${result.feesPaid / 1000} sats');
     if (result.errorCode != null || result.errorMessage != null) {
       print('- error code: ${result.errorCode}');

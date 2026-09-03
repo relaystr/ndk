@@ -1,5 +1,8 @@
 import 'wallet_type.dart';
 
+/// Lightning payment protocols a wallet can use for internal transfers.
+enum WalletPaymentProtocol { bolt11, bolt12 }
+
 /// Base interface for all wallet types
 /// Provides common properties and methods that all wallets must implement
 abstract class Wallet {
@@ -44,4 +47,29 @@ abstract class Wallet {
 
   /// Indicates if the wallet can send funds
   bool get canSend;
+
+  /// Payment protocols this wallet can send.
+  ///
+  /// Wallets keep BOLT11 as the compatibility default. Wallet types with
+  /// richer or dynamic capabilities should override this getter.
+  Set<WalletPaymentProtocol> get sendPaymentProtocols => canSend
+      ? const {WalletPaymentProtocol.bolt11}
+      : const <WalletPaymentProtocol>{};
+
+  /// Payment protocols this wallet can receive.
+  Set<WalletPaymentProtocol> get receivePaymentProtocols => canReceive
+      ? const {WalletPaymentProtocol.bolt11}
+      : const <WalletPaymentProtocol>{};
+
+  /// Whether this wallet can use the NWC-321/BIP-321 `pay` operation.
+  bool get supportsBip321Pay => false;
+
+  /// Whether this wallet can use the NWC-321/BIP-321 `receive` operation.
+  bool get supportsBip321Receive => false;
+
+  /// Whether this wallet can directly pay a BOLT11 invoice.
+  bool get supportsBolt11InvoicePay => canSend;
+
+  /// Whether this wallet can directly create a BOLT11 invoice.
+  bool get supportsBolt11InvoiceReceive => canReceive;
 }

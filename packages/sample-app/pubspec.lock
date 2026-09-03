@@ -169,6 +169,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.9"
+  dart_bip353:
+    dependency: transitive
+    description:
+      name: dart_bip353
+      sha256: "269daf722556e66c56cf62f7c7d584bd8f43e7480113f31001f382135f8899c5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.0"
+  dart_bolt12_decoder:
+    dependency: transitive
+    description:
+      name: dart_bolt12_decoder
+      sha256: c61b34b6922c5f64d6f50d16c479bd3f0189a093557d59f4eb69424c51dd3d57
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.0"
   dbus:
     dependency: transitive
     description:
@@ -587,21 +603,21 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.8.4-dev.11"
+    version: "0.9.0"
   ndk_drift:
     dependency: "direct main"
     description:
       path: "../drift"
       relative: true
     source: path
-    version: "0.1.1-dev.13"
+    version: "0.1.1+1"
   ndk_flutter:
     dependency: "direct main"
     description:
       path: "../ndk_flutter"
       relative: true
     source: path
-    version: "0.8.4-dev.14"
+    version: "0.9.0"
   nested:
     dependency: transitive
     description:

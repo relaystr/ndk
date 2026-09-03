@@ -26,14 +26,24 @@ import 'package:web_socket_channel/web_socket_channel.dart' as _i2;
 
 class _FakeWebSocketChannel_0 extends _i1.SmartFake
     implements _i2.WebSocketChannel {
-  _FakeWebSocketChannel_0(Object parent, Invocation parentInvocation)
-      : super(parent, parentInvocation);
+  _FakeWebSocketChannel_0(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
 }
 
 class _FakeStreamSubscription_1<T> extends _i1.SmartFake
     implements _i3.StreamSubscription<T> {
-  _FakeStreamSubscription_1(Object parent, Invocation parentInvocation)
-      : super(parent, parentInvocation);
+  _FakeStreamSubscription_1(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
 }
 
 /// A class which mocks [WebsocketDS].
@@ -61,13 +71,22 @@ class MockWebsocketDS extends _i1.Mock implements _i4.WebsocketDS {
   }) =>
       (super.noSuchMethod(
         Invocation.method(
-            #listen, [onData], {#onError: onError, #onDone: onDone}),
+          #listen,
+          [onData],
+          {
+            #onError: onError,
+            #onDone: onDone,
+          },
+        ),
         returnValue: _FakeStreamSubscription_1<dynamic>(
           this,
           Invocation.method(
             #listen,
             [onData],
-            {#onError: onError, #onDone: onDone},
+            {
+              #onError: onError,
+              #onDone: onDone,
+            },
           ),
         ),
         returnValueForMissingStub: _FakeStreamSubscription_1<dynamic>(
@@ -75,34 +94,49 @@ class MockWebsocketDS extends _i1.Mock implements _i4.WebsocketDS {
           Invocation.method(
             #listen,
             [onData],
-            {#onError: onError, #onDone: onDone},
+            {
+              #onError: onError,
+              #onDone: onDone,
+            },
           ),
         ),
       ) as _i3.StreamSubscription<dynamic>);
 
   @override
   void send(dynamic data) => super.noSuchMethod(
-        Invocation.method(#send, [data]),
+        Invocation.method(
+          #send,
+          [data],
+        ),
         returnValueForMissingStub: null,
       );
 
   @override
   _i3.Future<void> ready() => (super.noSuchMethod(
-        Invocation.method(#ready, []),
+        Invocation.method(
+          #ready,
+          [],
+        ),
         returnValue: _i3.Future<void>.value(),
         returnValueForMissingStub: _i3.Future<void>.value(),
       ) as _i3.Future<void>);
 
   @override
   _i3.Future<void> close() => (super.noSuchMethod(
-        Invocation.method(#close, []),
+        Invocation.method(
+          #close,
+          [],
+        ),
         returnValue: _i3.Future<void>.value(),
         returnValueForMissingStub: _i3.Future<void>.value(),
       ) as _i3.Future<void>);
 
   @override
   bool isOpen() => (super.noSuchMethod(
-        Invocation.method(#isOpen, []),
+        Invocation.method(
+          #isOpen,
+          [],
+        ),
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);

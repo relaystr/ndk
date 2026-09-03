@@ -13,6 +13,8 @@ void main() {
         NwcMethod.fromPlaintext('get_budget'),
         equals(NwcMethod.GET_BUDGET),
       );
+      expect(NwcMethod.fromPlaintext('pay'), equals(NwcMethod.PAY));
+      expect(NwcMethod.fromPlaintext('receive'), equals(NwcMethod.RECEIVE));
       expect(
         NwcMethod.fromPlaintext('pay_invoice'),
         equals(NwcMethod.PAY_INVOICE),

@@ -64,6 +64,7 @@ class _NWalletActionsState extends State<NWalletActions>
 
         final bool isCashu = wallet is CashuWallet;
         final bool isNwc = wallet is NwcWallet;
+        final bool isBolt12 = wallet is Bolt12Wallet;
         final bool canSend = wallet.canSend;
         final bool canReceive = wallet.canReceive;
         final bool condensed = widget.condensed;
@@ -101,6 +102,8 @@ class _NWalletActionsState extends State<NWalletActions>
                           return const Icon(Icons.cloud, color: Colors.blue);
                         },
                       )
+                    else if (isBolt12)
+                      const Icon(Icons.electric_bolt, color: Colors.green)
                     else
                       const Icon(Icons.bolt, color: Colors.purple),
                     const SizedBox(width: 8),
@@ -109,6 +112,8 @@ class _NWalletActionsState extends State<NWalletActions>
                           ? l10n.cashuWallet
                           : isNwc
                           ? l10n.nwcWallet
+                          : isBolt12
+                          ? l10n.bolt12Wallet
                           : l10n.lnurlWallet,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),

@@ -17,10 +17,14 @@ export 'providers/nwc/nwc_wallet_provider.dart';
 export 'providers/lnurl/lnurl_wallet.dart';
 export 'providers/lnurl/lnurl_wallet_provider.dart';
 
+export 'providers/bolt12/bolt12_wallet.dart';
+export 'providers/bolt12/bolt12_wallet_provider.dart';
+
 // Then: imports needed for WalletFactory
 import 'providers/cashu/cashu_wallet.dart';
 import 'providers/nwc/nwc_wallet.dart';
 import 'providers/lnurl/lnurl_wallet.dart';
+import 'providers/bolt12/bolt12_wallet.dart';
 import 'wallet.dart';
 import 'wallet_type.dart';
 
@@ -54,6 +58,13 @@ class WalletFactory {
         );
       case WalletType.LNURL:
         return LnurlWallet.fromStorage(
+          id: id,
+          name: name,
+          supportedUnits: supportedUnits,
+          metadata: metadata,
+        );
+      case WalletType.BOLT12:
+        return Bolt12Wallet.fromStorage(
           id: id,
           name: name,
           supportedUnits: supportedUnits,

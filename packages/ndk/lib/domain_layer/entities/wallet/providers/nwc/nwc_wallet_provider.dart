@@ -6,6 +6,8 @@ import '../../../../usecases/nwc/consts/nwc_method.dart';
 import '../../../../usecases/nwc/nwc.dart';
 import '../../../../usecases/nwc/nwc_connection.dart';
 import '../../../../usecases/nwc/responses/pay_invoice_response.dart';
+import '../../../../usecases/nwc/responses/pay_response.dart';
+import '../../../../usecases/nwc/responses/receive_response.dart';
 import '../../wallet.dart';
 import '../../wallet_balance.dart';
 import '../../wallet_provider.dart';
@@ -184,6 +186,58 @@ class NwcWalletProvider implements WalletProvider {
 
     // await _refreshAll(nwcWallet);
     return response.invoice;
+  }
+
+  @override
+  Future<PayResponse> payBip321(
+    Wallet wallet, {
+    required String payment,
+    int? amountMsat,
+    String? payerNote,
+    Map<String, dynamic>? metadata,
+    Duration? timeout,
+  }) async {
+    final nwcWallet = wallet as NwcWallet;
+
+    await initialize(wallet);
+    final connection = _connectionOrThrow(nwcWallet);
+
+    final response = await _nwcUseCase.pay(
+      connection,
+      payment: payment,
+      amountMsat: amountMsat,
+      payerNote: payerNote,
+      metadata: metadata,
+      timeout: timeout,
+    );
+    try {
+      await _refreshAll(nwcWallet);
+    } catch (_) {
+      // The payment succeeded; optional refresh methods must not hide it.
+    }
+    return response;
+  }
+
+  @override
+  Future<ReceiveResponse> receiveBip321(
+    Wallet wallet, {
+    int? amountMsat,
+    String? description,
+    Map<String, dynamic>? metadata,
+    Duration? timeout,
+  }) async {
+    final nwcWallet = wallet as NwcWallet;
+
+    await initialize(wallet);
+    final connection = _connectionOrThrow(nwcWallet);
+
+    return _nwcUseCase.receive(
+      connection,
+      amountMsat: amountMsat,
+      description: description,
+      metadata: metadata,
+      timeout: timeout,
+    );
   }
 
   Future<void> _refreshAll(NwcWallet wallet) async {

@@ -1619,6 +1619,42 @@ abstract class AppLocalizations {
   /// **'Pay Invoice'**
   String get payInvoiceTitle;
 
+  /// No description provided for @sendToWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to Wallet'**
+  String get sendToWallet;
+
+  /// No description provided for @sendToWalletDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer to another compatible wallet'**
+  String get sendToWalletDescription;
+
+  /// No description provided for @noCompatibleReceivingWallets.
+  ///
+  /// In en, this message translates to:
+  /// **'No compatible receiving wallets'**
+  String get noCompatibleReceivingWallets;
+
+  /// No description provided for @noCompatibleReceivingWalletsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Add or connect another wallet that can receive a payment supported by this wallet.'**
+  String get noCompatibleReceivingWalletsDescription;
+
+  /// No description provided for @destinationWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Destination wallet'**
+  String get destinationWallet;
+
+  /// No description provided for @walletTransferSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment sent to {walletName}'**
+  String walletTransferSubmitted(String walletName);
+
   /// Label for invoice input
   ///
   /// In en, this message translates to:
@@ -2290,6 +2326,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Restored {count} proofs from backup'**
   String restoreSuccess(int count);
+
+  /// No description provided for @bolt12Wallet.
+  ///
+  /// In en, this message translates to:
+  /// **'BOLT12 Wallet'**
+  String get bolt12Wallet;
+
+  /// No description provided for @bolt12WalletSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reusable Lightning offer'**
+  String get bolt12WalletSubtitle;
+
+  /// No description provided for @bolt12PrivateOfferSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reusable private offer'**
+  String get bolt12PrivateOfferSubtitle;
+
+  /// No description provided for @anyAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Any amount'**
+  String get anyAmount;
+
+  /// No description provided for @blindedRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Blinded'**
+  String get blindedRoute;
+
+  /// No description provided for @fromAmountSats.
+  ///
+  /// In en, this message translates to:
+  /// **'From {amount} sats'**
+  String fromAmountSats(String amount);
+
+  /// No description provided for @fromAmountMsats.
+  ///
+  /// In en, this message translates to:
+  /// **'From {amount} msats'**
+  String fromAmountMsats(String amount);
+
+  /// No description provided for @fromCurrencyAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'From {amount} {currency}'**
+  String fromCurrencyAmount(String amount, String currency);
+
+  /// No description provided for @bolt12Expires.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires {date}'**
+  String bolt12Expires(String date);
+
+  /// No description provided for @bolt12WalletTypeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'BOLT12 Offer'**
+  String get bolt12WalletTypeTitle;
+
+  /// No description provided for @bolt12WalletTypeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive-only wallet using a reusable offer'**
+  String get bolt12WalletTypeSubtitle;
+
+  /// No description provided for @addBolt12WalletTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add BOLT12 Wallet'**
+  String get addBolt12WalletTitle;
+
+  /// No description provided for @enterBolt12Input.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter or scan an lno offer, a bitcoin:?lno=... URI, or a BIP353 address.'**
+  String get enterBolt12Input;
+
+  /// No description provided for @bolt12Input.
+  ///
+  /// In en, this message translates to:
+  /// **'BOLT12 payment target'**
+  String get bolt12Input;
+
+  /// No description provided for @bolt12InputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'lno1..., bitcoin:?lno=..., or user@domain.com'**
+  String get bolt12InputHint;
+
+  /// No description provided for @walletNameOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet name (optional)'**
+  String get walletNameOptional;
+
+  /// No description provided for @scanBolt12QrCodeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan BOLT12 QR code'**
+  String get scanBolt12QrCodeTitle;
+
+  /// No description provided for @invalidBolt12QrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'The QR code is not a BOLT12, BIP321, or BIP353 payment target.'**
+  String get invalidBolt12QrCode;
+
+  /// No description provided for @pleaseEnterBolt12Input.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a BOLT12 offer or BIP353 address.'**
+  String get pleaseEnterBolt12Input;
+
+  /// No description provided for @bolt12WalletAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'BOLT12 wallet added successfully!'**
+  String get bolt12WalletAdded;
+
+  /// No description provided for @bolt12OfferTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive with BOLT12'**
+  String get bolt12OfferTitle;
+
+  /// No description provided for @bolt12OfferInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this reusable offer to receive a Lightning payment.'**
+  String get bolt12OfferInstructions;
 }
 
 class _AppLocalizationsDelegate

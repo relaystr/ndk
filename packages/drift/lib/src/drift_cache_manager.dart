@@ -10,12 +10,7 @@ import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
-import 'package:ndk/domain_layer/entities/wallet/providers/cashu/cashu_wallet.dart';
-import 'package:ndk/domain_layer/entities/wallet/providers/nwc/nwc_wallet.dart';
-import 'package:ndk/domain_layer/entities/wallet/providers/lnurl/lnurl_wallet.dart';
-import 'package:ndk/domain_layer/entities/wallet/wallet.dart';
-import 'package:ndk/domain_layer/entities/wallet/wallet_transaction.dart';
-import 'package:ndk/domain_layer/entities/wallet/wallet_type.dart';
+import 'package:ndk/domain_layer/entities/wallet/wallet_factory.dart';
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/event_kind_classification.dart';
@@ -1968,37 +1963,13 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
         .map((e) => e.toString())
         .toSet();
 
-    switch (type) {
-      case WalletType.CASHU:
-        return CashuWallet(
-          id: row.id,
-          name: row.name,
-          supportedUnits: supportedUnits,
-          mintUrl: metadata['mintUrl'] as String,
-          mintInfo: CashuMintInfo.fromJson(
-            metadata['mintInfo'] as Map<String, dynamic>,
-            mintUrl: metadata['mintUrl'] as String,
-          ),
-        );
-      case WalletType.NWC:
-        return NwcWallet(
-          id: row.id,
-          name: row.name,
-          supportedUnits: supportedUnits,
-          nwcUrl: metadata['nwcUrl'] as String,
-        );
-      case WalletType.LNURL:
-        return LnurlWallet(
-          id: row.id,
-          name: row.name,
-          supportedUnits: supportedUnits,
-          identifier: metadata['identifier'] as String,
-          lnurlPayUrl: metadata['lnurlPayUrl'] as String,
-          minSendable: metadata['minSendable'] as int?,
-          maxSendable: metadata['maxSendable'] as int?,
-          metadataFetchedAt: metadata['metadataFetchedAt'] as int?,
-        );
-    }
+    return WalletFactory.fromStorage(
+      id: row.id,
+      name: row.name,
+      type: type,
+      supportedUnits: supportedUnits,
+      metadata: metadata,
+    );
   }
 
   @override

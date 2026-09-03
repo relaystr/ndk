@@ -5,11 +5,14 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../entities/wallet/wallet.dart';
 import '../../entities/wallet/wallet_balance.dart';
+import '../../entities/wallet/bip321.dart';
 import '../../entities/wallet/wallet_provider.dart';
 import '../../entities/wallet/wallet_transaction.dart';
 import '../../entities/wallet/wallet_type.dart';
 import '../../repositories/wallets_repo.dart';
 import '../../usecases/nwc/responses/pay_invoice_response.dart';
+import '../../usecases/nwc/responses/pay_response.dart';
+import '../../usecases/nwc/responses/receive_response.dart';
 
 /// Unified wallet system that handles multiple wallet types (NWC, Cashu, etc.)
 /// Uses WalletProvider pattern for pluggability
@@ -257,35 +260,28 @@ class Wallets {
 
   /// Add a new wallet to the system
   Future<void> addWallet(Wallet wallet) async {
-    await _repository.storeWallet(wallet);
-    await _addWalletToMemory(wallet);
-
-    // Initialize with provider
+    // Initialize before persisting so failed setup (for example, an
+    // unreachable LNURL endpoint) cannot leave a partially added wallet.
     final provider = _providers[wallet.type];
+    var walletToStore = wallet;
     if (provider != null) {
       final updatedWallet = await provider.initialize(wallet);
       if (updatedWallet != null) {
-        // Replace old wallet with updated one while preserving order
-        final list = _wallets.toList();
-        final existingIndex = list.indexWhere((w) => w.id == wallet.id);
-        if (existingIndex >= 0) {
-          list[existingIndex] = updatedWallet;
-          _wallets.clear();
-          _wallets.addAll(list);
-          _safeAddWallets(list);
-        }
-        // Also update in repository (addWallet handles updates too)
-        await _repository.storeWallet(updatedWallet);
+        walletToStore = updatedWallet;
       }
     }
 
-    if (wallet.canReceive &&
+    await _repository.storeWallet(walletToStore);
+    await _addWalletToMemory(walletToStore);
+
+    if (walletToStore.canReceive &&
         _repository.getDefaultWalletIdForReceiving() == null) {
-      _repository.setDefaultWalletForReceiving(wallet.id);
+      _repository.setDefaultWalletForReceiving(walletToStore.id);
     }
 
-    if (wallet.canSend && _repository.getDefaultWalletIdForSending() == null) {
-      _repository.setDefaultWalletForSending(wallet.id);
+    if (walletToStore.canSend &&
+        _repository.getDefaultWalletIdForSending() == null) {
+      _repository.setDefaultWalletForSending(walletToStore.id);
     }
 
     _updateCombinedStreams();
@@ -575,6 +571,211 @@ class Wallets {
     return provider.receive(wallet, amountSats);
   }
 
+  /// Pays an instruction from a BIP-321 URI using the selected wallet.
+  Future<PayResponse> payBip321({
+    String? walletId,
+    required String payment,
+    int? amountMsat,
+    String? payerNote,
+    Map<String, dynamic>? metadata,
+    Duration? timeout,
+  }) async {
+    await _initializationFuture;
+    walletId ??= _repository.getDefaultWalletIdForSending();
+    if (walletId == null) {
+      throw StateError('No default wallet set');
+    }
+    final wallet = await _getWalletForOperation(walletId);
+    final provider = _providers[wallet.type];
+    if (provider == null) {
+      throw ArgumentError('No provider for wallet type: ${wallet.type}');
+    }
+    return provider.payBip321(
+      wallet,
+      payment: payment,
+      amountMsat: amountMsat,
+      payerNote: payerNote,
+      metadata: metadata,
+      timeout: timeout,
+    );
+  }
+
+  /// Creates a BIP-321 URI using the selected receiving wallet.
+  Future<ReceiveResponse> receiveBip321({
+    String? walletId,
+    int? amountMsat,
+    String? description,
+    Map<String, dynamic>? metadata,
+    Duration? timeout,
+  }) async {
+    await _initializationFuture;
+    walletId ??= _repository.getDefaultWalletIdForReceiving();
+    if (walletId == null) {
+      throw StateError('No default wallet set');
+    }
+    final wallet = await _getWalletForOperation(walletId);
+    final provider = _providers[wallet.type];
+    if (provider == null) {
+      throw ArgumentError('No provider for wallet type: ${wallet.type}');
+    }
+    return provider.receiveBip321(
+      wallet,
+      amountMsat: amountMsat,
+      description: description,
+      metadata: metadata,
+      timeout: timeout,
+    );
+  }
+
+  /// Returns the protocol that can transfer funds from [source] to
+  /// [destination], or null when the wallets have no compatible payment path.
+  WalletPaymentProtocol? compatibleTransferProtocol({
+    required Wallet source,
+    required Wallet destination,
+  }) {
+    if (source.id == destination.id ||
+        !source.canSend ||
+        !destination.canReceive ||
+        !source.supportedUnits.contains('sat') ||
+        !destination.supportedUnits.contains('sat')) {
+      return null;
+    }
+
+    final common = source.sendPaymentProtocols.intersection(
+      destination.receivePaymentProtocols,
+    );
+
+    // A BOLT12-only destination must use the reusable offer through BIP-321.
+    if (destination.receivePaymentProtocols.length == 1 &&
+        destination.receivePaymentProtocols.contains(
+          WalletPaymentProtocol.bolt12,
+        ) &&
+        common.contains(WalletPaymentProtocol.bolt12) &&
+        source.supportsBip321Pay &&
+        destination.supportsBip321Receive) {
+      return WalletPaymentProtocol.bolt12;
+    }
+
+    if (common.contains(WalletPaymentProtocol.bolt11)) {
+      final genericPath = source.supportsBip321Pay &&
+          (destination.supportsBip321Receive ||
+              destination.supportsBolt11InvoiceReceive);
+      final invoicePath = source.supportsBolt11InvoicePay &&
+          destination.supportsBolt11InvoiceReceive;
+      if (genericPath || invoicePath) return WalletPaymentProtocol.bolt11;
+    }
+
+    if (common.contains(WalletPaymentProtocol.bolt12) &&
+        source.supportsBip321Pay &&
+        destination.supportsBip321Receive) {
+      return WalletPaymentProtocol.bolt12;
+    }
+    return null;
+  }
+
+  /// Transfers funds directly between two configured wallets.
+  ///
+  /// BOLT11-capable wallets exchange a fresh invoice. A BOLT12-only receiver
+  /// exposes its reusable offer and requires a BIP-321-capable sender.
+  Future<WalletTransferResult> transfer({
+    required String sourceWalletId,
+    required String destinationWalletId,
+    int? amountMsat,
+    Duration? timeout,
+  }) async {
+    await _initializationFuture;
+    final source = await _getWalletForOperation(sourceWalletId);
+    final destination = await _getWalletForOperation(destinationWalletId);
+    final protocol = compatibleTransferProtocol(
+      source: source,
+      destination: destination,
+    );
+    if (protocol == null) {
+      throw UnsupportedError(
+        'The selected wallets have no compatible payment protocol',
+      );
+    }
+    if (amountMsat != null && amountMsat <= 0) {
+      throw ArgumentError.value(
+        amountMsat,
+        'amountMsat',
+        'Transfer amount must be positive',
+      );
+    }
+    if (protocol == WalletPaymentProtocol.bolt11 &&
+        (amountMsat == null || amountMsat % 1000 != 0)) {
+      throw ArgumentError.value(
+        amountMsat,
+        'amountMsat',
+        'BOLT11 wallet transfers require a positive whole-satoshi amount',
+      );
+    }
+
+    ReceiveResponse? receiveResponse;
+    late final String payment;
+    if (destination.supportsBip321Receive) {
+      receiveResponse = await receiveBip321(
+        walletId: destination.id,
+        amountMsat: amountMsat,
+        timeout: timeout,
+      );
+      payment = receiveResponse.bip321;
+    } else {
+      final invoice = await receive(
+        walletId: destination.id,
+        amountSats: amountMsat! ~/ 1000,
+      );
+      payment = Bip321.fromBolt11(invoice);
+    }
+
+    if (source.supportsBip321Pay) {
+      final payResponse = await payBip321(
+        walletId: source.id,
+        payment: payment,
+        amountMsat: amountMsat,
+        timeout: timeout,
+      );
+      if (payResponse.errorCode != null || payResponse.state == 'failed') {
+        throw StateError(
+          payResponse.errorMessage ??
+              payResponse.failureReason ??
+              'Wallet transfer failed',
+        );
+      }
+      final selectedProtocol = payResponse.instructionType == 'bolt12'
+          ? WalletPaymentProtocol.bolt12
+          : WalletPaymentProtocol.bolt11;
+      return WalletTransferResult(
+        sourceWalletId: source.id,
+        destinationWalletId: destination.id,
+        protocol: selectedProtocol,
+        payment: payment,
+        receiveResponse: receiveResponse,
+        payResponse: payResponse,
+      );
+    }
+
+    final invoice = Bip321.getBolt11(payment);
+    final payInvoiceResponse = await send(
+      walletId: source.id,
+      invoice: invoice,
+      timeout: timeout,
+    );
+    if (payInvoiceResponse.errorCode != null) {
+      throw StateError(
+        payInvoiceResponse.errorMessage ?? 'Wallet transfer failed',
+      );
+    }
+    return WalletTransferResult(
+      sourceWalletId: source.id,
+      destinationWalletId: destination.id,
+      protocol: WalletPaymentProtocol.bolt11,
+      payment: payment,
+      receiveResponse: receiveResponse,
+      payInvoiceResponse: payInvoiceResponse,
+    );
+  }
+
   Future<Wallet> _getWalletForOperation(String walletId) async {
     final inMemory = _wallets.firstWhereOrNull(
       (wallet) => wallet.id == walletId,
@@ -664,4 +865,25 @@ class Wallets {
     }
     _walletsSubject.add(wallets);
   }
+}
+
+/// Result of a completed or submitted wallet-to-wallet transfer.
+class WalletTransferResult {
+  final String sourceWalletId;
+  final String destinationWalletId;
+  final WalletPaymentProtocol protocol;
+  final String payment;
+  final ReceiveResponse? receiveResponse;
+  final PayResponse? payResponse;
+  final PayInvoiceResponse? payInvoiceResponse;
+
+  const WalletTransferResult({
+    required this.sourceWalletId,
+    required this.destinationWalletId,
+    required this.protocol,
+    required this.payment,
+    this.receiveResponse,
+    this.payResponse,
+    this.payInvoiceResponse,
+  });
 }

@@ -24,6 +24,8 @@ platforms:
   windows:
 
 dependencies:
+  dart_bip353: ^0.8.0
+  dart_bolt12_decoder: ^0.8.0
   bip32_keys: ^3.1.4
   http: ^1.6.0
   bip340: ">=0.3.0 <0.4.0"
