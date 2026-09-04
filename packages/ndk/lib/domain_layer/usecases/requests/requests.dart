@@ -546,12 +546,14 @@ class Requests {
           final pageFilter = filter.clone();
           pageFilter.until = state.currentUntil;
 
+          // no relaySet: it takes precedence over explicitRelays in the relay
+          // sets engine, which would send this page to the whole set with the
+          // `until` of a single relay
           final response = requestNostrEvent(
             NdkRequest.query(
               '$name-page-${Helpers.getRandomString(5)}',
               name: name,
               filters: [pageFilter],
-              relaySet: relaySet,
               cacheRead: false, // Don't read from cache for subsequent pages
               cacheWrite: cacheWrite,
               timeoutDuration: timeout,
