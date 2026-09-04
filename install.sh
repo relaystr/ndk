@@ -191,12 +191,14 @@ main() {
   need curl
   need tar
 
-  local target tag asset_name download_url tmp_dir extract_dir
+  local target tag release_version asset_name legacy_asset_name download_url tmp_dir extract_dir
   local bin_src lib_src lib_installed
 
   target="$(detect_target)"
   tag="$(resolve_tag)"
-  asset_name="ndk-cli-${target}.tar.gz"
+  release_version="${tag#v}"
+  asset_name="ndk-cli-${release_version}-${target}.tar.gz"
+  legacy_asset_name="ndk-cli-${target}.tar.gz"
   download_url="https://github.com/${REPO}/releases/download/${tag}/${asset_name}"
 
   info "installing ${BIN_NAME} ${tag} (${target})"
@@ -207,8 +209,15 @@ main() {
   trap 'rm -rf "${tmp_dir:-}"' EXIT
   mkdir -p "$extract_dir"
 
-  curl -fsSL --progress-bar "$download_url" -o "${tmp_dir}/${asset_name}" \
-    || err "download failed — check that release asset exists: ${download_url}"
+  # Current release assets include the version in their filename. Fall back to
+  # the old unversioned convention so releases through v0.9.1 remain installable.
+  if ! curl -fsSL --progress-bar "$download_url" -o "${tmp_dir}/${asset_name}" 2>/dev/null; then
+    asset_name="$legacy_asset_name"
+    download_url="https://github.com/${REPO}/releases/download/${tag}/${asset_name}"
+    info "versioned asset not found; trying ${asset_name}"
+    curl -fsSL --progress-bar "$download_url" -o "${tmp_dir}/${asset_name}" \
+      || err "download failed — check that release asset exists: ${download_url}"
+  fi
 
   tar -xzf "${tmp_dir}/${asset_name}" -C "$extract_dir" \
     || err "failed to extract archive: ${asset_name}"
