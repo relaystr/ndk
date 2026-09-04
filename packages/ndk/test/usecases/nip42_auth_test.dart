@@ -155,6 +155,77 @@ void authTests(NdkEngine engine) {
     );
 
     test(
+      'concurrent gift wraps share authenticated retry without losing one',
+      timeout: const Timeout(Duration(seconds: 5)),
+      () async {
+        final senderKey = Bip340.generatePrivateKey();
+        final recipientKey = Bip340.generatePrivateKey();
+        final relay = MockRelay(
+          name: "concurrent gift wrap auth relay",
+          requireAuthForEvents: true,
+        );
+        await relay.startServer();
+
+        final ndk = Ndk(
+          NdkConfig(
+            eventVerifier: MockEventVerifier(),
+            cache: MemCacheManager(),
+            bootstrapRelays: [relay.url],
+            defaultBroadcastTimeout: const Duration(seconds: 2),
+            engine: engine,
+          ),
+        );
+        addTearDown(() async {
+          await ndk.destroy();
+          await relay.stopServer();
+        });
+        ndk.accounts.loginPrivateKey(
+          pubkey: senderKey.publicKey,
+          privkey: senderKey.privateKey!,
+        );
+
+        Future<Nip01Event> wrap(String content) async {
+          final rumor = await ndk.giftWrap.createRumor(
+            content: content,
+            kind: Nip01Event.kTextNodeKind,
+            tags: [
+              ["p", recipientKey.publicKey],
+            ],
+          );
+          return ndk.giftWrap.toGiftWrap(
+            rumor: rumor,
+            recipientPubkey: recipientKey.publicKey,
+          );
+        }
+
+        final wraps = await Future.wait([wrap('one'), wrap('two')]);
+        final broadcasts = wraps
+            .map(
+              (event) => ndk.broadcast.broadcast(
+                  nostrEvent: event,
+                  specificRelays: [relay.url]).broadcastDoneFuture,
+            )
+            .toList();
+        final results = await Future.wait(broadcasts);
+
+        expect(
+          results.every(
+            (result) => result.any((response) => response.broadcastSuccessful),
+          ),
+          isTrue,
+        );
+        for (final event in wraps) {
+          expect(
+            relay.receivedEvents
+                .where((received) => received.id == event.id)
+                .length,
+            greaterThanOrEqualTo(2),
+          );
+        }
+      },
+    );
+
+    test(
       'request should complete when relay requires auth but sends no challenge',
       timeout: const Timeout(Duration(seconds: 5)),
       () async {

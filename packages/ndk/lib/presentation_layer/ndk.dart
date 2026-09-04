@@ -37,23 +37,24 @@ import 'ndk_config.dart';
 /// Main entry point for the NDK (Nostr Development Kit) library.
 ///
 /// This file contains the primary class [Ndk] which provides access to various
-/// Nostr-related functionalities/usecases and manages the global state of the application.
+/// Nostr-related functionalities/usecases and manages the state of this NDK instance.
 class Ndk {
   /// Configuration for the NDK instance
   final NdkConfig config;
 
-  /// Global state shared across the application
-  static final GlobalState _globalState = GlobalState();
+  /// Request, broadcast, and relay state owned by this NDK instance.
+  final GlobalState _globalState;
 
   /// Internal initialization object for setting up repositories and usecases
-  final Initialization _initialization;
+  late final Initialization _initialization;
 
   /// Creates a new instance of [Ndk] with the given [config]
-  Ndk(this.config)
-      : _initialization = Initialization(
-          ndkConfig: config,
-          globalState: _globalState,
-        );
+  Ndk(this.config) : _globalState = GlobalState() {
+    _initialization = Initialization(
+      ndkConfig: config,
+      globalState: _globalState,
+    );
+  }
 
   /// Creates a new instance of [Ndk] with default configuration
   Ndk.defaultConfig()
