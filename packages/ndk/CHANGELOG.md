@@ -1,3 +1,7 @@
+## 0.9.3
+
+ - Stable release.
+
 ## 0.9.2
 
  - **FEAT**: add DM relay discovery and publishing APIs.
