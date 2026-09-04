@@ -10,7 +10,7 @@ import '../cli_command.dart';
 ///
 /// Identities are persisted in plaintext at [CliAccountsStore.defaultPath].
 /// See [CliAccountRecord] for the security trade-off.
-class AccountsCliCommand implements CliCommand {
+class AccountsCliCommand extends CliCommand {
   @override
   String get name => 'accounts';
 

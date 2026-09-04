@@ -7,7 +7,7 @@ import 'package:ndk/ndk.dart';
 import '../cli_accounts_store.dart';
 import '../cli_command.dart';
 
-class WalletsCliCommand implements CliCommand {
+class WalletsCliCommand extends CliCommand {
   @override
   String get name => 'wallets';
 
@@ -18,6 +18,9 @@ class WalletsCliCommand implements CliCommand {
   @override
   String get usage =>
       'wallets <list|add|remove|receive|send|balance|budget> [args]';
+
+  @override
+  bool get restoreAccountsOnStartup => false;
 
   @override
   Future<int> run(

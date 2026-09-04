@@ -10,7 +10,7 @@ import '../cli_command.dart';
 /// mirror of [Ndk.files]).
 ///
 /// Sub-commands: `upload`, `download`, `delete`, `check`.
-class FilesCliCommand implements CliCommand {
+class FilesCliCommand extends CliCommand {
   @override
   String get name => 'files';
 
