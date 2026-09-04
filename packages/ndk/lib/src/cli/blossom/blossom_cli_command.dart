@@ -10,7 +10,7 @@ import '../cli_command.dart';
 ///
 /// Sub-commands:
 ///   upload, download, delete, list, mirror, check, servers
-class BlossomCliCommand implements CliCommand {
+class BlossomCliCommand extends CliCommand {
   @override
   String get name => 'blossom';
 

@@ -56,7 +56,8 @@ class NdkCliApp {
     final ndk = _createNdk(walletsRepo, cache, globalOptions.logLevel);
     try {
       final accountsStore = await CliAccountsStore.load();
-      if (accountsStore.records.isNotEmpty) {
+      if (command.restoreAccountsOnStartup &&
+          accountsStore.records.isNotEmpty) {
         await restoreAccountsIntoNdk(ndk: ndk, store: accountsStore);
       }
       return await command.run(
@@ -74,6 +75,8 @@ class NdkCliApp {
       } catch (e) {
         // ignore
       }
+      await cache.close();
+      await walletsRepo.close();
     }
   }
 
@@ -110,7 +113,7 @@ class NdkCliApp {
     return null;
   }
 
-  Future<WalletsRepo> _createWalletsRepo() {
+  Future<SembastWalletsRepo> _createWalletsRepo() {
     return SembastWalletsRepo.create(filename: 'wallets_db.db');
   }
 
@@ -136,6 +139,7 @@ class NdkCliApp {
         eventVerifier: _CliEventVerifier(),
         bootstrapRelays: const [],
         logLevel: logLevel,
+        pendingDeliveryRetriesEnabled: false,
       ),
     );
   }
