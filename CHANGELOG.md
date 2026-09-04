@@ -3,6 +3,116 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.9.1-dev.3`](#ndk---v091-dev3)
+ - [`ndk_drift` - `v0.1.1-dev.5`](#ndk_drift---v011-dev5)
+ - [`ndk_objectbox` - `v0.2.12-dev.5`](#ndk_objectbox---v0212-dev5)
+ - [`ndk_flutter` - `v0.9.0-dev.3`](#ndk_flutter---v090-dev3)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.9.0-dev.3`
+
+---
+
+#### `ndk` - `v0.9.1-dev.3`
+
+ - **FIX**(release): isolate version generation.
+ - **FIX**: hash a request independently of the order of its filter lists.
+ - **FIX**: clean relay url.
+ - **FIX**: more dms.
+ - **FIX**: kind not allowed is a permanet failure.
+ - **FIX**: track only the oldest event timestamp per relay for fetched ranges.
+ - **FIX**: record fetched ranges from network events only.
+ - **FEAT**(nwc): add optional maxFeeMsat to pay_invoice (NIP-47 max_fee).
+
+#### `ndk_drift` - `v0.1.1-dev.5`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_objectbox` - `v0.2.12-dev.5`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-09-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.9.1-dev.2`](#ndk---v091-dev2)
+ - [`ndk_drift` - `v0.1.1-dev.4`](#ndk_drift---v011-dev4)
+ - [`ndk_objectbox` - `v0.2.12-dev.4`](#ndk_objectbox---v0212-dev4)
+ - [`ndk_flutter` - `v0.9.0-dev.2`](#ndk_flutter---v090-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.9.0-dev.2`
+
+---
+
+#### `ndk` - `v0.9.1-dev.2`
+
+ - **FIX**(release): isolate version generation.
+ - **FIX**: hash a request independently of the order of its filter lists.
+ - **FIX**: clean relay url.
+ - **FIX**: more dms.
+ - **FIX**: kind not allowed is a permanet failure.
+ - **FIX**: track only the oldest event timestamp per relay for fetched ranges.
+ - **FIX**: record fetched ranges from network events only.
+ - **FEAT**(nwc): add optional maxFeeMsat to pay_invoice (NIP-47 max_fee).
+
+#### `ndk_drift` - `v0.1.1-dev.4`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_objectbox` - `v0.2.12-dev.4`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
 ## 2026-08-29
 
 ### Changes
