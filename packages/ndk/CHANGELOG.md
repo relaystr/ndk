@@ -1,3 +1,17 @@
+## 0.9.2
+
+ - **FEAT**: add DM relay discovery and publishing APIs.
+ - **FEAT**: add explicit legacy NIP-04 DMs and NIP-17 file messages.
+ - **FEAT**(nwc): expose supported extensions, add hold-invoice timeouts,
+   and support `max_fee` for `pay_invoice`.
+ - **FIX**: paginate every relay in a relay set independently.
+ - **FIX**: make request hashes independent of filter-list ordering.
+ - **FIX**: record fetched ranges only from network events and retain the
+   oldest timestamp reported by each relay.
+ - **FIX**: normalize relay URLs and treat disallowed event kinds as permanent
+   failures.
+ - **FIX**(release): isolate generated package-version updates.
+
 ## 0.9.1-dev.3
 
  - **FIX**(release): isolate version generation.
