@@ -21,7 +21,7 @@ melos:
     version:
       hooks:
         preCommit: |
-          melos exec --fail-fast --scope="ndk" -- "dart run build_runner build --delete-conflicting-outputs"
+          melos exec --fail-fast --scope="ndk" -- "dart run tool/update_version.dart"
           git add packages/ndk/lib/src/version.dart
 
   scripts:
