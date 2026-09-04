@@ -142,6 +142,10 @@ class RequestState {
   // key is the connection the request was sent on, value is RelayRequestState
   Map<RelayConnectionKey, RelayRequestState> requests = {};
 
+  // the connections of one relay, so collapsing a url into its outcome reads
+  // them instead of scanning every connection of the request
+  final Map<String, List<RelayRequestState>> _requestsByUrl = {};
+
   /// the original request
   NdkRequest request;
 
@@ -240,18 +244,23 @@ class RequestState {
 
   final Map<String, RelayRequestOutcome> _relayOutcomes = {};
 
-  Map<String, RelayRequestOutcome> _relayOutcomesSnapshot = const {};
+  Map<String, RelayRequestOutcome>? _relayOutcomesSnapshot;
 
   BehaviorSubject<Map<String, RelayRequestOutcome>>? _relayOutcomesSubject;
 
   bool _relayOutcomesDone = false;
+
+  /// [_relayOutcomes] as it is handed out, built on demand: a request whose
+  /// outcomes nobody reads or watches copies nothing.
+  Map<String, RelayRequestOutcome> get _ownRelayOutcomes =>
+      _relayOutcomesSnapshot ??= Map.unmodifiable(_relayOutcomes);
 
   /// What the request ended with on each relay it was sent to, as it stands now
   ///
   /// Keyed by relay url: several connections to one relay collapse into the
   /// outcome that comes first in [RelayRequestStatus].
   Map<String, RelayRequestOutcome> get relayOutcomes =>
-      servedBy?.relayOutcomes ?? _relayOutcomesSnapshot;
+      servedBy?.relayOutcomes ?? _ownRelayOutcomes;
 
   /// [relayOutcomes] on every change, starting with what it holds right now,
   /// and closed once the request is over.
@@ -263,8 +272,8 @@ class RequestState {
     if (served != null) {
       return served.relayOutcomesStream;
     }
-    final subject = _relayOutcomesSubject ??=
-        BehaviorSubject.seeded(_relayOutcomesSnapshot);
+    final subject =
+        _relayOutcomesSubject ??= BehaviorSubject.seeded(_ownRelayOutcomes);
     // asked for once the request is over: nothing is left to close a subject
     // created this late, and a closed one still replays what it ended on
     if (_relayOutcomesDone) {
@@ -276,7 +285,7 @@ class RequestState {
   /// Recomputes every relay, for a change that reaches all of them at once.
   void _refreshRelayOutcomes() {
     var changed = false;
-    for (final url in requests.values.map((request) => request.url).toSet()) {
+    for (final url in _requestsByUrl.keys) {
       changed = _recomputeRelayOutcome(url) || changed;
     }
     if (changed) {
@@ -294,8 +303,7 @@ class RequestState {
   /// that outcome moved.
   bool _recomputeRelayOutcome(String url) {
     RelayRequestOutcome? collapsed;
-    for (final request in requests.values) {
-      if (request.url != url) continue;
+    for (final request in _requestsByUrl[url] ?? const <RelayRequestState>[]) {
       final outcome = _outcomeOf(request);
       if (collapsed == null || outcome.status.index < collapsed.status.index) {
         collapsed = outcome;
@@ -312,10 +320,10 @@ class RequestState {
   }
 
   void _publishRelayOutcomes() {
-    _relayOutcomesSnapshot = Map.unmodifiable(_relayOutcomes);
+    _relayOutcomesSnapshot = null;
     final subject = _relayOutcomesSubject;
     if (subject != null && !subject.isClosed) {
-      subject.add(_relayOutcomesSnapshot);
+      subject.add(_ownRelayOutcomes);
     }
   }
 
@@ -363,12 +371,20 @@ class RequestState {
     final dropped = requests.remove(key);
     if (dropped == null) return;
     dropped.onOutcomeChanged = null;
+    final onUrl = _requestsByUrl[dropped.url];
+    if (onUrl != null) {
+      onUrl.remove(dropped);
+      if (onUrl.isEmpty) {
+        _requestsByUrl.remove(dropped.url);
+      }
+    }
     _onRelayRequestChanged(dropped.url);
   }
 
   void _trackRequest(RelayRequestState request) {
     request.onOutcomeChanged = () => _onRelayRequestChanged(request.url);
     requests[request.key] = request;
+    _requestsByUrl.putIfAbsent(request.url, () => []).add(request);
     _onRelayRequestChanged(request.url);
   }
 
