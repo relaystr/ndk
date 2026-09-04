@@ -1,17 +1,31 @@
-name: Prepare release manually
+name: Prepare package release
 on:
   workflow_dispatch:
     inputs:
-      prerelease:
-        description: "Version as prerelease"
+      release_mode:
+        description: "How should package versions be selected?"
+        required: true
+        default: stable
+        type: choice
+        options:
+          - stable
+          - development-prerelease
+          - graduate-prerelease
+          - exact
+      exact_package:
+        description: "Package to version (used only when release mode is exact)"
+        required: true
+        default: ndk
+        type: choice
+        options:
+          - ndk
+          - ndk_drift
+          - ndk_objectbox
+          - ndk_flutter
+      exact_version:
+        description: "Version such as 0.9.2 (required only when release mode is exact)"
         required: false
-        default: false
-        type: boolean
-      graduate:
-        description: "Graduate prereleases to stable"
-        required: false
-        default: false
-        type: boolean
+        type: string
 
 jobs:
   prepare-release:
@@ -38,11 +52,44 @@ jobs:
           cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
           architecture: x64 # optional, x64 or arm64
 
-      - name: Run Melos
+      - name: Configure Git author
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+      - name: Prepare automatic version changes
         uses: bluefireteam/melos-action@v3
         with:
-          run-versioning: ${{ inputs.prerelease == false }}
-          run-versioning-prerelease: ${{ inputs.prerelease == true }}
-          run-versioning-graduate: ${{ inputs.graduate == true }}
+          melos-version: "8.3.0"
+          run-versioning: ${{ inputs.release_mode == 'stable' }}
+          run-versioning-prerelease: ${{ inputs.release_mode == 'development-prerelease' }}
+          run-versioning-graduate: ${{ inputs.release_mode == 'graduate-prerelease' }}
+          publish-dry-run: false
+          create-pr: false
+
+      - name: Validate exact version
+        if: inputs.release_mode == 'exact'
+        env:
+          EXACT_VERSION: ${{ inputs.exact_version }}
+        run: |
+          if [ -z "$EXACT_VERSION" ]; then
+            echo "::error::exact_version is required when release_mode is exact"
+            exit 1
+          fi
+
+      - name: Set exact package version
+        if: inputs.release_mode == 'exact'
+        env:
+          EXACT_PACKAGE: ${{ inputs.exact_package }}
+          EXACT_VERSION: ${{ inputs.exact_version }}
+        run: >
+          melos version "$EXACT_PACKAGE" "$EXACT_VERSION"
+          --yes --no-git-tag-version --no-changelog
+
+      - name: Validate and create release PR
+        uses: bluefireteam/melos-action@v3
+        with:
+          melos-version: "8.3.0"
+          run-bootstrap: false
           publish-dry-run: true
           create-pr: true
