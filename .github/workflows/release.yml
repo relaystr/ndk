@@ -333,6 +333,25 @@ jobs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
       id: ${{ steps.create_release.outputs.id }}
     steps:
+      - name: Check out the release source
+        uses: actions/checkout@v4
+
+      - name: Prepare release notes from the NDK changelog
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          version="${RELEASE_TAG#v}"
+          awk -v heading="## ${version}" '
+            $0 == heading { found = 1 }
+            found && $0 ~ /^## / && $0 != heading { exit }
+            found { print }
+          ' packages/ndk/CHANGELOG.md > release-notes.md
+
+          if [[ ! -s release-notes.md ]]; then
+            echo "No NDK changelog section found for ${version}." >&2
+            exit 1
+          fi
+
       # Create Release
       - name: Create Release
         id: create_release
@@ -342,6 +361,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
+          body_path: release-notes.md
           draft: true
           prerelease: ${{ contains(github.ref, '-dev') }}
 

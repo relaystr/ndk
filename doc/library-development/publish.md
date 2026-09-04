@@ -59,9 +59,10 @@ the `0.9.2` release.
 
 After pub.dev publication succeeds, the package workflow creates `v0.9.2` on
 the release commit. That tag starts the sample-app release workflow. It creates
-a draft GitHub release, builds and uploads the Android APKs and cross-platform
-CLI archives, and deploys the sample web app. After every job succeeds, the
-workflow publishes the GitHub release automatically.
+a draft GitHub release using the matching section from
+`packages/ndk/CHANGELOG.md`, builds and uploads the Android APKs and
+cross-platform CLI archives, and deploys the sample web app. After every job
+succeeds, the workflow publishes the GitHub release automatically.
 
 Verify the completed release and its assets on the
 [GitHub releases page](https://github.com/relaystr/ndk/releases).
