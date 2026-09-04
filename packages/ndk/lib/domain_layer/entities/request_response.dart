@@ -31,7 +31,7 @@ class NdkResponse {
   /// now, keyed by relay url.
   ///
   /// Reading it tells an exhausted relay from a silent one: a relay that has
-  /// not answered yet is [RelayRequestOutcomeType.pending], which is what a
+  /// not answered yet is [RelayRequestStatus.pending], which is what a
   /// live subscription shows for as long as it runs.
   Map<String, RelayRequestOutcome> get relayOutcomes => _relayOutcomes();
 

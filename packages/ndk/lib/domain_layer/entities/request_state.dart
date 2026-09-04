@@ -249,7 +249,7 @@ class RequestState {
   /// What the request ended with on each relay it was sent to, as it stands now
   ///
   /// Keyed by relay url: several connections to one relay collapse into the
-  /// outcome that comes first in [RelayRequestOutcomeType].
+  /// outcome that comes first in [RelayRequestStatus].
   Map<String, RelayRequestOutcome> get relayOutcomes =>
       servedBy?.relayOutcomes ?? _relayOutcomesSnapshot;
 
@@ -297,7 +297,7 @@ class RequestState {
     for (final request in requests.values) {
       if (request.url != url) continue;
       final outcome = _outcomeOf(request);
-      if (collapsed == null || outcome.type.index < collapsed.type.index) {
+      if (collapsed == null || outcome.status.index < collapsed.status.index) {
         collapsed = outcome;
       }
     }
@@ -321,24 +321,24 @@ class RequestState {
 
   RelayRequestOutcome _outcomeOf(RelayRequestState request) {
     if (request.retryingAuth) {
-      return const RelayRequestOutcome(RelayRequestOutcomeType.pending);
+      return const RelayRequestOutcome(RelayRequestStatus.pending);
     }
     if (request.receivedEOSE) {
-      return const RelayRequestOutcome(RelayRequestOutcomeType.eose);
+      return const RelayRequestOutcome(RelayRequestStatus.eose);
     }
     if (request.receivedClosed) {
       return RelayRequestOutcome(
-        RelayRequestOutcomeType.closed,
+        RelayRequestStatus.closed,
         message: request.closedMessage,
       );
     }
     if (request.connectionGone) {
-      return const RelayRequestOutcome(RelayRequestOutcomeType.disconnected);
+      return const RelayRequestOutcome(RelayRequestStatus.disconnected);
     }
     if (timedOut) {
-      return const RelayRequestOutcome(RelayRequestOutcomeType.timedOut);
+      return const RelayRequestOutcome(RelayRequestStatus.timedOut);
     }
-    return const RelayRequestOutcome(RelayRequestOutcomeType.pending);
+    return const RelayRequestOutcome(RelayRequestStatus.pending);
   }
 
   /// Adds single relay request to the state

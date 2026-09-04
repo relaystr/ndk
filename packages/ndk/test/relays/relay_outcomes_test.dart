@@ -81,8 +81,8 @@ void deadConnectionTests() {
 
       await _waitUntil(
         () =>
-            state.relayOutcomes[relay.url]?.type ==
-            RelayRequestOutcomeType.disconnected,
+            state.relayOutcomes[relay.url]?.status ==
+            RelayRequestStatus.disconnected,
         reason: 'the request stayed on a socket nobody will reopen',
       );
       expect(state.networkController.isClosed, true);
@@ -110,7 +110,7 @@ void collapseTests() {
       state.requests[key]!.connectionGone = true;
 
       expect(state.relayOutcomes, {
-        url: RelayRequestOutcome(RelayRequestOutcomeType.disconnected),
+        url: RelayRequestOutcome(RelayRequestStatus.disconnected),
       });
     });
 
@@ -126,7 +126,7 @@ void collapseTests() {
       state.requests[authenticated]!.receivedEOSE = true;
 
       expect(state.relayOutcomes, {
-        url: RelayRequestOutcome(RelayRequestOutcomeType.eose),
+        url: RelayRequestOutcome(RelayRequestStatus.eose),
       });
     });
 
@@ -140,7 +140,7 @@ void collapseTests() {
       state.requests[key]!.markSent();
 
       expect(state.relayOutcomes, {
-        url: RelayRequestOutcome(RelayRequestOutcomeType.pending),
+        url: RelayRequestOutcome(RelayRequestStatus.pending),
       });
     });
 
@@ -159,8 +159,8 @@ void collapseTests() {
       await subscription.cancel();
 
       expect(seen, [
-        {url: RelayRequestOutcome(RelayRequestOutcomeType.pending)},
-        {url: RelayRequestOutcome(RelayRequestOutcomeType.eose)},
+        {url: RelayRequestOutcome(RelayRequestStatus.pending)},
+        {url: RelayRequestOutcome(RelayRequestStatus.eose)},
       ]);
     });
 
@@ -171,7 +171,7 @@ void collapseTests() {
       state.requests[key]!.receivedEOSE = true;
 
       expect(await state.relayOutcomesStream.first, {
-        url: RelayRequestOutcome(RelayRequestOutcomeType.eose),
+        url: RelayRequestOutcome(RelayRequestStatus.eose),
       });
     });
 
@@ -184,7 +184,7 @@ void collapseTests() {
         ..retryingAuth = true;
 
       expect(state.relayOutcomes, {
-        url: RelayRequestOutcome(RelayRequestOutcomeType.pending),
+        url: RelayRequestOutcome(RelayRequestStatus.pending),
       });
     });
   });
@@ -242,7 +242,7 @@ void relayOutcomesTests(NdkEngine engine) {
 
       expect(events, hasLength(1));
       expect(response.relayOutcomes, {
-        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.eose),
+        relay1.url: RelayRequestOutcome(RelayRequestStatus.eose),
       });
       expect(await response.relayOutcomesDone, response.relayOutcomes);
     });
@@ -264,7 +264,7 @@ void relayOutcomesTests(NdkEngine engine) {
       await duplicate.future;
 
       expect(duplicate.relayOutcomes, {
-        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.eose),
+        relay1.url: RelayRequestOutcome(RelayRequestStatus.eose),
       });
     });
 
@@ -279,7 +279,7 @@ void relayOutcomesTests(NdkEngine engine) {
 
       final outcomes = await streamed;
       expect(outcomes.last, {
-        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.eose),
+        relay1.url: RelayRequestOutcome(RelayRequestStatus.eose),
       });
       expect(outcomes.last, await response.relayOutcomesDone);
     });
@@ -296,7 +296,7 @@ void relayOutcomesTests(NdkEngine engine) {
       // broadcast stream, so a second listener is served just like the first
       final stream = response.relayOutcomesStream;
       final ended = {
-        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.eose),
+        relay1.url: RelayRequestOutcome(RelayRequestStatus.eose),
       };
       expect((await stream.toList()).last, ended);
       expect((await stream.toList()).last, ended);
@@ -320,7 +320,7 @@ void relayOutcomesTests(NdkEngine engine) {
       await duplicate.future;
 
       expect((await streamed).last, {
-        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.eose),
+        relay1.url: RelayRequestOutcome(RelayRequestStatus.eose),
       });
     });
 
@@ -338,7 +338,7 @@ void relayOutcomesTests(NdkEngine engine) {
 
       expect(response.relayOutcomes, {
         relay1.url: RelayRequestOutcome(
-          RelayRequestOutcomeType.closed,
+          RelayRequestStatus.closed,
           message: "blocked: you are not whitelisted",
         ),
       });
@@ -357,7 +357,7 @@ void relayOutcomesTests(NdkEngine engine) {
       await response.future;
 
       expect(response.relayOutcomes, {
-        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.timedOut),
+        relay1.url: RelayRequestOutcome(RelayRequestStatus.timedOut),
       });
     });
 
@@ -385,12 +385,12 @@ void relayOutcomesTests(NdkEngine engine) {
       expect(
         outcomes,
         anyElement(equals({
-          relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.pending),
+          relay1.url: RelayRequestOutcome(RelayRequestStatus.pending),
         })),
         reason: 'a page still running must show its relay as pending',
       );
       expect(outcomes.last, {
-        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.eose),
+        relay1.url: RelayRequestOutcome(RelayRequestStatus.eose),
       });
     });
 
@@ -413,13 +413,13 @@ void relayOutcomesTests(NdkEngine engine) {
       await Future.delayed(Duration(seconds: 1));
 
       expect(response.relayOutcomes, {
-        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.pending),
+        relay1.url: RelayRequestOutcome(RelayRequestStatus.pending),
       });
 
       await ndk.requests.closeSubscription(response.requestId);
 
       expect(await response.relayOutcomesDone, {
-        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.pending),
+        relay1.url: RelayRequestOutcome(RelayRequestStatus.pending),
       });
     });
 
@@ -445,7 +445,7 @@ void relayOutcomesTests(NdkEngine engine) {
       await ndk.requests.closeSubscription(response.requestId);
 
       expect((await streamed).last, {
-        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.pending),
+        relay1.url: RelayRequestOutcome(RelayRequestStatus.pending),
       });
     });
 
@@ -464,7 +464,7 @@ void relayOutcomesTests(NdkEngine engine) {
         await response.future;
 
         final outcome = response.relayOutcomes[relay1.url];
-        expect(outcome?.type, RelayRequestOutcomeType.closed);
+        expect(outcome?.status, RelayRequestStatus.closed);
         expect(outcome?.message, startsWith("auth-required"));
       },
     );
@@ -490,7 +490,7 @@ void relayOutcomesTests(NdkEngine engine) {
       // an authenticated connection, which is the one that answered
       expect(events, hasLength(1));
       expect(response.relayOutcomes, {
-        relay1.url: RelayRequestOutcome(RelayRequestOutcomeType.eose),
+        relay1.url: RelayRequestOutcome(RelayRequestStatus.eose),
       });
     });
   });

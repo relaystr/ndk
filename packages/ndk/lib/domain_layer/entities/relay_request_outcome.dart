@@ -4,7 +4,7 @@
 /// connections to the same relay, an anonymous one handed over to an
 /// authenticated one, and the url reports the first of these its connections
 /// reached.
-enum RelayRequestOutcomeType {
+enum RelayRequestStatus {
   /// the relay has not ended the request, it may still send events
   pending,
 
@@ -24,29 +24,30 @@ enum RelayRequestOutcomeType {
   notSent,
 }
 
-/// What a request ended with on a single relay
+/// Where a request stands on a single relay, and why
 class RelayRequestOutcome {
   /// what the relay did with the request
-  final RelayRequestOutcomeType type;
+  final RelayRequestStatus status;
 
   /// why, when there is a reason to give: the message of a CLOSED, or what
   /// kept the request from being sent
   final String? message;
 
   /// creates a new [RelayRequestOutcome]
-  const RelayRequestOutcome(this.type, {this.message});
+  const RelayRequestOutcome(this.status, {this.message});
 
   @override
-  String toString() => message == null ? type.name : '${type.name}: $message';
+  String toString() =>
+      message == null ? status.name : '${status.name}: $message';
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is RelayRequestOutcome &&
           runtimeType == other.runtimeType &&
-          type == other.type &&
+          status == other.status &&
           message == other.message;
 
   @override
-  int get hashCode => Object.hash(type, message);
+  int get hashCode => Object.hash(status, message);
 }
