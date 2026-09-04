@@ -120,7 +120,9 @@ jobs:
 
       - name: Build versioned release PR title
         id: release_pr
-        run: bash .github/scripts/release-pr-title.sh "$GITHUB_SHA"
+        env:
+          PRIMARY_PACKAGE: ${{ inputs.release_mode == 'exact' && inputs.exact_package || 'ndk' }}
+        run: bash .github/scripts/release-pr-title.sh "$GITHUB_SHA" HEAD "$PRIMARY_PACKAGE"
 
       - name: Validate and create release PR
         uses: bluefireteam/melos-action@v3
