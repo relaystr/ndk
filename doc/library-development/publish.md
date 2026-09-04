@@ -48,8 +48,9 @@ The workflow opens a versioned PR named
 `chore(prerelease): publish ndk 0.9.3-dev.0`. Replace the generated
 `Stable release.` changelog stub with the actual release notes. Then review the
 NDK version and all generated dependent-package constraint updates before
-merging the PR. The title shows only the primary package and omits dependent
-packages that will also be published.
+merging the PR. The title shows only the current main `ndk` version and omits
+other workspace packages that will also be published, even when a release run
+only changes one of those other packages.
 
 Merging that release PR creates package-scoped authentication tags and
 publishes every changed, publishable package to pub.dev. Each publication

@@ -79,7 +79,7 @@ jobs:
 
       - name: Build versioned prerelease PR title
         id: release_pr
-        run: bash .github/scripts/release-pr-title.sh "$GITHUB_SHA"
+        run: bash .github/scripts/release-pr-title.sh HEAD prerelease
 
       - name: Validate and create development prerelease PR
         uses: bluefireteam/melos-action@v3
