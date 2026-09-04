@@ -5,10 +5,11 @@
 Complete releases have two distinct stages, in this order:
 
 1. Prepare and merge the package release PR. This publishes packages to
-   pub.dev and creates package tags such as `ndk-v0.9.2`.
-2. Tag that resulting `master` commit with the workspace release tag, such as
-   `v0.9.2`. This creates the GitHub release and builds its Android, CLI, and
-   web artifacts.
+   pub.dev.
+2. After publication succeeds, automation tags the release commit. NDK uses a
+   plain tag such as `v0.9.2`; other packages use tags such as
+   `ndk_flutter-v0.9.0`. An NDK `vX.Y.Z` tag creates the GitHub release and
+   builds its Android, CLI, and web artifacts.
 
 ## 1. Publish packages to pub.dev
 
@@ -48,29 +49,29 @@ Graduation only removes `-dev.N`, so it would produce `0.9.1`. Use `exact` for
 the `0.9.2` release.
 !!!
 
-## 2. Publish the GitHub release and artifacts
+## 2. Verify the GitHub release and artifacts
 
-After the package release PR is merged, update local `master` and tag that
-exact commit:
+After pub.dev publication succeeds, the package workflow creates `v0.9.2` on
+the release commit. That tag starts the sample-app release workflow. It creates
+a draft GitHub release using the matching section from
+`packages/ndk/CHANGELOG.md`, builds and uploads the Android APKs and
+cross-platform CLI archives, and deploys the sample web app. After every job
+succeeds, the workflow publishes the GitHub release automatically.
 
-```sh
-git switch master
-git pull --ff-only
-git tag -a v0.9.2 -m "Release v0.9.2"
-git push origin v0.9.2
-```
-
-The `v0.9.2` tag starts the sample-app release workflow. It creates a draft
-GitHub release, builds and uploads the Android APKs and cross-platform CLI
-archives, and deploys the sample web app. After every job succeeds, the
-workflow publishes the GitHub release automatically.
+The release preparation keeps `doc/retype.yml` aligned with the NDK package
+version. The tag-triggered docs deployment also derives the displayed version
+from the tag so the published site cannot retain a stale version label.
 
 Verify the completed release and its assets on the
 [GitHub releases page](https://github.com/relaystr/ndk/releases).
 
-Do not create `v0.9.2` before the package release PR is merged. Otherwise the
-tag and built artifacts point to source that still reports the previous
-package version.
+Release asset names use `<product>-<version>-<platform>-<architecture>` with
+kebab-case product names, for example `ndk-demo-0.9.2-android-arm64-v8a.apk`
+and `ndk-cli-0.9.2-linux-x64.tar.gz`.
+
+Do not create `v0.9.2` manually before package publication finishes. Otherwise
+the tag and built artifacts can point to source that still reports the
+previous package version.
 
 ## Manual alternative
 

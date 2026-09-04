@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.841855202879">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.841856883823">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 4.6.0">
@@ -37,12 +37,11 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.6.0.841855202879" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.841856883823" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.841855202879" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.841856883823" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.841855202879" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.841855202879" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.841856883823" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -59,7 +58,7 @@
                 <div class="flex items-center px-2 md:px-6">
                     <a id="retype-branding-logo" href="https://dart-nostr.com/" class="flex items-center leading-snug text-2xl">
                         <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
-                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.9.0</span>
+                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.9.2</span>
                 </div>
     
                 <span class="hidden h-8 border-r md:inline-block border-base-border"></span>
@@ -160,12 +159,13 @@
 <ol>
 <li>
 <p>Prepare and merge the package release PR. This publishes packages to
-pub.dev and creates package tags such as <code translate="no" v-pre>ndk-v0.9.2</code>.</p>
+pub.dev.</p>
 </li>
 <li>
-<p>Tag that resulting <code translate="no" v-pre>master</code> commit with the workspace release tag, such as
-<code translate="no" v-pre>v0.9.2</code>. This creates the GitHub release and builds its Android, CLI, and
-web artifacts.</p>
+<p>After publication succeeds, automation tags the release commit. NDK uses a
+plain tag such as <code translate="no" v-pre>v0.9.2</code>; other packages use tags such as
+<code translate="no" v-pre>ndk_flutter-v0.9.0</code>. An NDK <code translate="no" v-pre>vX.Y.Z</code> tag creates the GitHub release and
+builds its Android, CLI, and web artifacts.</p>
 </li>
 </ol>
 <h2 id="1-publish-packages-to-pubdev">1. Publish packages to pub.dev</h2>
@@ -241,24 +241,24 @@ the <code translate="no" v-pre>0.9.2</code> release.</p>
         </div>
     </div>
 </div>
-<h2 id="2-publish-the-github-release-and-artifacts">2. Publish the GitHub release and artifacts</h2>
-<p>After the package release PR is merged, update local <code translate="no" v-pre>master</code> and tag that
-exact commit:</p>
-<div id="2-publish-the-github-release-and-artifacts-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-bash"><code v-pre class="language-bash">git switch master
-git pull --ff-only
-git tag -a v0.9.2 -m &quot;Release v0.9.2&quot;
-git push origin v0.9.2</code></pre>
-</doc-codeblock></div>
-<p>The <code translate="no" v-pre>v0.9.2</code> tag starts the sample-app release workflow. It creates a draft
-GitHub release, builds and uploads the Android APKs and cross-platform CLI
-archives, and deploys the sample web app. After every job succeeds, the
-workflow publishes the GitHub release automatically.</p>
+<h2 id="2-verify-the-github-release-and-artifacts">2. Verify the GitHub release and artifacts</h2>
+<p>After pub.dev publication succeeds, the package workflow creates <code translate="no" v-pre>v0.9.2</code> on
+the release commit. That tag starts the sample-app release workflow. It creates
+a draft GitHub release using the matching section from
+<code translate="no" v-pre>packages/ndk/CHANGELOG.md</code>, builds and uploads the Android APKs and
+cross-platform CLI archives, and deploys the sample web app. After every job
+succeeds, the workflow publishes the GitHub release automatically.</p>
+<p>The release preparation keeps <code translate="no" v-pre>doc/retype.yml</code> aligned with the NDK package
+version. The tag-triggered docs deployment also derives the displayed version
+from the tag so the published site cannot retain a stale version label.</p>
 <p>Verify the completed release and its assets on the
 <a href="https://github.com/relaystr/ndk/releases">GitHub releases page</a>.</p>
-<p>Do not create <code translate="no" v-pre>v0.9.2</code> before the package release PR is merged. Otherwise the
-tag and built artifacts point to source that still reports the previous
-package version.</p>
+<p>Release asset names use <code translate="no" v-pre>&lt;product&gt;-&lt;version&gt;-&lt;platform&gt;-&lt;architecture&gt;</code> with
+kebab-case product names, for example <code translate="no" v-pre>ndk-demo-0.9.2-android-arm64-v8a.apk</code>
+and <code translate="no" v-pre>ndk-cli-0.9.2-linux-x64.tar.gz</code>.</p>
+<p>Do not create <code translate="no" v-pre>v0.9.2</code> manually before package publication finishes. Otherwise
+the tag and built artifacts can point to source that still reports the
+previous package version.</p>
 <h2 id="manual-alternative">Manual alternative</h2>
 <ol>
 <li>
@@ -343,6 +343,6 @@ run <code translate="no" v-pre>melos version</code> (which creates a Git commit)
 
     <div id="retype-overlay-target"></div>
 
-        <script data-cfasync="false">window.__DOCS__ = { "title": "Publishing", level: 2, icon: "file", hasPrism: true, hasInstagram: false, hasMermaid: false, hasMath: false, tocDepth: 23, "md": "/library-development/publish.md" }</script>
+        <script data-cfasync="false">window.__DOCS__ = { "title": "Publishing", level: 2, icon: "file", hasPrism: false, hasInstagram: false, hasMermaid: false, hasMath: false, tocDepth: 23, "md": "/library-development/publish.md" }</script>
 </body>
 </html>
