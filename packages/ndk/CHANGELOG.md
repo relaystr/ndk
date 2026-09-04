@@ -1,3 +1,7 @@
+## 0.9.2
+
+ - Stable release.
+
 ## 0.9.1-dev.3
 
  - **FIX**(release): isolate version generation.
