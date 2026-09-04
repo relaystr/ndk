@@ -1,3 +1,10 @@
+## 0.9.2-dev.0+1
+
+ - **FIX**(cli): avoid wallet startup network work.
+ - **FIX**: paginate each relay of a relay set on its own.
+ - **DOCS**(cli): condense wallet command help.
+ - **DOCS**(ndk): finalize 0.9.2 changelog.
+
 ## 0.9.2
 
  - **FEAT**: add DM relay discovery and publishing APIs.
