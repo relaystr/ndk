@@ -72,11 +72,13 @@
 ## Library Development
 
 - [Contributing to NDK](https://dart-nostr.com/library-development/contributing.md): We love your input! We want to make contributing to this project as easy and transparent as possible, whether it's:
-- [Publishing](https://dart-nostr.com/library-development/publish.md): Create a tag git tag -a v1.2.3 -m Release v1.2.3
+- [Publishing](https://dart-nostr.com/library-development/publish.md): Complete releases have two distinct stages, in this order:
 
 ### ADRs
 
 - [ADRs](https://dart-nostr.com/library-development/adrs/index.md)
 - [Architecture Decision Record: Layered Architecture](https://dart-nostr.com/library-development/adrs/layerd-architecture.md): Title: Layered Architecture - folder structure
+- [Architecture Decision Record: Offline Broadcast](https://dart-nostr.com/library-development/adrs/broadcast-offline.md): Title: Record: Offline Broadcast
 - [Architecture Decision Record: Package Structure dart, flutter](https://dart-nostr.com/library-development/adrs/reduce-packages.md): Title: Package Structure dart, flutter
+- [Architecture Decision Record: Relay authentication](https://dart-nostr.com/library-development/adrs/relay-auth.md): Title: Relay authentication - who a query, subscription or broadcast authenticates as
 - [Architecture Decision Record: Wallet Cashu API](https://dart-nostr.com/library-development/adrs/wallet-cashu.md): Title: Wallet Cashu - api design
