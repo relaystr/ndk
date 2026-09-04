@@ -16,6 +16,27 @@ void main() {
   }
   collapseTests();
   deadConnectionTests();
+  fallbackTests();
+}
+
+/// What a response carries when it was built without a request behind it.
+void fallbackTests() {
+  group('relay outcomes fallback', () {
+    test('a response built without outcomes reports empty ones', () async {
+      final response = NdkResponse(
+        "no-outcomes",
+        const Stream<Nip01Event>.empty(),
+      );
+
+      expect(response.relayOutcomes, isEmpty);
+      expect(await response.relayOutcomesDone, isEmpty);
+      // the initial snapshot the stream promises, and then its end
+      expect(
+        await response.relayOutcomesStream.toList(),
+        [<String, RelayRequestOutcome>{}],
+      );
+    });
+  });
 }
 
 /// Polls [condition] so a test does not depend on connect or reconnect timings.

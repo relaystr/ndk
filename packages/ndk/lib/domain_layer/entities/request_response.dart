@@ -66,8 +66,10 @@ class NdkResponse {
   static Map<String, RelayRequestOutcome> _noOutcomes() =>
       const <String, RelayRequestOutcome>{};
 
+  // one empty snapshot rather than nothing at all, so a response built without
+  // outcomes still keeps what [relayOutcomesStream] promises its listener
   static Stream<Map<String, RelayRequestOutcome>> _noOutcomesStream() =>
-      const Stream<Map<String, RelayRequestOutcome>>.empty();
+      Stream.value(const <String, RelayRequestOutcome>{});
 }
 
 // coverage:ignore-end
