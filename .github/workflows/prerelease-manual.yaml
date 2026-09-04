@@ -108,6 +108,16 @@ jobs:
           git add "$changelog_path"
           git commit --amend --no-edit
 
+      - name: Keep the documentation version aligned with NDK
+        run: |
+          ndk_version=$(awk '$1 == "version:" { print $2; exit }' packages/ndk/pubspec.yaml)
+          sed -i -E "s/^  label: .*/  label: v${ndk_version}/" doc/retype.yml
+
+          if ! git diff --quiet -- doc/retype.yml; then
+            git add doc/retype.yml
+            git commit --amend --no-edit
+          fi
+
       - name: Validate and create release PR
         uses: bluefireteam/melos-action@v3
         with:

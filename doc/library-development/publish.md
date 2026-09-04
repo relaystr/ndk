@@ -64,8 +64,16 @@ a draft GitHub release using the matching section from
 cross-platform CLI archives, and deploys the sample web app. After every job
 succeeds, the workflow publishes the GitHub release automatically.
 
+The release preparation keeps `doc/retype.yml` aligned with the NDK package
+version. The tag-triggered docs deployment also derives the displayed version
+from the tag so the published site cannot retain a stale version label.
+
 Verify the completed release and its assets on the
 [GitHub releases page](https://github.com/relaystr/ndk/releases).
+
+Release asset names use `<product>-<version>-<platform>-<architecture>` with
+kebab-case product names, for example `ndk-demo-0.9.2-android-arm64-v8a.apk`
+and `ndk-cli-0.9.2-linux-x64.tar.gz`.
 
 Do not create `v0.9.2` manually before package publication finishes. Otherwise
 the tag and built artifacts can point to source that still reports the
