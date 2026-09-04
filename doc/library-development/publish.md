@@ -10,12 +10,14 @@ order: 100
 
 Complete releases have two distinct stages, in this order:
 
-1. Prepare and merge the package release PR. This publishes packages to
-   pub.dev.
-2. After publication succeeds, automation tags the release commit. NDK uses a
-   plain tag such as `v0.9.2`; other packages use tags such as
-   `ndk_flutter-v0.9.0`. An NDK `vX.Y.Z` tag creates the GitHub release and
-   builds its Android, CLI, and web artifacts.
+1. Prepare and merge the package release PR. Automation creates a
+   package-scoped tag such as `ndk-v0.9.2`, which pub.dev uses to authenticate
+   the publication workflow, and then publishes the package.
+2. After NDK publication succeeds, automation also creates the plain release
+   tag, such as `v0.9.2`, and dispatches the tag-based release and documentation
+   workflows. They create the GitHub release and build its Android, CLI, and
+   web artifacts. For other packages, the package-scoped tag is the release
+   tag.
 
 ## 1. Publish packages to pub.dev
 
@@ -49,9 +51,11 @@ NDK version and all generated dependent-package constraint updates before
 merging the PR. If several package versions change, the title lists each exact
 package/version pair.
 
-Merging that release PR creates package tags and publishes every changed,
-publishable package to pub.dev. Preparing the PR performs only a publish dry
-run; it does not publish anything.
+Merging that release PR creates package-scoped authentication tags and
+publishes every changed, publishable package to pub.dev. Each publication
+workflow must run from its package tag because pub.dev's trusted publisher is
+configured to accept tag identities. Preparing the PR performs only a publish
+dry run; it does not publish anything.
 
 !!!
 Do not use `graduate-prerelease` to change `0.9.1-dev.N` into `0.9.2`.
@@ -62,8 +66,9 @@ the `0.9.2` release.
 ## 2. Verify the GitHub release and artifacts
 
 After pub.dev publication succeeds, the package workflow creates `v0.9.2` on
-the release commit. That tag starts the sample-app release workflow. It creates
-a draft GitHub release using the matching section from
+the release commit and dispatches the sample-app release and documentation
+workflows from that tag. The release workflow creates a draft GitHub release
+using the matching section from
 `packages/ndk/CHANGELOG.md`, builds and uploads the Android APKs and
 cross-platform CLI archives, and deploys the sample web app. After every job
 succeeds, the workflow publishes the GitHub release automatically.

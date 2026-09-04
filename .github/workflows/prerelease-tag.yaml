@@ -30,11 +30,12 @@ jobs:
         uses: bluefireteam/melos-action@v3
         with:
           melos-version: "8.3.0"
+          tag: true
       - name: Publish changed packages
         run: |
           melos exec -c 1 --no-published --no-private -- \
           gh workflow run prerelease-publish.yaml \
-          --ref master \
+          --ref \$MELOS_PACKAGE_NAME-v\$MELOS_PACKAGE_VERSION \
           -f package_name=\$MELOS_PACKAGE_NAME \
           -f package_version=\$MELOS_PACKAGE_VERSION \
           -f commit_sha=$GITHUB_SHA
