@@ -1,3 +1,11 @@
+## 0.9.3-dev.0+1
+
+ - **FIX**(cli): avoid wallet startup network work.
+ - **FIX**: paginate each relay of a relay set on its own.
+ - **DOCS**(release): add 0.9.3 notes.
+ - **DOCS**(cli): condense wallet command help.
+ - **DOCS**(ndk): finalize 0.9.2 changelog.
+
 ## 0.9.3
 
  - **FIX**(cli): prevent wallet commands from replaying pending deliveries or
