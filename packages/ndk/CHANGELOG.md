@@ -1,3 +1,7 @@
+## 0.9.1-dev.4
+
+ - **FIX**: paginate each relay of a relay set on its own.
+
 ## 0.9.1-dev.3
 
  - **FIX**(release): isolate version generation.
