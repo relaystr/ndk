@@ -118,6 +118,10 @@ jobs:
             git commit --amend --no-edit
           fi
 
+      - name: Build versioned release PR title
+        id: release_pr
+        run: bash .github/scripts/release-pr-title.sh "$GITHUB_SHA"
+
       - name: Validate and create release PR
         uses: bluefireteam/melos-action@v3
         with:
@@ -125,3 +129,4 @@ jobs:
           run-bootstrap: false
           publish-dry-run: true
           create-pr: true
+          pr-title: ${{ steps.release_pr.outputs.pr_title }}

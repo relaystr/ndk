@@ -40,10 +40,14 @@ Run the workflow with:
 - `exact_package`: `ndk`
 - `exact_version`: `0.9.2`
 
-The workflow opens a PR named `chore(release): Publish packages`. Replace the
-generated `Stable release.` changelog stub with the actual `0.9.2` release
-notes. Then review the NDK version and all generated dependent-package
-constraint updates before merging the PR.
+The workflow opens a versioned PR named
+`chore(release): publish ndk 0.9.2`. Development versions instead use
+`chore(prerelease)`, for example
+`chore(prerelease): publish ndk 0.9.3-dev.0`. Replace the generated
+`Stable release.` changelog stub with the actual release notes. Then review the
+NDK version and all generated dependent-package constraint updates before
+merging the PR. If several package versions change, the title lists each exact
+package/version pair.
 
 Merging that release PR creates package tags and publishes every changed,
 publishable package to pub.dev. Preparing the PR performs only a publish dry
