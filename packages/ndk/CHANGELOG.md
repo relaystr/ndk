@@ -1,6 +1,12 @@
 ## 0.9.3
 
- - Stable release.
+ - **FIX**(cli): prevent wallet commands from replaying pending deliveries or
+   restoring unrelated remote signers, and close CLI databases cleanly.
+ - **FIX**(installer): download stable CLI releases without consuming the
+   GitHub REST API quota.
+ - **DOCS**(cli): condense wallet help and standardize optional argument
+   notation.
+ - **CI**: run NDK tests serially to reduce peak native verifier memory usage.
 
 ## 0.9.2
 
