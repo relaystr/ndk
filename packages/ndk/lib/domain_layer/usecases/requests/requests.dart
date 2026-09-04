@@ -15,6 +15,7 @@ import '../../entities/ndk_request.dart';
 import '../../entities/nip_01_event.dart';
 import '../../entities/relay_connectivity.dart';
 import '../../entities/relay_set.dart';
+import '../../entities/relay_request_outcome.dart';
 import '../../entities/request_response.dart';
 import '../../entities/request_state.dart';
 import '../../repositories/cache_manager.dart';
@@ -341,7 +342,13 @@ class Requests {
   NdkResponse requestNostrEvent(NdkRequest request) {
     final state = RequestState(request);
 
-    final response = NdkResponse(state.id, state.stream);
+    final response = NdkResponse(
+      state.id,
+      state.stream,
+      relayOutcomes: () => state.relayOutcomes,
+      relayOutcomesStream: () => state.relayOutcomesStream,
+      relayOutcomesDone: state.controller.done.then((_) => state.relayOutcomes),
+    );
 
     final concurrency = ConcurrencyCheck(_globalState);
 
@@ -466,6 +473,33 @@ class Requests {
     final aggregatedController = ReplaySubject<Nip01Event>();
     final seenEventIds = <String>{};
 
+    // a relay is paginated by its own sequence of requests, so what it ended
+    // with is what its last page ended with
+    final relayOutcomes = <String, RelayRequestOutcome>{};
+    final relayOutcomesDone = Completer<Map<String, RelayRequestOutcome>>();
+    final relayOutcomesSubject =
+        BehaviorSubject<Map<String, RelayRequestOutcome>>.seeded(const {});
+
+    void mergeRelayOutcomes(Map<String, RelayRequestOutcome> page) {
+      relayOutcomes.addAll(page);
+      if (!relayOutcomesSubject.isClosed) {
+        relayOutcomesSubject.add(Map.unmodifiable(relayOutcomes));
+      }
+    }
+
+    /// Awaits a page, merging what its relays answer while it is still running
+    /// so the aggregated stream reports a pending relay instead of only the
+    /// pages that ended.
+    Future<List<Nip01Event>> awaitPage(NdkResponse page) async {
+      final outcomes = page.relayOutcomesStream.listen(mergeRelayOutcomes);
+      try {
+        return await page.future;
+      } finally {
+        await outcomes.cancel();
+        mergeRelayOutcomes(page.relayOutcomes);
+      }
+    }
+
     Future<void> paginate() async {
       final since = filter.since;
 
@@ -488,7 +522,7 @@ class Requests {
         ),
       );
 
-      final initialEvents = await initialResponse.future;
+      final initialEvents = await awaitPage(initialResponse);
 
       // Emit initial events and discover relays
       final relayState = <String, _RelayPaginationState>{};
@@ -565,7 +599,8 @@ class Requests {
             ),
           );
 
-          return MapEntry(relay, await response.future);
+          final pageEvents = await awaitPage(response);
+          return MapEntry(relay, pageEvents);
         });
 
         final results = await Future.wait(futures);
@@ -604,9 +639,18 @@ class Requests {
     }
 
     // Start pagination asynchronously
-    paginate();
+    paginate().whenComplete(() {
+      relayOutcomesDone.complete(Map.of(relayOutcomes));
+      relayOutcomesSubject.close();
+    });
 
-    return NdkResponse(requestId, aggregatedController.stream);
+    return NdkResponse(
+      requestId,
+      aggregatedController.stream,
+      relayOutcomes: () => Map.of(relayOutcomes),
+      relayOutcomesStream: () => relayOutcomesSubject.stream,
+      relayOutcomesDone: relayOutcomesDone.future,
+    );
   }
 
   /// Records fetched ranges for each relay that received EOSE
