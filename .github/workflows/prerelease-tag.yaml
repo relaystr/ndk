@@ -1,11 +1,11 @@
-name: Tag and start pre-release
+name: Start package releases
 on:
   push:
     branches: [master]
 
 jobs:
   publish-packages:
-    name: Create tags for pre-release
+    name: Start package releases
 
     permissions:
       actions: write
@@ -26,17 +26,17 @@ jobs:
           cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
           cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
           architecture: x64 # optional, x64 or arm64
-      - name: Tag and start pre-release
+      - name: Setup Melos
         uses: bluefireteam/melos-action@v3
         with:
-          tag: true
-      # - run: |
-      #     melos exec -c 1 --no-published --no-private --order-dependents -- \
-      #     gh workflow run prerelease-publish.yaml \
-      #     --ref \$MELOS_PACKAGE_NAME-v\$MELOS_PACKAGE_VERSION
-      - run: |
+          melos-version: "8.3.0"
+      - name: Publish changed packages
+        run: |
           melos exec -c 1 --no-published --no-private -- \
           gh workflow run prerelease-publish.yaml \
-          --ref \$MELOS_PACKAGE_NAME-v\$MELOS_PACKAGE_VERSION
+          --ref master \
+          -f package_name=\$MELOS_PACKAGE_NAME \
+          -f package_version=\$MELOS_PACKAGE_VERSION \
+          -f commit_sha=$GITHUB_SHA
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
