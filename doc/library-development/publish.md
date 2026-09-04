@@ -66,7 +66,9 @@ succeeds, the workflow publishes the GitHub release automatically.
 
 The release preparation keeps `doc/retype.yml` aligned with the NDK package
 version. The tag-triggered docs deployment also derives the displayed version
-from the tag so the published site cannot retain a stale version label.
+from the tag so the published site cannot retain a stale version label. The
+documentation and sample-app deployments share one deployment queue and retain
+each other's files on the `gh-pages` branch.
 
 Verify the completed release and its assets on the
 [GitHub releases page](https://github.com/relaystr/ndk/releases).

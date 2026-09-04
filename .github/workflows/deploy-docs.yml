@@ -5,6 +5,10 @@ on:
       - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
   workflow_dispatch:
 
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
 jobs:
   publish:
     name: Publish to gh-pages branch
@@ -29,9 +33,15 @@ jobs:
         with:
           dotnet-version: "7.0.x"
 
-      - uses: retypeapp/action-build@latest
-
-      - uses: retypeapp/action-github-pages@latest
+      - name: Build documentation
+        uses: retypeapp/action-build@latest
         with:
-          update-branch: true
-          branch: gh-pages
+          output: ${{ runner.temp }}/retype-output
+
+      - name: Deploy documentation without removing the sample app
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ runner.temp }}/retype-output
+          publish_branch: gh-pages
+          keep_files: true
