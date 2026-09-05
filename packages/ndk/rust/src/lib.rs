@@ -5,7 +5,7 @@ use std::slice;
 
 use fips204::traits::{KeyGen, SerDes, Signer, Verifier};
 use fips204::{ml_dsa_44, ml_dsa_65, ml_dsa_87};
-use hex::decode;
+use hex::decode_to_slice;
 use hkdf::Hkdf;
 use secp256k1::{schnorr::Signature, XOnlyPublicKey, SECP256K1};
 use sha2::{Digest, Sha256};
@@ -118,39 +118,63 @@ pub unsafe extern "C" fn verify_schnorr_signature(
     }
 }
 
+/// Verifies a Schnorr signature from one fixed-size packed ASCII buffer:
+/// event id (64 bytes), pubkey (64 bytes), signature (128 bytes).
+///
+/// # Safety
+/// `packed` must point to `packed_len` readable bytes. The function rejects
+/// null pointers and every length other than 256 before reading the buffer.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn verify_schnorr_signature_packed(
+    packed: *const u8,
+    packed_len: usize,
+) -> i32 {
+    const PACKED_LEN: usize = 64 + 64 + 128;
+    if packed.is_null() || packed_len != PACKED_LEN {
+        return 0;
+    }
+    let bytes = unsafe { slice::from_raw_parts(packed, packed_len) };
+    let event_id_hex = &bytes[..64];
+    let pub_key_hex = &bytes[64..128];
+    let signature_hex = &bytes[128..];
+
+    if verify_schnorr_signature_bytes(pub_key_hex, event_id_hex, signature_hex) {
+        1
+    } else {
+        0
+    }
+}
+
 fn verify_schnorr_signature_internal(
     pub_key_hex: &str,
     event_id_hex: &str,
     signature_hex: &str,
 ) -> bool {
-    let pub_key_bytes = match decode(pub_key_hex) {
-        Ok(bytes) => bytes,
-        Err(_) => return false,
-    };
+    verify_schnorr_signature_bytes(
+        pub_key_hex.as_bytes(),
+        event_id_hex.as_bytes(),
+        signature_hex.as_bytes(),
+    )
+}
 
-    let event_id_bytes = match decode(event_id_hex) {
-        Ok(bytes) => bytes,
-        Err(_) => return false,
-    };
-
-    let signature_bytes = match decode(signature_hex) {
-        Ok(bytes) => bytes,
-        Err(_) => return false,
-    };
-
-    if event_id_bytes.len() != 32 || pub_key_bytes.len() != 32 || signature_bytes.len() != 64 {
+fn verify_schnorr_signature_bytes(
+    pub_key_hex: &[u8],
+    event_id_hex: &[u8],
+    signature_hex: &[u8],
+) -> bool {
+    if pub_key_hex.len() != 64 || event_id_hex.len() != 64 || signature_hex.len() != 128 {
         return false;
     }
 
-    let pub_key_array: [u8; 32] = match pub_key_bytes.try_into() {
-        Ok(arr) => arr,
-        Err(_) => return false,
-    };
-
-    let signature_array: [u8; 64] = match signature_bytes.try_into() {
-        Ok(arr) => arr,
-        Err(_) => return false,
-    };
+    let mut pub_key_array = [0u8; 32];
+    let mut event_id_array = [0u8; 32];
+    let mut signature_array = [0u8; 64];
+    if decode_to_slice(pub_key_hex, &mut pub_key_array).is_err()
+        || decode_to_slice(event_id_hex, &mut event_id_array).is_err()
+        || decode_to_slice(signature_hex, &mut signature_array).is_err()
+    {
+        return false;
+    }
 
     let pubkey = match XOnlyPublicKey::from_byte_array(pub_key_array) {
         Ok(key) => key,
@@ -160,7 +184,7 @@ fn verify_schnorr_signature_internal(
     let signature = Signature::from_byte_array(signature_array);
 
     SECP256K1
-        .verify_schnorr(&signature, &event_id_bytes, &pubkey)
+        .verify_schnorr(&signature, &event_id_array, &pubkey)
         .is_ok()
 }
 

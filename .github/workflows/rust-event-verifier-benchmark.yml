@@ -1,0 +1,60 @@
+name: Rust event verifier benchmark
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    paths:
+      - packages/ndk/lib/data_layer/repositories/verifiers/rust_event_verifier_native.dart
+      - packages/ndk/lib/src/rust_lib.dart
+      - packages/ndk/rust/**
+      - packages/ndk/tool/benchmark_rust_event_verifier.dart
+      - .github/workflows/rust-event-verifier-benchmark.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rust-event-verifier-benchmark-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/ndk
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          architecture: ${{ matrix.architecture }}
+          cache: true
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Run benchmark
+        run: dart run tool/benchmark_rust_event_verifier.dart > benchmark-results.json
+
+      - name: Record and compare benchmark
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Rust event verifier
+          tool: customSmallerIsBetter
+          output-file-path: packages/ndk/benchmark-results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-pages-branch: benchmark-data
+          benchmark-data-dir-path: rust-event-verifier
+          auto-push: ${{ github.event_name == 'push' }}
+          save-data-file: ${{ github.event_name == 'push' }}
+          alert-threshold: 110%
+          comment-on-alert: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+          summary-always: true
