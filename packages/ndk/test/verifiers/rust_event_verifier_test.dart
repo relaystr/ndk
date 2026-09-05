@@ -1,4 +1,8 @@
+import 'dart:ffi';
+
+import 'package:ffi/ffi.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/src/rust_lib.dart' as rust_lib;
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
@@ -191,6 +195,32 @@ void main() {
       );
 
       expect(await verifier.verify(event), isFalse);
+    });
+
+    test('rejects malformed packed FFI inputs', () {
+      const packedLength = 64 + 64 + 128;
+      final packed = malloc<Uint8>(packedLength);
+
+      try {
+        expect(
+          rust_lib.verifySchnorrSignaturePackedNative(
+              packed, packedLength - 10),
+          0,
+        );
+        expect(
+          rust_lib.verifySchnorrSignaturePackedNative(
+              Pointer.fromAddress(0), packedLength),
+          0,
+        );
+
+        packed.asTypedList(packedLength).fillRange(0, packedLength, 0x7a);
+        expect(
+          rust_lib.verifySchnorrSignaturePackedNative(packed, packedLength),
+          0,
+        );
+      } finally {
+        malloc.free(packed);
+      }
     });
 
     test('repeatedly verifies an event with many large tags', () async {
