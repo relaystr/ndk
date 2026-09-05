@@ -30,9 +30,13 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: dart-lang/setup-dart@v1
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
-          sdk: 3.13.0
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          architecture: ${{ matrix.architecture }}
+          cache: true
 
       - name: Install dependencies
         run: dart pub get
