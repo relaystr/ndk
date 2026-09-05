@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 
 import '../../config/rx_defaults.dart';
+import '../../shared/logger/logger.dart';
 import 'filter.dart';
 import 'ndk_request.dart';
 import 'nip_01_event.dart';
+import 'relay_auth.dart';
 import 'relay_connection_key.dart';
 
 /// Single relay request state
@@ -60,6 +62,11 @@ class RequestState {
   ///! our requests tracking obj
   // key is the connection the request was sent on, value is RelayRequestState
   Map<RelayConnectionKey, RelayRequestState> requests = {};
+
+  /// send paths still working out which connection to use, before they show up
+  /// in [requests]. The relay that answers first must not look like the only
+  /// one this request ever had, or the stream closes on the others
+  int pendingConnections = 0;
 
   /// the original request
   NdkRequest request;
@@ -131,7 +138,9 @@ class RequestState {
   }
 
   /// checks if all requests finished (received EOSE or CLOSED)
-  bool get didAllRequestsFinish => requests.values.every(
+  bool get didAllRequestsFinish =>
+      pendingConnections == 0 &&
+      requests.values.every(
         (element) =>
             (element.receivedEOSE || element.receivedClosed) &&
             !element.retryingAuth,
@@ -142,6 +151,18 @@ class RequestState {
     if (!requests.containsKey(key)) {
       requests[key] = RelayRequestState(key, filters);
     }
+  }
+
+  /// Adds a request towards [url] on the connection this request's [RelayAuth]
+  /// allows. A relay no connection can satisfy is skipped: falling back to the
+  /// anonymous one is what the caller ruled out.
+  void addRequestForRelay(String url, List<Filter> filters) {
+    final key = RelayAuth.keyFor(url, request.auth);
+    if (key == null) {
+      Logger.log.w(() => "No connection can carry ${request.id} to $url");
+      return;
+    }
+    addRequest(key, filters);
   }
 
   /// closes all streams

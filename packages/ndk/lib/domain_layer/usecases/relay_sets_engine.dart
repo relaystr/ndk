@@ -61,28 +61,47 @@ class RelaySetsEngine implements NetworkEngine {
       return false;
     }
 
-    final connected = await _relayManager.reconnectRelay(
-      request.url,
-      connectionSource:
-          ConnectionSource.explicit, // TODO improve this connection source
-      force: false,
-    );
+    // a connection that is still opening is not one that is gone, and
+    // _checkNetworkClose cannot tell them apart on its own
+    final state = _globalState.inFlightRequests[id];
+    if (state != null) {
+      _relayManager.beginPendingConnection(state);
+    }
+    final bool connected;
+    try {
+      connected = await _relayManager.reconnectConnection(
+        request.key,
+        connectionSource:
+            ConnectionSource.explicit, // TODO improve this connection source
+        force: false,
+        as: state?.request.auth?.account,
+      );
+    } finally {
+      if (state != null) {
+        _relayManager.endPendingConnection(state);
+      }
+    }
     if (connected) {
-      RelayConnectivity? relay =
-          _globalState.relays[RelayConnectionKey.anonymous(request.url)];
-      if (relay != null) {
-        try {
-          await _relayManager.sendOrThrow(
-            relay,
-            ClientMsg(ClientMsgType.kReq, id: id, filters: request.filters),
-          );
-        } catch (e) {
-          Logger.log.e(
-            () => "COULD NOT SEND REQUEST TO ${request.url}:",
-            error: e,
-          );
-          return false;
-        }
+      RelayConnectivity? relay = _globalState.relays[request.key];
+      if (relay == null) {
+        // the connection was closed between opening it and looking it up
+        Logger.log.w(
+          () => "COULD NOT SEND REQUEST TO ${request.url}, ${request.key} "
+              "is gone",
+        );
+        return false;
+      }
+      try {
+        await _relayManager.sendOrThrow(
+          relay,
+          ClientMsg(ClientMsgType.kReq, id: id, filters: request.filters),
+        );
+      } catch (e) {
+        Logger.log.e(
+          () => "COULD NOT SEND REQUEST TO ${request.url}:",
+          error: e,
+        );
+        return false;
       }
       return true;
     } else {
@@ -202,37 +221,27 @@ class RelaySetsEngine implements NetworkEngine {
             "making fallback requests to ${_bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}",
           );
           for (final url in _bootstrapRelays) {
-            state.addRequest(
-              RelayConnectionKey.anonymous(url),
-              RelaySet.sliceFilterAuthors(filter),
-            );
+            state.addRequestForRelay(url, RelaySet.sliceFilterAuthors(filter));
           }
         }
       } else {
         for (final url in relaySet.urls) {
-          state.addRequest(
-            RelayConnectionKey.anonymous(url),
-            RelaySet.sliceFilterAuthors(filter),
-          );
+          state.addRequestForRelay(url, RelaySet.sliceFilterAuthors(filter));
         }
       }
     }
     _globalState.inFlightRequests[state.id] = state;
 
-    // Late auth for subscriptions with authenticateAs
-    if (state.request.authenticateAs != null &&
-        state.request.authenticateAs!.isNotEmpty) {
-      for (final connectionKey in state.requests.keys) {
-        _relayManager.authenticateIfNeeded(
-          connectionKey.url,
-          state.request.authenticateAs!,
-        );
-      }
-    }
-
     for (MapEntry<RelayConnectionKey, RelayRequestState> entry
-        in state.requests.entries) {
-      doRelayRequest(state.id, entry.value);
+        in state.requests.entries.toList()) {
+      doRelayRequest(state.id, entry.value).then((sent) {
+        if (!sent) {
+          state.requests.remove(entry.key);
+          if (state.requests.isEmpty) {
+            state.networkController.close();
+          }
+        }
+      });
     }
   }
 
@@ -263,20 +272,9 @@ class RelaySetsEngine implements NetworkEngine {
       for (final filter in state.request.filters) {
         filters.addAll(RelaySet.sliceFilterAuthors(filter));
       }
-      state.addRequest(RelayConnectionKey.anonymous(url), filters);
+      state.addRequestForRelay(url, filters);
     }
     _globalState.inFlightRequests[state.id] = state;
-
-    // Late auth for subscriptions with authenticateAs
-    if (state.request.authenticateAs != null &&
-        state.request.authenticateAs!.isNotEmpty) {
-      for (final connectionKey in state.requests.keys) {
-        _relayManager.authenticateIfNeeded(
-          connectionKey.url,
-          state.request.authenticateAs!,
-        );
-      }
-    }
 
     for (MapEntry<RelayConnectionKey, RelayRequestState> entry
         in state.requests.entries) {
@@ -312,10 +310,7 @@ class RelaySetsEngine implements NetworkEngine {
     );
 
     for (var url in urls) {
-      state.addRequest(
-        RelayConnectionKey.anonymous(url),
-        RelaySet.sliceFilterAuthors(filter),
-      );
+      state.addRequestForRelay(url, RelaySet.sliceFilterAuthors(filter));
     }
     _globalState.inFlightRequests[state.id] = state;
 
