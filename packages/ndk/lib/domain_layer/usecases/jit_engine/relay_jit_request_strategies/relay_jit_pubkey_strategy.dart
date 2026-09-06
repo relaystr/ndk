@@ -98,7 +98,6 @@ class RelayJitPubkeyStrategy with Logger {
           connectedRelay,
           requestState,
           [splitFilter],
-          globalState,
           relayManager,
         ),
       );
@@ -226,7 +225,6 @@ class RelayJitPubkeyStrategy with Logger {
                     relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
                   ),
                 ],
-                globalState,
                 relayManger,
               ),
             );
@@ -274,7 +272,6 @@ class RelayJitPubkeyStrategy with Logger {
                 relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
               ),
             ],
-            globalState,
             relayManger,
           ),
         );
@@ -333,11 +330,13 @@ Future<void> _sendRequestToSocket(
   RelayConnectivity<JitEngineRelayConnectivityData> connectedRelay,
   RequestState requestState,
   List<Filter> filters,
-  GlobalState globalState,
   RelayManager relayManager,
 ) async {
-  if (globalState.inFlightRequests[requestState.id] == null) {
-    globalState.inFlightRequests[requestState.id] = requestState;
+  // [Requests] registers the request before any engine sees it, so an absent
+  // one is a request that already ended. Putting it back would send a REQ
+  // nobody would ever CLOSE, on a state nothing will ever clean up again
+  if (!relayManager.isStillInFlight(requestState)) {
+    return;
   }
 
   relayManager.beginPendingConnection(requestState);
