@@ -81,6 +81,12 @@ class RelaySetsEngine implements NetworkEngine {
         _relayManager.endPendingConnection(state);
       }
     }
+    // a timeout or a closeSubscription may have ended the request while the
+    // connection was opening: nothing tracks it anymore, so nothing would ever
+    // CLOSE what we would send here
+    if (state != null && !_relayManager.isStillInFlight(state)) {
+      return false;
+    }
     if (connected) {
       RelayConnectivity? relay = _globalState.relays[request.key];
       if (relay == null) {

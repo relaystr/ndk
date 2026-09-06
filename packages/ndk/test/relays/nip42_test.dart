@@ -1057,6 +1057,9 @@ void nip42Tests(NdkEngine engine) {
       );
       await relay1.startServer(
         textNotes: {key1: textNote(key1, "note from key1")},
+        // the close has to land while the bound connection is still opening,
+        // and a machine under load is not a reliable way to get there
+        delayConnection: Duration(milliseconds: 500),
       );
 
       final ndk = ndkFor(relay1);
@@ -1073,9 +1076,20 @@ void nip42Tests(NdkEngine engine) {
 
       // the strategy is still opening the bound connection, and what it
       // resolves must not be registered against a request nobody tracks
-      await Future.delayed(Duration(milliseconds: 1));
+      await Future.delayed(Duration(milliseconds: 100));
       await ndk.requests.closeSubscription(subId);
       await Future.delayed(Duration(seconds: 1));
+
+      expect(
+        ndk.relays.globalState.inFlightRequests.keys,
+        isNot(contains(subId)),
+        reason: 'a closed subscription must not come back in flight',
+      );
+      expect(
+        relay1.connectionsThatRequested(subId),
+        0,
+        reason: 'a REQ sent after the close is one nobody would ever CLOSE',
+      );
 
       await ndk.destroy();
       await relay1.stopServer();
