@@ -61,6 +61,10 @@ class JitEngine with Logger implements NetworkEngine {
     //clean ignore relays
     List<String> cleanIgnoreRelays = cleanRelayUrls(ignoreRelays);
 
+    /// strategies register their relays asynchronously, so the decision on
+    /// whether this request reached any relay has to wait for all of them
+    final List<Future<void>> strategies = [];
+
     /// ["REQ", <subscription_id>, <filters1>, <filters2>, ...]
     /// user can provide multiple filters
     for (final filter in requestState.unresolvedFilters) {
@@ -71,52 +75,58 @@ class JitEngine with Logger implements NetworkEngine {
         final cleanedExplicitRelays = cleanRelayUrls(
           requestState.request.explicitRelays!.toList(),
         );
-        RelayJitRequestSpecificStrategy.handleRequest(
-          relayManager: relayManagerLight,
-          requestState: requestState,
-          filter: filter,
-          closeOnEOSE: ndkRequest.closeOnEOSE,
-          specificRelays: cleanedExplicitRelays,
+        strategies.add(
+          RelayJitRequestSpecificStrategy.handleRequest(
+            relayManager: relayManagerLight,
+            requestState: requestState,
+            filter: filter,
+            closeOnEOSE: ndkRequest.closeOnEOSE,
+            specificRelays: cleanedExplicitRelays,
+          ),
         );
         continue;
       }
 
       if ((filter.authors != null && filter.authors!.isNotEmpty)) {
-        RelayJitPubkeyStrategy.handleRequest(
-          globalState: globalState,
-          relayManager: relayManagerLight,
-          requestState: requestState,
-          cacheManager: cache,
-          filter: filter,
-          connectedRelays: relayManagerLight.connectedAnonymousRelays
-              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-              .toList(),
-          bootstrapRelays: bootstrapRelays,
-          desiredCoverage: ndkRequest.desiredCoverage,
-          closeOnEOSE: ndkRequest.closeOnEOSE,
-          direction: ReadWriteMarker
-              .writeOnly, // the author should write on the persons write relays
-          ignoreRelays: cleanIgnoreRelays,
+        strategies.add(
+          RelayJitPubkeyStrategy.handleRequest(
+            globalState: globalState,
+            relayManager: relayManagerLight,
+            requestState: requestState,
+            cacheManager: cache,
+            filter: filter,
+            connectedRelays: relayManagerLight.connectedAnonymousRelays
+                .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
+                .toList(),
+            bootstrapRelays: bootstrapRelays,
+            desiredCoverage: ndkRequest.desiredCoverage,
+            closeOnEOSE: ndkRequest.closeOnEOSE,
+            direction: ReadWriteMarker
+                .writeOnly, // the author should write on the persons write relays
+            ignoreRelays: cleanIgnoreRelays,
+          ),
         );
         continue;
       }
 
       if (filter.pTags?.isNotEmpty != null && filter.pTags!.isNotEmpty) {
-        RelayJitPubkeyStrategy.handleRequest(
-          relayManager: relayManagerLight,
-          globalState: globalState,
-          requestState: requestState,
-          cacheManager: cache,
-          filter: filter,
-          connectedRelays: relayManagerLight.connectedAnonymousRelays
-              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-              .toList(),
-          bootstrapRelays: bootstrapRelays,
-          desiredCoverage: ndkRequest.desiredCoverage,
-          closeOnEOSE: ndkRequest.closeOnEOSE,
-          direction: ReadWriteMarker
-              .readOnly, // others should mention on the persons read relays
-          ignoreRelays: cleanIgnoreRelays,
+        strategies.add(
+          RelayJitPubkeyStrategy.handleRequest(
+            relayManager: relayManagerLight,
+            globalState: globalState,
+            requestState: requestState,
+            cacheManager: cache,
+            filter: filter,
+            connectedRelays: relayManagerLight.connectedAnonymousRelays
+                .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
+                .toList(),
+            bootstrapRelays: bootstrapRelays,
+            desiredCoverage: ndkRequest.desiredCoverage,
+            closeOnEOSE: ndkRequest.closeOnEOSE,
+            direction: ReadWriteMarker
+                .readOnly, // others should mention on the persons read relays
+            ignoreRelays: cleanIgnoreRelays,
+          ),
         );
         continue;
       }
@@ -143,6 +153,9 @@ class JitEngine with Logger implements NetworkEngine {
         closeOnEOSE: ndkRequest.closeOnEOSE,
       );
     }
+
+    await Future.wait(strategies);
+    requestState.closeIfNoRelays();
 
     // Late auth for subscriptions with authenticateAs
     if (ndkRequest.authenticateAs != null &&

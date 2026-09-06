@@ -230,6 +230,8 @@ class RelaySetsEngine implements NetworkEngine {
       }
     }
 
+    state.closeIfNoRelays();
+
     for (MapEntry<RelayConnectionKey, RelayRequestState> entry
         in state.requests.entries) {
       doRelayRequest(state.id, entry.value);
@@ -277,6 +279,8 @@ class RelaySetsEngine implements NetworkEngine {
         );
       }
     }
+
+    state.closeIfNoRelays();
 
     for (MapEntry<RelayConnectionKey, RelayRequestState> entry
         in state.requests.entries) {

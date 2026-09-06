@@ -144,6 +144,14 @@ class RequestState {
     }
   }
 
+  /// Closes the network stream if the request was not sent to any relay.
+  /// Engines call this once they are done dispatching: without a relay to
+  /// answer, nothing would end the request but its timeout.
+  void closeIfNoRelays() {
+    if (requests.isNotEmpty || networkController.isClosed) return;
+    networkController.close();
+  }
+
   /// closes all streams
   Future<void> close() async {
     if (_timeout != null) {
