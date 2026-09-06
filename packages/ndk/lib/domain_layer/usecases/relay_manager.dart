@@ -1437,28 +1437,32 @@ class RelayManager<T> {
     );
 
     state.pauseTimeout();
+    beginPendingConnection(state);
     openConnectionAs(
       key.url,
       account,
       connectionSource: relayConnectivity.relay.connectionSource,
     ).then((bound) {
-      if (!_isStillInFlight(reqId, state)) {
-        return;
+      try {
+        if (!_isStillInFlight(reqId, state)) {
+          return;
+        }
+        state.resumeTimeout();
+        final retry = state.requests[target];
+        if (retry == null) {
+          return;
+        }
+        if (bound == null) {
+          retry.receivedClosed = true;
+          return;
+        }
+        // sent without waiting for the AUTH: a relay that only challenges on
+        // demand needs this request as the trigger, and the refusal that may
+        // follow lands on the branch above
+        _sendRequest(bound, reqId, retry);
+      } finally {
+        endPendingConnection(state);
       }
-      state.resumeTimeout();
-      final retry = state.requests[target];
-      if (retry == null) {
-        return;
-      }
-      if (bound == null) {
-        retry.receivedClosed = true;
-        _checkNetworkClose(state);
-        return;
-      }
-      // sent without waiting for the AUTH: a relay that only challenges on
-      // demand needs this request as the trigger, and the refusal that may
-      // follow lands on the branch above
-      _sendRequest(bound, reqId, retry);
     });
   }
 
