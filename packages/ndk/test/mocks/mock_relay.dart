@@ -99,6 +99,10 @@ class MockRelay {
   /// in the middle of an authentication does. The next ones are answered
   int silenceFirstAuths;
 
+  /// accept REQ messages but never answer them, neither with events nor with
+  /// an EOSE, the way a relay that is alive but stuck does
+  bool ignoreRequests;
+
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
 
@@ -178,6 +182,7 @@ class MockRelay {
     this.rejectFirstEventPublishes = 0,
     this.rejectEventMessage = 'rate-limited: retry later',
     this.silenceFirstAuths = 0,
+    this.ignoreRequests = false,
     int? explicitPort,
   })  : _nip65s = nip65s,
         _explicitPort = explicitPort,
@@ -467,6 +472,11 @@ class MockRelay {
                     "auth-required: we can't serve requests to unauthenticated users",
                   ]),
                 );
+                return;
+              }
+
+              if (ignoreRequests) {
+                log("MockRelay: ignoring REQ $requestId");
                 return;
               }
 
