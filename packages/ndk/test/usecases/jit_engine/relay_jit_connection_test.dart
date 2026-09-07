@@ -1,8 +1,14 @@
+import 'dart:async';
+
 import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
+import 'package:ndk/domain_layer/entities/connection_source.dart';
 import 'package:ndk/domain_layer/entities/global_state.dart';
+import 'package:ndk/domain_layer/entities/jit_engine_relay_connectivity_data.dart';
+import 'package:ndk/domain_layer/entities/relay_connectivity.dart';
 import 'package:ndk/domain_layer/entities/request_state.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/domain_layer/repositories/nostr_transport.dart';
+import 'package:ndk/domain_layer/usecases/jit_engine/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 import 'package:ndk/domain_layer/usecases/relay_manager.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -216,5 +222,211 @@ void main() async {
         await stopServers();
       },
     );
+
+    test('starts relay candidate connections concurrently', () async {
+      final delayedUrl = 'ws://delayed.example';
+      final immediateUrl = 'ws://immediate.example';
+      final delayedTransport = _ControlledTransport(open: false);
+      final immediateTransport = _ControlledTransport(open: true);
+      final factory = _ControlledTransportFactory({
+        delayedUrl: delayedTransport,
+        immediateUrl: immediateTransport,
+      });
+      addTearDown(() async {
+        await delayedTransport.close();
+        await immediateTransport.close();
+      });
+
+      final relayLists = [
+        Nip65.fromMap(key1.publicKey, {
+          delayedUrl: ReadWriteMarker.readWrite,
+        }),
+        Nip65.fromMap(key2.publicKey, {
+          delayedUrl: ReadWriteMarker.readWrite,
+        }),
+        Nip65.fromMap(key3.publicKey, {
+          immediateUrl: ReadWriteMarker.readWrite,
+        }),
+      ];
+      final cacheManager = MemCacheManager();
+      await cacheManager.saveUserRelayLists(
+        relayLists.map(UserRelayList.fromNip65).toList(),
+      );
+
+      final globalState = GlobalState();
+      final relayManager = RelayManager(
+        bootstrapRelays: const [],
+        globalState: globalState,
+        nostrTransportFactory: factory,
+      );
+      final requestState = RequestState(
+        NdkRequest.query(
+          'concurrent-candidates',
+          timeoutDuration: const Duration(seconds: 2),
+          filters: [
+            Filter(authors: [
+              key1.publicKey,
+              key2.publicKey,
+              key3.publicKey,
+            ]),
+          ],
+        ),
+      );
+
+      final handling = RelayJitPubkeyStrategy.handleRequest(
+        requestState: requestState,
+        globalState: globalState,
+        filter: requestState.unresolvedFilters.single,
+        connectedRelays: const [],
+        bootstrapRelays: const [],
+        cacheManager: cacheManager,
+        desiredCoverage: 1,
+        closeOnEOSE: true,
+        direction: ReadWriteMarker.writeOnly,
+        ignoreRelays: const [],
+        relayManager: relayManager,
+      );
+
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      expect(factory.startedUrls, containsAll([delayedUrl, immediateUrl]));
+
+      delayedTransport.open();
+      await handling;
+    });
+
+    test('blasts to bootstrap relays when relay-list cache throws', () async {
+      final fallbackUrl = 'ws://fallback.example';
+      final fallbackTransport = _ControlledTransport(open: true);
+      final factory = _ControlledTransportFactory({
+        fallbackUrl: fallbackTransport,
+      });
+      addTearDown(fallbackTransport.close);
+
+      final globalState = GlobalState();
+      final relayManager = RelayManager<JitEngineRelayConnectivityData>(
+        bootstrapRelays: const [],
+        globalState: globalState,
+        nostrTransportFactory: factory,
+        engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
+      );
+      final connected = await relayManager.connectRelay(
+        dirtyUrl: fallbackUrl,
+        connectionSource: ConnectionSource.pubkeyStrategy,
+      );
+      expect(connected.first, isTrue);
+
+      final requestState = RequestState(
+        NdkRequest.query(
+          'cache-error-fallback',
+          timeoutDuration: const Duration(seconds: 2),
+          filters: [
+            Filter(authors: [key1.publicKey])
+          ],
+        ),
+      );
+      globalState.inFlightRequests[requestState.id] = requestState;
+
+      await RelayJitPubkeyStrategy.handleRequest(
+        requestState: requestState,
+        globalState: globalState,
+        filter: requestState.unresolvedFilters.single,
+        connectedRelays: relayManager.connectedAnonymousRelays
+            .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
+            .toList(),
+        bootstrapRelays: [fallbackUrl],
+        cacheManager: _ThrowingUserRelayListCache(),
+        desiredCoverage: 1,
+        closeOnEOSE: true,
+        direction: ReadWriteMarker.writeOnly,
+        ignoreRelays: const [],
+        relayManager: relayManager,
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(fallbackTransport.sentData, hasLength(1));
+      expect(fallbackTransport.sentData.single, contains('"REQ"'));
+      expect(fallbackTransport.sentData.single, contains(key1.publicKey));
+    });
   });
+}
+
+class _ThrowingUserRelayListCache extends MemCacheManager {
+  @override
+  Future<UserRelayList?> loadUserRelayList(String pubKey) =>
+      Future.error(StateError('cache unavailable'));
+}
+
+class _ControlledTransportFactory implements NostrTransportFactory {
+  final Map<String, _ControlledTransport> transports;
+  final List<String> startedUrls = [];
+
+  _ControlledTransportFactory(this.transports);
+
+  @override
+  NostrTransport call(
+    String url, {
+    Function? onReconnect,
+    Function(int?, Object?, String?)? onDisconnect,
+  }) {
+    startedUrls.add(url);
+    return transports[url]!;
+  }
+}
+
+class _ControlledTransport implements NostrTransport {
+  final StreamController<dynamic> _messages = StreamController.broadcast();
+  final Completer<void> _ready = Completer<void>();
+  final List<dynamic> sentData = [];
+  bool _open;
+
+  _ControlledTransport({required bool open}) : _open = open {
+    ready = _ready.future;
+    if (open) {
+      _ready.complete();
+    }
+  }
+
+  void open() {
+    _open = true;
+    if (!_ready.isCompleted) {
+      _ready.complete();
+    }
+  }
+
+  @override
+  late Future<void> ready;
+
+  @override
+  Future<void> close() async {
+    _open = false;
+    if (!_ready.isCompleted) {
+      _ready.complete();
+    }
+    if (!_messages.isClosed) {
+      await _messages.close();
+    }
+  }
+
+  @override
+  int? closeCode() => null;
+
+  @override
+  String? closeReason() => null;
+
+  @override
+  bool isConnecting() => !_open;
+
+  @override
+  bool isOpen() => _open;
+
+  @override
+  StreamSubscription listen(
+    void Function(dynamic) onData, {
+    Function? onError,
+    void Function()? onDone,
+  }) =>
+      _messages.stream.listen(onData, onError: onError, onDone: onDone);
+
+  @override
+  void send(dynamic data) => sentData.add(data);
 }
