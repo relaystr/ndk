@@ -1,3 +1,18 @@
+## 0.9.4-dev.0
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+
 ## 0.9.3
 
  - **FIX**(cli): prevent wallet commands from replaying pending deliveries or
