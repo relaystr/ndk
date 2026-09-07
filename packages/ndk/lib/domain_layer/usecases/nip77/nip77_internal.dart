@@ -302,7 +302,8 @@ class _Nip77Internal {
     if (state == null) return;
 
     final reason = message ?? '';
-    Logger.log.d(() => 'CLOSED for negotiation $subscriptionId on $key: $reason');
+    Logger.log
+        .d(() => 'CLOSED for negotiation $subscriptionId on $key: $reason');
 
     if (_isAuthRefusal(reason)) {
       _handleNegAuthRequired(state, reason);
