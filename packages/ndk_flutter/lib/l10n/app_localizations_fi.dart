@@ -1164,7 +1164,8 @@ class AppLocalizationsFi extends AppLocalizations {
   String get bolt12WalletSubtitle => 'Uudelleenkäytettävä Lightning-tarjous';
 
   @override
-  String get bolt12PrivateOfferSubtitle => 'Uudelleenkäytettävä yksityinen tarjous';
+  String get bolt12PrivateOfferSubtitle =>
+      'Uudelleenkäytettävä yksityinen tarjous';
 
   @override
   String get anyAmount => 'Mikä tahansa summa';

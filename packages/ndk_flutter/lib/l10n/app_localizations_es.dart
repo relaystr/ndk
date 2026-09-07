@@ -777,8 +777,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get sendToWallet => 'Enviar a una cartera';
 
   @override
-  String get sendToWalletDescription =>
-      'Transferir a otra cartera compatible';
+  String get sendToWalletDescription => 'Transferir a otra cartera compatible';
 
   @override
   String get noCompatibleReceivingWallets =>

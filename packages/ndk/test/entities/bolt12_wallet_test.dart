@@ -94,8 +94,7 @@ void main() {
             'Answer': [
               {
                 'type': 16,
-                'data':
-                    '"bitcoin:?lno=${_offer.substring(0, 60)}" '
+                'data': '"bitcoin:?lno=${_offer.substring(0, 60)}" '
                     '"${_offer.substring(60)}"',
               },
             ],

@@ -1166,7 +1166,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get bolt12WalletSubtitle => 'Wiederverwendbares Lightning-Angebot';
 
   @override
-  String get bolt12PrivateOfferSubtitle => 'Wiederverwendbares privates Angebot';
+  String get bolt12PrivateOfferSubtitle =>
+      'Wiederverwendbares privates Angebot';
 
   @override
   String get anyAmount => 'Beliebiger Betrag';
@@ -1212,7 +1213,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get bolt12Input => 'BOLT12-Zahlungsziel';
 
   @override
-  String get bolt12InputHint => 'lno1..., bitcoin:?lno=... oder user@domain.com';
+  String get bolt12InputHint =>
+      'lno1..., bitcoin:?lno=... oder user@domain.com';
 
   @override
   String get walletNameOptional => 'Wallet-Name (optional)';
