@@ -13,8 +13,10 @@ import '../../entities/filter.dart';
 import '../../entities/global_state.dart';
 import '../../entities/ndk_request.dart';
 import '../../entities/nip_01_event.dart';
+import '../../entities/relay_auth.dart';
 import '../../entities/relay_connectivity.dart';
 import '../../entities/relay_set.dart';
+import '../../entities/relay_request_outcome.dart';
 import '../../entities/request_response.dart';
 import '../../entities/request_state.dart';
 import '../../repositories/cache_manager.dart';
@@ -177,7 +179,8 @@ class Requests {
   /// [desiredCoverage] The number of relays per pubkey to query, default: 2 \
   /// [timeoutCallbackUserFacing] A user facing timeout callback, this callback should be given to the lib user \
   /// [timeoutCallback] An internal timeout callback, this callback should be used for internal error handling \
-  /// [authenticateAs] List of accounts to authenticate with on relays (NIP-42) \
+  /// [auth] which identity this query may be attributed to on relays (NIP-42), see [RelayAuth] \
+  /// [authenticateAs] @deprecated use [auth] instead; [auth] wins when both are given \
   /// [paginate] If true, automatically paginates backwards through time to fetch all events in the range \
   ///
   /// Returns an [NdkResponse] containing the query result stream, future
@@ -196,6 +199,10 @@ class Requests {
     Function()? timeoutCallback,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
+    RelayAuth? auth,
+    @Deprecated(
+      'Use auth: RelayAuth.allow(account) instead. authenticateAs will be removed in a future version.',
+    )
     List<Account>? authenticateAs,
     bool paginate = false,
   }) {
@@ -203,6 +210,8 @@ class Requests {
       throw ArgumentError('Either filter or filters must be provided');
     }
     final effectiveFilters = filter != null ? [filter] : filters!;
+    final effectiveAuth =
+        auth ?? RelayAuth.fromDeprecatedAccounts(authenticateAs);
     timeout ??= _defaultQueryTimeout;
 
     if (paginate) {
@@ -217,7 +226,7 @@ class Requests {
         timeoutCallback: timeoutCallback,
         explicitRelays: explicitRelays,
         desiredCoverage: desiredCoverage,
-        authenticateAs: authenticateAs,
+        auth: effectiveAuth,
       );
     }
 
@@ -235,7 +244,7 @@ class Requests {
         explicitRelays: explicitRelays,
         desiredCoverage:
             desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
-        authenticateAs: authenticateAs,
+        auth: effectiveAuth,
       ),
     );
   }
@@ -251,7 +260,8 @@ class Requests {
   /// [cacheWrite] Whether to write results to cache \
   /// [explicitRelays] A list of specific relays to use, bypassing inbox/outbox \
   /// [desiredCoverage] The number of relays per pubkey to subscribe to, default: 2 \
-  /// [authenticateAs] List of accounts to authenticate with on relays (NIP-42) \
+  /// [auth] which identity this subscription may be attributed to on relays (NIP-42), see [RelayAuth] \
+  /// [authenticateAs] @deprecated use [auth] instead; [auth] wins when both are given \
   ///
   /// Returns an [NdkResponse] containing the subscription results as stream
   NdkResponse subscription({
@@ -267,12 +277,18 @@ class Requests {
     bool cacheWrite = false,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
+    RelayAuth? auth,
+    @Deprecated(
+      'Use auth: RelayAuth.allow(account) instead. authenticateAs will be removed in a future version.',
+    )
     List<Account>? authenticateAs,
   }) {
     if (filter == null && (filters == null || filters.isEmpty)) {
       throw ArgumentError('Either filter or filters must be provided');
     }
     final effectiveFilters = filter != null ? [filter] : filters!;
+    final effectiveAuth =
+        auth ?? RelayAuth.fromDeprecatedAccounts(authenticateAs);
     return requestNostrEvent(
       NdkRequest.subscription(
         id ?? "$name-${Helpers.getRandomString(10)}",
@@ -284,7 +300,7 @@ class Requests {
         explicitRelays: explicitRelays,
         desiredCoverage:
             desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
-        authenticateAs: authenticateAs,
+        auth: effectiveAuth,
       ),
     );
   }
@@ -341,7 +357,13 @@ class Requests {
   NdkResponse requestNostrEvent(NdkRequest request) {
     final state = RequestState(request);
 
-    final response = NdkResponse(state.id, state.stream);
+    final response = NdkResponse(
+      state.id,
+      state.stream,
+      relayOutcomes: () => state.relayOutcomes,
+      relayOutcomesStream: () => state.relayOutcomesStream,
+      relayOutcomesDone: state.controller.done.then((_) => state.relayOutcomes),
+    );
 
     final concurrency = ConcurrencyCheck(_globalState);
 
@@ -430,6 +452,20 @@ class Requests {
         state.cacheController.close();
       }
 
+      // a request that requires an identity nobody can sign for has no
+      // connection to go out on, and its timeout would only delay the same
+      // empty answer. The cache already had its say above
+      final auth = state.request.auth;
+      if (auth is RelayAuthRequire && !auth.account.signer.canSign()) {
+        Logger.log.w(
+          () =>
+              "${state.id} requires ${auth.account.pubkey}, which cannot sign",
+        );
+        state.cancelTimeout();
+        await state.networkController.close();
+        return;
+      }
+
       /// if there are any more filters left (not served by cacheRead)
       if (state.request.filters.isNotEmpty) {
         /// handle request
@@ -460,11 +496,38 @@ class Requests {
     Function()? timeoutCallback,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
-    List<Account>? authenticateAs,
+    RelayAuth? auth,
   }) {
     final requestId = '$name-paginated-${Helpers.getRandomString(10)}';
     final aggregatedController = ReplaySubject<Nip01Event>();
     final seenEventIds = <String>{};
+
+    // a relay is paginated by its own sequence of requests, so what it ended
+    // with is what its last page ended with
+    final relayOutcomes = <String, RelayRequestOutcome>{};
+    final relayOutcomesDone = Completer<Map<String, RelayRequestOutcome>>();
+    final relayOutcomesSubject =
+        BehaviorSubject<Map<String, RelayRequestOutcome>>.seeded(const {});
+
+    void mergeRelayOutcomes(Map<String, RelayRequestOutcome> page) {
+      relayOutcomes.addAll(page);
+      if (!relayOutcomesSubject.isClosed) {
+        relayOutcomesSubject.add(Map.unmodifiable(relayOutcomes));
+      }
+    }
+
+    /// Awaits a page, merging what its relays answer while it is still running
+    /// so the aggregated stream reports a pending relay instead of only the
+    /// pages that ended.
+    Future<List<Nip01Event>> awaitPage(NdkResponse page) async {
+      final outcomes = page.relayOutcomesStream.listen(mergeRelayOutcomes);
+      try {
+        return await page.future;
+      } finally {
+        await outcomes.cancel();
+        mergeRelayOutcomes(page.relayOutcomes);
+      }
+    }
 
     Future<void> paginate() async {
       final since = filter.since;
@@ -484,11 +547,11 @@ class Requests {
           explicitRelays: explicitRelays,
           desiredCoverage:
               desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
-          authenticateAs: authenticateAs,
+          auth: auth,
         ),
       );
 
-      final initialEvents = await initialResponse.future;
+      final initialEvents = await awaitPage(initialResponse);
 
       // Emit initial events and discover relays
       final relayState = <String, _RelayPaginationState>{};
@@ -561,11 +624,12 @@ class Requests {
               timeoutCallback: timeoutCallback,
               explicitRelays: [relay],
               desiredCoverage: 1,
-              authenticateAs: authenticateAs,
+              auth: auth,
             ),
           );
 
-          return MapEntry(relay, await response.future);
+          final pageEvents = await awaitPage(response);
+          return MapEntry(relay, pageEvents);
         });
 
         final results = await Future.wait(futures);
@@ -604,9 +668,18 @@ class Requests {
     }
 
     // Start pagination asynchronously
-    paginate();
+    paginate().whenComplete(() {
+      relayOutcomesDone.complete(Map.of(relayOutcomes));
+      relayOutcomesSubject.close();
+    });
 
-    return NdkResponse(requestId, aggregatedController.stream);
+    return NdkResponse(
+      requestId,
+      aggregatedController.stream,
+      relayOutcomes: () => Map.of(relayOutcomes),
+      relayOutcomesStream: () => relayOutcomesSubject.stream,
+      relayOutcomesDone: relayOutcomesDone.future,
+    );
   }
 
   /// Records fetched ranges for each relay that received EOSE

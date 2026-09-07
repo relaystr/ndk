@@ -56,19 +56,6 @@ void main() async {
         "Hold invoice created successfully. Invoice: $invoice Payment Hash: ${makeResponse.paymentHash}",
       );
 
-      // if (invoice.isNotEmpty) {
-      // print("\nScan QR Code to pay/hold:");
-      // try {
-      //   final asciiQr = AsciiQrGenerator.generate(
-      //     invoice.toUpperCase(),
-      //   );
-      //   print(asciiQr.toString());
-      // } catch (e) {
-      //   print("Error generating ASCII QR code: $e");
-      // }
-      //   print("\nOr copy Bolt11 invoice:\n$invoice\n");
-      // }
-
       final duration = makeResponse.expiresAt! -
           DateTime.now().millisecondsSinceEpoch ~/ 1000;
       print(

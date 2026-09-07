@@ -32,22 +32,27 @@ class ConcurrencyCheck {
 
     // add already running stream to duplicate request
     // When original stream ends, close the duplicate's controller
+    final served = _globalState.inFlightRequests[hash]!;
+    requestState.servedBy = served;
     requestState.controller
-        .addStream(_globalState.inFlightRequests[hash]!.stream)
+        .addStream(served.stream)
         .then((_) => requestState.controller.close());
 
     return true;
   }
 
   /// Two requests are only interchangeable when they also target the same
-  /// relays and share the same lifetime. Merging a subscription with a query
-  /// kills one of them: the subscription would close on EOSE, or the query
-  /// would await a stream that never ends.
+  /// relays, share the same lifetime and may be attributed to the same
+  /// identity. Merging a subscription with a query kills one of them: the
+  /// subscription would close on EOSE, or the query would await a stream that
+  /// never ends. Merging across identities answers a request that asked to stay
+  /// unattributable with what an authenticated one obtained.
   String _hashRequest(NdkRequest request) {
     final jsonString = json.encode({
       'filters': _canonicalFilters(request.filters),
       'closeOnEOSE': request.closeOnEOSE,
       'explicitRelays': _sorted(request.explicitRelays),
+      'auth': request.auth?.canonical,
       'relaySet': request.relaySet == null
           ? null
           : {

@@ -1,5 +1,6 @@
 import 'account.dart';
 import 'filter.dart';
+import 'relay_auth.dart';
 import 'relay_set.dart';
 
 // coverage:ignore-start
@@ -43,9 +44,8 @@ class NdkRequest {
   /// use cache for write
   bool cacheWrite;
 
-  /// Accounts to authenticate with on the relays (NIP-42)
-  /// When set, AUTH events will be sent for each account that can sign
-  List<Account>? authenticateAs;
+  /// which identity this request may be attributed to on the relays (NIP-42)
+  final RelayAuth? auth;
 
   /// query
   NdkRequest.query(
@@ -61,8 +61,12 @@ class NdkRequest {
     this.explicitRelays,
     this.cacheRead = true,
     this.cacheWrite = true,
-    this.authenticateAs,
-  });
+    RelayAuth? auth,
+    @Deprecated(
+      'Use auth: RelayAuth.allow(account) instead. authenticateAs will be removed in a future version.',
+    )
+    List<Account>? authenticateAs,
+  }) : auth = auth ?? RelayAuth.fromDeprecatedAccounts(authenticateAs);
 
   /// subscription
   NdkRequest.subscription(
@@ -75,8 +79,12 @@ class NdkRequest {
     this.explicitRelays,
     this.cacheRead = true,
     this.cacheWrite = true,
-    this.authenticateAs,
-  });
+    RelayAuth? auth,
+    @Deprecated(
+      'Use auth: RelayAuth.allow(account) instead. authenticateAs will be removed in a future version.',
+    )
+    List<Account>? authenticateAs,
+  }) : auth = auth ?? RelayAuth.fromDeprecatedAccounts(authenticateAs);
 }
 
 // coverage:ignore-end
