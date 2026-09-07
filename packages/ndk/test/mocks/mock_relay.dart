@@ -201,7 +201,7 @@ class MockRelay {
     Duration? delayResponse,
     Duration? delayConnection,
   }) async {
-    var myPromise = Completer<void>();
+    final myPromise = Completer<void>();
 
     if (nip65s != null) {
       _nip65s = nip65s;
