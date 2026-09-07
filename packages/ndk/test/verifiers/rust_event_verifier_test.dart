@@ -199,12 +199,17 @@ void main() {
 
     test('rejects malformed packed FFI inputs', () {
       const packedLength = 64 + 64 + 128;
-      final packed = malloc<Uint8>(packedLength);
+      const oversizedLength = packedLength + 10;
+      final packed = malloc<Uint8>(oversizedLength);
 
       try {
         expect(
           rust_lib.verifySchnorrSignaturePackedNative(
               packed, packedLength - 10),
+          0,
+        );
+        expect(
+          rust_lib.verifySchnorrSignaturePackedNative(packed, oversizedLength),
           0,
         );
         expect(
