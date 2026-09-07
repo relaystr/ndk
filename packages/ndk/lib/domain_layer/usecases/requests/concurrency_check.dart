@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 
+import '../../entities/filter.dart';
 import '../../entities/global_state.dart';
 import '../../entities/ndk_request.dart';
 import '../../entities/request_state.dart';
@@ -31,8 +32,10 @@ class ConcurrencyCheck {
 
     // add already running stream to duplicate request
     // When original stream ends, close the duplicate's controller
+    final served = _globalState.inFlightRequests[hash]!;
+    requestState.servedBy = served;
     requestState.controller
-        .addStream(_globalState.inFlightRequests[hash]!.stream)
+        .addStream(served.stream)
         .then((_) => requestState.controller.close());
 
     return true;
@@ -46,7 +49,7 @@ class ConcurrencyCheck {
   /// unattributable with what an authenticated one obtained.
   String _hashRequest(NdkRequest request) {
     final jsonString = json.encode({
-      'filters': request.filters,
+      'filters': _canonicalFilters(request.filters),
       'closeOnEOSE': request.closeOnEOSE,
       'explicitRelays': _sorted(request.explicitRelays),
       'auth': request.auth?.canonical,
@@ -65,5 +68,25 @@ class ConcurrencyCheck {
   List<String>? _sorted(Iterable<String>? values) {
     if (values == null) return null;
     return values.toList()..sort();
+  }
+
+  /// Filters and their values are sets: `authors: [a, b]` and `authors: [b, a]`
+  /// ask the same question, so they have to hash the same.
+  List<String> _canonicalFilters(List<Filter> filters) {
+    return filters
+        .map((filter) => json.encode(_canonical(filter.toMap())))
+        .toList()
+      ..sort();
+  }
+
+  Map<String, dynamic> _canonical(Map<String, dynamic> map) {
+    final keys = map.keys.toList()..sort();
+    return {
+      for (final key in keys)
+        key: map[key] is List
+            ? (List<dynamic>.from(map[key] as List)
+              ..sort((a, b) => (a as Comparable).compareTo(b)))
+            : map[key],
+    };
   }
 }

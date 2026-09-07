@@ -6,42 +6,97 @@ order: 100
 
 # Publishing
 
-## publish to github
+## Full release order
 
-Create a tag
-`git tag -a v1.2.3 -m "Release v1.2.3"`
+Complete releases have two distinct stages, in this order:
 
-Push to git
+1. Prepare and merge the package release PR. Automation creates a
+   package-scoped tag such as `ndk-v0.9.2`, which pub.dev uses to authenticate
+   the publication workflow, and then publishes the package.
+2. After NDK publication succeeds, automation also creates the plain release
+   tag, such as `v0.9.2`, and dispatches the tag-based release and documentation
+   workflows. They create the GitHub release and build its Android, CLI, and
+   web artifacts. For other packages, the package-scoped tag is the release
+   tag.
 
-```
-git push origin v1.2.3
+## 1. Publish packages to pub.dev
 
-```
+Open the [Prepare package release workflow](https://github.com/relaystr/ndk/actions/workflows/prerelease-manual.yaml),
+select **Run workflow**, and choose one release mode:
 
-> This will build the sample app and create a draft github release (gh actions).
+| Release mode | Result |
+| --- | --- |
+| `stable` | Calculates the next stable versions from conventional commits. |
+| `development-prerelease` | Calculates the next development versions, such as `0.9.2-dev.1`. This mode is also run automatically after ordinary PRs merge. |
+| `graduate-prerelease` | Removes the prerelease suffix without changing its base version; for example, `0.9.2-dev.3` becomes `0.9.2`. |
+| `exact` | Sets one selected package to the exact version entered. Melos also updates affected workspace dependents and creates a changelog stub to review. |
 
-Wait for the sample app to build and review && publish on github release page [releases](https://github.com/relaystr/ndk/releases)
+The `exact_package` and `exact_version` inputs are used only with `exact` mode.
+For the other modes, leave them at their defaults.
 
+### Release NDK 0.9.2 as a stable version
 
-## publish to pub.dev (automated)
+Run the workflow with:
 
-go to [manual release gh actions](https://github.com/relaystr/ndk/actions/workflows/prerelease-manual.yaml)
+- `release_mode`: `exact`
+- `exact_package`: `ndk`
+- `exact_version`: `0.9.2`
 
-For dev releases this is called automatically on each merge.
+The workflow opens a versioned PR named
+`chore(release): publish ndk 0.9.2`. Development versions instead use
+`chore(prerelease)`, for example
+`chore(prerelease): publish ndk 0.9.3-dev.0`. Replace the generated
+`Stable release.` changelog stub with the actual release notes. Then review the
+NDK version and all generated dependent-package constraint updates before
+merging the PR. The title shows only the current main `ndk` version and omits
+other workspace packages that will also be published, even when a release run
+only changes one of those other packages.
 
-If you want a major release check 'Version as prerelease'!
-
-A new PR named 'chore(release): Publish packages' will open Review the changelog/versions, modify if needed.
-
-Merging this PR will automatically publish the changed (packages with version bump) packages to pub.dev
+Merging that release PR creates package-scoped authentication tags and
+publishes every changed, publishable package to pub.dev. Each publication
+workflow must run from its package tag because pub.dev's trusted publisher is
+configured to accept tag identities. Preparing the PR performs only a publish
+dry run; it does not publish anything.
 
 !!!
-Notice: the automated PR does just versioning and publish dry-run. The Publishing happens when this PR is merged.
+Do not use `graduate-prerelease` to change `0.9.1-dev.N` into `0.9.2`.
+Graduation only removes `-dev.N`, so it would produce `0.9.1`. Use `exact` for
+the `0.9.2` release.
 !!!
 
-## publish manually
+## 2. Verify the GitHub release and artifacts
 
-1. either change the versions manually (also all dependencies) or run melos version (this will create a git commit)
-2. run 'melos run format'
-3. commit your changes to git
-4. run `melos publish` check everything then run `melos publish --no-dry-run`. For a single package run `melos publish --<package name>`
+After pub.dev publication succeeds, the package workflow creates `v0.9.2` on
+the release commit and dispatches the sample-app release and documentation
+workflows from that tag. The release workflow creates a draft GitHub release
+using the matching section from
+`packages/ndk/CHANGELOG.md`, builds and uploads the Android APKs and
+cross-platform CLI archives, and deploys the sample web app. After every job
+succeeds, the workflow publishes the GitHub release automatically.
+
+The release preparation keeps `doc/retype.yml` aligned with the NDK package
+version. The tag-triggered docs deployment also derives the displayed version
+from the tag so the published site cannot retain a stale version label. The
+documentation and sample-app deployments share one deployment queue and retain
+each other's files on the `gh-pages` branch.
+
+Verify the completed release and its assets on the
+[GitHub releases page](https://github.com/relaystr/ndk/releases).
+
+Release asset names use `<product>-<version>-<platform>-<architecture>` with
+kebab-case product names, for example `ndk-demo-0.9.2-android-arm64-v8a.apk`
+and `ndk-cli-0.9.2-linux-x64.tar.gz`.
+
+Do not create `v0.9.2` manually before package publication finishes. Otherwise
+the tag and built artifacts can point to source that still reports the
+previous package version.
+
+## Manual alternative
+
+1. Either change the versions manually, including dependency constraints, or
+   run `melos version` (which creates a Git commit).
+2. Run `melos run format`.
+3. Commit your changes.
+4. Run `melos publish` to validate the release, then run
+   `melos publish --no-dry-run`. To publish one package, use
+   `melos publish --scope=<package_name> --no-dry-run`.

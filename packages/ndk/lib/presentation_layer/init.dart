@@ -216,18 +216,20 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
       pendingDelivery: pendingBroadcastDelivery,
     );
-    _relayConnectivitySubscription = relayManager.relayConnectivityChanges
-        .listen(_handleRelayConnectivityUpdate);
-    pendingBroadcastDelivery.startPeriodicRetry(
-      connectedRelayUrls: () =>
-          relayManager.connectedRelays.map((relay) => relay.url),
-      reconnectRelay: (relayUrl) => relayManager.reconnectRelay(
-        relayUrl,
-        connectionSource: ConnectionSource.explicit,
-        force: true,
-      ),
-      retryInterval: _ndkConfig.pendingDeliveryRetryInterval,
-    );
+    if (_ndkConfig.pendingDeliveryRetriesEnabled) {
+      _relayConnectivitySubscription = relayManager.relayConnectivityChanges
+          .listen(_handleRelayConnectivityUpdate);
+      pendingBroadcastDelivery.startPeriodicRetry(
+        connectedRelayUrls: () =>
+            relayManager.connectedRelays.map((relay) => relay.url),
+        reconnectRelay: (relayUrl) => relayManager.reconnectRelay(
+          relayUrl,
+          connectionSource: ConnectionSource.explicit,
+          force: true,
+        ),
+        retryInterval: _ndkConfig.pendingDeliveryRetryInterval,
+      );
+    }
 
     // Initialize nwc and cashu before walletsOperationsRepo since they are dependencies
     nwc = Nwc(

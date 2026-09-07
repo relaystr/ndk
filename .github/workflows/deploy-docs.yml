@@ -5,6 +5,10 @@ on:
       - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
   workflow_dispatch:
 
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
 jobs:
   publish:
     name: Publish to gh-pages branch
@@ -15,16 +19,28 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+
+      - name: Set documentation version from release tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          sed -i -E "s/^  label: .*/  label: ${RELEASE_TAG}/" doc/retype.yml
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "7.0.x"
 
-      - uses: retypeapp/action-build@latest
+      - name: Build documentation
+        id: build_docs
+        uses: retypeapp/action-build@latest
 
-      - uses: retypeapp/action-github-pages@latest
+      - name: Deploy documentation without removing the sample app
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          update-branch: true
-          branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ steps.build_docs.outputs.retype-output-path }}
+          publish_branch: gh-pages
+          keep_files: true

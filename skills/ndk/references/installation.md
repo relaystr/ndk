@@ -3,7 +3,7 @@
 ## Single command (Linux / macOS)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/refs/heads/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/master/install.sh | bash
 ```
 
 Installs to `~/.local/bin/ndk` (user mode, default).
@@ -12,7 +12,7 @@ Installs to `~/.local/bin/ndk` (user mode, default).
 
 ```bash
 # system-wide (/usr/bin/ndk) — may require sudo
-curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/refs/heads/master/install.sh | bash -s -- --system
+curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/master/install.sh | bash -s -- --system
 
 # specific version
 NDK_VERSION=v0.8.3 curl -fsSL ... | bash

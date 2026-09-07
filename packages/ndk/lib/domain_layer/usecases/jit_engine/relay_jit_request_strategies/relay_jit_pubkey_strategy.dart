@@ -37,7 +37,7 @@ import '../../user_relay_lists/user_relay_lists.dart';
 ///
 
 class RelayJitPubkeyStrategy with Logger {
-  static void handleRequest({
+  static Future<void> handleRequest({
     required RequestState requestState,
     required GlobalState globalState,
 
@@ -54,7 +54,7 @@ class RelayJitPubkeyStrategy with Logger {
     required ReadWriteMarker direction,
     required List<String> ignoreRelays,
     required RelayManager relayManager,
-  }) {
+  }) async {
     List<String> combindedPubkeys = [
       ...?filter.authors,
       ...?filter.pTags,
@@ -112,7 +112,7 @@ class RelayJitPubkeyStrategy with Logger {
       return;
     }
 
-    _findRelaysForUnresolvedPubkeys(
+    final unresolvedPubkeys = await _findRelaysForUnresolvedPubkeys(
       requestState: requestState,
       globalState: globalState,
       relayManger: relayManager,
@@ -126,7 +126,9 @@ class RelayJitPubkeyStrategy with Logger {
       closeOnEOSE: closeOnEOSE,
     );
 
-    _removeFullyCoveredPubkeys(coveragePubkeys);
+    coveragePubkeys
+      ..clear()
+      ..addAll(unresolvedPubkeys);
 
     if (coveragePubkeys.isEmpty) {
       // we are done
@@ -151,7 +153,7 @@ class RelayJitPubkeyStrategy with Logger {
   // looks in nip65 data for not covered pubkeys
   // the result is relay candidates
   // connects to these candidates and sends out the request
-  static void _findRelaysForUnresolvedPubkeys({
+  static Future<List<CoveragePubkey>> _findRelaysForUnresolvedPubkeys({
     required RelayManager relayManger,
     required RequestState requestState,
     required GlobalState globalState,
@@ -167,11 +169,28 @@ class RelayJitPubkeyStrategy with Logger {
   }) async {
     /// ### resolve not covered pubkeys ###
     // look in nip65 data for not covered pubkeys
-    List<UserRelayList> nip65Data =
-        await UserRelayLists.getUserRelayListCacheLatest(
-      pubkeys: coveragePubkeys.map((e) => e.pubkey).toList(),
-      cacheManager: cacheManager,
-    );
+    late final List<UserRelayList> nip65Data;
+    try {
+      nip65Data = await UserRelayLists.getUserRelayListCacheLatest(
+        pubkeys: coveragePubkeys.map((e) => e.pubkey).toList(),
+        cacheManager: cacheManager,
+      );
+    } catch (error, stackTrace) {
+      Logger.log.w(
+        () => "Could not load relay lists; falling back to bootstrap relays",
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return coveragePubkeys
+          .map(
+            (pubkey) => CoveragePubkey(
+              pubkey.pubkey,
+              pubkey.desiredCoverage,
+              pubkey.missingCoverage,
+            ),
+          )
+          .toList();
+    }
 
     // by finding the best relays to connect and send out the request
     RelayRankingResult relayRanking = rankRelays(
@@ -182,80 +201,57 @@ class RelayJitPubkeyStrategy with Logger {
       ignoreRelays: ignoreRelays,
     );
 
-    // update coveragePubkeys to the not found ones
-    // this is need so early on so the not found pubkeys can be blasted to all connected relays
-    coveragePubkeys = relayRanking.notCoveredPubkeys;
+    final unresolvedByPubkey = {
+      for (final pubkey in relayRanking.notCoveredPubkeys)
+        pubkey.pubkey: pubkey,
+    };
 
-    // connect to the new found relays and send out the request
+    void markCandidateUnavailable(RelayRanking relayCandidate) {
+      for (final coveredPubkey in relayCandidate.coveredPubkeys) {
+        final unresolved = unresolvedByPubkey.putIfAbsent(
+          coveredPubkey.pubkey,
+          () => CoveragePubkey(coveredPubkey.pubkey, desiredCoverage, 0),
+        );
+        unresolved.missingCoverage++;
+      }
+    }
+
+    // Start every candidate immediately. Awaiting inside this loop would make
+    // an unreachable relay consume the full connection timeout before the next
+    // useful candidate is even attempted.
+    final connectionAttempts = <Future<void>>[];
     for (final relayCandidate in relayRanking.ranking) {
       if (relayCandidate.score <= 0) {
         continue;
       }
-      // check if the relayCandidate is already connected
-      bool alreadyConnected = connectedRelays.any(
-        (element) => element.url == relayCandidate.relayUrl,
-      );
+      connectionAttempts.add(() async {
+        // check if the relayCandidate is already connected
+        final alreadyConnected = connectedRelays.any(
+          (element) => element.url == relayCandidate.relayUrl,
+        );
 
-      if (!alreadyConnected) {
-        relayManger
-            .connectRelay(
-          dirtyUrl: relayCandidate.relayUrl,
-          connectionSource: ConnectionSource.pubkeyStrategy,
-        )
-            .then((success) {
-          if (success.first) {
-            final myRelayConnectivity =
-                globalState.relays[RelayConnectionKey.anonymous(
-              relayCandidate.relayUrl,
-            )] as RelayConnectivity<JitEngineRelayConnectivityData>;
-            // add assigned pubkeys
-            myRelayConnectivity.specificEngineData!.addPubkeysToAssignedPubkeys(
-              relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
-              direction,
-            );
-
-            // send out the request
-            unawaited(
-              _sendRequestToSocket(
-                myRelayConnectivity,
-                requestState,
-                [
-                  _splitFilter(
-                    filter,
-                    relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
-                  ),
-                ],
-                relayManger,
-              ),
-            );
-          }
-
+        if (!alreadyConnected) {
+          final success = await relayManger.connectRelay(
+            dirtyUrl: relayCandidate.relayUrl,
+            connectionSource: ConnectionSource.pubkeyStrategy,
+          );
           if (!success.first) {
+            markCandidateUnavailable(relayCandidate);
             Logger.log.w(
               () =>
                   "Could not connect to relay: ${relayCandidate.relayUrl} - errorHandling",
             );
-            // _connectionErrorHandling(
-            //   errorRelay: newRelay,
-            //   requestState: requestState,
-            //   filter: filter,
-            //   connectedRelays: connectedRelays,
-            //   cacheManager: cacheManager,
-            //   desiredCoverage: desiredCoverage,
-            //   direction: direction,
-            //   ignoreRelays: ignoreRelays,
-            //   closeOnEOSE: closeOnEOSE,
-
-            // );
+            return;
           }
-        });
-      }
+        }
 
-      if (alreadyConnected) {
-        final myRelayConnectivity =
-            globalState.relays[RelayConnectionKey.anonymous(
-          relayCandidate.relayUrl,
-        )] as RelayConnectivity<JitEngineRelayConnectivityData>;
+        final myRelayConnectivity = globalState
+            .relays[RelayConnectionKey.anonymous(relayCandidate.relayUrl)];
+        if (myRelayConnectivity
+            is! RelayConnectivity<JitEngineRelayConnectivityData>) {
+          markCandidateUnavailable(relayCandidate);
+          return;
+        }
 
         myRelayConnectivity.specificEngineData!.addPubkeysToAssignedPubkeys(
           relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
@@ -275,8 +271,13 @@ class RelayJitPubkeyStrategy with Logger {
             relayManger,
           ),
         );
-      }
+      }());
     }
+    await Future.wait(connectionAttempts);
+
+    return unresolvedByPubkey.values
+        .where((pubkey) => pubkey.missingCoverage > 0)
+        .toList();
   }
 
   // adds the relay to ignoreRelays and retries the request for assigned pubkeys to this relay

@@ -21,10 +21,11 @@ jobs:
   prerelease:
     name: Create pre-release
     runs-on: ubuntu-latest
-    # Only run if the push wasn't made by the GitHub Action
-    # Only run if the push wasn't made by the GitHub Action AND doesn't contain release message
-    if:
-      github.event.pull_request.merged == true && github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, 'chore(release)')
+    # github.actor is the person who merged the PR. Check the PR author instead
+    # so merging the release PR created below cannot create another release PR.
+    if: >
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.user.login != 'github-actions[bot]'
 
     # Add concurrency to prevent parallel runs
     concurrency:
@@ -55,13 +56,38 @@ jobs:
           cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
           architecture: x64 # optional, x64 or arm64
 
-      - name: Run Melos
+      - name: Prepare development prerelease changes
         uses: bluefireteam/melos-action@v3
         with:
           run-versioning: false
           melos-version: "8.3.0"
           run-versioning-prerelease: true
+          publish-dry-run: false
+          create-pr: false
+          git-email: "github-actions[bot]@users.noreply.github.com"
+          git-name: "github-actions[bot]"
+
+      - name: Keep the documentation version aligned with NDK
+        run: |
+          ndk_version=$(awk '$1 == "version:" { print $2; exit }' packages/ndk/pubspec.yaml)
+          sed -i -E "s/^  label: .*/  label: v${ndk_version}/" doc/retype.yml
+
+          if ! git diff --quiet -- doc/retype.yml; then
+            git add doc/retype.yml
+            git commit --amend --no-edit
+          fi
+
+      - name: Build versioned prerelease PR title
+        id: release_pr
+        run: bash .github/scripts/release-pr-title.sh HEAD prerelease
+
+      - name: Validate and create development prerelease PR
+        uses: bluefireteam/melos-action@v3
+        with:
+          melos-version: "8.3.0"
+          run-bootstrap: false
           publish-dry-run: true
           create-pr: true
+          pr-title: ${{ steps.release_pr.outputs.pr_title }}
           git-email: "github-actions[bot]@users.noreply.github.com"
           git-name: "github-actions[bot]"

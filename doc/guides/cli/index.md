@@ -29,7 +29,7 @@ required.
 ### Single command (Linux / macOS)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/refs/heads/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/master/install.sh | bash
 ```
 
 By default this installs the `ndk` binary to `~/.local/bin/ndk` and its shared libraries to `~/.local/lib` (user mode).
@@ -38,13 +38,13 @@ By default this installs the `ndk` binary to `~/.local/bin/ndk` and its shared l
 
 ```bash
 # system-wide install (/usr/bin/ndk) — may require sudo
-curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/refs/heads/master/install.sh | bash -s -- --system
+curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/master/install.sh | bash -s -- --system
 
 # pin a specific version
-NDK_VERSION=v0.8.3 curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/refs/heads/master/install.sh | bash
+NDK_VERSION=v0.8.3 curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/master/install.sh | bash
 
 # latest pre-release
-NDK_VERSION=latest-pre curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/refs/heads/master/install.sh | bash
+NDK_VERSION=latest-pre curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/master/install.sh | bash
 ```
 
 ### Environment variables

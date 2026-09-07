@@ -286,7 +286,7 @@ class RelaySetsEngine implements NetworkEngine {
         in state.requests.entries) {
       doRelayRequest(state.id, entry.value).then((sent) {
         if (!sent) {
-          state.requests.remove(entry.key);
+          state.removeRequest(entry.key);
           if (state.requests.isEmpty) {
             state.networkController.close();
           }
@@ -324,7 +324,7 @@ class RelaySetsEngine implements NetworkEngine {
         in state.requests.entries) {
       doRelayRequest(state.id, entry.value).then((sent) {
         if (!sent) {
-          state.requests.remove(entry.key);
+          state.removeRequest(entry.key);
           // start fix
           if (state.requests.isEmpty) {
             state.networkController.close();
@@ -334,7 +334,13 @@ class RelaySetsEngine implements NetworkEngine {
       });
     }
 
-    return NdkResponse(state.id, state.stream);
+    return NdkResponse(
+      state.id,
+      state.stream,
+      relayOutcomes: () => state.relayOutcomes,
+      relayOutcomesStream: () => state.relayOutcomesStream,
+      relayOutcomesDone: state.controller.done.then((_) => state.relayOutcomes),
+    );
   }
 
   @override

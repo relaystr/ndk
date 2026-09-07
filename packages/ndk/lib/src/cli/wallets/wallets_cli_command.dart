@@ -7,7 +7,7 @@ import 'package:ndk/ndk.dart';
 import '../cli_accounts_store.dart';
 import '../cli_command.dart';
 
-class WalletsCliCommand implements CliCommand {
+class WalletsCliCommand extends CliCommand {
   @override
   String get name => 'wallets';
 
@@ -18,6 +18,9 @@ class WalletsCliCommand implements CliCommand {
   @override
   String get usage =>
       'wallets <list|add|remove|receive|send|balance|budget> [args]';
+
+  @override
+  bool get restoreAccountsOnStartup => false;
 
   @override
   Future<int> run(
@@ -218,7 +221,7 @@ class WalletsCliCommand implements CliCommand {
     Wallets walletsUsecase,
   ) async {
     if (args.length != 1) {
-      stderr.writeln('Usage: ndk wallets remove <walletId>');
+      stderr.writeln('Usage: ndk wallets remove <wallet_id>');
       throw ArgumentError('Missing wallet id for wallets remove');
     }
 
@@ -238,7 +241,7 @@ class WalletsCliCommand implements CliCommand {
 
   Future<void> _handleReceive(List<String> args, Wallets walletsUsecase) async {
     if (args.isEmpty || args.length > 2) {
-      stderr.writeln('Usage: ndk wallets receive <amountSats> [walletId]');
+      stderr.writeln('Usage: ndk wallets receive <amount_sats> [wallet_id]');
       throw ArgumentError('Invalid arguments for wallets receive');
     }
 
@@ -259,7 +262,7 @@ class WalletsCliCommand implements CliCommand {
 
   Future<void> _handleSend(List<String> args, Wallets walletsUsecase) async {
     if (args.isEmpty || args.length > 2) {
-      stderr.writeln('Usage: ndk wallets send <bolt11> [walletId]');
+      stderr.writeln('Usage: ndk wallets send <bolt11> [wallet_id]');
       throw ArgumentError('Invalid arguments for wallets send');
     }
 
@@ -289,7 +292,7 @@ class WalletsCliCommand implements CliCommand {
     Wallets walletsUsecase,
   ) async {
     if (args.length > 1) {
-      stderr.writeln('Usage: ndk wallets balance [walletId]');
+      stderr.writeln('Usage: ndk wallets balance [wallet_id]');
       throw ArgumentError('Invalid arguments for wallets balance');
     }
 
@@ -333,7 +336,7 @@ class WalletsCliCommand implements CliCommand {
     Ndk ndk,
   ) async {
     if (args.length > 1) {
-      stderr.writeln('Usage: ndk wallets budget [walletId]');
+      stderr.writeln('Usage: ndk wallets budget [wallet_id]');
       throw ArgumentError('Invalid arguments for wallets budget');
     }
 
@@ -390,7 +393,7 @@ class WalletsCliCommand implements CliCommand {
   ) async {
     if (args.isEmpty || args.length > 2) {
       stderr.writeln(
-        'Usage: ndk wallets set-default <walletId> '
+        'Usage: ndk wallets set-default <wallet_id> '
         '[receive|send|both] (default: both)',
       );
       throw ArgumentError('Invalid arguments for wallets set-default');
@@ -428,7 +431,7 @@ class WalletsCliCommand implements CliCommand {
   ) async {
     final parsed = _parseCashuOpArgs(
       args,
-      usageLine: 'ndk wallets melt <bolt11> [walletId] [--seed <mnemonic>]',
+      usageLine: 'ndk wallets melt <bolt11> [wallet_id] [--seed <mnemonic>]',
       requireValue: true,
       valueName: 'bolt11',
     );
@@ -477,7 +480,7 @@ class WalletsCliCommand implements CliCommand {
   ) async {
     final parsed = _parseCashuOpArgs(
       args,
-      usageLine: 'ndk wallets mint <amountSats> [walletId] '
+      usageLine: 'ndk wallets mint <amount_sats> [wallet_id] '
           '[--seed <mnemonic>] [--wait]',
       requireValue: true,
       valueName: 'amountSats',
@@ -529,7 +532,7 @@ class WalletsCliCommand implements CliCommand {
   Future<void> _handleSwapReceive(List<String> args, Ndk ndk) async {
     final parsed = _parseCashuOpArgs(
       args,
-      usageLine: 'ndk wallets swap-receive <cashuToken> [--seed <mnemonic>]',
+      usageLine: 'ndk wallets swap-receive <cashu_token> [--seed <mnemonic>]',
       requireValue: true,
       valueName: 'cashuToken',
     );
@@ -556,7 +559,7 @@ class WalletsCliCommand implements CliCommand {
   ) async {
     final parsed = _parseCashuOpArgs(
       args,
-      usageLine: 'ndk wallets swap-spend <amountSats> [walletId] '
+      usageLine: 'ndk wallets swap-spend <amount_sats> [wallet_id] '
           '[--seed <mnemonic>]',
       requireValue: true,
       valueName: 'amountSats',
@@ -604,7 +607,9 @@ class WalletsCliCommand implements CliCommand {
       } else if (walletId == null && !a.startsWith('-')) {
         walletId = a;
       } else {
-        stderr.writeln('Usage: ndk wallets pay-stats [walletId] [--limit N]');
+        stderr.writeln(
+          'Usage: ndk wallets pay-stats [wallet_id] [--limit <count>]',
+        );
         return;
       }
     }
@@ -817,41 +822,26 @@ class WalletsCliCommand implements CliCommand {
     out.writeln('');
     out.writeln('Sub-commands:');
     out.writeln('  list');
-    out.writeln('  add nwc <NWC_URI> [name]');
-    out.writeln('  add cashu <MINT_URL> [name]');
-    out.writeln('  remove <walletId>');
-    out.writeln('  receive <amountSats> [walletId]');
-    out.writeln('  send <bolt11> [walletId]');
-    out.writeln('  balance [walletId]');
-    out.writeln('  budget [walletId]                              (NWC only)');
-    out.writeln('  set-default <walletId> [receive|send|both]');
-    out.writeln('  melt <bolt11> [walletId] [--seed <mnemonic>]  (cashu only)');
-    out.writeln('  mint <amountSats> [walletId] [--seed <mnemonic>] [--wait]');
-    out.writeln('  swap-receive <cashuToken> [--seed <mnemonic>]');
-    out.writeln('  swap-spend <amountSats> [walletId] [--seed <mnemonic>]');
-    out.writeln('  pay-stats [walletId] [--limit N]');
-    out.writeln('');
-    out.writeln('Examples:');
-    out.writeln('  ndk wallets list');
-    out.writeln('  ndk wallets add nwc "nostr+walletconnect://..."');
-    out.writeln('  ndk wallets add cashu "https://mint.example.com"');
-    out.writeln('  ndk wallets remove wallet_123');
-    out.writeln('  ndk wallets receive 1000');
-    out.writeln('  ndk wallets receive 1000 wallet_123');
-    out.writeln('  ndk wallets send "lnbc1..."');
-    out.writeln('  ndk wallets send "lnbc1..." wallet_123');
-    out.writeln('  ndk wallets balance');
-    out.writeln('  ndk wallets balance wallet_123');
-    out.writeln('  ndk wallets budget');
-    out.writeln('  ndk wallets budget wallet_123');
-    out.writeln('  ndk wallets set-default wallet_123 send');
-    out.writeln('  ndk wallets mint 100 --wait --seed "word1 word2 ..."');
-    out.writeln('  ndk wallets melt "lnbc1..."');
-    out.writeln('  ndk wallets swap-receive "cashuA..."');
-    out.writeln('  ndk wallets pay-stats --limit 50');
+    out.writeln('  add <nwc|cashu> <connection> [name]');
+    out.writeln('  remove <wallet_id>');
+    out.writeln('  receive <amount_sats> [wallet_id]');
+    out.writeln('  send <bolt11> [wallet_id]');
+    out.writeln('  balance [wallet_id]');
+    out.writeln('  budget [wallet_id]  (NWC only)');
+    out.writeln('  set-default <wallet_id> [receive|send|both]');
+    out.writeln('  melt <bolt11> [wallet_id] [--seed <mnemonic>]');
     out.writeln(
-      'Cashu operations accept --seed or the NDK_CASHU_SEED env var.',
+      '  mint <amount_sats> [wallet_id] [--seed <mnemonic>] [--wait]',
     );
+    out.writeln('  swap-receive <cashu_token> [--seed <mnemonic>]');
+    out.writeln(
+      '  swap-spend <amount_sats> [wallet_id] [--seed <mnemonic>]',
+    );
+    out.writeln('  pay-stats [wallet_id] [--limit <count>]');
+    out.writeln('');
+    out.writeln('<...> required; [...] optional.');
+    out.writeln('Connection: NWC URI or Cashu mint URL.');
+    out.writeln('Cashu seed: --seed <mnemonic> or NDK_CASHU_SEED.');
   }
 
   bool _isHelp(String value) {

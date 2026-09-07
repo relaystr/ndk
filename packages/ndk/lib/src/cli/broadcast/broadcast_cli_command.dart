@@ -13,7 +13,7 @@ import '../cli_command.dart';
 ///
 /// Accepts pre-signed events (sent as-is) or unsigned events that are signed
 /// with either `--privkey` or the active account from `ndk accounts login`.
-class BroadcastCliCommand implements CliCommand {
+class BroadcastCliCommand extends CliCommand {
   @override
   String get name => 'broadcast';
 
