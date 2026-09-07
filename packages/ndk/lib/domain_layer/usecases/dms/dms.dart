@@ -7,6 +7,7 @@ import '../../entities/nip_17_file_message.dart';
 import '../../entities/nip_01_event.dart';
 import '../../entities/nip_01_utils.dart';
 import '../../entities/nip_17_message.dart';
+import '../../entities/relay_auth.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/event_verifier.dart';
 import '../accounts/accounts.dart';
@@ -181,7 +182,7 @@ class Dms {
           .query(
             name: 'legacy-nip04-outgoing',
             explicitRelays: relays,
-            authenticateAs: [account],
+            auth: RelayAuth.allow(account),
             cacheRead: !forceRefresh,
             cacheWrite: true,
             timeout: timeout,
@@ -195,7 +196,7 @@ class Dms {
           .query(
             name: 'legacy-nip04-incoming',
             explicitRelays: relays,
-            authenticateAs: [account],
+            auth: RelayAuth.allow(account),
             cacheRead: !forceRefresh,
             cacheWrite: true,
             timeout: timeout,
@@ -455,7 +456,7 @@ class Dms {
     final response = _requests.query(
       name: 'dm-conversations',
       explicitRelays: dmRelays,
-      authenticateAs: [_accounts.getLoggedAccount()!],
+      auth: RelayAuth.allow(_accounts.getLoggedAccount()!),
       cacheRead: !forceRefresh,
       cacheWrite: true,
       timeout: timeout,

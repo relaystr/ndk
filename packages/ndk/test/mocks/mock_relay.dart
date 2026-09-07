@@ -199,8 +199,9 @@ class MockRelay {
     Map<String, Nip01Event>? metadatas,
     Map<String, Nip01Event>? nip85Assertions,
     Duration? delayResponse,
+    Duration? delayConnection,
   }) async {
-    var myPromise = Completer<void>();
+    final myPromise = Completer<void>();
 
     if (nip65s != null) {
       _nip65s = nip65s;
@@ -252,7 +253,22 @@ class MockRelay {
     }
 
     this.server = server;
-    var stream = server.transform(WebSocketTransformer());
+    final Stream<WebSocket> stream;
+    if (delayConnection == null) {
+      stream = server.transform(WebSocketTransformer());
+    } else {
+      // holds the handshake, not the answers: it is how a client is left with a
+      // connection that is still opening
+      final upgrades = StreamController<WebSocket>();
+      server.listen(
+        (request) async {
+          await Future.delayed(delayConnection);
+          upgrades.add(await WebSocketTransformer.upgrade(request));
+        },
+        onDone: upgrades.close,
+      );
+      stream = upgrades.stream;
+    }
 
     // Generate challenge once for the entire server lifetime (fixes race condition on reconnect)
     final String serverChallenge = Helpers.getRandomString(10);

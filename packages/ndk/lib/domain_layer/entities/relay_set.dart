@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 
 import 'pubkey_mapping.dart';
 import 'read_write.dart';
-import 'relay_connection_key.dart';
+import 'relay_auth.dart';
 import 'request_state.dart';
 import 'filter.dart';
 
@@ -43,9 +43,12 @@ class RelaySet {
   static const int kMaxAuthorsPerRequest = 100;
 
   void splitIntoRequests(Filter filter, RequestState groupRequest) {
-    for (var entry in relaysMap.entries) {
-      String url = entry.key;
-      final connectionKey = RelayConnectionKey.anonymous(url);
+    for (final entry in relaysMap.entries) {
+      final String url = entry.key;
+      final connectionKey = RelayAuth.keyFor(url, groupRequest.request.auth);
+      if (connectionKey == null) {
+        continue;
+      }
       List<PubkeyMapping> pubKeyMappings = entry.value;
       if (pubKeyMappings.isEmpty) {
         groupRequest.addRequest(connectionKey, [filter]);
