@@ -19,9 +19,6 @@ enum RelayRequestStatus {
 
   /// the request ran into its timeout before the relay ended it
   timedOut,
-
-  /// the request never reached the relay
-  notSent,
 }
 
 /// Where a request stands on a single relay, and why
@@ -29,8 +26,7 @@ class RelayRequestOutcome {
   /// what the relay did with the request
   final RelayRequestStatus status;
 
-  /// why, when there is a reason to give: the message of a CLOSED, or what
-  /// kept the request from being sent
+  /// why, when there is a reason to give: the message of a CLOSED
   final String? message;
 
   /// creates a new [RelayRequestOutcome]
