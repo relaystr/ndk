@@ -4,14 +4,34 @@ import 'dart:typed_data';
 import 'package:rxdart/rxdart.dart';
 
 import '../../shared/nips/nip77/negentropy.dart';
+import 'filter.dart';
+import 'relay_auth.dart';
+import 'relay_connection_key.dart';
 
 /// State of a NIP-77 negentropy reconciliation session
 class Nip77State {
   /// Unique subscription ID for this session
   final String subscriptionId;
 
+  /// Connection this session runs on. It moves to a bound connection when a
+  /// relay refuses the negotiation without an identity.
+  RelayConnectionKey connectionKey;
+
+  /// Filter the negotiation was opened with, replayed on an auth retry
+  final Filter filter;
+
+  /// Which identity this session may be attributed to (NIP-42)
+  final RelayAuth? auth;
+
+  /// whether the negotiation already moved from the anonymous connection to a
+  /// bound one
+  bool movedToBoundConnection = false;
+
+  /// whether AUTH was already sent for the bound connection after a refusal
+  bool authenticatedAfterRefusal = false;
+
   /// Relay URL this session is connected to
-  final String relayUrl;
+  String get relayUrl => connectionKey.url;
 
   /// Local items for reconciliation
   final List<NegentropyItem> localItems;
@@ -39,8 +59,10 @@ class Nip77State {
 
   Nip77State({
     required this.subscriptionId,
-    required this.relayUrl,
+    required this.connectionKey,
+    required this.filter,
     required this.localItems,
+    this.auth,
   });
 
   /// Stream of IDs we need from the relay

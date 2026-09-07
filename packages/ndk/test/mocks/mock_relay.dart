@@ -11,6 +11,7 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/shared/nips/nip09/deletion.dart';
+import 'package:ndk/shared/nips/nip77/negentropy.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
 
@@ -105,6 +106,37 @@ class MockRelay {
   /// how many AUTH events are left unanswered, the way a relay that goes quiet
   /// in the middle of an authentication does. The next ones are answered
   int silenceFirstAuths;
+
+  /// when true a NEG-OPEN on an unauthenticated connection is refused
+  bool requireAuthForNegentropy = false;
+
+  /// how a refused NEG-OPEN is answered. NIP-77 only names NEG-ERR, but relays
+  /// that gate it behind NIP-42 often refuse it the way they refuse a REQ
+  bool refuseNegentropyWithClosed = false;
+
+  /// events the relay reconciles against, id to created_at
+  final Map<String, int> negentropyItems = {};
+
+  /// every NEG-OPEN the relay received, whether or not it served it
+  final List<String> receivedNegOpens = [];
+
+  /// subscription ids of NEG-OPENs carried by connections authenticated as
+  /// [pubkey]
+  Set<String> negOpensAuthenticatedAs(String pubkey) => {
+        for (final entry in _negOpenedSubscriptions.entries)
+          if (_authenticatedPubkeys[entry.key]?.contains(pubkey) ?? false)
+            ...entry.value,
+      };
+
+  /// subscription ids of NEG-OPENs carried by connections that were not
+  /// authenticated as [pubkey]
+  Set<String> negOpensNotAuthenticatedAs(String pubkey) => {
+        for (final entry in _negOpenedSubscriptions.entries)
+          if (!(_authenticatedPubkeys[entry.key]?.contains(pubkey) ?? false))
+            ...entry.value,
+      };
+
+  final Map<WebSocket, Set<String>> _negOpenedSubscriptions = {};
 
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
@@ -538,6 +570,45 @@ class MockRelay {
               }
               return;
             }
+
+            if (eventJson[0] == "NEG-OPEN") {
+              final String subscriptionId = eventJson[1];
+              final String payload = eventJson[3];
+
+              // recorded before the auth check, so a refused NEG-OPEN is still
+              // visible to tests
+              receivedNegOpens.add(subscriptionId);
+              _negOpenedSubscriptions
+                  .putIfAbsent(webSocket, () => {})
+                  .add(subscriptionId);
+
+              if (requireAuthForNegentropy && authenticatedPubkeys.isEmpty) {
+                const reason =
+                    "auth-required: we can't reconcile with unauthenticated users";
+                _send(
+                  webSocket,
+                  jsonEncode(
+                    refuseNegentropyWithClosed
+                        ? ["CLOSED", subscriptionId, reason]
+                        : ["NEG-ERR", subscriptionId, reason],
+                  ),
+                );
+                return;
+              }
+
+              _respondToNegentropy(webSocket, subscriptionId, payload);
+              return;
+            }
+
+            if (eventJson[0] == "NEG-MSG") {
+              _respondToNegentropy(webSocket, eventJson[1], eventJson[2]);
+              return;
+            }
+
+            if (eventJson[0] == "NEG-CLOSE") {
+              _negOpenedSubscriptions[webSocket]?.remove(eventJson[1]);
+              return;
+            }
           },
           onDone: () {
             // Clean up when client disconnects
@@ -567,6 +638,41 @@ class MockRelay {
       socket.add(message);
     } on StateError {
       log('MockRelay: dropped a message for a closed socket');
+    }
+  }
+
+  /// Answers one negentropy round against [negentropyItems]. A response that is
+  /// only the version byte means the relay has nothing left to say, so it is
+  /// not sent back and the client ends the session.
+  void _respondToNegentropy(
+    WebSocket webSocket,
+    String subscriptionId,
+    String payload,
+  ) {
+    final items = negentropyItems.entries
+        .map(
+          (e) => NegentropyItem.fromHex(timestamp: e.value, idHex: e.key),
+        )
+        .toList();
+
+    try {
+      final response = NegentropyEncoder.respond(
+        NegentropyEncoder.hexToBytes(payload),
+        items,
+      );
+      if (response.length <= 1) {
+        return;
+      }
+      _send(
+        webSocket,
+        jsonEncode([
+          "NEG-MSG",
+          subscriptionId,
+          NegentropyEncoder.bytesToHex(response),
+        ]),
+      );
+    } catch (e) {
+      _send(webSocket, jsonEncode(["NEG-ERR", subscriptionId, "$e"]));
     }
   }
 

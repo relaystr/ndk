@@ -21,6 +21,7 @@ class _Nip77Internal {
     required Filter filter,
     Duration timeout = Nip77.defaultTimeout,
     List<String>? localIds,
+    RelayAuth? auth,
   }) {
     final cleanUrl = cleanRelayUrl(relayUrl);
     if (cleanUrl == null) {
@@ -30,20 +31,34 @@ class _Nip77Internal {
     // Generate subscription ID
     final subscriptionId = 'neg-${DateTime.now().microsecondsSinceEpoch}';
 
+    final connectionKey = RelayAuth.keyFor(cleanUrl, auth);
+
     // Create session state (starts with empty items, will be populated async)
     final state = Nip77State(
       subscriptionId: subscriptionId,
-      relayUrl: cleanUrl,
+      connectionKey: connectionKey ?? RelayConnectionKey.anonymous(cleanUrl),
+      filter: filter,
       localItems: [],
+      auth: auth,
     );
 
     // Register in global state
     _globalState.inFlightNegotiations[subscriptionId] = state;
 
+    // nothing can carry this reconciliation: answer now rather than let a
+    // timeout fire on a request that was impossible from the start
+    if (connectionKey == null) {
+      state.completeWithError(
+        Nip77AuthUnavailableException(cleanUrl, auth!.account!.pubkey),
+      );
+      _globalState.inFlightNegotiations.remove(subscriptionId);
+      return Nip77Response(state);
+    }
+
     // Set up timeout
     Timer(timeout, () {
       if (!state.isCompleted) {
-        _sendNegClose(cleanUrl, subscriptionId);
+        _sendNegClose(state.connectionKey, subscriptionId);
         state.completeWithError(Nip77TimeoutException(cleanUrl, timeout));
         _globalState.inFlightNegotiations.remove(subscriptionId);
       }
@@ -51,8 +66,6 @@ class _Nip77Internal {
 
     // Start async initialization
     _startReconciliation(
-      cleanUrl: cleanUrl,
-      filter: filter,
       localIds: localIds,
       subscriptionId: subscriptionId,
       state: state,
@@ -62,33 +75,27 @@ class _Nip77Internal {
   }
 
   Future<void> _startReconciliation({
-    required String cleanUrl,
-    required Filter filter,
     required String subscriptionId,
     required Nip77State state,
     List<String>? localIds,
   }) async {
+    final cleanUrl = state.connectionKey.url;
     try {
-      // Connect to relay if needed
-      final connected = await _relayManager.reconnectRelay(
-        cleanUrl,
-        connectionSource: ConnectionSource.explicit,
-      );
+      final connectivity = await _openConnection(state);
       if (state.isCompleted) {
         return; // Guard: timeout may have fired during await
       }
-      if (!connected) {
+      if (connectivity == null) {
         state.completeWithError(
-          Exception('Failed to connect to relay: $cleanUrl'),
+          Exception('Failed to connect to relay: ${state.connectionKey}'),
         );
         _globalState.inFlightNegotiations.remove(subscriptionId);
         return;
       }
 
       // Check if relay supports NIP-77
-      final relayConnectivity = _relayManager.getRelayConnectivity(cleanUrl);
-      if (relayConnectivity?.relayInfo != null &&
-          !relayConnectivity!.relayInfo!.supportsNip(77)) {
+      if (connectivity.relayInfo != null &&
+          !connectivity.relayInfo!.supportsNip(77)) {
         state.completeWithError(Nip77NotSupportedException(cleanUrl));
         _globalState.inFlightNegotiations.remove(subscriptionId);
         return;
@@ -99,7 +106,7 @@ class _Nip77Internal {
       if (localIds != null) {
         localItems = await _buildItemsFromIds(localIds);
       } else {
-        localItems = await _buildItemsFromFilter(filter);
+        localItems = await _buildItemsFromFilter(state.filter);
       }
       if (state.isCompleted) {
         return; // Guard: timeout may have fired during await
@@ -108,31 +115,54 @@ class _Nip77Internal {
       // Update state with local items
       state.localItems.addAll(localItems);
 
-      // Create initial message (hex encoded per NIP-77)
-      final initialMessage = neg.NegentropyEncoder.createInitialMessage(
-        localItems,
-        neg.NegentropyEncoder.idSize,
-      );
-      final initialPayload = neg.NegentropyEncoder.bytesToHex(initialMessage);
-
-      // Send NEG-OPEN (final guard before network action)
-      if (state.isCompleted) return;
-      final negOpen = [
-        'NEG-OPEN',
-        subscriptionId,
-        filter.toMap(),
-        initialPayload,
-      ];
-      _relayManager
-          .getRelayConnectivity(cleanUrl)
-          ?.relayTransport
-          ?.send(jsonEncode(negOpen));
-
-      Logger.log.d(() => 'NEG-OPEN sent to $cleanUrl: $subscriptionId');
+      _sendNegOpen(state);
     } catch (e) {
       state.completeWithError(e);
       _globalState.inFlightNegotiations.remove(subscriptionId);
     }
+  }
+
+  /// Opens the connection the session is bound to, handing over the account so
+  /// a bound connection works for an identity that was never registered.
+  Future<RelayConnectivity?> _openConnection(Nip77State state) async {
+    final connected = await _relayManager.reconnectConnection(
+      state.connectionKey,
+      connectionSource: ConnectionSource.explicit,
+      as: state.auth?.account,
+    );
+    if (!connected) {
+      return null;
+    }
+    return _relayManager.getConnectivity(state.connectionKey);
+  }
+
+  /// Sends NEG-OPEN on the connection the session currently holds. The initial
+  /// message is rebuilt from [Nip77State.localItems], so a refused negotiation
+  /// can be reopened on another connection by calling this again.
+  void _sendNegOpen(Nip77State state) {
+    if (state.isCompleted) return;
+
+    final initialMessage = neg.NegentropyEncoder.createInitialMessage(
+      state.localItems,
+      neg.NegentropyEncoder.idSize,
+    );
+    final negOpen = [
+      'NEG-OPEN',
+      state.subscriptionId,
+      state.filter.toMap(),
+      neg.NegentropyEncoder.bytesToHex(initialMessage),
+    ];
+    _send(state.connectionKey, negOpen);
+
+    Logger.log.d(
+      () => 'NEG-OPEN sent to ${state.connectionKey}: ${state.subscriptionId}',
+    );
+  }
+
+  void _send(RelayConnectionKey key, List<dynamic> message) {
+    _relayManager.getConnectivity(key)?.relayTransport?.send(
+          jsonEncode(message),
+        );
   }
 
   Future<List<neg.NegentropyItem>> _buildItemsFromIds(List<String> ids) async {
@@ -172,25 +202,40 @@ class _Nip77Internal {
         .toList();
   }
 
-  /// Process incoming NEG-MSG from a relay
-  void processNegMsg(String subscriptionId, String relayUrl, String payload) {
+  /// The session [subscriptionId] belongs to, when the message really came
+  /// from the connection it runs on. Matching the whole key, not just the url,
+  /// keeps a message seen on the anonymous socket from feeding a session that
+  /// moved to a bound one.
+  Nip77State? _sessionFor(
+    String subscriptionId,
+    RelayConnectionKey key,
+    String messageType,
+  ) {
     final state = _globalState.inFlightNegotiations[subscriptionId];
     if (state == null) {
       Logger.log.w(
-        () => 'Received NEG-MSG for unknown session: $subscriptionId',
+        () => 'Received $messageType for unknown session: $subscriptionId',
       );
-      return;
+      return null;
     }
-
-    // Verify relay origin to avoid cross-relay session contamination
-    final cleanUrl = cleanRelayUrl(relayUrl);
-    if (cleanUrl == null || state.relayUrl != cleanUrl) {
+    if (state.connectionKey != key) {
       Logger.log.w(
-        () =>
-            'Received NEG-MSG from mismatched relay: expected ${state.relayUrl}, got $relayUrl',
+        () => 'Received $messageType from mismatched connection: expected '
+            '${state.connectionKey}, got $key',
       );
-      return;
+      return null;
     }
+    return state;
+  }
+
+  /// Process incoming NEG-MSG from a relay
+  void processNegMsg(
+    String subscriptionId,
+    RelayConnectionKey key,
+    String payload,
+  ) {
+    final state = _sessionFor(subscriptionId, key, 'NEG-MSG');
+    if (state == null) return;
 
     try {
       final messageBytes = neg.NegentropyEncoder.hexToBytes(payload);
@@ -198,7 +243,7 @@ class _Nip77Internal {
 
       if (response == null) {
         // Reconciliation complete
-        _sendNegClose(relayUrl, subscriptionId);
+        _sendNegClose(key, subscriptionId);
         state.complete();
         _globalState.inFlightNegotiations.remove(subscriptionId);
         Logger.log.d(
@@ -208,12 +253,8 @@ class _Nip77Internal {
       } else {
         // Send response (hex encoded)
         final responsePayload = neg.NegentropyEncoder.bytesToHex(response);
-        final negMsg = ['NEG-MSG', subscriptionId, responsePayload];
-        _relayManager
-            .getRelayConnectivity(relayUrl)
-            ?.relayTransport
-            ?.send(jsonEncode(negMsg));
-        Logger.log.d(() => 'NEG-MSG sent to $relayUrl');
+        _send(key, ['NEG-MSG', subscriptionId, responsePayload]);
+        Logger.log.d(() => 'NEG-MSG sent to $key');
       }
     } catch (e) {
       Logger.log.e(() => 'Error processing NEG-MSG: $e');
@@ -223,29 +264,25 @@ class _Nip77Internal {
   }
 
   /// Process incoming NEG-ERR from a relay
-  void processNegErr(String subscriptionId, String relayUrl, String errorMsg) {
-    final state = _globalState.inFlightNegotiations[subscriptionId];
-    if (state == null) {
-      Logger.log.w(
-        () => 'Received NEG-ERR for unknown session: $subscriptionId',
-      );
+  void processNegErr(
+    String subscriptionId,
+    RelayConnectionKey key,
+    String errorMsg,
+  ) {
+    final state = _sessionFor(subscriptionId, key, 'NEG-ERR');
+    if (state == null) return;
+
+    Logger.log.e(() => 'NEG-ERR from $key: $errorMsg');
+
+    if (_isAuthRefusal(errorMsg)) {
+      _handleNegAuthRequired(state, errorMsg);
       return;
     }
 
-    // Verify relay origin to avoid cross-relay session contamination
-    final cleanUrl = cleanRelayUrl(relayUrl);
-    if (cleanUrl == null || state.relayUrl != cleanUrl) {
-      Logger.log.w(
-        () =>
-            'Received NEG-ERR from mismatched relay: expected ${state.relayUrl}, got $relayUrl',
+    if (errorMsg.contains('CLOSED')) {
+      state.completeWithError(
+        Nip77NotSupportedException(key.url, errorMsg),
       );
-      return;
-    }
-
-    Logger.log.e(() => 'NEG-ERR from $cleanUrl: $errorMsg');
-
-    if (errorMsg.contains('CLOSED') || errorMsg.contains('auth-required')) {
-      state.completeWithError(Nip77NotSupportedException(cleanUrl, errorMsg));
     } else {
       state.completeWithError(Exception(errorMsg));
     }
@@ -253,19 +290,122 @@ class _Nip77Internal {
     _globalState.inFlightNegotiations.remove(subscriptionId);
   }
 
-  void _sendNegClose(String relayUrl, String subscriptionId) {
-    final negClose = ['NEG-CLOSE', subscriptionId];
+  /// Process a CLOSED that ends a negotiation. NIP-77 only names NEG-ERR, but
+  /// relays that gate NEG-OPEN behind NIP-42 commonly refuse it the way they
+  /// refuse a REQ.
+  void processNegClosed(
+    String subscriptionId,
+    RelayConnectionKey key,
+    String? message,
+  ) {
+    final state = _sessionFor(subscriptionId, key, 'CLOSED');
+    if (state == null) return;
+
+    final reason = message ?? '';
+    Logger.log.d(() => 'CLOSED for negotiation $subscriptionId on $key: $reason');
+
+    if (_isAuthRefusal(reason)) {
+      _handleNegAuthRequired(state, reason);
+      return;
+    }
+
+    state.completeWithError(Exception(reason.isEmpty ? 'closed' : reason));
+    _globalState.inFlightNegotiations.remove(subscriptionId);
+  }
+
+  /// NIP-77 only suggests `blocked` and `closed`, so a relay that gates the
+  /// negotiation behind an identity says so in the machine-readable prefixes
+  /// NIP-01 defines for CLOSED.
+  bool _isAuthRefusal(String message) {
+    final lower = message.toLowerCase();
+    return lower.contains('auth-required') || lower.contains('restricted');
+  }
+
+  /// Reopens a refused negotiation on a connection bound to an identity, the
+  /// way a refused REQ is retried.
+  void _handleNegAuthRequired(Nip77State state, String message) {
+    final subscriptionId = state.subscriptionId;
+    final url = state.connectionKey.url;
+
+    void fail(Object error) {
+      state.completeWithError(error);
+      _globalState.inFlightNegotiations.remove(subscriptionId);
+    }
+
+    // a refusal that lands mid-session cannot be replayed: the streams already
+    // emitted, and a fresh NEG-OPEN would report those ids twice
+    if (state.needIds.isNotEmpty || state.haveIds.isNotEmpty) {
+      fail(Nip77AuthRequiredException(url, message));
+      return;
+    }
+
+    final account = _relayManager.accountForAuth(state.auth);
+    if (account == null) {
+      fail(Nip77AuthRequiredException(url, message));
+      return;
+    }
+
+    // the connection is already bound, so the relay wants the AUTH it has not
+    // been given yet rather than another identity
+    if (!state.connectionKey.isAnonymous) {
+      if (state.authenticatedAfterRefusal) {
+        fail(Nip77AuthRequiredException(url, message));
+        return;
+      }
+      state.authenticatedAfterRefusal = true;
+      _relayManager.authenticateConnection(state.connectionKey).then((
+        authenticated,
+      ) {
+        if (state.isCompleted) return;
+        if (!authenticated) {
+          fail(Nip77AuthRequiredException(url, message));
+          return;
+        }
+        _sendNegOpen(state);
+      });
+      return;
+    }
+
+    if (state.movedToBoundConnection) {
+      fail(Nip77AuthRequiredException(url, message));
+      return;
+    }
+    state.movedToBoundConnection = true;
+
+    Logger.log.d(
+      () => 'AUTH required for negotiation $subscriptionId on $url, '
+          'retrying as ${account.pubkey}',
+    );
+
     _relayManager
-        .getRelayConnectivity(relayUrl)
-        ?.relayTransport
-        ?.send(jsonEncode(negClose));
-    Logger.log.d(() => 'NEG-CLOSE sent to $relayUrl: $subscriptionId');
+        .openConnectionAs(
+      url,
+      account,
+      connectionSource: ConnectionSource.explicit,
+    )
+        .then((bound) {
+      if (state.isCompleted) return;
+      if (bound == null) {
+        fail(Nip77AuthRequiredException(url, message));
+        return;
+      }
+      state.connectionKey = bound.key;
+      // sent without waiting for the AUTH: a relay that only challenges on
+      // demand needs this NEG-OPEN as the trigger, and the challenge it then
+      // sends authenticates the bound connection on its own
+      _sendNegOpen(state);
+    });
+  }
+
+  void _sendNegClose(RelayConnectionKey key, String subscriptionId) {
+    _send(key, ['NEG-CLOSE', subscriptionId]);
+    Logger.log.d(() => 'NEG-CLOSE sent to $key: $subscriptionId');
   }
 
   void close(String subscriptionId) {
     final state = _globalState.inFlightNegotiations[subscriptionId];
     if (state != null) {
-      _sendNegClose(state.relayUrl, subscriptionId);
+      _sendNegClose(state.connectionKey, subscriptionId);
       state.close();
       _globalState.inFlightNegotiations.remove(subscriptionId);
     }
@@ -273,7 +413,7 @@ class _Nip77Internal {
 
   void closeAll() {
     for (final entry in _globalState.inFlightNegotiations.entries.toList()) {
-      _sendNegClose(entry.value.relayUrl, entry.key);
+      _sendNegClose(entry.value.connectionKey, entry.key);
       entry.value.close();
     }
     _globalState.inFlightNegotiations.clear();
