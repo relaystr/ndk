@@ -12,6 +12,23 @@ void main() {
       expect(Bip321.getBolt11(payment), invoice);
     });
 
+    test('matches lightning keys case-insensitively', () {
+      expect(
+        Bip321.getBolt11('bitcoin:?LIGHTNING=lnbc1uppercase'),
+        'lnbc1uppercase',
+      );
+      expect(
+        Bip321.getBolt11('bitcoin:?LiGhTnInG=lnbc1mixedcase'),
+        'lnbc1mixedcase',
+      );
+      expect(
+        () => Bip321.getBolt11(
+          'bitcoin:?lightning=lnbc1first&LIGHTNING=lnbc1second',
+        ),
+        throwsFormatException,
+      );
+    });
+
     test('decodes BOLT11 amounts in millisatoshis', () {
       expect(Bip321.getBolt11AmountMsat('lnbc1paymentdata'), isNull);
       expect(Bip321.getBolt11AmountMsat('lnbc210n1paymentdata'), 21000);
@@ -22,12 +39,14 @@ void main() {
     });
 
     test('rejects unknown required parameters', () {
-      expect(
-        () => Bip321.getBolt11(
-          'bitcoin:?lightning=lnbc1paymentdata&req-example=value',
-        ),
-        throwsUnsupportedError,
-      );
+      for (final requiredKey in ['req-example', 'REQ-EXAMPLE', 'ReQ-example']) {
+        expect(
+          () => Bip321.getBolt11(
+            'bitcoin:?lightning=lnbc1paymentdata&$requiredKey=value',
+          ),
+          throwsUnsupportedError,
+        );
+      }
     });
 
     test('rejects missing and duplicate lightning instructions', () {

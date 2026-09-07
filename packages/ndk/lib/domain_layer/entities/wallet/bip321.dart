@@ -26,7 +26,13 @@ class Bip321 {
       throw FormatException('BIP-321 URI must use the bitcoin scheme', payment);
     }
 
-    final requiredParameters = uri.queryParametersAll.keys.where(
+    final parameters = <String, List<String>>{};
+    for (final entry in uri.queryParametersAll.entries) {
+      final normalizedKey = entry.key.toLowerCase();
+      (parameters[normalizedKey] ??= []).addAll(entry.value);
+    }
+
+    final requiredParameters = parameters.keys.where(
       (key) => key.startsWith('req-'),
     );
     if (requiredParameters.isNotEmpty) {
@@ -36,7 +42,7 @@ class Bip321 {
       );
     }
 
-    final instructions = uri.queryParametersAll['lightning'];
+    final instructions = parameters['lightning'];
     if (instructions == null ||
         instructions.length != 1 ||
         instructions.single.isEmpty) {
