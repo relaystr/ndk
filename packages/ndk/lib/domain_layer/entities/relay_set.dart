@@ -43,8 +43,8 @@ class RelaySet {
   static const int kMaxAuthorsPerRequest = 100;
 
   void splitIntoRequests(Filter filter, RequestState groupRequest) {
-    for (var entry in relaysMap.entries) {
-      String url = entry.key;
+    for (final entry in relaysMap.entries) {
+      final String url = entry.key;
       final connectionKey = RelayAuth.keyFor(url, groupRequest.request.auth);
       if (connectionKey == null) {
         continue;

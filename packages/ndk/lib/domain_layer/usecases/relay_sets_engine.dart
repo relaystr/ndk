@@ -315,7 +315,7 @@ class RelaySetsEngine implements NetworkEngine {
           : NdkRequest.subscription(id, name: name, filters: []),
     );
 
-    for (var url in urls) {
+    for (final url in urls) {
       state.addRequestForRelay(url, RelaySet.sliceFilterAuthors(filter));
     }
     _globalState.inFlightRequests[state.id] = state;
