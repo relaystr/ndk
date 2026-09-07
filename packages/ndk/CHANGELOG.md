@@ -1,3 +1,11 @@
+## 0.9.3-dev.0+1
+
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+
 ## 0.9.3
 
  - **FIX**(cli): prevent wallet commands from replaying pending deliveries or
