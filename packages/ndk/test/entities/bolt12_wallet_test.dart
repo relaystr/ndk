@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:ndk/entities.dart';
 import 'package:test/test.dart';
 
@@ -15,6 +19,7 @@ void main() {
       expect(resolved.decoded['type'], 'offer');
       expect(resolved.decoded['valid'], isTrue);
       expect(resolved.decoded['offer_description'], isNotEmpty);
+      expect(resolved.toMetadata(), isNot(contains('offerId')));
     });
 
     test('extracts an offer from a BIP321 URI', () async {
@@ -69,6 +74,71 @@ void main() {
           bip353Resolver: (_) async => null,
         ),
         throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('resolves DNSSEC-authenticated BIP353 through custom DoH', () async {
+      final endpoint = Uri.parse('https://resolver.example/dns-query');
+      final client = MockClient((request) async {
+        expect(request.url.origin + request.url.path, endpoint.toString());
+        expect(
+          request.url.queryParameters['name'],
+          'alice.user._bitcoin-payment.example.com',
+        );
+        expect(request.url.queryParameters['type'], 'TXT');
+        expect(request.headers['Accept'], 'application/dns-json');
+        return http.Response(
+          jsonEncode({
+            'Status': 0,
+            'AD': true,
+            'Answer': [
+              {
+                'type': 16,
+                'data':
+                    '"bitcoin:?lno=${_offer.substring(0, 60)}" '
+                    '"${_offer.substring(60)}"',
+              },
+            ],
+          }),
+          200,
+        );
+      });
+
+      final resolved = await Bolt12WalletProvider.resolveInput(
+        'alice@example.com',
+        bip353DohEndpoint: endpoint,
+        httpClient: client,
+      );
+
+      expect(resolved.offer, _offer);
+    });
+
+    test('rejects BIP353 response without DNSSEC authentication', () async {
+      final client = MockClient(
+        (_) async => http.Response(
+          jsonEncode({
+            'Status': 0,
+            'AD': false,
+            'Answer': [
+              {'type': 16, 'data': '"bitcoin:?lno=$_offer"'},
+            ],
+          }),
+          200,
+        ),
+      );
+
+      expect(
+        () => Bolt12WalletProvider.resolveInput(
+          'alice@example.com',
+          httpClient: client,
+        ),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            contains('DNSSEC'),
+          ),
+        ),
       );
     });
 

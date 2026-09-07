@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:dart_bip353/dart_bip353.dart';
-import 'package:dart_bolt12_decoder/dart_bolt12_decoder.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:ndk/domain_layer/usecases/nwc/responses/pay_invoice_response.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/pay_response.dart';
@@ -35,7 +34,6 @@ class Bolt12ResolvedOffer {
         'bip353Address': bip353Address,
         'description': _nonEmptyString(decoded['offer_description']),
         'nodeId': _nonEmptyString(decoded['offer_node_id']),
-        'offerId': _nonEmptyString(decoded['offer_id']),
         'amount': _nonEmptyString(decoded['offer_amount']),
         'issuer': _nonEmptyString(decoded['offer_issuer']),
         'currency': _nonEmptyString(decoded['offer_currency']),
@@ -64,6 +62,10 @@ class Bolt12ResolvedOffer {
 
 /// Provider for receive-only BOLT12 offer wallets.
 class Bolt12WalletProvider implements WalletProvider {
+  static final Uri defaultBip353DohEndpoint = Uri.parse(
+    'https://cloudflare-dns.com/dns-query',
+  );
+
   const Bolt12WalletProvider();
 
   @override
@@ -84,6 +86,8 @@ class Bolt12WalletProvider implements WalletProvider {
   static Future<Bolt12ResolvedOffer> resolveInput(
     String input, {
     Bip353OfferResolver? bip353Resolver,
+    Uri? bip353DohEndpoint,
+    http.Client? httpClient,
   }) async {
     final source = input.trim();
     if (source.isEmpty) {
@@ -102,8 +106,13 @@ class Bolt12WalletProvider implements WalletProvider {
       );
     }
 
-    final resolver = bip353Resolver ?? _resolveBip353;
-    final resolvedOffer = await resolver(address);
+    final resolvedOffer = bip353Resolver != null
+        ? await bip353Resolver(address)
+        : await _resolveBip353(
+            address,
+            endpoint: bip353DohEndpoint ?? defaultBip353DohEndpoint,
+            client: httpClient,
+          );
     if (resolvedOffer == null || resolvedOffer.trim().isEmpty) {
       throw FormatException(
         'BIP353 address $address does not publish a BOLT12 offer',
@@ -117,9 +126,71 @@ class Bolt12WalletProvider implements WalletProvider {
     );
   }
 
-  static Future<String?> _resolveBip353(String address) async {
-    final response = await Bip353.getAdressResolve(address);
-    return response.offer;
+  static Future<String?> _resolveBip353(
+    String address, {
+    required Uri endpoint,
+    http.Client? client,
+  }) async {
+    final parts = address.split('@');
+    final query = '${parts[0]}.user._bitcoin-payment.${parts[1]}';
+    final uri = endpoint.replace(
+      queryParameters: {
+        ...endpoint.queryParameters,
+        'name': query,
+        'type': 'TXT',
+      },
+    );
+    final response = client == null
+        ? await http.get(uri, headers: const {'Accept': 'application/dns-json'})
+        : await client.get(
+            uri,
+            headers: const {'Accept': 'application/dns-json'},
+          );
+    if (response.statusCode != 200) {
+      throw FormatException(
+        'BIP353 DNS query failed with HTTP ${response.statusCode}',
+      );
+    }
+
+    final Object? body;
+    try {
+      body = jsonDecode(response.body);
+    } on FormatException {
+      throw const FormatException('Invalid BIP353 DNS response');
+    }
+    if (body is! Map<String, dynamic> || body['Status'] != 0) {
+      throw const FormatException('BIP353 DNS query failed');
+    }
+    if (body['AD'] != true) {
+      throw const FormatException(
+        'BIP353 DNS response is not authenticated by DNSSEC',
+      );
+    }
+
+    final answers = body['Answer'];
+    if (answers is! List) return null;
+    for (final answer in answers) {
+      if (answer is! Map || answer['type'] != 16 || answer['data'] is! String) {
+        continue;
+      }
+      final paymentInstruction = _decodeTxtRecord(answer['data'] as String);
+      final offer = _directOffer(paymentInstruction);
+      if (offer != null) return offer;
+    }
+    return null;
+  }
+
+  static String _decodeTxtRecord(String data) {
+    final chunks = RegExp(r'"((?:\\.|[^"\\])*)"').allMatches(data).toList();
+    if (chunks.isEmpty) return data.trim();
+    return chunks.map((match) {
+      final chunk = match.group(1)!;
+      try {
+        return jsonDecode('"$chunk"') as String;
+      } on FormatException {
+        throw const FormatException('Invalid BIP353 TXT record');
+      }
+    }).join();
   }
 
   static Bolt12ResolvedOffer _validate({
@@ -130,25 +201,11 @@ class Bolt12WalletProvider implements WalletProvider {
     final envelope = _Bolt12OfferEnvelope.parse(offer);
     final canonicalOffer = envelope.canonicalOffer;
 
-    // dart_bolt12_decoder 0.8.0 predates the current blinded-path encoding
-    // and also requires description + issuer id, which modern offers may omit.
-    // Use it for the offer shapes it understands and retain strict structural
-    // validation for current-spec offers.
-    Map<String, dynamic> decoded = envelope.details;
-    if (envelope.isSupportedByDetailDecoder) {
-      final packageDecoded = Bolt12Decoder.decode(canonicalOffer);
-      if (packageDecoded != null &&
-          packageDecoded['type'] == 'offer' &&
-          packageDecoded['valid'] == true) {
-        decoded = {...decoded, ...packageDecoded};
-      }
-    }
-
     return Bolt12ResolvedOffer(
       offer: canonicalOffer,
       source: source,
       bip353Address: bip353Address,
-      decoded: Map.unmodifiable(decoded),
+      decoded: envelope.details,
     );
   }
 
@@ -221,7 +278,6 @@ class Bolt12WalletProvider implements WalletProvider {
       bip353Address: validated.bip353Address,
       description: resolvedMetadata['description'] as String?,
       nodeId: resolvedMetadata['nodeId'] as String?,
-      offerId: resolvedMetadata['offerId'] as String?,
       amount: resolvedMetadata['amount']?.toString(),
       issuer: resolvedMetadata['issuer'] as String?,
       currency: resolvedMetadata['currency'] as String?,
@@ -326,11 +382,6 @@ class _Bolt12OfferEnvelope {
     required this.fields,
     required this.details,
   });
-
-  bool get isSupportedByDetailDecoder =>
-      !fields.containsKey(16) &&
-      fields.containsKey(10) &&
-      fields.containsKey(22);
 
   static _Bolt12OfferEnvelope parse(String input) {
     final withoutContinuations = input.trim().replaceAll(

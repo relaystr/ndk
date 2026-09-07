@@ -14,7 +14,6 @@ class Bolt12Wallet extends Wallet {
 
   final String? description;
   final String? nodeId;
-  final String? offerId;
   final String? amount;
   final String? issuer;
   final String? currency;
@@ -32,7 +31,6 @@ class Bolt12Wallet extends Wallet {
     this.bip353Address,
     this.description,
     this.nodeId,
-    this.offerId,
     this.amount,
     this.issuer,
     this.currency,
@@ -48,7 +46,6 @@ class Bolt12Wallet extends Wallet {
             'bip353Address': bip353Address,
             'description': description,
             'nodeId': nodeId,
-            'offerId': offerId,
             'amount': amount,
             'issuer': issuer,
             'currency': currency,
@@ -81,7 +78,6 @@ class Bolt12Wallet extends Wallet {
       bip353Address: metadata['bip353Address'] as String?,
       description: metadata['description'] as String?,
       nodeId: metadata['nodeId'] as String?,
-      offerId: metadata['offerId'] as String?,
       amount: metadata['amount']?.toString(),
       issuer: metadata['issuer'] as String?,
       currency: metadata['currency'] as String?,
