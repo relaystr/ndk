@@ -14,6 +14,9 @@ void main() async {
   final connection = await ndk.nwc.connect(nwcUri, doGetInfoMethod: true);
 
   print("Connected, permissions: ${connection.permissions}");
+  print(
+    "Supported extensions: ${connection.supportedExtensions.map((extension) => '${extension.identifier} (${extension.name})').join(', ')}",
+  );
 
   if (connection.info != null) {
     print("alias: ${connection.info!.alias}");

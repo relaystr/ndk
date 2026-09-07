@@ -6,9 +6,10 @@ import '../../repositories/nip_05_repo.dart';
 
 /// usecase to handle Nip05 operations (verify and fetch)
 class Nip05Usecase {
-  // Static map to keep track of in-flight requests
-  static final Map<String, Future<Nip05>> _inFlightRequests = {};
-  static final Map<String, Future<Nip05ResolveResult>> _inFlightResolves = {};
+  // Keep request deduplication local to this use case/NDK instance. Different
+  // instances may use different repositories and caches for the same NIP-05.
+  final Map<String, Future<Nip05>> _inFlightRequests = {};
+  final Map<String, Future<Nip05ResolveResult>> _inFlightResolves = {};
 
   final CacheManager _database;
   final Nip05Repository _nip05Repository;

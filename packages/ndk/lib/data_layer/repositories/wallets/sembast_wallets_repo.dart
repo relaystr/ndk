@@ -36,6 +36,9 @@ class SembastWalletsRepo extends WalletsRepo {
     _keyValueStore = sembast.stringMapStoreFactory.store('key_values');
   }
 
+  /// Closes the underlying database.
+  Future<void> close() => _database.close();
+
   Future<void> initializeWalletDefaults() async {
     final receiving = await _keyValueStore
         .record(defaultWalletForReceivingKey)

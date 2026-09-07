@@ -12,6 +12,7 @@ import '../../repositories/cache_manager.dart';
 import '../../repositories/event_signer.dart';
 import '../accounts/accounts.dart';
 import '../../../shared/logger/logger.dart';
+import '../../../shared/helpers/relay_helper.dart';
 import '../../../shared/nips/nip01/event_kind_classification.dart';
 import 'broadcast_sender.dart';
 import 'delivery_policy.dart';
@@ -269,14 +270,17 @@ class PendingBroadcastDelivery {
       eventId: event.id,
     );
     final targetsByRelay = {
-      for (final target in existingTargets) target.relayUrl: target,
+      for (final target in existingTargets)
+        cleanRelayUrl(target.relayUrl) ?? target.relayUrl: target,
     };
 
     final updatedTargets = <RelayDeliveryTarget>[];
     final policy = DeliveryPolicy.forEvent(event);
     final attemptTimestamp = Nip01Event.secondsSinceEpoch();
     for (final response in responses) {
-      final current = targetsByRelay[response.relayUrl];
+      final responseRelayUrl =
+          cleanRelayUrl(response.relayUrl) ?? response.relayUrl;
+      final current = targetsByRelay[responseRelayUrl];
       if (current == null) {
         continue;
       }

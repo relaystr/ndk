@@ -7,6 +7,7 @@ import 'filter.dart';
 import 'ndk_request.dart';
 import 'nip_01_event.dart';
 import 'relay_connection_key.dart';
+import 'relay_request_outcome.dart';
 
 /// Single relay request state
 class RelayRequestState {
@@ -16,17 +17,97 @@ class RelayRequestState {
   /// url of the relay this request was sent to
   String get url => key.url;
 
-  bool receivedEOSE = false;
-  bool receivedClosed = false;
+  /// called by the owning [RequestState] whenever a field the outcome is
+  /// derived from changes, so the outcome never has to be derived on read
+  void Function()? onOutcomeChanged;
+
+  bool _receivedEOSE = false;
+
+  /// did the relay give everything it stored
+  bool get receivedEOSE => _receivedEOSE;
+
+  set receivedEOSE(bool value) {
+    if (_receivedEOSE == value) return;
+    _receivedEOSE = value;
+    onOutcomeChanged?.call();
+  }
+
+  bool _receivedClosed = false;
+
+  /// did the relay end the request itself
+  bool get receivedClosed => _receivedClosed;
+
+  set receivedClosed(bool value) {
+    if (_receivedClosed == value) return;
+    _receivedClosed = value;
+    onOutcomeChanged?.call();
+  }
+
+  String? _closedMessage;
+
+  /// message the relay sent with its CLOSED, null when it sent none
+  String? get closedMessage => _closedMessage;
+
+  set closedMessage(String? value) {
+    if (_closedMessage == value) return;
+    _closedMessage = value;
+    onOutcomeChanged?.call();
+  }
+
+  bool _connectionGone = false;
+
+  /// set when the connection was gone before the relay ended the request
+  bool get connectionGone => _connectionGone;
+
+  set connectionGone(bool value) {
+    if (_connectionGone == value) return;
+    _connectionGone = value;
+    onOutcomeChanged?.call();
+  }
+
+  bool _retryingAuth = false;
 
   /// set while this connection authenticates to satisfy the request: the relay
   /// closed it, but it is on its way back and must not count as finished
-  bool retryingAuth = false;
+  bool get retryingAuth => _retryingAuth;
+
+  set retryingAuth(bool value) {
+    if (_retryingAuth == value) return;
+    _retryingAuth = value;
+    onOutcomeChanged?.call();
+  }
 
   List<Filter> filters;
 
   /// default const
   RelayRequestState(this.key, this.filters);
+
+  /// The relay ended the request with a CLOSED carrying [message].
+  ///
+  /// Both at once, so the outcome is never observed as a CLOSED stripped of
+  /// the reason the relay gave for it.
+  void markClosed(String? message) {
+    if (_receivedClosed && _closedMessage == message) return;
+    _receivedClosed = true;
+    _closedMessage = message;
+    onOutcomeChanged?.call();
+  }
+
+  /// The request is on its way to the relay again, so whatever ended it the
+  /// last time no longer holds.
+  void markSent() {
+    if (!_receivedClosed &&
+        _closedMessage == null &&
+        !_connectionGone &&
+        !_retryingAuth) {
+      return;
+    }
+    _receivedClosed = false;
+    _closedMessage = null;
+    _connectionGone = false;
+    _retryingAuth = false;
+    onOutcomeChanged?.call();
+  }
 }
 
 /// State per request for multiple relays
@@ -61,6 +142,10 @@ class RequestState {
   // key is the connection the request was sent on, value is RelayRequestState
   Map<RelayConnectionKey, RelayRequestState> requests = {};
 
+  // the connections of one relay, so collapsing a url into its outcome reads
+  // them instead of scanning every connection of the request
+  final Map<String, List<RelayRequestState>> _requestsByUrl = {};
+
   /// the original request
   NdkRequest request;
 
@@ -70,6 +155,21 @@ class RequestState {
 
   /// timeout duration, closes all streams
   Duration? timeoutDuration;
+
+  bool _timedOut = false;
+
+  /// set when the request ended on its timeout instead of on the relays
+  bool get timedOut => _timedOut;
+
+  set timedOut(bool value) {
+    if (_timedOut == value) return;
+    _timedOut = value;
+    _refreshRelayOutcomes();
+  }
+
+  /// request this one was merged into by the concurrency check, when its stream
+  /// got replaced by an identical request already in flight
+  RequestState? servedBy;
 
   /// called when timeout is triggered
   Function(RequestState)? onTimeout;
@@ -97,6 +197,10 @@ class RequestState {
         if (_timeout != null) {
           _timeout!.cancel();
         }
+        // a query ends here rather than on close(), its controller is closed
+        // by the response cleaner once every relay is done
+        _relayOutcomesDone = true;
+        _relayOutcomesSubject?.close();
         _streamSubscription.cancel();
       },
     );
@@ -105,6 +209,7 @@ class RequestState {
   void _startTimeout(Duration duration) {
     _timeoutStartedAt = DateTime.now();
     _timeout = Timer(duration, () {
+      timedOut = true;
       onTimeout?.call(this);
       close();
     });
@@ -137,11 +242,150 @@ class RequestState {
             !element.retryingAuth,
       );
 
+  final Map<String, RelayRequestOutcome> _relayOutcomes = {};
+
+  Map<String, RelayRequestOutcome>? _relayOutcomesSnapshot;
+
+  BehaviorSubject<Map<String, RelayRequestOutcome>>? _relayOutcomesSubject;
+
+  bool _relayOutcomesDone = false;
+
+  /// [_relayOutcomes] as it is handed out, built on demand: a request whose
+  /// outcomes nobody reads or watches copies nothing.
+  Map<String, RelayRequestOutcome> get _ownRelayOutcomes =>
+      _relayOutcomesSnapshot ??= Map.unmodifiable(_relayOutcomes);
+
+  /// What the request ended with on each relay it was sent to, as it stands now
+  ///
+  /// Keyed by relay url: several connections to one relay collapse into the
+  /// outcome that comes first in [RelayRequestStatus].
+  Map<String, RelayRequestOutcome> get relayOutcomes =>
+      servedBy?.relayOutcomes ?? _ownRelayOutcomes;
+
+  /// [relayOutcomes] on every change, starting with what it holds right now,
+  /// and closed once the request is over.
+  ///
+  /// Late subscribers get the current outcomes instead of missing everything
+  /// the relays answered before they listened.
+  Stream<Map<String, RelayRequestOutcome>> get relayOutcomesStream {
+    final served = servedBy;
+    if (served != null) {
+      return served.relayOutcomesStream;
+    }
+    final subject =
+        _relayOutcomesSubject ??= BehaviorSubject.seeded(_ownRelayOutcomes);
+    // asked for once the request is over: nothing is left to close a subject
+    // created this late, and a closed one still replays what it ended on
+    if (_relayOutcomesDone) {
+      subject.close();
+    }
+    return subject.stream;
+  }
+
+  /// Recomputes every relay, for a change that reaches all of them at once.
+  void _refreshRelayOutcomes() {
+    var changed = false;
+    for (final url in _requestsByUrl.keys) {
+      changed = _recomputeRelayOutcome(url) || changed;
+    }
+    if (changed) {
+      _publishRelayOutcomes();
+    }
+  }
+
+  void _onRelayRequestChanged(String url) {
+    if (_recomputeRelayOutcome(url)) {
+      _publishRelayOutcomes();
+    }
+  }
+
+  /// Collapses the connections to [url] into its outcome, returning whether
+  /// that outcome moved.
+  bool _recomputeRelayOutcome(String url) {
+    RelayRequestOutcome? collapsed;
+    for (final request in _requestsByUrl[url] ?? const <RelayRequestState>[]) {
+      final outcome = _outcomeOf(request);
+      if (collapsed == null || outcome.status.index < collapsed.status.index) {
+        collapsed = outcome;
+      }
+    }
+    if (collapsed == null) {
+      return _relayOutcomes.remove(url) != null;
+    }
+    if (_relayOutcomes[url] == collapsed) {
+      return false;
+    }
+    _relayOutcomes[url] = collapsed;
+    return true;
+  }
+
+  void _publishRelayOutcomes() {
+    _relayOutcomesSnapshot = null;
+    final subject = _relayOutcomesSubject;
+    if (subject != null && !subject.isClosed) {
+      subject.add(_ownRelayOutcomes);
+    }
+  }
+
+  RelayRequestOutcome _outcomeOf(RelayRequestState request) {
+    if (request.retryingAuth) {
+      return const RelayRequestOutcome(RelayRequestStatus.pending);
+    }
+    if (request.receivedEOSE) {
+      return const RelayRequestOutcome(RelayRequestStatus.eose);
+    }
+    if (request.receivedClosed) {
+      return RelayRequestOutcome(
+        RelayRequestStatus.closed,
+        message: request.closedMessage,
+      );
+    }
+    if (request.connectionGone) {
+      return const RelayRequestOutcome(RelayRequestStatus.disconnected);
+    }
+    if (timedOut) {
+      return const RelayRequestOutcome(RelayRequestStatus.timedOut);
+    }
+    return const RelayRequestOutcome(RelayRequestStatus.pending);
+  }
+
   /// Adds single relay request to the state
   void addRequest(RelayConnectionKey key, List<Filter> filters) {
-    if (!requests.containsKey(key)) {
-      requests[key] = RelayRequestState(key, filters);
+    if (requests.containsKey(key)) return;
+    _trackRequest(RelayRequestState(key, filters));
+  }
+
+  /// Adds single relay request to the state, merging [filters] into the one
+  /// already tracked on the same connection
+  void registerRequest(RelayConnectionKey key, List<Filter> filters) {
+    final tracked = requests[key];
+    if (tracked != null) {
+      tracked.filters.addAll(filters);
+      return;
     }
+    _trackRequest(RelayRequestState(key, filters));
+  }
+
+  /// Drops a relay request, for a relay the request could not be sent to
+  void removeRequest(RelayConnectionKey key) {
+    final dropped = requests.remove(key);
+    if (dropped == null) return;
+    dropped.onOutcomeChanged = null;
+    final onUrl = _requestsByUrl[dropped.url];
+    if (onUrl != null) {
+      onUrl.remove(dropped);
+      if (onUrl.isEmpty) {
+        _requestsByUrl.remove(dropped.url);
+      }
+    }
+    _onRelayRequestChanged(dropped.url);
+  }
+
+  void _trackRequest(RelayRequestState request) {
+    request.onOutcomeChanged = () => _onRelayRequestChanged(request.url);
+    requests[request.key] = request;
+    _requestsByUrl.putIfAbsent(request.url, () => []).add(request);
+    _onRelayRequestChanged(request.url);
   }
 
   /// closes all streams

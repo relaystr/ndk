@@ -36,8 +36,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: "gh-pages-app"
-  cancel-in-progress: true
+  group: gh-pages-deploy
+  cancel-in-progress: false
 
 env:
   FLUTTER_VERSION: "3.47.0"

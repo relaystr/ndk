@@ -9,7 +9,7 @@ import 'package:ndk/shared/helpers/relay_helper.dart';
 import 'cli_accounts_store.dart';
 import 'cli_command.dart';
 
-class ReqCliCommand implements CliCommand {
+class ReqCliCommand extends CliCommand {
   @override
   String get name => 'req';
 

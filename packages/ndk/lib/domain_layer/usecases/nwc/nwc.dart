@@ -119,6 +119,7 @@ class Nwc {
       if (encryptions.isNotEmpty) {
         connection.supportedEncryptions = encryptions.first.split(" ");
       }
+      connection.addSupportedExtensions(event.getTags('extensions'));
 
       await _subscribeToNotificationsAndResponses(connection);
 
@@ -126,9 +127,7 @@ class Nwc {
           (ignoreCapabilitiesCheck ||
               connection.permissions.contains(NwcMethod.GET_INFO.name))) {
         try {
-          await getInfo(connection, timeout: timeout).then((info) {
-            connection.info = info;
-          });
+          await getInfo(connection, timeout: timeout);
         } catch (e) {
           onError?.call("timeout get_info");
         }
@@ -422,11 +421,14 @@ class Nwc {
     NwcConnection connection, {
     Duration? timeout,
   }) async {
-    return _executeRequest<GetInfoResponse>(
+    final info = await _executeRequest<GetInfoResponse>(
       connection,
       GetInfoRequest(),
       timeout: timeout,
     );
+    connection.info = info;
+    connection.supportedExtensions.addAll(info.extensions);
+    return info;
   }
 
   /// Does a `get_balance` request
@@ -514,11 +516,12 @@ class Nwc {
   Future<PayInvoiceResponse> payInvoice(
     NwcConnection connection, {
     required String invoice,
+    int? maxFeeMsat,
     Duration? timeout,
   }) async {
     return _executeRequest<PayInvoiceResponse>(
       connection,
-      PayInvoiceRequest(invoice: invoice),
+      PayInvoiceRequest(invoice: invoice, maxFeeMsat: maxFeeMsat),
       timeout: timeout,
     );
   }

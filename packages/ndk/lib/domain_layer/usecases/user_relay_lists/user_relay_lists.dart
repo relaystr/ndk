@@ -186,6 +186,7 @@ class UserRelayLists {
   Future<List<String>?> getDmRelays(
     String pubKey, {
     bool forceRefresh = false,
+    Iterable<String>? discoveryRelays,
   }) async {
     if (!forceRefresh) {
       final cached = await _cacheManager.loadEvents(
@@ -198,12 +199,15 @@ class UserRelayLists {
       }
     }
 
-    final events = await _requests.query(
-      name: "dm-relays",
-      filters: [
-        Filter(authors: [pubKey], kinds: [Nip51List.kDmRelays], limit: 1),
-      ],
-    ).future;
+    final events = await _requests
+        .query(
+          name: "dm-relays",
+          filters: [
+            Filter(authors: [pubKey], kinds: [Nip51List.kDmRelays], limit: 1),
+          ],
+          explicitRelays: discoveryRelays,
+        )
+        .future;
 
     if (events.isEmpty) return null;
 

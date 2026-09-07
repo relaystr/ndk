@@ -82,7 +82,7 @@ class JitEngine with Logger implements NetworkEngine {
       }
 
       if ((filter.authors != null && filter.authors!.isNotEmpty)) {
-        RelayJitPubkeyStrategy.handleRequest(
+        await RelayJitPubkeyStrategy.handleRequest(
           globalState: globalState,
           relayManager: relayManagerLight,
           requestState: requestState,
@@ -102,7 +102,7 @@ class JitEngine with Logger implements NetworkEngine {
       }
 
       if (filter.pTags?.isNotEmpty != null && filter.pTags!.isNotEmpty) {
-        RelayJitPubkeyStrategy.handleRequest(
+        await RelayJitPubkeyStrategy.handleRequest(
           relayManager: relayManagerLight,
           globalState: globalState,
           requestState: requestState,

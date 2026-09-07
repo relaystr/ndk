@@ -1,3 +1,61 @@
+## 0.9.3
+
+ - **FIX**(cli): prevent wallet commands from replaying pending deliveries or
+   restoring unrelated remote signers, and close CLI databases cleanly.
+ - **FIX**(installer): download stable CLI releases without consuming the
+   GitHub REST API quota.
+ - **DOCS**(cli): condense wallet help and standardize optional argument
+   notation.
+ - **CI**: run NDK tests serially to reduce peak native verifier memory usage.
+
+## 0.9.2
+
+ - **FEAT**: add DM relay discovery and publishing APIs.
+ - **FEAT**: add explicit legacy NIP-04 DMs and NIP-17 file messages.
+ - **FEAT**(nwc): expose supported extensions, add hold-invoice timeouts,
+   and support `max_fee` for `pay_invoice`.
+ - **FIX**: paginate every relay in a relay set independently.
+ - **FIX**: make request hashes independent of filter-list ordering.
+ - **FIX**: record fetched ranges only from network events and retain the
+   oldest timestamp reported by each relay.
+ - **FIX**: normalize relay URLs and treat disallowed event kinds as permanent
+   failures.
+ - **FIX**(release): isolate generated package-version updates.
+
+## 0.9.1-dev.3
+
+ - **FIX**(release): isolate version generation.
+ - **FIX**: hash a request independently of the order of its filter lists.
+ - **FIX**: clean relay url.
+ - **FIX**: more dms.
+ - **FIX**: kind not allowed is a permanet failure.
+ - **FIX**: track only the oldest event timestamp per relay for fetched ranges.
+ - **FIX**: record fetched ranges from network events only.
+ - **FEAT**(nwc): add optional maxFeeMsat to pay_invoice (NIP-47 max_fee).
+
+## 0.9.1-dev.2
+
+ - **FIX**(release): isolate version generation.
+ - **FIX**: hash a request independently of the order of its filter lists.
+ - **FIX**: clean relay url.
+ - **FIX**: more dms.
+ - **FIX**: kind not allowed is a permanet failure.
+ - **FIX**: track only the oldest event timestamp per relay for fetched ranges.
+ - **FIX**: record fetched ranges from network events only.
+ - **FEAT**(nwc): add optional maxFeeMsat to pay_invoice (NIP-47 max_fee).
+
+## 0.9.1-dev.1
+
+ - **FIX**: isolate relay, request, broadcast, and authentication state per NDK instance.
+ - **FEAT**: publishDmRelays.
+ - **FEAT**: allow explicit dm relay discovery.
+ - **FEAT**: add explicit legacy nip04 dms.
+
+## 0.9.1-dev.0
+
+ - **FEAT**: publishDmRelays.
+ - **FEAT**: nip17 file message.
+
 ## 0.9.0
 
 > Note: This release has breaking changes.

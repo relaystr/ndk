@@ -15,6 +15,7 @@ import '../../entities/ndk_request.dart';
 import '../../entities/nip_01_event.dart';
 import '../../entities/relay_connectivity.dart';
 import '../../entities/relay_set.dart';
+import '../../entities/relay_request_outcome.dart';
 import '../../entities/request_response.dart';
 import '../../entities/request_state.dart';
 import '../../repositories/cache_manager.dart';
@@ -341,7 +342,13 @@ class Requests {
   NdkResponse requestNostrEvent(NdkRequest request) {
     final state = RequestState(request);
 
-    final response = NdkResponse(state.id, state.stream);
+    final response = NdkResponse(
+      state.id,
+      state.stream,
+      relayOutcomes: () => state.relayOutcomes,
+      relayOutcomesStream: () => state.relayOutcomesStream,
+      relayOutcomesDone: state.controller.done.then((_) => state.relayOutcomes),
+    );
 
     final concurrency = ConcurrencyCheck(_globalState);
 
@@ -369,17 +376,34 @@ class Requests {
       writeToCache: request.cacheWrite,
     );
 
+    // only the oldest timestamp per relay is needed, buffering the events
+    // themselves would grow unbounded on long-lived subscriptions
+    final oldestNetworkEventByRelay = <String, int>{};
+    final trackedNetworkStream = _fetchedRanges == null
+        ? preparedNetworkStream
+        : preparedNetworkStream.map((event) {
+            for (final source in event.sources) {
+              final oldest = oldestNetworkEventByRelay[source];
+              if (oldest == null || event.createdAt < oldest) {
+                oldestNetworkEventByRelay[source] = event.createdAt;
+              }
+            }
+            return event;
+          });
+
     // register listener
     StreamResponseCleaner(
-      inputStreams: [preparedNetworkStream, state.cacheController.stream],
+      inputStreams: [trackedNetworkStream, state.cacheController.stream],
       trackingSet: state.returnedIds,
       outController: state.controller,
       eventOutFilters: _eventOutFilters,
     )();
 
-    // Record fetched ranges when network requests complete (EOSE received)
-    state.networkController.done.then((_) {
-      _recordFetchedRanges(state);
+    // Record fetched ranges once the response stream is closed, meaning the
+    // network stream has been fully drained. Closing on networkController.done
+    // would run before verification finished pushing events downstream.
+    state.controller.done.then((_) {
+      _recordFetchedRanges(state, oldestNetworkEventByRelay);
     });
 
     // cleanup on close
@@ -449,6 +473,33 @@ class Requests {
     final aggregatedController = ReplaySubject<Nip01Event>();
     final seenEventIds = <String>{};
 
+    // a relay is paginated by its own sequence of requests, so what it ended
+    // with is what its last page ended with
+    final relayOutcomes = <String, RelayRequestOutcome>{};
+    final relayOutcomesDone = Completer<Map<String, RelayRequestOutcome>>();
+    final relayOutcomesSubject =
+        BehaviorSubject<Map<String, RelayRequestOutcome>>.seeded(const {});
+
+    void mergeRelayOutcomes(Map<String, RelayRequestOutcome> page) {
+      relayOutcomes.addAll(page);
+      if (!relayOutcomesSubject.isClosed) {
+        relayOutcomesSubject.add(Map.unmodifiable(relayOutcomes));
+      }
+    }
+
+    /// Awaits a page, merging what its relays answer while it is still running
+    /// so the aggregated stream reports a pending relay instead of only the
+    /// pages that ended.
+    Future<List<Nip01Event>> awaitPage(NdkResponse page) async {
+      final outcomes = page.relayOutcomesStream.listen(mergeRelayOutcomes);
+      try {
+        return await page.future;
+      } finally {
+        await outcomes.cancel();
+        mergeRelayOutcomes(page.relayOutcomes);
+      }
+    }
+
     Future<void> paginate() async {
       final since = filter.since;
 
@@ -471,7 +522,7 @@ class Requests {
         ),
       );
 
-      final initialEvents = await initialResponse.future;
+      final initialEvents = await awaitPage(initialResponse);
 
       // Emit initial events and discover relays
       final relayState = <String, _RelayPaginationState>{};
@@ -529,12 +580,14 @@ class Requests {
           final pageFilter = filter.clone();
           pageFilter.until = state.currentUntil;
 
+          // no relaySet: it takes precedence over explicitRelays in the relay
+          // sets engine, which would send this page to the whole set with the
+          // `until` of a single relay
           final response = requestNostrEvent(
             NdkRequest.query(
               '$name-page-${Helpers.getRandomString(5)}',
               name: name,
               filters: [pageFilter],
-              relaySet: relaySet,
               cacheRead: false, // Don't read from cache for subsequent pages
               cacheWrite: cacheWrite,
               timeoutDuration: timeout,
@@ -546,7 +599,8 @@ class Requests {
             ),
           );
 
-          return MapEntry(relay, await response.future);
+          final pageEvents = await awaitPage(response);
+          return MapEntry(relay, pageEvents);
         });
 
         final results = await Future.wait(futures);
@@ -585,30 +639,34 @@ class Requests {
     }
 
     // Start pagination asynchronously
-    paginate();
+    paginate().whenComplete(() {
+      relayOutcomesDone.complete(Map.of(relayOutcomes));
+      relayOutcomesSubject.close();
+    });
 
-    return NdkResponse(requestId, aggregatedController.stream);
+    return NdkResponse(
+      requestId,
+      aggregatedController.stream,
+      relayOutcomes: () => Map.of(relayOutcomes),
+      relayOutcomesStream: () => relayOutcomesSubject.stream,
+      relayOutcomesDone: relayOutcomesDone.future,
+    );
   }
 
   /// Records fetched ranges for each relay that received EOSE
-  /// - If events received: use min/max of event timestamps
-  /// - If no events + filter has since/until: use filter bounds
-  /// - If no events + no bounds: use 0 to now
-  void _recordFetchedRanges(RequestState state) {
+  /// - If events received: coverage starts at the oldest event received
+  /// - If no events: use the filter bounds (0 to now when unbounded)
+  ///
+  /// [oldestEventByRelay] must only reflect events received from relays during
+  /// this request. Cache hits would make the recorded range claim coverage the
+  /// relay never actually served.
+  void _recordFetchedRanges(
+    RequestState state,
+    Map<String, int> oldestEventByRelay,
+  ) {
     if (_fetchedRanges == null) return;
 
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-    // Get all events from the replay subject
-    final events = state.controller.values.toList();
-
-    // Group events by source relay
-    final eventsByRelay = <String, List<Nip01Event>>{};
-    for (final event in events) {
-      for (final source in event.sources) {
-        eventsByRelay.putIfAbsent(source, () => []).add(event);
-      }
-    }
 
     for (final entry in state.requests.entries) {
       final relayUrl = entry.key.url;
@@ -616,27 +674,19 @@ class Requests {
 
       if (!relayState.receivedEOSE) continue;
 
-      final relayEvents = eventsByRelay[relayUrl];
+      final oldestEvent = oldestEventByRelay[relayUrl];
 
       // Record fetched range for each filter sent to this relay
       for (final filter in relayState.filters) {
-        int since;
-        int until;
+        int since = filter.since ?? 0;
+        final int until = filter.until ?? now;
 
-        if (relayEvents != null && relayEvents.isNotEmpty) {
-          // Use oldest event timestamp for since, filter.until or now for until
-          // EOSE means relay has no more events, so fetched range extends to query end
-          final timestamps = relayEvents.map((e) => e.createdAt).toList();
-          since = timestamps.reduce((a, b) => a < b ? a : b);
-          until = filter.until ?? now;
-        } else if (filter.since != null || filter.until != null) {
-          // No events but filter has explicit bounds
-          since = filter.since ?? 0;
-          until = filter.until ?? now;
-        } else {
-          // No events, no bounds - relay has nothing, record 0 to now
-          since = 0;
-          until = now;
+        if (oldestEvent != null) {
+          // A relay can cap a response below the requested limit, or with no
+          // limit in the filter at all (NIP-11 max_limit, which we don't read),
+          // so a full response is indistinguishable from a truncated one. Only
+          // claim coverage down to the oldest event received.
+          since = oldestEvent;
         }
 
         _fetchedRanges!.addRange(

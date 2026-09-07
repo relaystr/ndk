@@ -26,6 +26,7 @@ export 'domain_layer/entities/relay.dart';
 export 'domain_layer/entities/relay_connection_key.dart';
 export 'domain_layer/entities/relay_connectivity.dart';
 export 'domain_layer/entities/relay_info.dart';
+export 'domain_layer/entities/relay_request_outcome.dart';
 export 'domain_layer/entities/relay_set.dart';
 export 'domain_layer/entities/relay_stats.dart';
 export 'domain_layer/entities/request_response.dart';
@@ -39,6 +40,7 @@ export 'domain_layer/entities/file_hash_progress.dart';
 export 'domain_layer/entities/account.dart';
 export 'domain_layer/entities/gift_wrap_unwrap_result.dart';
 export 'domain_layer/entities/nip_17_message.dart';
+export 'domain_layer/entities/nip_17_file_message.dart';
 export 'domain_layer/entities/nip_17_conversation.dart';
 export 'domain_layer/entities/nip_85.dart';
 

@@ -91,6 +91,13 @@ class NdkConfig {
   /// Interval for retrying pending broadcast deliveries while relays remain connected.
   Duration pendingDeliveryRetryInterval;
 
+  /// Whether persisted broadcast deliveries are retried automatically in the
+  /// background.
+  ///
+  /// Disable this for short-lived clients such as command-line tools that
+  /// should only perform the network work requested by the current command.
+  bool pendingDeliveryRetriesEnabled;
+
   /// Default trusted providers for NIP-85 trusted assertions.
   List<Nip85TrustedProvider> defaultTrustedProviders;
 
@@ -143,6 +150,7 @@ class NdkConfig {
     this.eagerAuth = false,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
     this.pendingDeliveryRetryInterval = const Duration(seconds: 15),
+    this.pendingDeliveryRetriesEnabled = true,
     this.defaultTrustedProviders = DEFAULT_NIP85_PROVIDERS,
     this.cacheEvictionEnabled = false,
     this.cacheEvictionPolicy = const EvictionPolicy(),

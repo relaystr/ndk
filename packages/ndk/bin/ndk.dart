@@ -25,7 +25,5 @@ Future<void> main(List<String> args) async {
   );
 
   final exitCode = await app.run(args);
-  if (exitCode != 0) {
-    exit(exitCode);
-  }
+  exit(exitCode);
 }

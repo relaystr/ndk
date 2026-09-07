@@ -209,6 +209,17 @@ void main() {
             relayUrl: 'wss://relay.example',
             okReceived: false,
             broadcastSuccessful: false,
+            msg: 'kind 1059 is not allowed on this relay',
+          ),
+        ),
+        RelayDeliveryState.permanentFailure,
+      );
+      expect(
+        policy.resolveNextState(
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: false,
+            broadcastSuccessful: false,
             msg: 'restricted: not allowed to write',
           ),
         ),
