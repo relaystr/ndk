@@ -18,7 +18,6 @@ void main() {
       source: 'alice@example.com',
       bip353Address: 'alice@example.com',
       description: 'Test offer',
-      offerId: 'offer-id',
       issuer: 'Test issuer',
       currency: 'USD',
       expiresAt: 2000000000,

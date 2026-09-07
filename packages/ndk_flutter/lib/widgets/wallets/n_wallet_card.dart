@@ -1061,7 +1061,6 @@ class _NWalletCardState extends State<NWalletCard>
             bip353Address: w.bip353Address,
             description: w.description,
             nodeId: w.nodeId,
-            offerId: w.offerId,
             amount: w.amount,
             issuer: w.issuer,
             currency: w.currency,

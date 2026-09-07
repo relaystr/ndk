@@ -149,7 +149,6 @@ class _NWalletCardListState extends State<NWalletCardList> {
         bip353Address: wallet.bip353Address,
         description: wallet.description,
         nodeId: wallet.nodeId,
-        offerId: wallet.offerId,
         amount: wallet.amount,
         issuer: wallet.issuer,
         currency: wallet.currency,
