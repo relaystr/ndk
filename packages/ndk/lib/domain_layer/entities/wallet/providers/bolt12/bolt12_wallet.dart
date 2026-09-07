@@ -24,7 +24,6 @@ class Bolt12Wallet extends Wallet {
   Bolt12Wallet({
     required super.id,
     required super.name,
-    super.type = WalletType.BOLT12,
     required super.supportedUnits,
     required this.offer,
     required this.source,
@@ -39,6 +38,7 @@ class Bolt12Wallet extends Wallet {
     this.hasBlindedPaths = false,
     Map<String, dynamic>? metadata,
   }) : super(
+          type: WalletType.BOLT12,
           metadata: Map.unmodifiable({
             ...(metadata ?? const {}),
             'offer': offer,

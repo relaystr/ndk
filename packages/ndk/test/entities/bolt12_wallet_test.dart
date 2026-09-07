@@ -160,6 +160,7 @@ void main() {
       metadata: resolved.toMetadata(),
     ) as Bolt12Wallet;
 
+    expect(wallet.type, WalletType.BOLT12);
     expect(wallet.canReceive, isTrue);
     expect(wallet.canSend, isFalse);
     expect(await provider.receive(wallet, 123), _offer);

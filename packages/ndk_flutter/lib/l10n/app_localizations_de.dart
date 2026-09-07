@@ -772,24 +772,26 @@ class AppLocalizationsDe extends AppLocalizations {
   String get payInvoiceTitle => 'Rechnung bezahlen';
 
   @override
-  String get sendToWallet => 'Send to Wallet';
+  String get sendToWallet => 'An eine Wallet senden';
 
   @override
-  String get sendToWalletDescription => 'Transfer to another compatible wallet';
+  String get sendToWalletDescription =>
+      'Auf eine andere kompatible Wallet übertragen';
 
   @override
-  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
+  String get noCompatibleReceivingWallets =>
+      'Keine kompatiblen Empfangs-Wallets';
 
   @override
   String get noCompatibleReceivingWalletsDescription =>
-      'Add or connect another wallet that can receive a payment supported by this wallet.';
+      'Füge eine andere Wallet hinzu oder verbinde eine, die eine von dieser Wallet unterstützte Zahlung empfangen kann.';
 
   @override
-  String get destinationWallet => 'Destination wallet';
+  String get destinationWallet => 'Ziel-Wallet';
 
   @override
   String walletTransferSubmitted(String walletName) {
-    return 'Payment sent to $walletName';
+    return 'Zahlung an $walletName gesendet';
   }
 
   @override
@@ -1158,81 +1160,81 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get bolt12Wallet => 'BOLT12 Wallet';
+  String get bolt12Wallet => 'BOLT12-Wallet';
 
   @override
-  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
+  String get bolt12WalletSubtitle => 'Wiederverwendbares Lightning-Angebot';
 
   @override
-  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
+  String get bolt12PrivateOfferSubtitle => 'Wiederverwendbares privates Angebot';
 
   @override
-  String get anyAmount => 'Any amount';
+  String get anyAmount => 'Beliebiger Betrag';
 
   @override
-  String get blindedRoute => 'Blinded';
+  String get blindedRoute => 'Verblindete Route';
 
   @override
   String fromAmountSats(String amount) {
-    return 'From $amount sats';
+    return 'Ab $amount Sats';
   }
 
   @override
   String fromAmountMsats(String amount) {
-    return 'From $amount msats';
+    return 'Ab $amount msats';
   }
 
   @override
   String fromCurrencyAmount(String amount, String currency) {
-    return 'From $amount $currency';
+    return 'Ab $amount $currency';
   }
 
   @override
   String bolt12Expires(String date) {
-    return 'Expires $date';
+    return 'Läuft am $date ab';
   }
 
   @override
-  String get bolt12WalletTypeTitle => 'BOLT12 Offer';
+  String get bolt12WalletTypeTitle => 'BOLT12-Angebot';
 
   @override
   String get bolt12WalletTypeSubtitle =>
-      'Receive-only wallet using a reusable offer';
+      'Nur-Empfangs-Wallet mit einem wiederverwendbaren Angebot';
 
   @override
-  String get addBolt12WalletTitle => 'Add BOLT12 Wallet';
+  String get addBolt12WalletTitle => 'BOLT12-Wallet hinzufügen';
 
   @override
   String get enterBolt12Input =>
-      'Enter or scan an lno offer, a bitcoin:?lno=... URI, or a BIP353 address.';
+      'Gib ein lno-Angebot, eine bitcoin:?lno=...-URI oder eine BIP353-Adresse ein oder scanne sie.';
 
   @override
-  String get bolt12Input => 'BOLT12 payment target';
+  String get bolt12Input => 'BOLT12-Zahlungsziel';
 
   @override
-  String get bolt12InputHint => 'lno1..., bitcoin:?lno=..., or user@domain.com';
+  String get bolt12InputHint => 'lno1..., bitcoin:?lno=... oder user@domain.com';
 
   @override
-  String get walletNameOptional => 'Wallet name (optional)';
+  String get walletNameOptional => 'Wallet-Name (optional)';
 
   @override
-  String get scanBolt12QrCodeTitle => 'Scan BOLT12 QR code';
+  String get scanBolt12QrCodeTitle => 'BOLT12-QR-Code scannen';
 
   @override
   String get invalidBolt12QrCode =>
-      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
+      'Der QR-Code ist kein BOLT12-, BIP321- oder BIP353-Zahlungsziel.';
 
   @override
   String get pleaseEnterBolt12Input =>
-      'Please enter a BOLT12 offer or BIP353 address.';
+      'Bitte gib ein BOLT12-Angebot oder eine BIP353-Adresse ein.';
 
   @override
-  String get bolt12WalletAdded => 'BOLT12 wallet added successfully!';
+  String get bolt12WalletAdded => 'BOLT12-Wallet erfolgreich hinzugefügt!';
 
   @override
-  String get bolt12OfferTitle => 'Receive with BOLT12';
+  String get bolt12OfferTitle => 'Mit BOLT12 empfangen';
 
   @override
   String get bolt12OfferInstructions =>
-      'Share this reusable offer to receive a Lightning payment.';
+      'Teile dieses wiederverwendbare Angebot, um eine Lightning-Zahlung zu empfangen.';
 }

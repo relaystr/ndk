@@ -772,24 +772,26 @@ class AppLocalizationsFi extends AppLocalizations {
   String get payInvoiceTitle => 'Maksa lasku';
 
   @override
-  String get sendToWallet => 'Send to Wallet';
+  String get sendToWallet => 'Lähetä lompakkoon';
 
   @override
-  String get sendToWalletDescription => 'Transfer to another compatible wallet';
+  String get sendToWalletDescription =>
+      'Siirrä toiseen yhteensopivaan lompakkoon';
 
   @override
-  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
+  String get noCompatibleReceivingWallets =>
+      'Ei yhteensopivia vastaanottavia lompakoita';
 
   @override
   String get noCompatibleReceivingWalletsDescription =>
-      'Add or connect another wallet that can receive a payment supported by this wallet.';
+      'Lisää tai yhdistä toinen lompakko, joka voi vastaanottaa tämän lompakon tukeman maksun.';
 
   @override
-  String get destinationWallet => 'Destination wallet';
+  String get destinationWallet => 'Kohdelompakko';
 
   @override
   String walletTransferSubmitted(String walletName) {
-    return 'Payment sent to $walletName';
+    return 'Maksu lähetetty lompakkoon $walletName';
   }
 
   @override
@@ -1156,81 +1158,81 @@ class AppLocalizationsFi extends AppLocalizations {
   }
 
   @override
-  String get bolt12Wallet => 'BOLT12 Wallet';
+  String get bolt12Wallet => 'BOLT12-lompakko';
 
   @override
-  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
+  String get bolt12WalletSubtitle => 'Uudelleenkäytettävä Lightning-tarjous';
 
   @override
-  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
+  String get bolt12PrivateOfferSubtitle => 'Uudelleenkäytettävä yksityinen tarjous';
 
   @override
-  String get anyAmount => 'Any amount';
+  String get anyAmount => 'Mikä tahansa summa';
 
   @override
-  String get blindedRoute => 'Blinded';
+  String get blindedRoute => 'Sokaisettu reitti';
 
   @override
   String fromAmountSats(String amount) {
-    return 'From $amount sats';
+    return 'Alkaen $amount sats';
   }
 
   @override
   String fromAmountMsats(String amount) {
-    return 'From $amount msats';
+    return 'Alkaen $amount msats';
   }
 
   @override
   String fromCurrencyAmount(String amount, String currency) {
-    return 'From $amount $currency';
+    return 'Alkaen $amount $currency';
   }
 
   @override
   String bolt12Expires(String date) {
-    return 'Expires $date';
+    return 'Vanhenee $date';
   }
 
   @override
-  String get bolt12WalletTypeTitle => 'BOLT12 Offer';
+  String get bolt12WalletTypeTitle => 'BOLT12-tarjous';
 
   @override
   String get bolt12WalletTypeSubtitle =>
-      'Receive-only wallet using a reusable offer';
+      'Vain vastaanottamiseen tarkoitettu lompakko, joka käyttää uudelleenkäytettävää tarjousta';
 
   @override
-  String get addBolt12WalletTitle => 'Add BOLT12 Wallet';
+  String get addBolt12WalletTitle => 'Lisää BOLT12-lompakko';
 
   @override
   String get enterBolt12Input =>
-      'Enter or scan an lno offer, a bitcoin:?lno=... URI, or a BIP353 address.';
+      'Syötä tai skannaa lno-tarjous, bitcoin:?lno=...-URI tai BIP353-osoite.';
 
   @override
-  String get bolt12Input => 'BOLT12 payment target';
+  String get bolt12Input => 'BOLT12-maksukohde';
 
   @override
-  String get bolt12InputHint => 'lno1..., bitcoin:?lno=..., or user@domain.com';
+  String get bolt12InputHint => 'lno1..., bitcoin:?lno=... tai user@domain.com';
 
   @override
-  String get walletNameOptional => 'Wallet name (optional)';
+  String get walletNameOptional => 'Lompakon nimi (valinnainen)';
 
   @override
-  String get scanBolt12QrCodeTitle => 'Scan BOLT12 QR code';
+  String get scanBolt12QrCodeTitle => 'Skannaa BOLT12-QR-koodi';
 
   @override
   String get invalidBolt12QrCode =>
-      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
+      'QR-koodi ei ole BOLT12-, BIP321- tai BIP353-maksukohde.';
 
   @override
   String get pleaseEnterBolt12Input =>
-      'Please enter a BOLT12 offer or BIP353 address.';
+      'Syötä BOLT12-tarjous tai BIP353-osoite.';
 
   @override
-  String get bolt12WalletAdded => 'BOLT12 wallet added successfully!';
+  String get bolt12WalletAdded => 'BOLT12-lompakko lisättiin onnistuneesti!';
 
   @override
-  String get bolt12OfferTitle => 'Receive with BOLT12';
+  String get bolt12OfferTitle => 'Vastaanota BOLT12:lla';
 
   @override
   String get bolt12OfferInstructions =>
-      'Share this reusable offer to receive a Lightning payment.';
+      'Jaa tämä uudelleenkäytettävä tarjous vastaanottaaksesi Lightning-maksun.';
 }
