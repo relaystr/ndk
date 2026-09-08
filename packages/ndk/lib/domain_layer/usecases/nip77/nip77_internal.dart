@@ -366,8 +366,18 @@ class _Nip77Internal {
     state.authenticatedAfterRefusal = true;
 
     state.pauseTimeout();
-    final authenticated =
-        await _relayManager.authenticateConnection(state.connectionKey);
+    final bool authenticated;
+    try {
+      authenticated =
+          await _relayManager.authenticateConnection(state.connectionKey);
+    } catch (e) {
+      // nothing resumes a paused timeout once this future is gone, so a session
+      // that cannot authenticate has to end here rather than wait forever
+      if (!state.isCompleted) {
+        _fail(state, Nip77AuthRequiredException(url, '$message ($e)'));
+      }
+      return;
+    }
 
     if (state.isCompleted) return;
     state.resumeTimeout();
@@ -396,11 +406,19 @@ class _Nip77Internal {
     );
 
     state.pauseTimeout();
-    final bound = await _relayManager.openConnectionAs(
-      url,
-      account,
-      connectionSource: ConnectionSource.explicit,
-    );
+    final RelayConnectivity? bound;
+    try {
+      bound = await _relayManager.openConnectionAs(
+        url,
+        account,
+        connectionSource: ConnectionSource.explicit,
+      );
+    } catch (e) {
+      if (!state.isCompleted) {
+        _fail(state, Nip77AuthRequiredException(url, '$message ($e)'));
+      }
+      return;
+    }
 
     if (state.isCompleted) return;
     state.resumeTimeout();

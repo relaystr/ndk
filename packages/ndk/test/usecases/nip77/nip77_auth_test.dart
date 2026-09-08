@@ -3,6 +3,7 @@ import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
 
+import '../../mocks/mock_refusing_signer.dart';
 import '../../mocks/mock_relay.dart';
 import '../../mocks/mock_slow_signer.dart';
 
@@ -271,6 +272,84 @@ void main() async {
       final result = await response.future;
       expect(result.needIds, contains('a' * 64));
       expect(relay.connectionsAuthenticatedAs(key1.publicKey), 1);
+
+      await ndk.destroy();
+      await relay.stopServer();
+    });
+
+    test('a refused signature ends the reconciliation', () async {
+      final relay = await negentropyRelay(port: portBase + 8);
+      final ndk = ndkFor(relay);
+      await Future.delayed(Duration(seconds: 1));
+
+      final refusing = MockRefusingSigner(
+        innerSigner: Bip340EventSigner(
+          privateKey: key1.privateKey!,
+          publicKey: key1.publicKey,
+        ),
+      );
+
+      // the timeout is paused while the signer holds the request, so a rejection
+      // that never came back would leave this session without any clock
+      final response = ndk.nip77.reconcile(
+        relayUrl: relay.url,
+        filter: notesOf(key1),
+        auth: RelayAuth.require(
+          Account(
+            pubkey: key1.publicKey,
+            type: AccountType.privateKey,
+            signer: refusing,
+          ),
+        ),
+        timeout: Duration(seconds: 10),
+      );
+
+      await expectLater(
+        response.future,
+        throwsA(isA<Nip77AuthRequiredException>()),
+      );
+      expect(relay.connectionsAuthenticatedAs(key1.publicKey), 0);
+
+      await ndk.destroy();
+      await relay.stopServer();
+    });
+
+    test('a refused signature ends a reconciliation that started anonymously',
+        () async {
+      final relay = await negentropyRelay(port: portBase + 9);
+      final ndk = ndkFor(relay);
+      await Future.delayed(Duration(seconds: 1));
+
+      final refusing = MockRefusingSigner(
+        innerSigner: Bip340EventSigner(
+          privateKey: key1.privateKey!,
+          publicKey: key1.publicKey,
+        ),
+      );
+
+      final response = ndk.nip77.reconcile(
+        relayUrl: relay.url,
+        filter: notesOf(key1),
+        auth: RelayAuth.allow(
+          Account(
+            pubkey: key1.publicKey,
+            type: AccountType.privateKey,
+            signer: refusing,
+          ),
+        ),
+        timeout: Duration(seconds: 10),
+      );
+
+      await expectLater(
+        response.future,
+        throwsA(isA<Nip77AuthRequiredException>()),
+      );
+      expect(relay.connectionsAuthenticatedAs(key1.publicKey), 0);
+      expect(
+        refusing.signAttempts,
+        greaterThan(0),
+        reason: 'the refusal has to come from a signature that was asked for',
+      );
 
       await ndk.destroy();
       await relay.stopServer();

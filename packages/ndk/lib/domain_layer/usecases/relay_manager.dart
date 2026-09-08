@@ -1188,15 +1188,28 @@ class RelayManager<T> {
       return false;
     }
 
-    final signedAuth = await account.signer.sign(
-      AuthEvent(
-        pubKey: account.pubkey,
-        tags: [
-          ["relay", key.url],
-          ["challenge", challenge],
-        ],
-      ),
-    );
+    // signing throws for anything from a declined request to an unreachable
+    // signer, and a caller that paused its timeout to wait for it would never
+    // resume that timeout if the error escaped here
+    final Nip01Event signedAuth;
+    try {
+      signedAuth = await account.signer.sign(
+        AuthEvent(
+          pubKey: account.pubkey,
+          tags: [
+            ["relay", key.url],
+            ["challenge", challenge],
+          ],
+        ),
+      );
+    } catch (error, stackTrace) {
+      Logger.log.w(
+        () => "Could not sign AUTH for $key",
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
     if (transportGone()) {
       return false;
     }
