@@ -77,6 +77,53 @@ class Nip77State {
   /// Whether the session is completed
   bool get isCompleted => _isCompleted;
 
+  Timer? _timeoutTimer;
+  DateTime? _timeoutStartedAt;
+  Duration? _remainingTimeout;
+  void Function()? _onTimeout;
+
+  /// how long the reconciliation itself may take. A paused timeout resumes
+  /// with what is left of it, not with a fresh one
+  Duration? _timeoutDuration;
+
+  /// Starts the session timeout, [onTimeout] firing at most once.
+  void startTimeout(Duration duration, void Function() onTimeout) {
+    _timeoutDuration = duration;
+    _onTimeout = onTimeout;
+    _startTimeout(duration);
+  }
+
+  void _startTimeout(Duration duration) {
+    _timeoutStartedAt = DateTime.now();
+    _timeoutTimer = Timer(duration, () => _onTimeout?.call());
+  }
+
+  /// Pauses the timeout for a wait that is not the relay's to answer, the way
+  /// a request pauses before signing. Call it before an authentication.
+  void pauseTimeout() {
+    if (_timeoutTimer == null || _timeoutDuration == null) return;
+
+    final elapsed = DateTime.now().difference(_timeoutStartedAt!);
+    final remaining = _timeoutDuration! - elapsed;
+    _remainingTimeout = remaining.isNegative ? Duration.zero : remaining;
+    _timeoutTimer!.cancel();
+    _timeoutTimer = null;
+  }
+
+  /// Resumes a paused timeout with the time it had left.
+  void resumeTimeout() {
+    final remaining = _remainingTimeout;
+    if (remaining == null) return;
+    _remainingTimeout = null;
+    _startTimeout(remaining);
+  }
+
+  void _cancelTimeout() {
+    _timeoutTimer?.cancel();
+    _timeoutTimer = null;
+    _remainingTimeout = null;
+  }
+
   /// Process an incoming NEG-MSG from relay
   /// Returns the response message bytes to send back, or null if done
   Uint8List? processMessage(Uint8List messageBytes) {
@@ -112,6 +159,7 @@ class Nip77State {
   void complete() {
     if (_isCompleted) return;
     _isCompleted = true;
+    _cancelTimeout();
     _needController.close();
     _haveController.close();
     _completer.complete(
@@ -126,6 +174,7 @@ class Nip77State {
   void completeWithError(Object error) {
     if (_isCompleted) return;
     _isCompleted = true;
+    _cancelTimeout();
     this.error = error.toString();
     _needController.close();
     _haveController.close();
@@ -136,6 +185,7 @@ class Nip77State {
   void close() {
     if (_isCompleted) return;
     _isCompleted = true;
+    _cancelTimeout();
     _needController.close();
     _haveController.close();
     if (!_completer.isCompleted) {

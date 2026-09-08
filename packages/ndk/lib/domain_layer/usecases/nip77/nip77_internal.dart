@@ -51,13 +51,11 @@ class _Nip77Internal {
     // Register in global state
     _globalState.inFlightNegotiations[subscriptionId] = state;
 
-    // Set up timeout
-    Timer(timeout, () {
-      if (!state.isCompleted) {
-        _sendNegClose(state.connectionKey, subscriptionId);
-        state.completeWithError(Nip77TimeoutException(cleanUrl, timeout));
-        _globalState.inFlightNegotiations.remove(subscriptionId);
-      }
+    // Set up timeout. The state owns it so an authentication can pause it
+    state.startTimeout(timeout, () {
+      if (state.isCompleted) return;
+      _sendNegClose(state.connectionKey, subscriptionId);
+      _fail(state, Nip77TimeoutException(cleanUrl, timeout));
     });
 
     // Start async initialization
@@ -318,27 +316,26 @@ class _Nip77Internal {
     return lower.contains('auth-required') || lower.contains('restricted');
   }
 
+  void _fail(Nip77State state, Object error) {
+    state.completeWithError(error);
+    _globalState.inFlightNegotiations.remove(state.subscriptionId);
+  }
+
   /// Reopens a refused negotiation on a connection bound to an identity, the
   /// way a refused REQ is retried.
   void _handleNegAuthRequired(Nip77State state, String message) {
-    final subscriptionId = state.subscriptionId;
     final url = state.connectionKey.url;
-
-    void fail(Object error) {
-      state.completeWithError(error);
-      _globalState.inFlightNegotiations.remove(subscriptionId);
-    }
 
     // a refusal that lands mid-session cannot be replayed: the streams already
     // emitted, and a fresh NEG-OPEN would report those ids twice
     if (state.needIds.isNotEmpty || state.haveIds.isNotEmpty) {
-      fail(Nip77AuthRequiredException(url, message));
+      _fail(state, Nip77AuthRequiredException(url, message));
       return;
     }
 
     final account = _relayManager.accountForAuth(state.auth);
     if (account == null) {
-      fail(Nip77AuthRequiredException(url, message));
+      _fail(state, Nip77AuthRequiredException(url, message));
       return;
     }
 
@@ -346,52 +343,77 @@ class _Nip77Internal {
     // been given yet rather than another identity
     if (!state.connectionKey.isAnonymous) {
       if (state.authenticatedAfterRefusal) {
-        fail(Nip77AuthRequiredException(url, message));
+        _fail(state, Nip77AuthRequiredException(url, message));
         return;
       }
-      state.authenticatedAfterRefusal = true;
-      _relayManager.authenticateConnection(state.connectionKey).then((
-        authenticated,
-      ) {
-        if (state.isCompleted) return;
-        if (!authenticated) {
-          fail(Nip77AuthRequiredException(url, message));
-          return;
-        }
-        _sendNegOpen(state);
-      });
+      unawaited(_authenticateAndReopen(state, message));
       return;
     }
 
     if (state.movedToBoundConnection) {
-      fail(Nip77AuthRequiredException(url, message));
+      _fail(state, Nip77AuthRequiredException(url, message));
       return;
     }
+    unawaited(_moveToBoundConnection(state, account, message));
+  }
+
+  /// Answers the challenge on the bound connection, then reopens.
+  ///
+  /// The timeout is paused: signing may sit on a remote signer waiting for a
+  /// human, which is not time the relay is taking to reconcile.
+  Future<void> _authenticateAndReopen(Nip77State state, String message) async {
+    final url = state.connectionKey.url;
+    state.authenticatedAfterRefusal = true;
+
+    state.pauseTimeout();
+    final authenticated =
+        await _relayManager.authenticateConnection(state.connectionKey);
+
+    if (state.isCompleted) return;
+    state.resumeTimeout();
+
+    if (!authenticated) {
+      _fail(state, Nip77AuthRequiredException(url, message));
+      return;
+    }
+    _sendNegOpen(state);
+  }
+
+  /// Moves a refused anonymous negotiation onto a connection bound to
+  /// [account]. The timeout is paused for the same reason as above: opening
+  /// that connection is not the relay reconciling.
+  Future<void> _moveToBoundConnection(
+    Nip77State state,
+    Account account,
+    String message,
+  ) async {
+    final url = state.connectionKey.url;
     state.movedToBoundConnection = true;
 
     Logger.log.d(
-      () => 'AUTH required for negotiation $subscriptionId on $url, '
+      () => 'AUTH required for negotiation ${state.subscriptionId} on $url, '
           'retrying as ${account.pubkey}',
     );
 
-    _relayManager
-        .openConnectionAs(
+    state.pauseTimeout();
+    final bound = await _relayManager.openConnectionAs(
       url,
       account,
       connectionSource: ConnectionSource.explicit,
-    )
-        .then((bound) {
-      if (state.isCompleted) return;
-      if (bound == null) {
-        fail(Nip77AuthRequiredException(url, message));
-        return;
-      }
-      state.connectionKey = bound.key;
-      // sent without waiting for the AUTH: a relay that only challenges on
-      // demand needs this NEG-OPEN as the trigger, and the challenge it then
-      // sends authenticates the bound connection on its own
-      _sendNegOpen(state);
-    });
+    );
+
+    if (state.isCompleted) return;
+    state.resumeTimeout();
+
+    if (bound == null) {
+      _fail(state, Nip77AuthRequiredException(url, message));
+      return;
+    }
+    state.connectionKey = bound.key;
+    // sent without waiting for the AUTH: a relay that only challenges on
+    // demand needs this NEG-OPEN as the trigger, and the challenge it then
+    // sends authenticates the bound connection on its own
+    _sendNegOpen(state);
   }
 
   void _sendNegClose(RelayConnectionKey key, String subscriptionId) {

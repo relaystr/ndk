@@ -4,6 +4,7 @@ import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
 
 import '../../mocks/mock_relay.dart';
+import '../../mocks/mock_slow_signer.dart';
 
 void main() async {
   group('NIP-77 relay authentication', () {
@@ -231,6 +232,40 @@ void main() async {
       final result = await response.future;
       expect(result.needIds, contains('a' * 64));
       expect(relay.connectionsAuthenticatedAs(key1.publicKey), 0);
+
+      await ndk.destroy();
+      await relay.stopServer();
+    });
+
+    test('a slow signer does not spend the reconciliation budget', () async {
+      final relay = await negentropyRelay(port: portBase + 7);
+      final ndk = ndkFor(relay);
+      await Future.delayed(Duration(seconds: 1));
+
+      final slow = Account(
+        pubkey: key1.publicKey,
+        type: AccountType.privateKey,
+        signer: MockSlowSigner(
+          innerSigner: Bip340EventSigner(
+            privateKey: key1.privateKey!,
+            publicKey: key1.publicKey,
+          ),
+          delay: Duration(seconds: 4),
+        ),
+      );
+
+      // the signature alone outlasts the timeout, so this only reconciles if
+      // waiting on the signer does not count against it
+      final response = ndk.nip77.reconcile(
+        relayUrl: relay.url,
+        filter: notesOf(key1),
+        auth: RelayAuth.require(slow),
+        timeout: Duration(seconds: 2),
+      );
+
+      final result = await response.future;
+      expect(result.needIds, contains('a' * 64));
+      expect(relay.connectionsAuthenticatedAs(key1.publicKey), 1);
 
       await ndk.destroy();
       await relay.stopServer();
