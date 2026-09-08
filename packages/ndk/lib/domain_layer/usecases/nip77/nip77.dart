@@ -165,11 +165,13 @@ class Nip77 {
   /// Returns a [Nip77Response] with streams for real-time updates and
   /// a future that completes with the final result.
   ///
-  /// Throws [Nip77NotSupportedException] if the relay doesn't support NIP-77.
-  /// Throws [Nip77TimeoutException] if reconciliation times out.
-  /// Throws [Nip77AuthUnavailableException] if [auth] requires an identity that
-  /// cannot sign, and [Nip77AuthRequiredException] if the relay asks for an
-  /// identity [auth] rules out.
+  /// Throws [Nip77AuthUnavailableException] from the call itself, before
+  /// anything is sent, if [auth] requires an identity that cannot sign.
+  ///
+  /// The returned future fails with [Nip77NotSupportedException] if the relay
+  /// doesn't support NIP-77, [Nip77TimeoutException] if reconciliation times
+  /// out, and [Nip77AuthRequiredException] if the relay asks for an identity
+  /// [auth] rules out.
   Nip77Response reconcile({
     required String relayUrl,
     required Filter filter,

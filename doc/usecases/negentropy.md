@@ -48,7 +48,7 @@ explicitly whenever that matters.
 
 If `require` names an account that cannot sign, no connection can carry the
 reconciliation. Rather than fall back to the anonymous one, which is what
-`require` rules out, nothing is sent and the future fails right away with
+`require` rules out, nothing is sent and `reconcile` itself throws
 `Nip77AuthUnavailableException`.
 
 ## Error handling

@@ -189,15 +189,15 @@ void main() async {
         signer: Bip340EventSigner(privateKey: null, publicKey: key1.publicKey),
       );
 
-      final response = ndk.nip77.reconcile(
-        relayUrl: relay.url,
-        filter: notesOf(key1),
-        auth: RelayAuth.require(watchOnly),
-        timeout: Duration(seconds: 10),
-      );
-
-      await expectLater(
-        response.future,
+      // the call itself throws, so a caller that only reads the future later
+      // never faces an error nobody was listening to
+      expect(
+        () => ndk.nip77.reconcile(
+          relayUrl: relay.url,
+          filter: notesOf(key1),
+          auth: RelayAuth.require(watchOnly),
+          timeout: Duration(seconds: 10),
+        ),
         throwsA(isA<Nip77AuthUnavailableException>()),
       );
       expect(

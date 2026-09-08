@@ -28,15 +28,21 @@ class _Nip77Internal {
       throw ArgumentError('Invalid relay URL: $relayUrl');
     }
 
+    // nothing can carry this reconciliation, and nothing is sent. Raised like
+    // the invalid url above rather than through a future the caller has had no
+    // chance to listen to yet
+    final connectionKey = RelayAuth.keyFor(cleanUrl, auth);
+    if (connectionKey == null) {
+      throw Nip77AuthUnavailableException(cleanUrl, auth!.account!.pubkey);
+    }
+
     // Generate subscription ID
     final subscriptionId = 'neg-${DateTime.now().microsecondsSinceEpoch}';
-
-    final connectionKey = RelayAuth.keyFor(cleanUrl, auth);
 
     // Create session state (starts with empty items, will be populated async)
     final state = Nip77State(
       subscriptionId: subscriptionId,
-      connectionKey: connectionKey ?? RelayConnectionKey.anonymous(cleanUrl),
+      connectionKey: connectionKey,
       filter: filter,
       localItems: [],
       auth: auth,
@@ -44,16 +50,6 @@ class _Nip77Internal {
 
     // Register in global state
     _globalState.inFlightNegotiations[subscriptionId] = state;
-
-    // nothing can carry this reconciliation: answer now rather than let a
-    // timeout fire on a request that was impossible from the start
-    if (connectionKey == null) {
-      state.completeWithError(
-        Nip77AuthUnavailableException(cleanUrl, auth!.account!.pubkey),
-      );
-      _globalState.inFlightNegotiations.remove(subscriptionId);
-      return Nip77Response(state);
-    }
 
     // Set up timeout
     Timer(timeout, () {
