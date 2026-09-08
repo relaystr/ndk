@@ -71,6 +71,11 @@ void main() async {
       expect(result.needIds, contains('a' * 64));
       expect(relay.connectionsAuthenticatedAs(key1.publicKey), 1);
       expect(
+        relay.negOpensAuthenticatedAs(key1.publicKey),
+        isNotEmpty,
+        reason: 'require opens the negotiation on the bound connection',
+      );
+      expect(
         relay.negOpensNotAuthenticatedAs(key1.publicKey),
         isEmpty,
         reason: 'require never opens a negotiation on the anonymous connection',

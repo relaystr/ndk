@@ -117,26 +117,30 @@ class MockRelay {
   /// events the relay reconciles against, id to created_at
   final Map<String, int> negentropyItems = {};
 
-  /// every NEG-OPEN the relay received, whether or not it served it
-  final List<String> receivedNegOpens = [];
+  /// every NEG-OPEN the relay received, refused ones included, kept for the
+  /// whole run. A NEG-CLOSE or a socket that dies must not erase what a test
+  /// is about to assert on
+  final List<_ReceivedNegOpen> _negOpens = [];
+
+  /// subscription ids of every NEG-OPEN the relay received
+  List<String> get receivedNegOpens =>
+      [for (final negOpen in _negOpens) negOpen.subscriptionId];
 
   /// subscription ids of NEG-OPENs carried by connections authenticated as
   /// [pubkey]
   Set<String> negOpensAuthenticatedAs(String pubkey) => {
-        for (final entry in _negOpenedSubscriptions.entries)
-          if (_authenticatedPubkeys[entry.key]?.contains(pubkey) ?? false)
-            ...entry.value,
+        for (final negOpen in _negOpens)
+          if (negOpen.connectionPubkeys.contains(pubkey))
+            negOpen.subscriptionId,
       };
 
-  /// subscription ids of NEG-OPENs carried by connections that were not
+  /// subscription ids of NEG-OPENs carried by connections that were never
   /// authenticated as [pubkey]
   Set<String> negOpensNotAuthenticatedAs(String pubkey) => {
-        for (final entry in _negOpenedSubscriptions.entries)
-          if (!(_authenticatedPubkeys[entry.key]?.contains(pubkey) ?? false))
-            ...entry.value,
+        for (final negOpen in _negOpens)
+          if (!negOpen.connectionPubkeys.contains(pubkey))
+            negOpen.subscriptionId,
       };
-
-  final Map<WebSocket, Set<String>> _negOpenedSubscriptions = {};
 
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
@@ -576,11 +580,15 @@ class MockRelay {
               final String payload = eventJson[3];
 
               // recorded before the auth check, so a refused NEG-OPEN is still
-              // visible to tests
-              receivedNegOpens.add(subscriptionId);
-              _negOpenedSubscriptions
-                  .putIfAbsent(webSocket, () => {})
-                  .add(subscriptionId);
+              // visible to tests. It holds the connection's own pubkey set, so
+              // it still tells which identity carried the negotiation once the
+              // socket is gone and an AUTH that lands later still counts
+              _negOpens.add(
+                _ReceivedNegOpen(
+                  subscriptionId: subscriptionId,
+                  connectionPubkeys: authenticatedPubkeys,
+                ),
+              );
 
               if (requireAuthForNegentropy && authenticatedPubkeys.isEmpty) {
                 const reason =
@@ -606,7 +614,6 @@ class MockRelay {
             }
 
             if (eventJson[0] == "NEG-CLOSE") {
-              _negOpenedSubscriptions[webSocket]?.remove(eventJson[1]);
               return;
             }
           },
@@ -1251,4 +1258,19 @@ class MockRelay {
       return {'error': 'Error processing method $method: $e'};
     }
   }
+}
+
+/// One NEG-OPEN as the relay received it.
+///
+/// [connectionPubkeys] is the connection's own set, not a copy, so a NEG-OPEN
+/// sent before the AUTH that follows it still counts as carried by the
+/// identity that connection ended up holding.
+class _ReceivedNegOpen {
+  final String subscriptionId;
+  final Set<String> connectionPubkeys;
+
+  _ReceivedNegOpen({
+    required this.subscriptionId,
+    required this.connectionPubkeys,
+  });
 }
