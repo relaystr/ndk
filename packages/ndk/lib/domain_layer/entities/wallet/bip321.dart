@@ -67,7 +67,7 @@ class Bip321 {
 
     final hrp = invoice.toLowerCase().substring(0, separator);
     final match = RegExp(
-      r'^ln(?:bcrt|bc|tb|sb)([0-9]*)([munp]?)$',
+      r'^ln(?:bcrt|tbs|bc|tb|sb)([0-9]*)([munp]?)$',
     ).firstMatch(hrp);
     if (match == null) {
       throw const FormatException('Invalid BOLT11 invoice prefix');
