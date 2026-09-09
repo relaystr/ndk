@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip01/client_msg.dart';
@@ -91,12 +93,13 @@ class RelayJitPubkeyStrategy with Logger {
       /// create splitFilter that only contains the pubkeys for the relay
       Filter splitFilter = _splitFilter(filter, coveredPubkeysForRelay);
 
-      _sendRequestToSocket(
-        connectedRelay,
-        requestState,
-        [splitFilter],
-        globalState,
-        relayManager,
+      unawaited(
+        _sendRequestToSocket(
+          connectedRelay,
+          requestState,
+          [splitFilter],
+          relayManager,
+        ),
       );
 
       // clear out fully covered pubkeys
@@ -255,17 +258,18 @@ class RelayJitPubkeyStrategy with Logger {
           direction,
         );
 
-        _sendRequestToSocket(
-          myRelayConnectivity,
-          requestState,
-          [
-            _splitFilter(
-              filter,
-              relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
-            ),
-          ],
-          globalState,
-          relayManger,
+        unawaited(
+          _sendRequestToSocket(
+            myRelayConnectivity,
+            requestState,
+            [
+              _splitFilter(
+                filter,
+                relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
+              ),
+            ],
+            relayManger,
+          ),
         );
       }());
     }
@@ -320,28 +324,47 @@ void _removeFullyCoveredPubkeys(List<CoveragePubkey> coveragePubkeys) {
   coveragePubkeys.removeWhere((element) => element.missingCoverage == 0);
 }
 
-void _sendRequestToSocket(
+/// [connectedRelay] is the relay the strategy picked, always the anonymous
+/// connection. The request may need a bound one instead, see
+/// [RelayManager.connectionForRequest].
+Future<void> _sendRequestToSocket(
   RelayConnectivity<JitEngineRelayConnectivityData> connectedRelay,
   RequestState requestState,
   List<Filter> filters,
-  GlobalState globalState,
   RelayManager relayManager,
-) {
-  if (!identical(globalState.inFlightRequests[requestState.id], requestState)) {
+) async {
+  // [Requests] registers the request before any engine sees it, so an absent
+  // one is a request that already ended. Putting it back would send a REQ
+  // nobody would ever CLOSE, on a state nothing will ever clean up again
+  if (!relayManager.isStillInFlight(requestState)) {
     return;
   }
-  // link the request id to the relay
-  relayManager.registerRelayRequest(
-    reqId: requestState.id,
-    connectionKey: connectedRelay.key,
-    filters: filters,
-  );
 
-  // send out the request
-  relayManager.send(
-    connectedRelay,
-    ClientMsg(ClientMsgType.kReq, id: requestState.id, filters: filters),
-  );
+  relayManager.beginPendingConnection(requestState);
+  try {
+    final target = await relayManager.connectionForRequest(
+      requestState,
+      connectedRelay,
+    );
+    if (target == null || !relayManager.isStillInFlight(requestState)) {
+      return;
+    }
+
+    // link the request id to the relay
+    relayManager.registerRelayRequest(
+      reqId: requestState.id,
+      connectionKey: target.key,
+      filters: filters,
+    );
+
+    // send out the request
+    relayManager.send(
+      target,
+      ClientMsg(ClientMsgType.kReq, id: requestState.id, filters: filters),
+    );
+  } finally {
+    relayManager.endPendingConnection(requestState);
+  }
 }
 
 Filter _splitFilter(Filter filter, List<String> pubkeysToInclude) {

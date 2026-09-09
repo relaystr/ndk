@@ -3,6 +3,219 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-09
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.9.4-dev.2`](#ndk---v094-dev2)
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.8`](#ndk_drift---v011-dev8)
+ - [`ndk_objectbox` - `v0.2.12-dev.8`](#ndk_objectbox---v0212-dev8)
+ - [`ndk_flutter` - `v0.9.0-dev.6`](#ndk_flutter---v090-dev6)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.9.0-dev.6`
+
+---
+
+#### `ndk` - `v0.9.4-dev.2`
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: final over var.
+ - **FIX**(requests): end a query that reached no relay.
+ - **FIX**: do not resurrect a jit request that already ended.
+ - **FIX**: do not send a relay set request closed while connecting.
+ - **FIX**: keep a request open while its auth retry connects.
+ - **FIX**(cli): avoid wallet startup network work.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**: keep a jit request open while its other relays are still connecting.
+ - **FIX**: do not send a jit request that was closed while its connection opened.
+ - **FIX**: authenticate as an account that was handed over, not only a registered one.
+ - **FIX**: answer an impossible request without waiting for its timeout.
+ - **FIX**: tell two requests apart by the identity they authenticate as.
+ - **FIX**: paginate each relay of a relay set on its own.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: send a required request only on its bound connection in the jit engine.
+ - **FEAT**: send a required request only on its bound connection.
+ - **FEAT**: add RelayAuth, the identity a request may be attributed to.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+ - **DOCS**(release): add 0.9.3 notes.
+ - **DOCS**(cli): condense wallet command help.
+ - **DOCS**(ndk): finalize 0.9.2 changelog.
+ - **BREAKING** **FIX**: stop authenticating to relays that never asked.
+ - **BREAKING** **FEAT**: let a request say which identity it may authenticate as.
+
+#### `ndk_drift` - `v0.1.1-dev.8`
+
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+
+#### `ndk_objectbox` - `v0.2.12-dev.8`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-09-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.9.4-dev.1`](#ndk---v094-dev1)
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.7`](#ndk_drift---v011-dev7)
+ - [`ndk_objectbox` - `v0.2.12-dev.7`](#ndk_objectbox---v0212-dev7)
+ - [`ndk_flutter` - `v0.9.0-dev.5`](#ndk_flutter---v090-dev5)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.9.0-dev.5`
+
+---
+
+#### `ndk` - `v0.9.4-dev.1`
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: final over var.
+ - **FIX**: do not resurrect a jit request that already ended.
+ - **FIX**: do not send a relay set request closed while connecting.
+ - **FIX**: keep a request open while its auth retry connects.
+ - **FIX**(cli): avoid wallet startup network work.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**: keep a jit request open while its other relays are still connecting.
+ - **FIX**: do not send a jit request that was closed while its connection opened.
+ - **FIX**: authenticate as an account that was handed over, not only a registered one.
+ - **FIX**: answer an impossible request without waiting for its timeout.
+ - **FIX**: tell two requests apart by the identity they authenticate as.
+ - **FIX**: paginate each relay of a relay set on its own.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: send a required request only on its bound connection in the jit engine.
+ - **FEAT**: send a required request only on its bound connection.
+ - **FEAT**: add RelayAuth, the identity a request may be attributed to.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+ - **DOCS**(release): add 0.9.3 notes.
+ - **DOCS**(cli): condense wallet command help.
+ - **DOCS**(ndk): finalize 0.9.2 changelog.
+ - **BREAKING** **FIX**: stop authenticating to relays that never asked.
+ - **BREAKING** **FEAT**: let a request say which identity it may authenticate as.
+
+#### `ndk_drift` - `v0.1.1-dev.7`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_objectbox` - `v0.2.12-dev.7`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-09-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.9.4-dev.0`](#ndk---v094-dev0)
+ - [`ndk_drift` - `v0.1.1-dev.6`](#ndk_drift---v011-dev6)
+ - [`ndk_objectbox` - `v0.2.12-dev.6`](#ndk_objectbox---v0212-dev6)
+ - [`ndk_flutter` - `v0.9.0-dev.4`](#ndk_flutter---v090-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.9.0-dev.4`
+
+---
+
+#### `ndk` - `v0.9.4-dev.0`
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+
+#### `ndk_drift` - `v0.1.1-dev.6`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_objectbox` - `v0.2.12-dev.6`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
 ## 2026-09-04
 
 ### Changes

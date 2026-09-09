@@ -99,4 +99,71 @@ void main() async {
       },
     );
   });
+
+  group('repeated queries under different identities', () {
+    final key = Bip340.generatePrivateKey();
+
+    final note = Nip01Event(
+      kind: Nip01Event.kTextNodeKind,
+      pubKey: key.publicKey,
+      content: "a note only an authenticated request may see",
+      tags: [],
+      createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
+
+    late MockRelay relay;
+
+    setUp(() async {
+      relay = MockRelay(name: "relay", requireAuthForRequests: true);
+      await relay.startServer(textNotes: {key: note});
+    });
+
+    tearDown(() async {
+      await relay.stopServer();
+    });
+
+    test(
+      'a request that never authenticates is not served by an authenticated one',
+      timeout: const Timeout(Duration(seconds: 10)),
+      () async {
+        final ndk = Ndk(
+          NdkConfig(
+            eventVerifier: MockEventVerifier(),
+            cache: MemCacheManager(),
+            bootstrapRelays: [relay.url],
+          ),
+        );
+        ndk.accounts.loginPrivateKey(
+          pubkey: key.publicKey,
+          privkey: key.privateKey!,
+        );
+        await ndk.relays.seedRelaysConnected;
+
+        final filter = Filter(
+          kinds: [Nip01Event.kTextNodeKind],
+          authors: [key.publicKey],
+        );
+
+        // nothing is written to the cache, so only the concurrency check could
+        // bridge the two requests
+        final authenticated = ndk.requests.query(
+          filter: filter,
+          cacheWrite: false,
+          desiredCoverage: 1,
+        );
+        await Future.delayed(Duration(milliseconds: 1));
+        final anonymous = ndk.requests.query(
+          filter: filter,
+          auth: const RelayAuth.never(),
+          cacheWrite: false,
+          desiredCoverage: 1,
+        );
+
+        expect(await authenticated.future, hasLength(1));
+        expect(await anonymous.future, isEmpty);
+
+        await ndk.destroy();
+      },
+    );
+  });
 }

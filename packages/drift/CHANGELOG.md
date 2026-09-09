@@ -1,3 +1,35 @@
+## 0.1.1-dev.8
+
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+
+## 0.1.1-dev.7
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+## 0.1.1-dev.6
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
 ## 0.1.1-dev.5
 
  - **REVERT**: seperate cache manger package.

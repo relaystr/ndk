@@ -106,6 +106,10 @@ class MockRelay {
   /// in the middle of an authentication does. The next ones are answered
   int silenceFirstAuths;
 
+  /// accept REQ messages but never answer them, neither with events nor with
+  /// an EOSE, the way a relay that is alive but stuck does
+  bool ignoreRequests;
+
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
 
@@ -187,6 +191,7 @@ class MockRelay {
     this.closeRequestsMessage,
     this.silenceRequests = false,
     this.silenceFirstAuths = 0,
+    this.ignoreRequests = false,
     int? explicitPort,
   })  : _nip65s = nip65s,
         _explicitPort = explicitPort,
@@ -199,8 +204,9 @@ class MockRelay {
     Map<String, Nip01Event>? metadatas,
     Map<String, Nip01Event>? nip85Assertions,
     Duration? delayResponse,
+    Duration? delayConnection,
   }) async {
-    var myPromise = Completer<void>();
+    final myPromise = Completer<void>();
 
     if (nip65s != null) {
       _nip65s = nip65s;
@@ -252,7 +258,22 @@ class MockRelay {
     }
 
     this.server = server;
-    var stream = server.transform(WebSocketTransformer());
+    final Stream<WebSocket> stream;
+    if (delayConnection == null) {
+      stream = server.transform(WebSocketTransformer());
+    } else {
+      // holds the handshake, not the answers: it is how a client is left with a
+      // connection that is still opening
+      final upgrades = StreamController<WebSocket>();
+      server.listen(
+        (request) async {
+          await Future.delayed(delayConnection);
+          upgrades.add(await WebSocketTransformer.upgrade(request));
+        },
+        onDone: upgrades.close,
+      );
+      stream = upgrades.stream;
+    }
 
     // Generate challenge once for the entire server lifetime (fixes race condition on reconnect)
     final String serverChallenge = Helpers.getRandomString(10);
@@ -489,6 +510,11 @@ class MockRelay {
                     "auth-required: we can't serve requests to unauthenticated users",
                   ]),
                 );
+                return;
+              }
+
+              if (ignoreRequests) {
+                log("MockRelay: ignoring REQ $requestId");
                 return;
               }
 
