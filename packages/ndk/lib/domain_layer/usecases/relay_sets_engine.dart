@@ -238,6 +238,8 @@ class RelaySetsEngine implements NetworkEngine {
     }
     _globalState.inFlightRequests[state.id] = state;
 
+    state.closeIfNoRelays();
+
     for (MapEntry<RelayConnectionKey, RelayRequestState> entry
         in state.requests.entries.toList()) {
       doRelayRequest(state.id, entry.value).then((sent) {
@@ -281,6 +283,8 @@ class RelaySetsEngine implements NetworkEngine {
       state.addRequestForRelay(url, filters);
     }
     _globalState.inFlightRequests[state.id] = state;
+
+    state.closeIfNoRelays();
 
     for (MapEntry<RelayConnectionKey, RelayRequestState> entry
         in state.requests.entries) {
