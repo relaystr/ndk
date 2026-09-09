@@ -202,6 +202,98 @@ void main() async {
       await expectation;
     });
 
+    test('accountsStream emits on every change', () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      final expectation = expectLater(
+        ndk.accounts.accountsStream,
+        emitsInOrder([
+          isEmpty,
+          {key0.publicKey: anything},
+          {key0.publicKey: anything, key1.publicKey: anything},
+          {key1.publicKey: anything},
+          isEmpty,
+        ]),
+      );
+
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
+      ndk.accounts.loginPublicKey(pubkey: key1.publicKey);
+      ndk.accounts.removeAccount(pubkey: key0.publicKey);
+      ndk.accounts.removeAccount(pubkey: key1.publicKey);
+
+      await expectation;
+    });
+
+    test('accountsStream does not emit when nothing changed', () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+      final emitted = <Map<String, Account>>[];
+      final sub = ndk.accounts.accountsStream.listen(emitted.add);
+
+      ndk.accounts.loginPublicKey(pubkey: key0.publicKey);
+      ndk.accounts.removeAccount(pubkey: key1.publicKey);
+      ndk.accounts.switchAccount(pubkey: key0.publicKey);
+
+      await Future.delayed(Duration.zero);
+      await sub.cancel();
+
+      expect(emitted, hasLength(2));
+    });
+
+    test('logout and removeAccount notify in the same order', () async {
+      for (final removeLoggedAccount in [
+        (Accounts a) => a.logout(),
+        (Accounts a) => a.removeAccount(pubkey: key0.publicKey),
+      ]) {
+        final ndk = Ndk.emptyBootstrapRelaysConfig();
+        final order = <String>[];
+
+        ndk.accounts.accountsStream.listen((_) => order.add('accounts'));
+        ndk.accounts.authStateChanges.listen((_) => order.add('auth'));
+
+        ndk.accounts.loginPublicKey(pubkey: key0.publicKey);
+        await Future.delayed(Duration.zero);
+        order.clear();
+
+        removeLoggedAccount(ndk.accounts);
+        await Future.delayed(Duration.zero);
+
+        expect(order, ['accounts', 'auth']);
+        await ndk.destroy();
+      }
+    });
+
+    test('emitted accounts are unmodifiable snapshots', () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      ndk.accounts.loginPublicKey(pubkey: key0.publicKey);
+      final snapshot = await ndk.accounts.accountsStream.first;
+
+      expect(() => snapshot.clear(), throwsUnsupportedError);
+      expect(() => ndk.accounts.accounts.clear(), throwsUnsupportedError);
+
+      ndk.accounts.removeAccount(pubkey: key0.publicKey);
+      expect(snapshot, hasLength(1));
+      expect(ndk.accounts.accounts, isEmpty);
+    });
+
+    test('accounts is the last emitted snapshot', () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      ndk.accounts.loginPublicKey(pubkey: key0.publicKey);
+      expect(
+          ndk.accounts.accounts, same(await ndk.accounts.accountsStream.first));
+
+      final before = ndk.accounts.accounts;
+      ndk.accounts.removeAccount(pubkey: key1.publicKey);
+      expect(ndk.accounts.accounts, same(before));
+
+      ndk.accounts.removeAccount(pubkey: key0.publicKey);
+      expect(ndk.accounts.accounts, isNot(same(before)));
+    });
+
     test("dispose closes stream", () async {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
       final stream = ndk.accounts.authStateChanges;
