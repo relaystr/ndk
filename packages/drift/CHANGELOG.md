@@ -1,3 +1,11 @@
+## 0.1.1-dev.8
+
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+
 ## 0.1.1-dev.7
 
  - **REVERT**: seperate cache manger package.
