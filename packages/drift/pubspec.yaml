@@ -17,7 +17,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ndk: ^0.9.4-dev.2
+  ndk: ^0.10.0-dev.0
   drift: ^2.31.0
   drift_flutter: ^0.3.0
   path_provider: ^2.1.5

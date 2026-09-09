@@ -19,7 +19,7 @@ platforms:
 dependencies:
   objectbox: ^5.3.1 
   objectbox_flutter_libs: ^5.3.1 
-  ndk: ^0.9.4-dev.2
+  ndk: ^0.10.0-dev.0
   flat_buffers: ^25.9.23
   path_provider: ^2.1.5
   path: ^1.9.1
@@ -34,4 +34,3 @@ dev_dependencies:
   test: any
   flutter_test:
     sdk: flutter
-
