@@ -10,5 +10,5 @@ environment:
 resolution: workspace
 
 dependencies:
-  ndk: ^0.10.0-dev.0
+  ndk: ^0.10.0-dev.1
   test: ^1.30.0
