@@ -20,6 +20,7 @@ void main() {
   group('Timeout - query', () {
     KeyPair key1 = Bip340.generatePrivateKey();
     late MockRelay relay1;
+    late MockRelay silentRelay;
     late Ndk ndk;
     Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
 
@@ -28,11 +29,15 @@ void main() {
       relay1 = MockRelay(name: "relay 1");
       await relay1.startServer();
       relay1.textNotes = key1TextNotes;
+
+      silentRelay = MockRelay(name: "silent relay", ignoreRequests: true);
+      await silentRelay.startServer();
     });
 
     tearDown(() async {
       await ndk.destroy();
       await relay1.stopServer();
+      await silentRelay.stopServer();
     });
 
     test('timeout does not trigger on normal request', () async {
@@ -74,7 +79,7 @@ void main() {
         eventVerifier: MockEventVerifier(),
         cache: MemCacheManager(),
         engine: NdkEngine.RELAY_SETS,
-        bootstrapRelays: ["invalid"],
+        bootstrapRelays: [silentRelay.url],
       );
 
       ndk = Ndk(config);
@@ -111,7 +116,7 @@ void main() {
           eventVerifier: MockEventVerifier(),
           cache: MemCacheManager(),
           engine: NdkEngine.RELAY_SETS,
-          bootstrapRelays: ["invalid"],
+          bootstrapRelays: [silentRelay.url],
           defaultQueryTimeout: myTimeout,
         );
 
