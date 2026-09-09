@@ -325,8 +325,16 @@ class Bolt12WalletProvider implements WalletProvider {
   }
 
   @override
-  Future<String> receive(Wallet wallet, int amountSats) async =>
-      (wallet as Bolt12Wallet).offer;
+  Future<String> receive(Wallet wallet, int amountSats) async {
+    final offer = (wallet as Bolt12Wallet).offer;
+    return Uri(
+      scheme: 'bitcoin',
+      queryParameters: {
+        'amount': _formatBitcoinAmount(amountSats, 100000000),
+        'lno': offer,
+      },
+    ).toString();
+  }
 
   @override
   Future<PayResponse> payBip321(
@@ -360,9 +368,25 @@ class Bolt12WalletProvider implements WalletProvider {
       resultType: 'receive',
       bip321: Uri(
         scheme: 'bitcoin',
-        queryParameters: {'lno': offer},
+        queryParameters: {
+          if (amountMsat != null)
+            'amount': _formatBitcoinAmount(amountMsat, 100000000000),
+          'lno': offer,
+        },
       ).toString(),
     );
+  }
+
+  static String _formatBitcoinAmount(int amount, int unitsPerBitcoin) {
+    final whole = amount ~/ unitsPerBitcoin;
+    final remainder = amount % unitsPerBitcoin;
+    if (remainder == 0) return whole.toString();
+
+    final fraction = remainder
+        .toString()
+        .padLeft(unitsPerBitcoin.toString().length - 1, '0')
+        .replaceFirst(RegExp(r'0+$'), '');
+    return '$whole.$fraction';
   }
 
   @override

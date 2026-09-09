@@ -162,9 +162,20 @@ void main() {
     expect(wallet.type, WalletType.BOLT12);
     expect(wallet.canReceive, isTrue);
     expect(wallet.canSend, isFalse);
-    expect(await provider.receive(wallet, 123), _offer);
+    expect(
+      await provider.receive(wallet, 123),
+      'bitcoin:?amount=0.00000123&lno=$_offer',
+    );
     final bip321 = await provider.receiveBip321(wallet);
     expect(bip321.bip321, 'bitcoin:?lno=$_offer');
+    final bip321WithAmount = await provider.receiveBip321(
+      wallet,
+      amountMsat: 123001,
+    );
+    expect(
+      bip321WithAmount.bip321,
+      'bitcoin:?amount=0.00000123001&lno=$_offer',
+    );
     expect(
       () => provider.send(wallet, 'lnbc...'),
       throwsA(isA<UnsupportedError>()),

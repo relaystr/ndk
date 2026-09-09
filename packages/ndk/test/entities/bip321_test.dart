@@ -38,6 +38,11 @@ void main() {
       expect(Bip321.getBolt11AmountMsat('lnsb50p1paymentdata'), 5);
     });
 
+    test('decodes signet BOLT11 amounts in millisatoshis', () {
+      expect(Bip321.getBolt11AmountMsat('lntbs1paymentdata'), isNull);
+      expect(Bip321.getBolt11AmountMsat('lntbs5u1paymentdata'), 500000);
+    });
+
     test('rejects unknown required parameters', () {
       for (final requiredKey in ['req-example', 'REQ-EXAMPLE', 'ReQ-example']) {
         expect(
