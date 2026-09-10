@@ -584,7 +584,9 @@ class SembastCacheManager extends CacheManager {
 
     final finder = sembast.Finder(
       filter: filters.isNotEmpty ? sembast.Filter.and(filters) : null,
-      limit: limit,
+      // Pushing the limit down here would spend it on events the visibility
+      // rules and the tag filter below then remove.
+      limit: applyVisibilityRules ? null : limit,
       sortOrders: [sembast.SortOrder('created_at', false)],
     );
 
@@ -593,12 +595,12 @@ class SembastCacheManager extends CacheManager {
         .map((record) => Nip01EventExtension.fromJsonStorage(record.value))
         .toList();
 
-    final visibleEvents =
+    var result =
         applyVisibilityRules ? await _visibility.filterVisible(events) : events;
 
     // Filter by tags if specified (done in memory since Sembast doesn't support complex tag filtering)
     if (tags != null && tags.isNotEmpty) {
-      return visibleEvents.where((event) {
+      result = result.where((event) {
         return tags.entries.every((tagEntry) {
           var tagName = tagEntry.key;
           final tagValues = tagEntry.value;
@@ -622,7 +624,11 @@ class SembastCacheManager extends CacheManager {
       }).toList();
     }
 
-    return visibleEvents;
+    if (limit != null && limit > 0 && result.length > limit) {
+      result = result.take(limit).toList();
+    }
+
+    return result;
   }
 
   @override

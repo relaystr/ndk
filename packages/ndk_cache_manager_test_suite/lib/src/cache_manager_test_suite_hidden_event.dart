@@ -45,6 +45,32 @@ void _runHiddenEventTests(CacheManager Function() getCacheManager) {
     expect(visible.map((e) => e.content), equals(['final']));
   });
 
+  test('a limited read falls back to the newest visible event', () async {
+    final cacheManager = getCacheManager();
+
+    final v1 = _article(dTag: 'article-a', createdAt: 100, content: 'kept');
+    final v2 = _article(dTag: 'article-a', createdAt: 200, content: 'deleted');
+    final deletion = Nip01Event(
+      pubKey: _hiddenAuthor,
+      kind: 5,
+      tags: [
+        ['e', v2.id],
+      ],
+      content: 'gone',
+      createdAt: 250,
+    );
+    await cacheManager.saveEvents([v1, v2, deletion]);
+
+    // A limit must not be spent on events the visibility rules then remove.
+    final visible = await cacheManager.loadEvents(
+      pubKeys: [_hiddenAuthor],
+      kinds: [30023],
+      limit: 1,
+    );
+
+    expect(visible.map((e) => e.content), equals(['kept']));
+  });
+
   test('loadEvents hides a superseded version queried by id', () async {
     final cacheManager = getCacheManager();
 
@@ -101,12 +127,17 @@ void _runHiddenEventTests(CacheManager Function() getCacheManager) {
     final withEmptyDTag = await cacheManager.loadHiddenEvents(
       coordinates: ['${Metadata.kKind}:$_hiddenAuthor:'],
     );
+    // A kind with no d-tag has no domain named by a non empty third segment.
+    final withJunkDTag = await cacheManager.loadHiddenEvents(
+      coordinates: ['${Metadata.kKind}:$_hiddenAuthor:unexpected'],
+    );
 
     expect(withoutDTag.map((e) => e.event.content), equals(['{"name":"old"}']));
     expect(
       withEmptyDTag.map((e) => e.event.id),
       equals(withoutDTag.map((e) => e.event.id)),
     );
+    expect(withJunkDTag, isEmpty);
   });
 
   test('reasons filter separates deleted from superseded', () async {

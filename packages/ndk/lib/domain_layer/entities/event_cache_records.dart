@@ -480,6 +480,11 @@ class EventCacheStateRecord {
       return '$kind:${parts[1]}:$dTag';
     }
     if (!EventKindClassification.isReplaceableKind(kind)) return null;
+    // A non addressable kind has no d-tag, so only an empty trailing segment
+    // is a spelling of the same domain. Anything else is a different request.
+    if (parts.length > 3 || (parts.length == 3 && parts[2].isNotEmpty)) {
+      return null;
+    }
     return '$kind:${parts[1]}';
   }
 
