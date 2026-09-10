@@ -458,6 +458,31 @@ class EventCacheStateRecord {
   bool isExpiredAt(int timestamp) =>
       expirationAt != null && expirationAt! <= timestamp;
 
+  /// The NIP-01 conflict domain of [event]: `kind:pubkey:d-tag` for addressable
+  /// kinds, `kind:pubkey` for other replaceable kinds, null for the rest.
+  static String? conflictKeyFor(Nip01Event event) =>
+      _buildReplaceableConflictKey(event, event.getDtag());
+
+  /// Normalizes a caller supplied conflict domain so it compares equal to
+  /// [conflictKeyFor].
+  ///
+  /// Accepts NIP-01 `a` tag values, whose d-tag segment is present but empty
+  /// for non addressable kinds. Returns null when [coordinate] is malformed or
+  /// names a kind that has no conflict domain.
+  static String? normalizeConflictKey(String coordinate) {
+    final parts = coordinate.split(':');
+    if (parts.length < 2) return null;
+    final kind = int.tryParse(parts[0]);
+    if (kind == null || parts[1].isEmpty) return null;
+
+    if (EventKindClassification.isParameterizedReplaceableKind(kind)) {
+      final dTag = parts.length > 2 ? parts.sublist(2).join(':') : '';
+      return '$kind:${parts[1]}:$dTag';
+    }
+    if (!EventKindClassification.isReplaceableKind(kind)) return null;
+    return '$kind:${parts[1]}';
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'eventId': eventId,
@@ -558,14 +583,26 @@ class EventCacheStateRecord {
       target.getDtag(),
     );
 
+    // A non addressable replaceable kind is written both as `kind:pubkey` and
+    // with a trailing empty d-tag segment, so accept either spelling.
+    final coordinates = switch (replaceableConflictKey) {
+      null => const <String>[],
+      final key
+          when EventKindClassification.isParameterizedReplaceableKind(
+            target.kind,
+          ) =>
+        [key],
+      final key => [key, '$key:'],
+    };
+
     for (final event in deletionEvents) {
       if (event.pubKey != target.pubKey) continue;
       if (event.getTags('e').contains(target.id.toLowerCase())) {
         return event;
       }
-      if (replaceableConflictKey != null &&
+      if (coordinates.isNotEmpty &&
           event.createdAt >= target.createdAt &&
-          event.getTags('a').contains(replaceableConflictKey)) {
+          event.getTags('a').any(coordinates.contains)) {
         return event;
       }
     }

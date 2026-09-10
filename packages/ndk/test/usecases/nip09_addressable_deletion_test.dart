@@ -126,6 +126,37 @@ void main() {
       );
     });
 
+    test('hides a replaceable event deleted by either a tag spelling',
+        () async {
+      for (final coordinate in ['0:$author', '0:$author:']) {
+        final cache = MemCacheManager();
+        final metadata = Nip01Event(
+          pubKey: author,
+          kind: Metadata.kKind,
+          tags: const [],
+          content: '{"name":"gone"}',
+          createdAt: 1700000000,
+        );
+        final deletion = Nip01Event(
+          pubKey: author,
+          kind: Deletion.kKind,
+          tags: [
+            ['a', coordinate],
+          ],
+          content: 'delete metadata',
+          createdAt: 1700000001,
+        );
+
+        await cache.saveEvents([metadata, deletion]);
+
+        expect(
+          await cache.loadEvents(ids: [metadata.id]),
+          isEmpty,
+          reason: 'deletion written as `$coordinate` should tombstone kind 0',
+        );
+      }
+    });
+
     test(
       'eviction uses derived state to sweep obsolete replaceable versions',
       () async {

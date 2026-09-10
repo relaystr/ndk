@@ -2,8 +2,8 @@ import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:sembast/sembast.dart' as sembast;
 
-import '../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../shared/nips/nip01/event_eviction_planner.dart';
+import '../../../shared/nips/nip01/event_visibility_resolver.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import 'ndk_extensions.dart';
 
@@ -59,6 +59,10 @@ class SembastCacheManager extends CacheManager {
   late final sembast.StoreRef<String, Map<String, Object?>> _proofStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _mintInfoStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _secretCounterStore;
+
+  late final EventVisibilityResolver _visibility = EventVisibilityResolver(
+    _loadRawEvents,
+  );
 
   SembastCacheManager(this._database) {
     _eventsStore = sembast.stringMapStoreFactory.store('events');
@@ -485,6 +489,56 @@ class SembastCacheManager extends CacheManager {
     );
   }
 
+  @override
+  Future<List<HiddenEvent>> loadHiddenEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    List<String>? coordinates,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+    String? search,
+    int? limit,
+    Set<HiddenEventReason> reasons = kAllHiddenEventReasons,
+  }) {
+    return _visibility.loadHiddenEvents(
+      ids: ids,
+      pubKeys: pubKeys,
+      kinds: kinds,
+      coordinates: coordinates,
+      tags: tags,
+      since: since,
+      until: until,
+      search: search,
+      limit: limit,
+      reasons: reasons,
+    );
+  }
+
+  Future<List<Nip01Event>> _loadRawEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+    String? search,
+    int? limit,
+  }) {
+    return _loadEventsInternal(
+      ids: ids,
+      pubKeys: pubKeys,
+      kinds: kinds,
+      tags: tags,
+      since: since,
+      until: until,
+      search: search,
+      limit: limit,
+      applyVisibilityRules: false,
+    );
+  }
+
   Future<List<Nip01Event>> _loadEventsInternal({
     List<String>? ids,
     List<String>? pubKeys,
@@ -539,9 +593,8 @@ class SembastCacheManager extends CacheManager {
         .map((record) => Nip01EventExtension.fromJsonStorage(record.value))
         .toList();
 
-    final visibleEvents = applyVisibilityRules
-        ? await _applyEventVisibilityRules(events)
-        : events;
+    final visibleEvents =
+        applyVisibilityRules ? await _visibility.filterVisible(events) : events;
 
     // Filter by tags if specified (done in memory since Sembast doesn't support complex tag filtering)
     if (tags != null && tags.isNotEmpty) {
@@ -963,95 +1016,6 @@ class SembastCacheManager extends CacheManager {
     final keys = userRelayLists.map((u) => u.pubKey).toList();
     final values = userRelayLists.map((u) => u.toJsonForStorage()).toList();
     await _relayListStore.records(keys).put(_database, values);
-  }
-
-  Future<List<Nip01Event>> _applyEventVisibilityRules(
-    List<Nip01Event> events,
-  ) async {
-    final visible = <Nip01Event>[];
-    final replaceableWinners = <String, Nip01Event>{};
-    final now = Nip01Event.secondsSinceEpoch();
-    final deletionEvents = await _loadDeletionEvents();
-
-    for (final event in events) {
-      if (_isExpired(event, now)) continue;
-      if (_isDeletedByAuthor(event, deletionEvents)) continue;
-
-      final coordinateKey = _coordinateKey(event);
-      if (coordinateKey == null) {
-        visible.add(event);
-        continue;
-      }
-
-      final current = replaceableWinners[coordinateKey];
-      if (current == null || _isMoreRecentReplaceable(event, current)) {
-        replaceableWinners[coordinateKey] = event;
-      }
-    }
-
-    visible.addAll(replaceableWinners.values);
-    return visible;
-  }
-
-  bool _isDeletedByAuthor(Nip01Event target, List<Nip01Event> deletionEvents) {
-    if (target.kind == 5) return false;
-
-    // Addressable/replaceable events are deleted by coordinate (`a` tag), so a
-    // later version published after the deletion stays visible (NIP-09 only
-    // deletes coordinate matches with created_at <= the deletion).
-    final coordinate = _coordinateKey(target);
-
-    for (final event in deletionEvents) {
-      if (event.kind != 5) continue;
-      if (event.pubKey != target.pubKey) continue;
-      if (event.getTags('e').contains(target.id.toLowerCase())) {
-        return true;
-      }
-      if (coordinate != null &&
-          event.createdAt >= target.createdAt &&
-          event.getTags('a').contains(coordinate)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  Future<List<Nip01Event>> _loadDeletionEvents() async {
-    final records = await _eventsStore.find(
-      _database,
-      finder: sembast.Finder(filter: sembast.Filter.equals('kind', 5)),
-    );
-
-    return records
-        .map((record) => Nip01EventExtension.fromJsonStorage(record.value))
-        .toList();
-  }
-
-  bool _isExpired(Nip01Event event, int now) {
-    final expirationValue = event.getFirstTag('expiration');
-    if (expirationValue == null) return false;
-    final expiration = int.tryParse(expirationValue);
-    if (expiration == null) return false;
-    return expiration <= now;
-  }
-
-  String? _coordinateKey(Nip01Event event) {
-    if (!_isReplaceableKind(event.kind)) return null;
-    final dTag = event.getDtag() ?? '';
-    return '${event.kind}:${event.pubKey}:$dTag';
-  }
-
-  bool _isReplaceableKind(int kind) {
-    return EventKindClassification.isReplaceableKind(kind);
-  }
-
-  bool _isMoreRecentReplaceable(Nip01Event candidate, Nip01Event current) {
-    if (candidate.createdAt != current.createdAt) {
-      return candidate.createdAt > current.createdAt;
-    }
-
-    return candidate.id.compareTo(current.id) < 0;
   }
 
   @override
