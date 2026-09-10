@@ -82,12 +82,16 @@ class RelayManager<T> {
   final Duration authChallengeTimeout;
 
   /// Handler for NIP-77 NEG-MSG messages
-  void Function(String subscriptionId, String relayUrl, String payload)?
+  void Function(String subscriptionId, RelayConnectionKey key, String payload)?
       onNegMsg;
 
   /// Handler for NIP-77 NEG-ERR messages
-  void Function(String subscriptionId, String relayUrl, String errorMsg)?
+  void Function(String subscriptionId, RelayConnectionKey key, String errorMsg)?
       onNegErr;
+
+  /// Handler for CLOSED messages that end a NIP-77 negotiation
+  void Function(String subscriptionId, RelayConnectionKey key, String? message)?
+      onNegClosed;
 
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
@@ -974,7 +978,7 @@ class RelayManager<T> {
       if (msgData.length >= 3 && onNegMsg != null) {
         final subscriptionId = msgData[1] as String;
         final payload = msgData[2] as String;
-        onNegMsg!(subscriptionId, relayConnectivity.url, payload);
+        onNegMsg!(subscriptionId, relayConnectivity.key, payload);
       }
       return Future.value();
     }
@@ -983,7 +987,7 @@ class RelayManager<T> {
       if (msgData.length >= 3 && onNegErr != null) {
         final subscriptionId = msgData[1] as String;
         final errorMsg = msgData[2] as String;
-        onNegErr!(subscriptionId, relayConnectivity.url, errorMsg);
+        onNegErr!(subscriptionId, relayConnectivity.key, errorMsg);
       }
       return Future.value();
     }
@@ -1184,15 +1188,28 @@ class RelayManager<T> {
       return false;
     }
 
-    final signedAuth = await account.signer.sign(
-      AuthEvent(
-        pubKey: account.pubkey,
-        tags: [
-          ["relay", key.url],
-          ["challenge", challenge],
-        ],
-      ),
-    );
+    // signing throws for anything from a declined request to an unreachable
+    // signer, and a caller that paused its timeout to wait for it would never
+    // resume that timeout if the error escaped here
+    final Nip01Event signedAuth;
+    try {
+      signedAuth = await account.signer.sign(
+        AuthEvent(
+          pubKey: account.pubkey,
+          tags: [
+            ["relay", key.url],
+            ["challenge", challenge],
+          ],
+        ),
+      );
+    } catch (error, stackTrace) {
+      Logger.log.w(
+        () => "Could not sign AUTH for $key",
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
     if (transportGone()) {
       return false;
     }
@@ -1306,6 +1323,13 @@ class RelayManager<T> {
   ) {
     String id = eventJson[1];
     String? message = eventJson.length > 2 ? eventJson[2] : null;
+
+    // a negentropy session is not a REQ: it owns its own retry and never has a
+    // RequestState for the auth branch below to find
+    if (globalState.inFlightNegotiations.containsKey(id)) {
+      onNegClosed?.call(id, relayConnectivity.key, message);
+      return;
+    }
 
     // Check if this is an auth-required CLOSED message
     if (message != null && message.startsWith("auth-required")) {
@@ -1487,8 +1511,11 @@ class RelayManager<T> {
   }
 
   /// Account a request authenticates as, null when it must stay unattributable.
-  Account? _accountForRequest(RequestState state) {
-    final auth = state.request.auth;
+  Account? _accountForRequest(RequestState state) =>
+      accountForAuth(state.request.auth);
+
+  /// Account [auth] authenticates as, null when it must stay unattributable.
+  Account? accountForAuth(RelayAuth? auth) {
     switch (auth) {
       case RelayAuthNever():
         return null;
@@ -1763,6 +1790,11 @@ class RelayManager<T> {
   /// return [RelayConnectivity] by url
   RelayConnectivity? getRelayConnectivity(String url) {
     return globalState.relays[RelayConnectionKey.anonymous(url)];
+  }
+
+  /// return [RelayConnectivity] of one connection, anonymous or bound
+  RelayConnectivity? getConnectivity(RelayConnectionKey key) {
+    return globalState.relays[key];
   }
 }
 
