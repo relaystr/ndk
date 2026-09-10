@@ -228,6 +228,88 @@ void main() {
       }
     });
 
+    test(
+        'rejects malformed packed FFI inputs for the combined id/PoW/'
+        'signature check', () {
+      const packedLength = 64 + 64 + 128;
+      final packed = malloc<Uint8>(packedLength);
+      final content = ''.toNativeUtf8();
+
+      try {
+        packed.asTypedList(packedLength).fillRange(0, packedLength, 0x7a);
+
+        expect(
+          rust_lib.verifyNostrEventPackedNative(
+            packed,
+            packedLength - 10,
+            0,
+            1,
+            nullptr,
+            nullptr,
+            0,
+            content,
+          ),
+          0,
+        );
+        expect(
+          rust_lib.verifyNostrEventPackedNative(
+            Pointer.fromAddress(0),
+            packedLength,
+            0,
+            1,
+            nullptr,
+            nullptr,
+            0,
+            content,
+          ),
+          0,
+        );
+        // Well-formed but non-matching id/pubkey/signature: id hash won't match.
+        expect(
+          rust_lib.verifyNostrEventPackedNative(
+            packed,
+            packedLength,
+            0,
+            1,
+            nullptr,
+            nullptr,
+            0,
+            content,
+          ),
+          0,
+        );
+      } finally {
+        malloc.free(packed);
+        malloc.free(content);
+      }
+    });
+
+    test('rejects event whose declared proof-of-work target is not met',
+        () async {
+      final createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final tags = [
+        ['nonce', '1', '255'],
+      ];
+      final id = Nip01Utils.calculateEventIdSync(
+        pubKey: keyPair.publicKey,
+        createdAt: createdAt,
+        kind: 1,
+        tags: tags,
+        content: 'pow test',
+      );
+      final event = Nip01Event(
+        id: id,
+        pubKey: keyPair.publicKey,
+        createdAt: createdAt,
+        kind: 1,
+        tags: tags,
+        content: 'pow test',
+        sig: Bip340.sign(id, keyPair.privateKey!),
+      );
+
+      expect(await verifier.verify(event), isFalse);
+    });
+
     test('repeatedly verifies an event with many large tags', () async {
       final createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       final tags = List.generate(
