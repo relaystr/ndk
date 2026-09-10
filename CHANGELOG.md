@@ -3,6 +3,54 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-10
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.10.0-dev.2`](#ndk---v0100-dev2)
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.10`](#ndk_drift---v011-dev10)
+ - [`ndk_objectbox` - `v0.2.12-dev.10`](#ndk_objectbox---v0212-dev10)
+ - [`ndk_flutter` - `v0.9.0-dev.8`](#ndk_flutter---v090-dev8)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.9.0-dev.8`
+
+---
+
+#### `ndk` - `v0.10.0-dev.2`
+
+ - **FIX**: end a reconciliation whose signer refuses to answer the challenge.
+ - **FIX**: stop spending the reconciliation budget on waiting for a signer.
+ - **FIX**: raise an impossible reconciliation from the call, not from its future.
+ - **FEAT**: let a negentropy reconciliation say which identity it may use.
+ - **BREAKING** **FEAT**(accounts): add accountsStream.
+
+#### `ndk_drift` - `v0.1.1-dev.10`
+
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+
+#### `ndk_objectbox` - `v0.2.12-dev.10`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
 ## 2026-09-09
 
 ### Changes
