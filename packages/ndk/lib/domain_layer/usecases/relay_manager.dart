@@ -1008,6 +1008,7 @@ class RelayManager<T> {
     String url,
     Account account, {
     ConnectionSource connectionSource = ConnectionSource.explicit,
+    int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT,
   }) async {
     if (!account.signer.canSign()) {
       Logger.log.w(() => "Cannot bind a connection to ${account.pubkey}");
@@ -1024,6 +1025,7 @@ class RelayManager<T> {
       dirtyUrl: url,
       connectionSource: connectionSource,
       authPubkey: account.pubkey,
+      connectTimeout: connectTimeout,
     );
     final connectivity = globalState.relays[key];
     if (!connected.first || connectivity == null) {
@@ -1086,6 +1088,7 @@ class RelayManager<T> {
         url,
         auth.account,
         connectionSource: connectionSource,
+        connectTimeout: connectTimeout,
       );
     }
 
