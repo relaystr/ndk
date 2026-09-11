@@ -184,6 +184,41 @@ void main() {
       expect(result, isTrue);
     });
 
+    // NUL cannot cross the current null-terminated string FFI; Rust hash tests
+    // cover its serialization directly along with all other control characters.
+    for (var code = 1; code < 0x20; code++) {
+      for (final inTag in [false, true]) {
+        test('verifies control character $code in ${inTag ? 'tag' : 'content'}',
+            () async {
+          final value = 'before${String.fromCharCode(code)}after';
+          final tags = inTag
+              ? [
+                  ['t', value],
+                ]
+              : <List<String>>[];
+          final content = inTag ? '' : value;
+          final id = Nip01Utils.calculateEventIdSync(
+            pubKey: keyPair.publicKey,
+            createdAt: 1726215220,
+            kind: 1,
+            tags: tags,
+            content: content,
+          );
+          final event = Nip01Event(
+            id: id,
+            pubKey: keyPair.publicKey,
+            createdAt: 1726215220,
+            kind: 1,
+            tags: tags,
+            content: content,
+            sig: Bip340.sign(id, keyPair.privateKey!),
+          );
+
+          expect(await verifier.verify(event), isTrue);
+        });
+      }
+    }
+
     test('rejects malformed fixed-size signature fields', () async {
       final event = Nip01Event(
         id: 'z' * 64,
@@ -197,42 +232,13 @@ void main() {
       expect(await verifier.verify(event), isFalse);
     });
 
-    test('rejects malformed packed FFI inputs', () {
-      const packedLength = 64 + 64 + 128;
-      const oversizedLength = packedLength + 10;
-      final packed = malloc<Uint8>(oversizedLength);
-
-      try {
-        expect(
-          rust_lib.verifySchnorrSignaturePackedNative(
-              packed, packedLength - 10),
-          0,
-        );
-        expect(
-          rust_lib.verifySchnorrSignaturePackedNative(packed, oversizedLength),
-          0,
-        );
-        expect(
-          rust_lib.verifySchnorrSignaturePackedNative(
-              Pointer.fromAddress(0), packedLength),
-          0,
-        );
-
-        packed.asTypedList(packedLength).fillRange(0, packedLength, 0x7a);
-        expect(
-          rust_lib.verifySchnorrSignaturePackedNative(packed, packedLength),
-          0,
-        );
-      } finally {
-        malloc.free(packed);
-      }
-    });
-
     test(
         'rejects malformed packed FFI inputs for the combined id/PoW/'
         'signature check', () {
       const packedLength = 64 + 64 + 128;
-      final packed = malloc<Uint8>(packedLength);
+      const oversizedLength = packedLength + 10;
+      final truncatedPacked = calloc<Uint8>(packedLength - 10);
+      final packed = malloc<Uint8>(oversizedLength);
       final content = ''.toNativeUtf8();
 
       try {
@@ -240,8 +246,21 @@ void main() {
 
         expect(
           rust_lib.verifyNostrEventPackedNative(
-            packed,
+            truncatedPacked,
             packedLength - 10,
+            0,
+            1,
+            nullptr,
+            nullptr,
+            0,
+            content,
+          ),
+          0,
+        );
+        expect(
+          rust_lib.verifyNostrEventPackedNative(
+            packed,
+            oversizedLength,
             0,
             1,
             nullptr,
@@ -279,6 +298,7 @@ void main() {
           0,
         );
       } finally {
+        calloc.free(truncatedPacked);
         malloc.free(packed);
         malloc.free(content);
       }
