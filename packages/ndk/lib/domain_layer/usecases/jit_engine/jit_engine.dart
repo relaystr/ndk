@@ -71,7 +71,7 @@ class JitEngine with Logger implements NetworkEngine {
         final cleanedExplicitRelays = cleanRelayUrls(
           requestState.request.explicitRelays!.toList(),
         );
-        RelayJitRequestSpecificStrategy.handleRequest(
+        await RelayJitRequestSpecificStrategy.handleRequest(
           relayManager: relayManagerLight,
           requestState: requestState,
           filter: filter,
@@ -144,16 +144,7 @@ class JitEngine with Logger implements NetworkEngine {
       );
     }
 
-    // Late auth for subscriptions with authenticateAs
-    if (ndkRequest.authenticateAs != null &&
-        ndkRequest.authenticateAs!.isNotEmpty) {
-      for (final connectionKey in requestState.requests.keys) {
-        relayManagerLight.authenticateIfNeeded(
-          connectionKey.url,
-          ndkRequest.authenticateAs!,
-        );
-      }
-    }
+    requestState.closeIfNoRelays();
   }
 
   /// broadcasts given event using inbox/outbox (gossip) if explicit relays are given they are used instead

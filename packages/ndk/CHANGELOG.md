@@ -1,3 +1,145 @@
+## 0.10.0-dev.2
+
+> Note: This release has breaking changes.
+
+ - **FIX**: end a reconciliation whose signer refuses to answer the challenge.
+ - **FIX**: stop spending the reconciliation budget on waiting for a signer.
+ - **FIX**: raise an impossible reconciliation from the call, not from its future.
+ - **FEAT**: let a negentropy reconciliation say which identity it may use.
+ - **BREAKING** **FEAT**(accounts): add accountsStream.
+
+## 0.10.0-dev.1
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: prerelease.
+ - **FIX**: final over var.
+ - **FIX**(requests): end a query that reached no relay.
+ - **FIX**: do not resurrect a jit request that already ended.
+ - **FIX**: do not send a relay set request closed while connecting.
+ - **FIX**: keep a request open while its auth retry connects.
+ - **FIX**(cli): avoid wallet startup network work.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**: keep a jit request open while its other relays are still connecting.
+ - **FIX**: do not send a jit request that was closed while its connection opened.
+ - **FIX**: authenticate as an account that was handed over, not only a registered one.
+ - **FIX**: answer an impossible request without waiting for its timeout.
+ - **FIX**: tell two requests apart by the identity they authenticate as.
+ - **FIX**: paginate each relay of a relay set on its own.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: send a required request only on its bound connection in the jit engine.
+ - **FEAT**: send a required request only on its bound connection.
+ - **FEAT**: add RelayAuth, the identity a request may be attributed to.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+ - **DOCS**(release): add 0.9.3 notes.
+ - **DOCS**(cli): condense wallet command help.
+ - **DOCS**(ndk): finalize 0.9.2 changelog.
+ - **BREAKING** **FIX**: stop authenticating to relays that never asked.
+ - **BREAKING** **FEAT**: let a request say which identity it may authenticate as.
+
+## 0.10.0-dev.0
+
+> Note: This release has breaking changes.
+
+ - Start the 0.10.0 prerelease series.
+
+## 0.9.4-dev.2
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: final over var.
+ - **FIX**(requests): end a query that reached no relay.
+ - **FIX**: do not resurrect a jit request that already ended.
+ - **FIX**: do not send a relay set request closed while connecting.
+ - **FIX**: keep a request open while its auth retry connects.
+ - **FIX**(cli): avoid wallet startup network work.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**: keep a jit request open while its other relays are still connecting.
+ - **FIX**: do not send a jit request that was closed while its connection opened.
+ - **FIX**: authenticate as an account that was handed over, not only a registered one.
+ - **FIX**: answer an impossible request without waiting for its timeout.
+ - **FIX**: tell two requests apart by the identity they authenticate as.
+ - **FIX**: paginate each relay of a relay set on its own.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: send a required request only on its bound connection in the jit engine.
+ - **FEAT**: send a required request only on its bound connection.
+ - **FEAT**: add RelayAuth, the identity a request may be attributed to.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+ - **DOCS**(release): add 0.9.3 notes.
+ - **DOCS**(cli): condense wallet command help.
+ - **DOCS**(ndk): finalize 0.9.2 changelog.
+ - **BREAKING** **FIX**: stop authenticating to relays that never asked.
+ - **BREAKING** **FEAT**: let a request say which identity it may authenticate as.
+
+## 0.9.4-dev.1
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: final over var.
+ - **FIX**: do not resurrect a jit request that already ended.
+ - **FIX**: do not send a relay set request closed while connecting.
+ - **FIX**: keep a request open while its auth retry connects.
+ - **FIX**(cli): avoid wallet startup network work.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**: keep a jit request open while its other relays are still connecting.
+ - **FIX**: do not send a jit request that was closed while its connection opened.
+ - **FIX**: authenticate as an account that was handed over, not only a registered one.
+ - **FIX**: answer an impossible request without waiting for its timeout.
+ - **FIX**: tell two requests apart by the identity they authenticate as.
+ - **FIX**: paginate each relay of a relay set on its own.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: send a required request only on its bound connection in the jit engine.
+ - **FEAT**: send a required request only on its bound connection.
+ - **FEAT**: add RelayAuth, the identity a request may be attributed to.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+ - **DOCS**(release): add 0.9.3 notes.
+ - **DOCS**(cli): condense wallet command help.
+ - **DOCS**(ndk): finalize 0.9.2 changelog.
+ - **BREAKING** **FIX**: stop authenticating to relays that never asked.
+ - **BREAKING** **FEAT**: let a request say which identity it may authenticate as.
+
+## 0.9.4-dev.0
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+
 ## 0.9.3
 
  - **FIX**(cli): prevent wallet commands from replaying pending deliveries or

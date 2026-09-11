@@ -11,6 +11,7 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/shared/nips/nip09/deletion.dart';
+import 'package:ndk/shared/nips/nip77/negentropy.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
 
@@ -106,6 +107,45 @@ class MockRelay {
   /// in the middle of an authentication does. The next ones are answered
   int silenceFirstAuths;
 
+  /// accept REQ messages but never answer them, neither with events nor with
+  /// an EOSE, the way a relay that is alive but stuck does
+  bool ignoreRequests;
+
+  /// when true a NEG-OPEN on an unauthenticated connection is refused
+  bool requireAuthForNegentropy = false;
+
+  /// how a refused NEG-OPEN is answered. NIP-77 only names NEG-ERR, but relays
+  /// that gate it behind NIP-42 often refuse it the way they refuse a REQ
+  bool refuseNegentropyWithClosed = false;
+
+  /// events the relay reconciles against, id to created_at
+  final Map<String, int> negentropyItems = {};
+
+  /// every NEG-OPEN the relay received, refused ones included, kept for the
+  /// whole run. A NEG-CLOSE or a socket that dies must not erase what a test
+  /// is about to assert on
+  final List<_ReceivedNegOpen> _negOpens = [];
+
+  /// subscription ids of every NEG-OPEN the relay received
+  List<String> get receivedNegOpens =>
+      [for (final negOpen in _negOpens) negOpen.subscriptionId];
+
+  /// subscription ids of NEG-OPENs carried by connections authenticated as
+  /// [pubkey]
+  Set<String> negOpensAuthenticatedAs(String pubkey) => {
+        for (final negOpen in _negOpens)
+          if (negOpen.connectionPubkeys.contains(pubkey))
+            negOpen.subscriptionId,
+      };
+
+  /// subscription ids of NEG-OPENs carried by connections that were never
+  /// authenticated as [pubkey]
+  Set<String> negOpensNotAuthenticatedAs(String pubkey) => {
+        for (final negOpen in _negOpens)
+          if (!negOpen.connectionPubkeys.contains(pubkey))
+            negOpen.subscriptionId,
+      };
+
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
 
@@ -187,6 +227,7 @@ class MockRelay {
     this.closeRequestsMessage,
     this.silenceRequests = false,
     this.silenceFirstAuths = 0,
+    this.ignoreRequests = false,
     int? explicitPort,
   })  : _nip65s = nip65s,
         _explicitPort = explicitPort,
@@ -199,8 +240,9 @@ class MockRelay {
     Map<String, Nip01Event>? metadatas,
     Map<String, Nip01Event>? nip85Assertions,
     Duration? delayResponse,
+    Duration? delayConnection,
   }) async {
-    var myPromise = Completer<void>();
+    final myPromise = Completer<void>();
 
     if (nip65s != null) {
       _nip65s = nip65s;
@@ -252,7 +294,22 @@ class MockRelay {
     }
 
     this.server = server;
-    var stream = server.transform(WebSocketTransformer());
+    final Stream<WebSocket> stream;
+    if (delayConnection == null) {
+      stream = server.transform(WebSocketTransformer());
+    } else {
+      // holds the handshake, not the answers: it is how a client is left with a
+      // connection that is still opening
+      final upgrades = StreamController<WebSocket>();
+      server.listen(
+        (request) async {
+          await Future.delayed(delayConnection);
+          upgrades.add(await WebSocketTransformer.upgrade(request));
+        },
+        onDone: upgrades.close,
+      );
+      stream = upgrades.stream;
+    }
 
     // Generate challenge once for the entire server lifetime (fixes race condition on reconnect)
     final String serverChallenge = Helpers.getRandomString(10);
@@ -492,6 +549,11 @@ class MockRelay {
                 return;
               }
 
+              if (ignoreRequests) {
+                log("MockRelay: ignoring REQ $requestId");
+                return;
+              }
+
               if (filters.isNotEmpty) {
                 // Store the subscription for this client
                 _clientSubscriptions[webSocket]?[requestId] = filters;
@@ -520,6 +582,48 @@ class MockRelay {
                   "MockRelay: Attempted to close non-existent subscription $subscriptionId",
                 );
               }
+              return;
+            }
+
+            if (eventJson[0] == "NEG-OPEN") {
+              final String subscriptionId = eventJson[1];
+              final String payload = eventJson[3];
+
+              // recorded before the auth check, so a refused NEG-OPEN is still
+              // visible to tests. It holds the connection's own pubkey set, so
+              // it still tells which identity carried the negotiation once the
+              // socket is gone and an AUTH that lands later still counts
+              _negOpens.add(
+                _ReceivedNegOpen(
+                  subscriptionId: subscriptionId,
+                  connectionPubkeys: authenticatedPubkeys,
+                ),
+              );
+
+              if (requireAuthForNegentropy && authenticatedPubkeys.isEmpty) {
+                const reason =
+                    "auth-required: we can't reconcile with unauthenticated users";
+                _send(
+                  webSocket,
+                  jsonEncode(
+                    refuseNegentropyWithClosed
+                        ? ["CLOSED", subscriptionId, reason]
+                        : ["NEG-ERR", subscriptionId, reason],
+                  ),
+                );
+                return;
+              }
+
+              _respondToNegentropy(webSocket, subscriptionId, payload);
+              return;
+            }
+
+            if (eventJson[0] == "NEG-MSG") {
+              _respondToNegentropy(webSocket, eventJson[1], eventJson[2]);
+              return;
+            }
+
+            if (eventJson[0] == "NEG-CLOSE") {
               return;
             }
           },
@@ -551,6 +655,41 @@ class MockRelay {
       socket.add(message);
     } on StateError {
       log('MockRelay: dropped a message for a closed socket');
+    }
+  }
+
+  /// Answers one negentropy round against [negentropyItems]. A response that is
+  /// only the version byte means the relay has nothing left to say, so it is
+  /// not sent back and the client ends the session.
+  void _respondToNegentropy(
+    WebSocket webSocket,
+    String subscriptionId,
+    String payload,
+  ) {
+    final items = negentropyItems.entries
+        .map(
+          (e) => NegentropyItem.fromHex(timestamp: e.value, idHex: e.key),
+        )
+        .toList();
+
+    try {
+      final response = NegentropyEncoder.respond(
+        NegentropyEncoder.hexToBytes(payload),
+        items,
+      );
+      if (response.length <= 1) {
+        return;
+      }
+      _send(
+        webSocket,
+        jsonEncode([
+          "NEG-MSG",
+          subscriptionId,
+          NegentropyEncoder.bytesToHex(response),
+        ]),
+      );
+    } catch (e) {
+      _send(webSocket, jsonEncode(["NEG-ERR", subscriptionId, "$e"]));
     }
   }
 
@@ -1129,4 +1268,19 @@ class MockRelay {
       return {'error': 'Error processing method $method: $e'};
     }
   }
+}
+
+/// One NEG-OPEN as the relay received it.
+///
+/// [connectionPubkeys] is the connection's own set, not a copy, so a NEG-OPEN
+/// sent before the AUTH that follows it still counts as carried by the
+/// identity that connection ended up holding.
+class _ReceivedNegOpen {
+  final String subscriptionId;
+  final Set<String> connectionPubkeys;
+
+  _ReceivedNegOpen({
+    required this.subscriptionId,
+    required this.connectionPubkeys,
+  });
 }

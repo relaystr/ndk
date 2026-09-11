@@ -26,6 +26,7 @@ export 'domain_layer/entities/nip_51_list.dart';
 export 'domain_layer/entities/contact_list.dart';
 export 'domain_layer/entities/read_write.dart';
 export 'domain_layer/entities/relay.dart';
+export 'domain_layer/entities/relay_auth.dart';
 export 'domain_layer/entities/relay_connection_key.dart';
 export 'domain_layer/entities/relay_request_outcome.dart';
 export 'domain_layer/entities/relay_set.dart';
@@ -129,7 +130,9 @@ export 'domain_layer/usecases/nip77/nip77.dart'
         Nip77,
         Nip77Response,
         Nip77NotSupportedException,
-        Nip77TimeoutException;
+        Nip77TimeoutException,
+        Nip77AuthUnavailableException,
+        Nip77AuthRequiredException;
 export 'domain_layer/entities/nip77_state.dart' show Nip77Result;
 export 'domain_layer/usecases/ta/trusted_assertions.dart';
 export 'domain_layer/entities/nip_85.dart';

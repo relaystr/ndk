@@ -377,6 +377,7 @@ class Initialization {
     // Wire up NIP-77 handlers
     relayManager.onNegMsg = nip77.processNegMsg;
     relayManager.onNegErr = nip77.processNegErr;
+    relayManager.onNegClosed = nip77.processNegClosed;
 
     trustedAssertions = TrustedAssertions(
       requests: requests,
