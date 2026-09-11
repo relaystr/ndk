@@ -12,6 +12,7 @@ import 'package:ndk/domain_layer/entities/account.dart';
 import 'package:ndk/domain_layer/entities/relay_auth.dart';
 import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/domain_layer/entities/signer_request_rejected_exception.dart';
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/domain_layer/usecases/accounts/accounts.dart';
@@ -64,6 +65,45 @@ void main() {
       await pendingDelivery.stop();
     });
 
+    /// One event may be published to two relays under two identities, so the
+    /// policy belongs to the relay target, not to the event.
+    test('keeps one policy per relay for the same event', () async {
+      final alice = Bip340.generatePrivateKey();
+      final bob = Bip340.generatePrivateKey();
+
+      Account accountOf(KeyPair k) => Account(
+            pubkey: k.publicKey,
+            type: AccountType.privateKey,
+            signer: Bip340EventSigner(
+              privateKey: k.privateKey!,
+              publicKey: k.publicKey,
+            ),
+          );
+
+      await pendingDelivery.enqueueSpecificRelayBroadcast(
+        event: event,
+        relayUrls: const ['wss://r1.example'],
+        requiresInteractiveSigning: false,
+        auth: RelayAuth.require(accountOf(alice)),
+      );
+      await pendingDelivery.enqueueSpecificRelayBroadcast(
+        event: event,
+        relayUrls: const ['wss://r2.example'],
+        requiresInteractiveSigning: false,
+        auth: RelayAuth.require(accountOf(bob)),
+      );
+
+      await pendingDelivery.flushForRelay('wss://r1.example');
+      await pendingDelivery.flushForRelay('wss://r2.example');
+
+      expect(
+        broadcast.broadcastedAuth
+            .map((auth) => (auth as RelayAuthRequire).account.pubkey),
+        [alice.publicKey, bob.publicKey],
+        reason: 'the second broadcast must not re-attribute the first',
+      );
+    });
+
     /// A signer never survives a restart, only the canonical policy does, so a
     /// retry has to find the account again or hold the delivery.
     group('auth policy across a restart', () {
@@ -97,8 +137,10 @@ void main() {
       test('persists the canonical policy, never a signer', () async {
         await enqueueUnder(RelayAuth.require(signable()));
 
-        final record = await cacheManager.loadEventDeliveryRecord(event.id);
-        expect(record?.authCanonical, 'require:${signerKey.publicKey}');
+        final targets = await cacheManager.loadRelayDeliveryTargets(
+          eventId: event.id,
+        );
+        expect(targets.single.authCanonical, 'require:${signerKey.publicKey}');
       });
 
       test('never survives a restart, since it names nobody', () async {
@@ -172,13 +214,12 @@ void main() {
         ]);
 
         // a delivery revived after that has to rebuild the policy from the
-        // record, so the handed-over identity is gone even in this process
+        // target, so the handed-over identity is gone even in this process
+        final settled = await cacheManager.loadRelayDeliveryTargets(
+          eventId: event.id,
+        );
         await cacheManager.saveRelayDeliveryTarget(
-          RelayDeliveryTarget(
-            eventId: event.id,
-            relayUrl: 'wss://relay.example',
-            reason: RelayDeliveryReason.explicit,
-          ),
+          settled.single.copyWith(state: RelayDeliveryState.pending),
         );
         await pendingDelivery.flushForRelay('wss://relay.example');
 

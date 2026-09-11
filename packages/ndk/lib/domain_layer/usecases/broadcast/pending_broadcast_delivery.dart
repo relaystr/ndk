@@ -39,10 +39,11 @@ class PendingBroadcastDelivery {
   final Map<String, int> _activeSignAttemptIds = {};
   final Map<String, int> _latestSignAttemptIds = {};
 
-  /// auth policy per event id, for as long as this process lives. A signer
-  /// cannot be persisted, so an account the caller handed over without ever
-  /// registering it only survives here. What outlives a restart is the
-  /// canonical form on the delivery record, see [_authForDelivery].
+  /// auth policy per relay target, keyed by [RelayDeliveryTarget.key] so one
+  /// event may go to two relays as two identities. For as long as this process
+  /// lives: a signer cannot be persisted, so an account the caller handed over
+  /// without ever registering it only survives here. What outlives a restart is
+  /// the canonical form on the target, see [_authForTarget].
   final Map<String, RelayAuth> _authPolicies = {};
   Iterable<String> Function()? _connectedRelayUrlsProvider;
   Timer? _retryTimer;
@@ -208,9 +209,6 @@ class PendingBroadcastDelivery {
     if (_stopped) {
       return;
     }
-    if (auth != null) {
-      _authPolicies[event.id] = auth;
-    }
     // One durable aggregate record plus one durable target per relay gives NDK
     // enough state to recover delivery after restart without mutating a shared
     // in-memory list.
@@ -238,7 +236,6 @@ class PendingBroadcastDelivery {
         lastSignAttemptAt: existing?.lastSignAttemptAt,
         nextSignRetryAt: existing?.nextSignRetryAt,
         lastSignError: existing?.lastSignError,
-        authCanonical: auth?.canonical ?? existing?.authCanonical,
       ),
     );
 
@@ -249,17 +246,32 @@ class PendingBroadcastDelivery {
       for (final target in existingTargets) target.relayUrl: target,
     };
 
-    await _cacheManager.saveRelayDeliveryTargets(
-      relayUrlList.map((relayUrl) {
-        final existingTarget = existingByRelay[relayUrl];
-        return existingTarget ??
-            RelayDeliveryTarget(
-              eventId: event.id,
-              relayUrl: relayUrl,
-              reason: RelayDeliveryReason.explicit,
-            );
-      }).toList(),
-    );
+    final targets = relayUrlList.map((relayUrl) {
+      final existingTarget = existingByRelay[relayUrl];
+      if (existingTarget != null) {
+        // only the relays of this call are re-attributed; the same event may
+        // be on its way to another relay as somebody else
+        return auth == null
+            ? existingTarget
+            : existingTarget.copyWith(authCanonical: auth.canonical);
+      }
+      return RelayDeliveryTarget(
+        eventId: event.id,
+        relayUrl: relayUrl,
+        reason: RelayDeliveryReason.explicit,
+        authCanonical: auth?.canonical,
+      );
+    }).toList();
+
+    if (auth != null) {
+      // keyed off the targets themselves, so the live policy can only ever be
+      // found under the key the persisted target is read back with
+      for (final target in targets) {
+        _authPolicies[target.key] = auth;
+      }
+    }
+
+    await _cacheManager.saveRelayDeliveryTargets(targets);
   }
 
   Future<void> persistSpecificRelayBroadcastResult(
@@ -301,7 +313,7 @@ class PendingBroadcastDelivery {
       final isAcked = response.okReceived && response.broadcastSuccessful;
       final nextState = policy.resolveNextState(
         response,
-        auth: _authForDelivery(existing).policy,
+        auth: _authForTarget(current).policy,
       );
       final nextRetryAt = policy.shouldRetryState(nextState)
           ? attemptTimestamp +
@@ -370,7 +382,7 @@ class PendingBroadcastDelivery {
         completedAt: completionTimestamp,
       ),
     );
-    _dropAuthPolicyIfSettled(event.id, allTargets);
+    _dropSettledAuthPolicies(allTargets);
     await _purgeEphemeralIfResolved(
       event.id,
       deliveryStatus,
@@ -488,7 +500,7 @@ class PendingBroadcastDelivery {
           continue;
         }
 
-        final auth = _authForDelivery(deliveryRecord);
+        final auth = _authForTarget(target);
         if (!auth.available) {
           await _parkUnattributableDelivery(target, deliveryRecord);
           continue;
@@ -507,7 +519,7 @@ class PendingBroadcastDelivery {
     }
   }
 
-  /// The auth policy a retry must go out under.
+  /// The auth policy a retry to this relay must go out under.
   ///
   /// The live policy wins: it holds the [Account] itself, so an identity the
   /// caller handed over without registering it still works. After a restart
@@ -515,13 +527,13 @@ class PendingBroadcastDelivery {
   /// looked up in [Accounts], the way [_resolveSignerForEvent] looks up a
   /// signer. An identity nobody can sign for resolves to nothing rather than
   /// falling back to the logged account, which is what the policy ruled out.
-  _AuthResolution _authForDelivery(EventDeliveryRecord record) {
-    final live = _authPolicies[record.eventId];
+  _AuthResolution _authForTarget(RelayDeliveryTarget target) {
+    final live = _authPolicies[target.key];
     if (live != null) {
       return _AuthResolution(live);
     }
 
-    final canonical = record.authCanonical;
+    final canonical = target.authCanonical;
     if (canonical == null) {
       return const _AuthResolution(null);
     }
@@ -556,14 +568,14 @@ class PendingBroadcastDelivery {
     EventDeliveryRecord record,
   ) async {
     Logger.log.w(
-      () => 'delivery ${record.eventId} to ${target.relayUrl} needs '
-          '${record.authCanonical}, which no account can sign for',
+      () => 'delivery ${target.eventId} to ${target.relayUrl} needs '
+          '${target.authCanonical}, which no account can sign for',
     );
     await _cacheManager.saveRelayDeliveryTargets([
       target.copyWith(
         state: RelayDeliveryState.authRequired,
         nextRetryAt: null,
-        lastError: 'No available account for ${record.authCanonical}',
+        lastError: 'No available account for ${target.authCanonical}',
       ),
     ]);
     await _saveSigningOutcome(record);
@@ -611,30 +623,22 @@ class PendingBroadcastDelivery {
     return visibleEvents.single.id != event.id;
   }
 
-  /// The live policy is only needed while something may still be sent.
-  /// Dropping it once every target settled keeps the map from growing for the
-  /// life of the process. A delivery that is revived supplies it again through
+  /// A live policy is only needed while something may still be sent to that
+  /// relay. Dropping the settled ones keeps the map from growing for the life
+  /// of the process. A delivery that is revived supplies it again through
   /// [enqueueSpecificRelayBroadcast].
-  void _dropAuthPolicyIfSettled(
-    String eventId,
-    List<RelayDeliveryTarget> targets,
-  ) {
-    // no targets yet means enrollment is still in flight, not that it is over
-    if (targets.isEmpty) {
-      return;
-    }
-    final settled = targets.every(
-      (target) =>
-          target.state == RelayDeliveryState.acked ||
-          target.state == RelayDeliveryState.permanentFailure,
-    );
-    if (settled) {
-      _authPolicies.remove(eventId);
+  void _dropSettledAuthPolicies(List<RelayDeliveryTarget> targets) {
+    for (final target in targets) {
+      if (target.state == RelayDeliveryState.acked ||
+          target.state == RelayDeliveryState.permanentFailure) {
+        _authPolicies.remove(target.key);
+      }
     }
   }
 
   Future<void> _discardEventDelivery(String eventId) async {
-    _authPolicies.remove(eventId);
+    final prefix = RelayDeliveryTarget.keyPrefixFor(eventId);
+    _authPolicies.removeWhere((key, _) => key.startsWith(prefix));
     await _cacheManager.removeRelayDeliveryTargets(eventId);
     await _cacheManager.removeEventDeliveryRecord(eventId);
   }
@@ -1069,7 +1073,7 @@ class PendingBroadcastDelivery {
             : null,
       ),
     );
-    _dropAuthPolicyIfSettled(record.eventId, targets);
+    _dropSettledAuthPolicies(targets);
     await _purgeEphemeralIfResolved(
       record.eventId,
       resolvedStatus,

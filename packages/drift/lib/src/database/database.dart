@@ -41,7 +41,7 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
   NdkCacheDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration {
@@ -76,6 +76,16 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
           // legacy tables.
           await _migrateLegacyMetadatas();
           await _migrateLegacyContactLists();
+        }
+        // which identity an event goes to a relay under, see RelayAuth. Only
+        // for a database that already had the table: createTable above builds
+        // it from today's definition, column included, so adding it again
+        // there would fail on a duplicate
+        if (from >= 5 && from < 7) {
+          await m.addColumn(
+            relayDeliveryTargetsTable,
+            relayDeliveryTargetsTable.authCanonical,
+          );
         }
       },
     );
