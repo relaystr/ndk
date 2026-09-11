@@ -159,13 +159,22 @@ void broadcastAuthTests(NdkEngine engine) {
           .broadcastDoneFuture;
 
       expect(result.any((r) => r.broadcastSuccessful), isTrue);
+
+      // asserted after the connections are gone: what carried the event has to
+      // outlive the socket that carried it
+      await ndk.destroy();
+
       expect(
         relay.eventsNotAuthenticatedAs(key.publicKey),
         isEmpty,
         reason: 'the event never touches the anonymous connection',
       );
+      expect(
+        relay.eventsAuthenticatedAs(key.publicKey),
+        contains(event.id),
+        reason: 'and it went out as the identity that was required',
+      );
 
-      await ndk.destroy();
       await relay.stopServer();
     });
 

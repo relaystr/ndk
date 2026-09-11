@@ -65,27 +65,25 @@ class MockRelay {
             ...entry.value,
       };
 
-  /// every EVENT received, with the socket that carried it
+  /// every EVENT received, holding its connection's own identity set rather
+  /// than a copy of it. A connection bound to an identity sends before the
+  /// relay accepted its AUTH, so a snapshot taken on arrival would call a bound
+  /// connection anonymous; the live set shows the AUTH that follows. Holding
+  /// the set rather than the socket also outlives the socket's cleanup, so a
+  /// test may assert after the connection closed.
   final List<_ReceivedEvent> _receivedEventConnections = [];
-
-  /// Whether [socket] is authenticated as [pubkey] *now*, not when the event
-  /// arrived. A connection bound to an identity sends before the relay has
-  /// accepted its AUTH, so judging at arrival time would call a bound
-  /// connection anonymous.
-  bool _socketCarries(WebSocket socket, String pubkey) =>
-      _authenticatedPubkeys[socket]?.contains(pubkey) ?? false;
 
   /// ids of EVENTs carried by connections authenticated as [pubkey]
   Set<String> eventsAuthenticatedAs(String pubkey) => {
         for (final received in _receivedEventConnections)
-          if (_socketCarries(received.socket, pubkey)) received.eventId,
+          if (received.connectionPubkeys.contains(pubkey)) received.eventId,
       };
 
   /// ids of EVENTs carried by connections that were never authenticated as
   /// [pubkey]
   Set<String> eventsNotAuthenticatedAs(String pubkey) => {
         for (final received in _receivedEventConnections)
-          if (!_socketCarries(received.socket, pubkey)) received.eventId,
+          if (!received.connectionPubkeys.contains(pubkey)) received.eventId,
       };
 
   /// how many live connections are authenticated as [pubkey]
@@ -405,7 +403,10 @@ class MockRelay {
               if (verify(newEvent.pubKey, newEvent.id, newEvent.sig!)) {
                 _receivedEvents.add(newEvent);
                 _receivedEventConnections.add(
-                  _ReceivedEvent(eventId: newEvent.id, socket: webSocket),
+                  _ReceivedEvent(
+                    eventId: newEvent.id,
+                    connectionPubkeys: authenticatedPubkeys,
+                  ),
                 );
                 if (rejectFirstEventPublishes > 0) {
                   rejectFirstEventPublishes--;
@@ -1313,7 +1314,9 @@ class _ReceivedNegOpen {
 
 class _ReceivedEvent {
   final String eventId;
-  final WebSocket socket;
 
-  _ReceivedEvent({required this.eventId, required this.socket});
+  /// the connection's own set, mutated in place when its AUTH is accepted
+  final Set<String> connectionPubkeys;
+
+  _ReceivedEvent({required this.eventId, required this.connectionPubkeys});
 }
