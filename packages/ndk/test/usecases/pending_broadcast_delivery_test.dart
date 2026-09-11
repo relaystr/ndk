@@ -159,6 +159,52 @@ void main() {
         expect(record?.status, EventDeliveryStatus.needsAction);
       });
 
+      test('drops the live policy once every target settled', () async {
+        // handed over, never registered, so it only exists in memory
+        await enqueueUnder(RelayAuth.require(signable()));
+
+        await pendingDelivery.persistSpecificRelayBroadcastResult(event, [
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: true,
+            broadcastSuccessful: true,
+          ),
+        ]);
+
+        // a delivery revived after that has to rebuild the policy from the
+        // record, so the handed-over identity is gone even in this process
+        await cacheManager.saveRelayDeliveryTarget(
+          RelayDeliveryTarget(
+            eventId: event.id,
+            relayUrl: 'wss://relay.example',
+            reason: RelayDeliveryReason.explicit,
+          ),
+        );
+        await pendingDelivery.flushForRelay('wss://relay.example');
+
+        expect(broadcast.broadcastedEvents, isEmpty);
+        final targets = await cacheManager.loadRelayDeliveryTargets(
+          eventId: event.id,
+        );
+        expect(targets.single.state, RelayDeliveryState.authRequired);
+      });
+
+      test('keeps the live policy while a target is still pending', () async {
+        await enqueueUnder(RelayAuth.require(signable()));
+
+        await pendingDelivery.persistSpecificRelayBroadcastResult(event, [
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: false,
+            broadcastSuccessful: false,
+            msg: 'auth-required: please authenticate',
+          ),
+        ]);
+        await pendingDelivery.flushForRelay('wss://relay.example');
+
+        expect(broadcast.broadcastedAuth, [isA<RelayAuthRequire>()]);
+      });
+
       test('resumes once the event is broadcast with the account', () async {
         await enqueueUnder(RelayAuth.require(signable()));
         final restarted = afterRestart();

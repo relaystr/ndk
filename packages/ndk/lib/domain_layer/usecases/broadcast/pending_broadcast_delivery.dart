@@ -92,6 +92,7 @@ class PendingBroadcastDelivery {
     _stopped = true;
     _retryTimer?.cancel();
     _retryTimer = null;
+    _authPolicies.clear();
     final operations = _inFlightOperations.toList(growable: false);
     if (operations.isNotEmpty) {
       await Future.wait(operations);
@@ -369,6 +370,7 @@ class PendingBroadcastDelivery {
         completedAt: completionTimestamp,
       ),
     );
+    _dropAuthPolicyIfSettled(event.id, allTargets);
     await _purgeEphemeralIfResolved(
       event.id,
       deliveryStatus,
@@ -609,7 +611,30 @@ class PendingBroadcastDelivery {
     return visibleEvents.single.id != event.id;
   }
 
+  /// The live policy is only needed while something may still be sent.
+  /// Dropping it once every target settled keeps the map from growing for the
+  /// life of the process. A delivery that is revived supplies it again through
+  /// [enqueueSpecificRelayBroadcast].
+  void _dropAuthPolicyIfSettled(
+    String eventId,
+    List<RelayDeliveryTarget> targets,
+  ) {
+    // no targets yet means enrollment is still in flight, not that it is over
+    if (targets.isEmpty) {
+      return;
+    }
+    final settled = targets.every(
+      (target) =>
+          target.state == RelayDeliveryState.acked ||
+          target.state == RelayDeliveryState.permanentFailure,
+    );
+    if (settled) {
+      _authPolicies.remove(eventId);
+    }
+  }
+
   Future<void> _discardEventDelivery(String eventId) async {
+    _authPolicies.remove(eventId);
     await _cacheManager.removeRelayDeliveryTargets(eventId);
     await _cacheManager.removeEventDeliveryRecord(eventId);
   }
@@ -1044,6 +1069,7 @@ class PendingBroadcastDelivery {
             : null,
       ),
     );
+    _dropAuthPolicyIfSettled(record.eventId, targets);
     await _purgeEphemeralIfResolved(
       record.eventId,
       resolvedStatus,
