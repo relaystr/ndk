@@ -161,6 +161,11 @@ class EventDeliveryRecord {
   final int? nextSignRetryAt;
   final String? lastSignError;
 
+  /// canonical form of the [RelayAuth] this event was broadcast under, see
+  /// `RelayAuth.canonical`. A signer cannot be persisted, so only the intent
+  /// is: the account behind a pubkey is resolved again on retry.
+  final String? authCanonical;
+
   const EventDeliveryRecord({
     required this.eventId,
     this.status = EventDeliveryStatus.pending,
@@ -175,6 +180,7 @@ class EventDeliveryRecord {
     this.lastSignAttemptAt,
     this.nextSignRetryAt,
     this.lastSignError,
+    this.authCanonical,
   });
 
   /// True once all known targets have been acknowledged.
@@ -200,6 +206,7 @@ class EventDeliveryRecord {
     Object? lastSignAttemptAt = _noChange,
     Object? nextSignRetryAt = _noChange,
     Object? lastSignError = _noChange,
+    Object? authCanonical = _noChange,
   }) {
     return EventDeliveryRecord(
       eventId: eventId ?? this.eventId,
@@ -227,6 +234,9 @@ class EventDeliveryRecord {
       lastSignError: identical(lastSignError, _noChange)
           ? this.lastSignError
           : lastSignError as String?,
+      authCanonical: identical(authCanonical, _noChange)
+          ? this.authCanonical
+          : authCanonical as String?,
     );
   }
 
@@ -245,6 +255,7 @@ class EventDeliveryRecord {
       'lastSignAttemptAt': lastSignAttemptAt,
       'nextSignRetryAt': nextSignRetryAt,
       'lastSignError': lastSignError,
+      'authCanonical': authCanonical,
     };
   }
 
@@ -271,6 +282,7 @@ class EventDeliveryRecord {
       lastSignAttemptAt: json['lastSignAttemptAt'] as int?,
       nextSignRetryAt: json['nextSignRetryAt'] as int?,
       lastSignError: json['lastSignError'] as String?,
+      authCanonical: json['authCanonical'] as String?,
     );
   }
 }

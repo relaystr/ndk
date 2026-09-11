@@ -29,6 +29,53 @@ You might encounter a warning about missing `nip65` data. You can ignore this wa
 If you want to use the outbox model, check out the [enabling gossip](/guides/enabling-gossip.md#broadcast-using-outbox) guide (recommended).
 !!!
 
+## Relay authentication (NIP-42)
+
+Some relays only accept an event from a client that authenticated. The `auth`
+parameter says which identity the broadcast may be attributed to, exactly like
+on [requests](/usecases/requests.md#relay-authentication-nip-42):
+
+```dart
+final myBroadcast = ndk.broadcast.broadcast(
+  nostrEvent: report,
+  auth: const RelayAuth.never(),
+);
+```
+
+| policy | connection | what a relay learns |
+| --- | --- | --- |
+| `RelayAuth.never()` | anonymous, always | nothing. A relay that refuses the event without an identity simply does not accept it |
+| `RelayAuth.allow(a)` | anonymous, moves to one bound to `a` once the relay refuses | who you are, but only after that relay asked |
+| `RelayAuth.require(a)` | bound to `a` from the start | who you are, as soon as it sends a challenge |
+
+Without `auth`, a refused event authenticates as its author when a registered
+account matches, and as the currently logged-in account otherwise. The relay
+therefore decides when your identity is revealed. Pass `auth` explicitly
+whenever that matters.
+
+The account does not have to be one NDK knows: `allow` and `require` take the
+`Account` itself, so an identity you built on the spot works.
+
+If `require` names an account that cannot sign, no connection can carry the
+event. Rather than fall back to the anonymous one, which is what `require`
+rules out, nothing is sent and `broadcast` itself throws
+`BroadcastAuthUnavailableException`.
+
+### Across a restart
+
+A signer is never written to disk, only the policy is, as `never`,
+`allow:<pubkey>` or `require:<pubkey>`. That matters for the background retries
+described below, not for the broadcast you are awaiting.
+
+- `never()` survives a restart whole, because it names nobody. A relay that
+  refuses such an event is a final answer, so it is not retried at all.
+- `allow` and `require` resolve their pubkey through the accounts NDK holds. A
+  retry therefore needs that account to be registered again after a restart.
+- An identity no account can sign for parks the delivery in
+  `EventDeliveryStatus.needsAction` instead of going out as somebody else. You
+  see it through `loadPendingDeliveries()`, and you resume it by broadcasting
+  the same event again with the account in hand.
+
 ## When to use
 
 Broadcast should be used when your use case has no broadcasting method. \

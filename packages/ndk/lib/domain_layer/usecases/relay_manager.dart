@@ -1062,6 +1062,33 @@ class RelayManager<T> {
     );
   }
 
+  /// The connection a broadcast under [auth] must go out on towards [url].
+  ///
+  /// Mirrors [connectionForRequest] for the write path: a broadcast that
+  /// requires an identity gets its own bound connection, opened if it is not
+  /// there yet, so the event never touches the anonymous socket. Null means
+  /// nothing may be sent to that relay.
+  Future<RelayConnectivity?> connectionForBroadcast(
+    String url,
+    RelayAuth? auth, {
+    ConnectionSource connectionSource = ConnectionSource.broadcastSpecific,
+  }) async {
+    if (auth is! RelayAuthRequire) {
+      return getRelayConnectivity(url);
+    }
+    if (!auth.account.signer.canSign()) {
+      Logger.log.w(
+        () => "Broadcast requires ${auth.account.pubkey}, which cannot sign",
+      );
+      return null;
+    }
+    return openConnectionAs(
+      url,
+      auth.account,
+      connectionSource: connectionSource,
+    );
+  }
+
   /// The account [key] authenticates as. A registered account wins, because
   /// [Accounts] owns its signer's lifetime; otherwise it is the one the caller
   /// handed to [RelayAuth], which never had to be registered. Both carry
@@ -1530,6 +1557,26 @@ class RelayManager<T> {
     }
   }
 
+  /// Account a broadcast authenticates as, null when it must stay
+  /// unattributable.
+  ///
+  /// A caller that named an identity gets that one, with no heuristic. Only a
+  /// broadcast that said nothing prefers the event author, because gift wraps
+  /// and other ephemeral-author events have no matching account and the logged
+  /// one is the historical fallback.
+  Account? _accountForBroadcast(BroadcastState state, Nip01Event event) {
+    if (state.auth != null) {
+      return accountForAuth(state.auth);
+    }
+
+    final author = _accounts?.accounts[event.pubKey];
+    if (author != null && author.signer.canSign()) {
+      return author;
+    }
+    final logged = _accounts?.getLoggedAccount();
+    return logged != null && logged.signer.canSign() ? logged : null;
+  }
+
   /// Handles OK auth-required for broadcasts by moving the retry onto an
   /// account-bound connection, authenticating it once, and re-sending EVENT.
   /// Concurrent broadcasts share [authenticateConnection], avoiding duplicate
@@ -1555,24 +1602,25 @@ class RelayManager<T> {
       return;
     }
 
-    // Prefer authenticating as the event author. Gift wraps and other
-    // ephemeral-author events may not have a matching account, so fall back to
-    // the currently logged-in account when needed.
-    Account? account = _accounts?.accounts[eventToResend.pubKey];
-    final loggedAccount = _accounts?.getLoggedAccount();
-    if ((account == null || !account.signer.canSign()) &&
-        loggedAccount != null &&
-        loggedAccount.pubkey != account?.pubkey) {
-      account = loggedAccount;
-    }
+    final resolved = _accountForBroadcast(broadcastState, eventToResend);
 
-    if (account == null || !account.signer.canSign()) {
+    if (resolved == null) {
       Logger.log.w(
         () =>
-            "Received OK auth-required but no account can sign for ${relayConnectivity.url}",
+            "Cannot satisfy auth-required for broadcast $eventId on ${relayConnectivity.url}",
       );
+      // a broadcast that named a policy gets an answer rather than a timeout;
+      // one that said nothing keeps waiting, as it always has
+      if (broadcastState.auth != null) {
+        failBroadcast(
+          eventId,
+          relayConnectivity.url,
+          'auth-required: this broadcast may not reveal an identity',
+        );
+      }
       return;
     }
+    final account = resolved;
 
     final boundKey = RelayConnectionKey.authenticated(
       relayConnectivity.url,
@@ -1583,7 +1631,7 @@ class RelayManager<T> {
       try {
         final bound = await openConnectionAs(
           relayConnectivity.url,
-          account!,
+          account,
           connectionSource: relayConnectivity.relay.connectionSource,
         );
         if (!identical(

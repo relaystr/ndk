@@ -65,6 +65,29 @@ class MockRelay {
             ...entry.value,
       };
 
+  /// every EVENT received, with the socket that carried it
+  final List<_ReceivedEvent> _receivedEventConnections = [];
+
+  /// Whether [socket] is authenticated as [pubkey] *now*, not when the event
+  /// arrived. A connection bound to an identity sends before the relay has
+  /// accepted its AUTH, so judging at arrival time would call a bound
+  /// connection anonymous.
+  bool _socketCarries(WebSocket socket, String pubkey) =>
+      _authenticatedPubkeys[socket]?.contains(pubkey) ?? false;
+
+  /// ids of EVENTs carried by connections authenticated as [pubkey]
+  Set<String> eventsAuthenticatedAs(String pubkey) => {
+        for (final received in _receivedEventConnections)
+          if (_socketCarries(received.socket, pubkey)) received.eventId,
+      };
+
+  /// ids of EVENTs carried by connections that were never authenticated as
+  /// [pubkey]
+  Set<String> eventsNotAuthenticatedAs(String pubkey) => {
+        for (final received in _receivedEventConnections)
+          if (!_socketCarries(received.socket, pubkey)) received.eventId,
+      };
+
   /// how many live connections are authenticated as [pubkey]
   int connectionsAuthenticatedAs(String pubkey) => _authenticatedPubkeys.values
       .where((pubkeys) => pubkeys.contains(pubkey))
@@ -381,6 +404,9 @@ class MockRelay {
               Nip01Event newEvent = Nip01EventModel.fromJson(eventJson[1]);
               if (verify(newEvent.pubKey, newEvent.id, newEvent.sig!)) {
                 _receivedEvents.add(newEvent);
+                _receivedEventConnections.add(
+                  _ReceivedEvent(eventId: newEvent.id, socket: webSocket),
+                );
                 if (rejectFirstEventPublishes > 0) {
                   rejectFirstEventPublishes--;
                   _send(
@@ -1283,4 +1309,11 @@ class _ReceivedNegOpen {
     required this.subscriptionId,
     required this.connectionPubkeys,
   });
+}
+
+class _ReceivedEvent {
+  final String eventId;
+  final WebSocket socket;
+
+  _ReceivedEvent({required this.eventId, required this.socket});
 }

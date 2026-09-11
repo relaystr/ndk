@@ -2,8 +2,8 @@ import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../repositories/cache_manager.dart';
 import '../../../entities/connection_source.dart';
-import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/nip_01_event.dart';
+import '../../../entities/relay_auth.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../relay_manager.dart';
 
@@ -13,10 +13,9 @@ class RelayJitBroadcastSpecificRelaysStrategy {
   static Future broadcast({
     required Nip01Event eventToPublish,
     required CacheManager cacheManager,
-    required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-        connectedRelays,
     required RelayManager relayManager,
     required List<String> specificRelays,
+    RelayAuth? auth,
   }) async {
     // Deduplicate relay URLs
     final uniqueRelayUrls = specificRelays.toSet().toList();
@@ -39,48 +38,23 @@ class RelayJitBroadcastSpecificRelaysStrategy {
       );
 
       try {
-        final isConnected = relayManager.isRelayConnected(relayUrl);
-        if (isConnected) {
-          if (await _shouldSkipObsoleteReplaceableBroadcast(
-            cacheManager: cacheManager,
-            event: eventToPublish,
-          )) {
+        if (!relayManager.isRelayConnected(relayUrl)) {
+          final success = (await relayManager.connectRelay(
+            dirtyUrl: relayUrl,
+            connectionSource: ConnectionSource.broadcastSpecific,
+            connectTimeout: 1,
+          ))
+              .first;
+          if (!success) {
             relayManager.failBroadcast(
               eventToPublish.id,
               relayUrl,
-              "obsolete replaceable event skipped",
+              "connection failed",
             );
             return;
           }
-          try {
-            final relay = connectedRelays.firstWhere(
-              (element) => element.url == relayUrl,
-            );
-            sendToRelay(relay: relay);
-          } catch (e) {
-            relayManager.failBroadcast(
-              eventToPublish.id,
-              relayUrl,
-              "relay not found in connected list",
-            );
-          }
-          return;
         }
 
-        final success = (await relayManager.connectRelay(
-          dirtyUrl: relayUrl,
-          connectionSource: ConnectionSource.broadcastSpecific,
-          connectTimeout: 1,
-        ))
-            .first;
-        if (!success) {
-          relayManager.failBroadcast(
-            eventToPublish.id,
-            relayUrl,
-            "connection failed",
-          );
-          return;
-        }
         if (await _shouldSkipObsoleteReplaceableBroadcast(
           cacheManager: cacheManager,
           event: eventToPublish,
@@ -92,18 +66,20 @@ class RelayJitBroadcastSpecificRelaysStrategy {
           );
           return;
         }
-        try {
-          final relay = relayManager.connectedAnonymousRelays.firstWhere(
-            (element) => element.url == relayUrl,
-          );
-          sendToRelay(relay: relay);
-        } catch (e) {
+
+        final relay = await relayManager.connectionForBroadcast(
+          relayUrl,
+          auth,
+        );
+        if (relay == null) {
           relayManager.failBroadcast(
             eventToPublish.id,
             relayUrl,
-            "relay not found after connection",
+            "no connection could carry this broadcast",
           );
+          return;
         }
+        sendToRelay(relay: relay);
       } catch (e) {
         relayManager.failBroadcast(
           eventToPublish.id,

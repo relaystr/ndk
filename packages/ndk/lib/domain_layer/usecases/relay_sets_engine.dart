@@ -17,6 +17,7 @@ import '../entities/filter.dart';
 import '../entities/global_state.dart';
 import '../entities/ndk_request.dart';
 import '../entities/nip_01_event.dart';
+import '../entities/relay_auth.dart';
 import '../entities/relay_connection_key.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_set.dart';
@@ -127,7 +128,11 @@ class RelaySetsEngine implements NetworkEngine {
   /// 3) if connected was successfull send the event
   /// 4) otherwise call failBroadcast in order to publish a RelayBroadcastResponse
   ///   for that specific relay with an error message
-  Future<void> doRelayBroadcast(String relayUrl, Nip01Event nostrEvent) async {
+  Future<void> doRelayBroadcast(
+    String relayUrl,
+    Nip01Event nostrEvent, {
+    RelayAuth? auth,
+  }) async {
     _relayManager.registerRelayBroadcast(
       eventToPublish: nostrEvent,
       relayUrl: relayUrl,
@@ -166,11 +171,22 @@ class RelaySetsEngine implements NetworkEngine {
         return;
       }
 
-      final relayConnectivity = _relayManager.getRelayConnectivity(relayUrl);
+      final relayConnectivity = await _relayManager.connectionForBroadcast(
+        relayUrl,
+        auth,
+      );
       if (relayConnectivity != null) {
         await _relayManager.sendOrThrow(
           relayConnectivity,
           ClientMsg(ClientMsgType.kEvent, event: nostrEvent),
+        );
+        return;
+      }
+      if (auth is RelayAuthRequire) {
+        _relayManager.failBroadcast(
+          nostrEvent.id,
+          relayUrl,
+          "no connection bound to ${auth.account.pubkey} could be opened",
         );
         return;
       }
@@ -378,7 +394,8 @@ class RelaySetsEngine implements NetworkEngine {
             specificRelays.map(
               (relayUrl) =>
                   // broadcast async
-                  doRelayBroadcast(relayUrl, workingEvent),
+                  doRelayBroadcast(relayUrl, workingEvent,
+                      auth: broadcastState.auth),
             ),
           );
         }
@@ -412,7 +429,8 @@ class RelaySetsEngine implements NetworkEngine {
 
         await Future.wait(
           writeRelaysUrls.map(
-            (relayUrl) => doRelayBroadcast(relayUrl, workingEvent),
+            (relayUrl) => doRelayBroadcast(relayUrl, workingEvent,
+                auth: broadcastState.auth),
           ),
         );
 
@@ -447,7 +465,8 @@ class RelaySetsEngine implements NetworkEngine {
 
           await Future.wait(
             myWriteRelayUrlsOthers.map(
-              (relayUrl) => doRelayBroadcast(relayUrl, workingEvent),
+              (relayUrl) => doRelayBroadcast(relayUrl, workingEvent,
+                  auth: broadcastState.auth),
             ),
           );
         }

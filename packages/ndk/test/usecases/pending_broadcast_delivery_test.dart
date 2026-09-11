@@ -8,6 +8,10 @@ import 'package:ndk/domain_layer/entities/event_cache_records.dart';
 import 'package:ndk/domain_layer/entities/global_state.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/pending_signer_request.dart';
+import 'package:ndk/domain_layer/entities/account.dart';
+import 'package:ndk/domain_layer/entities/relay_auth.dart';
+import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/domain_layer/entities/signer_request_rejected_exception.dart';
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/domain_layer/usecases/accounts/accounts.dart';
@@ -58,6 +62,122 @@ void main() {
 
     tearDown(() async {
       await pendingDelivery.stop();
+    });
+
+    /// A signer never survives a restart, only the canonical policy does, so a
+    /// retry has to find the account again or hold the delivery.
+    group('auth policy across a restart', () {
+      final signerKey = Bip340.generatePrivateKey();
+
+      Account signable() => Account(
+            pubkey: signerKey.publicKey,
+            type: AccountType.privateKey,
+            signer: Bip340EventSigner(
+              privateKey: signerKey.privateKey!,
+              publicKey: signerKey.publicKey,
+            ),
+          );
+
+      Future<void> enqueueUnder(RelayAuth auth) async {
+        await pendingDelivery.enqueueSpecificRelayBroadcast(
+          event: event,
+          relayUrls: const ['wss://relay.example'],
+          requiresInteractiveSigning: false,
+          auth: auth,
+        );
+      }
+
+      /// the same durable state seen by a process that never held the policy
+      PendingBroadcastDelivery afterRestart() => PendingBroadcastDelivery(
+            cacheManager: cacheManager,
+            broadcastSender: broadcast,
+            accounts: accounts,
+          );
+
+      test('persists the canonical policy, never a signer', () async {
+        await enqueueUnder(RelayAuth.require(signable()));
+
+        final record = await cacheManager.loadEventDeliveryRecord(event.id);
+        expect(record?.authCanonical, 'require:${signerKey.publicKey}');
+      });
+
+      test('never survives a restart, since it names nobody', () async {
+        await enqueueUnder(const RelayAuth.never());
+        final restarted = afterRestart();
+        addTearDown(restarted.stop);
+
+        await restarted.flushForRelay('wss://relay.example');
+
+        expect(broadcast.broadcastedAuth, [isA<RelayAuthNever>()]);
+      });
+
+      test('rebuilds a named policy from a registered account', () async {
+        await enqueueUnder(RelayAuth.allow(signable()));
+        accounts.addAccount(
+          pubkey: signerKey.publicKey,
+          type: AccountType.privateKey,
+          signer: Bip340EventSigner(
+            privateKey: signerKey.privateKey!,
+            publicKey: signerKey.publicKey,
+          ),
+        );
+        final restarted = afterRestart();
+        addTearDown(restarted.stop);
+
+        await restarted.flushForRelay('wss://relay.example');
+
+        expect(broadcast.broadcastedAuth, [isA<RelayAuthAllow>()]);
+        expect(
+          (broadcast.broadcastedAuth.single as RelayAuthAllow).account.pubkey,
+          signerKey.publicKey,
+        );
+      });
+
+      test('holds a delivery whose identity no account can sign for', () async {
+        await enqueueUnder(RelayAuth.require(signable()));
+        // the account was handed over, never registered, so a new process has
+        // the pubkey and no way to sign as it
+        final restarted = afterRestart();
+        addTearDown(restarted.stop);
+
+        await restarted.flushForRelay('wss://relay.example');
+
+        expect(
+          broadcast.broadcastedEvents,
+          isEmpty,
+          reason: 'sending it as anybody else is what require ruled out',
+        );
+
+        final targets = await cacheManager.loadRelayDeliveryTargets(
+          eventId: event.id,
+        );
+        expect(targets.single.state, RelayDeliveryState.authRequired);
+        expect(targets.single.nextRetryAt, isNull);
+        expect(targets.single.lastError, contains(signerKey.publicKey));
+
+        final record = await cacheManager.loadEventDeliveryRecord(event.id);
+        expect(record?.status, EventDeliveryStatus.needsAction);
+      });
+
+      test('resumes once the event is broadcast with the account', () async {
+        await enqueueUnder(RelayAuth.require(signable()));
+        final restarted = afterRestart();
+        addTearDown(restarted.stop);
+        await restarted.flushForRelay('wss://relay.example');
+        expect(broadcast.broadcastedEvents, isEmpty);
+
+        // the app hands the identity back by broadcasting the same event again
+        await restarted.enqueueSpecificRelayBroadcast(
+          event: event,
+          relayUrls: const ['wss://relay.example'],
+          requiresInteractiveSigning: false,
+          auth: RelayAuth.require(signable()),
+        );
+        await restarted.flushForRelay('wss://relay.example');
+
+        expect(broadcast.broadcastedEvents, [event]);
+        expect(broadcast.broadcastedAuth, [isA<RelayAuthRequire>()]);
+      });
     });
 
     test('does not rebroadcast permanent failures during due flush', () async {
@@ -833,6 +953,7 @@ void main() {
 
 class RecordingBroadcastSender extends BroadcastSender {
   final List<Nip01Event> broadcastedEvents = [];
+  final List<RelayAuth?> broadcastedAuth = [];
 
   RecordingBroadcastSender({required MemCacheManager cacheManager})
       : super(
@@ -853,8 +974,10 @@ class RecordingBroadcastSender extends BroadcastSender {
     double? considerDonePercent,
     Duration? timeout,
     bool? saveToCache,
+    RelayAuth? auth,
   }) {
     broadcastedEvents.add(nostrEvent);
+    broadcastedAuth.add(auth);
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
       broadcastDoneStream: Stream.value(const <RelayBroadcastResponse>[]),

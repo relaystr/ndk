@@ -94,6 +94,7 @@ export 'domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 export 'domain_layer/usecases/lists/lists.dart';
 export 'domain_layer/usecases/relay_sets/relay_sets.dart';
 export 'domain_layer/usecases/broadcast/broadcast.dart';
+export 'domain_layer/usecases/broadcast/broadcast_exceptions.dart';
 export 'domain_layer/usecases/nwc/nwc.dart';
 export 'domain_layer/usecases/zaps/zaps.dart';
 export 'domain_layer/usecases/zaps/zap_request.dart';

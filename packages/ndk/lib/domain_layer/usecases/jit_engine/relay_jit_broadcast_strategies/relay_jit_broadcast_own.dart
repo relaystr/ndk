@@ -1,8 +1,8 @@
 import '../../../../shared/logger/logger.dart';
 import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../entities/connection_source.dart';
-import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/nip_01_event.dart';
+import '../../../entities/relay_auth.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../../repositories/cache_manager.dart';
 import '../../relay_manager.dart';
@@ -13,11 +13,10 @@ class RelayJitBroadcastOutboxStrategy {
   /// publish event to nip65 outbox relays
   static Future broadcast({
     required Nip01Event eventToPublish,
-    required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-        connectedRelays,
     required CacheManager cacheManager,
     required RelayManager relayManager,
     required List<String> bootstrapRelays,
+    RelayAuth? auth,
   }) async {
     final nip65Data = await UserRelayLists.getUserRelayListCacheLatestSingle(
       pubkey: eventToPublish.pubKey,
@@ -63,48 +62,35 @@ class RelayJitBroadcastOutboxStrategy {
       );
 
       try {
-        final isConnected = relayManager.isRelayConnected(relayUrl);
-        if (isConnected) {
-          try {
-            final relay = connectedRelays.firstWhere(
-              (element) => element.url == relayUrl,
-            );
-            sendToRelay(relay: relay);
-          } catch (e) {
+        if (!relayManager.isRelayConnected(relayUrl)) {
+          final success = await relayManager.connectRelay(
+            dirtyUrl: relayUrl,
+            connectionSource: ConnectionSource.broadcastOwn,
+          );
+          if (!success.first) {
             relayManager.failBroadcast(
               eventToPublish.id,
               relayUrl,
-              "relay not found in connected list",
+              "connection failed",
             );
+            return;
           }
-          return;
         }
 
-        final success = await relayManager.connectRelay(
-          dirtyUrl: relayUrl,
+        final relay = await relayManager.connectionForBroadcast(
+          relayUrl,
+          auth,
           connectionSource: ConnectionSource.broadcastOwn,
         );
-        if (!success.first) {
+        if (relay == null) {
           relayManager.failBroadcast(
             eventToPublish.id,
             relayUrl,
-            "connection failed",
+            "no connection could carry this broadcast",
           );
           return;
         }
-
-        try {
-          final relay = relayManager.connectedAnonymousRelays.firstWhere(
-            (element) => element.url == relayUrl,
-          );
-          sendToRelay(relay: relay);
-        } catch (e) {
-          relayManager.failBroadcast(
-            eventToPublish.id,
-            relayUrl,
-            "relay not found after connection",
-          );
-        }
+        sendToRelay(relay: relay);
       } catch (e) {
         relayManager.failBroadcast(
           eventToPublish.id,
