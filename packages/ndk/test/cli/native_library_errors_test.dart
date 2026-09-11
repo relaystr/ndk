@@ -18,5 +18,21 @@ void main() {
         isFalse,
       );
     });
+
+    test('does not classify unrelated load errors', () {
+      expect(
+        isNativeLibraryLoadError(ArgumentError('Failed to load event data')),
+        isFalse,
+      );
+    });
+
+    test('recognizes dynamic library load errors', () {
+      expect(
+        isNativeLibraryLoadError(
+          ArgumentError('Failed to load dynamic library: library not found'),
+        ),
+        isTrue,
+      );
+    });
   });
 }

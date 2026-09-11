@@ -3,6 +3,5 @@ bool isNativeLibraryLoadError(ArgumentError error) {
   return message.contains('dynamic library') ||
       message.contains('failed to lookup symbol') ||
       message.contains("couldn't resolve native function") ||
-      message.contains('no available native assets') ||
-      message.contains('failed to load');
+      message.contains('no available native assets');
 }
