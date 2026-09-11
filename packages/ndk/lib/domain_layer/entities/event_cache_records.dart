@@ -469,15 +469,19 @@ class EventCacheStateRecord {
   /// Accepts NIP-01 `a` tag values, whose d-tag segment is present but empty
   /// for non addressable kinds. Returns null when [coordinate] is malformed or
   /// names a kind that has no conflict domain.
+  ///
+  /// Only the pubkey is case folded: NIP-01 mandates lowercase hex there, while
+  /// a d-tag is an arbitrary string relays match byte for byte.
   static String? normalizeConflictKey(String coordinate) {
     final parts = coordinate.split(':');
     if (parts.length < 2) return null;
     final kind = int.tryParse(parts[0]);
     if (kind == null || parts[1].isEmpty) return null;
+    final pubKey = parts[1].toLowerCase();
 
     if (EventKindClassification.isParameterizedReplaceableKind(kind)) {
       final dTag = parts.length > 2 ? parts.sublist(2).join(':') : '';
-      return '$kind:${parts[1]}:$dTag';
+      return '$kind:$pubKey:$dTag';
     }
     if (!EventKindClassification.isReplaceableKind(kind)) return null;
     // A non addressable kind has no d-tag, so only an empty trailing segment
@@ -485,7 +489,25 @@ class EventCacheStateRecord {
     if (parts.length > 3 || (parts.length == 3 && parts[2].isNotEmpty)) {
       return null;
     }
-    return '$kind:${parts[1]}';
+    return '$kind:$pubKey';
+  }
+
+  /// Whether [deletion] covers [conflictKey] through one of its `a` tags.
+  ///
+  /// Reads the tags directly because [Nip01Event.getTags] lowercases values,
+  /// which would drop the case of the d-tag carried by the coordinate.
+  static bool deletionCoversConflictKey(
+    Nip01Event deletion,
+    String conflictKey,
+  ) {
+    for (final tag in deletion.tags) {
+      if (tag.length > 1 &&
+          tag[0] == 'a' &&
+          normalizeConflictKey(tag[1].trim()) == conflictKey) {
+        return true;
+      }
+    }
+    return false;
   }
 
   Map<String, dynamic> toJson() {
@@ -588,26 +610,14 @@ class EventCacheStateRecord {
       target.getDtag(),
     );
 
-    // A non addressable replaceable kind is written both as `kind:pubkey` and
-    // with a trailing empty d-tag segment, so accept either spelling.
-    final coordinates = switch (replaceableConflictKey) {
-      null => const <String>[],
-      final key
-          when EventKindClassification.isParameterizedReplaceableKind(
-            target.kind,
-          ) =>
-        [key],
-      final key => [key, '$key:'],
-    };
-
     for (final event in deletionEvents) {
       if (event.pubKey != target.pubKey) continue;
       if (event.getTags('e').contains(target.id.toLowerCase())) {
         return event;
       }
-      if (coordinates.isNotEmpty &&
+      if (replaceableConflictKey != null &&
           event.createdAt >= target.createdAt &&
-          event.getTags('a').any(coordinates.contains)) {
+          deletionCoversConflictKey(event, replaceableConflictKey)) {
         return event;
       }
     }

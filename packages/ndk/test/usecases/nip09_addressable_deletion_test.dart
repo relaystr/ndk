@@ -107,6 +107,86 @@ void main() {
     );
   });
 
+  group('addressable (a-tag) deletion is case sensitive on the d-tag', () {
+    // NIP-01 only mandates lowercase hex for the pubkey. A d-tag is an
+    // arbitrary string, so relays match the coordinate byte for byte.
+    const mixedCaseDtag = 'Article-A';
+
+    Nip01Event article() {
+      return Nip01Event(
+        pubKey: author,
+        kind: addressableKind,
+        tags: const [
+          ['d', mixedCaseDtag],
+        ],
+        content: 'v1',
+        createdAt: 1700000000,
+      );
+    }
+
+    Nip01Event deletionOf(String dTag) {
+      return Nip01Event(
+        pubKey: author,
+        kind: Deletion.kKind,
+        tags: [
+          ['a', '$addressableKind:$author:$dTag'],
+        ],
+        content: 'delete by coordinate',
+        createdAt: 1700000001,
+      );
+    }
+
+    test('a mixed case coordinate deletes its own event', () {
+      final target = article();
+      final records = EventCacheStateRecord.buildForEvents([
+        target,
+        deletionOf(mixedCaseDtag),
+      ], now: 1700000100);
+
+      expect(
+        records.firstWhere((record) => record.eventId == target.id).isDeleted,
+        isTrue,
+      );
+    });
+
+    test('a lowercased coordinate deletes nothing', () {
+      final target = article();
+      final records = EventCacheStateRecord.buildForEvents([
+        target,
+        deletionOf(mixedCaseDtag.toLowerCase()),
+      ], now: 1700000100);
+
+      expect(
+        records.firstWhere((record) => record.eventId == target.id).isDeleted,
+        isFalse,
+      );
+    });
+
+    test('eviction sweeps a mixed case coordinate deletion', () {
+      final target = article();
+
+      final plan = EventEvictionPlanner.plan(
+        rawEvents: [target, deletionOf(mixedCaseDtag)],
+        lockedEventIds: const {},
+        deliveredEventIds: const {},
+        policy: const EvictionPolicy(),
+        now: 1700000100,
+      );
+
+      expect(plan.eventIdsToRemove, contains(target.id));
+      expect(plan.removedDeleted, 1);
+    });
+
+    test('cache reads hide a mixed case coordinate deletion', () async {
+      final cache = MemCacheManager();
+      final target = article();
+
+      await cache.saveEvents([target, deletionOf(mixedCaseDtag)]);
+
+      expect(await cache.loadEvents(ids: [target.id]), isEmpty);
+    });
+  });
+
   group('MemCacheManager addressable (a-tag) deletion visibility', () {
     test('hides an addressable event deleted by coordinate', () async {
       final cache = MemCacheManager();
