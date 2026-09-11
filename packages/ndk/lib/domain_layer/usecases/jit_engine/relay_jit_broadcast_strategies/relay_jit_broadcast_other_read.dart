@@ -68,21 +68,6 @@ class RelayJitBroadcastOtherReadStrategy {
       );
 
       try {
-        if (!relayManager.isRelayConnected(relayUrl)) {
-          final success = await relayManager.connectRelay(
-            dirtyUrl: relayUrl,
-            connectionSource: ConnectionSource.broadcastOther,
-          );
-          if (!success.first) {
-            relayManager.failBroadcast(
-              eventToPublish.id,
-              relayUrl,
-              "connection failed",
-            );
-            return;
-          }
-        }
-
         final relay = await relayManager.connectionForBroadcast(
           relayUrl,
           auth,

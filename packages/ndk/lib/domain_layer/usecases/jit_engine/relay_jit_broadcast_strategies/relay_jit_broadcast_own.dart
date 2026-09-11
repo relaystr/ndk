@@ -62,21 +62,6 @@ class RelayJitBroadcastOutboxStrategy {
       );
 
       try {
-        if (!relayManager.isRelayConnected(relayUrl)) {
-          final success = await relayManager.connectRelay(
-            dirtyUrl: relayUrl,
-            connectionSource: ConnectionSource.broadcastOwn,
-          );
-          if (!success.first) {
-            relayManager.failBroadcast(
-              eventToPublish.id,
-              relayUrl,
-              "connection failed",
-            );
-            return;
-          }
-        }
-
         final relay = await relayManager.connectionForBroadcast(
           relayUrl,
           auth,

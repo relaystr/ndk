@@ -1062,31 +1062,45 @@ class RelayManager<T> {
     );
   }
 
-  /// The connection a broadcast under [auth] must go out on towards [url].
+  /// The connection a broadcast under [auth] must go out on towards [url],
+  /// opening it when it is not there yet. Null means nothing may be sent.
   ///
-  /// Mirrors [connectionForRequest] for the write path: a broadcast that
-  /// requires an identity gets its own bound connection, opened if it is not
-  /// there yet, so the event never touches the anonymous socket. Null means
-  /// nothing may be sent to that relay.
+  /// Mirrors [connectionForRequest] for the write path, and owns the connecting
+  /// too: a broadcast that requires an identity must not even open the
+  /// anonymous connection, because a socket we opened is one the relay saw,
+  /// whether or not anything was sent on it.
   Future<RelayConnectivity?> connectionForBroadcast(
     String url,
     RelayAuth? auth, {
     ConnectionSource connectionSource = ConnectionSource.broadcastSpecific,
+    int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT,
   }) async {
-    if (auth is! RelayAuthRequire) {
-      return getRelayConnectivity(url);
-    }
-    if (!auth.account.signer.canSign()) {
-      Logger.log.w(
-        () => "Broadcast requires ${auth.account.pubkey}, which cannot sign",
+    if (auth is RelayAuthRequire) {
+      if (!auth.account.signer.canSign()) {
+        Logger.log.w(
+          () => "Broadcast requires ${auth.account.pubkey}, which cannot sign",
+        );
+        return null;
+      }
+      return openConnectionAs(
+        url,
+        auth.account,
+        connectionSource: connectionSource,
       );
-      return null;
     }
-    return openConnectionAs(
-      url,
-      auth.account,
-      connectionSource: connectionSource,
-    );
+
+    if (!isRelayConnected(url)) {
+      final connected = await connectRelay(
+        dirtyUrl: url,
+        connectionSource: connectionSource,
+        connectTimeout: connectTimeout,
+      );
+      if (!connected.first) {
+        Logger.log.w(() => "Could not connect to $url: ${connected.second}");
+        return null;
+      }
+    }
+    return getRelayConnectivity(url);
   }
 
   /// The account [key] authenticates as. A registered account wins, because

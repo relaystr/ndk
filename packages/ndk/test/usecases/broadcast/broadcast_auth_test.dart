@@ -169,6 +169,44 @@ void broadcastAuthTests(NdkEngine engine) {
       await relay.stopServer();
     });
 
+    test('require never opens the anonymous connection', () async {
+      // bootstrapping to another relay, so the only reason to reach the target
+      // at all is this broadcast
+      final bootstrap = await authRelay(requireAuth: false);
+      final target = await authRelay();
+      final ndk = ndkFor(bootstrap);
+      final account = signableAccount(key);
+
+      await ndk.broadcast
+          .broadcast(
+            nostrEvent: noteFrom(key, "require alone"),
+            specificRelays: [target.url],
+            customSigner: account.signer,
+            auth: RelayAuth.require(account),
+          )
+          .broadcastDoneFuture;
+
+      expect(
+        ndk.relays.globalState.relays.keys.where(
+          (connectionKey) =>
+              connectionKey.url == target.url && connectionKey.isAnonymous,
+        ),
+        isEmpty,
+        reason: 'a socket we opened is one the relay saw, sent on or not',
+      );
+      expect(
+        ndk.relays.globalState.relays.keys.where(
+          (connectionKey) => connectionKey.pubkey == key.publicKey,
+        ),
+        isNotEmpty,
+        reason: 'the bound connection is the one that was opened',
+      );
+
+      await ndk.destroy();
+      await bootstrap.stopServer();
+      await target.stopServer();
+    });
+
     test('require binds even when the relay never refuses', () async {
       final relay = await authRelay(requireAuth: false);
       final ndk = ndkFor(relay);

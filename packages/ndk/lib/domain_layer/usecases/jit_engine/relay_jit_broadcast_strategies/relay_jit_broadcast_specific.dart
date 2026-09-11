@@ -1,7 +1,6 @@
 import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../repositories/cache_manager.dart';
-import '../../../entities/connection_source.dart';
 import '../../../entities/nip_01_event.dart';
 import '../../../entities/relay_auth.dart';
 import '../../../entities/relay_connectivity.dart';
@@ -38,23 +37,22 @@ class RelayJitBroadcastSpecificRelaysStrategy {
       );
 
       try {
-        if (!relayManager.isRelayConnected(relayUrl)) {
-          final success = (await relayManager.connectRelay(
-            dirtyUrl: relayUrl,
-            connectionSource: ConnectionSource.broadcastSpecific,
-            connectTimeout: 1,
-          ))
-              .first;
-          if (!success) {
-            relayManager.failBroadcast(
-              eventToPublish.id,
-              relayUrl,
-              "connection failed",
-            );
-            return;
-          }
+        final relay = await relayManager.connectionForBroadcast(
+          relayUrl,
+          auth,
+          connectTimeout: 1,
+        );
+        if (relay == null) {
+          relayManager.failBroadcast(
+            eventToPublish.id,
+            relayUrl,
+            "no connection could carry this broadcast",
+          );
+          return;
         }
 
+        // checked once the connection is there: a newer version may have been
+        // persisted while it was opening, and that one supersedes this send
         if (await _shouldSkipObsoleteReplaceableBroadcast(
           cacheManager: cacheManager,
           event: eventToPublish,
@@ -67,18 +65,6 @@ class RelayJitBroadcastSpecificRelaysStrategy {
           return;
         }
 
-        final relay = await relayManager.connectionForBroadcast(
-          relayUrl,
-          auth,
-        );
-        if (relay == null) {
-          relayManager.failBroadcast(
-            eventToPublish.id,
-            relayUrl,
-            "no connection could carry this broadcast",
-          );
-          return;
-        }
         sendToRelay(relay: relay);
       } catch (e) {
         relayManager.failBroadcast(

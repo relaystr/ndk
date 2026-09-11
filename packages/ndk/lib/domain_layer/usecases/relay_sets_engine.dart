@@ -138,26 +138,25 @@ class RelaySetsEngine implements NetworkEngine {
       relayUrl: relayUrl,
     );
 
-    var connected = _relayManager.isRelayConnected(relayUrl);
+    RelayConnectivity? relayConnectivity;
     Object? error;
-    if (!connected) {
-      try {
-        final result = await _relayManager.connectRelay(
-          dirtyUrl: relayUrl,
-          connectionSource: ConnectionSource.broadcastSpecific,
-          connectTimeout: 1,
-        );
-        connected = result.first;
-      } catch (e) {
-        Logger.log.w(
-          () => "Error during quick connect for $relayUrl in doRelayBroadcast",
-          error: e,
-        );
-        error = e;
-      }
+    try {
+      relayConnectivity = await _relayManager.connectionForBroadcast(
+        relayUrl,
+        auth,
+        connectTimeout: 1,
+      );
+    } catch (e) {
+      Logger.log.w(
+        () => "Error during quick connect for $relayUrl in doRelayBroadcast",
+        error: e,
+      );
+      error = e;
     }
 
-    if (connected) {
+    if (relayConnectivity != null) {
+      // checked once the connection is there: a newer version may have been
+      // persisted while it was opening, and that one supersedes this send
       if (await _shouldSkipObsoleteReplaceableBroadcast(nostrEvent)) {
         Logger.log.d(
           () =>
@@ -171,25 +170,19 @@ class RelaySetsEngine implements NetworkEngine {
         return;
       }
 
-      final relayConnectivity = await _relayManager.connectionForBroadcast(
-        relayUrl,
-        auth,
+      await _relayManager.sendOrThrow(
+        relayConnectivity,
+        ClientMsg(ClientMsgType.kEvent, event: nostrEvent),
       );
-      if (relayConnectivity != null) {
-        await _relayManager.sendOrThrow(
-          relayConnectivity,
-          ClientMsg(ClientMsgType.kEvent, event: nostrEvent),
-        );
-        return;
-      }
-      if (auth is RelayAuthRequire) {
-        _relayManager.failBroadcast(
-          nostrEvent.id,
-          relayUrl,
-          "no connection bound to ${auth.account.pubkey} could be opened",
-        );
-        return;
-      }
+      return;
+    }
+    if (auth is RelayAuthRequire) {
+      _relayManager.failBroadcast(
+        nostrEvent.id,
+        relayUrl,
+        "no connection bound to ${auth.account.pubkey} could be opened",
+      );
+      return;
     }
     _relayManager.failBroadcast(
       nostrEvent.id,
