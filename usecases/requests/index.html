@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.841860672437">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.842449580163">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 4.6.0">
@@ -37,12 +37,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.6.0.841860672437" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.842449580163" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.841860672437" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.842449580163" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.841860672437" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.841860672437" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.842449580163" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.842449580163" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -59,7 +59,7 @@
                 <div class="flex items-center px-2 md:px-6">
                     <a id="retype-branding-logo" href="https://dart-nostr.com/" class="flex items-center leading-snug text-2xl">
                         <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
-                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.9.3</span>
+                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.10.0-dev.2</span>
                 </div>
     
                 <span class="hidden h-8 border-r md:inline-block border-base-border"></span>
@@ -206,7 +206,10 @@ await for (final event in response.stream) {
 <p>Requests should be used when no other use case fits your needs. <br />
 There is <code translate="no" v-pre>.query</code> and <code translate="no" v-pre>.subscription</code> representing the nostr equivalent, <code translate="no" v-pre>.subscription</code> should only be used when absolutely necessary. Many relays limit the amount of simultaneous subscriptions.</p>
 <h2 id="relay-authentication-nip-42">Relay Authentication (NIP-42)</h2>
-<p>Some relays require authentication before serving requests. Use <code translate="no" v-pre>authenticateAs</code> to specify which accounts should authenticate:</p>
+<p>Some relays only serve a request to a client that authenticated. A connection
+carries at most one identity, chosen when it is opened and immutable for its
+whole lifetime, so choosing an identity is really choosing a connection. The
+<code translate="no" v-pre>auth</code> parameter says which one a request may use:</p>
 <div id="relay-authentication-nip-42-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">final account = Account(
   pubkey: myPubkey,
@@ -215,27 +218,129 @@ There is <code translate="no" v-pre>.query</code> and <code translate="no" v-pre
   // Use NdkEventSigner from ndk_flutter for automatic web/native selection
 );
 
-ndk.accounts.addAccount(pubkey: account.pubkey, type: account.type, signer: account.signer);
-
+// the account does not have to be one of ndk.accounts: handing it over is
+// enough, and it can differ from the one that is logged in
 final response = ndk.requests.query(
-  filter: Filter(kinds: [4], authors: [myPubkey]),
-  authenticateAs: [account],
+  filter: Filter(kinds: [1059], authors: [myPubkey]),
+  auth: RelayAuth.allow(account),
 );</code></pre>
 </doc-codeblock></div>
-<h3 id="use-cases">Use cases</h3>
-<ul>
-<li><strong>Multi-account clients</strong>: Fetch private data (DMs, encrypted content) for multiple identities in a single query</li>
-<li><strong>Account aggregation</strong>: Apps managing several accounts can authenticate all at once</li>
-<li><strong>Seamless account switching</strong>: Pre-authenticate multiple accounts to avoid delays when switching</li>
-</ul>
-<div id="use-cases-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">// Authenticate multiple accounts at once
-final response = ndk.requests.query(
-  filter: Filter(kinds: [4], authors: [user1Pubkey, user2Pubkey]),
-  authenticateAs: [account1, account2],
+<h3 id="the-three-policies">The three policies</h3>
+<retype-table copy-text="| policy | connection | what a relay learns |
+| --- | --- | --- |
+| `RelayAuth.never()` | anonymous, always | nothing. A relay that refuses the request without an identity simply does not serve it, and the request returns what the other relays gave |
+| `RelayAuth.allow(a)` | anonymous, moves to one bound to `a` once a relay refuses | who you are, but only after that relay asked |
+| `RelayAuth.require(a)` | bound to `a` from the start | who you are, as soon as it sends a challenge |">
+<div class="table-wrapper scrollbar overflow-hidden">
+<table class="comfortable">
+<thead>
+<tr>
+<th>policy</th>
+<th>connection</th>
+<th>what a relay learns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code translate="no" v-pre>RelayAuth.never()</code></td>
+<td>anonymous, always</td>
+<td>nothing. A relay that refuses the request without an identity simply does not serve it, and the request returns what the other relays gave</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>RelayAuth.allow(a)</code></td>
+<td>anonymous, moves to one bound to <code translate="no" v-pre>a</code> once a relay refuses</td>
+<td>who you are, but only after that relay asked</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>RelayAuth.require(a)</code></td>
+<td>bound to <code translate="no" v-pre>a</code> from the start</td>
+<td>who you are, as soon as it sends a challenge</td>
+</tr>
+</tbody>
+</table>
+</div>
+</retype-table>
+<p>Report an event without ever being attributable for it:</p>
+<div id="the-three-policies-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">ndk.requests.query(
+  filter: Filter(kinds: [1], ids: [suspiciousEventId]),
+  auth: const RelayAuth.never(),
 );</code></pre>
 </doc-codeblock></div>
-<p>If <code translate="no" v-pre>authenticateAs</code> is not specified, NDK falls back to the currently logged-in account.</p>
+<p>Read your own encrypted data, which no relay should serve to anyone else:</p>
+<div id="the-three-policies-code-2" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">ndk.requests.query(
+  filter: Filter(kinds: [1059], authors: [myPubkey]),
+  auth: RelayAuth.require(account),
+);</code></pre>
+</doc-codeblock></div>
+<h3 id="what-require-guarantees-exactly">What <code translate="no" v-pre>require</code> guarantees, exactly</h3>
+<p>The request is never written to a connection other than one reserved for that
+account. It does not mean the relay knows who asked: NIP-42 has no way to
+authenticate unprompted, so a relay that never sends a challenge never learns
+the identity. It also does not mean no anonymous socket to that relay exists.
+NDK connects to its bootstrap relays anonymously at startup, and the JIT engine
+discovers relays on anonymous connections before routing the request onto the
+bound one, which costs a second socket to the same relay.</p>
+<p>If the account cannot sign, no connection can carry the request at all. Rather
+than fall back to the anonymous one, which is what <code translate="no" v-pre>require</code> rules out, it is
+sent to no relay and completes right away with whatever the local cache held.
+Its timeout never fires: nothing timed out, the request was impossible from the
+start.</p>
+<h3 id="one-request-one-identity">One request, one identity</h3>
+<p>A request authenticates as at most one account. To read data belonging to
+several identities, issue one request per identity: each gets its own
+connection, and a relay never sees two of your identities on the same socket.</p>
+<h3 id="the-default">The default</h3>
+<p>Without <code translate="no" v-pre>auth</code>, a request that meets <code translate="no" v-pre>auth-required</code> authenticates as the
+currently logged-in account. The relay therefore decides when your identity is
+revealed. Pass <code translate="no" v-pre>auth</code> explicitly whenever that matters. This default is
+expected to change.</p>
+<h3 id="migrating-from-authenticateas">Migrating from <code translate="no" v-pre>authenticateAs</code></h3>
+<p><code translate="no" v-pre>authenticateAs</code> is deprecated. It is translated into a policy, and <code translate="no" v-pre>auth</code> wins
+when both are given:</p>
+<retype-table copy-text="| `authenticateAs` | translated to |
+| --- | --- |
+| `[a]` | `RelayAuth.allow(a)` |
+| `[a, b]` | `RelayAuth.allow(a)`, the rest of the list is dropped |
+| a list where no account can sign | `const RelayAuth.never()` |
+| not specified | nothing, the default above applies |">
+<div class="table-wrapper scrollbar overflow-hidden">
+<table class="comfortable">
+<thead>
+<tr>
+<th><code translate="no" v-pre>authenticateAs</code></th>
+<th>translated to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code translate="no" v-pre>[a]</code></td>
+<td><code translate="no" v-pre>RelayAuth.allow(a)</code></td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>[a, b]</code></td>
+<td><code translate="no" v-pre>RelayAuth.allow(a)</code>, the rest of the list is dropped</td>
+</tr>
+<tr>
+<td>a list where no account can sign</td>
+<td><code translate="no" v-pre>const RelayAuth.never()</code></td>
+</tr>
+<tr>
+<td>not specified</td>
+<td>nothing, the default above applies</td>
+</tr>
+</tbody>
+</table>
+</div>
+</retype-table>
+<p>A list never authenticated as more than one identity: only the first account
+that could sign was ever used, and that is now what it says. If you passed
+<code translate="no" v-pre>[a, b]</code> expecting both to be covered, issue one request per identity, each
+with its own <code translate="no" v-pre>auth</code>.</p>
+<p>One behaviour did change. <code translate="no" v-pre>authenticateAs</code> opened an authenticated connection
+before any relay asked for one, which revealed the identity even to relays that
+would have served the request anonymously. <code translate="no" v-pre>allow</code> waits for the refusal.</p>
 <h2 id="event-sources">Event sources</h2>
 <p>When events are cached, NDK may also persist source relay information.</p>
 <p>Current behavior:</p>

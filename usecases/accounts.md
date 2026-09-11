@@ -44,6 +44,27 @@ await ndk.accounts.loginWithBunkerConnection(
 Store the `BunkerConnection` details locally to re-establish the connection in future sessions. Use `bunkerConnection.toJson()` to serialize and `BunkerConnection.fromJson()` to restore. Without storing these, users will need to re-authenticate each time.
 !!!
 
+### Reacting to changes
+
+```dart watch the logged in account
+ndk.accounts.authStateChanges.listen((account) {
+    // account is null when logged out
+});
+```
+
+```dart watch the list of accounts
+ndk.accounts.accountsStream.listen((accounts) {
+    // pubkey -> Account, emitted on every add and remove
+});
+```
+
+`accountsStream` emits the current accounts on subscription, then an unmodifiable
+snapshot each time an account is added or removed. `switchAccount` changes the
+logged in account but not the list, so it only fires `authStateChanges`.
+
+The `ndk.accounts.accounts` map is a read-only view of the same data, for when you
+need a synchronous read instead of a stream.
+
 ## When to use
 
 Use it to log in an account.

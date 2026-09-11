@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.841860672437">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.842449580163">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 4.6.0">
@@ -12,7 +12,7 @@
     <!-- Primary Meta Tags -->
     <title>Negentropy</title>
     <meta name="title" content="Negentropy">
-    <meta name="description" content="✅ Good for:">
+    <meta name="description" content="Some relays only reconcile with a client that authenticated, the same way they only serve a request to one. The auth parameter says which identity the">
 
     <!-- Canonical -->
     <link rel="canonical" href="https://dart-nostr.com/usecases/negentropy/">
@@ -22,7 +22,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dart-nostr.com/usecases/negentropy/">
     <meta property="og:title" content="Negentropy">
-    <meta property="og:description" content="✅ Good for:">
+    <meta property="og:description" content="Some relays only reconcile with a client that authenticated, the same way they only serve a request to one. The auth parameter says which identity the">
     <meta property="og:site_name" content="NDK">
     <meta property="og:locale" content="en_US">
 
@@ -30,19 +30,19 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://dart-nostr.com/usecases/negentropy/">
     <meta name="twitter:title" content="Negentropy">
-    <meta name="twitter:description" content="✅ Good for:">
+    <meta name="twitter:description" content="Some relays only reconcile with a client that authenticated, the same way they only serve a request to one. The auth parameter says which identity the">
 
     <!-- Alternate Markdown -->
     <link rel="alternate" type="text/markdown" href="https://dart-nostr.com/usecases/negentropy.md">
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.6.0.841860672437" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.842449580163" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.841860672437" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.842449580163" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.841860672437" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.841860672437" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.842449580163" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.842449580163" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -59,7 +59,7 @@
                 <div class="flex items-center px-2 md:px-6">
                     <a id="retype-branding-logo" href="https://dart-nostr.com/" class="flex items-center leading-snug text-2xl">
                         <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
-                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.9.3</span>
+                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.10.0-dev.2</span>
                 </div>
     
                 <span class="hidden h-8 border-r md:inline-block border-base-border"></span>
@@ -173,6 +173,59 @@ final response = ndk.nip77.reconcile(
 final result = await response.future;
 print('Sync complete: ${result.needIds.length} events to fetch, ${result.haveIds.length} events to broadcast');</code></pre>
 </doc-codeblock></div>
+<h2 id="relay-authentication-nip-42">Relay authentication (NIP-42)</h2>
+<p>Some relays only reconcile with a client that authenticated, the same way they
+only serve a request to one. The <code translate="no" v-pre>auth</code> parameter says which identity the
+reconciliation may be attributed to, exactly like on
+<a href="../requests/#relay-authentication-nip-42">requests</a>:</p>
+<div id="relay-authentication-nip-42-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">final response = ndk.nip77.reconcile(
+  relayUrl: 'wss://relay.example.com',
+  filter: Filter(authors: [myPubkey]),
+  auth: RelayAuth.require(account),
+);</code></pre>
+</doc-codeblock></div>
+<retype-table copy-text="| policy | connection | what a relay learns |
+| --- | --- | --- |
+| `RelayAuth.never()` | anonymous, always | nothing. A relay that refuses the negotiation without an identity simply does not reconcile |
+| `RelayAuth.allow(a)` | anonymous, moves to one bound to `a` once the relay refuses | who you are, but only after that relay asked |
+| `RelayAuth.require(a)` | bound to `a` from the start | who you are, as soon as it sends a challenge |">
+<div class="table-wrapper scrollbar overflow-hidden">
+<table class="comfortable">
+<thead>
+<tr>
+<th>policy</th>
+<th>connection</th>
+<th>what a relay learns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code translate="no" v-pre>RelayAuth.never()</code></td>
+<td>anonymous, always</td>
+<td>nothing. A relay that refuses the negotiation without an identity simply does not reconcile</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>RelayAuth.allow(a)</code></td>
+<td>anonymous, moves to one bound to <code translate="no" v-pre>a</code> once the relay refuses</td>
+<td>who you are, but only after that relay asked</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>RelayAuth.require(a)</code></td>
+<td>bound to <code translate="no" v-pre>a</code> from the start</td>
+<td>who you are, as soon as it sends a challenge</td>
+</tr>
+</tbody>
+</table>
+</div>
+</retype-table>
+<p>Without <code translate="no" v-pre>auth</code>, a refused negotiation authenticates as the currently logged-in
+account, so the relay decides when your identity is revealed. Pass <code translate="no" v-pre>auth</code>
+explicitly whenever that matters.</p>
+<p>If <code translate="no" v-pre>require</code> names an account that cannot sign, no connection can carry the
+reconciliation. Rather than fall back to the anonymous one, which is what
+<code translate="no" v-pre>require</code> rules out, nothing is sent and <code translate="no" v-pre>reconcile</code> itself throws
+<code translate="no" v-pre>Nip77AuthUnavailableException</code>.</p>
 <h2 id="error-handling">Error handling</h2>
 <h3 id="relay-doesnt-support-nip-77">Relay doesn&#x27;t support NIP-77</h3>
 <div id="relay-doesnt-support-nip-77-code-1" class="codeblock-wrapper"><doc-codeblock>
@@ -188,6 +241,20 @@ print('Sync complete: ${result.needIds.length} events to fetch, ${result.haveIds
   ndk.requests.query(filter: filter, paginate: true);
 } on Nip77TimeoutException catch (e) {
   print('Reconciliation timed out: ${e.timeout}');
+}</code></pre>
+</doc-codeblock></div>
+<h3 id="relay-requires-an-identity-you-did-not-give-it">Relay requires an identity you did not give it</h3>
+<div id="relay-requires-an-identity-you-did-not-give-it-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">try {
+  await ndk.nip77.reconcile(
+    relayUrl: 'wss://relay.example.com',
+    filter: filter,
+    auth: const RelayAuth.never(),
+  ).future;
+} on Nip77AuthRequiredException catch (e) {
+  print('Relay wants an identity: ${e.message}');
+} on Nip77AuthUnavailableException catch (e) {
+  print('${e.pubkey} cannot sign, nothing was sent');
 }</code></pre>
 </doc-codeblock></div>
 <h2 id="when-to-use">When to use</h2>

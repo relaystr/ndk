@@ -46,7 +46,7 @@
 - [Gift Wrap](https://dart-nostr.com/usecases/gift-wrap.md): Gift Wrap depends on the logged in user (accounts usecase) make sure you are logged in with the right user
 - [Lists](https://dart-nostr.com/usecases/lists.md): We distinguish between lists and sets:
 - [Metadata](https://dart-nostr.com/usecases/metadata.md): Gives you the metadata for a given pubkey. Uses caching, so repeated calls are ok.
-- [Negentropy](https://dart-nostr.com/usecases/negentropy.md): ✅ Good for:
+- [Negentropy](https://dart-nostr.com/usecases/negentropy.md): Some relays only reconcile with a client that authenticated, the same way they only serve a request to one. The auth parameter says which identity the
 - [Nwc](https://dart-nostr.com/usecases/nwc.md): You need a nostr+walletconnect://... uri from your NWC wallet service provider.
 - [Relay sets](https://dart-nostr.com/usecases/relay-sets.md): Calculates the best relays for a given set of pubkeys. It's used by inbox/outbox. This allows for granular control in the relaySets engine. E.g. calculating the best relays for a thread view.
 - [Requests](https://dart-nostr.com/usecases/requests.md): Relays can misbehave and return events that do not match your query filters.
