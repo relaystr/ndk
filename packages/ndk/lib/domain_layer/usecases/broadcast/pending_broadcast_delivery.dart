@@ -251,9 +251,20 @@ class PendingBroadcastDelivery {
       if (existingTarget != null) {
         // only the relays of this call are re-attributed; the same event may
         // be on its way to another relay as somebody else
-        return auth == null
-            ? existingTarget
-            : existingTarget.copyWith(authCanonical: auth.canonical);
+        if (auth == null) {
+          return existingTarget;
+        }
+        final reattributed = existingTarget.copyWith(
+          authCanonical: auth.canonical,
+        );
+        // naming an identity is what a target parked for a missing one was
+        // waiting for, so it can move again
+        return _isParkedForIdentity(reattributed)
+            ? reattributed.copyWith(
+                state: RelayDeliveryState.pending,
+                lastError: null,
+              )
+            : reattributed;
       }
       return RelayDeliveryTarget(
         eventId: event.id,
@@ -417,6 +428,10 @@ class PendingBroadcastDelivery {
 
         if (!onlyDue) {
           return true;
+        }
+
+        if (_isParkedForIdentity(target)) {
+          return false;
         }
 
         return target.nextRetryAt == null || target.nextRetryAt! <= now;
@@ -643,6 +658,15 @@ class PendingBroadcastDelivery {
     await _cacheManager.removeEventDeliveryRecord(eventId);
   }
 
+  /// A target waiting for an identity the app has to name again. Nothing about
+  /// it changes on its own, so it must not make its relay due: it would
+  /// reconnect and rewrite the same state on every retry interval, forever.
+  /// A normal auth-required refusal carries a [RelayDeliveryTarget.nextRetryAt]
+  /// and stays retryable.
+  bool _isParkedForIdentity(RelayDeliveryTarget target) =>
+      target.state == RelayDeliveryState.authRequired &&
+      target.nextRetryAt == null;
+
   Future<Set<String>> _relayUrlsWithDuePendingTargets() async {
     final now = Nip01Event.secondsSinceEpoch();
     final targets = await _cacheManager.loadRelayDeliveryTargets(
@@ -652,6 +676,9 @@ class PendingBroadcastDelivery {
     final relayUrls = <String>{};
     for (final target in targets) {
       if (target.state == RelayDeliveryState.permanentFailure) {
+        continue;
+      }
+      if (_isParkedForIdentity(target)) {
         continue;
       }
       if (target.nextRetryAt != null && target.nextRetryAt! > now) {

@@ -246,6 +246,60 @@ void main() {
         expect(broadcast.broadcastedAuth, [isA<RelayAuthRequire>()]);
       });
 
+      test('a parked delivery does not reconnect on every interval', () async {
+        await enqueueUnder(RelayAuth.require(signable()));
+        final restarted = afterRestart();
+        addTearDown(restarted.stop);
+        await restarted.flushForRelay('wss://relay.example');
+
+        // nothing about it changes on its own, so waking the relay for it would
+        // only rewrite the same state every interval
+        await restarted.retryDueDeliveries(
+          connectedRelayUrls: () => const <String>[],
+          reconnectRelay: (relayUrl) async {
+            reconnectAttempts.add(relayUrl);
+            return true;
+          },
+        );
+
+        expect(reconnectAttempts, isEmpty);
+        expect(broadcast.broadcastedEvents, isEmpty);
+      });
+
+      test('a parked delivery becomes due again once an identity is named',
+          () async {
+        await enqueueUnder(RelayAuth.require(signable()));
+        final restarted = afterRestart();
+        addTearDown(restarted.stop);
+        await restarted.flushForRelay('wss://relay.example');
+
+        accounts.addAccount(
+          pubkey: signerKey.publicKey,
+          type: AccountType.privateKey,
+          signer: Bip340EventSigner(
+            privateKey: signerKey.privateKey!,
+            publicKey: signerKey.publicKey,
+          ),
+        );
+        await restarted.enqueueSpecificRelayBroadcast(
+          event: event,
+          relayUrls: const ['wss://relay.example'],
+          requiresInteractiveSigning: false,
+          auth: RelayAuth.require(signable()),
+        );
+
+        await restarted.retryDueDeliveries(
+          connectedRelayUrls: () => const <String>[],
+          reconnectRelay: (relayUrl) async {
+            reconnectAttempts.add(relayUrl);
+            return true;
+          },
+        );
+
+        expect(reconnectAttempts, ['wss://relay.example']);
+        expect(broadcast.broadcastedEvents, [event]);
+      });
+
       test('resumes once the event is broadcast with the account', () async {
         await enqueueUnder(RelayAuth.require(signable()));
         final restarted = afterRestart();
