@@ -50,6 +50,40 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
               ),
             if (!isLoggedIn) const SizedBox(height: 24),
 
+            _buildSection(
+              title: 'NAppUpdateBanner / NAppUpdateTile',
+              description:
+                  'Trusted NIP-82 update notice and Android install handoff. '
+                  'Configured for sample app releases published on Zapstore.',
+              child: Card(
+                child: Column(
+                  children: [
+                    NAppUpdateBanner(controller: appUpdater),
+                    NAppUpdateTile(controller: appUpdater),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          const Text('Installed version: '),
+                          NAppVersion(
+                            controller: appUpdater,
+                            fallbackVersion: packageVersion,
+                          ),
+                        ],
+                      ),
+                    ),
+                    NAppUpdateBuilder(
+                      controller: appUpdater,
+                      builder: (context, state) => Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        child: Text('Custom UI state: ${state.status.name}'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
             // NName Widget Section
             _buildSection(
               title: 'NName',

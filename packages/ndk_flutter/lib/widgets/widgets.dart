@@ -14,3 +14,8 @@ export 'wallets/n_pending_transactions.dart';
 export 'wallets/n_recent_transactions.dart';
 export 'wallets/n_wallet_actions.dart';
 export 'wallets/n_add_wallet_dialogs.dart';
+export 'app_update/n_app_update_controller.dart';
+export 'app_update/n_app_update_widgets.dart';
+export 'app_update/n_app_version.dart';
+export 'app_update/n_release_engagement.dart';
+export 'app_update/update_installer.dart';

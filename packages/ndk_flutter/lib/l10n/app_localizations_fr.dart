@@ -1133,6 +1133,224 @@ class AppLocalizationsFr extends AppLocalizations {
   String get restoringBackup => 'Restoring backup...';
 
   @override
+  String appUpdateVersionAvailable(String version) {
+    return 'Version $version disponible';
+  }
+
+  @override
+  String get appUpdateLater => 'Plus tard';
+
+  @override
+  String get appUpdateView => 'Voir la mise à jour';
+
+  @override
+  String get appUpdateChecking => 'Recherche de mises à jour…';
+
+  @override
+  String get appUpdateCheckFailed => 'Échec de la recherche de mises à jour';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return 'Version installée : $version';
+  }
+
+  @override
+  String get appUpdatesTitle => 'Mises à jour de l’application';
+
+  @override
+  String get appUpdateNone => 'Aucune mise à jour disponible';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return 'Mise à jour $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size Mo';
+  }
+
+  @override
+  String get appUpdateAllowInstalls =>
+      'Autorisez les installations depuis cette application, puis touchez de nouveau Mettre à jour.';
+
+  @override
+  String get appUpdateCompleteInstallation =>
+      'Terminez l’installation dans le programme d’installation Android.';
+
+  @override
+  String get appUpdateFailed => 'Échec de la mise à jour';
+
+  @override
+  String get appUpdateCancel => 'Annuler';
+
+  @override
+  String get appUpdateAction => 'Mettre à jour';
+
+  @override
+  String get appUpdateDownload => 'Télécharger';
+
+  @override
+  String get appUpdateUpToDate => 'Vous êtes à jour';
+
+  @override
+  String get appUpdateAheadOfPublished => 'Plus récente que la version publiée';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return 'La version installée $installedVersion est plus récente que la dernière version publiée $publishedVersion. Les détails apparaîtront lorsque cette version sera publiée.';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage =>
+      'Impossible de rechercher les mises à jour.';
+
+  @override
+  String appUpdateLatest(String version) {
+    return 'La version $version est la plus récente disponible.';
+  }
+
+  @override
+  String get appUpdateClose => 'Fermer';
+
+  @override
+  String get appUpdateCheckAgain => 'Vérifier à nouveau';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return 'Version installée $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return 'Version installée $installedVersion. Mise à jour $availableVersion disponible.';
+  }
+
+  @override
+  String get appUpdateChangelog => 'Journal des modifications';
+
+  @override
+  String get appUpdateReleaseHistory => 'Historique des versions';
+
+  @override
+  String get appUpdateInstalledBadge => 'Installée';
+
+  @override
+  String get appUpdateAvailableBadge => 'Mise à jour disponible';
+
+  @override
+  String get appUpdateLatestBadge => 'Dernière';
+
+  @override
+  String get appUpdateNoReleases => 'Aucune version n’a encore été publiée.';
+
+  @override
+  String get appUpdateAcrossAllReleases => 'Toutes versions confondues';
+
+  @override
+  String get appUpdateReleaseDetails => 'Détails de la version';
+
+  @override
+  String get appUpdateWhatsNew => 'Nouveautés';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return 'Publié le $date';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return 'Canal : $channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return 'Architecture : $architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return 'Build $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes => 'Aucune note de version publiée.';
+
+  @override
+  String get appUpdatePublisher => 'Éditeur';
+
+  @override
+  String get appUpdatePublisherSignatureVerified =>
+      'Signature de l’événement Nostr vérifiée';
+
+  @override
+  String get appUpdateCertificateDeclared =>
+      'Certificat de signature Android déclaré par l’éditeur';
+
+  @override
+  String appUpdateSource(String host) {
+    return 'Source du téléchargement : $host';
+  }
+
+  @override
+  String get appUpdateCommunity => 'Communauté';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return '$count zaps · $sats sats';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'sats par';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return '$count réactions';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return '$count commentaires';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed =>
+      'Impossible de charger l’activité de la communauté.';
+
+  @override
+  String get appUpdateComments => 'Commentaires';
+
+  @override
+  String get appUpdateNoComments => 'Aucun commentaire pour le moment.';
+
+  @override
+  String get appUpdateCommentHint => 'Partagez votre avis sur cette version';
+
+  @override
+  String get appUpdatePostComment => 'Publier le commentaire';
+
+  @override
+  String get appUpdateSignInToComment =>
+      'Connectez-vous avec un compte Nostr pour commenter.';
+
+  @override
+  String get appUpdateTechnicalDetails => 'Détails techniques';
+
+  @override
+  String get appUpdateViewStatus => 'Voir l’état des mises à jour';
+
+  @override
   String restoreSuccess(int count) {
     return 'Restored $count proofs from backup';
   }

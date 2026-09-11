@@ -27,6 +27,7 @@ import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/search/search.dart';
+import '../domain_layer/usecases/software/software.dart';
 import '../domain_layer/usecases/ta/trusted_assertions.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 import '../domain_layer/usecases/wallets/wallets.dart';
@@ -174,6 +175,9 @@ class Ndk {
   /// Search
   @experimental
   Search get search => _initialization.search;
+
+  /// NIP-82 software application, release, and asset discovery.
+  Software get software => _initialization.software;
 
   /// Cashu Wallet
   @experimental // in development

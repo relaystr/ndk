@@ -2285,6 +2285,354 @@ abstract class AppLocalizations {
   /// **'Restoring backup...'**
   String get restoringBackup;
 
+  /// No description provided for @appUpdateVersionAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} available'**
+  String appUpdateVersionAvailable(String version);
+
+  /// No description provided for @appUpdateLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get appUpdateLater;
+
+  /// No description provided for @appUpdateView.
+  ///
+  /// In en, this message translates to:
+  /// **'View update'**
+  String get appUpdateView;
+
+  /// No description provided for @appUpdateChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking for updates…'**
+  String get appUpdateChecking;
+
+  /// No description provided for @appUpdateCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Update check failed'**
+  String get appUpdateCheckFailed;
+
+  /// No description provided for @appUpdateInstalled.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed {version}'**
+  String appUpdateInstalled(String version);
+
+  /// No description provided for @appUpdatesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App updates'**
+  String get appUpdatesTitle;
+
+  /// No description provided for @appUpdateNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No update available'**
+  String get appUpdateNone;
+
+  /// No description provided for @appUpdateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update {currentVersion} → {availableVersion}'**
+  String appUpdateTitle(String currentVersion, String availableVersion);
+
+  /// No description provided for @appUpdateSizeMb.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} MB'**
+  String appUpdateSizeMb(String size);
+
+  /// No description provided for @appUpdateAllowInstalls.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow installs from this app, then tap Update again.'**
+  String get appUpdateAllowInstalls;
+
+  /// No description provided for @appUpdateCompleteInstallation.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete installation in Android system installer.'**
+  String get appUpdateCompleteInstallation;
+
+  /// No description provided for @appUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Update failed'**
+  String get appUpdateFailed;
+
+  /// No description provided for @appUpdateCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get appUpdateCancel;
+
+  /// No description provided for @appUpdateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get appUpdateAction;
+
+  /// No description provided for @appUpdateDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get appUpdateDownload;
+
+  /// No description provided for @appUpdateUpToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'You’re up to date'**
+  String get appUpdateUpToDate;
+
+  /// No description provided for @appUpdateAheadOfPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Newer than published'**
+  String get appUpdateAheadOfPublished;
+
+  /// No description provided for @appUpdateAheadOfPublishedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed version {installedVersion} is newer than latest published version {publishedVersion}. Release details will appear after this version is published.'**
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  );
+
+  /// No description provided for @appUpdateCheckFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not check for updates.'**
+  String get appUpdateCheckFailedMessage;
+
+  /// No description provided for @appUpdateLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} is the latest available version.'**
+  String appUpdateLatest(String version);
+
+  /// No description provided for @appUpdateClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get appUpdateClose;
+
+  /// No description provided for @appUpdateCheckAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get appUpdateCheckAgain;
+
+  /// No description provided for @appUpdateInstalledVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed version {version}'**
+  String appUpdateInstalledVersion(String version);
+
+  /// No description provided for @appUpdateInstalledAndAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed version {installedVersion}. Update {availableVersion} available.'**
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  );
+
+  /// No description provided for @appUpdateChangelog.
+  ///
+  /// In en, this message translates to:
+  /// **'Changelog'**
+  String get appUpdateChangelog;
+
+  /// No description provided for @appUpdateReleaseHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Release history'**
+  String get appUpdateReleaseHistory;
+
+  /// No description provided for @appUpdateInstalledBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed'**
+  String get appUpdateInstalledBadge;
+
+  /// No description provided for @appUpdateAvailableBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Update available'**
+  String get appUpdateAvailableBadge;
+
+  /// No description provided for @appUpdateLatestBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest'**
+  String get appUpdateLatestBadge;
+
+  /// No description provided for @appUpdateNoReleases.
+  ///
+  /// In en, this message translates to:
+  /// **'No releases have been published yet.'**
+  String get appUpdateNoReleases;
+
+  /// No description provided for @appUpdateAcrossAllReleases.
+  ///
+  /// In en, this message translates to:
+  /// **'Across all releases'**
+  String get appUpdateAcrossAllReleases;
+
+  /// No description provided for @appUpdateReleaseDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Release details'**
+  String get appUpdateReleaseDetails;
+
+  /// No description provided for @appUpdateWhatsNew.
+  ///
+  /// In en, this message translates to:
+  /// **'What’s new'**
+  String get appUpdateWhatsNew;
+
+  /// No description provided for @appUpdatePublishedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Published {date}'**
+  String appUpdatePublishedOn(String date);
+
+  /// No description provided for @appUpdateChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Channel: {channel}'**
+  String appUpdateChannel(String channel);
+
+  /// No description provided for @appUpdateArchitecture.
+  ///
+  /// In en, this message translates to:
+  /// **'Architecture: {architecture}'**
+  String appUpdateArchitecture(String architecture);
+
+  /// No description provided for @appUpdateVersionCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Build {versionCode}'**
+  String appUpdateVersionCode(int versionCode);
+
+  /// No description provided for @appUpdateReleaseVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Release {version}'**
+  String appUpdateReleaseVersion(String version);
+
+  /// No description provided for @appUpdateNoReleaseNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'No release notes were published.'**
+  String get appUpdateNoReleaseNotes;
+
+  /// No description provided for @appUpdatePublisher.
+  ///
+  /// In en, this message translates to:
+  /// **'Publisher'**
+  String get appUpdatePublisher;
+
+  /// No description provided for @appUpdatePublisherSignatureVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Nostr event signature verified'**
+  String get appUpdatePublisherSignatureVerified;
+
+  /// No description provided for @appUpdateCertificateDeclared.
+  ///
+  /// In en, this message translates to:
+  /// **'Android signing certificate declared by publisher'**
+  String get appUpdateCertificateDeclared;
+
+  /// No description provided for @appUpdateSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Download source: {host}'**
+  String appUpdateSource(String host);
+
+  /// No description provided for @appUpdateCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get appUpdateCommunity;
+
+  /// No description provided for @appUpdateZapSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} zaps · {sats} sats'**
+  String appUpdateZapSummary(int count, int sats);
+
+  /// No description provided for @appUpdateSatsBy.
+  ///
+  /// In en, this message translates to:
+  /// **'sats by'**
+  String get appUpdateSatsBy;
+
+  /// No description provided for @appUpdateReactionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reactions'**
+  String appUpdateReactionCount(int count);
+
+  /// No description provided for @appUpdateCommentCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} comments'**
+  String appUpdateCommentCount(int count);
+
+  /// No description provided for @appUpdateSocialLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Community activity could not be loaded.'**
+  String get appUpdateSocialLoadFailed;
+
+  /// No description provided for @appUpdateComments.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get appUpdateComments;
+
+  /// No description provided for @appUpdateNoComments.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet.'**
+  String get appUpdateNoComments;
+
+  /// No description provided for @appUpdateCommentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Share feedback about this release'**
+  String get appUpdateCommentHint;
+
+  /// No description provided for @appUpdatePostComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Post comment'**
+  String get appUpdatePostComment;
+
+  /// No description provided for @appUpdateSignInToComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with a Nostr account to comment.'**
+  String get appUpdateSignInToComment;
+
+  /// No description provided for @appUpdateTechnicalDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Technical details'**
+  String get appUpdateTechnicalDetails;
+
+  /// No description provided for @appUpdateViewStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'View update status'**
+  String get appUpdateViewStatus;
+
   /// Confirmation after a successful restore
   ///
   /// In en, this message translates to:

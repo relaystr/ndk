@@ -1131,6 +1131,223 @@ class AppLocalizationsRu extends AppLocalizations {
   String get restoringBackup => 'Restoring backup...';
 
   @override
+  String appUpdateVersionAvailable(String version) {
+    return 'Доступна версия $version';
+  }
+
+  @override
+  String get appUpdateLater => 'Позже';
+
+  @override
+  String get appUpdateView => 'Показать обновление';
+
+  @override
+  String get appUpdateChecking => 'Проверка обновлений…';
+
+  @override
+  String get appUpdateCheckFailed => 'Не удалось проверить обновления';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return 'Установлена: $version';
+  }
+
+  @override
+  String get appUpdatesTitle => 'Обновления приложения';
+
+  @override
+  String get appUpdateNone => 'Обновлений нет';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return 'Обновление $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size МБ';
+  }
+
+  @override
+  String get appUpdateAllowInstalls =>
+      'Разрешите установку из этого приложения, затем снова нажмите «Обновить».';
+
+  @override
+  String get appUpdateCompleteInstallation =>
+      'Завершите установку в системном установщике Android.';
+
+  @override
+  String get appUpdateFailed => 'Обновление не удалось';
+
+  @override
+  String get appUpdateCancel => 'Отмена';
+
+  @override
+  String get appUpdateAction => 'Обновить';
+
+  @override
+  String get appUpdateDownload => 'Скачать';
+
+  @override
+  String get appUpdateUpToDate => 'У вас последняя версия';
+
+  @override
+  String get appUpdateAheadOfPublished => 'Новее опубликованной версии';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return 'Установленная версия $installedVersion новее последней опубликованной версии $publishedVersion. Сведения появятся после публикации этой версии.';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage => 'Не удалось проверить обновления.';
+
+  @override
+  String appUpdateLatest(String version) {
+    return 'Версия $version — самая новая из доступных.';
+  }
+
+  @override
+  String get appUpdateClose => 'Закрыть';
+
+  @override
+  String get appUpdateCheckAgain => 'Проверить снова';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return 'Установлена версия $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return 'Установлена версия $installedVersion. Доступно обновление $availableVersion.';
+  }
+
+  @override
+  String get appUpdateChangelog => 'Журнал изменений';
+
+  @override
+  String get appUpdateReleaseHistory => 'История версий';
+
+  @override
+  String get appUpdateInstalledBadge => 'Установлена';
+
+  @override
+  String get appUpdateAvailableBadge => 'Доступно обновление';
+
+  @override
+  String get appUpdateLatestBadge => 'Последняя';
+
+  @override
+  String get appUpdateNoReleases => 'Пока не опубликовано ни одной версии.';
+
+  @override
+  String get appUpdateAcrossAllReleases => 'Для всех версий';
+
+  @override
+  String get appUpdateReleaseDetails => 'Сведения о выпуске';
+
+  @override
+  String get appUpdateWhatsNew => 'Что нового';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return 'Опубликовано $date';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return 'Канал: $channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return 'Архитектура: $architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return 'Сборка $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return 'Версия $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes => 'Примечания к выпуску не опубликованы.';
+
+  @override
+  String get appUpdatePublisher => 'Издатель';
+
+  @override
+  String get appUpdatePublisherSignatureVerified =>
+      'Подпись события Nostr проверена';
+
+  @override
+  String get appUpdateCertificateDeclared =>
+      'Издатель указал сертификат подписи Android';
+
+  @override
+  String appUpdateSource(String host) {
+    return 'Источник загрузки: $host';
+  }
+
+  @override
+  String get appUpdateCommunity => 'Сообщество';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return 'Запов: $count · $sats сат';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'сат от';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return 'Реакций: $count';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return 'Комментариев: $count';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed =>
+      'Не удалось загрузить активность сообщества.';
+
+  @override
+  String get appUpdateComments => 'Комментарии';
+
+  @override
+  String get appUpdateNoComments => 'Комментариев пока нет.';
+
+  @override
+  String get appUpdateCommentHint => 'Оставьте отзыв об этой версии';
+
+  @override
+  String get appUpdatePostComment => 'Опубликовать комментарий';
+
+  @override
+  String get appUpdateSignInToComment =>
+      'Войдите в аккаунт Nostr, чтобы комментировать.';
+
+  @override
+  String get appUpdateTechnicalDetails => 'Технические сведения';
+
+  @override
+  String get appUpdateViewStatus => 'Показать статус обновления';
+
+  @override
   String restoreSuccess(int count) {
     return 'Restored $count proofs from backup';
   }
