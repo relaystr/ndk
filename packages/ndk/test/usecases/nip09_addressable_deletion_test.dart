@@ -246,6 +246,32 @@ void main() {
     });
   });
 
+  group('addressable (a-tag) deletion is byte exact on the pubkey', () {
+    test('an uppercased pubkey coordinate deletes nothing', () {
+      // NIP-01 mandates lowercase hex, so a relay never matches this either.
+      final target = addressableEvent(createdAt: 1700000000);
+      final deletion = Nip01Event(
+        pubKey: author,
+        kind: Deletion.kKind,
+        tags: [
+          ['a', '$addressableKind:${author.toUpperCase()}:$dTag'],
+        ],
+        content: 'delete by coordinate',
+        createdAt: 1700000001,
+      );
+
+      final records = EventCacheStateRecord.buildForEvents([
+        target,
+        deletion,
+      ], now: 1700000100);
+
+      expect(
+        records.firstWhere((record) => record.eventId == target.id).isDeleted,
+        isFalse,
+      );
+    });
+  });
+
   group('MemCacheManager addressable (a-tag) deletion visibility', () {
     test('hides an addressable event deleted by coordinate', () async {
       final cache = MemCacheManager();

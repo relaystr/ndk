@@ -470,14 +470,15 @@ class EventCacheStateRecord {
   /// for non addressable kinds. Returns null when [coordinate] is malformed or
   /// names a kind that has no conflict domain.
   ///
-  /// Only the pubkey is case folded: NIP-01 mandates lowercase hex there, while
-  /// a d-tag is an arbitrary string relays match byte for byte.
+  /// Only the kind is parsed. NIP-01 mandates lowercase hex for the pubkey and
+  /// leaves the d-tag an arbitrary string, so both compare byte for byte the
+  /// way a relay compares them.
   static String? normalizeConflictKey(String coordinate) {
     final parts = coordinate.split(':');
     if (parts.length < 2) return null;
     final kind = int.tryParse(parts[0]);
     if (kind == null || parts[1].isEmpty) return null;
-    final pubKey = parts[1].toLowerCase();
+    final pubKey = parts[1];
 
     if (EventKindClassification.isParameterizedReplaceableKind(kind)) {
       final dTag = parts.length > 2 ? parts.sublist(2).join(':') : '';
