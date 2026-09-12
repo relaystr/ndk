@@ -1,3 +1,15 @@
+## 0.10.0-dev.3
+
+> Note: This release has breaking changes.
+
+ - **PERF**(cache): batch visibility context reads.
+ - **FIX**(metadata): cache the metadata event that was broadcast.
+ - **FIX**(cache): compare conflict coordinates byte for byte.
+ - **FIX**(cache): keep d-tag whitespace when matching deletion coordinates.
+ - **FIX**(cache): keep d-tag case when matching deletion coordinates.
+ - **FIX**(cache): stop a limited read from dropping visible events.
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
 ## 0.10.0-dev.2
 
 > Note: This release has breaking changes.
