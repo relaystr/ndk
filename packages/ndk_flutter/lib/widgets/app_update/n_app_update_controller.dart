@@ -500,7 +500,7 @@ class NAppUpdateController extends ChangeNotifier with WidgetsBindingObserver {
     _setState(
       _state.copyWith(
         status: NAppUpdateStatus.downloading,
-        progress: 0,
+        clearProgress: true,
         clearError: true,
       ),
     );

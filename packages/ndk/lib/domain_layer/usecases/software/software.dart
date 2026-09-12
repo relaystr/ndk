@@ -186,11 +186,6 @@ class Software {
         release.event.id: release.assets
             .map((reference) => assetsById[reference.eventId])
             .whereType<SoftwareAsset>()
-            .where(
-              (asset) =>
-                  asset.identifier == release.identifier &&
-                  asset.version == release.version,
-            )
             .toList(growable: false),
     };
   }

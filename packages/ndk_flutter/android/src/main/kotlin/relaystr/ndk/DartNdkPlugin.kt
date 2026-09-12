@@ -30,6 +30,7 @@ import java.net.InetAddress
 import java.net.URL
 import java.security.MessageDigest
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.roundToInt
 
 
 /// ndk_flutter native plugin.
@@ -55,6 +56,7 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     private val _pendingIntentRequestCodesById = HashMap<String, Int>()
     private var _nextIntentRequestCode = 1
     private val _updateLock = Any()
+    private val _mainHandler = Handler(Looper.getMainLooper())
     private var _activeUpdate: UpdateDownload? = null
 
     private class UpdateDownload(
@@ -205,6 +207,7 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                     FileOutputStream(apk).use { output ->
                         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                         var downloaded = 0L
+                        var lastProgressPercentage = -1
                         while (true) {
                             if (operation.cancelled.get()) break
                             val count = input.read(buffer)
@@ -215,7 +218,16 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                             }
                             output.write(buffer, 0, count)
                             digest.update(buffer, 0, count)
-                            if (total > 0) emitProgress(downloaded.toDouble() / total)
+                            if (total > 0) {
+                                val percentage =
+                                    ((downloaded.toDouble() / total) * 100)
+                                        .roundToInt()
+                                        .coerceAtMost(99)
+                                if (percentage != lastProgressPercentage) {
+                                    lastProgressPercentage = percentage
+                                    emitProgress(percentage / 100.0)
+                                }
+                            }
                         }
                         if (operation.cancelled.get()) {
                             completeUpdate(operation, "cancelled")
@@ -224,6 +236,7 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                         check(expectedSize == null || downloaded == expectedSize) {
                             "Downloaded APK size mismatch"
                         }
+                        if (total > 0) emitProgress(1.0)
                     }
                 }
                 operation.input = null
@@ -257,7 +270,7 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                     "APK certificate is incompatible with installed app"
                 }
 
-                Handler(Looper.getMainLooper()).post {
+                _mainHandler.post {
                     if (operation.cancelled.get()) {
                         completeUpdateOnMainThread(operation, "cancelled")
                         return@post
@@ -347,7 +360,7 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         operation: UpdateDownload,
         value: String? = null,
         error: Throwable? = null,
-    ) = Handler(Looper.getMainLooper()).post {
+    ) = _mainHandler.post {
         completeUpdateOnMainThread(operation, value, error)
     }
 
@@ -374,7 +387,7 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     }
 
     private fun emitProgress(progress: Double) {
-        Handler(Looper.getMainLooper()).post {
+        _mainHandler.post {
             _updatesChannel.invokeMethod("progress", progress.coerceIn(0.0, 1.0))
         }
     }

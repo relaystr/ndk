@@ -383,7 +383,8 @@ void main() {
       expect(releases.map((release) => release.version), ['2.0.0', '1.0.0']);
     });
 
-    test('resolves only valid referenced assets', () async {
+    test('resolves referenced assets with independent identifiers and versions',
+        () async {
       final assetEvent = networkEvent(
         softwareAssetKind,
         [
@@ -395,7 +396,7 @@ void main() {
           ['apk_certificate_hash', certificate],
         ],
       );
-      final wrongAppAsset = networkEvent(
+      final independentIdentifierAsset = networkEvent(
         softwareAssetKind,
         [
           ['i', 'com.example.other'],
@@ -406,7 +407,7 @@ void main() {
           ['apk_certificate_hash', certificate],
         ],
       );
-      final wrongVersionAsset = networkEvent(
+      final independentVersionAsset = networkEvent(
         softwareAssetKind,
         [
           ['i', 'com.example.app'],
@@ -425,22 +426,29 @@ void main() {
           ['d', 'com.example.app@2.0.0'],
           ['c', 'main'],
           ['e', assetEvent.id, relay.url],
-          ['e', wrongAppAsset.id, relay.url],
-          ['e', wrongVersionAsset.id, relay.url],
+          ['e', independentIdentifierAsset.id, relay.url],
+          ['e', independentVersionAsset.id, relay.url],
         ],
         id: 'release',
       ));
       relay.textNotes = {
         Bip340.generatePrivateKey(): assetEvent,
-        Bip340.generatePrivateKey(): wrongAppAsset,
-        Bip340.generatePrivateKey(): wrongVersionAsset,
+        Bip340.generatePrivateKey(): independentIdentifierAsset,
+        Bip340.generatePrivateKey(): independentVersionAsset,
       };
 
       final assets = await ndk.software.resolveAssets(
         release,
         relays: [relay.url],
       );
-      expect(assets.map((asset) => asset.event.id), [assetEvent.id]);
+      expect(
+        assets.map((asset) => asset.event.id),
+        [
+          assetEvent.id,
+          independentIdentifierAsset.id,
+          independentVersionAsset.id,
+        ],
+      );
     });
 
     test('resolves assets for multiple releases in one request', () async {
