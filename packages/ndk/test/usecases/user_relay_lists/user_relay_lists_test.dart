@@ -174,8 +174,8 @@ void main() async {
     late Ndk ndk;
 
     setUp(() async {
-      indexer = MockRelay(name: "indexer", explicitPort: 5102);
-      bootstrap = MockRelay(name: "bootstrap", explicitPort: 5103);
+      indexer = MockRelay(name: "indexer");
+      bootstrap = MockRelay(name: "bootstrap");
 
       await indexer.startServer(
         nip65s: {
@@ -211,6 +211,89 @@ void main() async {
       );
 
       expect(list!.writeUrls, contains("wss://relay.write"));
+    });
+  });
+
+  group('nip65 refresh before editing the own list', () {
+    KeyPair key = Bip340.generatePrivateKey();
+
+    late MockRelay indexer;
+    late MockRelay bootstrap;
+    late MockRelay own;
+    late MemCacheManager cache;
+    late Ndk ndk;
+
+    setUp(() async {
+      indexer = MockRelay(name: "indexer");
+      bootstrap = MockRelay(name: "bootstrap");
+      own = MockRelay(name: "own");
+
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+      await indexer.startServer(
+        nip65s: {
+          key: Nip65(
+            pubKey: key.publicKey,
+            relays: {"wss://relay.stale": ReadWriteMarker.readWrite},
+            createdAt: now - 3600,
+          ),
+        },
+      );
+      await bootstrap.startServer();
+      await own.startServer(
+        nip65s: {
+          key: Nip65(
+            pubKey: key.publicKey,
+            relays: {"wss://relay.fresh": ReadWriteMarker.readWrite},
+            createdAt: now,
+          ),
+        },
+      );
+
+      cache = MemCacheManager();
+      ndk = Ndk(
+        NdkConfig(
+          eventVerifier: MockEventVerifier(),
+          cache: cache,
+          engine: NdkEngine.RELAY_SETS,
+          bootstrapRelays: [bootstrap.url],
+          indexerRelays: [indexer.url],
+        ),
+      );
+
+      await ndk.relays.seedRelaysConnected;
+
+      ndk.accounts.loginPrivateKey(
+        pubkey: key.publicKey,
+        privkey: key.privateKey!,
+      );
+    });
+
+    tearDown(() async {
+      await ndk.destroy();
+      await indexer.stopServer();
+      await bootstrap.stopServer();
+      await own.stopServer();
+    });
+
+    test('picks up an edit the indexers have not caught up with', () async {
+      await cache.saveUserRelayList(
+        UserRelayList(
+          pubKey: key.publicKey,
+          relays: {own.url: ReadWriteMarker.readWrite},
+          createdAt: 0,
+          refreshedTimestamp: 0,
+        ),
+      );
+
+      final list = await ndk.userRelayLists.broadcastAddNip65Relay(
+        relayUrl: "wss://relay.added",
+        marker: ReadWriteMarker.readWrite,
+        broadcastRelays: [own.url],
+      );
+
+      expect(list.relays.keys, contains("wss://relay.fresh"));
+      expect(list.relays.keys, isNot(contains("wss://relay.stale")));
     });
   });
 }
