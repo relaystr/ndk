@@ -169,20 +169,22 @@ class Metadatas {
     Iterable<String>? specificRelays,
   }) async {
     _checkSigner();
-    Nip01Event? event = await _refreshMetadataEvent();
-    if (event != null) {
-      Map<String, dynamic> map = json.decode(event.content);
-      map.addAll(metadata.content);
-      event = Nip01Event(
-        pubKey: event.pubKey,
-        kind: event.kind,
-        tags: event.tags,
-        content: json.encode(map),
-        createdAt: Helpers.now,
-      );
-    } else {
-      event = metadata.toEvent();
-    }
+    final Nip01Event? loaded = await _refreshMetadataEvent();
+
+    final Map<String, dynamic> content =
+        loaded != null && Helpers.isNotBlank(loaded.content)
+            ? json.decode(loaded.content) as Map<String, dynamic>
+            : <String, dynamic>{};
+    content.addAll(metadata.content);
+
+    final event = Nip01Event(
+      pubKey: _signer.getPublicKey(),
+      kind: Metadata.kKind,
+      tags: loaded?.tags ?? metadata.tags,
+      content: json.encode(content),
+      createdAt: Helpers.now,
+    );
+
     final bResult = _broadcast.broadcast(
       nostrEvent: event,
       specificRelays: specificRelays,
@@ -190,11 +192,13 @@ class Metadatas {
 
     await bResult.broadcastDoneFuture;
 
-    metadata.updatedAt = Helpers.now;
-    metadata.refreshedTimestamp = Helpers.now;
-    await _cacheManager.saveEvent(metadata.toEvent());
+    // caching anything but the published event leaves two kind:0 competing for
+    // the same replaceable slot, where the id tie-break can hide the published one
+    await _cacheManager.saveEvent(event);
 
-    return metadata;
+    final broadcasted = Metadata.fromEvent(event);
+    broadcasted.refreshedTimestamp = Helpers.now;
+    return broadcasted;
   }
 
   /// *******************************************************************************************************************
