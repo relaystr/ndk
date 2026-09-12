@@ -134,6 +134,8 @@ export 'domain_layer/entities/nip77_state.dart' show Nip77Result;
 export 'domain_layer/usecases/ta/trusted_assertions.dart';
 export 'domain_layer/entities/nip_85.dart';
 export 'config/nip85_defaults.dart';
+export 'config/bootstrap_relays.dart';
+export 'config/indexer_relays.dart';
 
 /**
  * other stuff
