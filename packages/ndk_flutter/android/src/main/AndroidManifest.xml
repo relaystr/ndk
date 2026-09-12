@@ -9,7 +9,7 @@
     </queries>
     <application>
         <provider
-            android:name="androidx.core.content.FileProvider"
+            android:name="relaystr.ndk.NdkUpdateFileProvider"
             android:authorities="${applicationId}.ndk_updates"
             android:exported="false"
             android:grantUriPermissions="true">
