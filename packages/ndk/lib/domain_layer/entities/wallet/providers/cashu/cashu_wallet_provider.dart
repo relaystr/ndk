@@ -185,21 +185,9 @@ class CashuWalletProvider implements WalletProvider {
   }
 
   @override
-  Stream<List<Wallet>> get discoveredWallets {
-    return _cashuUseCase.knownMints.map((mints) {
-      return mints
-          .map(
-            (mint) => CashuWallet(
-              id: mint.urls.first,
-              name: mint.name ?? mint.urls.first,
-              supportedUnits: mint.supportedUnits,
-              mintUrl: mint.urls.first,
-              mintInfo: mint,
-            ),
-          )
-          .toList();
-    });
-  }
+  // Mint metadata is a cache, not proof of user-approved wallet membership.
+  // Cashu wallets are added explicitly and restored from WalletsRepo.
+  Stream<List<Wallet>> get discoveredWallets => Stream.value(const <Wallet>[]);
 
   @override
   Future<String> receive(Wallet wallet, int amountSats) async {

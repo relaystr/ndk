@@ -18,28 +18,33 @@ class NCashuMintIcon extends StatelessWidget {
     return Image.asset(
       'assets/images/cashu.png',
       package: 'ndk_flutter',
-      width: size,
-      height: size,
       fit: BoxFit.contain,
       errorBuilder: (_, _, _) =>
-          Icon(Icons.account_balance_wallet, color: Colors.orange, size: size),
+          const Icon(Icons.account_balance_wallet, color: Colors.orange),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final iconUrl = wallet.mintInfo.iconUrl?.trim();
-    return ClipRRect(
-      borderRadius: borderRadius,
-      child: iconUrl?.isNotEmpty == true
-          ? Image.network(
-              iconUrl!,
-              width: size,
-              height: size,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => _fallback(),
-            )
-          : _fallback(),
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE0E0E0),
+        borderRadius: borderRadius,
+        border: Border.all(color: Colors.white.withAlpha(120)),
+      ),
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        child: iconUrl?.isNotEmpty == true
+            ? Image.network(
+                iconUrl!,
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => _fallback(),
+              )
+            : _fallback(),
+      ),
     );
   }
 }
