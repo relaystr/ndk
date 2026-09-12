@@ -187,6 +187,65 @@ void main() {
     });
   });
 
+  group('addressable (a-tag) deletion keeps d-tag whitespace', () {
+    // NIP-01 replaces on an exact kind/pubkey/d-tag combination, so `article `
+    // and `article` are two different addressable events.
+    Nip01Event article(String dTag) {
+      return Nip01Event(
+        pubKey: author,
+        kind: addressableKind,
+        tags: [
+          ['d', dTag],
+        ],
+        content: 'v1',
+        createdAt: 1700000000,
+      );
+    }
+
+    Nip01Event deletionOf(String dTag) {
+      return Nip01Event(
+        pubKey: author,
+        kind: Deletion.kKind,
+        tags: [
+          ['a', '$addressableKind:$author:$dTag'],
+        ],
+        content: 'delete by coordinate',
+        createdAt: 1700000001,
+      );
+    }
+
+    bool isDeleted(Nip01Event target, Nip01Event deletion) {
+      final records = EventCacheStateRecord.buildForEvents([
+        target,
+        deletion,
+      ], now: 1700000100);
+      return records
+          .firstWhere((record) => record.eventId == target.id)
+          .isDeleted;
+    }
+
+    test('a padded coordinate deletes its own event', () {
+      expect(isDeleted(article('article '), deletionOf('article ')), isTrue);
+    });
+
+    test('a trimmed coordinate deletes nothing', () {
+      expect(isDeleted(article('article '), deletionOf('article')), isFalse);
+    });
+
+    test('a padded coordinate spares the unpadded event', () {
+      expect(isDeleted(article('article'), deletionOf('article ')), isFalse);
+    });
+
+    test('cache reads hide a padded coordinate deletion', () async {
+      final cache = MemCacheManager();
+      final target = article('article ');
+
+      await cache.saveEvents([target, deletionOf('article ')]);
+
+      expect(await cache.loadEvents(ids: [target.id]), isEmpty);
+    });
+  });
+
   group('MemCacheManager addressable (a-tag) deletion visibility', () {
     test('hides an addressable event deleted by coordinate', () async {
       final cache = MemCacheManager();

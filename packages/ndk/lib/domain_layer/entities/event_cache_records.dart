@@ -494,8 +494,8 @@ class EventCacheStateRecord {
 
   /// Whether [deletion] covers [conflictKey] through one of its `a` tags.
   ///
-  /// Reads the tags directly because [Nip01Event.getTags] lowercases values,
-  /// which would drop the case of the d-tag carried by the coordinate.
+  /// Reads the tags directly because [Nip01Event.getTags] trims and lowercases
+  /// values, which would drop bytes of the d-tag carried by the coordinate.
   static bool deletionCoversConflictKey(
     Nip01Event deletion,
     String conflictKey,
@@ -503,7 +503,7 @@ class EventCacheStateRecord {
     for (final tag in deletion.tags) {
       if (tag.length > 1 &&
           tag[0] == 'a' &&
-          normalizeConflictKey(tag[1].trim()) == conflictKey) {
+          normalizeConflictKey(tag[1]) == conflictKey) {
         return true;
       }
     }
