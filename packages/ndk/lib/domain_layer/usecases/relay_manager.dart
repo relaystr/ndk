@@ -286,22 +286,6 @@ class RelayManager<T> {
 
       relayConnectivity.relay.tryingToConnect();
 
-      /// TO BE REMOVED, ONCE WE FIND A WAY OF AVOIDING PROBLEM WHEN CONNECTING TO THIS
-      if (url.startsWith("wss://brb.io")) {
-        relayConnectivity.relay.failedToConnect();
-        if (!connectCompleter.isCompleted) {
-          connectCompleter.complete(false);
-        }
-        if (identical(
-          _connectReadyCompleters[connectionKey],
-          connectCompleter,
-        )) {
-          _connectReadyCompleters.remove(connectionKey);
-        }
-        updateRelayConnectivity();
-        return Tuple(false, "bad relay");
-      }
-
       Logger.log.i(() => "connecting to relay $dirtyUrl");
 
       // a fresh socket for a key we may already know: nothing the previous one
