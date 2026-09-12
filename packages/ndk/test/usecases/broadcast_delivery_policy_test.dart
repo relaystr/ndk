@@ -1,6 +1,7 @@
 import 'package:ndk/domain_layer/entities/broadcast_state.dart';
 import 'package:ndk/domain_layer/entities/event_cache_records.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/relay_auth.dart';
 import 'package:ndk/domain_layer/usecases/broadcast/delivery_policy.dart';
 import 'package:test/test.dart';
 
@@ -69,6 +70,38 @@ void main() {
           ),
         ),
         RelayDeliveryState.permanentFailure,
+      );
+    });
+
+    test('auth-required under never is permanent, not retryable', () {
+      final event = Nip01Event(
+        id: 'event-never',
+        pubKey: 'pubkey',
+        createdAt: 1700000002,
+        kind: Nip01Event.kTextNodeKind,
+        tags: const [],
+        content: 'text',
+        sig: 'sig',
+      );
+
+      final policy = DeliveryPolicy.forEvent(event);
+      final refusal = RelayBroadcastResponse(
+        relayUrl: 'wss://relay.example',
+        okReceived: false,
+        broadcastSuccessful: false,
+        msg: 'auth-required: please authenticate',
+      );
+
+      // no identity may ever be revealed here, so retrying every minute could
+      // only ever collect the same refusal
+      expect(
+        policy.resolveNextState(refusal, auth: const RelayAuth.never()),
+        RelayDeliveryState.permanentFailure,
+      );
+      expect(
+        policy.resolveNextState(refusal),
+        RelayDeliveryState.authRequired,
+        reason: 'a broadcast that named nobody may still authenticate',
       );
     });
 

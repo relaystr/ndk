@@ -3004,6 +3004,17 @@ class $RelayDeliveryTargetsTableTable extends RelayDeliveryTargetsTable
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _authCanonicalMeta = const VerificationMeta(
+    'authCanonical',
+  );
+  @override
+  late final GeneratedColumn<String> authCanonical = GeneratedColumn<String>(
+    'auth_canonical',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     eventId,
@@ -3015,6 +3026,7 @@ class $RelayDeliveryTargetsTableTable extends RelayDeliveryTargetsTable
     nextRetryAt,
     lastError,
     lastOkMessage,
+    authCanonical,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3102,6 +3114,15 @@ class $RelayDeliveryTargetsTableTable extends RelayDeliveryTargetsTable
         ),
       );
     }
+    if (data.containsKey('auth_canonical')) {
+      context.handle(
+        _authCanonicalMeta,
+        authCanonical.isAcceptableOrUnknown(
+          data['auth_canonical']!,
+          _authCanonicalMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3147,6 +3168,10 @@ class $RelayDeliveryTargetsTableTable extends RelayDeliveryTargetsTable
         DriftSqlType.string,
         data['${effectivePrefix}last_ok_message'],
       ),
+      authCanonical: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}auth_canonical'],
+      ),
     );
   }
 
@@ -3167,6 +3192,7 @@ class DbRelayDeliveryTarget extends DataClass
   final int? nextRetryAt;
   final String? lastError;
   final String? lastOkMessage;
+  final String? authCanonical;
   const DbRelayDeliveryTarget({
     required this.eventId,
     required this.relayUrl,
@@ -3177,6 +3203,7 @@ class DbRelayDeliveryTarget extends DataClass
     this.nextRetryAt,
     this.lastError,
     this.lastOkMessage,
+    this.authCanonical,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3197,6 +3224,9 @@ class DbRelayDeliveryTarget extends DataClass
     }
     if (!nullToAbsent || lastOkMessage != null) {
       map['last_ok_message'] = Variable<String>(lastOkMessage);
+    }
+    if (!nullToAbsent || authCanonical != null) {
+      map['auth_canonical'] = Variable<String>(authCanonical);
     }
     return map;
   }
@@ -3220,6 +3250,9 @@ class DbRelayDeliveryTarget extends DataClass
       lastOkMessage: lastOkMessage == null && nullToAbsent
           ? const Value.absent()
           : Value(lastOkMessage),
+      authCanonical: authCanonical == null && nullToAbsent
+          ? const Value.absent()
+          : Value(authCanonical),
     );
   }
 
@@ -3238,6 +3271,7 @@ class DbRelayDeliveryTarget extends DataClass
       nextRetryAt: serializer.fromJson<int?>(json['nextRetryAt']),
       lastError: serializer.fromJson<String?>(json['lastError']),
       lastOkMessage: serializer.fromJson<String?>(json['lastOkMessage']),
+      authCanonical: serializer.fromJson<String?>(json['authCanonical']),
     );
   }
   @override
@@ -3253,6 +3287,7 @@ class DbRelayDeliveryTarget extends DataClass
       'nextRetryAt': serializer.toJson<int?>(nextRetryAt),
       'lastError': serializer.toJson<String?>(lastError),
       'lastOkMessage': serializer.toJson<String?>(lastOkMessage),
+      'authCanonical': serializer.toJson<String?>(authCanonical),
     };
   }
 
@@ -3266,6 +3301,7 @@ class DbRelayDeliveryTarget extends DataClass
     Value<int?> nextRetryAt = const Value.absent(),
     Value<String?> lastError = const Value.absent(),
     Value<String?> lastOkMessage = const Value.absent(),
+    Value<String?> authCanonical = const Value.absent(),
   }) => DbRelayDeliveryTarget(
     eventId: eventId ?? this.eventId,
     relayUrl: relayUrl ?? this.relayUrl,
@@ -3280,6 +3316,9 @@ class DbRelayDeliveryTarget extends DataClass
     lastOkMessage: lastOkMessage.present
         ? lastOkMessage.value
         : this.lastOkMessage,
+    authCanonical: authCanonical.present
+        ? authCanonical.value
+        : this.authCanonical,
   );
   DbRelayDeliveryTarget copyWithCompanion(
     RelayDeliveryTargetsTableCompanion data,
@@ -3302,6 +3341,9 @@ class DbRelayDeliveryTarget extends DataClass
       lastOkMessage: data.lastOkMessage.present
           ? data.lastOkMessage.value
           : this.lastOkMessage,
+      authCanonical: data.authCanonical.present
+          ? data.authCanonical.value
+          : this.authCanonical,
     );
   }
 
@@ -3316,7 +3358,8 @@ class DbRelayDeliveryTarget extends DataClass
           ..write('lastAttemptAt: $lastAttemptAt, ')
           ..write('nextRetryAt: $nextRetryAt, ')
           ..write('lastError: $lastError, ')
-          ..write('lastOkMessage: $lastOkMessage')
+          ..write('lastOkMessage: $lastOkMessage, ')
+          ..write('authCanonical: $authCanonical')
           ..write(')'))
         .toString();
   }
@@ -3332,6 +3375,7 @@ class DbRelayDeliveryTarget extends DataClass
     nextRetryAt,
     lastError,
     lastOkMessage,
+    authCanonical,
   );
   @override
   bool operator ==(Object other) =>
@@ -3345,7 +3389,8 @@ class DbRelayDeliveryTarget extends DataClass
           other.lastAttemptAt == this.lastAttemptAt &&
           other.nextRetryAt == this.nextRetryAt &&
           other.lastError == this.lastError &&
-          other.lastOkMessage == this.lastOkMessage);
+          other.lastOkMessage == this.lastOkMessage &&
+          other.authCanonical == this.authCanonical);
 }
 
 class RelayDeliveryTargetsTableCompanion
@@ -3359,6 +3404,7 @@ class RelayDeliveryTargetsTableCompanion
   final Value<int?> nextRetryAt;
   final Value<String?> lastError;
   final Value<String?> lastOkMessage;
+  final Value<String?> authCanonical;
   final Value<int> rowid;
   const RelayDeliveryTargetsTableCompanion({
     this.eventId = const Value.absent(),
@@ -3370,6 +3416,7 @@ class RelayDeliveryTargetsTableCompanion
     this.nextRetryAt = const Value.absent(),
     this.lastError = const Value.absent(),
     this.lastOkMessage = const Value.absent(),
+    this.authCanonical = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   RelayDeliveryTargetsTableCompanion.insert({
@@ -3382,6 +3429,7 @@ class RelayDeliveryTargetsTableCompanion
     this.nextRetryAt = const Value.absent(),
     this.lastError = const Value.absent(),
     this.lastOkMessage = const Value.absent(),
+    this.authCanonical = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : eventId = Value(eventId),
        relayUrl = Value(relayUrl),
@@ -3397,6 +3445,7 @@ class RelayDeliveryTargetsTableCompanion
     Expression<int>? nextRetryAt,
     Expression<String>? lastError,
     Expression<String>? lastOkMessage,
+    Expression<String>? authCanonical,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3409,6 +3458,7 @@ class RelayDeliveryTargetsTableCompanion
       if (nextRetryAt != null) 'next_retry_at': nextRetryAt,
       if (lastError != null) 'last_error': lastError,
       if (lastOkMessage != null) 'last_ok_message': lastOkMessage,
+      if (authCanonical != null) 'auth_canonical': authCanonical,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3423,6 +3473,7 @@ class RelayDeliveryTargetsTableCompanion
     Value<int?>? nextRetryAt,
     Value<String?>? lastError,
     Value<String?>? lastOkMessage,
+    Value<String?>? authCanonical,
     Value<int>? rowid,
   }) {
     return RelayDeliveryTargetsTableCompanion(
@@ -3435,6 +3486,7 @@ class RelayDeliveryTargetsTableCompanion
       nextRetryAt: nextRetryAt ?? this.nextRetryAt,
       lastError: lastError ?? this.lastError,
       lastOkMessage: lastOkMessage ?? this.lastOkMessage,
+      authCanonical: authCanonical ?? this.authCanonical,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3469,6 +3521,9 @@ class RelayDeliveryTargetsTableCompanion
     if (lastOkMessage.present) {
       map['last_ok_message'] = Variable<String>(lastOkMessage.value);
     }
+    if (authCanonical.present) {
+      map['auth_canonical'] = Variable<String>(authCanonical.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3487,6 +3542,7 @@ class RelayDeliveryTargetsTableCompanion
           ..write('nextRetryAt: $nextRetryAt, ')
           ..write('lastError: $lastError, ')
           ..write('lastOkMessage: $lastOkMessage, ')
+          ..write('authCanonical: $authCanonical, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -8350,6 +8406,7 @@ typedef $$RelayDeliveryTargetsTableTableCreateCompanionBuilder =
       Value<int?> nextRetryAt,
       Value<String?> lastError,
       Value<String?> lastOkMessage,
+      Value<String?> authCanonical,
       Value<int> rowid,
     });
 typedef $$RelayDeliveryTargetsTableTableUpdateCompanionBuilder =
@@ -8363,6 +8420,7 @@ typedef $$RelayDeliveryTargetsTableTableUpdateCompanionBuilder =
       Value<int?> nextRetryAt,
       Value<String?> lastError,
       Value<String?> lastOkMessage,
+      Value<String?> authCanonical,
       Value<int> rowid,
     });
 
@@ -8417,6 +8475,11 @@ class $$RelayDeliveryTargetsTableTableFilterComposer
 
   ColumnFilters<String> get lastOkMessage => $composableBuilder(
     column: $table.lastOkMessage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get authCanonical => $composableBuilder(
+    column: $table.authCanonical,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -8474,6 +8537,11 @@ class $$RelayDeliveryTargetsTableTableOrderingComposer
     column: $table.lastOkMessage,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get authCanonical => $composableBuilder(
+    column: $table.authCanonical,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$RelayDeliveryTargetsTableTableAnnotationComposer
@@ -8517,6 +8585,11 @@ class $$RelayDeliveryTargetsTableTableAnnotationComposer
 
   GeneratedColumn<String> get lastOkMessage => $composableBuilder(
     column: $table.lastOkMessage,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get authCanonical => $composableBuilder(
+    column: $table.authCanonical,
     builder: (column) => column,
   );
 }
@@ -8576,6 +8649,7 @@ class $$RelayDeliveryTargetsTableTableTableManager
                 Value<int?> nextRetryAt = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
                 Value<String?> lastOkMessage = const Value.absent(),
+                Value<String?> authCanonical = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RelayDeliveryTargetsTableCompanion(
                 eventId: eventId,
@@ -8587,6 +8661,7 @@ class $$RelayDeliveryTargetsTableTableTableManager
                 nextRetryAt: nextRetryAt,
                 lastError: lastError,
                 lastOkMessage: lastOkMessage,
+                authCanonical: authCanonical,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -8600,6 +8675,7 @@ class $$RelayDeliveryTargetsTableTableTableManager
                 Value<int?> nextRetryAt = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
                 Value<String?> lastOkMessage = const Value.absent(),
+                Value<String?> authCanonical = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RelayDeliveryTargetsTableCompanion.insert(
                 eventId: eventId,
@@ -8611,6 +8687,7 @@ class $$RelayDeliveryTargetsTableTableTableManager
                 nextRetryAt: nextRetryAt,
                 lastError: lastError,
                 lastOkMessage: lastOkMessage,
+                authCanonical: authCanonical,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -1,6 +1,7 @@
 import '../../entities/broadcast_state.dart';
 import '../../entities/event_cache_records.dart';
 import '../../entities/nip_01_event.dart';
+import '../../entities/relay_auth.dart';
 import '../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../shared/nips/nip09/deletion.dart';
 
@@ -80,7 +81,12 @@ class DeliveryPolicy {
 
   bool get retainsOnlyLatest => kind == DeliveryPolicyKind.latestStateOnly;
 
-  RelayDeliveryState resolveNextState(RelayBroadcastResponse response) {
+  /// [auth] is the policy the broadcast went out under, so a refusal can be
+  /// judged against what this event is allowed to reveal.
+  RelayDeliveryState resolveNextState(
+    RelayBroadcastResponse response, {
+    RelayAuth? auth,
+  }) {
     if (response.okReceived && response.broadcastSuccessful) {
       return RelayDeliveryState.acked;
     }
@@ -97,7 +103,11 @@ class DeliveryPolicy {
 
     if (prefix == 'auth-required' ||
         normalizedMsg.startsWith('auth-required')) {
-      return RelayDeliveryState.authRequired;
+      // no identity may ever be revealed here, so no retry can turn this
+      // refusal into an accepted event
+      return auth is RelayAuthNever
+          ? RelayDeliveryState.permanentFailure
+          : RelayDeliveryState.authRequired;
     }
 
     if (_looksPermanent(response.msg)) {
