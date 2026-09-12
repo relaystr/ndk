@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ndk/entities.dart';
@@ -288,6 +291,20 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
               }
             }
 
+            Future<void> saveToFile() async {
+              final json = backupJson;
+              if (json == null) return;
+              final path = await FilePicker.platform.saveFile(
+                dialogTitle: l10n.saveBackupToFile,
+                fileName:
+                    'cashu-backup-${DateTime.now().toUtc().toIso8601String().replaceAll(':', '-')}.json',
+                type: FileType.custom,
+                allowedExtensions: const ['json'],
+                bytes: Uint8List.fromList(utf8.encode(json)),
+              );
+              if (path != null) displaySuccess(l10n.backupSavedToFile);
+            }
+
             return AlertDialog(
               title: Text(l10n.cashuBackupTitle),
               content: SizedBox(
@@ -350,7 +367,7 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                       generating ? l10n.generatingBackup : l10n.backup,
                     ),
                   )
-                else
+                else ...[
                   TextButton(
                     onPressed: () async {
                       await Clipboard.setData(ClipboardData(text: backupJson!));
@@ -358,6 +375,12 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                     },
                     child: Text(l10n.copyBackup),
                   ),
+                  TextButton.icon(
+                    onPressed: saveToFile,
+                    icon: const Icon(Icons.save_alt),
+                    label: Text(l10n.saveBackupToFile),
+                  ),
+                ],
               ],
             );
           },
@@ -380,6 +403,25 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            Future<void> chooseBackupFile() async {
+              final picked = await FilePicker.platform.pickFiles(
+                type: FileType.custom,
+                allowedExtensions: const ['json'],
+                withData: true,
+              );
+              if (picked == null) return;
+              final bytes = picked.files.single.bytes;
+              if (bytes == null) {
+                displayError(l10n.backupFileReadFailed);
+                return;
+              }
+              try {
+                controller.text = utf8.decode(bytes);
+              } catch (_) {
+                displayError(l10n.backupFileReadFailed);
+              }
+            }
+
             return AlertDialog(
               title: Text(l10n.cashuRestoreTitle),
               content: TextField(
@@ -392,6 +434,11 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                 ),
               ),
               actions: [
+                TextButton.icon(
+                  onPressed: restoring ? null : chooseBackupFile,
+                  icon: const Icon(Icons.file_open),
+                  label: Text(l10n.restoreFromFile),
+                ),
                 TextButton(
                   onPressed: restoring
                       ? null

@@ -9,6 +9,23 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
+  String get saveBackupToFile => 'Сохранить резервную копию в файл';
+
+  @override
+  String get backupSavedToFile => 'Резервная копия сохранена в файл';
+
+  @override
+  String get restoreFromFile => 'Восстановить из файла';
+
+  @override
+  String get backupFileReadFailed =>
+      'Не удалось прочитать выбранный файл резервной копии.';
+
+  @override
+  String get fetchingWalletConnectionInfo =>
+      'Получение данных подключения кошелька…';
+
+  @override
   String get createAccount => 'Создать аккаунт';
 
   @override
@@ -988,6 +1005,87 @@ class AppLocalizationsRu extends AppLocalizations {
   String get addWalletTitle => 'Добавить Кошелёк';
 
   @override
+  String get addWalletDescription =>
+      'Отсканируйте поддерживаемый QR-код кошелька, вставьте данные или подключитесь через приложение кошелька.';
+
+  @override
+  String get scanWalletQrCode => 'Сканировать QR-код кошелька';
+
+  @override
+  String get connectWithWallet => 'Подключить кошелёк';
+
+  @override
+  String get chooseWalletApp => 'Выбрать приложение кошелька';
+
+  @override
+  String get oneClickConnect => 'Подключить в 1 клик';
+
+  @override
+  String get chooseWallet => 'Выбрать кошелёк';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => 'Ручное подключение NWC';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return 'Завершите подключение в $walletName';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return 'Подключение к $walletName…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '$walletName подключён';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return 'Не удалось подключить $walletName';
+  }
+
+  @override
+  String get retry => 'Повторить';
+
+  @override
+  String get chooseAnotherWallet => 'Выбрать другой кошелёк';
+
+  @override
+  String get chooseWalletAppDescription =>
+      'Подтвердите NWC-подключение в установленном кошельке';
+
+  @override
+  String get walletInput => 'Адрес или подключение кошелька';
+
+  @override
+  String get walletInputHint =>
+      'NWC, адрес Lightning/BIP353, предложение BOLT12/BIP321 или HTTPS-адрес минта Cashu';
+
+  @override
+  String get unsupportedWalletInput =>
+      'Этот адрес или подключение кошелька не поддерживается.';
+
+  @override
+  String get detected => 'Обнаружено';
+
+  @override
+  String get lightningAddressInputType => 'Адрес Lightning или BIP353';
+
+  @override
+  String get manualWalletSetup => 'Настроить вручную';
+
+  @override
   String get chooseWalletType => 'Выберите тип кошелька';
 
   @override
@@ -1006,6 +1104,32 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => 'Выбрать минт Cashu';
+
+  @override
+  String get cashuMintRatingsNotice =>
+      'Оценки сообщества взяты из подписанных отзывов Nostr. Высокая оценка не гарантирует безопасность минта.';
+
+  @override
+  String get cashuMintDiscoveryFailed =>
+      'Не удалось загрузить предложения минтов.';
+
+  @override
+  String get noCashuMintSuggestions =>
+      'Доступные предложения минтов не найдены.';
+
+  @override
+  String get noRatingsYet => 'Оценок пока нет';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · отзывов: $count';
+  }
+
+  @override
+  String get enterMintUrlManually => 'Ввести URL минта вручную';
 
   @override
   String get cashuWalletTypeSubtitle =>
@@ -1157,7 +1281,7 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get bolt12Wallet => 'BOLT12 Wallet';
+  String get bolt12Wallet => 'Кошелёк BOLT12';
 
   @override
   String get bolt12WalletSubtitle => 'Reusable Lightning offer';
@@ -1192,30 +1316,37 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get bolt12WalletTypeTitle => 'BOLT12 Offer';
+  String get bolt12WalletTypeTitle => 'Предложение BOLT12';
+
+  @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
 
   @override
   String get bolt12WalletTypeSubtitle =>
       'Receive-only wallet using a reusable offer';
 
   @override
-  String get addBolt12WalletTitle => 'Add BOLT12 Wallet';
+  String get addBolt12WalletTitle => 'Добавить кошелёк BOLT12';
 
   @override
   String get enterBolt12Input =>
-      'Enter or scan an lno offer, a bitcoin:?lno=... URI, or a BIP353 address.';
+      'Введите или отсканируйте предложение lno, URI bitcoin:?lno=… или адрес BIP353.';
 
   @override
-  String get bolt12Input => 'BOLT12 payment target';
+  String get bolt12Input => 'Цель платежа BOLT12';
 
   @override
-  String get bolt12InputHint => 'lno1..., bitcoin:?lno=..., or user@domain.com';
+  String get bolt12InputHint =>
+      'lno1…, bitcoin:?lno=… или пользователь@домен.com';
 
   @override
-  String get walletNameOptional => 'Wallet name (optional)';
+  String get walletNameOptional => 'Название кошелька (необязательно)';
 
   @override
-  String get scanBolt12QrCodeTitle => 'Scan BOLT12 QR code';
+  String get scanBolt12QrCodeTitle => 'Сканировать QR-код BOLT12';
 
   @override
   String get invalidBolt12QrCode =>
@@ -1223,10 +1354,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get pleaseEnterBolt12Input =>
-      'Please enter a BOLT12 offer or BIP353 address.';
+      'Введите предложение BOLT12 или адрес BIP353.';
 
   @override
-  String get bolt12WalletAdded => 'BOLT12 wallet added successfully!';
+  String get bolt12WalletAdded => 'Кошелёк BOLT12 успешно добавлен!';
 
   @override
   String get bolt12OfferTitle => 'Receive with BOLT12';
@@ -1234,4 +1365,89 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get bolt12OfferInstructions =>
       'Share this reusable offer to receive a Lightning payment.';
+
+  @override
+  String get confirm => 'Подтвердить';
+
+  @override
+  String get reviewWallet => 'Проверить кошелёк';
+
+  @override
+  String get confirmWalletTitle => 'Подтвердить кошелёк';
+
+  @override
+  String get confirmWalletDescription =>
+      'Проверьте эти данные перед добавлением кошелька.';
+
+  @override
+  String get walletDetailType => 'Тип кошелька';
+
+  @override
+  String get walletDetailAddress => 'Адрес';
+
+  @override
+  String get walletDetailDomain => 'Домен';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => 'Публичный ключ';
+
+  @override
+  String get walletDetailRelay => 'Ретранслятор';
+
+  @override
+  String get walletDetailRelays => 'Ретрансляторы';
+
+  @override
+  String get walletDetailSecret => 'Секрет подключения';
+
+  @override
+  String get walletSecretHidden => 'Присутствует и скрыт для безопасности';
+
+  @override
+  String get walletDetailDescription => 'Описание';
+
+  @override
+  String get walletDetailDetails => 'Сведения';
+
+  @override
+  String get walletDetailIssuer => 'Эмитент';
+
+  @override
+  String get walletDetailAmount => 'Сумма';
+
+  @override
+  String get walletDetailCurrency => 'Валюта';
+
+  @override
+  String get walletDetailExpiry => 'Истекает';
+
+  @override
+  String get walletDetailNodeId => 'ID узла';
+
+  @override
+  String get walletDetailOffer => 'Предложение BOLT12';
+
+  @override
+  String get walletDetailVersion => 'Версия';
+
+  @override
+  String get walletDetailUnits => 'Поддерживаемые единицы';
+
+  @override
+  String get walletDetailContact => 'Контакт';
+
+  @override
+  String get walletDetailTerms => 'Условия использования';
+
+  @override
+  String get walletDetailMessage => 'Сообщение';
+
+  @override
+  String get walletDetailCommunityRating => 'Оценка сообщества';
+
+  @override
+  String get walletDetailCommunityReviews => 'Недавние отзывы сообщества';
 }

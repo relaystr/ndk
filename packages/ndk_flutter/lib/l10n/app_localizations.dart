@@ -119,6 +119,36 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @saveBackupToFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Save backup to file'**
+  String get saveBackupToFile;
+
+  /// No description provided for @backupSavedToFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup saved to file'**
+  String get backupSavedToFile;
+
+  /// No description provided for @restoreFromFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from file'**
+  String get restoreFromFile;
+
+  /// No description provided for @backupFileReadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the selected backup file.'**
+  String get backupFileReadFailed;
+
+  /// No description provided for @fetchingWalletConnectionInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching wallet connection info…'**
+  String get fetchingWalletConnectionInfo;
+
   /// Button text for creating a new account
   ///
   /// In en, this message translates to:
@@ -2027,6 +2057,144 @@ abstract class AppLocalizations {
   /// **'Add Wallet'**
   String get addWalletTitle;
 
+  /// Description for the unified add wallet flow
+  ///
+  /// In en, this message translates to:
+  /// **'Scan any supported wallet QR code, paste its details, or connect through a wallet app.'**
+  String get addWalletDescription;
+
+  /// Button for opening the universal wallet QR scanner
+  ///
+  /// In en, this message translates to:
+  /// **'Scan wallet QR code'**
+  String get scanWalletQrCode;
+
+  /// Heading for wallet-assisted NWC connection options
+  ///
+  /// In en, this message translates to:
+  /// **'Connect with a wallet'**
+  String get connectWithWallet;
+
+  /// Button for opening the standard NWC wallet chooser
+  ///
+  /// In en, this message translates to:
+  /// **'Choose wallet app'**
+  String get chooseWalletApp;
+
+  /// No description provided for @oneClickConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'1-click connect'**
+  String get oneClickConnect;
+
+  /// No description provided for @chooseWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose wallet'**
+  String get chooseWallet;
+
+  /// No description provided for @albyWalletOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Alby'**
+  String get albyWalletOption;
+
+  /// No description provided for @albyCloudOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Alby Cloud'**
+  String get albyCloudOption;
+
+  /// No description provided for @coinosWalletOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Coinos'**
+  String get coinosWalletOption;
+
+  /// No description provided for @manualNwcConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual NWC connection'**
+  String get manualNwcConnection;
+
+  /// Prompt shown while an external wallet is authorizing
+  ///
+  /// In en, this message translates to:
+  /// **'Finish connection in {walletName}'**
+  String walletConnectionFinishIn(String walletName);
+
+  /// Progress shown while adding an externally authorized wallet
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting {walletName}…'**
+  String walletConnectionConnecting(String walletName);
+
+  /// Animated success message after adding a wallet
+  ///
+  /// In en, this message translates to:
+  /// **'{walletName} connected'**
+  String walletConnectionConnected(String walletName);
+
+  /// Heading shown when an external wallet connection fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect {walletName}'**
+  String walletConnectionFailed(String walletName);
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @chooseAnotherWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another wallet'**
+  String get chooseAnotherWallet;
+
+  /// Description for the standard NWC wallet chooser
+  ///
+  /// In en, this message translates to:
+  /// **'Approve an NWC connection in an installed wallet'**
+  String get chooseWalletAppDescription;
+
+  /// Label for unified wallet input
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet address or connection'**
+  String get walletInput;
+
+  /// Hint listing supported wallet inputs
+  ///
+  /// In en, this message translates to:
+  /// **'NWC, Lightning/BIP353 address, BOLT12/BIP321 offer, or HTTPS Cashu mint URL'**
+  String get walletInputHint;
+
+  /// Error for an unrecognized unified wallet input
+  ///
+  /// In en, this message translates to:
+  /// **'This is not a supported wallet address or connection.'**
+  String get unsupportedWalletInput;
+
+  /// Label shown before a detected wallet type
+  ///
+  /// In en, this message translates to:
+  /// **'Detected'**
+  String get detected;
+
+  /// Detected type label for an ambiguous user at domain address
+  ///
+  /// In en, this message translates to:
+  /// **'Lightning or BIP353 address'**
+  String get lightningAddressInputType;
+
+  /// Button revealing type-specific manual wallet setup
+  ///
+  /// In en, this message translates to:
+  /// **'Set up manually'**
+  String get manualWalletSetup;
+
   /// Prompt to choose wallet type
   ///
   /// In en, this message translates to:
@@ -2062,6 +2230,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cashu'**
   String get cashuWalletTypeTitle;
+
+  /// No description provided for @chooseCashuMint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Cashu mint'**
+  String get chooseCashuMint;
+
+  /// No description provided for @cashuMintRatingsNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Community ratings come from signed Nostr reviews. A high rating does not guarantee that a mint is safe.'**
+  String get cashuMintRatingsNotice;
+
+  /// No description provided for @cashuMintDiscoveryFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load mint suggestions.'**
+  String get cashuMintDiscoveryFailed;
+
+  /// No description provided for @noCashuMintSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'No available mint suggestions found.'**
+  String get noCashuMintSuggestions;
+
+  /// No description provided for @noRatingsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No ratings yet'**
+  String get noRatingsYet;
+
+  /// No description provided for @cashuMintRating.
+  ///
+  /// In en, this message translates to:
+  /// **'★ {rating} · {count} reviews'**
+  String cashuMintRating(String rating, int count);
+
+  /// No description provided for @enterMintUrlManually.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter mint URL manually'**
+  String get enterMintUrlManually;
 
   /// Subtitle for the Cashu wallet type option
   ///
@@ -2387,6 +2597,18 @@ abstract class AppLocalizations {
   /// **'BOLT12 Offer'**
   String get bolt12WalletTypeTitle;
 
+  /// No description provided for @bip353WalletTypeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'BIP353'**
+  String get bip353WalletTypeTitle;
+
+  /// No description provided for @lnurlProtocol.
+  ///
+  /// In en, this message translates to:
+  /// **'LNURL'**
+  String get lnurlProtocol;
+
   /// No description provided for @bolt12WalletTypeSubtitle.
   ///
   /// In en, this message translates to:
@@ -2458,6 +2680,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share this reusable offer to receive a Lightning payment.'**
   String get bolt12OfferInstructions;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @reviewWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Review wallet'**
+  String get reviewWallet;
+
+  /// No description provided for @confirmWalletTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm wallet'**
+  String get confirmWalletTitle;
+
+  /// No description provided for @confirmWalletDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Review these details before adding this wallet.'**
+  String get confirmWalletDescription;
+
+  /// No description provided for @walletDetailType.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet type'**
+  String get walletDetailType;
+
+  /// No description provided for @walletDetailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get walletDetailAddress;
+
+  /// No description provided for @walletDetailDomain.
+  ///
+  /// In en, this message translates to:
+  /// **'Domain'**
+  String get walletDetailDomain;
+
+  /// No description provided for @walletDetailUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'URL'**
+  String get walletDetailUrl;
+
+  /// No description provided for @walletDetailPublicKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Public key'**
+  String get walletDetailPublicKey;
+
+  /// No description provided for @walletDetailRelay.
+  ///
+  /// In en, this message translates to:
+  /// **'Relay'**
+  String get walletDetailRelay;
+
+  /// No description provided for @walletDetailRelays.
+  ///
+  /// In en, this message translates to:
+  /// **'Relays'**
+  String get walletDetailRelays;
+
+  /// No description provided for @walletDetailSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection secret'**
+  String get walletDetailSecret;
+
+  /// No description provided for @walletSecretHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Present and hidden for security'**
+  String get walletSecretHidden;
+
+  /// No description provided for @walletDetailDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get walletDetailDescription;
+
+  /// No description provided for @walletDetailDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get walletDetailDetails;
+
+  /// No description provided for @walletDetailIssuer.
+  ///
+  /// In en, this message translates to:
+  /// **'Issuer'**
+  String get walletDetailIssuer;
+
+  /// No description provided for @walletDetailAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get walletDetailAmount;
+
+  /// No description provided for @walletDetailCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get walletDetailCurrency;
+
+  /// No description provided for @walletDetailExpiry.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires'**
+  String get walletDetailExpiry;
+
+  /// No description provided for @walletDetailNodeId.
+  ///
+  /// In en, this message translates to:
+  /// **'Node ID'**
+  String get walletDetailNodeId;
+
+  /// No description provided for @walletDetailOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'BOLT12 offer'**
+  String get walletDetailOffer;
+
+  /// No description provided for @walletDetailVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get walletDetailVersion;
+
+  /// No description provided for @walletDetailUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'Supported units'**
+  String get walletDetailUnits;
+
+  /// No description provided for @walletDetailContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact'**
+  String get walletDetailContact;
+
+  /// No description provided for @walletDetailTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of service'**
+  String get walletDetailTerms;
+
+  /// No description provided for @walletDetailMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get walletDetailMessage;
+
+  /// No description provided for @walletDetailCommunityRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Community rating'**
+  String get walletDetailCommunityRating;
+
+  /// No description provided for @walletDetailCommunityReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent community reviews'**
+  String get walletDetailCommunityReviews;
 }
 
 class _AppLocalizationsDelegate

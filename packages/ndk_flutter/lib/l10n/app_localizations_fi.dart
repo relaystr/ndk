@@ -9,6 +9,22 @@ class AppLocalizationsFi extends AppLocalizations {
   AppLocalizationsFi([String locale = 'fi']) : super(locale);
 
   @override
+  String get saveBackupToFile => 'Tallenna varmuuskopio tiedostoon';
+
+  @override
+  String get backupSavedToFile => 'Varmuuskopio tallennettu tiedostoon';
+
+  @override
+  String get restoreFromFile => 'Palauta tiedostosta';
+
+  @override
+  String get backupFileReadFailed =>
+      'Valittua varmuuskopiotiedostoa ei voitu lukea.';
+
+  @override
+  String get fetchingWalletConnectionInfo => 'Haetaan lompakon yhteystietoja…';
+
+  @override
   String get createAccount => 'Luo tili';
 
   @override
@@ -772,26 +788,24 @@ class AppLocalizationsFi extends AppLocalizations {
   String get payInvoiceTitle => 'Maksa lasku';
 
   @override
-  String get sendToWallet => 'Lähetä lompakkoon';
+  String get sendToWallet => 'Send to Wallet';
 
   @override
-  String get sendToWalletDescription =>
-      'Siirrä toiseen yhteensopivaan lompakkoon';
+  String get sendToWalletDescription => 'Transfer to another compatible wallet';
 
   @override
-  String get noCompatibleReceivingWallets =>
-      'Ei yhteensopivia vastaanottavia lompakoita';
+  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
 
   @override
   String get noCompatibleReceivingWalletsDescription =>
-      'Lisää tai yhdistä toinen lompakko, joka voi vastaanottaa tämän lompakon tukeman maksun.';
+      'Add or connect another wallet that can receive a payment supported by this wallet.';
 
   @override
-  String get destinationWallet => 'Kohdelompakko';
+  String get destinationWallet => 'Destination wallet';
 
   @override
   String walletTransferSubmitted(String walletName) {
-    return 'Maksu lähetetty lompakkoon $walletName';
+    return 'Payment sent to $walletName';
   }
 
   @override
@@ -990,6 +1004,87 @@ class AppLocalizationsFi extends AppLocalizations {
   String get addWalletTitle => 'Lisää lompakko';
 
   @override
+  String get addWalletDescription =>
+      'Skannaa tuetun lompakon QR-koodi, liitä sen tiedot tai yhdistä lompakkosovelluksella.';
+
+  @override
+  String get scanWalletQrCode => 'Skannaa lompakon QR-koodi';
+
+  @override
+  String get connectWithWallet => 'Yhdistä lompakkoon';
+
+  @override
+  String get chooseWalletApp => 'Valitse lompakkosovellus';
+
+  @override
+  String get oneClickConnect => 'Yhdistä yhdellä napsautuksella';
+
+  @override
+  String get chooseWallet => 'Valitse lompakko';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => 'Manuaalinen NWC-yhteys';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return 'Viimeistele yhteys sovelluksessa $walletName';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return 'Yhdistetään lompakkoon $walletName…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '$walletName yhdistetty';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return 'Lompakkoon $walletName ei voitu yhdistää';
+  }
+
+  @override
+  String get retry => 'Yritä uudelleen';
+
+  @override
+  String get chooseAnotherWallet => 'Valitse toinen lompakko';
+
+  @override
+  String get chooseWalletAppDescription =>
+      'Hyväksy NWC-yhteys asennetussa lompakossa';
+
+  @override
+  String get walletInput => 'Lompakon osoite tai yhteys';
+
+  @override
+  String get walletInputHint =>
+      'NWC, Lightning-/BIP353-osoite, BOLT12-/BIP321-tarjous tai Cashu-mintin HTTPS-URL';
+
+  @override
+  String get unsupportedWalletInput =>
+      'Tätä lompakon osoitetta tai yhteyttä ei tueta.';
+
+  @override
+  String get detected => 'Havaittu';
+
+  @override
+  String get lightningAddressInputType => 'Lightning- tai BIP353-osoite';
+
+  @override
+  String get manualWalletSetup => 'Määritä manuaalisesti';
+
+  @override
   String get chooseWalletType => 'Valitse lompakon tyyppi';
 
   @override
@@ -1007,6 +1102,31 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => 'Valitse Cashu-mintti';
+
+  @override
+  String get cashuMintRatingsNotice =>
+      'Yhteisöarviot ovat allekirjoitettuja Nostr-arvosteluja. Korkea arvio ei takaa mintin turvallisuutta.';
+
+  @override
+  String get cashuMintDiscoveryFailed => 'Minttiehdotuksia ei voitu ladata.';
+
+  @override
+  String get noCashuMintSuggestions =>
+      'Saatavilla olevia minttiehdotuksia ei löytynyt.';
+
+  @override
+  String get noRatingsYet => 'Ei vielä arvioita';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · $count arvostelua';
+  }
+
+  @override
+  String get enterMintUrlManually => 'Syötä mintin URL manuaalisesti';
 
   @override
   String get cashuWalletTypeSubtitle =>
@@ -1161,57 +1281,63 @@ class AppLocalizationsFi extends AppLocalizations {
   String get bolt12Wallet => 'BOLT12-lompakko';
 
   @override
-  String get bolt12WalletSubtitle => 'Uudelleenkäytettävä Lightning-tarjous';
+  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
 
   @override
-  String get bolt12PrivateOfferSubtitle =>
-      'Uudelleenkäytettävä yksityinen tarjous';
+  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
 
   @override
-  String get anyAmount => 'Mikä tahansa summa';
+  String get anyAmount => 'Any amount';
 
   @override
-  String get blindedRoute => 'Sokaisettu reitti';
+  String get blindedRoute => 'Blinded';
 
   @override
   String fromAmountSats(String amount) {
-    return 'Alkaen $amount sats';
+    return 'From $amount sats';
   }
 
   @override
   String fromAmountMsats(String amount) {
-    return 'Alkaen $amount msats';
+    return 'From $amount msats';
   }
 
   @override
   String fromCurrencyAmount(String amount, String currency) {
-    return 'Alkaen $amount $currency';
+    return 'From $amount $currency';
   }
 
   @override
   String bolt12Expires(String date) {
-    return 'Vanhenee $date';
+    return 'Expires $date';
   }
 
   @override
   String get bolt12WalletTypeTitle => 'BOLT12-tarjous';
 
   @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
+
+  @override
   String get bolt12WalletTypeSubtitle =>
-      'Vain vastaanottamiseen tarkoitettu lompakko, joka käyttää uudelleenkäytettävää tarjousta';
+      'Receive-only wallet using a reusable offer';
 
   @override
   String get addBolt12WalletTitle => 'Lisää BOLT12-lompakko';
 
   @override
   String get enterBolt12Input =>
-      'Syötä tai skannaa lno-tarjous, bitcoin:?lno=...-URI tai BIP353-osoite.';
+      'Syötä tai skannaa lno-tarjous, bitcoin:?lno=…-URI tai BIP353-osoite.';
 
   @override
   String get bolt12Input => 'BOLT12-maksukohde';
 
   @override
-  String get bolt12InputHint => 'lno1..., bitcoin:?lno=... tai user@domain.com';
+  String get bolt12InputHint =>
+      'lno1…, bitcoin:?lno=… tai käyttäjä@verkkotunnus.com';
 
   @override
   String get walletNameOptional => 'Lompakon nimi (valinnainen)';
@@ -1221,19 +1347,105 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get invalidBolt12QrCode =>
-      'QR-koodi ei ole BOLT12-, BIP321- tai BIP353-maksukohde.';
+      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
 
   @override
   String get pleaseEnterBolt12Input =>
       'Syötä BOLT12-tarjous tai BIP353-osoite.';
 
   @override
-  String get bolt12WalletAdded => 'BOLT12-lompakko lisättiin onnistuneesti!';
+  String get bolt12WalletAdded => 'BOLT12-lompakko lisätty!';
 
   @override
-  String get bolt12OfferTitle => 'Vastaanota BOLT12:lla';
+  String get bolt12OfferTitle => 'Receive with BOLT12';
 
   @override
   String get bolt12OfferInstructions =>
-      'Jaa tämä uudelleenkäytettävä tarjous vastaanottaaksesi Lightning-maksun.';
+      'Share this reusable offer to receive a Lightning payment.';
+
+  @override
+  String get confirm => 'Vahvista';
+
+  @override
+  String get reviewWallet => 'Tarkista lompakko';
+
+  @override
+  String get confirmWalletTitle => 'Vahvista lompakko';
+
+  @override
+  String get confirmWalletDescription =>
+      'Tarkista nämä tiedot ennen lompakon lisäämistä.';
+
+  @override
+  String get walletDetailType => 'Lompakon tyyppi';
+
+  @override
+  String get walletDetailAddress => 'Osoite';
+
+  @override
+  String get walletDetailDomain => 'Verkkotunnus';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => 'Julkinen avain';
+
+  @override
+  String get walletDetailRelay => 'Rele';
+
+  @override
+  String get walletDetailRelays => 'Releet';
+
+  @override
+  String get walletDetailSecret => 'Yhteyssalaisuus';
+
+  @override
+  String get walletSecretHidden =>
+      'Olemassa ja piilotettu turvallisuuden vuoksi';
+
+  @override
+  String get walletDetailDescription => 'Kuvaus';
+
+  @override
+  String get walletDetailDetails => 'Tiedot';
+
+  @override
+  String get walletDetailIssuer => 'Myöntäjä';
+
+  @override
+  String get walletDetailAmount => 'Summa';
+
+  @override
+  String get walletDetailCurrency => 'Valuutta';
+
+  @override
+  String get walletDetailExpiry => 'Vanhenee';
+
+  @override
+  String get walletDetailNodeId => 'Solmun tunnus';
+
+  @override
+  String get walletDetailOffer => 'BOLT12-tarjous';
+
+  @override
+  String get walletDetailVersion => 'Versio';
+
+  @override
+  String get walletDetailUnits => 'Tuetut yksiköt';
+
+  @override
+  String get walletDetailContact => 'Yhteystieto';
+
+  @override
+  String get walletDetailTerms => 'Käyttöehdot';
+
+  @override
+  String get walletDetailMessage => 'Viesti';
+
+  @override
+  String get walletDetailCommunityRating => 'Yhteisön arvio';
+
+  @override
+  String get walletDetailCommunityReviews => 'Viimeisimmät yhteisöarvostelut';
 }

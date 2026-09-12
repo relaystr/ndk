@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io' show Platform;
 
 import 'package:android_intent_plus/android_intent.dart';
@@ -25,7 +26,265 @@ typedef NwcUriScanner = Future<String?> Function(BuildContext context);
 /// Opens a host-provided scanner and returns a BOLT12, BIP321, or BIP353 input.
 typedef Bolt12InputScanner = Future<String?> Function(BuildContext context);
 
+/// Result returned by a host-provided wallet scanner screen.
+enum WalletInputOrigin { scanner, walletChooser, cashuMintChooser }
+
+class WalletInputScanResult {
+  final String? value;
+  final bool connectionStarted;
+  final bool manuallyEntered;
+  final WalletInputOrigin origin;
+  final CashuMintSuggestion? cashuMintSuggestion;
+
+  const WalletInputScanResult.value(
+    this.value, {
+    this.manuallyEntered = false,
+    this.origin = WalletInputOrigin.scanner,
+    this.cashuMintSuggestion,
+  }) : connectionStarted = false;
+
+  const WalletInputScanResult.connectionStarted()
+    : value = null,
+      connectionStarted = true,
+      manuallyEntered = false,
+      origin = WalletInputOrigin.walletChooser,
+      cashuMintSuggestion = null;
+}
+
+/// Wallet connection choice displayed inside a host-provided scanner screen.
+enum WalletScannerConnectionKind { installedWallet, albyGo, custom }
+
+class WalletScannerConnectionOption {
+  final String? id;
+  final String label;
+  final String? subtitle;
+  final WidgetBuilder? iconBuilder;
+  final Future<void> Function() connect;
+  final WalletScannerConnectionKind kind;
+
+  const WalletScannerConnectionOption({
+    required this.label,
+    required this.connect,
+    required this.kind,
+    this.id,
+    this.subtitle,
+    this.iconBuilder,
+  });
+}
+
+/// Content and actions for a host-provided wallet scanner screen.
+class WalletInputScannerConfiguration {
+  final String supportedInputDescription;
+  final String connectionSectionTitle;
+  final List<WalletScannerConnectionOption> connectionOptions;
+  final ValueListenable<WalletConnectionState> connectionState;
+  final Future<bool> Function() retryPendingConnection;
+  final VoidCallback cancelPendingConnection;
+  final Future<List<CashuMintSuggestion>> Function() discoverCashuMints;
+  final Future<CashuMintSuggestion> Function(CashuMintSuggestion suggestion)
+  enrichCashuMint;
+  final bool openWalletChooserInitially;
+  final bool openCashuMintChooserInitially;
+
+  const WalletInputScannerConfiguration({
+    required this.supportedInputDescription,
+    required this.connectionSectionTitle,
+    required this.connectionOptions,
+    required this.connectionState,
+    required this.retryPendingConnection,
+    required this.cancelPendingConnection,
+    required this.discoverCashuMints,
+    required this.enrichCashuMint,
+    this.openWalletChooserInitially = false,
+    this.openCashuMintChooserInitially = false,
+  });
+}
+
+/// Community-rated Cashu mint discovered from signed NIP-87 events.
+class CashuMintSuggestion {
+  final String url;
+  final String name;
+  final String? iconUrl;
+  final double? averageRating;
+  final int reviewsCount;
+  final List<CashuMintReview> reviews;
+
+  const CashuMintSuggestion({
+    required this.url,
+    required this.name,
+    this.iconUrl,
+    required this.averageRating,
+    required this.reviewsCount,
+    this.reviews = const [],
+  });
+}
+
+class CashuMintReview {
+  final int? rating;
+  final String comment;
+
+  const CashuMintReview({required this.rating, required this.comment});
+}
+
+/// Opens a host-provided scanner accepting every supported wallet input.
+///
+/// Scanner should explain [WalletInputScannerConfiguration.supportedInputDescription]
+/// and render its wallet connection choices alongside camera and paste controls.
+typedef WalletInputScanner =
+    Future<WalletInputScanResult?> Function(
+      BuildContext context,
+      WalletInputScannerConfiguration configuration,
+    );
+
+/// Launches a wallet-assisted NWC connection flow.
+typedef NwcConnectionLauncher =
+    Future<void> Function(
+      BuildContext context,
+      NdkFlutter ndkFlutter,
+      NwcWalletAuthCoordinator coordinator,
+    );
+
+/// Host-provided wallet app or web service that can authorize an NWC connection.
+class NwcConnectionOption {
+  final String? id;
+  final String label;
+  final String? subtitle;
+  final WidgetBuilder? iconBuilder;
+  final NwcConnectionLauncher connect;
+
+  const NwcConnectionOption({
+    required this.label,
+    required this.connect,
+    this.id,
+    this.subtitle,
+    this.iconBuilder,
+  });
+}
+
+/// Wallet input categories recognized by the unified add-wallet flow.
+enum WalletInputKind { nwc, bolt12, lightningAddress, cashuMint }
+
+/// Classifies locally recognizable wallet input without performing network I/O.
+WalletInputKind? classifyWalletInput(String input) {
+  final value = _normalizeWalletInput(input);
+  if (value.isEmpty) return null;
+
+  final uri = Uri.tryParse(value);
+  if (uri?.scheme.toLowerCase() == 'nostr+walletconnect') {
+    try {
+      NostrWalletConnectUri.parseConnectionUri(value);
+      return WalletInputKind.nwc;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  final normalizedLower = value.toLowerCase();
+  if (normalizedLower.startsWith('lno1') ||
+      (uri?.scheme.toLowerCase() == 'bitcoin' &&
+          uri!.queryParameters.entries.any(
+            (entry) =>
+                entry.key.toLowerCase() == 'lno' && entry.value.isNotEmpty,
+          ))) {
+    return WalletInputKind.bolt12;
+  }
+
+  var address = value;
+  if (address.startsWith('₿')) address = address.substring(1);
+  final addressParts = address.split('@');
+  if (addressParts.length == 2 &&
+      addressParts.every((part) => part.isNotEmpty) &&
+      !address.contains(RegExp(r'\s'))) {
+    return WalletInputKind.lightningAddress;
+  }
+
+  if (uri?.scheme.toLowerCase() == 'https' && uri!.host.isNotEmpty) {
+    return WalletInputKind.cashuMint;
+  }
+  return null;
+}
+
+String _normalizeWalletInput(String input) {
+  final value = input.trim();
+  if (value.toLowerCase().startsWith('lightning:')) {
+    return value.substring('lightning:'.length).trim();
+  }
+  return value;
+}
+
+/// Builds client-key web-wallet authorization URL.
+Uri buildNwcWebWalletAuthUri({
+  required Uri authorizationEndpoint,
+  required String appName,
+  required String pubkey,
+  Map<String, String> additionalQueryParameters = const {},
+}) {
+  return authorizationEndpoint.replace(
+    queryParameters: {
+      ...authorizationEndpoint.queryParameters,
+      ...additionalQueryParameters,
+      'name': appName,
+      'pubkey': pubkey,
+    },
+  );
+}
+
+/// Builds standard NWC wallet-auth URI handled by compatible wallet apps.
+Uri buildNwcWalletAuthUri({
+  required String appPubkey,
+  required AlbyGoConnectConfig config,
+}) {
+  return Uri(
+    scheme: 'nostr+walletauth',
+    host: appPubkey,
+    queryParameters: {
+      'relay': config.discoveryRelay,
+      'name': config.appName,
+      'request_methods': config.requestMethods
+          .map((method) => method.name)
+          .join(' '),
+      'icon': config.appIconUrl,
+      'return_to': config.callback,
+    },
+  );
+}
+
 enum AlbyGoConnectMethod { walletAuth, nostrNwcCallback }
+
+enum WalletConnectionPhase {
+  idle,
+  awaitingReturn,
+  connecting,
+  connected,
+  failed,
+}
+
+@immutable
+class WalletConnectionState {
+  final WalletConnectionPhase phase;
+  final String? walletName;
+  final String? error;
+
+  const WalletConnectionState._(this.phase, {this.walletName, this.error});
+
+  const WalletConnectionState.idle() : this._(WalletConnectionPhase.idle);
+
+  const WalletConnectionState.awaitingReturn(String walletName)
+    : this._(WalletConnectionPhase.awaitingReturn, walletName: walletName);
+
+  const WalletConnectionState.connecting(String walletName)
+    : this._(WalletConnectionPhase.connecting, walletName: walletName);
+
+  const WalletConnectionState.connected(String walletName)
+    : this._(WalletConnectionPhase.connected, walletName: walletName);
+
+  const WalletConnectionState.failed(String walletName, String error)
+    : this._(
+        WalletConnectionPhase.failed,
+        walletName: walletName,
+        error: error,
+      );
+}
 
 const List<NwcMethod> _defaultAlbyGoRequestMethods = [
   NwcMethod.GET_INFO,
@@ -79,13 +338,253 @@ class NwcWalletAuthCoordinator {
   _PendingNwcWalletAuthSession? _pendingSession;
   _PendingNwcCallbackSession? _pendingCallbackSession;
   String? _lastConnectedWalletId;
+  bool _isCompletingPendingSession = false;
+  Future<void> Function()? _retryLaunch;
+  final ValueNotifier<WalletConnectionState> connectionState = ValueNotifier(
+    const WalletConnectionState.idle(),
+  );
 
   bool get hasPendingSession => _pendingSession != null;
+
+  void cancelPendingConnection() {
+    _pendingSession = null;
+    _pendingCallbackSession = null;
+    _retryLaunch = null;
+    connectionState.value = const WalletConnectionState.idle();
+  }
+
+  /// Clears stale terminal UI state before starting a new add-wallet flow.
+  /// Active external-wallet sessions remain untouched.
+  void resetTerminalConnectionState() {
+    final phase = connectionState.value.phase;
+    if (phase == WalletConnectionPhase.connected ||
+        phase == WalletConnectionPhase.failed) {
+      cancelPendingConnection();
+    }
+  }
+
+  Future<bool> retryPendingConnection(
+    BuildContext context,
+    NdkFlutter ndkFlutter,
+  ) async {
+    if (_pendingSession != null) {
+      return completePendingWalletAuth(context, ndkFlutter);
+    }
+    final retryLaunch = _retryLaunch;
+    if (retryLaunch == null) return false;
+    await retryLaunch();
+    return true;
+  }
+
+  /// Finishes whichever external-wallet flow was active when app resumes.
+  ///
+  /// Callback-based wallets deliver deep link shortly after lifecycle resume.
+  /// Give that intent brief grace period before treating plain return as failure.
+  Future<bool> handleAppResume(
+    BuildContext context,
+    NdkFlutter ndkFlutter,
+  ) async {
+    final pendingCallback = _pendingCallbackSession;
+    if (pendingCallback == null) {
+      return completePendingWalletAuth(context, ndkFlutter);
+    }
+
+    await Future<void>.delayed(const Duration(milliseconds: 750));
+    if (!identical(_pendingCallbackSession, pendingCallback)) return true;
+
+    _markFailed(
+      pendingCallback.walletName,
+      'Wallet returned without providing a connection. Try again or choose another wallet.',
+    );
+    return true;
+  }
 
   String? takeLastConnectedWalletId() {
     final walletId = _lastConnectedWalletId;
     _lastConnectedWalletId = null;
     return walletId;
+  }
+
+  void _markAwaiting(String walletName) {
+    connectionState.value = WalletConnectionState.awaitingReturn(walletName);
+  }
+
+  void _markFailed(String walletName, Object error) {
+    connectionState.value = WalletConnectionState.failed(
+      walletName,
+      error.toString(),
+    );
+  }
+
+  /// Launches an installed-wallet or web authorization URI and waits for its
+  /// callback to be passed to [processProtocolUrl].
+  Future<void> connectWithUri(
+    BuildContext context, {
+    required Uri launchUri,
+    required String callback,
+    required String walletName,
+  }) async {
+    _retryLaunch = () => connectWithUri(
+      context,
+      launchUri: launchUri,
+      callback: callback,
+      walletName: walletName,
+    );
+    _pendingSession = null;
+    _pendingCallbackSession = _PendingNwcCallbackSession(
+      returnTo: callback,
+      walletName: walletName,
+    );
+    _markAwaiting(walletName);
+
+    try {
+      if (!kIsWeb && Platform.isAndroid) {
+        await AndroidIntent(
+          action: 'action_view',
+          data: launchUri.toString(),
+        ).launch();
+      } else {
+        final launched = await launchUrl(
+          launchUri,
+          mode: LaunchMode.externalApplication,
+        );
+        if (!launched) throw StateError('Could not launch wallet app');
+      }
+    } catch (error) {
+      _pendingCallbackSession = null;
+      _markFailed(walletName, error);
+      if (!context.mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.error(error.toString())),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  /// Opens standard wallet-auth URI in any compatible installed wallet.
+  Future<void> connectInstalledWallet(
+    BuildContext context, {
+    required AlbyGoConnectConfig config,
+  }) {
+    return connectWalletAuth(context, config: config, walletName: 'NWC');
+  }
+
+  /// Opens standard `nostr+walletauth://` URI in a compatible wallet.
+  Future<void> connectWalletAuth(
+    BuildContext context, {
+    required AlbyGoConnectConfig config,
+    required String walletName,
+  }) async {
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
+
+    final appKey = Bip340.generatePrivateKey();
+    _retryLaunch = () =>
+        connectWalletAuth(context, config: config, walletName: walletName);
+    final launchUri = buildNwcWalletAuthUri(
+      appPubkey: appKey.publicKey,
+      config: config,
+    );
+
+    _pendingSession = _PendingNwcWalletAuthSession(
+      appKey: appKey,
+      discoveryRelay: config.discoveryRelay,
+      returnTo: config.callback,
+      walletName: walletName,
+    );
+    _pendingCallbackSession = null;
+    _markAwaiting(walletName);
+
+    try {
+      if (Platform.isAndroid) {
+        await AndroidIntent(
+          action: 'action_view',
+          data: launchUri.toString(),
+        ).launch();
+      } else {
+        final launched = await launchUrl(
+          launchUri,
+          mode: LaunchMode.externalApplication,
+        );
+        if (!launched) throw StateError('Could not launch wallet app');
+      }
+    } catch (error) {
+      _pendingSession = null;
+      _markFailed(walletName, error);
+      if (!context.mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.error(error.toString())),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  /// Starts client-key NWC authorization through a web wallet.
+  ///
+  /// [appName] is sent as `name`; generated public key is sent as `pubkey`.
+  /// Call [completePendingWalletAuth] when host app resumes to discover wallet
+  /// info event addressed to generated key on [discoveryRelay].
+  Future<void> connectWebWalletAuth(
+    BuildContext context, {
+    required Uri authorizationEndpoint,
+    required String appName,
+    required String discoveryRelay,
+    required String callback,
+    required String walletName,
+    String? walletServicePubkey,
+    Map<String, String> additionalQueryParameters = const {},
+  }) async {
+    final appKey = Bip340.generatePrivateKey();
+    _retryLaunch = () => connectWebWalletAuth(
+      context,
+      authorizationEndpoint: authorizationEndpoint,
+      appName: appName,
+      discoveryRelay: discoveryRelay,
+      callback: callback,
+      walletName: walletName,
+      walletServicePubkey: walletServicePubkey,
+      additionalQueryParameters: additionalQueryParameters,
+    );
+    final launchUri = buildNwcWebWalletAuthUri(
+      authorizationEndpoint: authorizationEndpoint,
+      appName: appName,
+      pubkey: appKey.publicKey,
+      additionalQueryParameters: additionalQueryParameters,
+    );
+
+    _pendingSession = _PendingNwcWalletAuthSession(
+      appKey: appKey,
+      discoveryRelay: discoveryRelay,
+      returnTo: callback,
+      walletName: walletName,
+      walletServicePubkey: walletServicePubkey,
+    );
+    _pendingCallbackSession = null;
+    _markAwaiting(walletName);
+
+    try {
+      final launched = await launchUrl(
+        launchUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) throw StateError('Could not launch wallet provider');
+    } catch (error) {
+      _pendingSession = null;
+      _markFailed(walletName, error);
+      if (!context.mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.error(error.toString())),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Future<void> connectAlbyGo(
@@ -95,46 +594,31 @@ class NwcWalletAuthCoordinator {
   }) async {
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
 
-    final appKey = Bip340.generatePrivateKey();
-    Uri launchUri;
     if (config.connectMethod == AlbyGoConnectMethod.walletAuth) {
-      launchUri = Uri(
-        scheme: 'nostr+walletauth',
-        host: appKey.publicKey,
-        queryParameters: {
-          'relay': config.discoveryRelay,
-          'name': config.appName,
-          'request_methods': config.requestMethods
-              .map((method) => method.name)
-              .join(' '),
-          'icon': config.appIconUrl,
-          'return_to': config.callback,
-        },
-      );
-
-      _pendingSession = _PendingNwcWalletAuthSession(
-        appKey: appKey,
-        discoveryRelay: config.discoveryRelay,
-        returnTo: config.callback,
-        walletName: config.walletName,
-      );
-      _pendingCallbackSession = null;
-    } else {
-      launchUri = Uri(
-        scheme: 'nostrnwc',
-        host: config.nostrNwcHost,
-        queryParameters: {
-          'appname': config.appName,
-          'appicon': config.appIconUrl,
-          'callback': config.callback,
-        },
-      );
-      _pendingSession = null;
-      _pendingCallbackSession = _PendingNwcCallbackSession(
-        returnTo: config.callback,
+      return connectWalletAuth(
+        context,
+        config: config,
         walletName: config.walletName,
       );
     }
+
+    _retryLaunch = () => connectAlbyGo(context, ndkFlutter, config: config);
+
+    final launchUri = Uri(
+      scheme: 'nostrnwc',
+      host: config.nostrNwcHost,
+      queryParameters: {
+        'appname': config.appName,
+        'appicon': config.appIconUrl,
+        'callback': config.callback,
+      },
+    );
+    _pendingSession = null;
+    _pendingCallbackSession = _PendingNwcCallbackSession(
+      returnTo: config.callback,
+      walletName: config.walletName,
+    );
+    _markAwaiting(config.walletName);
 
     try {
       if (Platform.isAndroid) {
@@ -153,7 +637,8 @@ class NwcWalletAuthCoordinator {
         }
       }
     } catch (e) {
-      _pendingSession = null;
+      _pendingCallbackSession = null;
+      _markFailed(config.walletName, e);
       if (!context.mounted) return;
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -175,6 +660,51 @@ class NwcWalletAuthCoordinator {
         ? ScaffoldMessenger.of(context)
         : null;
 
+    final returnedUri = Uri.tryParse(url);
+    final pendingWalletAuth = _pendingSession;
+    final returnedRelay = returnedUri?.queryParameters['relay'];
+    final returnedWalletPubkey = returnedUri?.queryParameters['pubkey'];
+    if (pendingWalletAuth != null &&
+        _matchesReturnTo(url, pendingWalletAuth.returnTo) &&
+        returnedRelay != null &&
+        returnedRelay.isNotEmpty &&
+        returnedWalletPubkey != null &&
+        returnedWalletPubkey.isNotEmpty) {
+      try {
+        connectionState.value = WalletConnectionState.connecting(
+          pendingWalletAuth.walletName,
+        );
+        final secret = pendingWalletAuth.appKey.privateKey;
+        if (secret == null) {
+          throw StateError('Generated wallet auth key is missing private key');
+        }
+        final nwcUri =
+            'nostr+walletconnect://$returnedWalletPubkey?relay=${Uri.encodeComponent(returnedRelay)}&secret=$secret';
+        await _addNwcWallet(
+          ndkFlutter,
+          nwcUri: nwcUri,
+          walletName: pendingWalletAuth.walletName,
+        );
+        _pendingSession = null;
+        connectionState.value = WalletConnectionState.connected(
+          pendingWalletAuth.walletName,
+        );
+        _retryLaunch = null;
+        if (context.mounted) {
+          scaffoldMessenger!.showSnackBar(
+            SnackBar(
+              content: Text(l10n!.nwcWalletAdded),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        return true;
+      } catch (error) {
+        _markFailed(pendingWalletAuth.walletName, error);
+        return true;
+      }
+    }
+
     final callbackNwcUri = _extractNwcUriFromCallback(url);
     if (callbackNwcUri != null) {
       final pendingCallbackSession = _pendingCallbackSession;
@@ -185,6 +715,11 @@ class NwcWalletAuthCoordinator {
       }
 
       try {
+        connectionState.value = WalletConnectionState.connecting(
+          pendingCallbackSession?.walletName ??
+              _pendingSession?.walletName ??
+              kDefaultAlbyGoConnectConfig.walletName,
+        );
         await _addNwcWallet(
           ndkFlutter,
           nwcUri: callbackNwcUri,
@@ -193,6 +728,12 @@ class NwcWalletAuthCoordinator {
               _pendingSession?.walletName ??
               kDefaultAlbyGoConnectConfig.walletName,
         );
+        connectionState.value = WalletConnectionState.connected(
+          pendingCallbackSession?.walletName ??
+              _pendingSession?.walletName ??
+              kDefaultAlbyGoConnectConfig.walletName,
+        );
+        _retryLaunch = null;
         if (context.mounted) {
           scaffoldMessenger!.showSnackBar(
             SnackBar(
@@ -202,6 +743,12 @@ class NwcWalletAuthCoordinator {
           );
         }
       } catch (e) {
+        _markFailed(
+          pendingCallbackSession?.walletName ??
+              _pendingSession?.walletName ??
+              kDefaultAlbyGoConnectConfig.walletName,
+          e,
+        );
         if (context.mounted) {
           scaffoldMessenger!.showSnackBar(
             SnackBar(
@@ -223,16 +770,34 @@ class NwcWalletAuthCoordinator {
       return false;
     }
 
-    _pendingSession = null;
+    return completePendingWalletAuth(context, ndkFlutter);
+  }
+
+  /// Resolves pending client-key wallet authorization from its NWC info event.
+  ///
+  /// Useful for web providers that return control by app lifecycle rather than
+  /// a callback URL.
+  Future<bool> completePendingWalletAuth(
+    BuildContext context,
+    NdkFlutter ndkFlutter,
+  ) async {
+    final pendingSession = _pendingSession;
+    if (pendingSession == null || _isCompletingPendingSession) return false;
+
+    _isCompletingPendingSession = true;
+    connectionState.value = WalletConnectionState.connecting(
+      pendingSession.walletName,
+    );
+    final l10n = context.mounted ? AppLocalizations.of(context)! : null;
+    final scaffoldMessenger = context.mounted
+        ? ScaffoldMessenger.of(context)
+        : null;
+
     _pendingCallbackSession = null;
 
     if (context.mounted) {
       scaffoldMessenger!.showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Wallet callback received. Fetching connection info...',
-          ),
-        ),
+        SnackBar(content: Text(l10n!.fetchingWalletConnectionInfo)),
       );
     }
 
@@ -241,7 +806,12 @@ class NwcWalletAuthCoordinator {
           .query(
             filter: Filter(
               kinds: [NwcKind.INFO.value],
-              pTags: [pendingSession.appKey.publicKey],
+              authors: pendingSession.walletServicePubkey == null
+                  ? null
+                  : [pendingSession.walletServicePubkey!],
+              pTags: pendingSession.walletServicePubkey == null
+                  ? [pendingSession.appKey.publicKey]
+                  : null,
               limit: 1,
             ),
             explicitRelays: {pendingSession.discoveryRelay},
@@ -258,14 +828,22 @@ class NwcWalletAuthCoordinator {
         );
       }
 
+      final walletServicePubkey =
+          pendingSession.walletServicePubkey ?? foundWalletAuthEvent.pubKey;
       final constructedNwcUri =
-          'nostr+walletconnect://${foundWalletAuthEvent.pubKey}?relay=${Uri.encodeComponent(pendingSession.discoveryRelay)}&secret=$appPrivateKey';
+          'nostr+walletconnect://$walletServicePubkey?relay=${Uri.encodeComponent(pendingSession.discoveryRelay)}&secret=$appPrivateKey';
 
       await _addNwcWallet(
         ndkFlutter,
         nwcUri: constructedNwcUri,
         walletName: pendingSession.walletName,
       );
+
+      _pendingSession = null;
+      connectionState.value = WalletConnectionState.connected(
+        pendingSession.walletName,
+      );
+      _retryLaunch = null;
 
       if (!context.mounted) return true;
       scaffoldMessenger!.showSnackBar(
@@ -276,6 +854,10 @@ class NwcWalletAuthCoordinator {
       );
       return true;
     } on TimeoutException {
+      _markFailed(
+        pendingSession.walletName,
+        'Timed out while waiting for wallet connection info from ${pendingSession.discoveryRelay}',
+      );
       if (!context.mounted) return true;
       scaffoldMessenger!.showSnackBar(
         SnackBar(
@@ -289,6 +871,7 @@ class NwcWalletAuthCoordinator {
       );
       return true;
     } catch (e) {
+      _markFailed(pendingSession.walletName, e);
       if (!context.mounted) return true;
       scaffoldMessenger!.showSnackBar(
         SnackBar(
@@ -297,6 +880,8 @@ class NwcWalletAuthCoordinator {
         ),
       );
       return true;
+    } finally {
+      _isCompletingPendingSession = false;
     }
   }
 
@@ -322,12 +907,14 @@ class _PendingNwcWalletAuthSession {
   final String discoveryRelay;
   final String returnTo;
   final String walletName;
+  final String? walletServicePubkey;
 
   const _PendingNwcWalletAuthSession({
     required this.appKey,
     required this.discoveryRelay,
     required this.returnTo,
     required this.walletName,
+    this.walletServicePubkey,
   });
 }
 
@@ -1183,140 +1770,1302 @@ class _AddBolt12WalletDialogState extends State<_AddBolt12WalletDialog> {
   }
 }
 
-/// Shows a dialog to choose wallet type.
+/// Shows the unified add-wallet flow.
 ///
-/// Returns true if a wallet type was selected, false if cancelled.
-/// Use [albyGoConnectConfig] to override Alby Go app metadata.
+/// Scan and paste accept every supported wallet input. Wallet-assisted NWC and
+/// type-specific manual setup remain available as alternative paths.
 Future<bool> showAddWalletTypeDialog(
   BuildContext context,
   NdkFlutter ndkFlutter, {
   AlbyGoConnectConfig albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
   NwcWalletAuthCoordinator? nwcWalletAuthCoordinator,
+  WalletInputScanner? walletInputScanner,
+  List<NwcConnectionOption> nwcConnectionOptions = const [],
+  bool openScannerOnAdd = true,
   NwcUriScanner? nwcUriScanner,
   Bolt12InputScanner? bolt12InputScanner,
 }) async {
-  final l10n = AppLocalizations.of(context)!;
-
+  final coordinator = nwcWalletAuthCoordinator ?? NwcWalletAuthCoordinator();
+  coordinator.resetTerminalConnectionState();
   return await showDialog<bool>(
         context: context,
-        builder: (dialogContext) => Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(width: 24),
-                    Expanded(
-                      child: Text(
-                        l10n.addWalletTitle,
-                        style: Theme.of(context).textTheme.titleLarge,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.of(dialogContext).pop(false),
-                      child: const Icon(Icons.close, size: 24),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.chooseWalletType,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _WalletTypeListOption(
-                      imageAsset: 'assets/images/nwc.png',
-                      title: l10n.nwcWalletTypeTitle,
-                      subtitle: l10n.nwcWalletTypeSubtitle,
-                      infoUrl: 'https://nwc.dev/',
-                      onTap: () async {
-                        Navigator.of(dialogContext).pop(true);
-                        await showNwcConnectionOptionsDialog(
-                          context,
-                          ndkFlutter,
-                          albyGoConnectConfig: albyGoConnectConfig,
-                          nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
-                          nwcUriScanner: nwcUriScanner,
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _WalletTypeListOption(
-                      icon: Icons.bolt,
-                      title: l10n.lnurlWalletTypeTitle,
-                      subtitle: l10n.lnurlWalletTypeSubtitle,
-                      infoUrl: 'https://lightningaddress.com/',
-                      onTap: () async {
-                        Navigator.of(dialogContext).pop(true);
-                        await showAddLnurlWalletDialog(
-                          context,
-                          ndkFlutter,
-                          returnToWalletType: true,
-                          albyGoConnectConfig: albyGoConnectConfig,
-                          nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
-                          nwcUriScanner: nwcUriScanner,
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _WalletTypeListOption(
-                      icon: Icons.electric_bolt,
-                      title: l10n.bolt12WalletTypeTitle,
-                      subtitle: l10n.bolt12WalletTypeSubtitle,
-                      infoUrl: 'https://bolt12.org/',
-                      onTap: () async {
-                        Navigator.of(dialogContext).pop(true);
-                        await showAddBolt12WalletDialog(
-                          context,
-                          ndkFlutter,
-                          returnToWalletType: true,
-                          albyGoConnectConfig: albyGoConnectConfig,
-                          nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
-                          nwcUriScanner: nwcUriScanner,
-                          bolt12InputScanner: bolt12InputScanner,
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _WalletTypeListOption(
-                      imageAsset: 'assets/images/cashu.png',
-                      title: l10n.cashuWalletTypeTitle,
-                      subtitle: l10n.cashuWalletTypeSubtitle,
-                      infoUrl: 'https://cashu.space/',
-                      onTap: () async {
-                        Navigator.of(dialogContext).pop(true);
-                        await showAddCashuWalletDialog(
-                          context,
-                          ndkFlutter,
-                          returnToWalletType: true,
-                          albyGoConnectConfig: albyGoConnectConfig,
-                          nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
-                          nwcUriScanner: nwcUriScanner,
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+        builder: (dialogContext) => _AddWalletDialog(
+          ndkFlutter: ndkFlutter,
+          parentContext: context,
+          albyGoConnectConfig: albyGoConnectConfig,
+          nwcWalletAuthCoordinator: coordinator,
+          walletInputScanner: walletInputScanner,
+          legacyWalletInputScanner: walletInputScanner == null
+              ? nwcUriScanner ?? bolt12InputScanner
+              : null,
+          nwcUriScanner: nwcUriScanner,
+          bolt12InputScanner: bolt12InputScanner,
+          nwcConnectionOptions: nwcConnectionOptions,
+          openScannerOnAdd: openScannerOnAdd && walletInputScanner != null,
         ),
       ) ??
       false;
+}
+
+class _AddWalletDialog extends StatefulWidget {
+  final NdkFlutter ndkFlutter;
+  final BuildContext parentContext;
+  final AlbyGoConnectConfig albyGoConnectConfig;
+  final NwcWalletAuthCoordinator nwcWalletAuthCoordinator;
+  final WalletInputScanner? walletInputScanner;
+  final Future<String?> Function(BuildContext context)?
+  legacyWalletInputScanner;
+  final NwcUriScanner? nwcUriScanner;
+  final Bolt12InputScanner? bolt12InputScanner;
+  final List<NwcConnectionOption> nwcConnectionOptions;
+  final bool openScannerOnAdd;
+
+  const _AddWalletDialog({
+    required this.ndkFlutter,
+    required this.parentContext,
+    required this.albyGoConnectConfig,
+    required this.nwcWalletAuthCoordinator,
+    required this.walletInputScanner,
+    required this.legacyWalletInputScanner,
+    required this.nwcUriScanner,
+    required this.bolt12InputScanner,
+    required this.nwcConnectionOptions,
+    required this.openScannerOnAdd,
+  });
+
+  @override
+  State<_AddWalletDialog> createState() => _AddWalletDialogState();
+}
+
+class _WalletInputPreview {
+  final String input;
+  final bool manuallyEntered;
+  final WalletInputKind detectedKind;
+  final WalletType walletType;
+  final String name;
+  final List<_WalletPreviewDetail> details;
+  final WalletInputOrigin origin;
+  final CashuMintSuggestion? cashuMintSuggestion;
+  final Bolt12ResolvedOffer? resolvedOffer;
+  final CashuMintInfo? mintInfo;
+
+  const _WalletInputPreview({
+    required this.input,
+    required this.manuallyEntered,
+    required this.detectedKind,
+    required this.walletType,
+    required this.name,
+    required this.details,
+    required this.origin,
+    this.cashuMintSuggestion,
+    this.resolvedOffer,
+    this.mintInfo,
+  });
+}
+
+class _WalletPreviewDetail {
+  final String label;
+  final String value;
+
+  const _WalletPreviewDetail(this.label, this.value);
+}
+
+class _AddWalletDialogState extends State<_AddWalletDialog> {
+  final _inputController = TextEditingController();
+  final _walletNameController = TextEditingController();
+  WalletInputKind? _inputKind;
+  String? _errorMessage;
+  bool _isAdding = false;
+  bool _isResolvingDetails = false;
+  _WalletInputPreview? _preview;
+  bool _showManualOptions = false;
+  bool _scannerOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.openScannerOnAdd && widget.walletInputScanner != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _scan();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _inputController.dispose();
+    _walletNameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _scan({
+    WalletInputOrigin initialOrigin = WalletInputOrigin.scanner,
+  }) async {
+    final scanner = widget.walletInputScanner;
+    if (scanner != null) {
+      if (_scannerOpen) return;
+      setState(() => _scannerOpen = true);
+      final result = await scanner(
+        context,
+        _scannerConfiguration(
+          openWalletChooserInitially:
+              initialOrigin != WalletInputOrigin.scanner,
+          openCashuMintChooserInitially:
+              initialOrigin == WalletInputOrigin.cashuMintChooser,
+        ),
+      );
+      if (!mounted) return;
+      setState(() => _scannerOpen = false);
+      if (result == null) {
+        if (widget.openScannerOnAdd) Navigator.of(context).pop(false);
+        return;
+      }
+      if (result.connectionStarted) {
+        widget.nwcWalletAuthCoordinator.cancelPendingConnection();
+        Navigator.of(context).pop(true);
+        return;
+      }
+      if (result.value != null) {
+        await _preparePreview(
+          result.value!,
+          manuallyEntered: result.manuallyEntered,
+          origin: result.origin,
+          cashuMintSuggestion: result.cashuMintSuggestion,
+        );
+      }
+      return;
+    }
+
+    final value = await widget.legacyWalletInputScanner?.call(context);
+    if (!mounted || value == null) return;
+    await _preparePreview(value);
+  }
+
+  void _cancelPreview() {
+    final origin = _preview?.origin ?? WalletInputOrigin.scanner;
+    setState(() {
+      _preview = null;
+      _errorMessage = null;
+    });
+    if (widget.openScannerOnAdd && widget.walletInputScanner != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _scan(initialOrigin: origin);
+        }
+      });
+    }
+  }
+
+  WalletInputScannerConfiguration _scannerConfiguration({
+    bool openWalletChooserInitially = false,
+    bool openCashuMintChooserInitially = false,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    final options = <WalletScannerConnectionOption>[];
+    final showInstalledWallets =
+        !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+
+    if (showInstalledWallets) {
+      options.addAll([
+        WalletScannerConnectionOption(
+          id: 'installed-wallet',
+          label: l10n.chooseWalletApp,
+          subtitle: l10n.chooseWalletAppDescription,
+          kind: WalletScannerConnectionKind.installedWallet,
+          iconBuilder: (_) => const Icon(Icons.account_balance_wallet_outlined),
+          connect: _launchInstalledWallet,
+        ),
+        WalletScannerConnectionOption(
+          id: 'alby-go',
+          label: l10n.albyGoOption,
+          kind: WalletScannerConnectionKind.albyGo,
+          iconBuilder: (_) => Image.asset(
+            'assets/images/albygo.png',
+            package: 'ndk_flutter',
+            width: 28,
+            height: 28,
+          ),
+          connect: _launchAlbyGo,
+        ),
+      ]);
+    }
+
+    for (final option in widget.nwcConnectionOptions) {
+      options.add(
+        WalletScannerConnectionOption(
+          id: option.id,
+          label: option.label,
+          subtitle: option.subtitle,
+          kind: WalletScannerConnectionKind.custom,
+          iconBuilder: option.iconBuilder,
+          connect: () => _launchConnectionOption(option),
+        ),
+      );
+    }
+
+    return WalletInputScannerConfiguration(
+      supportedInputDescription: l10n.walletInputHint,
+      connectionSectionTitle: l10n.connectWithWallet,
+      connectionOptions: options,
+      connectionState: widget.nwcWalletAuthCoordinator.connectionState,
+      retryPendingConnection: () => widget.nwcWalletAuthCoordinator
+          .retryPendingConnection(widget.parentContext, widget.ndkFlutter),
+      cancelPendingConnection:
+          widget.nwcWalletAuthCoordinator.cancelPendingConnection,
+      discoverCashuMints: _discoverCashuMints,
+      enrichCashuMint: _enrichCashuMint,
+      openWalletChooserInitially: openWalletChooserInitially,
+      openCashuMintChooserInitially: openCashuMintChooserInitially,
+    );
+  }
+
+  Future<List<CashuMintSuggestion>> _discoverCashuMints() async {
+    final recommendations = await widget.ndkFlutter.ndk.cashu
+        .discoverMintRecommendations();
+    final suggestions = recommendations.map((recommendation) {
+      final info = recommendation.mintInfo;
+      final fallbackName =
+          Uri.tryParse(recommendation.url)?.host ?? recommendation.url;
+      return CashuMintSuggestion(
+        url: recommendation.url,
+        name: info?.name?.trim().isNotEmpty == true
+            ? info!.name!.trim()
+            : fallbackName,
+        iconUrl: info?.iconUrl?.trim().isNotEmpty == true
+            ? info!.iconUrl!.trim()
+            : null,
+        averageRating: recommendation.averageRating,
+        reviewsCount: recommendation.reviewsCount,
+        reviews: recommendation.reviews
+            .where((review) => review.comment.isNotEmpty)
+            .take(5)
+            .map(
+              (review) => CashuMintReview(
+                rating: review.rating,
+                comment: review.comment,
+              ),
+            )
+            .toList(),
+      );
+    }).toList();
+    final existingMintUrls = (await widget.ndkFlutter.ndk.wallets.getWallets())
+        .whereType<CashuWallet>()
+        .map((wallet) => wallet.mintUrl.replaceAll(RegExp(r'/+$'), ''))
+        .toSet();
+    return suggestions
+        .where((suggestion) => !existingMintUrls.contains(suggestion.url))
+        .toList();
+  }
+
+  Future<CashuMintSuggestion> _enrichCashuMint(
+    CashuMintSuggestion suggestion,
+  ) async {
+    final recommendation = CashuMintRecommendation(
+      url: suggestion.url,
+      averageRating: suggestion.averageRating,
+      reviewsCount: suggestion.reviewsCount,
+    );
+    final enriched = await widget.ndkFlutter.ndk.cashu.enrichMintRecommendation(
+      recommendation,
+    );
+    final info = enriched.mintInfo;
+    return CashuMintSuggestion(
+      url: suggestion.url,
+      name: info?.name?.trim().isNotEmpty == true
+          ? info!.name!.trim()
+          : suggestion.name,
+      iconUrl: info?.iconUrl?.trim().isNotEmpty == true
+          ? info!.iconUrl!.trim()
+          : suggestion.iconUrl,
+      averageRating: suggestion.averageRating,
+      reviewsCount: suggestion.reviewsCount,
+      reviews: suggestion.reviews,
+    );
+  }
+
+  Future<void> _paste() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (!mounted) return;
+    await _preparePreview(data?.text ?? '', manuallyEntered: true);
+  }
+
+  void _setInput(String value) {
+    final normalized = _normalizeWalletInput(value);
+    final kind = classifyWalletInput(normalized);
+    setState(() {
+      _inputController.text = normalized;
+      _inputController.selection = TextSelection.collapsed(
+        offset: normalized.length,
+      );
+      _inputKind = kind;
+      _errorMessage = kind == null
+          ? AppLocalizations.of(context)!.unsupportedWalletInput
+          : null;
+    });
+  }
+
+  void _onInputChanged(String value) {
+    final kind = classifyWalletInput(value);
+    setState(() {
+      _inputKind = kind;
+      _errorMessage = null;
+    });
+  }
+
+  Future<void> _preparePreview(
+    String rawInput, {
+    bool manuallyEntered = false,
+    WalletInputOrigin origin = WalletInputOrigin.scanner,
+    CashuMintSuggestion? cashuMintSuggestion,
+  }) async {
+    final input = _normalizeWalletInput(rawInput);
+    _setInput(input);
+    final kind = classifyWalletInput(input);
+    if (kind == null) return;
+
+    setState(() {
+      _isResolvingDetails = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final preview = await _resolvePreview(
+        input,
+        kind,
+        manuallyEntered,
+        origin,
+        cashuMintSuggestion,
+      );
+      if (!mounted) return;
+      setState(() {
+        _preview = preview;
+        _walletNameController.text = preview.name;
+        _walletNameController.selection = TextSelection.collapsed(
+          offset: preview.name.length,
+        );
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _errorMessage = error.toString());
+    } finally {
+      if (mounted) setState(() => _isResolvingDetails = false);
+    }
+  }
+
+  Future<_WalletInputPreview> _resolvePreview(
+    String input,
+    WalletInputKind kind,
+    bool manuallyEntered,
+    WalletInputOrigin origin,
+    CashuMintSuggestion? cashuMintSuggestion,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    switch (kind) {
+      case WalletInputKind.nwc:
+        final parsed = NostrWalletConnectUri.parseConnectionUri(input);
+        final relayHost = parsed.relays.isEmpty
+            ? null
+            : Uri.tryParse(parsed.relays.first)?.host;
+        final name = parsed.lud16?.trim().isNotEmpty == true
+            ? parsed.lud16!.trim()
+            : relayHost?.isNotEmpty == true
+            ? 'NWC · $relayHost'
+            : l10n.nwcWalletTypeTitle;
+        return _WalletInputPreview(
+          input: input,
+          manuallyEntered: manuallyEntered,
+          origin: origin,
+          detectedKind: kind,
+          walletType: WalletType.NWC,
+          name: name,
+          details: [
+            _WalletPreviewDetail(
+              l10n.walletDetailType,
+              l10n.nwcWalletTypeTitle,
+            ),
+            if (parsed.lud16?.trim().isNotEmpty == true)
+              _WalletPreviewDetail(
+                l10n.walletDetailAddress,
+                parsed.lud16!.trim(),
+              ),
+            _WalletPreviewDetail(
+              l10n.walletDetailPublicKey,
+              parsed.walletPubkey,
+            ),
+            _WalletPreviewDetail(
+              parsed.relays.length == 1
+                  ? l10n.walletDetailRelay
+                  : l10n.walletDetailRelays,
+              parsed.relays.join('\n'),
+            ),
+            _WalletPreviewDetail(
+              l10n.walletDetailSecret,
+              l10n.walletSecretHidden,
+            ),
+          ],
+        );
+      case WalletInputKind.bolt12:
+        final resolved = await Bolt12WalletProvider.resolveInput(input);
+        return _bolt12Preview(
+          input,
+          kind,
+          resolved,
+          l10n,
+          manuallyEntered,
+          origin,
+        );
+      case WalletInputKind.lightningAddress:
+        try {
+          final resolved = await Bolt12WalletProvider.resolveInput(input);
+          return _bolt12Preview(
+            input,
+            kind,
+            resolved,
+            l10n,
+            manuallyEntered,
+            origin,
+          );
+        } catch (_) {
+          final address = input.replaceFirst('₿', '');
+          final parts = address.split('@');
+          if (parts.length != 2) {
+            throw FormatException(l10n.unsupportedWalletInput);
+          }
+          final lnurlPayUrl = Uri.https(
+            parts.last,
+            '/.well-known/lnurlp/${parts.first}',
+          );
+          final response = await http
+              .get(lnurlPayUrl)
+              .timeout(const Duration(seconds: 10));
+          final body = response.statusCode >= 200 && response.statusCode < 300
+              ? jsonDecode(response.body)
+              : null;
+          if (body is! Map<String, dynamic> || body['tag'] != 'payRequest') {
+            throw FormatException(l10n.unsupportedWalletInput);
+          }
+          return _WalletInputPreview(
+            input: address,
+            manuallyEntered: manuallyEntered,
+            origin: origin,
+            detectedKind: kind,
+            walletType: WalletType.LNURL,
+            name: address,
+            details: [
+              _WalletPreviewDetail(l10n.walletDetailType, l10n.lnurlProtocol),
+              if (!manuallyEntered)
+                _WalletPreviewDetail(l10n.walletDetailAddress, address),
+            ],
+          );
+        }
+      case WalletInputKind.cashuMint:
+        final mintInfo = await widget.ndkFlutter.ndk.cashu.getMintInfoNetwork(
+          mintUrl: input,
+        );
+        final name = mintInfo.name?.trim().isNotEmpty == true
+            ? mintInfo.name!.trim()
+            : 'Cashu · ${Uri.parse(input).host}';
+        return _WalletInputPreview(
+          input: input,
+          manuallyEntered: manuallyEntered,
+          origin: origin,
+          cashuMintSuggestion: cashuMintSuggestion,
+          detectedKind: kind,
+          walletType: WalletType.CASHU,
+          name: name,
+          mintInfo: mintInfo,
+          details: [
+            _WalletPreviewDetail(
+              l10n.walletDetailType,
+              l10n.cashuWalletTypeTitle,
+            ),
+            _WalletPreviewDetail(l10n.walletDetailUrl, input),
+            if (cashuMintSuggestion?.averageRating != null)
+              _WalletPreviewDetail(
+                l10n.walletDetailCommunityRating,
+                l10n.cashuMintRating(
+                  cashuMintSuggestion!.averageRating!.toStringAsFixed(1),
+                  cashuMintSuggestion.reviewsCount,
+                ),
+              ),
+            if (cashuMintSuggestion?.reviews.isNotEmpty == true)
+              _WalletPreviewDetail(
+                l10n.walletDetailCommunityReviews,
+                cashuMintSuggestion!.reviews
+                    .map(
+                      (review) => review.rating == null
+                          ? review.comment
+                          : '★ ${review.rating}/5 — ${review.comment}',
+                    )
+                    .join('\n\n'),
+              ),
+            if (mintInfo.description?.trim().isNotEmpty == true)
+              _WalletPreviewDetail(
+                l10n.walletDetailDescription,
+                mintInfo.description!.trim(),
+              ),
+            if (mintInfo.descriptionLong?.trim().isNotEmpty == true &&
+                mintInfo.descriptionLong!.trim() !=
+                    mintInfo.description?.trim())
+              _WalletPreviewDetail(
+                l10n.walletDetailDetails,
+                mintInfo.descriptionLong!.trim(),
+              ),
+            if (mintInfo.version?.trim().isNotEmpty == true)
+              _WalletPreviewDetail(
+                l10n.walletDetailVersion,
+                mintInfo.version!.trim(),
+              ),
+            if (mintInfo.pubkey?.trim().isNotEmpty == true)
+              _WalletPreviewDetail(
+                l10n.walletDetailPublicKey,
+                mintInfo.pubkey!.trim(),
+              ),
+            if (mintInfo.supportedUnits.isNotEmpty)
+              _WalletPreviewDetail(
+                l10n.walletDetailUnits,
+                mintInfo.supportedUnits.join(', '),
+              ),
+            if (mintInfo.contact.isNotEmpty)
+              _WalletPreviewDetail(
+                l10n.walletDetailContact,
+                mintInfo.contact
+                    .map((contact) => '${contact.method}: ${contact.info}')
+                    .join('\n'),
+              ),
+            if (mintInfo.tosUrl?.trim().isNotEmpty == true)
+              _WalletPreviewDetail(
+                l10n.walletDetailTerms,
+                mintInfo.tosUrl!.trim(),
+              ),
+            if (mintInfo.motd?.trim().isNotEmpty == true)
+              _WalletPreviewDetail(
+                l10n.walletDetailMessage,
+                mintInfo.motd!.trim(),
+              ),
+          ],
+        );
+    }
+  }
+
+  _WalletInputPreview _bolt12Preview(
+    String input,
+    WalletInputKind detectedKind,
+    Bolt12ResolvedOffer resolved,
+    AppLocalizations l10n,
+    bool manuallyEntered,
+    WalletInputOrigin origin,
+  ) {
+    final metadata = resolved.toMetadata();
+    final description = metadata['description']?.toString().trim();
+    final issuer = metadata['issuer']?.toString().trim();
+    final nodeId = metadata['nodeId']?.toString().trim();
+    final amount = metadata['amount']?.toString().trim();
+    final currency = metadata['currency']?.toString().trim();
+    final expiresAt = metadata['expiresAt'] as int?;
+    final name =
+        resolved.bip353Address ??
+        (issuer?.isNotEmpty == true
+            ? issuer!
+            : description?.isNotEmpty == true
+            ? description!
+            : l10n.bolt12WalletTypeTitle);
+    return _WalletInputPreview(
+      input: input,
+      manuallyEntered: manuallyEntered,
+      origin: origin,
+      detectedKind: detectedKind,
+      walletType: WalletType.BOLT12,
+      name: name,
+      resolvedOffer: resolved,
+      details: [
+        _WalletPreviewDetail(
+          l10n.walletDetailType,
+          resolved.bip353Address == null
+              ? l10n.bolt12WalletTypeTitle
+              : l10n.bip353WalletTypeTitle,
+        ),
+        if (resolved.bip353Address != null && !manuallyEntered)
+          _WalletPreviewDetail(
+            l10n.walletDetailAddress,
+            resolved.bip353Address!,
+          ),
+        if (description?.isNotEmpty == true)
+          _WalletPreviewDetail(l10n.walletDetailDescription, description!),
+        if (issuer?.isNotEmpty == true)
+          _WalletPreviewDetail(l10n.walletDetailIssuer, issuer!),
+        if (amount?.isNotEmpty == true)
+          _WalletPreviewDetail(l10n.walletDetailAmount, amount!),
+        if (currency?.isNotEmpty == true)
+          _WalletPreviewDetail(l10n.walletDetailCurrency, currency!),
+        if (expiresAt != null)
+          _WalletPreviewDetail(
+            l10n.walletDetailExpiry,
+            DateTime.fromMillisecondsSinceEpoch(
+              expiresAt * 1000,
+              isUtc: true,
+            ).toLocal().toString(),
+          ),
+        if (nodeId?.isNotEmpty == true)
+          _WalletPreviewDetail(l10n.walletDetailNodeId, nodeId!),
+        _WalletPreviewDetail(l10n.walletDetailOffer, resolved.offer),
+      ],
+    );
+  }
+
+  Future<void> _confirmInput() async {
+    var preview = _preview;
+    if (preview == null) return;
+
+    final input = _normalizeWalletInput(_inputController.text);
+    final kind = classifyWalletInput(input);
+    if (kind == null) {
+      setState(() {
+        _errorMessage = AppLocalizations.of(context)!.unsupportedWalletInput;
+      });
+      return;
+    }
+
+    setState(() {
+      _isAdding = true;
+      _errorMessage = null;
+      _inputKind = kind;
+    });
+
+    try {
+      if (input != preview.input || kind != preview.detectedKind) {
+        preview = await _resolvePreview(
+          input,
+          kind,
+          true,
+          preview.origin,
+          preview.cashuMintSuggestion,
+        );
+        if (!mounted) return;
+        setState(() => _preview = preview);
+      }
+      final customName = _walletNameController.text.trim();
+      final wallet = await _createWalletFromPreview(
+        preview,
+        walletName: customName.isEmpty ? preview.name : customName,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+      _showWalletAdded(wallet);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _errorMessage = error.toString());
+    } finally {
+      if (mounted) setState(() => _isAdding = false);
+    }
+  }
+
+  Future<Wallet> _createWalletFromPreview(
+    _WalletInputPreview preview, {
+    required String walletName,
+  }) async {
+    switch (preview.walletType) {
+      case WalletType.NWC:
+        NostrWalletConnectUri.parseConnectionUri(preview.input);
+        final wallet = NwcWallet(
+          id: 'nwc-${DateTime.now().microsecondsSinceEpoch}',
+          name: walletName,
+          supportedUnits: const {'sat'},
+          nwcUrl: preview.input,
+        );
+        await widget.ndkFlutter.ndk.wallets.addWallet(wallet);
+        return wallet;
+      case WalletType.BOLT12:
+        return _addResolvedBolt12Wallet(
+          preview.resolvedOffer!,
+          walletName: walletName,
+        );
+      case WalletType.LNURL:
+        return _addLnurlWallet(preview.input, walletName: walletName);
+      case WalletType.CASHU:
+        return _addCashuWallet(
+          preview.input,
+          walletName: walletName,
+          mintInfo: preview.mintInfo,
+        );
+    }
+  }
+
+  Future<Bolt12Wallet> _addResolvedBolt12Wallet(
+    Bolt12ResolvedOffer resolved, {
+    required String walletName,
+  }) async {
+    final wallet =
+        widget.ndkFlutter.ndk.wallets.createWallet(
+              id: 'bolt12-${DateTime.now().microsecondsSinceEpoch}',
+              name: walletName,
+              type: WalletType.BOLT12,
+              supportedUnits: const {'sat'},
+              metadata: resolved.toMetadata(),
+            )
+            as Bolt12Wallet;
+    await widget.ndkFlutter.ndk.wallets.addWallet(wallet);
+    return wallet;
+  }
+
+  Future<Wallet> _addLnurlWallet(
+    String identifier, {
+    required String walletName,
+  }) async {
+    final wallet = widget.ndkFlutter.ndk.wallets.createWallet(
+      id: 'lnurl-${DateTime.now().microsecondsSinceEpoch}',
+      name: walletName,
+      type: WalletType.LNURL,
+      supportedUnits: const {'sat'},
+      metadata: {'identifier': identifier},
+    );
+    await widget.ndkFlutter.ndk.wallets.addWallet(wallet);
+    return wallet;
+  }
+
+  Future<CashuWallet> _addCashuWallet(
+    String mintUrl, {
+    required String walletName,
+    CashuMintInfo? mintInfo,
+  }) async {
+    await widget.ndkFlutter.ndk.cashu.addMintToKnownMints(mintUrl: mintUrl);
+    final resolvedMintInfo =
+        mintInfo ??
+        await widget.ndkFlutter.ndk.cashu.getMintInfoNetwork(mintUrl: mintUrl);
+    final wallet = CashuWallet(
+      id: mintUrl,
+      name: walletName,
+      mintUrl: mintUrl,
+      mintInfo: resolvedMintInfo,
+      supportedUnits: resolvedMintInfo.supportedUnits,
+    );
+    await widget.ndkFlutter.ndk.wallets.addWallet(wallet);
+    return wallet;
+  }
+
+  void _showWalletAdded(Wallet wallet) {
+    final l10n = AppLocalizations.of(widget.parentContext)!;
+    final message = switch (wallet.type) {
+      WalletType.NWC => l10n.nwcWalletAdded,
+      WalletType.BOLT12 => l10n.bolt12WalletAdded,
+      WalletType.LNURL => l10n.lnurlWalletAdded,
+      WalletType.CASHU => l10n.cashuWalletAdded,
+    };
+    ScaffoldMessenger.of(widget.parentContext).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.green),
+    );
+  }
+
+  String _kindLabel(AppLocalizations l10n, WalletInputKind kind) {
+    return switch (kind) {
+      WalletInputKind.nwc => l10n.nwcWalletTypeTitle,
+      WalletInputKind.bolt12 => l10n.bolt12WalletTypeTitle,
+      WalletInputKind.lightningAddress => l10n.lightningAddressInputType,
+      WalletInputKind.cashuMint => l10n.cashuWalletTypeTitle,
+    };
+  }
+
+  Future<void> _connectOption(NwcConnectionOption option) async {
+    Navigator.of(context).pop(true);
+    await _launchConnectionOption(option);
+  }
+
+  Future<void> _launchConnectionOption(NwcConnectionOption option) async {
+    try {
+      await option.connect(
+        widget.parentContext,
+        widget.ndkFlutter,
+        widget.nwcWalletAuthCoordinator,
+      );
+    } catch (error) {
+      if (!widget.parentContext.mounted) return;
+      final l10n = AppLocalizations.of(widget.parentContext)!;
+      ScaffoldMessenger.of(widget.parentContext).showSnackBar(
+        SnackBar(
+          content: Text(l10n.error(error.toString())),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _chooseInstalledWallet() async {
+    Navigator.of(context).pop(true);
+    await _launchInstalledWallet();
+  }
+
+  Future<void> _launchInstalledWallet() async {
+    await widget.nwcWalletAuthCoordinator.connectInstalledWallet(
+      widget.parentContext,
+      config: widget.albyGoConnectConfig,
+    );
+  }
+
+  Future<void> _connectAlbyGo() async {
+    Navigator.of(context).pop(true);
+    await _launchAlbyGo();
+  }
+
+  Future<void> _launchAlbyGo() async {
+    await widget.nwcWalletAuthCoordinator.connectAlbyGo(
+      widget.parentContext,
+      widget.ndkFlutter,
+      config: widget.albyGoConnectConfig,
+    );
+  }
+
+  Future<void> _openManual(WalletType type) async {
+    Navigator.of(context).pop(true);
+    switch (type) {
+      case WalletType.NWC:
+        await showNwcConnectionOptionsDialog(
+          widget.parentContext,
+          widget.ndkFlutter,
+          albyGoConnectConfig: widget.albyGoConnectConfig,
+          nwcWalletAuthCoordinator: widget.nwcWalletAuthCoordinator,
+          nwcUriScanner: widget.nwcUriScanner,
+        );
+        return;
+      case WalletType.BOLT12:
+        await showAddBolt12WalletDialog(
+          widget.parentContext,
+          widget.ndkFlutter,
+          bolt12InputScanner: widget.bolt12InputScanner,
+        );
+        return;
+      case WalletType.LNURL:
+        await showAddLnurlWalletDialog(widget.parentContext, widget.ndkFlutter);
+        return;
+      case WalletType.CASHU:
+        await showAddCashuWalletDialog(widget.parentContext, widget.ndkFlutter);
+        return;
+    }
+  }
+
+  Widget _buildConfirmationDialog(
+    BuildContext context,
+    _WalletInputPreview preview,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final icon = switch (preview.walletType) {
+      WalletType.NWC => Icons.account_balance_wallet_outlined,
+      WalletType.BOLT12 => Icons.bolt,
+      WalletType.LNURL => Icons.alternate_email,
+      WalletType.CASHU => Icons.toll_outlined,
+    };
+    final mintIconUrl =
+        preview.cashuMintSuggestion?.iconUrl?.trim().isNotEmpty == true
+        ? preview.cashuMintSuggestion!.iconUrl!.trim()
+        : preview.mintInfo?.iconUrl?.trim();
+    final fallbackIcon = Icon(icon, size: 32, color: colors.onPrimaryContainer);
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 560, maxHeight: 720),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: colors.primaryContainer,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(18),
+                          child:
+                              preview.walletType == WalletType.CASHU &&
+                                  mintIconUrl?.isNotEmpty == true
+                              ? Image.network(
+                                  mintIconUrl!,
+                                  width: 64,
+                                  height: 64,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => fallbackIcon,
+                                )
+                              : fallbackIcon,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      l10n.confirmWalletTitle,
+                      style: theme.textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      l10n.confirmWalletDescription,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    if (preview.manuallyEntered) ...[
+                      TextField(
+                        controller: _inputController,
+                        onChanged: _onInputChanged,
+                        enabled: !_isAdding,
+                        obscureText:
+                            classifyWalletInput(_inputController.text) ==
+                            WalletInputKind.nwc,
+                        enableSuggestions:
+                            classifyWalletInput(_inputController.text) !=
+                            WalletInputKind.nwc,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: l10n.walletInput,
+                          errorText: _inputKind == null ? _errorMessage : null,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    TextField(
+                      controller: _walletNameController,
+                      enabled: !_isAdding,
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        labelText: l10n.walletNameOptional,
+                        hintText: l10n.walletNameHint,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    for (
+                      var index = 0;
+                      index < preview.details.length;
+                      index++
+                    ) ...[
+                      if (index > 0)
+                        Divider(height: 25, color: colors.outlineVariant),
+                      Text(
+                        preview.details[index].label,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      SelectableText(
+                        preview.details[index].value,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                    if (_errorMessage != null) ...[
+                      const SizedBox(height: 20),
+                      Text(
+                        _errorMessage!,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colors.error,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: colors.outlineVariant)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _isAdding ? null : _cancelPreview,
+                        child: Text(l10n.cancel),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: _isAdding ? null : _confirmInput,
+                        child: _isAdding
+                            ? const SizedBox.square(
+                                dimension: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(l10n.confirm),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final kind = _inputKind;
+    final showInstalledWallets =
+        !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+    final preview = _preview;
+
+    if (preview != null) {
+      return _buildConfirmationDialog(context, preview);
+    }
+
+    if (widget.openScannerOnAdd && widget.walletInputScanner != null) {
+      return const SizedBox.shrink();
+    }
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 560, maxHeight: 720),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.addWalletTitle,
+                      style: theme.textTheme.headlineSmall,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).closeButtonTooltip,
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              Text(
+                l10n.addWalletDescription,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              if (widget.walletInputScanner != null ||
+                  widget.legacyWalletInputScanner != null) ...[
+                const SizedBox(height: 24),
+                FilledButton.icon(
+                  onPressed: _isAdding || _isResolvingDetails ? null : _scan,
+                  icon: const Icon(Icons.qr_code_scanner),
+                  label: Text(l10n.scanWalletQrCode),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(52),
+                  ),
+                ),
+              ],
+              if (showInstalledWallets ||
+                  widget.nwcConnectionOptions.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                Text(
+                  l10n.connectWithWallet,
+                  style: theme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                if (showInstalledWallets)
+                  _ConnectionOptionTile(
+                    icon: const Icon(Icons.account_balance_wallet_outlined),
+                    title: l10n.chooseWalletApp,
+                    subtitle: l10n.chooseWalletAppDescription,
+                    onTap: _chooseInstalledWallet,
+                  ),
+                if (showInstalledWallets) ...[
+                  const SizedBox(height: 8),
+                  _ConnectionOptionTile(
+                    icon: Image.asset(
+                      'assets/images/albygo.png',
+                      package: 'ndk_flutter',
+                      width: 28,
+                      height: 28,
+                    ),
+                    title: l10n.albyGoOption,
+                    onTap: _connectAlbyGo,
+                  ),
+                ],
+                for (final option in widget.nwcConnectionOptions) ...[
+                  const SizedBox(height: 8),
+                  _ConnectionOptionTile(
+                    icon:
+                        option.iconBuilder?.call(context) ??
+                        const Icon(Icons.account_balance_wallet_outlined),
+                    title: option.label,
+                    subtitle: option.subtitle,
+                    onTap: () => _connectOption(option),
+                  ),
+                ],
+              ],
+              const SizedBox(height: 24),
+              Text(l10n.walletInput, style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _inputController,
+                onChanged: _onInputChanged,
+                enabled: !_isAdding && !_isResolvingDetails,
+                obscureText: kind == WalletInputKind.nwc,
+                enableSuggestions: kind != WalletInputKind.nwc,
+                autocorrect: false,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  hintText: l10n.walletInputHint,
+                  errorText: _errorMessage,
+                  suffixIcon: IconButton(
+                    onPressed: _isAdding || _isResolvingDetails ? null : _paste,
+                    tooltip: l10n.paste,
+                    icon: const Icon(Icons.content_paste),
+                  ),
+                ),
+              ),
+              if (kind != null) ...[
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      size: 18,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${l10n.detected}: ${_kindLabel(l10n, kind)}',
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                FilledButton(
+                  onPressed: _isAdding || _isResolvingDetails
+                      ? null
+                      : () => _preparePreview(
+                          _inputController.text,
+                          manuallyEntered: true,
+                        ),
+                  child: _isResolvingDetails
+                      ? const SizedBox.square(
+                          dimension: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(l10n.reviewWallet),
+                ),
+              ],
+              const SizedBox(height: 16),
+              TextButton.icon(
+                onPressed: _isAdding
+                    ? null
+                    : () => setState(
+                        () => _showManualOptions = !_showManualOptions,
+                      ),
+                icon: Icon(
+                  _showManualOptions ? Icons.expand_less : Icons.expand_more,
+                ),
+                label: Text(l10n.manualWalletSetup),
+              ),
+              if (_showManualOptions) ...[
+                const SizedBox(height: 8),
+                _ManualWalletTile(
+                  title: l10n.nwcWalletTypeTitle,
+                  icon: Icons.account_balance_wallet_outlined,
+                  onTap: () => _openManual(WalletType.NWC),
+                ),
+                _ManualWalletTile(
+                  title: l10n.lnurlWalletTypeTitle,
+                  icon: Icons.bolt,
+                  onTap: () => _openManual(WalletType.LNURL),
+                ),
+                _ManualWalletTile(
+                  title: l10n.bolt12WalletTypeTitle,
+                  icon: Icons.electric_bolt,
+                  onTap: () => _openManual(WalletType.BOLT12),
+                ),
+                _ManualWalletTile(
+                  title: l10n.cashuWalletTypeTitle,
+                  icon: Icons.toll,
+                  onTap: () => _openManual(WalletType.CASHU),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ConnectionOptionTile extends StatelessWidget {
+  final Widget icon;
+  final String title;
+  final String? subtitle;
+  final VoidCallback onTap;
+
+  const _ConnectionOptionTile({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+    this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(12),
+      child: ListTile(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        leading: SizedBox.square(dimension: 32, child: Center(child: icon)),
+        title: Text(title),
+        subtitle: subtitle == null ? null : Text(subtitle!),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
+      ),
+    );
+  }
+}
+
+class _ManualWalletTile extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _ManualWalletTile({
+    required this.title,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
+    );
+  }
 }
 
 /// Shows a dialog to choose NWC connection method.
@@ -1516,119 +3265,6 @@ class _WalletTypeOptionButton extends StatelessWidget {
       ),
     );
   }
-}
-
-class _WalletTypeListOption extends StatelessWidget {
-  final IconData? icon;
-  final String? imageAsset;
-  final String title;
-  final String subtitle;
-  final String infoUrl;
-  final VoidCallback onTap;
-
-  const _WalletTypeListOption({
-    this.icon,
-    this.imageAsset,
-    required this.title,
-    required this.subtitle,
-    required this.infoUrl,
-    required this.onTap,
-  }) : assert(
-         icon != null || imageAsset != null,
-         'Either icon or imageAsset must be provided',
-       );
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outlineVariant,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: imageAsset != null
-                    ? Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Image.asset(
-                          imageAsset!,
-                          package: 'ndk_flutter',
-                          fit: BoxFit.contain,
-                        ),
-                      )
-                    : Icon(
-                        icon!,
-                        size: 38,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(title, style: Theme.of(context).textTheme.titleSmall),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: 2),
-                    InkWell(
-                      onTap: () => _launchExternalLink(context, infoUrl),
-                      child: Text(
-                        infoUrl,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-Future<void> _launchExternalLink(BuildContext context, String url) async {
-  final uri = Uri.tryParse(url);
-  if (uri == null) return;
-
-  final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-  if (launched || !context.mounted) return;
-
-  final l10n = AppLocalizations.of(context)!;
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(l10n.error('Could not open $url')),
-      backgroundColor: Colors.red,
-    ),
-  );
 }
 
 String? _extractNwcUriFromCallback(String receivedUrl) {

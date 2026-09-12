@@ -9,6 +9,21 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get saveBackupToFile => 'Save backup to file';
+
+  @override
+  String get backupSavedToFile => 'Backup saved to file';
+
+  @override
+  String get restoreFromFile => 'Restore from file';
+
+  @override
+  String get backupFileReadFailed => 'Could not read the selected backup file.';
+
+  @override
+  String get fetchingWalletConnectionInfo => 'Fetching wallet connection info…';
+
+  @override
   String get createAccount => 'Create your account';
 
   @override
@@ -987,6 +1002,87 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addWalletTitle => 'Add Wallet';
 
   @override
+  String get addWalletDescription =>
+      'Scan any supported wallet QR code, paste its details, or connect through a wallet app.';
+
+  @override
+  String get scanWalletQrCode => 'Scan wallet QR code';
+
+  @override
+  String get connectWithWallet => 'Connect with a wallet';
+
+  @override
+  String get chooseWalletApp => 'Choose wallet app';
+
+  @override
+  String get oneClickConnect => '1-click connect';
+
+  @override
+  String get chooseWallet => 'Choose wallet';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => 'Manual NWC connection';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return 'Finish connection in $walletName';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return 'Connecting $walletName…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '$walletName connected';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return 'Could not connect $walletName';
+  }
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get chooseAnotherWallet => 'Choose another wallet';
+
+  @override
+  String get chooseWalletAppDescription =>
+      'Approve an NWC connection in an installed wallet';
+
+  @override
+  String get walletInput => 'Wallet address or connection';
+
+  @override
+  String get walletInputHint =>
+      'NWC, Lightning/BIP353 address, BOLT12/BIP321 offer, or HTTPS Cashu mint URL';
+
+  @override
+  String get unsupportedWalletInput =>
+      'This is not a supported wallet address or connection.';
+
+  @override
+  String get detected => 'Detected';
+
+  @override
+  String get lightningAddressInputType => 'Lightning or BIP353 address';
+
+  @override
+  String get manualWalletSetup => 'Set up manually';
+
+  @override
   String get chooseWalletType => 'Choose wallet type';
 
   @override
@@ -1004,6 +1100,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => 'Choose Cashu mint';
+
+  @override
+  String get cashuMintRatingsNotice =>
+      'Community ratings come from signed Nostr reviews. A high rating does not guarantee that a mint is safe.';
+
+  @override
+  String get cashuMintDiscoveryFailed => 'Could not load mint suggestions.';
+
+  @override
+  String get noCashuMintSuggestions => 'No available mint suggestions found.';
+
+  @override
+  String get noRatingsYet => 'No ratings yet';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · $count reviews';
+  }
+
+  @override
+  String get enterMintUrlManually => 'Enter mint URL manually';
 
   @override
   String get cashuWalletTypeSubtitle =>
@@ -1192,6 +1312,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bolt12WalletTypeTitle => 'BOLT12 Offer';
 
   @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
+
+  @override
   String get bolt12WalletTypeSubtitle =>
       'Receive-only wallet using a reusable offer';
 
@@ -1231,4 +1357,89 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get bolt12OfferInstructions =>
       'Share this reusable offer to receive a Lightning payment.';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get reviewWallet => 'Review wallet';
+
+  @override
+  String get confirmWalletTitle => 'Confirm wallet';
+
+  @override
+  String get confirmWalletDescription =>
+      'Review these details before adding this wallet.';
+
+  @override
+  String get walletDetailType => 'Wallet type';
+
+  @override
+  String get walletDetailAddress => 'Address';
+
+  @override
+  String get walletDetailDomain => 'Domain';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => 'Public key';
+
+  @override
+  String get walletDetailRelay => 'Relay';
+
+  @override
+  String get walletDetailRelays => 'Relays';
+
+  @override
+  String get walletDetailSecret => 'Connection secret';
+
+  @override
+  String get walletSecretHidden => 'Present and hidden for security';
+
+  @override
+  String get walletDetailDescription => 'Description';
+
+  @override
+  String get walletDetailDetails => 'Details';
+
+  @override
+  String get walletDetailIssuer => 'Issuer';
+
+  @override
+  String get walletDetailAmount => 'Amount';
+
+  @override
+  String get walletDetailCurrency => 'Currency';
+
+  @override
+  String get walletDetailExpiry => 'Expires';
+
+  @override
+  String get walletDetailNodeId => 'Node ID';
+
+  @override
+  String get walletDetailOffer => 'BOLT12 offer';
+
+  @override
+  String get walletDetailVersion => 'Version';
+
+  @override
+  String get walletDetailUnits => 'Supported units';
+
+  @override
+  String get walletDetailContact => 'Contact';
+
+  @override
+  String get walletDetailTerms => 'Terms of service';
+
+  @override
+  String get walletDetailMessage => 'Message';
+
+  @override
+  String get walletDetailCommunityRating => 'Community rating';
+
+  @override
+  String get walletDetailCommunityReviews => 'Recent community reviews';
 }

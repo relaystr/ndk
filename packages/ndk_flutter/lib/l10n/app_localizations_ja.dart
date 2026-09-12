@@ -9,6 +9,21 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
+  String get saveBackupToFile => 'バックアップをファイルに保存';
+
+  @override
+  String get backupSavedToFile => 'バックアップをファイルに保存しました';
+
+  @override
+  String get restoreFromFile => 'ファイルから復元';
+
+  @override
+  String get backupFileReadFailed => '選択したバックアップファイルを読み込めませんでした。';
+
+  @override
+  String get fetchingWalletConnectionInfo => 'ウォレットの接続情報を取得中…';
+
+  @override
   String get createAccount => 'アカウントを作成';
 
   @override
@@ -980,6 +995,85 @@ class AppLocalizationsJa extends AppLocalizations {
   String get addWalletTitle => 'ウォレットを追加';
 
   @override
+  String get addWalletDescription =>
+      '対応するウォレットのQRコードをスキャンするか、接続情報を貼り付けるか、ウォレットアプリから接続します。';
+
+  @override
+  String get scanWalletQrCode => 'ウォレットのQRコードをスキャン';
+
+  @override
+  String get connectWithWallet => 'ウォレットに接続';
+
+  @override
+  String get chooseWalletApp => 'ウォレットアプリを選択';
+
+  @override
+  String get oneClickConnect => '1クリック接続';
+
+  @override
+  String get chooseWallet => 'ウォレットを選択';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => 'NWCを手動接続';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return '$walletNameで接続を完了してください';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return '$walletNameに接続中…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '$walletNameに接続しました';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return '$walletNameに接続できませんでした';
+  }
+
+  @override
+  String get retry => '再試行';
+
+  @override
+  String get chooseAnotherWallet => '別のウォレットを選択';
+
+  @override
+  String get chooseWalletAppDescription => 'インストール済みウォレットでNWC接続を承認します';
+
+  @override
+  String get walletInput => 'ウォレットアドレスまたは接続情報';
+
+  @override
+  String get walletInputHint =>
+      'NWC、Lightning/BIP353アドレス、BOLT12/BIP321オファー、またはCashuミントのHTTPS URL';
+
+  @override
+  String get unsupportedWalletInput => '対応していないウォレットアドレスまたは接続情報です。';
+
+  @override
+  String get detected => '検出済み';
+
+  @override
+  String get lightningAddressInputType => 'LightningまたはBIP353アドレス';
+
+  @override
+  String get manualWalletSetup => '手動で設定';
+
+  @override
   String get chooseWalletType => 'ウォレットタイプを選択';
 
   @override
@@ -996,6 +1090,30 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => 'Cashuミントを選択';
+
+  @override
+  String get cashuMintRatingsNotice =>
+      'コミュニティ評価は署名済みNostrレビューに基づきます。高評価でもミントの安全性は保証されません。';
+
+  @override
+  String get cashuMintDiscoveryFailed => 'ミント候補を読み込めませんでした。';
+
+  @override
+  String get noCashuMintSuggestions => '利用可能なミント候補が見つかりません。';
+
+  @override
+  String get noRatingsYet => 'まだ評価がありません';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · $count件のレビュー';
+  }
+
+  @override
+  String get enterMintUrlManually => 'ミントURLを手動入力';
 
   @override
   String get cashuWalletTypeSubtitle => 'Cashuミント対応のecashウォレットを使う';
@@ -1145,7 +1263,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get bolt12Wallet => 'BOLT12 Wallet';
+  String get bolt12Wallet => 'BOLT12ウォレット';
 
   @override
   String get bolt12WalletSubtitle => 'Reusable Lightning offer';
@@ -1180,41 +1298,46 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get bolt12WalletTypeTitle => 'BOLT12 Offer';
+  String get bolt12WalletTypeTitle => 'BOLT12オファー';
+
+  @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
 
   @override
   String get bolt12WalletTypeSubtitle =>
       'Receive-only wallet using a reusable offer';
 
   @override
-  String get addBolt12WalletTitle => 'Add BOLT12 Wallet';
+  String get addBolt12WalletTitle => 'BOLT12ウォレットを追加';
 
   @override
   String get enterBolt12Input =>
-      'Enter or scan an lno offer, a bitcoin:?lno=... URI, or a BIP353 address.';
+      'lnoオファー、bitcoin:?lno=… URI、またはBIP353アドレスを入力またはスキャンしてください。';
 
   @override
-  String get bolt12Input => 'BOLT12 payment target';
+  String get bolt12Input => 'BOLT12支払い先';
 
   @override
-  String get bolt12InputHint => 'lno1..., bitcoin:?lno=..., or user@domain.com';
+  String get bolt12InputHint => 'lno1…、bitcoin:?lno=…、またはuser@domain.com';
 
   @override
-  String get walletNameOptional => 'Wallet name (optional)';
+  String get walletNameOptional => 'ウォレット名（任意）';
 
   @override
-  String get scanBolt12QrCodeTitle => 'Scan BOLT12 QR code';
+  String get scanBolt12QrCodeTitle => 'BOLT12 QRコードをスキャン';
 
   @override
   String get invalidBolt12QrCode =>
       'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
 
   @override
-  String get pleaseEnterBolt12Input =>
-      'Please enter a BOLT12 offer or BIP353 address.';
+  String get pleaseEnterBolt12Input => 'BOLT12オファーまたはBIP353アドレスを入力してください。';
 
   @override
-  String get bolt12WalletAdded => 'BOLT12 wallet added successfully!';
+  String get bolt12WalletAdded => 'BOLT12ウォレットを追加しました！';
 
   @override
   String get bolt12OfferTitle => 'Receive with BOLT12';
@@ -1222,4 +1345,88 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get bolt12OfferInstructions =>
       'Share this reusable offer to receive a Lightning payment.';
+
+  @override
+  String get confirm => '確認';
+
+  @override
+  String get reviewWallet => 'ウォレットを確認';
+
+  @override
+  String get confirmWalletTitle => 'ウォレットを確認';
+
+  @override
+  String get confirmWalletDescription => 'このウォレットを追加する前に詳細を確認してください。';
+
+  @override
+  String get walletDetailType => 'ウォレットの種類';
+
+  @override
+  String get walletDetailAddress => 'アドレス';
+
+  @override
+  String get walletDetailDomain => 'ドメイン';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => '公開鍵';
+
+  @override
+  String get walletDetailRelay => 'リレー';
+
+  @override
+  String get walletDetailRelays => 'リレー';
+
+  @override
+  String get walletDetailSecret => '接続シークレット';
+
+  @override
+  String get walletSecretHidden => '存在します（安全のため非表示）';
+
+  @override
+  String get walletDetailDescription => '説明';
+
+  @override
+  String get walletDetailDetails => '詳細';
+
+  @override
+  String get walletDetailIssuer => '発行者';
+
+  @override
+  String get walletDetailAmount => '金額';
+
+  @override
+  String get walletDetailCurrency => '通貨';
+
+  @override
+  String get walletDetailExpiry => '有効期限';
+
+  @override
+  String get walletDetailNodeId => 'ノードID';
+
+  @override
+  String get walletDetailOffer => 'BOLT12オファー';
+
+  @override
+  String get walletDetailVersion => 'バージョン';
+
+  @override
+  String get walletDetailUnits => '対応単位';
+
+  @override
+  String get walletDetailContact => '連絡先';
+
+  @override
+  String get walletDetailTerms => '利用規約';
+
+  @override
+  String get walletDetailMessage => 'メッセージ';
+
+  @override
+  String get walletDetailCommunityRating => 'コミュニティ評価';
+
+  @override
+  String get walletDetailCommunityReviews => '最近のコミュニティレビュー';
 }

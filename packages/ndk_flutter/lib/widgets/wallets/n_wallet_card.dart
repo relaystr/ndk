@@ -5,6 +5,7 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
+import 'n_cashu_mint_icon.dart';
 import 'wallet_action_dialogs.dart';
 
 /// Configuration for wallet type icons
@@ -357,7 +358,12 @@ class _NWalletCardState extends State<NWalletCard>
     // Build main icon widget (full color, not monochromatic)
     final Widget mainIcon =
         iconConfig.iconWidget ??
-        (defaultAssetName != null
+        (isCashu
+            ? NCashuMintIcon(
+                wallet: widget.wallet as CashuWallet,
+                size: iconConfig.iconSize,
+              )
+            : defaultAssetName != null
             ? Image.asset(
                 'assets/images/$defaultAssetName',
                 package: 'ndk_flutter',

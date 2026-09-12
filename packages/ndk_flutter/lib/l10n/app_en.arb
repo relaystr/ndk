@@ -1,4 +1,9 @@
 {
+  "saveBackupToFile": "Save backup to file",
+  "backupSavedToFile": "Backup saved to file",
+  "restoreFromFile": "Restore from file",
+  "backupFileReadFailed": "Could not read the selected backup file.",
+  "fetchingWalletConnectionInfo": "Fetching wallet connection info…",
   "@@locale": "en",
   "createAccount": "Create your account",
   "@createAccount": {
@@ -1286,6 +1291,78 @@
   "@addWalletTitle": {
     "description": "Title for add wallet dialog"
   },
+  "addWalletDescription": "Scan any supported wallet QR code, paste its details, or connect through a wallet app.",
+  "@addWalletDescription": {
+    "description": "Description for the unified add wallet flow"
+  },
+  "scanWalletQrCode": "Scan wallet QR code",
+  "@scanWalletQrCode": {
+    "description": "Button for opening the universal wallet QR scanner"
+  },
+  "connectWithWallet": "Connect with a wallet",
+  "@connectWithWallet": {
+    "description": "Heading for wallet-assisted NWC connection options"
+  },
+  "chooseWalletApp": "Choose wallet app",
+  "oneClickConnect": "1-click connect",
+  "chooseWallet": "Choose wallet",
+  "albyWalletOption": "Alby",
+  "albyCloudOption": "Alby Cloud",
+  "coinosWalletOption": "Coinos",
+  "manualNwcConnection": "Manual NWC connection",
+  "walletConnectionFinishIn": "Finish connection in {walletName}",
+  "@walletConnectionFinishIn": {
+    "description": "Prompt shown while an external wallet is authorizing",
+    "placeholders": {"walletName": {"type": "String"}}
+  },
+  "walletConnectionConnecting": "Connecting {walletName}…",
+  "@walletConnectionConnecting": {
+    "description": "Progress shown while adding an externally authorized wallet",
+    "placeholders": {"walletName": {"type": "String"}}
+  },
+  "walletConnectionConnected": "{walletName} connected",
+  "@walletConnectionConnected": {
+    "description": "Animated success message after adding a wallet",
+    "placeholders": {"walletName": {"type": "String"}}
+  },
+  "walletConnectionFailed": "Could not connect {walletName}",
+  "@walletConnectionFailed": {
+    "description": "Heading shown when an external wallet connection fails",
+    "placeholders": {"walletName": {"type": "String"}}
+  },
+  "retry": "Retry",
+  "chooseAnotherWallet": "Choose another wallet",
+  "@chooseWalletApp": {
+    "description": "Button for opening the standard NWC wallet chooser"
+  },
+  "chooseWalletAppDescription": "Approve an NWC connection in an installed wallet",
+  "@chooseWalletAppDescription": {
+    "description": "Description for the standard NWC wallet chooser"
+  },
+  "walletInput": "Wallet address or connection",
+  "@walletInput": {
+    "description": "Label for unified wallet input"
+  },
+  "walletInputHint": "NWC, Lightning/BIP353 address, BOLT12/BIP321 offer, or HTTPS Cashu mint URL",
+  "@walletInputHint": {
+    "description": "Hint listing supported wallet inputs"
+  },
+  "unsupportedWalletInput": "This is not a supported wallet address or connection.",
+  "@unsupportedWalletInput": {
+    "description": "Error for an unrecognized unified wallet input"
+  },
+  "detected": "Detected",
+  "@detected": {
+    "description": "Label shown before a detected wallet type"
+  },
+  "lightningAddressInputType": "Lightning or BIP353 address",
+  "@lightningAddressInputType": {
+    "description": "Detected type label for an ambiguous user at domain address"
+  },
+  "manualWalletSetup": "Set up manually",
+  "@manualWalletSetup": {
+    "description": "Button revealing type-specific manual wallet setup"
+  },
   "chooseWalletType": "Choose wallet type",
   "@chooseWalletType": {
     "description": "Prompt to choose wallet type"
@@ -1307,6 +1384,19 @@
     "description": "Subtitle for the LNURL wallet type option"
   },
   "cashuWalletTypeTitle": "Cashu",
+  "chooseCashuMint": "Choose Cashu mint",
+  "cashuMintRatingsNotice": "Community ratings come from signed Nostr reviews. A high rating does not guarantee that a mint is safe.",
+  "cashuMintDiscoveryFailed": "Could not load mint suggestions.",
+  "noCashuMintSuggestions": "No available mint suggestions found.",
+  "noRatingsYet": "No ratings yet",
+  "cashuMintRating": "★ {rating} · {count} reviews",
+  "@cashuMintRating": {
+    "placeholders": {
+      "rating": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "enterMintUrlManually": "Enter mint URL manually",
   "@cashuWalletTypeTitle": {
     "description": "Title for the Cashu wallet type option"
   },
@@ -1551,6 +1641,8 @@
     }
   },
   "bolt12WalletTypeTitle": "BOLT12 Offer",
+  "bip353WalletTypeTitle": "BIP353",
+  "lnurlProtocol": "LNURL",
   "bolt12WalletTypeSubtitle": "Receive-only wallet using a reusable offer",
   "addBolt12WalletTitle": "Add BOLT12 Wallet",
   "enterBolt12Input": "Enter or scan an lno offer, a bitcoin:?lno=... URI, or a BIP353 address.",
@@ -1562,5 +1654,33 @@
   "pleaseEnterBolt12Input": "Please enter a BOLT12 offer or BIP353 address.",
   "bolt12WalletAdded": "BOLT12 wallet added successfully!",
   "bolt12OfferTitle": "Receive with BOLT12",
-  "bolt12OfferInstructions": "Share this reusable offer to receive a Lightning payment."
+  "bolt12OfferInstructions": "Share this reusable offer to receive a Lightning payment.",
+  "confirm": "Confirm",
+  "reviewWallet": "Review wallet",
+  "confirmWalletTitle": "Confirm wallet",
+  "confirmWalletDescription": "Review these details before adding this wallet.",
+  "walletDetailType": "Wallet type",
+  "walletDetailAddress": "Address",
+  "walletDetailDomain": "Domain",
+  "walletDetailUrl": "URL",
+  "walletDetailPublicKey": "Public key",
+  "walletDetailRelay": "Relay",
+  "walletDetailRelays": "Relays",
+  "walletDetailSecret": "Connection secret",
+  "walletSecretHidden": "Present and hidden for security",
+  "walletDetailDescription": "Description",
+  "walletDetailDetails": "Details",
+  "walletDetailIssuer": "Issuer",
+  "walletDetailAmount": "Amount",
+  "walletDetailCurrency": "Currency",
+  "walletDetailExpiry": "Expires",
+  "walletDetailNodeId": "Node ID",
+  "walletDetailOffer": "BOLT12 offer",
+  "walletDetailVersion": "Version",
+  "walletDetailUnits": "Supported units",
+  "walletDetailContact": "Contact",
+  "walletDetailTerms": "Terms of service",
+  "walletDetailMessage": "Message",
+  "walletDetailCommunityRating": "Community rating",
+  "walletDetailCommunityReviews": "Recent community reviews"
 }

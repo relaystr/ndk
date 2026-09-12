@@ -3,6 +3,7 @@ import 'package:ndk/entities.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
+import 'n_cashu_mint_icon.dart';
 import 'wallet_action_dialogs.dart';
 
 /// Card with Send/Receive actions and dialogs for a selected wallet.
@@ -46,8 +47,27 @@ class NWalletActions extends StatefulWidget {
 
 class _NWalletActionsState extends State<NWalletActions>
     with WalletActionDialogsMixin {
+  bool _selectionClearScheduled = false;
+
   @override
   NdkFlutter get ndkFlutter => widget.ndkFlutter;
+
+  @override
+  void didUpdateWidget(covariant NWalletActions oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedWalletId != widget.selectedWalletId) {
+      _selectionClearScheduled = false;
+    }
+  }
+
+  void _clearMissingWalletSelection() {
+    if (_selectionClearScheduled) return;
+    _selectionClearScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      widget.onClearSelection?.call();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,16 +77,24 @@ class _NWalletActionsState extends State<NWalletActions>
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const SizedBox.shrink();
 
-        final wallet = snapshot.data!.firstWhere(
-          (w) => w.id == widget.selectedWalletId,
-          orElse: () => throw Exception('Wallet not found'),
-        );
+        Wallet? wallet;
+        for (final candidate in snapshot.data!) {
+          if (candidate.id == widget.selectedWalletId) {
+            wallet = candidate;
+            break;
+          }
+        }
+        if (wallet == null) {
+          _clearMissingWalletSelection();
+          return const SizedBox.shrink();
+        }
+        final selectedWallet = wallet;
 
-        final bool isCashu = wallet is CashuWallet;
-        final bool isNwc = wallet is NwcWallet;
-        final bool isBolt12 = wallet is Bolt12Wallet;
-        final bool canSend = wallet.canSend;
-        final bool canReceive = wallet.canReceive;
+        final bool isCashu = selectedWallet is CashuWallet;
+        final bool isNwc = selectedWallet is NwcWallet;
+        final bool isBolt12 = selectedWallet is Bolt12Wallet;
+        final bool canSend = selectedWallet.canSend;
+        final bool canReceive = selectedWallet.canReceive;
         final bool condensed = widget.condensed;
         final bool showHeader = widget.showTitle || widget.showCloseButton;
         final double buttonPadding = condensed ? 8 : 16;
@@ -80,18 +108,7 @@ class _NWalletActionsState extends State<NWalletActions>
                 children: [
                   if (widget.showTitle) ...[
                     if (isCashu)
-                      Image.asset(
-                        'assets/images/cashu.png',
-                        package: 'ndk_flutter',
-                        width: 24,
-                        height: 24,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
-                            Icons.account_balance_wallet,
-                            color: Colors.orange,
-                          );
-                        },
-                      )
+                      NCashuMintIcon(wallet: selectedWallet, size: 24)
                     else if (isNwc)
                       Image.asset(
                         'assets/images/nwc.png',
@@ -136,7 +153,8 @@ class _NWalletActionsState extends State<NWalletActions>
                   if (canSend)
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () => showSendDialog(context, wallet),
+                        onPressed: () =>
+                            showSendDialog(context, selectedWallet),
                         icon: const Icon(Icons.send),
                         label: Text(l10n.send),
                         style: ElevatedButton.styleFrom(
@@ -151,7 +169,8 @@ class _NWalletActionsState extends State<NWalletActions>
                   if (canReceive)
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () => showReceiveFlow(context, wallet),
+                        onPressed: () =>
+                            showReceiveFlow(context, selectedWallet),
                         icon: const Icon(Icons.download),
                         label: Text(l10n.receive),
                         style: ElevatedButton.styleFrom(

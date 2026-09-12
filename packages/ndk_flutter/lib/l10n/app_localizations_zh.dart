@@ -9,6 +9,21 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get saveBackupToFile => '将备份保存到文件';
+
+  @override
+  String get backupSavedToFile => '备份已保存到文件';
+
+  @override
+  String get restoreFromFile => '从文件恢复';
+
+  @override
+  String get backupFileReadFailed => '无法读取所选备份文件。';
+
+  @override
+  String get fetchingWalletConnectionInfo => '正在获取钱包连接信息…';
+
+  @override
   String get createAccount => '创建账户';
 
   @override
@@ -979,6 +994,84 @@ class AppLocalizationsZh extends AppLocalizations {
   String get addWalletTitle => '添加钱包';
 
   @override
+  String get addWalletDescription => '扫描受支持的钱包二维码、粘贴连接信息，或通过钱包应用连接。';
+
+  @override
+  String get scanWalletQrCode => '扫描钱包二维码';
+
+  @override
+  String get connectWithWallet => '连接钱包';
+
+  @override
+  String get chooseWalletApp => '选择钱包应用';
+
+  @override
+  String get oneClickConnect => '一键连接';
+
+  @override
+  String get chooseWallet => '选择钱包';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => '手动连接 NWC';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return '请在 $walletName 中完成连接';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return '正在连接 $walletName…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '已连接 $walletName';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return '无法连接 $walletName';
+  }
+
+  @override
+  String get retry => '重试';
+
+  @override
+  String get chooseAnotherWallet => '选择其他钱包';
+
+  @override
+  String get chooseWalletAppDescription => '在已安装的钱包中批准 NWC 连接';
+
+  @override
+  String get walletInput => '钱包地址或连接信息';
+
+  @override
+  String get walletInputHint =>
+      'NWC、Lightning/BIP353 地址、BOLT12/BIP321 报价或 Cashu 铸币厂 HTTPS URL';
+
+  @override
+  String get unsupportedWalletInput => '不支持此钱包地址或连接信息。';
+
+  @override
+  String get detected => '已检测';
+
+  @override
+  String get lightningAddressInputType => 'Lightning 或 BIP353 地址';
+
+  @override
+  String get manualWalletSetup => '手动设置';
+
+  @override
   String get chooseWalletType => '选择钱包类型';
 
   @override
@@ -995,6 +1088,29 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => '选择 Cashu 铸币厂';
+
+  @override
+  String get cashuMintRatingsNotice => '社区评分来自已签名的 Nostr 评论。高评分并不能保证铸币厂安全。';
+
+  @override
+  String get cashuMintDiscoveryFailed => '无法加载铸币厂建议。';
+
+  @override
+  String get noCashuMintSuggestions => '未找到可用的铸币厂建议。';
+
+  @override
+  String get noRatingsYet => '暂无评分';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · $count 条评论';
+  }
+
+  @override
+  String get enterMintUrlManually => '手动输入铸币厂 URL';
 
   @override
   String get cashuWalletTypeSubtitle => '使用由 Cashu mint 支持的 ecash 钱包';
@@ -1144,7 +1260,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get bolt12Wallet => 'BOLT12 Wallet';
+  String get bolt12Wallet => 'BOLT12 钱包';
 
   @override
   String get bolt12WalletSubtitle => 'Reusable Lightning offer';
@@ -1179,41 +1295,45 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get bolt12WalletTypeTitle => 'BOLT12 Offer';
+  String get bolt12WalletTypeTitle => 'BOLT12 报价';
+
+  @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
 
   @override
   String get bolt12WalletTypeSubtitle =>
       'Receive-only wallet using a reusable offer';
 
   @override
-  String get addBolt12WalletTitle => 'Add BOLT12 Wallet';
+  String get addBolt12WalletTitle => '添加 BOLT12 钱包';
 
   @override
-  String get enterBolt12Input =>
-      'Enter or scan an lno offer, a bitcoin:?lno=... URI, or a BIP353 address.';
+  String get enterBolt12Input => '输入或扫描 lno 报价、bitcoin:?lno=… URI 或 BIP353 地址。';
 
   @override
-  String get bolt12Input => 'BOLT12 payment target';
+  String get bolt12Input => 'BOLT12 支付目标';
 
   @override
-  String get bolt12InputHint => 'lno1..., bitcoin:?lno=..., or user@domain.com';
+  String get bolt12InputHint => 'lno1…、bitcoin:?lno=… 或 user@domain.com';
 
   @override
-  String get walletNameOptional => 'Wallet name (optional)';
+  String get walletNameOptional => '钱包名称（可选）';
 
   @override
-  String get scanBolt12QrCodeTitle => 'Scan BOLT12 QR code';
+  String get scanBolt12QrCodeTitle => '扫描 BOLT12 二维码';
 
   @override
   String get invalidBolt12QrCode =>
       'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
 
   @override
-  String get pleaseEnterBolt12Input =>
-      'Please enter a BOLT12 offer or BIP353 address.';
+  String get pleaseEnterBolt12Input => '请输入 BOLT12 报价或 BIP353 地址。';
 
   @override
-  String get bolt12WalletAdded => 'BOLT12 wallet added successfully!';
+  String get bolt12WalletAdded => 'BOLT12 钱包添加成功！';
 
   @override
   String get bolt12OfferTitle => 'Receive with BOLT12';
@@ -1221,4 +1341,88 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get bolt12OfferInstructions =>
       'Share this reusable offer to receive a Lightning payment.';
+
+  @override
+  String get confirm => '确认';
+
+  @override
+  String get reviewWallet => '检查钱包';
+
+  @override
+  String get confirmWalletTitle => '确认钱包';
+
+  @override
+  String get confirmWalletDescription => '添加钱包前请检查这些信息。';
+
+  @override
+  String get walletDetailType => '钱包类型';
+
+  @override
+  String get walletDetailAddress => '地址';
+
+  @override
+  String get walletDetailDomain => '域名';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => '公钥';
+
+  @override
+  String get walletDetailRelay => '中继';
+
+  @override
+  String get walletDetailRelays => '中继';
+
+  @override
+  String get walletDetailSecret => '连接密钥';
+
+  @override
+  String get walletSecretHidden => '已提供并因安全原因隐藏';
+
+  @override
+  String get walletDetailDescription => '说明';
+
+  @override
+  String get walletDetailDetails => '详情';
+
+  @override
+  String get walletDetailIssuer => '发行方';
+
+  @override
+  String get walletDetailAmount => '金额';
+
+  @override
+  String get walletDetailCurrency => '货币';
+
+  @override
+  String get walletDetailExpiry => '到期时间';
+
+  @override
+  String get walletDetailNodeId => '节点 ID';
+
+  @override
+  String get walletDetailOffer => 'BOLT12 报价';
+
+  @override
+  String get walletDetailVersion => '版本';
+
+  @override
+  String get walletDetailUnits => '支持的单位';
+
+  @override
+  String get walletDetailContact => '联系方式';
+
+  @override
+  String get walletDetailTerms => '服务条款';
+
+  @override
+  String get walletDetailMessage => '消息';
+
+  @override
+  String get walletDetailCommunityRating => '社区评分';
+
+  @override
+  String get walletDetailCommunityReviews => '近期社区评论';
 }

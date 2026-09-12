@@ -49,6 +49,7 @@ export 'domain_layer/entities/nip_85.dart';
 export 'domain_layer/entities/cashu/cashu_keyset.dart';
 export 'domain_layer/entities/cashu/cashu_proof.dart';
 export 'domain_layer/entities/cashu/cashu_mint_info.dart';
+export 'domain_layer/entities/cashu/cashu_mint_recommendation.dart';
 export 'domain_layer/entities/cashu/cashu_token.dart';
 export 'domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 export 'domain_layer/entities/cashu/cashu_blinded_message.dart';
