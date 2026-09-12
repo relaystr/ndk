@@ -28,9 +28,9 @@ typedef RawEventLoader = Future<List<Nip01Event>> Function({
 /// event id. So the resolver runs one extra raw read to fetch that context,
 /// then classifies the candidates against it.
 class EventVisibilityResolver {
-  /// Above this many distinct authors, the context read stops constraining
-  /// authors: a huge `inList` costs more than the wider scan it saves.
-  static const _maxAuthorScope = 100;
+  /// Maximum authors per context read, keeping each query scoped without
+  /// creating an excessively large `inList`.
+  static const _authorBatchSize = 100;
 
   final RawEventLoader _loadRawEvents;
 
@@ -178,10 +178,17 @@ class EventVisibilityResolver {
       }
     }
 
-    final context = await _loadRawEvents(
-      pubKeys: authors.length <= _maxAuthorScope ? authors.toList() : null,
-      kinds: contextKinds.toList(),
-    );
+    final authorList = authors.toList();
+    final context = <Nip01Event>[];
+    for (var start = 0; start < authorList.length; start += _authorBatchSize) {
+      final end = (start + _authorBatchSize).clamp(0, authorList.length);
+      context.addAll(
+        await _loadRawEvents(
+          pubKeys: authorList.sublist(start, end),
+          kinds: contextKinds.toList(),
+        ),
+      );
+    }
 
     final byId = <String, Nip01Event>{};
     for (final event in candidates) {
