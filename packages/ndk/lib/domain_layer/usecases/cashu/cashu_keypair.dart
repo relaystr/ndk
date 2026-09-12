@@ -10,6 +10,14 @@ class CashuKeypair {
 
   CashuKeypair({required this.privateKey, required this.publicKey});
 
+  /// Builds a keypair from a private key hex string by deriving the public key.
+  static CashuKeypair fromPrivateKeyHex(String privateKeyHex) {
+    final pubKeyHex = hex.encode(
+      derivePublicKey(privateKeyHex).getEncoded(true),
+    );
+    return CashuKeypair(privateKey: privateKeyHex, publicKey: pubKeyHex);
+  }
+
   static CashuKeypair generateCashuKeyPair() {
     // 32-byte private key
     final privKey = Helpers.getSecureRandomHex(32);

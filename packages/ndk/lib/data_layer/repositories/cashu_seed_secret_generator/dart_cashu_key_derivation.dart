@@ -7,11 +7,13 @@ import 'package:convert/convert.dart';
 import 'package:bip32_keys/bip32_keys.dart';
 
 import '../../../domain_layer/repositories/cashu_key_derivation.dart';
+import '../../../domain_layer/usecases/cashu/cashu_keypair.dart';
 import '../../../domain_layer/usecases/cashu/cashu_seed.dart';
 
 enum DerivationType {
   secret(0),
-  blindingFactor(1);
+  blindingFactor(1),
+  quoteKey(2);
 
   final int value;
 
@@ -59,6 +61,35 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
     throw Exception(
       'Unrecognized keyset ID version ${keysetId.substring(0, 2)}',
     );
+  }
+
+  @override
+  Future<CashuKeypair> deriveQuoteKey({
+    required Uint8List seedBytes,
+    required String mintUrl,
+    required int counter,
+  }) async {
+    final handle = _deriveQuoteKeyWithSeed(
+      seed: seedBytes,
+      counter: counter,
+    );
+    return CashuKeypair.fromPrivateKeyHex(handle);
+  }
+
+  /// Deterministic derivation of a NUT-20 mint quote lock key.
+  ///
+  static String _deriveQuoteKeyWithSeed({
+    required Uint8List seed,
+    required int counter,
+  }) {
+    final masterKey = Bip32Keys.fromSeed(seed);
+
+    // Derive shared parent path once
+    final master = masterKey.derivePath(
+      "m/129373'/20'/0'/0'/$counter",
+    );
+
+    return hex.encode(master.private!);
   }
 
   /// Modern derivation method with explicit seed parameter
@@ -114,6 +145,10 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
       case DerivationType.blindingFactor:
         messageBuilder.add([0x01]);
         break;
+      case DerivationType.quoteKey:
+        throw UnsupportedError(
+          'quoteKey is derived via deriveQuoteKey(), not deriveSecret()',
+        );
     }
 
     final message = messageBuilder.toBytes();

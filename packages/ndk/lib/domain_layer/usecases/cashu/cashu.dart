@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:rxdart/rxdart.dart';
 
 import '../../../config/cashu_config.dart';
@@ -22,6 +24,7 @@ import '../../repositories/wallets_repo.dart';
 import 'cashu_export_import.dart';
 import 'cashu_bdhke.dart';
 import 'cashu_cache_decorator.dart';
+import 'cashu_keypair.dart';
 import 'cashu_keysets.dart';
 import 'cashu_proof_select.dart';
 import 'cashu_restore.dart';
@@ -592,12 +595,26 @@ class Cashu {
       unit: unit,
     );
 
+    final quoteKeyCounter =
+        await _cacheManagerCashu.getAndIncrementDerivationCounter(
+      keysetId: kQuoteKeyDerivationCounterSlot,
+      mintUrl: mintUrl,
+    );
+
+    final quoteKey = await _cashuKeyDerivation.deriveQuoteKey(
+      seedBytes: Uint8List.fromList(_cashuSeed.getSeedBytes()),
+      mintUrl: mintUrl,
+      counter: quoteKeyCounter,
+    );
+
     final quote = await _cashuRepo.getMintQuote(
       mintUrl: mintUrl,
       amount: amount,
       unit: unit,
       method: method,
       description: memo ?? '',
+      quoteKey: quoteKey,
+      quoteKeyCounter: quoteKeyCounter,
     );
 
     CashuWalletTransaction draftTransaction = CashuWalletTransaction(
@@ -621,6 +638,55 @@ class Cashu {
     await _walletsRepo.saveTransactions([draftTransaction]);
 
     return draftTransaction;
+  }
+
+  /// Recover the private key for a NUT-20 mint quote lock key using the seed.
+  ///
+  /// Mints lock issuance to the `pubkey` sent when the quote was created. NDK
+  /// derives these keys from the wallet seed, so a paid but unminted quote can
+  /// still be completed after local data loss by scanning counters until the
+  /// derived public key matches the `pubkey` the mint locked the quote to.
+  ///
+  /// [lockedPubkey] is the compressed public key of the quote lock (the
+  /// `pubkey` the mint has on file for the quote). [maxScan] limits how many
+  /// counters are scanned when the persisted counter slot is gone.
+  ///
+  /// Returns the matching [CashuKeypair] (whose private key signs the mint
+  /// request) or `null` when no counter derives to [lockedPubkey].
+  Future<CashuKeypair?> recoverQuoteKey({
+    required String mintUrl,
+    required String lockedPubkey,
+    int maxScan = 10000,
+  }) async {
+    await preflightChecks();
+
+    final seedBytes = Uint8List.fromList(_cashuSeed.getSeedBytes());
+
+    final slotCounter = await _cacheManagerCashu.getCashuSecretCounter(
+      mintUrl: mintUrl,
+      keysetId: kQuoteKeyDerivationCounterSlot,
+    );
+
+    // The slot holds the number of quote keys assigned so far (counters 0..
+    // slot-1 are used). When local data is gone the slot is 0, so fall back
+    // to the caller-provided cap.
+    final scanUpperBound = slotCounter > 0 ? slotCounter : maxScan;
+
+    for (var counter = 0; counter < scanUpperBound; counter++) {
+      final keypair = await _cashuKeyDerivation.deriveQuoteKey(
+        seedBytes: seedBytes,
+        mintUrl: mintUrl,
+        counter: counter,
+      );
+      if (keypair.publicKey == lockedPubkey) {
+        Logger.log.i(
+          () => 'Recovered quote lock key for $mintUrl at counter $counter',
+        );
+        return keypair;
+      }
+    }
+
+    return null;
   }
 
   /// retrieve funds from a pending funding transaction \
