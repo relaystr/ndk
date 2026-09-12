@@ -42,6 +42,7 @@ void main() async {
         cache: cache,
         engine: NdkEngine.RELAY_SETS,
         bootstrapRelays: [relay0.url],
+        indexerRelays: [],
         // logLevel: Logger.logLevels.trace,
         ignoreRelays: [],
       );
@@ -162,6 +163,54 @@ void main() async {
         forceRefresh: true,
       );
       expect(list!.relays.containsKey(r1), false);
+    });
+  });
+
+  group('nip65 lookup on indexer relays', () {
+    KeyPair key = Bip340.generatePrivateKey();
+
+    late MockRelay indexer;
+    late MockRelay bootstrap;
+    late Ndk ndk;
+
+    setUp(() async {
+      indexer = MockRelay(name: "indexer", explicitPort: 5102);
+      bootstrap = MockRelay(name: "bootstrap", explicitPort: 5103);
+
+      await indexer.startServer(
+        nip65s: {
+          key: Nip65.fromMap(key.publicKey, {
+            "wss://relay.write": ReadWriteMarker.writeOnly,
+          }),
+        },
+      );
+      await bootstrap.startServer();
+
+      ndk = Ndk(
+        NdkConfig(
+          eventVerifier: MockEventVerifier(),
+          cache: MemCacheManager(),
+          engine: NdkEngine.RELAY_SETS,
+          bootstrapRelays: [bootstrap.url],
+          indexerRelays: [indexer.url],
+        ),
+      );
+
+      await ndk.relays.seedRelaysConnected;
+    });
+
+    tearDown(() async {
+      await ndk.destroy();
+      await indexer.stopServer();
+      await bootstrap.stopServer();
+    });
+
+    test('resolved from an indexer the bootstrap relays do not know', () async {
+      final list = await ndk.userRelayLists.getSingleUserRelayList(
+        key.publicKey,
+      );
+
+      expect(list!.writeUrls, contains("wss://relay.write"));
     });
   });
 }

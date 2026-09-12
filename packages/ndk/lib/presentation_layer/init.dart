@@ -284,6 +284,8 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
       broadcast: broadcast,
       accounts: accounts,
+      indexerRelays: _ndkConfig.indexerRelays,
+      bootstrapRelays: _ndkConfig.bootstrapRelays,
     );
 
     lists = Lists(

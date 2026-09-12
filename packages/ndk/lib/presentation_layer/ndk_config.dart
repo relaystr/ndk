@@ -49,6 +49,9 @@ class NdkConfig {
   /// A list of relay URLs that index nip65 relay lists (kind 10002), and for
   /// some of them metadata (kind 0), for arbitrary pubkeys.
   ///
+  /// Queried together with [bootstrapRelays] to resolve relay lists, which
+  /// inbox/outbox cannot do on its own. Set to an empty list to opt out.
+  ///
   /// Defaults to [DEFAULT_INDEXER_RELAYS].
   List<String> indexerRelays;
 
