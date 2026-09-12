@@ -29,6 +29,8 @@ abstract class CashuRepo {
     required String unit,
     required String method,
     String description = '',
+    required CashuKeypair quoteKey,
+    required int quoteKeyCounter,
   });
 
   Future<CashuQuoteState> checkMintQuoteState({

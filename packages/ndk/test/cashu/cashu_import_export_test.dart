@@ -1,6 +1,7 @@
 import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_keyset.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_proof.dart';
+import 'package:ndk/domain_layer/repositories/cashu_key_derivation.dart';
 import 'package:ndk/domain_layer/usecases/cashu/cashu_cache_decorator.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
@@ -58,6 +59,12 @@ void main() {
       keysetId: 'keyset1',
       counter: 42,
     );
+    // quote key derivation counter occupies the reserved non-hex slot
+    await srcCache.setCashuSecretCounter(
+      mintUrl: mintUrl,
+      keysetId: kQuoteKeyDerivationCounterSlot,
+      counter: 7,
+    );
 
     final exported = await _export(
       srcCache,
@@ -68,7 +75,7 @@ void main() {
     expect(exported['type'], equals(CashuStateExportImport.exportType));
     expect(exported['seedPhrase'], equals(seed.getSeedPhrase().sentence));
     expect((exported['proofs'] as List).length, equals(2));
-    expect((exported['counters'] as List).single['counter'], equals(42));
+    expect((exported['counters'] as List).length, equals(2));
 
     // restore into a fresh, empty device
     final dstCache = MemCacheManager();
@@ -98,6 +105,12 @@ void main() {
       keysetId: 'keyset1',
     );
     expect(restoredCounter, equals(42));
+
+    final restoredQuoteKeyCounter = await dstCache.getCashuSecretCounter(
+      mintUrl: mintUrl,
+      keysetId: kQuoteKeyDerivationCounterSlot,
+    );
+    expect(restoredQuoteKeyCounter, equals(7));
 
     final restoredKeysets = await dstCache.getKeysets(mintUrl: mintUrl);
     expect(restoredKeysets.single.id, equals('keyset1'));
