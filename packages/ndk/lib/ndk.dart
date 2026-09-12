@@ -52,6 +52,7 @@ export 'domain_layer/entities/file_hash_progress.dart';
 export 'domain_layer/entities/cache_eviction.dart';
 export 'domain_layer/entities/event_cache_records.dart';
 export 'domain_layer/entities/event_delivery_inspection.dart';
+export 'domain_layer/entities/hidden_event.dart';
 export 'domain_layer/entities/nip_17_conversation.dart';
 export 'domain_layer/entities/nip_17_message.dart';
 export 'domain_layer/entities/nip_17_file_message.dart';

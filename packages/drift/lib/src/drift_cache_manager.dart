@@ -18,8 +18,8 @@ import 'package:ndk/domain_layer/entities/wallet/wallet_transaction.dart';
 import 'package:ndk/domain_layer/entities/wallet/wallet_type.dart';
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/event_kind_classification.dart';
 import 'package:ndk/shared/nips/nip01/event_eviction_planner.dart';
+import 'package:ndk/shared/nips/nip01/event_visibility_resolver.dart';
 
 import 'database/database.dart';
 
@@ -36,6 +36,10 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   final NdkCacheDatabase _db;
   String? _defaultWalletIdForReceiving;
   String? _defaultWalletIdForSending;
+
+  late final EventVisibilityResolver _visibility = EventVisibilityResolver(
+    _loadRawEvents,
+  );
 
   DriftCacheManager(this._db) {
     unawaited(_initializeWalletDefaults());
@@ -143,6 +147,63 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     String? search,
     int? limit,
   }) async {
+    var events = await _loadRawEvents(
+      ids: ids,
+      pubKeys: pubKeys,
+      kinds: kinds,
+      tags: tags,
+      since: since,
+      until: until,
+      search: search,
+    );
+
+    events = await _visibility.filterVisible(events);
+    events.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    if (limit != null && limit > 0 && events.length > limit) {
+      events = events.take(limit).toList();
+    }
+
+    return events;
+  }
+
+  @override
+  Future<List<HiddenEvent>> loadHiddenEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    List<String>? coordinates,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+    String? search,
+    int? limit,
+    Set<HiddenEventReason> reasons = kAllHiddenEventReasons,
+  }) {
+    return _visibility.loadHiddenEvents(
+      ids: ids,
+      pubKeys: pubKeys,
+      kinds: kinds,
+      coordinates: coordinates,
+      tags: tags,
+      since: since,
+      until: until,
+      search: search,
+      limit: limit,
+      reasons: reasons,
+    );
+  }
+
+  Future<List<Nip01Event>> _loadRawEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+    String? search,
+    int? limit,
+  }) async {
     var query = _db.select(_db.events);
 
     // Build WHERE clause
@@ -210,14 +271,6 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
         });
       }).toList();
     }
-
-    final deletionRows = await (_db.select(
-      _db.events,
-    )..where((t) => t.kind.equals(5))).get();
-    final deletions = deletionRows.map(_eventFromRow).toList();
-
-    events = _applyEventVisibilityRules(events, deletions);
-    events.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     if (limit != null && limit > 0 && events.length > limit) {
       events = events.take(limit).toList();
@@ -494,79 +547,6 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       tags: tags,
       sources: sources,
     );
-  }
-
-  List<Nip01Event> _applyEventVisibilityRules(
-    List<Nip01Event> events,
-    List<Nip01Event> deletions,
-  ) {
-    final visible = <Nip01Event>[];
-    final replaceableWinners = <String, Nip01Event>{};
-    final now = Nip01Event.secondsSinceEpoch();
-
-    for (final event in events) {
-      if (_isExpired(event, now)) continue;
-      if (_isDeletedByAuthor(event, deletions)) continue;
-
-      final coordinateKey = _coordinateKey(event);
-      if (coordinateKey == null) {
-        visible.add(event);
-        continue;
-      }
-
-      final current = replaceableWinners[coordinateKey];
-      if (current == null || _isMoreRecentReplaceable(event, current)) {
-        replaceableWinners[coordinateKey] = event;
-      }
-    }
-
-    visible.addAll(replaceableWinners.values);
-    return visible;
-  }
-
-  bool _isDeletedByAuthor(Nip01Event target, List<Nip01Event> deletions) {
-    if (target.kind == 5) return false;
-
-    // Addressable/replaceable events are deleted by coordinate (`a` tag), so a
-    // later version published after the deletion stays visible (NIP-09 only
-    // deletes coordinate matches with created_at <= the deletion).
-    final coordinate = _coordinateKey(target);
-
-    for (final deletion in deletions) {
-      if (deletion.pubKey != target.pubKey) continue;
-      if (deletion.getTags('e').contains(target.id.toLowerCase())) {
-        return true;
-      }
-      if (coordinate != null &&
-          deletion.createdAt >= target.createdAt &&
-          deletion.getTags('a').contains(coordinate)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  bool _isExpired(Nip01Event event, int now) {
-    final expirationValue = event.getFirstTag('expiration');
-    if (expirationValue == null) return false;
-    final expiration = int.tryParse(expirationValue);
-    if (expiration == null) return false;
-    return expiration <= now;
-  }
-
-  String? _coordinateKey(Nip01Event event) {
-    if (!EventKindClassification.isReplaceableKind(event.kind)) return null;
-    final dTag = event.getDtag() ?? '';
-    return '${event.kind}:${event.pubKey}:$dTag';
-  }
-
-  bool _isMoreRecentReplaceable(Nip01Event candidate, Nip01Event current) {
-    if (candidate.createdAt != current.createdAt) {
-      return candidate.createdAt > current.createdAt;
-    }
-
-    return candidate.id.compareTo(current.id) < 0;
   }
 
   Future<Nip01Event?> _loadLatestVisibleEvent({
