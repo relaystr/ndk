@@ -243,7 +243,11 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 val actualHash = digest.digest().joinToString("") { "%02x".format(it) }
                 check(actualHash == expectedHash) { "Downloaded APK SHA-256 mismatch" }
 
-                val flags = android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES
+                val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES
+                } else {
+                    android.content.pm.PackageManager.GET_SIGNATURES
+                }
                 val archive = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     _context.packageManager.getPackageArchiveInfo(
                         apk.path,
