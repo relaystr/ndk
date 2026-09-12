@@ -1,4 +1,5 @@
 import 'package:ndk/ndk.dart';
+import 'package:ndk/domain_layer/entities/cashu/cashu_mint_info.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -53,6 +54,66 @@ void main() {
       expect(recommendations.single.averageRating, isNull);
       expect(recommendations.single.reviews.single.comment,
           'Useful comment without rating');
+    });
+
+    test('ignores unrelated events and ranks equal review counts by rating',
+        () {
+      const mintA = 'https://mint-a.example';
+      const mintB = 'https://mint-b.example';
+      final recommendations = CashuMintRecommendations.fromEvents(
+        announcements: [
+          _event(kind: 1, pubkey: 'ignored', tags: const [
+            ['u', 'https://ignored.example']
+          ]),
+          _event(kind: 38172, pubkey: 'a', tags: const [
+            ['u'],
+            ['u', mintA]
+          ]),
+          _event(kind: 38172, pubkey: 'b', tags: const [
+            ['u', mintB]
+          ]),
+        ],
+        reviews: [
+          _event(
+            kind: 38000,
+            pubkey: 'ignored',
+            tags: const [
+              ['u', mintA]
+            ],
+          ),
+          _review(mintA, pubkey: 'one', createdAt: 10, content: '[6/5] bad'),
+          _review(mintB, pubkey: 'two', createdAt: 20, content: '[4/5] good'),
+        ],
+      );
+
+      expect(recommendations.map((item) => item.url), [mintB, mintA]);
+      expect(recommendations.last.averageRating, isNull);
+      expect(recommendations.last.reviews.single.comment, 'bad');
+    });
+
+    test('copyWith preserves review data while attaching mint info', () {
+      const review = CashuMintReview(
+        reviewerPubkey: 'reviewer',
+        createdAt: 42,
+        rating: 5,
+        comment: 'Reliable',
+      );
+      const recommendation = CashuMintRecommendation(
+        url: 'https://mint.example',
+        averageRating: 5,
+        reviewsCount: 1,
+        reviews: [review],
+      );
+      final mintInfo = CashuMintInfo(name: 'Example Mint', nuts: const {});
+
+      final enriched = recommendation.copyWith(mintInfo: mintInfo);
+
+      expect(enriched.url, recommendation.url);
+      expect(enriched.mintInfo, same(mintInfo));
+      expect(enriched.averageRating, recommendation.averageRating);
+      expect(enriched.reviewsCount, recommendation.reviewsCount);
+      expect(enriched.reviews, same(recommendation.reviews));
+      expect(enriched.copyWith().mintInfo, same(mintInfo));
     });
   });
 }
