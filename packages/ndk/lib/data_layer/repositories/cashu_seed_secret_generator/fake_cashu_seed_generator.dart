@@ -29,7 +29,6 @@ class FakeCashuSeedGenerator implements CashuKeyDerivation {
   @override
   Future<CashuKeypair> deriveQuoteKey({
     required Uint8List seedBytes,
-    required String mintUrl,
     required int counter,
   }) async {
     return CashuKeypair(

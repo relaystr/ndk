@@ -598,12 +598,11 @@ class Cashu {
     final quoteKeyCounter =
         await _cacheManagerCashu.getAndIncrementDerivationCounter(
       keysetId: kQuoteKeyDerivationCounterSlot,
-      mintUrl: mintUrl,
+      mintUrl: kQuoteKeyDerivationCounterSlot,
     );
 
     final quoteKey = await _cashuKeyDerivation.deriveQuoteKey(
       seedBytes: Uint8List.fromList(_cashuSeed.getSeedBytes()),
-      mintUrl: mintUrl,
       counter: quoteKeyCounter,
     );
 
@@ -675,7 +674,6 @@ class Cashu {
     for (var counter = 0; counter < scanUpperBound; counter++) {
       final keypair = await _cashuKeyDerivation.deriveQuoteKey(
         seedBytes: seedBytes,
-        mintUrl: mintUrl,
         counter: counter,
       );
       if (keypair.publicKey == lockedPubkey) {
