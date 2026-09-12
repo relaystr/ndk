@@ -9,6 +9,29 @@ class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
   @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'No LNbits, escolha a carteira que pretende ligar, abra-a, clique em Documentação da API e copie a chave de administrador. Cole-a abaixo:';
+
+  @override
+  String get lnbitsAdminKey => 'Chave de administrador LNbits';
+
+  @override
+  String get lnbitsUrl => 'URL do LNbits';
+
+  @override
+  String get lnbitsCredentialsRequired =>
+      'Introduza a chave de administrador e o URL do LNbits.';
+
+  @override
+  String get lnbitsWalletAdded => 'Carteira LNbits adicionada';
+
+  @override
+  String get walletDetailWalletId => 'ID da carteira';
+
+  @override
   String get saveBackupToFile => 'Guardar cópia num ficheiro';
 
   @override
@@ -1461,6 +1484,29 @@ class AppLocalizationsPt extends AppLocalizations {
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
 class AppLocalizationsPtBr extends AppLocalizationsPt {
   AppLocalizationsPtBr() : super('pt_BR');
+
+  @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'No LNbits, escolha a carteira que deseja conectar, abra-a, clique em Documentação da API e copie a chave de administrador. Cole-a abaixo:';
+
+  @override
+  String get lnbitsAdminKey => 'Chave de administrador LNbits';
+
+  @override
+  String get lnbitsUrl => 'URL do LNbits';
+
+  @override
+  String get lnbitsCredentialsRequired =>
+      'Insira a chave de administrador e a URL do LNbits.';
+
+  @override
+  String get lnbitsWalletAdded => 'Carteira LNbits adicionada';
+
+  @override
+  String get walletDetailWalletId => 'ID da carteira';
 
   @override
   String get saveBackupToFile => 'Salvar backup em arquivo';

@@ -102,6 +102,7 @@ abstract class WalletTransaction {
         );
       case WalletType.LNURL:
       case WalletType.BOLT12:
+      case WalletType.LNBITS:
         return LnurlWalletTransaction(
           id: id,
           walletId: walletId,

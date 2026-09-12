@@ -1,4 +1,11 @@
 {
+  "lnbitsWalletOption": "LNbits",
+  "lnbitsConnectionInstructions": "LNbitsで接続するウォレットを選んで開き、APIドキュメントを押して管理者キーをコピーしてください。下に貼り付けます：",
+  "lnbitsAdminKey": "LNbits管理者キー",
+  "lnbitsUrl": "LNbits URL",
+  "lnbitsCredentialsRequired": "LNbits管理者キーとURLを入力してください。",
+  "lnbitsWalletAdded": "LNbitsウォレットを追加しました",
+  "walletDetailWalletId": "ウォレットID",
   "saveBackupToFile": "バックアップをファイルに保存",
   "backupSavedToFile": "バックアップをファイルに保存しました",
   "restoreFromFile": "ファイルから復元",

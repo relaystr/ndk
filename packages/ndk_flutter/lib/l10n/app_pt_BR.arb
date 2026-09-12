@@ -1,4 +1,11 @@
 {
+  "lnbitsWalletOption": "LNbits",
+  "lnbitsConnectionInstructions": "No LNbits, escolha a carteira que deseja conectar, abra-a, clique em Documentação da API e copie a chave de administrador. Cole-a abaixo:",
+  "lnbitsAdminKey": "Chave de administrador LNbits",
+  "lnbitsUrl": "URL do LNbits",
+  "lnbitsCredentialsRequired": "Insira a chave de administrador e a URL do LNbits.",
+  "lnbitsWalletAdded": "Carteira LNbits adicionada",
+  "walletDetailWalletId": "ID da carteira",
   "saveBackupToFile": "Salvar backup em arquivo",
   "backupSavedToFile": "Backup salvo em arquivo",
   "restoreFromFile": "Restaurar de arquivo",

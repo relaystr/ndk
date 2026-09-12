@@ -253,6 +253,7 @@ class _NWalletCardState extends State<NWalletCard>
     final bool isNwc = widget.wallet is NwcWallet;
     final bool isLnurl = widget.wallet is LnurlWallet;
     final bool isBolt12 = widget.wallet is Bolt12Wallet;
+    final bool isLnBits = widget.wallet is LnBitsWallet;
     final nwcPermissions = isNwc
         ? _nwcPermissions(widget.wallet as NwcWallet)
         : const <String>{};
@@ -275,6 +276,8 @@ class _NWalletCardState extends State<NWalletCard>
       walletName = (widget.wallet as LnurlWallet).name;
     } else if (isBolt12) {
       walletName = (widget.wallet as Bolt12Wallet).name;
+    } else if (isLnBits) {
+      walletName = (widget.wallet as LnBitsWallet).name;
     } else {
       walletName = l10n.unknownWalletType;
     }
@@ -300,6 +303,11 @@ class _NWalletCardState extends State<NWalletCard>
           (bolt12Wallet.hasBlindedPaths
               ? l10n.bolt12PrivateOfferSubtitle
               : l10n.bolt12WalletSubtitle);
+    } else if (isLnBits) {
+      subtitle = (widget.wallet as LnBitsWallet).lnbitsUrl.replaceFirst(
+        RegExp(r'^https?://'),
+        '',
+      );
     } else {
       subtitle = '';
     }
@@ -324,6 +332,7 @@ class _NWalletCardState extends State<NWalletCard>
           isNwc,
           isLnurl,
           isBolt12,
+          isLnBits,
         );
       }
     }
@@ -349,6 +358,10 @@ class _NWalletCardState extends State<NWalletCard>
       iconConfig = widget.bolt12Icon ?? const WalletIconConfig();
       defaultAssetName = null;
       fallbackIcon = Icons.electric_bolt;
+    } else if (isLnBits) {
+      iconConfig = const WalletIconConfig();
+      defaultAssetName = null;
+      fallbackIcon = Icons.bolt;
     } else {
       iconConfig = const WalletIconConfig();
       defaultAssetName = 'wallet.png';
@@ -363,6 +376,8 @@ class _NWalletCardState extends State<NWalletCard>
                 wallet: widget.wallet as CashuWallet,
                 size: iconConfig.iconSize,
               )
+            : isLnBits
+            ? NLnBitsIcon(size: iconConfig.iconSize)
             : defaultAssetName != null
             ? Image.asset(
                 'assets/images/$defaultAssetName',
@@ -386,7 +401,12 @@ class _NWalletCardState extends State<NWalletCard>
     // Build background widget
     final Widget backgroundWidget =
         iconConfig.backgroundWidget ??
-        (defaultAssetName != null
+        (isLnBits
+            ? Opacity(
+                opacity: iconConfig.backgroundOpacity,
+                child: NLnBitsIcon(size: iconConfig.backgroundSize),
+              )
+            : defaultAssetName != null
             ? Image.asset(
                 'assets/images/$defaultAssetName',
                 package: 'ndk_flutter',
@@ -841,6 +861,7 @@ class _NWalletCardState extends State<NWalletCard>
     bool isNwc,
     bool isLnurl,
     bool isBolt12,
+    bool isLnBits,
   ) {
     if (isCashu) {
       return [const Color(0xFF7F38CA), const Color(0xFF9B5AD8)];
@@ -853,6 +874,8 @@ class _NWalletCardState extends State<NWalletCard>
       return [const Color(0xFFFFB300), const Color(0xFFFFC107)];
     } else if (isBolt12) {
       return [const Color(0xFF1B5E20), const Color(0xFF43A047)];
+    } else if (isLnBits) {
+      return [const Color(0xFF512DA8), const Color(0xFF7E57C2)];
     } else {
       return [Colors.grey[700]!, Colors.grey[400]!];
     }

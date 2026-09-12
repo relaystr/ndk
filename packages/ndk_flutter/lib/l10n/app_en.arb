@@ -1,4 +1,11 @@
 {
+  "lnbitsWalletOption": "LNbits",
+  "lnbitsConnectionInstructions": "In LNbits, choose the wallet you want to connect, open it, click API docs, and copy the Admin Key. Paste it below:",
+  "lnbitsAdminKey": "LNbits Admin Key",
+  "lnbitsUrl": "LNbits URL",
+  "lnbitsCredentialsRequired": "Enter both the LNbits Admin Key and URL.",
+  "lnbitsWalletAdded": "LNbits wallet added successfully",
+  "walletDetailWalletId": "Wallet ID",
   "saveBackupToFile": "Save backup to file",
   "backupSavedToFile": "Backup saved to file",
   "restoreFromFile": "Restore from file",

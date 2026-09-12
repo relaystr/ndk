@@ -1,4 +1,11 @@
 {
+  "lnbitsWalletOption": "LNbits",
+  "lnbitsConnectionInstructions": "Dans LNbits, choisissez le portefeuille à connecter, ouvrez-le, cliquez sur Documentation API et copiez la clé administrateur. Collez-la ci-dessous :",
+  "lnbitsAdminKey": "Clé administrateur LNbits",
+  "lnbitsUrl": "URL LNbits",
+  "lnbitsCredentialsRequired": "Saisissez la clé administrateur et l’URL LNbits.",
+  "lnbitsWalletAdded": "Portefeuille LNbits ajouté",
+  "walletDetailWalletId": "Identifiant du portefeuille",
   "saveBackupToFile": "Enregistrer la sauvegarde dans un fichier",
   "backupSavedToFile": "Sauvegarde enregistrée dans un fichier",
   "restoreFromFile": "Restaurer depuis un fichier",

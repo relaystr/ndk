@@ -1,4 +1,11 @@
 {
+  "lnbitsWalletOption": "LNbits",
+  "lnbitsConnectionInstructions": "В LNbits выберите кошелёк для подключения, откройте его, нажмите «Документация API» и скопируйте ключ администратора. Вставьте его ниже:",
+  "lnbitsAdminKey": "Ключ администратора LNbits",
+  "lnbitsUrl": "URL LNbits",
+  "lnbitsCredentialsRequired": "Введите ключ администратора и URL LNbits.",
+  "lnbitsWalletAdded": "Кошелёк LNbits добавлен",
+  "walletDetailWalletId": "ID кошелька",
   "saveBackupToFile": "Сохранить резервную копию в файл",
   "backupSavedToFile": "Резервная копия сохранена в файл",
   "restoreFromFile": "Восстановить из файла",

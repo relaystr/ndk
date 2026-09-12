@@ -9,6 +9,29 @@ class AppLocalizationsFi extends AppLocalizations {
   AppLocalizationsFi([String locale = 'fi']) : super(locale);
 
   @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'Valitse LNbitsissä yhdistettävä lompakko, avaa se, napsauta API-ohjeita ja kopioi ylläpitäjän avain. Liitä se alle:';
+
+  @override
+  String get lnbitsAdminKey => 'LNbits-ylläpitäjän avain';
+
+  @override
+  String get lnbitsUrl => 'LNbits-URL';
+
+  @override
+  String get lnbitsCredentialsRequired =>
+      'Anna LNbits-ylläpitäjän avain ja URL-osoite.';
+
+  @override
+  String get lnbitsWalletAdded => 'LNbits-lompakko lisättiin';
+
+  @override
+  String get walletDetailWalletId => 'Lompakon tunnus';
+
+  @override
   String get saveBackupToFile => 'Tallenna varmuuskopio tiedostoon';
 
   @override

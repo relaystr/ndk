@@ -1,4 +1,11 @@
 {
+  "lnbitsWalletOption": "LNbits",
+  "lnbitsConnectionInstructions": "在 LNbits 中选择并打开要连接的钱包，点击 API 文档并复制管理员密钥。粘贴到下方：",
+  "lnbitsAdminKey": "LNbits 管理员密钥",
+  "lnbitsUrl": "LNbits URL",
+  "lnbitsCredentialsRequired": "请输入 LNbits 管理员密钥和 URL。",
+  "lnbitsWalletAdded": "LNbits 钱包已添加",
+  "walletDetailWalletId": "钱包 ID",
   "saveBackupToFile": "将备份保存到文件",
   "backupSavedToFile": "备份已保存到文件",
   "restoreFromFile": "从文件恢复",

@@ -1,4 +1,11 @@
 {
+  "lnbitsWalletOption": "LNbits",
+  "lnbitsConnectionInstructions": "W LNbits wybierz portfel, który chcesz połączyć, otwórz go, kliknij Dokumentacja API i skopiuj klucz administratora. Wklej go poniżej:",
+  "lnbitsAdminKey": "Klucz administratora LNbits",
+  "lnbitsUrl": "Adres URL LNbits",
+  "lnbitsCredentialsRequired": "Wprowadź klucz administratora i adres URL LNbits.",
+  "lnbitsWalletAdded": "Portfel LNbits został dodany",
+  "walletDetailWalletId": "Identyfikator portfela",
   "saveBackupToFile": "Zapisz kopię do pliku",
   "backupSavedToFile": "Kopia zapisana do pliku",
   "restoreFromFile": "Przywróć z pliku",

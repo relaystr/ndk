@@ -469,6 +469,7 @@ class _ManualWalletInputDialogState extends State<_ManualWalletInputDialog> {
       WalletInputKind.bolt12 => l10n.bolt12WalletTypeTitle,
       WalletInputKind.lightningAddress => l10n.lightningAddressInputType,
       WalletInputKind.cashuMint => l10n.cashuWalletTypeTitle,
+      WalletInputKind.lnBits => l10n.lnbitsWalletOption,
     };
   }
 
@@ -678,6 +679,18 @@ class _WalletChooserDialogState extends State<_WalletChooserDialog> {
     if (result != null && context.mounted) Navigator.of(context).pop(result);
   }
 
+  Future<void> _openLnBits(BuildContext context) async {
+    final result = await showDialog<LnBitsConnectionInput>(
+      context: context,
+      builder: (_) => _LnBitsConnectionDialog(
+        validate: configuration.validateLnBitsConnection,
+      ),
+    );
+    if (result != null && context.mounted) {
+      Navigator.of(context).pop(WalletInputScanResult.lnBits(result));
+    }
+  }
+
   void _returnToScanner(BuildContext context) {
     Navigator.of(context).pop();
   }
@@ -747,9 +760,148 @@ class _WalletChooserDialogState extends State<_WalletChooserDialog> {
               icon: const _NwcIcon(),
               onTap: () => _manualNwc(context),
             ),
+            _WalletGridTile(
+              label: l10n.lnbitsWalletOption,
+              icon: const _LnBitsIcon(),
+              onTap: () => _openLnBits(context),
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _LnBitsConnectionDialog extends StatefulWidget {
+  final Future<LnBitsConnectionInput> Function(LnBitsConnectionInput input)?
+      validate;
+
+  const _LnBitsConnectionDialog({this.validate});
+
+  @override
+  State<_LnBitsConnectionDialog> createState() =>
+      _LnBitsConnectionDialogState();
+}
+
+class _LnBitsConnectionDialogState extends State<_LnBitsConnectionDialog> {
+  final _adminKeyController = TextEditingController();
+  final _urlController = TextEditingController(text: 'https://');
+  bool _showAdminKey = false;
+  bool _isValidating = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _adminKeyController.dispose();
+    _urlController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _continue() async {
+    final l10n = ndk_l10n.AppLocalizations.of(context)!;
+    final adminKey = _adminKeyController.text.trim();
+    final url = _urlController.text.trim();
+    if (adminKey.isEmpty || url.isEmpty || url == 'https://') {
+      setState(() => _error = l10n.lnbitsCredentialsRequired);
+      return;
+    }
+    final input = LnBitsConnectionInput(url: url, adminKey: adminKey);
+    final validate = widget.validate;
+    if (validate == null) {
+      Navigator.of(context).pop(input);
+      return;
+    }
+    setState(() {
+      _isValidating = true;
+      _error = null;
+    });
+    try {
+      final validated = await validate(input);
+      if (mounted) Navigator.of(context).pop(validated);
+    } catch (error) {
+      if (mounted) setState(() => _error = error.toString());
+    } finally {
+      if (mounted) setState(() => _isValidating = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = ndk_l10n.AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Row(
+        children: [
+          const _LnBitsIcon(),
+          const SizedBox(width: 16),
+          Expanded(child: Text(l10n.lnbitsWalletOption)),
+          IconButton(
+            onPressed: _isValidating ? null : () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close),
+          ),
+        ],
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(l10n.lnbitsConnectionInstructions),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _adminKeyController,
+              enabled: !_isValidating,
+              obscureText: !_showAdminKey,
+              enableSuggestions: false,
+              autocorrect: false,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText: l10n.lnbitsAdminKey,
+                suffixIcon: IconButton(
+                  onPressed: () => setState(() {
+                    _showAdminKey = !_showAdminKey;
+                  }),
+                  icon: Icon(
+                    _showAdminKey ? Icons.visibility_off : Icons.visibility,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _urlController,
+              enabled: !_isValidating,
+              keyboardType: TextInputType.url,
+              autocorrect: false,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText: l10n.lnbitsUrl,
+              ),
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isValidating ? null : () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: _isValidating ? null : _continue,
+          child: _isValidating
+              ? const SizedBox.square(
+                  dimension: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(l10n.reviewWallet),
+        ),
+      ],
     );
   }
 }
@@ -1184,6 +1336,23 @@ class _NwcIcon extends StatelessWidget {
         width: 48,
         height: 48,
         fit: BoxFit.contain,
+      ),
+    );
+  }
+}
+
+class _LnBitsIcon extends StatelessWidget {
+  const _LnBitsIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return _BrandIconFrame(
+      backgroundColor: const Color(0xFF673AB7),
+      child: SvgPicture.asset(
+        'assets/images/lnbits.svg',
+        package: 'ndk_flutter',
+        width: 64,
+        height: 64,
       ),
     );
   }

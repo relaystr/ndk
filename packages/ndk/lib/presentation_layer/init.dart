@@ -20,6 +20,7 @@ import '../domain_layer/entities/wallet/providers/cashu/cashu_wallet_provider.da
 import '../domain_layer/entities/wallet/providers/nwc/nwc_wallet_provider.dart';
 import '../domain_layer/entities/wallet/providers/lnurl/lnurl_wallet_provider.dart';
 import '../domain_layer/entities/wallet/providers/bolt12/bolt12_wallet_provider.dart';
+import '../domain_layer/entities/wallet/providers/lnbits/lnbits_wallet_provider.dart';
 import '../domain_layer/repositories/blossom.dart';
 import '../domain_layer/repositories/cashu_repo.dart';
 import '../domain_layer/repositories/lnurl_transport.dart';
@@ -319,6 +320,7 @@ class Initialization {
     // Create LNURL wallet provider after lnurl is initialized
     final lnurlProvider = LnurlWalletProvider(lnurl);
     const bolt12Provider = Bolt12WalletProvider();
+    final lnbitsProvider = LnBitsWalletProvider();
 
     zaps = Zaps(requests: requests, nwc: nwc, lnurl: lnurl);
 
@@ -365,7 +367,13 @@ class Initialization {
     connectivity = Connectivy(relayManager);
 
     wallets = Wallets(
-      providers: [cashuProvider, nwcProvider, lnurlProvider, bolt12Provider],
+      providers: [
+        cashuProvider,
+        nwcProvider,
+        lnurlProvider,
+        bolt12Provider,
+        lnbitsProvider,
+      ],
       repository: _ndkConfig.walletsRepo!,
     );
     proofOfWork = ProofOfWork();

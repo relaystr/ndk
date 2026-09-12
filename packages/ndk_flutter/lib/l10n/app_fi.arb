@@ -1,4 +1,11 @@
 {
+  "lnbitsWalletOption": "LNbits",
+  "lnbitsConnectionInstructions": "Valitse LNbitsissä yhdistettävä lompakko, avaa se, napsauta API-ohjeita ja kopioi ylläpitäjän avain. Liitä se alle:",
+  "lnbitsAdminKey": "LNbits-ylläpitäjän avain",
+  "lnbitsUrl": "LNbits-URL",
+  "lnbitsCredentialsRequired": "Anna LNbits-ylläpitäjän avain ja URL-osoite.",
+  "lnbitsWalletAdded": "LNbits-lompakko lisättiin",
+  "walletDetailWalletId": "Lompakon tunnus",
   "saveBackupToFile": "Tallenna varmuuskopio tiedostoon",
   "backupSavedToFile": "Varmuuskopio tallennettu tiedostoon",
   "restoreFromFile": "Palauta tiedostosta",

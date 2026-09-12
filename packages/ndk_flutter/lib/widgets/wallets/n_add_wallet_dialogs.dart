@@ -35,20 +35,45 @@ class WalletInputScanResult {
   final bool manuallyEntered;
   final WalletInputOrigin origin;
   final CashuMintSuggestion? cashuMintSuggestion;
+  final LnBitsConnectionInput? lnBitsConnection;
 
   const WalletInputScanResult.value(
     this.value, {
     this.manuallyEntered = false,
     this.origin = WalletInputOrigin.scanner,
     this.cashuMintSuggestion,
-  }) : connectionStarted = false;
+  }) : connectionStarted = false,
+       lnBitsConnection = null;
+
+  const WalletInputScanResult.lnBits(LnBitsConnectionInput connection)
+    : lnBitsConnection = connection,
+      value = null,
+      connectionStarted = false,
+      manuallyEntered = true,
+      origin = WalletInputOrigin.walletChooser,
+      cashuMintSuggestion = null;
 
   const WalletInputScanResult.connectionStarted()
     : value = null,
       connectionStarted = true,
       manuallyEntered = false,
       origin = WalletInputOrigin.walletChooser,
-      cashuMintSuggestion = null;
+      cashuMintSuggestion = null,
+      lnBitsConnection = null;
+}
+
+class LnBitsConnectionInput {
+  final String url;
+  final String adminKey;
+  final String? walletName;
+  final String? remoteWalletId;
+
+  const LnBitsConnectionInput({
+    required this.url,
+    required this.adminKey,
+    this.walletName,
+    this.remoteWalletId,
+  });
 }
 
 /// Wallet connection choice displayed inside a host-provided scanner screen.
@@ -83,6 +108,8 @@ class WalletInputScannerConfiguration {
   final Future<List<CashuMintSuggestion>> Function() discoverCashuMints;
   final Future<CashuMintSuggestion> Function(CashuMintSuggestion suggestion)
   enrichCashuMint;
+  final Future<LnBitsConnectionInput> Function(LnBitsConnectionInput input)?
+  validateLnBitsConnection;
   final bool openWalletChooserInitially;
   final bool openCashuMintChooserInitially;
 
@@ -95,6 +122,7 @@ class WalletInputScannerConfiguration {
     required this.cancelPendingConnection,
     required this.discoverCashuMints,
     required this.enrichCashuMint,
+    this.validateLnBitsConnection,
     this.openWalletChooserInitially = false,
     this.openCashuMintChooserInitially = false,
   });
@@ -162,7 +190,7 @@ class NwcConnectionOption {
 }
 
 /// Wallet input categories recognized by the unified add-wallet flow.
-enum WalletInputKind { nwc, bolt12, lightningAddress, cashuMint }
+enum WalletInputKind { nwc, bolt12, lightningAddress, cashuMint, lnBits }
 
 /// Classifies locally recognizable wallet input without performing network I/O.
 WalletInputKind? classifyWalletInput(String input) {
@@ -1848,6 +1876,7 @@ class _WalletInputPreview {
   final CashuMintSuggestion? cashuMintSuggestion;
   final Bolt12ResolvedOffer? resolvedOffer;
   final CashuMintInfo? mintInfo;
+  final LnBitsConnectionInput? lnBitsConnection;
 
   const _WalletInputPreview({
     required this.input,
@@ -1860,6 +1889,7 @@ class _WalletInputPreview {
     this.cashuMintSuggestion,
     this.resolvedOffer,
     this.mintInfo,
+    this.lnBitsConnection,
   });
 }
 
@@ -1873,6 +1903,8 @@ class _WalletPreviewDetail {
 class _AddWalletDialogState extends State<_AddWalletDialog> {
   final _inputController = TextEditingController();
   final _walletNameController = TextEditingController();
+  final _lnBitsUrlController = TextEditingController();
+  final _lnBitsAdminKeyController = TextEditingController();
   WalletInputKind? _inputKind;
   String? _errorMessage;
   bool _isAdding = false;
@@ -1895,6 +1927,8 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
   void dispose() {
     _inputController.dispose();
     _walletNameController.dispose();
+    _lnBitsUrlController.dispose();
+    _lnBitsAdminKeyController.dispose();
     super.dispose();
   }
 
@@ -1925,6 +1959,10 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
         Navigator.of(context).pop(true);
         return;
       }
+      if (result.lnBitsConnection case final connection?) {
+        await _prepareLnBitsPreview(connection);
+        return;
+      }
       if (result.value != null) {
         await _preparePreview(
           result.value!,
@@ -1939,6 +1977,66 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
     final value = await widget.legacyWalletInputScanner?.call(context);
     if (!mounted || value == null) return;
     await _preparePreview(value);
+  }
+
+  Future<void> _prepareLnBitsPreview(LnBitsConnectionInput connection) async {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() {
+      _isResolvingDetails = true;
+      _errorMessage = null;
+    });
+    try {
+      final validated = connection.walletName == null
+          ? await _validateLnBitsConnection(connection)
+          : connection;
+      if (!mounted) return;
+      final preview = _WalletInputPreview(
+        input: validated.url,
+        manuallyEntered: true,
+        origin: WalletInputOrigin.walletChooser,
+        detectedKind: WalletInputKind.lnBits,
+        walletType: WalletType.LNBITS,
+        name: validated.walletName!,
+        lnBitsConnection: validated,
+        details: [
+          _WalletPreviewDetail(l10n.walletDetailType, l10n.lnbitsWalletOption),
+          _WalletPreviewDetail(l10n.lnbitsUrl, validated.url),
+          _WalletPreviewDetail(l10n.lnbitsAdminKey, l10n.walletSecretHidden),
+          if (validated.remoteWalletId?.isNotEmpty == true)
+            _WalletPreviewDetail(
+              l10n.walletDetailWalletId,
+              validated.remoteWalletId!,
+            ),
+        ],
+      );
+      setState(() {
+        _preview = preview;
+        _lnBitsUrlController.text = validated.url;
+        _lnBitsAdminKeyController.text = validated.adminKey;
+        _walletNameController.text = preview.name;
+      });
+    } catch (error) {
+      if (mounted) setState(() => _errorMessage = error.toString());
+    } finally {
+      if (mounted) setState(() => _isResolvingDetails = false);
+    }
+  }
+
+  Future<LnBitsConnectionInput> _validateLnBitsConnection(
+    LnBitsConnectionInput connection,
+  ) async {
+    final normalizedUrl = LnBitsWalletProvider.normalizeUrl(connection.url);
+    final adminKey = connection.adminKey.trim();
+    final info = await LnBitsWalletProvider.probe(
+      lnbitsUrl: normalizedUrl,
+      adminKey: adminKey,
+    );
+    return LnBitsConnectionInput(
+      url: normalizedUrl,
+      adminKey: adminKey,
+      walletName: info.name,
+      remoteWalletId: info.id,
+    );
   }
 
   void _cancelPreview() {
@@ -2014,6 +2112,7 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
           widget.nwcWalletAuthCoordinator.cancelPendingConnection,
       discoverCashuMints: _discoverCashuMints,
       enrichCashuMint: _enrichCashuMint,
+      validateLnBitsConnection: _validateLnBitsConnection,
       openWalletChooserInitially: openWalletChooserInitially,
       openCashuMintChooserInitially: openCashuMintChooserInitially,
     );
@@ -2345,6 +2444,8 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
               ),
           ],
         );
+      case WalletInputKind.lnBits:
+        throw StateError('LNbits uses structured connection details');
     }
   }
 
@@ -2417,8 +2518,17 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
     var preview = _preview;
     if (preview == null) return;
 
-    final input = _normalizeWalletInput(_inputController.text);
-    final kind = classifyWalletInput(input);
+    final isLnBits = preview.walletType == WalletType.LNBITS;
+    late final String input;
+    try {
+      input = isLnBits
+          ? LnBitsWalletProvider.normalizeUrl(_lnBitsUrlController.text)
+          : _normalizeWalletInput(_inputController.text);
+    } catch (error) {
+      setState(() => _errorMessage = error.toString());
+      return;
+    }
+    final kind = isLnBits ? WalletInputKind.lnBits : classifyWalletInput(input);
     if (kind == null) {
       setState(() {
         _errorMessage = AppLocalizations.of(context)!.unsupportedWalletInput;
@@ -2433,7 +2543,24 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
     });
 
     try {
-      if (input != preview.input || kind != preview.detectedKind) {
+      if (isLnBits) {
+        final connection = await _validateLnBitsConnection(
+          LnBitsConnectionInput(
+            url: input,
+            adminKey: _lnBitsAdminKeyController.text.trim(),
+          ),
+        );
+        preview = _WalletInputPreview(
+          input: input,
+          manuallyEntered: true,
+          detectedKind: WalletInputKind.lnBits,
+          walletType: WalletType.LNBITS,
+          name: preview.name,
+          details: preview.details,
+          origin: preview.origin,
+          lnBitsConnection: connection,
+        );
+      } else if (input != preview.input || kind != preview.detectedKind) {
         preview = await _resolvePreview(
           input,
           kind,
@@ -2488,6 +2615,21 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
           walletName: walletName,
           mintInfo: preview.mintInfo,
         );
+      case WalletType.LNBITS:
+        final connection = preview.lnBitsConnection!;
+        final wallet = widget.ndkFlutter.ndk.wallets.createWallet(
+          id: 'lnbits-${DateTime.now().microsecondsSinceEpoch}',
+          name: walletName,
+          type: WalletType.LNBITS,
+          supportedUnits: const {'sat'},
+          metadata: {
+            LnBitsWallet.urlMetadataKey: connection.url,
+            LnBitsWallet.adminKeyMetadataKey: connection.adminKey,
+            LnBitsWallet.remoteWalletIdMetadataKey: ?connection.remoteWalletId,
+          },
+        );
+        await widget.ndkFlutter.ndk.wallets.addWallet(wallet);
+        return wallet;
     }
   }
 
@@ -2550,6 +2692,7 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
       WalletType.BOLT12 => l10n.bolt12WalletAdded,
       WalletType.LNURL => l10n.lnurlWalletAdded,
       WalletType.CASHU => l10n.cashuWalletAdded,
+      WalletType.LNBITS => l10n.lnbitsWalletAdded,
     };
     ScaffoldMessenger.of(widget.parentContext).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.green),
@@ -2562,6 +2705,7 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
       WalletInputKind.bolt12 => l10n.bolt12WalletTypeTitle,
       WalletInputKind.lightningAddress => l10n.lightningAddressInputType,
       WalletInputKind.cashuMint => l10n.cashuWalletTypeTitle,
+      WalletInputKind.lnBits => l10n.lnbitsWalletOption,
     };
   }
 
@@ -2639,6 +2783,8 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
       case WalletType.CASHU:
         await showAddCashuWalletDialog(widget.parentContext, widget.ndkFlutter);
         return;
+      case WalletType.LNBITS:
+        return;
     }
   }
 
@@ -2654,6 +2800,7 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
       WalletType.BOLT12 => Icons.bolt,
       WalletType.LNURL => Icons.alternate_email,
       WalletType.CASHU => Icons.toll_outlined,
+      WalletType.LNBITS => Icons.bolt,
     };
     final mintIconUrl =
         preview.cashuMintSuggestion?.iconUrl?.trim().isNotEmpty == true
@@ -2677,28 +2824,30 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
-                      child: Container(
-                        width: 64,
-                        height: 64,
-                        decoration: BoxDecoration(
-                          color: colors.primaryContainer,
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(18),
-                          child:
-                              preview.walletType == WalletType.CASHU &&
-                                  mintIconUrl?.isNotEmpty == true
-                              ? Image.network(
-                                  mintIconUrl!,
-                                  width: 64,
-                                  height: 64,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) => fallbackIcon,
-                                )
-                              : fallbackIcon,
-                        ),
-                      ),
+                      child: preview.walletType == WalletType.LNBITS
+                          ? const NLnBitsIcon(size: 64)
+                          : Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                color: colors.primaryContainer,
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(18),
+                                child:
+                                    preview.walletType == WalletType.CASHU &&
+                                        mintIconUrl?.isNotEmpty == true
+                                    ? Image.network(
+                                        mintIconUrl!,
+                                        width: 64,
+                                        height: 64,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, _, _) => fallbackIcon,
+                                      )
+                                    : fallbackIcon,
+                              ),
+                            ),
                     ),
                     const SizedBox(height: 20),
                     Text(
@@ -2713,7 +2862,31 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
                       ),
                     ),
                     const SizedBox(height: 22),
-                    if (preview.manuallyEntered) ...[
+                    if (preview.walletType == WalletType.LNBITS) ...[
+                      TextField(
+                        controller: _lnBitsAdminKeyController,
+                        enabled: !_isAdding,
+                        obscureText: true,
+                        enableSuggestions: false,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: l10n.lnbitsAdminKey,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _lnBitsUrlController,
+                        enabled: !_isAdding,
+                        keyboardType: TextInputType.url,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: l10n.lnbitsUrl,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ] else if (preview.manuallyEntered) ...[
                       TextField(
                         controller: _inputController,
                         onChanged: _onInputChanged,

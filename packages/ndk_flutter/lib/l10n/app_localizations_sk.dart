@@ -9,6 +9,28 @@ class AppLocalizationsSk extends AppLocalizations {
   AppLocalizationsSk([String locale = 'sk']) : super(locale);
 
   @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'V LNbits vyberte peňaženku, ktorú chcete pripojiť, otvorte ju, kliknite na Dokumentáciu API a skopírujte kľúč správcu. Vložte ho nižšie:';
+
+  @override
+  String get lnbitsAdminKey => 'Kľúč správcu LNbits';
+
+  @override
+  String get lnbitsUrl => 'URL LNbits';
+
+  @override
+  String get lnbitsCredentialsRequired => 'Zadajte kľúč správcu aj URL LNbits.';
+
+  @override
+  String get lnbitsWalletAdded => 'Peňaženka LNbits bola pridaná';
+
+  @override
+  String get walletDetailWalletId => 'ID peňaženky';
+
+  @override
   String get saveBackupToFile => 'Uložiť zálohu do súboru';
 
   @override

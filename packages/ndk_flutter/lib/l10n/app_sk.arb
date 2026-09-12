@@ -1,4 +1,11 @@
 {
+  "lnbitsWalletOption": "LNbits",
+  "lnbitsConnectionInstructions": "V LNbits vyberte peňaženku, ktorú chcete pripojiť, otvorte ju, kliknite na Dokumentáciu API a skopírujte kľúč správcu. Vložte ho nižšie:",
+  "lnbitsAdminKey": "Kľúč správcu LNbits",
+  "lnbitsUrl": "URL LNbits",
+  "lnbitsCredentialsRequired": "Zadajte kľúč správcu aj URL LNbits.",
+  "lnbitsWalletAdded": "Peňaženka LNbits bola pridaná",
+  "walletDetailWalletId": "ID peňaženky",
   "saveBackupToFile": "Uložiť zálohu do súboru",
   "backupSavedToFile": "Záloha bola uložená do súboru",
   "restoreFromFile": "Obnoviť zo súboru",

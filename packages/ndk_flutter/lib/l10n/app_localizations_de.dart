@@ -9,6 +9,29 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'Wähle in LNbits die Wallet aus, die du verbinden möchtest, öffne sie, klicke auf API-Dokumentation und kopiere den Admin Key. Füge ihn unten ein:';
+
+  @override
+  String get lnbitsAdminKey => 'LNbits Admin Key';
+
+  @override
+  String get lnbitsUrl => 'LNbits-URL';
+
+  @override
+  String get lnbitsCredentialsRequired =>
+      'Gib den LNbits Admin Key und die URL ein.';
+
+  @override
+  String get lnbitsWalletAdded => 'LNbits-Wallet erfolgreich hinzugefügt';
+
+  @override
+  String get walletDetailWalletId => 'Wallet-ID';
+
+  @override
   String get saveBackupToFile => 'Backup in Datei speichern';
 
   @override

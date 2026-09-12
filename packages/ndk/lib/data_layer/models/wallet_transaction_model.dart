@@ -20,6 +20,7 @@ class WalletTransactionModel {
         return NwcWalletTransactionModel.fromJson(json);
       case WalletType.LNURL:
       case WalletType.BOLT12:
+      case WalletType.LNBITS:
         return LnurlWalletTransactionModel.fromJson(json);
     }
   }

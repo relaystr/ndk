@@ -119,6 +119,48 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @lnbitsWalletOption.
+  ///
+  /// In en, this message translates to:
+  /// **'LNbits'**
+  String get lnbitsWalletOption;
+
+  /// No description provided for @lnbitsConnectionInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'In LNbits, choose the wallet you want to connect, open it, click API docs, and copy the Admin Key. Paste it below:'**
+  String get lnbitsConnectionInstructions;
+
+  /// No description provided for @lnbitsAdminKey.
+  ///
+  /// In en, this message translates to:
+  /// **'LNbits Admin Key'**
+  String get lnbitsAdminKey;
+
+  /// No description provided for @lnbitsUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'LNbits URL'**
+  String get lnbitsUrl;
+
+  /// No description provided for @lnbitsCredentialsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter both the LNbits Admin Key and URL.'**
+  String get lnbitsCredentialsRequired;
+
+  /// No description provided for @lnbitsWalletAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'LNbits wallet added successfully'**
+  String get lnbitsWalletAdded;
+
+  /// No description provided for @walletDetailWalletId.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet ID'**
+  String get walletDetailWalletId;
+
   /// No description provided for @saveBackupToFile.
   ///
   /// In en, this message translates to:

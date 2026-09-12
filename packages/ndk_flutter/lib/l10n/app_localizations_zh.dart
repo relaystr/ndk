@@ -9,6 +9,28 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      '在 LNbits 中选择并打开要连接的钱包，点击 API 文档并复制管理员密钥。粘贴到下方：';
+
+  @override
+  String get lnbitsAdminKey => 'LNbits 管理员密钥';
+
+  @override
+  String get lnbitsUrl => 'LNbits URL';
+
+  @override
+  String get lnbitsCredentialsRequired => '请输入 LNbits 管理员密钥和 URL。';
+
+  @override
+  String get lnbitsWalletAdded => 'LNbits 钱包已添加';
+
+  @override
+  String get walletDetailWalletId => '钱包 ID';
+
+  @override
   String get saveBackupToFile => '将备份保存到文件';
 
   @override

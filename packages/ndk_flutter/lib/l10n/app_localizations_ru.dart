@@ -9,6 +9,29 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'В LNbits выберите кошелёк для подключения, откройте его, нажмите «Документация API» и скопируйте ключ администратора. Вставьте его ниже:';
+
+  @override
+  String get lnbitsAdminKey => 'Ключ администратора LNbits';
+
+  @override
+  String get lnbitsUrl => 'URL LNbits';
+
+  @override
+  String get lnbitsCredentialsRequired =>
+      'Введите ключ администратора и URL LNbits.';
+
+  @override
+  String get lnbitsWalletAdded => 'Кошелёк LNbits добавлен';
+
+  @override
+  String get walletDetailWalletId => 'ID кошелька';
+
+  @override
   String get saveBackupToFile => 'Сохранить резервную копию в файл';
 
   @override

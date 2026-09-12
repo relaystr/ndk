@@ -6,7 +6,9 @@ enum WalletType {
   // ignore: constant_identifier_names
   LNURL('lnurl'),
   // ignore: constant_identifier_names
-  BOLT12('bolt12');
+  BOLT12('bolt12'),
+  // ignore: constant_identifier_names
+  LNBITS('lnbits');
 
   final String value;
 
