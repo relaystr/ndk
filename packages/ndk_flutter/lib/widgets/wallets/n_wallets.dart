@@ -74,10 +74,12 @@ class NWallets extends StatefulWidget {
   final WalletInputScanner? walletInputScanner;
 
   /// Wallet apps or web services offering assisted NWC authorization.
-  final List<NwcConnectionOption> nwcConnectionOptions;
+  /// Null enables Alby Cloud and Coinos presets; an empty list disables them.
+  final List<NwcConnectionOption>? nwcConnectionOptions;
 
-  /// Whether to open the host scanner immediately on Android and iOS.
-  final bool openScannerOnAdd;
+  /// Camera preview/decoder for the shared wallet input UI. Optional: paste and
+  /// wallet selection work without any camera dependency.
+  final WalletQrScannerBuilder? walletQrScannerBuilder;
 
   /// Custom icon configuration for Cashu wallets
   final WalletIconConfig? cashuIcon;
@@ -115,8 +117,8 @@ class NWallets extends StatefulWidget {
     this.nwcUriScanner,
     this.bolt12InputScanner,
     this.walletInputScanner,
-    this.nwcConnectionOptions = const [],
-    this.openScannerOnAdd = true,
+    this.nwcConnectionOptions,
+    this.walletQrScannerBuilder,
     this.cashuIcon,
     this.nwcIcon,
     this.lnurlIcon,
@@ -136,6 +138,26 @@ class NWalletsState extends State<NWallets> {
     super.initState();
     _nwcWalletAuthCoordinator =
         widget.nwcWalletAuthCoordinator ?? NwcWalletAuthCoordinator();
+    _nwcWalletAuthCoordinator.connectionState.addListener(
+      _onWalletConnectionStateChanged,
+    );
+  }
+
+  @override
+  void dispose() {
+    _nwcWalletAuthCoordinator.connectionState.removeListener(
+      _onWalletConnectionStateChanged,
+    );
+    super.dispose();
+  }
+
+  void _onWalletConnectionStateChanged() {
+    if (!mounted ||
+        _nwcWalletAuthCoordinator.connectionState.value.phase !=
+            WalletConnectionPhase.connected) {
+      return;
+    }
+    _selectConnectedWallet();
   }
 
   Future<bool> onProtocolUrlReceived(String url) async {
@@ -305,8 +327,8 @@ class NWalletsState extends State<NWallets> {
       albyGoConnectConfig: widget.albyGoConnectConfig,
       nwcWalletAuthCoordinator: _nwcWalletAuthCoordinator,
       walletInputScanner: widget.walletInputScanner,
+      walletQrScannerBuilder: widget.walletQrScannerBuilder,
       nwcConnectionOptions: widget.nwcConnectionOptions,
-      openScannerOnAdd: widget.openScannerOnAdd,
       nwcUriScanner: widget.nwcUriScanner,
       bolt12InputScanner: widget.bolt12InputScanner,
     );

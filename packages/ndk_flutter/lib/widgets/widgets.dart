@@ -15,3 +15,4 @@ export 'wallets/n_recent_transactions.dart';
 export 'wallets/n_wallet_actions.dart';
 export 'wallets/n_add_wallet_dialogs.dart';
 export 'wallets/n_lnbits_icon.dart';
+export 'wallets/n_wallet_input_dialog.dart';

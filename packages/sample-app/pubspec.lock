@@ -364,7 +364,7 @@ packages:
     source: hosted
     version: "4.1.0"
   flutter_svg:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: flutter_svg
       sha256: "35882981abcbfb8c15b286f0cd690ff25bac12d95eff3e25ee207f37d4c42e7f"
@@ -382,7 +382,7 @@ packages:
     source: sdk
     version: "0.0.0"
   flutter_webrtc:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_webrtc
       sha256: "381e05c120caf2f1ee1accd806baad22b33802f36c74d8ea5e43a5800ce6380c"
@@ -454,7 +454,7 @@ packages:
     source: hosted
     version: "2.9.2"
   image:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: image
       sha256: f9881ff4998044947ec38d098bc7c8316ae1186fa786eddffdb867b9bc94dfce

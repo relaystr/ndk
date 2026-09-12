@@ -5,6 +5,25 @@ import 'package:test/test.dart';
 
 void main() {
   group('NwcWallet', () {
+    test('restores authenticated-response requirement from metadata', () {
+      final wallet = NwcWallet.fromStorage(
+        id: 'strict-nwc',
+        name: 'Coinos',
+        supportedUnits: {'sat'},
+        metadata: const {
+          'nwcUrl':
+              'nostr+walletconnect://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa?relay=wss%3A%2F%2Frelay.example.com&secret=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+          NwcWallet.kRequireAuthenticatedResponseMetadataKey: true,
+        },
+      );
+
+      expect(wallet.requireAuthenticatedResponse, isTrue);
+      expect(
+        wallet.toMetadata()[NwcWallet.kRequireAuthenticatedResponseMetadataKey],
+        isTrue,
+      );
+    });
+
     test('canSend and canReceive use cached permissions from storage', () {
       final wallet = NwcWallet.fromStorage(
         id: 'w1',

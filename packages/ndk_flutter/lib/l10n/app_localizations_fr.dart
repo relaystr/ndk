@@ -1094,6 +1094,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get retry => 'Réessayer';
 
   @override
+  String get walletUnreachable => 'Portefeuille inaccessible';
+
+  @override
   String get chooseAnotherWallet => 'Choisir un autre portefeuille';
 
   @override
@@ -1186,6 +1189,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'Dans Alby Go, appuyez sur « Envoyer », puis scannez ce code QR.';
 
   @override
   String get manualOption => 'Manuel';

@@ -48,8 +48,13 @@ class CashuMintRecommendations {
     _inFlight = request;
     try {
       final result = await request;
-      _cache = result;
-      _cachedAt = DateTime.now();
+      // An empty result commonly means every relay was temporarily
+      // unavailable. Keep it retryable instead of hiding recommendations for
+      // the full cache window.
+      if (result.isNotEmpty) {
+        _cache = result;
+        _cachedAt = DateTime.now();
+      }
       return result;
     } finally {
       if (identical(_inFlight, request)) _inFlight = null;
@@ -57,6 +62,19 @@ class CashuMintRecommendations {
   }
 
   Future<List<CashuMintRecommendation>> _load({
+    required Set<String> relays,
+    required Duration timeout,
+  }) async {
+    var result = await _loadOnce(relays: relays, timeout: timeout);
+    if (result.isEmpty) {
+      // A browser's first request can expire while relay connections and event
+      // verification warm up. Retry once on those now-established connections.
+      result = await _loadOnce(relays: relays, timeout: timeout);
+    }
+    return result;
+  }
+
+  Future<List<CashuMintRecommendation>> _loadOnce({
     required Set<String> relays,
     required Duration timeout,
   }) async {

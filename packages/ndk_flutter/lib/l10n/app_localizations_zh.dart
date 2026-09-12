@@ -1078,6 +1078,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get retry => '重试';
 
   @override
+  String get walletUnreachable => '无法连接钱包';
+
+  @override
   String get chooseAnotherWallet => '选择其他钱包';
 
   @override
@@ -1163,6 +1166,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions => '在 Alby Go 中点击“发送”，然后扫描此二维码。';
 
   @override
   String get manualOption => '手动';

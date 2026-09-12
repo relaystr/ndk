@@ -70,21 +70,22 @@ class LnurlWalletProvider implements WalletProvider {
   @override
   Future<Wallet?> initialize(Wallet wallet) async {
     final lnurlWallet = wallet as LnurlWallet;
-    if (!lnurlWallet.isMetadataValid) {
-      final response = await _fetchAndCacheMetadata(lnurlWallet);
-      // Return updated wallet with fetched metadata
-      return LnurlWallet(
-        id: lnurlWallet.id,
-        name: lnurlWallet.name,
-        supportedUnits: lnurlWallet.supportedUnits,
-        identifier: lnurlWallet.identifier,
-        lnurlPayUrl: lnurlWallet.lnurlPayUrl,
-        minSendable: response.minSendable,
-        maxSendable: response.maxSendable,
-        metadataFetchedAt: DateTime.now().millisecondsSinceEpoch,
-      );
-    }
-    return null; // No update needed
+    // Always contact the endpoint. Cached metadata cannot prove the remote
+    // LNURL service is still reachable when reconnecting an existing wallet.
+    final response = await _fetchAndCacheMetadata(lnurlWallet);
+    if (lnurlWallet.isMetadataValid) return null;
+
+    return LnurlWallet(
+      id: lnurlWallet.id,
+      name: lnurlWallet.name,
+      supportedUnits: lnurlWallet.supportedUnits,
+      identifier: lnurlWallet.identifier,
+      lnurlPayUrl: lnurlWallet.lnurlPayUrl,
+      minSendable: response.minSendable,
+      maxSendable: response.maxSendable,
+      metadataFetchedAt: DateTime.now().millisecondsSinceEpoch,
+      metadata: lnurlWallet.metadata,
+    );
   }
 
   @override

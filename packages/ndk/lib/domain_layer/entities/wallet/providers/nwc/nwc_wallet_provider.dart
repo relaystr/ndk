@@ -386,6 +386,7 @@ class NwcWalletProvider implements WalletProvider {
     wallet.connection = await _nwcUseCase.connect(
       wallet.nwcUrl,
       doGetInfoMethod: true,
+      requireGetInfoResponse: wallet.requireAuthenticatedResponse,
     );
 
     // Auto-refresh balance whenever the wallet reports a payment notification

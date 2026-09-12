@@ -1092,6 +1092,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get retry => 'Повторить';
 
   @override
+  String get walletUnreachable => 'Кошелёк недоступен';
+
+  @override
   String get chooseAnotherWallet => 'Выбрать другой кошелёк';
 
   @override
@@ -1185,6 +1188,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'В Alby Go нажмите «Отправить», затем отсканируйте этот QR-код.';
 
   @override
   String get manualOption => 'Вручную';

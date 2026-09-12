@@ -1095,6 +1095,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get retry => 'Spróbuj ponownie';
 
   @override
+  String get walletUnreachable => 'Portfel jest nieosiągalny';
+
+  @override
   String get chooseAnotherWallet => 'Wybierz inny portfel';
 
   @override
@@ -1187,6 +1190,10 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'W Alby Go wybierz „Wyślij”, a następnie zeskanuj ten kod QR.';
 
   @override
   String get manualOption => 'Ręcznie';

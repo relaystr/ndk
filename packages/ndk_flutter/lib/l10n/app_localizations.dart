@@ -2207,6 +2207,12 @@ abstract class AppLocalizations {
   /// **'Retry'**
   String get retry;
 
+  /// Status shown when a wallet's remote service cannot be reached
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet unreachable'**
+  String get walletUnreachable;
+
   /// No description provided for @chooseAnotherWallet.
   ///
   /// In en, this message translates to:
@@ -2374,6 +2380,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Alby Go'**
   String get albyGoOption;
+
+  /// Instructions shown beside the Alby Go wallet authorization QR code
+  ///
+  /// In en, this message translates to:
+  /// **'In Alby Go, tap Send, then scan this QR code.'**
+  String get albyGoQrScanInstructions;
 
   /// Label for manual connection option
   ///

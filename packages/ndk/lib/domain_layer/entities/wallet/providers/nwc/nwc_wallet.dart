@@ -11,6 +11,8 @@ import 'package:rxdart/rxdart.dart';
 class NwcWallet extends Wallet {
   static const String kPermissionsMetadataKey = 'permissions';
   static const String kProviderIdMetadataKey = 'providerId';
+  static const String kRequireAuthenticatedResponseMetadataKey =
+      'requireAuthenticatedResponse';
 
   final String nwcUrl;
   final Set<String> cachedPermissions;
@@ -26,6 +28,9 @@ class NwcWallet extends Wallet {
   BehaviorSubject<List<WalletTransaction>>? pendingTransactionsSubject;
 
   bool isConnected() => connection != null;
+
+  bool get requireAuthenticatedResponse =>
+      metadata[kRequireAuthenticatedResponseMetadataKey] == true;
 
   NwcWallet({
     required super.id,

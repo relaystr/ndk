@@ -1081,6 +1081,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get retry => '再試行';
 
   @override
+  String get walletUnreachable => 'ウォレットに接続できません';
+
+  @override
   String get chooseAnotherWallet => '別のウォレットを選択';
 
   @override
@@ -1167,6 +1170,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'Alby Goで「送信」をタップして、このQRコードをスキャンしてください。';
 
   @override
   String get manualOption => '手動';

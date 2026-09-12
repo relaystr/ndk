@@ -7,6 +7,7 @@ import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/lnurl_http_impl.dart';
 import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
 import 'package:ndk/domain_layer/entities/wallet/providers/lnurl/lnurl_wallet_provider.dart';
+import 'package:ndk/domain_layer/entities/wallet/providers/lnurl/lnurl_wallet.dart';
 import 'package:ndk/domain_layer/entities/wallet/wallet_type.dart';
 import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
 import 'package:ndk/domain_layer/usecases/wallets/wallets.dart';
@@ -91,6 +92,43 @@ void main() {
       await expectLater(wallets.addWallet(wallet), throwsException);
       expect(await repository.getWallets(), isEmpty);
       expect(await wallets.getWallets(), isEmpty);
+    });
+
+    test('reconnect checks HTTP endpoint even with cached metadata', () async {
+      final client = MockClient();
+      final transport = LnurlTransportHttpImpl(HttpRequestDS(client));
+      final lnurl = Lnurl(transport: transport);
+      final repository = MemWalletsRepo();
+      const identifier = 'name@domain.com';
+      final link = Lnurl.getLud16LinkFromLud16(identifier)!;
+      final wallet = LnurlWallet(
+        id: 'lnurl-wallet',
+        name: identifier,
+        supportedUnits: const {'sat'},
+        identifier: identifier,
+        lnurlPayUrl: link,
+        minSendable: 1000,
+        maxSendable: 100000,
+        metadataFetchedAt: DateTime.now().millisecondsSinceEpoch,
+      );
+      await repository.storeWallet(wallet);
+      final wallets = Wallets(
+        providers: [LnurlWalletProvider(lnurl)],
+        repository: repository,
+      );
+      addTearDown(wallets.dispose);
+      await wallets.getWallets();
+
+      when(client.get(Uri.parse(link), headers: {'Accept': 'application/json'}))
+          .thenAnswer((_) async => http.Response('unavailable', 503));
+
+      await expectLater(
+        wallets.reconnectWallet(wallet.id),
+        throwsException,
+      );
+      verify(
+        client.get(Uri.parse(link), headers: {'Accept': 'application/json'}),
+      ).called(1);
     });
 
     test('getAmountFromBolt11 returns correct amount for valid input', () {

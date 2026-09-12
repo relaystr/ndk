@@ -1091,6 +1091,9 @@ class AppLocalizationsSk extends AppLocalizations {
   String get retry => 'Skúsiť znova';
 
   @override
+  String get walletUnreachable => 'Peňaženka je nedostupná';
+
+  @override
   String get chooseAnotherWallet => 'Vybrať inú peňaženku';
 
   @override
@@ -1182,6 +1185,10 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'V Alby Go ťuknite na „Odoslať“ a potom naskenujte tento QR kód.';
 
   @override
   String get manualOption => 'Manuálne';

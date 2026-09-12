@@ -1,15 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk_demo/l10n/app_localizations_context.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 import 'main.dart';
 import 'nwc_qr_scanner.dart';
-
-const _sampleAppName = 'NDK Demo';
-const _sampleCallback = 'ndk://nwc';
-const _coinosRelay = 'wss://relay.coinos.io';
-const _coinosWalletServicePubkey =
-    'ba80990666ef0b6f4ba5059347beb13242921e54669e680064ca755256a1e3a6';
 
 class WalletsPage extends StatefulWidget {
   final String? initialUrl;
@@ -82,45 +77,12 @@ class WalletsPageState extends State<WalletsPage> with WidgetsBindingObserver {
       body: NWallets(
         key: _walletsKey,
         ndkFlutter: ndkFlutter,
-        walletInputScanner: scanWalletInput,
-        nwcConnectionOptions: [
-          NwcConnectionOption(
-            id: 'alby-cloud',
-            label: 'Alby Cloud',
-            connect: (context, ndkFlutter, coordinator) {
-              return coordinator.connectWebWalletAuth(
-                context,
-                authorizationEndpoint: Uri.parse(
-                  'https://my.albyhub.com/apps/new',
-                ),
-                appName: _sampleAppName,
-                discoveryRelay: kDefaultAlbyGoConnectConfig.discoveryRelay,
-                callback: _sampleCallback,
-                walletName: 'Alby Cloud',
-                providerId: 'alby',
-                additionalQueryParameters: const {
-                  'return_to': _sampleCallback,
-                },
-              );
-            },
-          ),
-          NwcConnectionOption(
-            id: 'coinos',
-            label: 'Coinos',
-            connect: (context, ndkFlutter, coordinator) {
-              return coordinator.connectWebWalletAuth(
-                context,
-                authorizationEndpoint: Uri.parse('https://coinos.io/apps/new'),
-                appName: _sampleAppName,
-                discoveryRelay: _coinosRelay,
-                callback: _sampleCallback,
-                walletName: 'Coinos',
-                providerId: 'coinos',
-                walletServicePubkey: _coinosWalletServicePubkey,
-              );
-            },
-          ),
-        ],
+        walletQrScannerBuilder: kIsWeb ||
+                defaultTargetPlatform == TargetPlatform.android ||
+                defaultTargetPlatform == TargetPlatform.iOS ||
+                defaultTargetPlatform == TargetPlatform.linux
+            ? buildWalletQrScanner
+            : null,
       ),
     );
   }

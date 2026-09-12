@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ndk/entities.dart';
 import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_method.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
@@ -8,12 +9,14 @@ void main() {
       authorizationEndpoint: Uri.parse('https://coinos.io/apps/new'),
       appName: 'NDK Demo',
       pubkey: 'generated-public-key',
+      state: '0123456789abcdef0123456789abcdef',
     );
 
     expect(uri.origin, 'https://coinos.io');
     expect(uri.path, '/apps/new');
     expect(uri.queryParameters['name'], 'NDK Demo');
     expect(uri.queryParameters['pubkey'], 'generated-public-key');
+    expect(uri.queryParameters['state'], '0123456789abcdef0123456789abcdef');
   });
 
   test('builds generic NWC wallet-auth deep link', () {
@@ -29,6 +32,7 @@ void main() {
       appPubkey:
           'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
       config: config,
+      state: '0123456789abcdef0123456789abcdef',
     );
 
     expect(uri.scheme, 'nostr+walletauth');
@@ -40,6 +44,180 @@ void main() {
     expect(uri.queryParameters['name'], 'NDK Demo');
     expect(uri.queryParameters['request_methods'], 'get_info pay_invoice');
     expect(uri.queryParameters['return_to'], 'ndk://nwc');
+    expect(uri.queryParameters['state'], '0123456789abcdef0123456789abcdef');
+  });
+
+  test('builds generic callback URI handled by Primal and Alby Go', () {
+    const config = AlbyGoConnectConfig(
+      appName: 'NDK Demo',
+      appIconUrl: 'https://example.com/icon.png',
+      callback: 'ndk://nwc',
+    );
+
+    final uri = buildNwcCallbackUri(config: config);
+
+    expect(uri.scheme, 'nostrnwc');
+    expect(uri.host, 'connect');
+    expect(uri.queryParameters['appname'], 'NDK Demo');
+    expect(uri.queryParameters['appicon'], 'https://example.com/icon.png');
+    expect(uri.queryParameters['callback'], 'ndk://nwc');
+  });
+
+  test('builds Alby Go-specific wallet-auth deep link', () {
+    const config = AlbyGoConnectConfig(
+      appName: 'NDK Demo',
+      appIconUrl: 'https://example.com/icon.png',
+      callback: 'ndk://nwc',
+    );
+
+    final uri = buildNwcWalletAuthUri(
+      appPubkey:
+          'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      config: config,
+      state: '0123456789abcdef0123456789abcdef',
+      scheme: config.walletAuthScheme,
+    );
+
+    expect(uri.scheme, 'nostr+walletauth+alby');
+    expect(
+      uri.queryParameters['request_methods'],
+      'get_info get_balance get_budget make_invoice pay_invoice '
+      'lookup_invoice list_transactions',
+    );
+    expect(config.nostrNwcScheme, 'nostrnwc+alby');
+    expect(config.androidPackage, 'com.getalby.mobile');
+
+    final qrUri = buildNwcWalletAuthUri(
+      appPubkey:
+          'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      config: config,
+      state: '0123456789abcdef0123456789abcdef',
+      scheme: config.walletAuthScheme,
+      includeReturnTo: false,
+    );
+    expect(qrUri.queryParameters.containsKey('return_to'), isFalse);
+    expect(qrUri.queryParameters['relay'], config.discoveryRelay);
+    expect(qrUri.queryParameters['state'], '0123456789abcdef0123456789abcdef');
+  });
+
+  test('generates 128-bit lowercase hex wallet-auth state', () {
+    final first = generateNwcWalletAuthState();
+    final second = generateNwcWalletAuthState();
+
+    expect(first, matches(RegExp(r'^[0-9a-f]{32}$')));
+    expect(second, isNot(first));
+  });
+
+  test('matches NWC-08 info by client pubkey and state', () {
+    const appPubkey =
+        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    final event = Nip01Event(
+      pubKey:
+          'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      kind: 13194,
+      tags: const [
+        ['p', appPubkey],
+        ['state', '0123456789abcdef0123456789abcdef'],
+        ['relay', 'wss://wallet.example.com/CaseSensitive'],
+      ],
+      content: 'get_info get_balance',
+    );
+
+    expect(
+      matchesNwcWalletAuthInfoEvent(
+        event,
+        appPubkey: appPubkey,
+        state: '0123456789abcdef0123456789abcdef',
+      ),
+      isTrue,
+    );
+    expect(
+      matchesNwcWalletAuthInfoEvent(
+        event,
+        appPubkey: appPubkey,
+        state: 'wrong-state',
+      ),
+      isFalse,
+    );
+    expect(
+      matchesNwcWalletAuthInfoEvent(
+        event,
+        appPubkey: appPubkey,
+        state: '0123456789abcdef0123456789abcdef',
+        walletServicePubkey:
+            'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+      ),
+      isFalse,
+    );
+    expect(
+      walletAuthConnectionRelay(
+        event,
+        fallbackRelay: 'wss://discovery.example.com',
+      ),
+      'wss://wallet.example.com/CaseSensitive',
+    );
+
+    final eventWithoutState = Nip01Event(
+      pubKey: event.pubKey,
+      kind: event.kind,
+      tags: const [
+        ['p', appPubkey],
+      ],
+      content: event.content,
+    );
+    expect(
+      matchesNwcWalletAuthInfoEvent(
+        eventWithoutState,
+        appPubkey: appPubkey,
+        state: '0123456789abcdef0123456789abcdef',
+      ),
+      isTrue,
+    );
+
+    final untaggedLegacyEvent = Nip01Event(
+      pubKey: event.pubKey,
+      kind: event.kind,
+      tags: const [],
+      content: event.content,
+    );
+    expect(
+      matchesNwcWalletAuthInfoEvent(
+        untaggedLegacyEvent,
+        appPubkey: appPubkey,
+        state: '0123456789abcdef0123456789abcdef',
+        walletServicePubkey: event.pubKey,
+        requireAppPubkeyTag: false,
+      ),
+      isTrue,
+    );
+    expect(
+      matchesNwcWalletAuthInfoEvent(
+        untaggedLegacyEvent,
+        appPubkey: appPubkey,
+        state: '0123456789abcdef0123456789abcdef',
+        walletServicePubkey:
+            'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+        requireAppPubkeyTag: false,
+      ),
+      isFalse,
+    );
+
+    final eventWithoutRelay = Nip01Event(
+      pubKey: event.pubKey,
+      kind: event.kind,
+      tags: const [
+        ['p', appPubkey],
+        ['state', '0123456789abcdef0123456789abcdef'],
+      ],
+      content: event.content,
+    );
+    expect(
+      walletAuthConnectionRelay(
+        eventWithoutRelay,
+        fallbackRelay: 'wss://discovery.example.com',
+      ),
+      'wss://discovery.example.com',
+    );
   });
 
   group('classifyWalletInput', () {

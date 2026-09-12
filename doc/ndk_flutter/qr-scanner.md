@@ -11,10 +11,9 @@ offers, BIP321 URIs, and HTTPS Cashu mint URLs from one QR scanner.
 
 `ndk_flutter` does **not** bundle a camera/scanner dependency. Instead you provide your own
 scanner, so you stay in control of the camera plugin, runtime permissions, and the UI. When you
-don't provide one, the scan button is hidden and users can still paste a value manually.
-On Android and iOS the scanner opens when the user enters the add-wallet flow. Set
-`openScannerOnAdd: false` to start on the unified choices screen instead. Your scanner remains
-responsible for camera-permission rationale and denial handling.
+don't provide one, users can still paste a value manually. The shared wallet-input screen is
+the sole add-wallet entry point; the previous intermediate Add Wallet screen no longer exists.
+Your scanner remains responsible for camera-permission rationale and denial handling.
 
 ## Provide a scanner
 
@@ -50,8 +49,8 @@ active. Keep the scanner open through `awaitingReturn`, `connecting`, and `faile
 `retryPendingConnection` and `cancelPendingConnection` for retry and back actions. Return
 `WalletInputScanResult.connectionStarted()` after the state reaches `connected`.
 
-The widget classifies and validates scanned values. Your callback returns
-Return scanned values as `WalletInputScanResult.value(rawText)`. For pasted or
+The widget classifies and validates scanned values. Return scanned values as
+`WalletInputScanResult.value(rawText)`. For pasted or
 typed values, pass `manuallyEntered: true` so confirmation allows editing.
 Legacy `nwcUriScanner` and `bolt12InputScanner` callbacks remain available on their
 type-specific dialogs.
@@ -60,6 +59,22 @@ type-specific dialogs.
 
 On Android and iOS, the unified flow includes the standard NWC wallet chooser and Alby Go.
 Add installed or web wallet integrations with `nwcConnectionOptions`:
+
+Alby Go uses the branded `nostr+walletauth+alby://` NWC-08 flow. If direct app launch
+fails because Alby Go is not installed, the same authorization request is shown as a QR
+code. Web and desktop platforms show this QR directly for scanning with Alby Go on a phone.
+The client keeps its generated secret locally, verifies any returned `state` tag,
+discovers the wallet-service public key from its kind `13194` info event, and honors any
+wallet-service `relay` tag.
+
+Wallet-auth requests include `state`. For compatibility with deployed Alby implementations,
+responses and info events may omit it; a present but mismatched state is always rejected.
+Separate-phone QR requests omit `return_to` because no same-device callback is possible.
+
+Coinos uses its fixed service public key and `wss://relay.coinos.io`. Because its info event
+is not addressed to the generated client key, the client subscribes to info events from that
+fixed service key and keeps validating later events until the approved connection works.
+No manual confirmation is required.
 
 ```dart
 NWallets(
@@ -86,7 +101,8 @@ NWallets(
 ```
 
 Client-key web wallets can receive configurable app metadata and a freshly generated public
-key. Complete pending authorization when the host app resumes:
+key. Default Alby Cloud, Alby Go, and Coinos connections keep a live discovery dialog open
+until a usable info event arrives or the user cancels:
 
 ```dart
 NwcConnectionOption(
@@ -102,29 +118,33 @@ NwcConnectionOption(
       walletName: 'Coinos',
       walletServicePubkey:
           'ba80990666ef0b6f4ba5059347beb13242921e54669e680064ca755256a1e3a6',
+      allowUntaggedInfoEvent: true,
     );
   },
 )
 ```
 
-Call `NWalletsState.resumePendingWalletAuth()` from the app's resumed lifecycle callback.
+Call `NWalletsState.resumePendingWalletAuth()` from mobile resumed lifecycle callbacks.
+Legacy providers without client-tagged discovery events are revalidated every five
+seconds while their connection screen remains open.
 
-Use the standard installed-wallet flow for any app that handles `nostr+walletauth://`:
+Use NWC-07 callback flow to launch `nostrnwc://connect`. Android resolves it using
+normal system intent handling, including user defaults and multiple compatible apps:
 
 ```dart
-return coordinator.connectWalletAuth(
+return coordinator.connectInstalledWallet(
   context,
   config: const AlbyGoConnectConfig(
     appName: 'My app',
     appIconUrl: 'https://example.com/icon.png',
     callback: 'myapp://nwc',
   ),
-  walletName: 'NWC',
 );
 ```
 
-Forward callback URLs to `NWalletsState.onProtocolUrlReceived`. Provider authorization URLs
-must return a `nostr+walletconnect://` value in a callback query parameter.
+Forward callback URLs to `NWalletsState.onProtocolUrlReceived`. Wallet-auth callback results
+return `relay_url` and `wallet_pubkey`; when `state` is present, it must match. Legacy providers
+may return a `nostr+walletconnect://` value in a callback query parameter.
 
 ## Example: scanning with mobile_scanner
 
@@ -140,7 +160,5 @@ The callback just opens a dialog that wraps the camera view and pops the first d
 
 :::code source="../../packages/sample-app/lib/nwc_qr_scanner.dart" language="dart" range="7-12" title="scanWalletInput callback" :::
 
-The full dialog lives in
-[`packages/sample-app/lib/nwc_qr_scanner.dart`](https://github.com/relaystr/ndk/blob/master/packages/sample-app/lib/nwc_qr_scanner.dart).
-It adds a camera preview, paste and manual-entry fallbacks, wallet connection choices, error
-handling, and a desktop/web-safe layout.
+`packages/sample-app/lib/nwc_qr_scanner.dart` only adapts the host camera implementation.
+Wallet choices, paste/manual input, errors, and layout live in `ndk_flutter`.

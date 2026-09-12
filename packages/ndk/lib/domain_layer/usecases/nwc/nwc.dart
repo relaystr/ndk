@@ -63,16 +63,23 @@ class Nwc {
 
   /// Connects to a given nostr+walletconnect:// uri,
   /// checking for 13194 event info,
-  /// and optionally doing a `get_info` request (default false).
+  /// and optionally doing a `get_info` request (default false). When
+  /// [requireGetInfoResponse] is true, missing authorization fails connection.
   /// It subscribes for notifications
   Future<NwcConnection> connect(
     String uri, {
     bool doGetInfoMethod = false,
+    bool requireGetInfoResponse = false,
     bool useETagForEachRequest = false,
     bool ignoreCapabilitiesCheck = false,
     Function(String?)? onError,
     Duration? timeout,
   }) async {
+    if (requireGetInfoResponse && !doGetInfoMethod) {
+      throw ArgumentError(
+        'requireGetInfoResponse requires doGetInfoMethod',
+      );
+    }
     var parsedUri = NostrWalletConnectUri.parseConnectionUri(uri);
     var relays = parsedUri.relays.map((r) => Uri.decodeFull(r)).toList();
     var filter = Filter(
@@ -123,13 +130,20 @@ class Nwc {
 
       await _subscribeToNotificationsAndResponses(connection);
 
-      if (doGetInfoMethod &&
-          (ignoreCapabilitiesCheck ||
-              connection.permissions.contains(NwcMethod.GET_INFO.name))) {
+      if (doGetInfoMethod) {
         try {
-          await getInfo(connection, timeout: timeout);
+          if (ignoreCapabilitiesCheck ||
+              connection.permissions.contains(NwcMethod.GET_INFO.name)) {
+            await getInfo(connection, timeout: timeout);
+          } else if (requireGetInfoResponse) {
+            throw StateError('Wallet does not advertise get_info');
+          }
         } catch (e) {
           onError?.call("timeout get_info");
+          if (requireGetInfoResponse) {
+            await disconnect(connection);
+            rethrow;
+          }
         }
       }
       Logger.log.i(() => "NWC ${connection.uri} connected");
@@ -137,6 +151,9 @@ class Nwc {
       completer.complete(connection);
     } else {
       onError?.call("not found");
+      if (requireGetInfoResponse) {
+        throw StateError('NWC info event not found');
+      }
       completer.complete(
         NwcConnection(parsedUri, eventSignerFactory: _eventSignerFactory),
       );

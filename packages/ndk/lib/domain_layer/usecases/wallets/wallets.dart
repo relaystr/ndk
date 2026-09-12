@@ -496,6 +496,36 @@ class Wallets {
     return balances;
   }
 
+  /// Re-establishes access to a wallet's remote service.
+  ///
+  /// Providers use [WalletProvider.initialize] for their connectivity check.
+  /// Any refreshed wallet metadata is persisted without resetting live streams.
+  Future<Wallet> reconnectWallet(String walletId) async {
+    await _initializationFuture;
+    final wallet = await _getWalletForOperation(walletId);
+    final provider = _providers[wallet.type];
+    if (provider == null) {
+      throw StateError('No provider registered for wallet type ${wallet.type}');
+    }
+
+    final updatedWallet = await provider.initialize(wallet);
+    if (updatedWallet == null) return wallet;
+
+    await _repository.storeWallet(updatedWallet);
+    final wallets = _wallets.toList();
+    final index = wallets.indexWhere((item) => item.id == walletId);
+    if (index >= 0) {
+      wallets[index] = updatedWallet;
+    } else {
+      wallets.add(updatedWallet);
+    }
+    _wallets
+      ..clear()
+      ..addAll(wallets);
+    _safeAddWallets(wallets);
+    return updatedWallet;
+  }
+
   Stream<List<WalletTransaction>> getRecentTransactionsStream(String walletId) {
     _initRecentTransactionStream(walletId);
     return _walletRecentTransactionStreams[walletId]!.stream;

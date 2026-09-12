@@ -91,6 +91,8 @@ class _NWalletCardState extends State<NWalletCard>
   GetBudgetResponse? _budgetResponse;
   bool _isFetchingBudget = false;
   bool _isRefreshingBalance = false;
+  bool _isWalletAvailable = true;
+  int _connectionCheckGeneration = 0;
 
   @override
   NdkFlutter get ndkFlutter => widget.ndkFlutter;
@@ -109,6 +111,28 @@ class _NWalletCardState extends State<NWalletCard>
     _loadCustomColor();
     _initializeNwcBalanceIfNeeded();
     _fetchBudgetIfNeeded();
+    _checkWalletConnection();
+  }
+
+  Future<void> _checkWalletConnection() async {
+    final generation = ++_connectionCheckGeneration;
+    final walletId = widget.wallet.id;
+    try {
+      await widget.ndkFlutter.ndk.wallets
+          .reconnectWallet(walletId)
+          .timeout(const Duration(seconds: 10));
+      if (mounted &&
+          widget.wallet.id == walletId &&
+          generation == _connectionCheckGeneration) {
+        setState(() => _isWalletAvailable = true);
+      }
+    } catch (_) {
+      if (mounted &&
+          widget.wallet.id == walletId &&
+          generation == _connectionCheckGeneration) {
+        setState(() => _isWalletAvailable = false);
+      }
+    }
   }
 
   void _initializeNwcBalanceIfNeeded() {
@@ -174,6 +198,10 @@ class _NWalletCardState extends State<NWalletCard>
           _budgetResponse = budget;
         });
       }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isWalletAvailable = false);
+      }
     } finally {
       _isFetchingBudget = false;
     }
@@ -207,6 +235,11 @@ class _NWalletCardState extends State<NWalletCard>
     final isCurrentNwc = widget.wallet is NwcWallet;
     final isOldNwc = oldWidget.wallet is NwcWallet;
     final walletIdChanged = oldWidget.wallet.id != widget.wallet.id;
+
+    if (walletIdChanged) {
+      _isWalletAvailable = true;
+      _checkWalletConnection();
+    }
 
     if (isCurrentNwc) {
       _initializeNwcBalanceIfNeeded();
@@ -266,6 +299,7 @@ class _NWalletCardState extends State<NWalletCard>
         (isNwc || isLnurl || isLnBits) &&
         widget.wallet.canReceive &&
         !widget.wallet.canSend;
+    final bool isWalletUnavailable = !_isWalletAvailable;
 
     final String walletName;
     if (isCashu) {
@@ -340,7 +374,10 @@ class _NWalletCardState extends State<NWalletCard>
         );
       }
     }
-    final Color shadowColor = gradientColors[0];
+    final effectiveGradientColors = isWalletUnavailable
+        ? [Colors.grey.shade700, Colors.grey.shade500]
+        : gradientColors;
+    final Color shadowColor = effectiveGradientColors[0];
 
     // Determine icon configuration based on wallet type
     final WalletIconConfig iconConfig;
@@ -438,8 +475,40 @@ class _NWalletCardState extends State<NWalletCard>
                 color: Colors.white.withAlpha(30),
               ));
 
+    const unavailableColorFilter = ColorFilter.matrix(<double>[
+      0.2126,
+      0.7152,
+      0.0722,
+      0,
+      0,
+      0.2126,
+      0.7152,
+      0.0722,
+      0,
+      0,
+      0.2126,
+      0.7152,
+      0.0722,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+    ]);
+    final effectiveMainIcon = isWalletUnavailable
+        ? ColorFiltered(colorFilter: unavailableColorFilter, child: mainIcon)
+        : mainIcon;
+    final effectiveBackgroundWidget = isWalletUnavailable
+        ? ColorFiltered(
+            colorFilter: unavailableColorFilter,
+            child: backgroundWidget,
+          )
+        : backgroundWidget;
+
     return GestureDetector(
-      onTap: widget.onTap,
+      onTap: isWalletUnavailable ? null : widget.onTap,
       child: Container(
         width: widget.width,
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -448,7 +517,7 @@ class _NWalletCardState extends State<NWalletCard>
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: gradientColors,
+            colors: effectiveGradientColors,
           ),
           boxShadow: [
             BoxShadow(
@@ -463,7 +532,7 @@ class _NWalletCardState extends State<NWalletCard>
         ),
         child: Stack(
           children: [
-            Positioned(right: -20, top: -20, child: backgroundWidget),
+            Positioned(right: -20, top: -20, child: effectiveBackgroundWidget),
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -473,7 +542,7 @@ class _NWalletCardState extends State<NWalletCard>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      mainIcon,
+                      effectiveMainIcon,
                       if (showReceiveOnlyLabel)
                         Expanded(
                           child: Padding(
@@ -567,7 +636,9 @@ class _NWalletCardState extends State<NWalletCard>
                         ),
                       ],
                       SizedBox(height: showBudgetInfo ? 4 : 16),
-                      isLnurl
+                      isWalletUnavailable
+                          ? _buildUnavailableInfo(context)
+                          : isLnurl
                           ? _buildLnurlInfo(
                               context,
                               widget.wallet as LnurlWallet,
@@ -610,7 +681,7 @@ class _NWalletCardState extends State<NWalletCard>
                   final actionItems = <PopupMenuEntry<String>>[
                     PopupMenuItem(
                       value: 'send',
-                      enabled: widget.wallet.canSend,
+                      enabled: !isWalletUnavailable && widget.wallet.canSend,
                       child: Row(
                         children: [
                           const Icon(Icons.send, size: 20),
@@ -621,7 +692,7 @@ class _NWalletCardState extends State<NWalletCard>
                     ),
                     PopupMenuItem(
                       value: 'receive',
-                      enabled: widget.wallet.canReceive,
+                      enabled: !isWalletUnavailable && widget.wallet.canReceive,
                       child: Row(
                         children: [
                           const Icon(Icons.download, size: 20),
@@ -633,7 +704,7 @@ class _NWalletCardState extends State<NWalletCard>
                     if (isCashuWallet)
                       PopupMenuItem(
                         value: 'reclaim',
-                        enabled: reclaimable.isNotEmpty,
+                        enabled: !isWalletUnavailable && reclaimable.isNotEmpty,
                         child: Row(
                           children: [
                             const Icon(Icons.replay, size: 20),
@@ -670,7 +741,9 @@ class _NWalletCardState extends State<NWalletCard>
                     if (widget.wallet.canReceive)
                       PopupMenuItem(
                         value: 'set_default_receive',
-                        enabled: !widget.isDefaultForReceiving,
+                        enabled:
+                            !isWalletUnavailable &&
+                            !widget.isDefaultForReceiving,
                         child: Row(
                           children: [
                             Icon(
@@ -694,7 +767,8 @@ class _NWalletCardState extends State<NWalletCard>
                     if (widget.wallet.canSend)
                       PopupMenuItem(
                         value: 'set_default_send',
-                        enabled: !widget.isDefaultForSending,
+                        enabled:
+                            !isWalletUnavailable && !widget.isDefaultForSending,
                         child: Row(
                           children: [
                             Icon(
@@ -1261,6 +1335,43 @@ class _NWalletCardState extends State<NWalletCard>
     return normalized == null || normalized.isEmpty ? null : normalized;
   }
 
+  Widget _buildUnavailableInfo(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
+      children: [
+        const Icon(Icons.cloud_off_outlined, color: Colors.white, size: 20),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            l10n.walletUnreachable,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white.withAlpha(220),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        IconButton(
+          tooltip: l10n.retry,
+          color: Colors.white,
+          visualDensity: VisualDensity.compact,
+          onPressed: _isRefreshingBalance ? null : _refreshBalance,
+          icon: _isRefreshingBalance
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Icon(Icons.refresh),
+        ),
+      ],
+    );
+  }
+
   Widget _buildBalance(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final numberFormatter = NumberFormat.decimalPattern(
@@ -1328,14 +1439,43 @@ class _NWalletCardState extends State<NWalletCard>
   }
 
   Future<void> _refreshBalance() async {
+    final generation = ++_connectionCheckGeneration;
+    final walletId = widget.wallet.id;
+    final wasUnavailable = !_isWalletAvailable;
     setState(() => _isRefreshingBalance = true);
     try {
-      await widget.ndkFlutter.ndk.wallets.refreshBalance(widget.wallet.id);
-      if (mounted) {
-        displaySuccess(AppLocalizations.of(context)!.balanceRefreshed);
+      await widget.ndkFlutter.ndk.wallets
+          .reconnectWallet(walletId)
+          .timeout(const Duration(seconds: 10));
+      final canRefreshBalance =
+          widget.wallet is LnBitsWallet ||
+          (widget.wallet is NwcWallet &&
+              _nwcPermissions(
+                widget.wallet as NwcWallet,
+              ).contains(NwcMethod.GET_BALANCE.name));
+      if (canRefreshBalance) {
+        await widget.ndkFlutter.ndk.wallets
+            .refreshBalance(walletId)
+            .timeout(const Duration(seconds: 10));
+      }
+      if (mounted &&
+          widget.wallet.id == walletId &&
+          generation == _connectionCheckGeneration) {
+        setState(() => _isWalletAvailable = true);
+        final l10n = AppLocalizations.of(context)!;
+        displaySuccess(
+          wasUnavailable
+              ? l10n.walletConnectionConnected(widget.wallet.name)
+              : l10n.balanceRefreshed,
+        );
       }
     } catch (error) {
-      if (mounted) displayError(error.toString());
+      if (mounted &&
+          widget.wallet.id == walletId &&
+          generation == _connectionCheckGeneration) {
+        setState(() => _isWalletAvailable = false);
+        displayError(error.toString());
+      }
     } finally {
       if (mounted) setState(() => _isRefreshingBalance = false);
     }

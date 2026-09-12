@@ -13,7 +13,7 @@ class NNwcWalletIcon extends StatelessWidget {
     return switch (wallet.providerId) {
       'alby' => _BrandIconFrame(
         size: size,
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.white,
         child: SvgPicture.asset(
           'assets/images/albyhub.svg',
           package: 'ndk_flutter',

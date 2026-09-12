@@ -1091,6 +1091,9 @@ class AppLocalizationsFi extends AppLocalizations {
   String get retry => 'Yritä uudelleen';
 
   @override
+  String get walletUnreachable => 'Lompakkoa ei tavoiteta';
+
+  @override
   String get chooseAnotherWallet => 'Valitse toinen lompakko';
 
   @override
@@ -1182,6 +1185,10 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'Napauta Alby Go -sovelluksessa Lähetä ja skannaa sitten tämä QR-koodi.';
 
   @override
   String get manualOption => 'Manuaalinen';
