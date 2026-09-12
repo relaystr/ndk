@@ -136,10 +136,6 @@ class NReleaseEngagementController extends ChangeNotifier {
         targets.earliestRelease,
         zapTargets.earliestRelease,
       ].reduce((a, b) => a < b ? a : b);
-      final publishers = {
-        release.event.pubKey,
-        zapTargetApp?.publisher,
-      }.whereType<String>().toList(growable: false);
       final responses = await Future.wait([
         ndk.requests
             .query(
@@ -147,7 +143,10 @@ class NReleaseEngagementController extends ChangeNotifier {
               explicitRelays: relays.isEmpty ? null : relays,
               filter: Filter(
                 kinds: const [9735, 7],
-                pTags: publishers,
+                aTags: {
+                  ...targets.addresses,
+                  ...zapTargets.addresses,
+                }.toList(growable: false),
                 since: earliestRelease,
                 limit: 1000,
               ),
