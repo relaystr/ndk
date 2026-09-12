@@ -2,6 +2,9 @@
   "lnbitsWalletOption": "LNbits",
   "lnbitsConnectionInstructions": "En LNbits, elige la cartera que quieres conectar, ábrela, pulsa Documentación de API y copia la clave de administrador. Pégala abajo:",
   "lnbitsAdminKey": "Clave de administrador de LNbits",
+  "lnbitsKeyType": "Tipo de clave de LNbits",
+  "lnbitsInvoiceReadKey": "Clave de facturación/lectura de LNbits",
+  "lnbitsReadOnlyDescription": "Cartera solo para recibir: permite ver el saldo y el historial y crear facturas. Los pagos están desactivados.",
   "lnbitsUrl": "URL de LNbits",
   "lnbitsCredentialsRequired": "Introduce la clave de administrador y la URL de LNbits.",
   "lnbitsWalletAdded": "Cartera LNbits añadida correctamente",
@@ -415,6 +418,8 @@
   "scanNwcInstructions": "Escanee el código QR de su aplicación de billetera NWC",
   "invalidNwcUri": "URI NWC inválida",
   "paste": "Pegar",
+  "clearInput": "Borrar entrada",
+  "pasteOrEnter": "Pegar o escribir",
   "fromYourProfile": "De tu perfil",
   "orEnterManually": "O ingresa manualmente:",
   "budgetUsedOf": "Presupuesto: {used} / {total}",
@@ -454,5 +459,7 @@
   "walletName": "Nombre de la cartera",
   "walletNameHint": "Ingrese el nombre de la cartera",
   "save": "Guardar",
-  "walletRenamed": "Cartera renombrada"
+  "walletRenamed": "Cartera renombrada",
+  "refreshBalance": "Actualizar saldo",
+  "balanceRefreshed": "Saldo actualizado"
 }

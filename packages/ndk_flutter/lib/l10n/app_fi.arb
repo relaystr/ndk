@@ -2,6 +2,9 @@
   "lnbitsWalletOption": "LNbits",
   "lnbitsConnectionInstructions": "Valitse LNbitsissä yhdistettävä lompakko, avaa se, napsauta API-ohjeita ja kopioi ylläpitäjän avain. Liitä se alle:",
   "lnbitsAdminKey": "LNbits-ylläpitäjän avain",
+  "lnbitsKeyType": "LNbits-avaimen tyyppi",
+  "lnbitsInvoiceReadKey": "LNbits-laskutus-/lukuavain",
+  "lnbitsReadOnlyDescription": "Vain vastaanottava lompakko: näytä saldo ja historia sekä luo laskuja. Maksujen lähetys on poistettu käytöstä.",
   "lnbitsUrl": "LNbits-URL",
   "lnbitsCredentialsRequired": "Anna LNbits-ylläpitäjän avain ja URL-osoite.",
   "lnbitsWalletAdded": "LNbits-lompakko lisättiin",
@@ -473,6 +476,8 @@
   "scanNwcInstructions": "Skannaa QR-koodi NWC-lompakkosovelluksestasi",
   "invalidNwcUri": "Virheellinen NWC URI",
   "paste": "Liitä",
+  "clearInput": "Tyhjennä syöte",
+  "pasteOrEnter": "Liitä tai kirjoita",
   "fromYourProfile": "Profiilistasi",
   "orEnterManually": "Tai syötä manuaalisesti:",
   "renameWallet": "Nimeä uudelleen",
@@ -512,5 +517,7 @@
   "budgetWeekly": "Viikoittain",
   "budgetMonthly": "Kuukausittain",
   "budgetYearly": "Vuosittain",
-  "budgetNever": "Ei koskaan"
+  "budgetNever": "Ei koskaan",
+  "refreshBalance": "Päivitä saldo",
+  "balanceRefreshed": "Saldo päivitetty"
 }

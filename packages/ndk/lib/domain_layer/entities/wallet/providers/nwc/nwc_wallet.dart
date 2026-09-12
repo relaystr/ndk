@@ -10,9 +10,11 @@ import 'package:rxdart/rxdart.dart';
 /// Manages connection to a remote wallet via NWC protocol
 class NwcWallet extends Wallet {
   static const String kPermissionsMetadataKey = 'permissions';
+  static const String kProviderIdMetadataKey = 'providerId';
 
   final String nwcUrl;
   final Set<String> cachedPermissions;
+  final String? providerId;
   NwcConnection? connection;
 
   /// Remaining NWC budget in sats, cached after the last `get_budget` call.
@@ -31,6 +33,7 @@ class NwcWallet extends Wallet {
     super.type = WalletType.NWC,
     required super.supportedUnits,
     required this.nwcUrl,
+    this.providerId,
     Set<String> cachedPermissions = const {},
     Map<String, dynamic>? metadata,
   })  : cachedPermissions = Set.unmodifiable(cachedPermissions),
@@ -38,6 +41,7 @@ class NwcWallet extends Wallet {
           metadata: Map.unmodifiable({
             ...(metadata ?? const {}),
             'nwcUrl': nwcUrl,
+            if (providerId != null) kProviderIdMetadataKey: providerId,
             kPermissionsMetadataKey: cachedPermissions.toList(),
           }),
         );
@@ -63,6 +67,7 @@ class NwcWallet extends Wallet {
       name: name,
       supportedUnits: supportedUnits,
       nwcUrl: nwcUrl,
+      providerId: metadata[kProviderIdMetadataKey] as String?,
       cachedPermissions: _parsePermissions(metadata[kPermissionsMetadataKey]),
       metadata: metadata,
     );
@@ -74,6 +79,7 @@ class NwcWallet extends Wallet {
       name: name,
       supportedUnits: supportedUnits,
       nwcUrl: nwcUrl,
+      providerId: providerId,
       cachedPermissions: permissions,
       metadata: metadata,
     );

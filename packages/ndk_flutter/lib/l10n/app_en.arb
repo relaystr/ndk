@@ -2,6 +2,9 @@
   "lnbitsWalletOption": "LNbits",
   "lnbitsConnectionInstructions": "In LNbits, choose the wallet you want to connect, open it, click API docs, and copy the Admin Key. Paste it below:",
   "lnbitsAdminKey": "LNbits Admin Key",
+  "lnbitsKeyType": "LNbits key type",
+  "lnbitsInvoiceReadKey": "LNbits invoice/read key",
+  "lnbitsReadOnlyDescription": "Receive-only wallet: view balance and history, and create invoices. Sending payments is disabled.",
   "lnbitsUrl": "LNbits URL",
   "lnbitsCredentialsRequired": "Enter both the LNbits Admin Key and URL.",
   "lnbitsWalletAdded": "LNbits wallet added successfully",
@@ -1464,6 +1467,8 @@
     "description": "Error message for invalid NWC URI"
   },
   "paste": "Paste",
+  "clearInput": "Clear input",
+  "pasteOrEnter": "Paste or type",
   "@paste": {
     "description": "Label for paste action"
   },
@@ -1689,5 +1694,7 @@
   "walletDetailTerms": "Terms of service",
   "walletDetailMessage": "Message",
   "walletDetailCommunityRating": "Community rating",
-  "walletDetailCommunityReviews": "Recent community reviews"
+  "walletDetailCommunityReviews": "Recent community reviews",
+  "refreshBalance": "Refresh balance",
+  "balanceRefreshed": "Balance refreshed"
 }

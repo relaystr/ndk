@@ -97,6 +97,7 @@ class WalletsPageState extends State<WalletsPage> with WidgetsBindingObserver {
                 discoveryRelay: kDefaultAlbyGoConnectConfig.discoveryRelay,
                 callback: _sampleCallback,
                 walletName: 'Alby Cloud',
+                providerId: 'alby',
                 additionalQueryParameters: const {
                   'return_to': _sampleCallback,
                 },
@@ -114,6 +115,7 @@ class WalletsPageState extends State<WalletsPage> with WidgetsBindingObserver {
                 discoveryRelay: _coinosRelay,
                 callback: _sampleCallback,
                 walletName: 'Coinos',
+                providerId: 'coinos',
                 walletServicePubkey: _coinosWalletServicePubkey,
               );
             },

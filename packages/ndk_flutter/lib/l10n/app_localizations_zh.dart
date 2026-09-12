@@ -19,6 +19,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get lnbitsAdminKey => 'LNbits 管理员密钥';
 
   @override
+  String get lnbitsKeyType => 'LNbits 密钥类型';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'LNbits 发票/只读密钥';
+
+  @override
+  String get lnbitsReadOnlyDescription => '仅收款钱包：可查看余额和历史记录并创建发票，无法发送付款。';
+
+  @override
   String get lnbitsUrl => 'LNbits URL';
 
   @override
@@ -1180,6 +1189,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get paste => '粘贴';
 
   @override
+  String get clearInput => '清除输入';
+
+  @override
+  String get pasteOrEnter => '粘贴或输入';
+
+  @override
   String get fromYourProfile => '来自您的个人资料';
 
   @override
@@ -1447,4 +1462,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get walletDetailCommunityReviews => '近期社区评论';
+
+  @override
+  String get refreshBalance => '刷新余额';
+
+  @override
+  String get balanceRefreshed => '余额已刷新';
 }

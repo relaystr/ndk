@@ -19,6 +19,16 @@ class AppLocalizationsFi extends AppLocalizations {
   String get lnbitsAdminKey => 'LNbits-ylläpitäjän avain';
 
   @override
+  String get lnbitsKeyType => 'LNbits-avaimen tyyppi';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'LNbits-laskutus-/lukuavain';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Vain vastaanottava lompakko: näytä saldo ja historia sekä luo laskuja. Maksujen lähetys on poistettu käytöstä.';
+
+  @override
   String get lnbitsUrl => 'LNbits-URL';
 
   @override
@@ -1199,6 +1209,12 @@ class AppLocalizationsFi extends AppLocalizations {
   String get paste => 'Liitä';
 
   @override
+  String get clearInput => 'Tyhjennä syöte';
+
+  @override
+  String get pasteOrEnter => 'Liitä tai kirjoita';
+
+  @override
   String get fromYourProfile => 'Profiilistasi';
 
   @override
@@ -1471,4 +1487,10 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get walletDetailCommunityReviews => 'Viimeisimmät yhteisöarvostelut';
+
+  @override
+  String get refreshBalance => 'Päivitä saldo';
+
+  @override
+  String get balanceRefreshed => 'Saldo päivitetty';
 }

@@ -36,12 +36,14 @@ class WalletInputScanResult {
   final WalletInputOrigin origin;
   final CashuMintSuggestion? cashuMintSuggestion;
   final LnBitsConnectionInput? lnBitsConnection;
+  final String? providerId;
 
   const WalletInputScanResult.value(
     this.value, {
     this.manuallyEntered = false,
     this.origin = WalletInputOrigin.scanner,
     this.cashuMintSuggestion,
+    this.providerId,
   }) : connectionStarted = false,
        lnBitsConnection = null;
 
@@ -51,7 +53,8 @@ class WalletInputScanResult {
       connectionStarted = false,
       manuallyEntered = true,
       origin = WalletInputOrigin.walletChooser,
-      cashuMintSuggestion = null;
+      cashuMintSuggestion = null,
+      providerId = null;
 
   const WalletInputScanResult.connectionStarted()
     : value = null,
@@ -59,7 +62,8 @@ class WalletInputScanResult {
       manuallyEntered = false,
       origin = WalletInputOrigin.walletChooser,
       cashuMintSuggestion = null,
-      lnBitsConnection = null;
+      lnBitsConnection = null,
+      providerId = null;
 }
 
 class LnBitsConnectionInput {
@@ -67,12 +71,14 @@ class LnBitsConnectionInput {
   final String adminKey;
   final String? walletName;
   final String? remoteWalletId;
+  final bool readOnly;
 
   const LnBitsConnectionInput({
     required this.url,
     required this.adminKey,
     this.walletName,
     this.remoteWalletId,
+    this.readOnly = false,
   });
 }
 
@@ -451,17 +457,20 @@ class NwcWalletAuthCoordinator {
     required Uri launchUri,
     required String callback,
     required String walletName,
+    String? providerId,
   }) async {
     _retryLaunch = () => connectWithUri(
       context,
       launchUri: launchUri,
       callback: callback,
       walletName: walletName,
+      providerId: providerId,
     );
     _pendingSession = null;
     _pendingCallbackSession = _PendingNwcCallbackSession(
       returnTo: callback,
       walletName: walletName,
+      providerId: providerId,
     );
     _markAwaiting(walletName);
 
@@ -505,12 +514,17 @@ class NwcWalletAuthCoordinator {
     BuildContext context, {
     required AlbyGoConnectConfig config,
     required String walletName,
+    String? providerId,
   }) async {
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
 
     final appKey = Bip340.generatePrivateKey();
-    _retryLaunch = () =>
-        connectWalletAuth(context, config: config, walletName: walletName);
+    _retryLaunch = () => connectWalletAuth(
+      context,
+      config: config,
+      walletName: walletName,
+      providerId: providerId,
+    );
     final launchUri = buildNwcWalletAuthUri(
       appPubkey: appKey.publicKey,
       config: config,
@@ -521,6 +535,7 @@ class NwcWalletAuthCoordinator {
       discoveryRelay: config.discoveryRelay,
       returnTo: config.callback,
       walletName: walletName,
+      providerId: providerId,
     );
     _pendingCallbackSession = null;
     _markAwaiting(walletName);
@@ -564,6 +579,7 @@ class NwcWalletAuthCoordinator {
     required String discoveryRelay,
     required String callback,
     required String walletName,
+    String? providerId,
     String? walletServicePubkey,
     Map<String, String> additionalQueryParameters = const {},
   }) async {
@@ -575,6 +591,7 @@ class NwcWalletAuthCoordinator {
       discoveryRelay: discoveryRelay,
       callback: callback,
       walletName: walletName,
+      providerId: providerId,
       walletServicePubkey: walletServicePubkey,
       additionalQueryParameters: additionalQueryParameters,
     );
@@ -591,6 +608,7 @@ class NwcWalletAuthCoordinator {
       returnTo: callback,
       walletName: walletName,
       walletServicePubkey: walletServicePubkey,
+      providerId: providerId,
     );
     _pendingCallbackSession = null;
     _markAwaiting(walletName);
@@ -627,6 +645,7 @@ class NwcWalletAuthCoordinator {
         context,
         config: config,
         walletName: config.walletName,
+        providerId: 'alby',
       );
     }
 
@@ -645,6 +664,7 @@ class NwcWalletAuthCoordinator {
     _pendingCallbackSession = _PendingNwcCallbackSession(
       returnTo: config.callback,
       walletName: config.walletName,
+      providerId: 'alby',
     );
     _markAwaiting(config.walletName);
 
@@ -712,6 +732,7 @@ class NwcWalletAuthCoordinator {
           ndkFlutter,
           nwcUri: nwcUri,
           walletName: pendingWalletAuth.walletName,
+          providerId: pendingWalletAuth.providerId,
         );
         _pendingSession = null;
         connectionState.value = WalletConnectionState.connected(
@@ -755,6 +776,8 @@ class NwcWalletAuthCoordinator {
               pendingCallbackSession?.walletName ??
               _pendingSession?.walletName ??
               kDefaultAlbyGoConnectConfig.walletName,
+          providerId:
+              pendingCallbackSession?.providerId ?? _pendingSession?.providerId,
         );
         connectionState.value = WalletConnectionState.connected(
           pendingCallbackSession?.walletName ??
@@ -865,6 +888,7 @@ class NwcWalletAuthCoordinator {
         ndkFlutter,
         nwcUri: constructedNwcUri,
         walletName: pendingSession.walletName,
+        providerId: pendingSession.providerId,
       );
 
       _pendingSession = null;
@@ -917,6 +941,7 @@ class NwcWalletAuthCoordinator {
     NdkFlutter ndkFlutter, {
     required String nwcUri,
     required String walletName,
+    String? providerId,
   }) async {
     final walletId = DateTime.now().millisecondsSinceEpoch.toString();
     final nwcWallet = NwcWallet(
@@ -924,6 +949,7 @@ class NwcWalletAuthCoordinator {
       name: walletName,
       supportedUnits: {'sat'},
       nwcUrl: nwcUri,
+      providerId: providerId,
     );
     await ndkFlutter.ndk.wallets.addWallet(nwcWallet);
     _lastConnectedWalletId = walletId;
@@ -936,6 +962,7 @@ class _PendingNwcWalletAuthSession {
   final String returnTo;
   final String walletName;
   final String? walletServicePubkey;
+  final String? providerId;
 
   const _PendingNwcWalletAuthSession({
     required this.appKey,
@@ -943,16 +970,19 @@ class _PendingNwcWalletAuthSession {
     required this.returnTo,
     required this.walletName,
     this.walletServicePubkey,
+    this.providerId,
   });
 }
 
 class _PendingNwcCallbackSession {
   final String returnTo;
   final String walletName;
+  final String? providerId;
 
   const _PendingNwcCallbackSession({
     required this.returnTo,
     required this.walletName,
+    this.providerId,
   });
 }
 
@@ -1877,6 +1907,7 @@ class _WalletInputPreview {
   final Bolt12ResolvedOffer? resolvedOffer;
   final CashuMintInfo? mintInfo;
   final LnBitsConnectionInput? lnBitsConnection;
+  final String? providerId;
 
   const _WalletInputPreview({
     required this.input,
@@ -1890,6 +1921,7 @@ class _WalletInputPreview {
     this.resolvedOffer,
     this.mintInfo,
     this.lnBitsConnection,
+    this.providerId,
   });
 }
 
@@ -1969,6 +2001,7 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
           manuallyEntered: result.manuallyEntered,
           origin: result.origin,
           cashuMintSuggestion: result.cashuMintSuggestion,
+          providerId: result.providerId,
         );
       }
       return;
@@ -2001,7 +2034,12 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
         details: [
           _WalletPreviewDetail(l10n.walletDetailType, l10n.lnbitsWalletOption),
           _WalletPreviewDetail(l10n.lnbitsUrl, validated.url),
-          _WalletPreviewDetail(l10n.lnbitsAdminKey, l10n.walletSecretHidden),
+          _WalletPreviewDetail(
+            validated.readOnly
+                ? l10n.lnbitsInvoiceReadKey
+                : l10n.lnbitsAdminKey,
+            l10n.walletSecretHidden,
+          ),
           if (validated.remoteWalletId?.isNotEmpty == true)
             _WalletPreviewDetail(
               l10n.walletDetailWalletId,
@@ -2036,6 +2074,7 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
       adminKey: adminKey,
       walletName: info.name,
       remoteWalletId: info.id,
+      readOnly: connection.readOnly,
     );
   }
 
@@ -2216,6 +2255,7 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
     bool manuallyEntered = false,
     WalletInputOrigin origin = WalletInputOrigin.scanner,
     CashuMintSuggestion? cashuMintSuggestion,
+    String? providerId,
   }) async {
     final input = _normalizeWalletInput(rawInput);
     _setInput(input);
@@ -2234,6 +2274,7 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
         manuallyEntered,
         origin,
         cashuMintSuggestion,
+        providerId,
       );
       if (!mounted) return;
       setState(() {
@@ -2257,6 +2298,7 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
     bool manuallyEntered,
     WalletInputOrigin origin,
     CashuMintSuggestion? cashuMintSuggestion,
+    String? providerId,
   ) async {
     final l10n = AppLocalizations.of(context)!;
     switch (kind) {
@@ -2277,6 +2319,7 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
           detectedKind: kind,
           walletType: WalletType.NWC,
           name: name,
+          providerId: providerId,
           details: [
             _WalletPreviewDetail(
               l10n.walletDetailType,
@@ -2548,6 +2591,7 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
           LnBitsConnectionInput(
             url: input,
             adminKey: _lnBitsAdminKeyController.text.trim(),
+            readOnly: preview.lnBitsConnection?.readOnly ?? false,
           ),
         );
         preview = _WalletInputPreview(
@@ -2567,6 +2611,7 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
           true,
           preview.origin,
           preview.cashuMintSuggestion,
+          preview.providerId,
         );
         if (!mounted) return;
         setState(() => _preview = preview);
@@ -2599,6 +2644,7 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
           name: walletName,
           supportedUnits: const {'sat'},
           nwcUrl: preview.input,
+          providerId: preview.providerId,
         );
         await widget.ndkFlutter.ndk.wallets.addWallet(wallet);
         return wallet;
@@ -2625,6 +2671,7 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
           metadata: {
             LnBitsWallet.urlMetadataKey: connection.url,
             LnBitsWallet.adminKeyMetadataKey: connection.adminKey,
+            LnBitsWallet.readOnlyMetadataKey: connection.readOnly,
             LnBitsWallet.remoteWalletIdMetadataKey: ?connection.remoteWalletId,
           },
         );
@@ -2863,6 +2910,34 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
                     ),
                     const SizedBox(height: 22),
                     if (preview.walletType == WalletType.LNBITS) ...[
+                      if (preview.lnBitsConnection?.readOnly == true) ...[
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: colors.primaryContainer,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.lock_outline,
+                                color: colors.onPrimaryContainer,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  l10n.lnbitsReadOnlyDescription,
+                                  style: TextStyle(
+                                    color: colors.onPrimaryContainer,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       TextField(
                         controller: _lnBitsAdminKeyController,
                         enabled: !_isAdding,
@@ -2871,7 +2946,9 @@ class _AddWalletDialogState extends State<_AddWalletDialog> {
                         autocorrect: false,
                         decoration: InputDecoration(
                           border: const OutlineInputBorder(),
-                          labelText: l10n.lnbitsAdminKey,
+                          labelText: preview.lnBitsConnection?.readOnly == true
+                              ? l10n.lnbitsInvoiceReadKey
+                              : l10n.lnbitsAdminKey,
                         ),
                       ),
                       const SizedBox(height: 16),

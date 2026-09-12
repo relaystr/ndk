@@ -59,6 +59,28 @@ void main() {
           isA<LnBitsWallet>());
     });
 
+    test('invoice/read key creates receive-only wallet and round-trips', () {
+      final readOnlyWallet = LnBitsWallet(
+        id: 'read-only',
+        name: 'Read-only LNbits',
+        supportedUnits: const {'sat'},
+        lnbitsUrl: url,
+        adminKey: 'invoice-key',
+        readOnly: true,
+      );
+
+      expect(readOnlyWallet.canSend, isFalse);
+      expect(readOnlyWallet.canReceive, isTrue);
+      final restored = LnBitsWallet.fromStorage(
+        id: readOnlyWallet.id,
+        name: readOnlyWallet.name,
+        supportedUnits: readOnlyWallet.supportedUnits,
+        metadata: readOnlyWallet.toMetadata(),
+      );
+      expect(restored.readOnly, isTrue);
+      expect(restored.adminKey, 'invoice-key');
+    });
+
     test('rejects invalid URLs and missing credentials', () {
       expect(
         () => LnBitsWalletProvider.normalizeUrl('lnbits.example'),
@@ -162,6 +184,29 @@ void main() {
           isTrue);
     });
 
+    test('invoice/read key rejects outgoing payments before HTTP request',
+        () async {
+      var requested = false;
+      final provider = LnBitsWalletProvider(MockClient((_) async {
+        requested = true;
+        return http.Response('{}', 200);
+      }));
+      final readOnlyWallet = LnBitsWallet(
+        id: 'read-only',
+        name: 'Read-only LNbits',
+        supportedUnits: const {'sat'},
+        lnbitsUrl: url,
+        adminKey: 'invoice-key',
+        readOnly: true,
+      );
+
+      await expectLater(
+        provider.send(readOnlyWallet, 'lnbc1invoice'),
+        throwsUnsupportedError,
+      );
+      expect(requested, isFalse);
+    });
+
     test('maps pending and completed LNbits transactions', () async {
       final provider = LnBitsWalletProvider(MockClient((_) async {
         return http.Response(
@@ -211,6 +256,26 @@ void main() {
               .having(
                   (error) => error.toString(), 'secret', isNot(contains(key))),
         ),
+      );
+    });
+
+    test('rejects outgoing payment when configured with invoice/read key',
+        () async {
+      final provider = LnBitsWalletProvider(MockClient((_) async {
+        throw StateError('HTTP must not be called');
+      }));
+      final readOnlyWallet = LnBitsWallet(
+        id: 'read-only',
+        name: 'Read-only LNbits',
+        supportedUnits: const {'sat'},
+        lnbitsUrl: url,
+        adminKey: 'invoice-key',
+        readOnly: true,
+      );
+
+      await expectLater(
+        provider.send(readOnlyWallet, 'lnbc1invoice'),
+        throwsUnsupportedError,
       );
     });
   });

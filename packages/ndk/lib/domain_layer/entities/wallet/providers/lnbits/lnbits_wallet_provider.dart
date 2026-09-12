@@ -38,6 +38,8 @@ class LnBitsApiException implements Exception {
 
 /// Direct LNbits REST API wallet provider.
 class LnBitsWalletProvider implements WalletProvider {
+  static const balanceRefreshInterval = Duration(seconds: 30);
+
   final http.Client _client;
 
   LnBitsWalletProvider([http.Client? client])
@@ -100,6 +102,7 @@ class LnBitsWalletProvider implements WalletProvider {
       ),
       remoteWalletId:
           metadata[LnBitsWallet.remoteWalletIdMetadataKey]?.toString(),
+      readOnly: metadata[LnBitsWallet.readOnlyMetadataKey] as bool? ?? false,
       metadata: metadata,
     );
   }
@@ -119,6 +122,7 @@ class LnBitsWalletProvider implements WalletProvider {
       lnbitsUrl: lnbitsWallet.lnbitsUrl,
       adminKey: lnbitsWallet.adminKey,
       remoteWalletId: info.id,
+      readOnly: lnbitsWallet.readOnly,
       metadata: lnbitsWallet.metadata,
     );
   }
@@ -127,22 +131,22 @@ class LnBitsWalletProvider implements WalletProvider {
   Future<void> removeWallet(Wallet wallet) async {}
 
   @override
-  Stream<List<WalletBalance>> getBalances(Wallet wallet) {
+  Stream<List<WalletBalance>> getBalances(Wallet wallet) async* {
     final lnbitsWallet = _asLnBitsWallet(wallet);
-    return Stream.fromFuture(
-      _getWalletInfo(
+    while (true) {
+      final info = await _getWalletInfo(
         lnbitsUrl: lnbitsWallet.lnbitsUrl,
         adminKey: lnbitsWallet.adminKey,
-      ).then(
-        (info) => [
-          WalletBalance(
-            walletId: wallet.id,
-            unit: 'sat',
-            amount: info.balanceMsat ~/ 1000,
-          ),
-        ],
-      ),
-    );
+      );
+      yield [
+        WalletBalance(
+          walletId: wallet.id,
+          unit: 'sat',
+          amount: info.balanceMsat ~/ 1000,
+        ),
+      ];
+      await Future<void>.delayed(balanceRefreshInterval);
+    }
   }
 
   @override
@@ -171,6 +175,9 @@ class LnBitsWalletProvider implements WalletProvider {
     String invoice, {
     Duration? timeout,
   }) async {
+    if (_asLnBitsWallet(wallet).readOnly) {
+      throw UnsupportedError('LNbits invoice/read key cannot send payments');
+    }
     final result = await _pay(
       _asLnBitsWallet(wallet),
       invoice,
@@ -210,6 +217,9 @@ class LnBitsWalletProvider implements WalletProvider {
     Map<String, dynamic>? metadata,
     Duration? timeout,
   }) async {
+    if (_asLnBitsWallet(wallet).readOnly) {
+      throw UnsupportedError('LNbits invoice/read key cannot send payments');
+    }
     if (payerNote?.isNotEmpty == true) {
       throw UnsupportedError(
           'LNbits BOLT11 payments do not support payer notes');

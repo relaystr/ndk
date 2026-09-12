@@ -53,6 +53,20 @@ void main() {
     expect(provider.receiveMetadata, {'order_id': '456'});
     expect(provider.receiveTimeout, const Duration(seconds: 15));
   });
+
+  test('Wallets refreshes balance from provider on demand', () async {
+    final wallet = _TestWallet();
+    final repository = MemWalletsRepo();
+    await repository.storeWallet(wallet);
+    final provider = _TestWalletProvider(wallet);
+    final wallets = Wallets(providers: [provider], repository: repository);
+    addTearDown(wallets.dispose);
+
+    final balances = await wallets.refreshBalance(wallet.id);
+
+    expect(balances.single.amount, 42);
+    expect(provider.balanceRequests, 1);
+  });
 }
 
 class _TestWallet extends Wallet {
@@ -79,6 +93,8 @@ class _TestWalletProvider extends WalletProvider {
   final Wallet wallet;
 
   _TestWalletProvider(this.wallet);
+
+  int balanceRequests = 0;
 
   final payResponse = PayResponse(
     resultType: 'pay',
@@ -125,8 +141,12 @@ class _TestWalletProvider extends WalletProvider {
   Stream<List<Wallet>> get discoveredWallets => Stream.value(const []);
 
   @override
-  Stream<List<WalletBalance>> getBalances(Wallet wallet) =>
-      Stream.value(const []);
+  Stream<List<WalletBalance>> getBalances(Wallet wallet) {
+    balanceRequests++;
+    return Stream.value([
+      WalletBalance(walletId: wallet.id, unit: 'sat', amount: 42),
+    ]);
+  }
 
   @override
   Stream<List<WalletTransaction>> getPendingTransactions(Wallet wallet) =>

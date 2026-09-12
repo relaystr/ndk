@@ -116,10 +116,8 @@ class _WalletQrScannerDialogState extends State<_WalletQrScannerDialog> {
     setState(() => _errorMessage = error.toString());
   }
 
-  Future<void> _pasteFromClipboard() async {
-    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-    if (!mounted) return;
-    await _showManualInput(initialValue: clipboardData?.text ?? '');
+  Future<void> _openManualInput() async {
+    await _showManualInput();
   }
 
   Future<void> _showManualInput({
@@ -307,10 +305,12 @@ class _WalletQrScannerDialogState extends State<_WalletQrScannerDialog> {
                         children: [
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed:
-                                  _hasScanned ? null : _pasteFromClipboard,
+                              onPressed: _hasScanned ? null : _openManualInput,
                               icon: const Icon(Icons.paste),
-                              label: Text(l10n.paste),
+                              label: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(l10n.pasteOrEnter),
+                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Theme.of(
                                   context,
@@ -578,11 +578,26 @@ class _ManualWalletInputDialogState extends State<_ManualWalletInputDialog> {
     }
   }
 
+  Future<void> _pasteInput() async {
+    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+    if (!mounted) return;
+    final value = clipboardData?.text?.trim() ?? '';
+    _controller.text = value;
+    _controller.selection = TextSelection.collapsed(offset: value.length);
+    setState(() => _kind = classifyWalletInput(value));
+  }
+
+  void _clearInput() {
+    _controller.clear();
+    setState(() => _kind = null);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = ndk_l10n.AppLocalizations.of(context)!;
     final kind = _kind;
     final hasInput = _controller.text.trim().isNotEmpty;
+    final isNwcInput = kind == WalletInputKind.nwc;
 
     return AlertDialog(
       title: Text(widget.nwcOnly ? l10n.manualNwcConnection : l10n.walletInput),
@@ -596,11 +611,11 @@ class _ManualWalletInputDialogState extends State<_ManualWalletInputDialog> {
               controller: _controller,
               autofocus: true,
               autocorrect: false,
-              obscureText: kind == WalletInputKind.nwc,
-              enableSuggestions: kind != WalletInputKind.nwc,
+              obscureText: isNwcInput,
+              enableSuggestions: !isNwcInput,
               keyboardType: TextInputType.url,
-              minLines: 2,
-              maxLines: 4,
+              minLines: isNwcInput ? 1 : 2,
+              maxLines: isNwcInput ? 1 : 4,
               onChanged: (value) {
                 setState(() => _kind = classifyWalletInput(value));
               },
@@ -609,8 +624,16 @@ class _ManualWalletInputDialogState extends State<_ManualWalletInputDialog> {
                 hintText: widget.nwcOnly
                     ? l10n.nwcConnectionUriHint
                     : widget.supportedInputDescription,
-                suffixIcon: widget.nwcOnly
-                    ? IconButton(
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: _pasteInput,
+                      tooltip: l10n.paste,
+                      icon: const Icon(Icons.content_paste_outlined),
+                    ),
+                    if (widget.nwcOnly)
+                      IconButton(
                         onPressed: _isScanningQr ? null : _scanQrCode,
                         tooltip: l10n.scanWalletQrCode,
                         icon: _isScanningQr
@@ -621,8 +644,15 @@ class _ManualWalletInputDialogState extends State<_ManualWalletInputDialog> {
                                 ),
                               )
                             : const Icon(Icons.qr_code_scanner),
-                      )
-                    : null,
+                      ),
+                    if (hasInput)
+                      IconButton(
+                        onPressed: _clearInput,
+                        tooltip: l10n.clearInput,
+                        icon: const Icon(Icons.clear),
+                      ),
+                  ],
+                ),
               ),
             ),
             if (widget.nwcOnly && widget.connectWalletApp != null) ...[
@@ -1032,8 +1062,21 @@ class _LnBitsConnectionDialogState extends State<_LnBitsConnectionDialog> {
   final _adminKeyController = TextEditingController();
   final _urlController = TextEditingController(text: 'https://');
   bool _showAdminKey = false;
+  bool _readOnly = false;
   bool _isValidating = false;
   String? _error;
+
+  Future<void> _scanInto(TextEditingController controller) async {
+    final value = await showDialog<String>(
+      context: context,
+      builder: (_) => const _QrCodeScannerDialog(),
+    );
+    if (!mounted || value == null) return;
+    final normalized = value.trim();
+    controller.text = normalized;
+    controller.selection = TextSelection.collapsed(offset: normalized.length);
+    setState(() => _error = null);
+  }
 
   @override
   void dispose() {
@@ -1050,7 +1093,11 @@ class _LnBitsConnectionDialogState extends State<_LnBitsConnectionDialog> {
       setState(() => _error = l10n.lnbitsCredentialsRequired);
       return;
     }
-    final input = LnBitsConnectionInput(url: url, adminKey: adminKey);
+    final input = LnBitsConnectionInput(
+      url: url,
+      adminKey: adminKey,
+      readOnly: _readOnly,
+    );
     final validate = widget.validate;
     if (validate == null) {
       Navigator.of(context).pop(input);
@@ -1092,6 +1139,43 @@ class _LnBitsConnectionDialogState extends State<_LnBitsConnectionDialog> {
           children: [
             Text(l10n.lnbitsConnectionInstructions),
             const SizedBox(height: 20),
+            DropdownButtonFormField<bool>(
+              initialValue: _readOnly,
+              isExpanded: true,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText: l10n.lnbitsKeyType,
+              ),
+              items: [
+                DropdownMenuItem(
+                  value: false,
+                  child: Text(l10n.lnbitsAdminKey),
+                ),
+                DropdownMenuItem(
+                  value: true,
+                  child: Text(l10n.lnbitsInvoiceReadKey),
+                ),
+              ],
+              onChanged: _isValidating
+                  ? null
+                  : (value) => setState(() => _readOnly = value ?? false),
+            ),
+            if (_readOnly) ...[
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.lock_outline,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(l10n.lnbitsReadOnlyDescription)),
+                ],
+              ),
+            ],
+            const SizedBox(height: 16),
             TextField(
               controller: _adminKeyController,
               enabled: !_isValidating,
@@ -1100,14 +1184,27 @@ class _LnBitsConnectionDialogState extends State<_LnBitsConnectionDialog> {
               autocorrect: false,
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
-                labelText: l10n.lnbitsAdminKey,
-                suffixIcon: IconButton(
-                  onPressed: () => setState(() {
-                    _showAdminKey = !_showAdminKey;
-                  }),
-                  icon: Icon(
-                    _showAdminKey ? Icons.visibility_off : Icons.visibility,
-                  ),
+                labelText:
+                    _readOnly ? l10n.lnbitsInvoiceReadKey : l10n.lnbitsAdminKey,
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: _isValidating
+                          ? null
+                          : () => _scanInto(_adminKeyController),
+                      tooltip: l10n.scanWalletQrCode,
+                      icon: const Icon(Icons.qr_code_scanner),
+                    ),
+                    IconButton(
+                      onPressed: () => setState(() {
+                        _showAdminKey = !_showAdminKey;
+                      }),
+                      icon: Icon(
+                        _showAdminKey ? Icons.visibility_off : Icons.visibility,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -1120,6 +1217,12 @@ class _LnBitsConnectionDialogState extends State<_LnBitsConnectionDialog> {
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
                 labelText: l10n.lnbitsUrl,
+                suffixIcon: IconButton(
+                  onPressed:
+                      _isValidating ? null : () => _scanInto(_urlController),
+                  tooltip: l10n.scanWalletQrCode,
+                  icon: const Icon(Icons.qr_code_scanner),
+                ),
               ),
             ),
             if (_error != null) ...[
@@ -1435,6 +1538,7 @@ class _AlbyChooserDialog extends StatelessWidget {
           result!.value,
           manuallyEntered: true,
           origin: WalletInputOrigin.walletChooser,
+          providerId: 'alby',
         ),
       );
     }
@@ -1459,6 +1563,7 @@ class _AlbyChooserDialog extends StatelessWidget {
               onTap:
                   _albyCloudOption == null ? null : () => _openCloud(context),
             ),
+            const SizedBox(height: 16),
             ListTile(
               leading: const _AlbyGoIcon(),
               title: Text(l10n.albyGoOption),
@@ -1467,6 +1572,7 @@ class _AlbyChooserDialog extends StatelessWidget {
               onTap:
                   _albyGoOption == null ? null : () => _connectAlbyGo(context),
             ),
+            const SizedBox(height: 16),
             ListTile(
               leading: const _NwcIcon(),
               title: Text(l10n.manualNwcConnection),

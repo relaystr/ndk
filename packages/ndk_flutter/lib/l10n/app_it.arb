@@ -2,6 +2,9 @@
   "lnbitsWalletOption": "LNbits",
   "lnbitsConnectionInstructions": "In LNbits, scegli il portafoglio da collegare, aprilo, fai clic su Documentazione API e copia la chiave amministratore. Incollala qui sotto:",
   "lnbitsAdminKey": "Chiave amministratore LNbits",
+  "lnbitsKeyType": "Tipo di chiave LNbits",
+  "lnbitsInvoiceReadKey": "Chiave fatture/lettura LNbits",
+  "lnbitsReadOnlyDescription": "Portafoglio di sola ricezione: visualizza saldo e cronologia e crea fatture. L’invio di pagamenti è disabilitato.",
   "lnbitsUrl": "URL LNbits",
   "lnbitsCredentialsRequired": "Inserisci la chiave amministratore e l’URL LNbits.",
   "lnbitsWalletAdded": "Portafoglio LNbits aggiunto",
@@ -473,6 +476,8 @@
   "scanNwcInstructions": "Scansiona il codice QR dalla tua app di portafoglio NWC",
   "invalidNwcUri": "URI NWC non valido",
   "paste": "Incolla",
+  "clearInput": "Cancella testo",
+  "pasteOrEnter": "Incolla o digita",
   "fromYourProfile": "Dal tuo profilo",
   "orEnterManually": "Oppure inserisci manualmente:",
   "budgetUsedOf": "Bilancio: {used} / {total}",
@@ -512,5 +517,7 @@
   "walletName": "Nome del portafoglio",
   "walletNameHint": "Inserisci il nome del portafoglio",
   "save": "Salva",
-  "walletRenamed": "Portafoglio rinominato"
+  "walletRenamed": "Portafoglio rinominato",
+  "refreshBalance": "Aggiorna saldo",
+  "balanceRefreshed": "Saldo aggiornato"
 }

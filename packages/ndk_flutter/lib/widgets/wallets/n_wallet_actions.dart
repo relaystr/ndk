@@ -4,6 +4,7 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'n_cashu_mint_icon.dart';
+import 'n_nwc_wallet_icon.dart';
 import 'wallet_action_dialogs.dart';
 
 /// Card with Send/Receive actions and dialogs for a selected wallet.
@@ -92,6 +93,7 @@ class _NWalletActionsState extends State<NWalletActions>
 
         final bool isCashu = selectedWallet is CashuWallet;
         final bool isNwc = selectedWallet is NwcWallet;
+        final bool isLnurl = selectedWallet is LnurlWallet;
         final bool isBolt12 = selectedWallet is Bolt12Wallet;
         final bool isLnBits = selectedWallet is LnBitsWallet;
         final bool canSend = selectedWallet.canSend;
@@ -111,15 +113,7 @@ class _NWalletActionsState extends State<NWalletActions>
                     if (isCashu)
                       NCashuMintIcon(wallet: selectedWallet, size: 24)
                     else if (isNwc)
-                      Image.asset(
-                        'assets/images/nwc.png',
-                        package: 'ndk_flutter',
-                        width: 24,
-                        height: 24,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.cloud, color: Colors.blue);
-                        },
-                      )
+                      NNwcWalletIcon(wallet: selectedWallet, size: 24)
                     else if (isBolt12)
                       const Icon(Icons.electric_bolt, color: Colors.green)
                     else if (isLnBits)
@@ -150,6 +144,23 @@ class _NWalletActionsState extends State<NWalletActions>
               ),
               const Divider(),
               const SizedBox(height: 8),
+            ],
+            if ((isLnBits || isLnurl || isNwc) && canReceive && !canSend) ...[
+              Row(
+                children: [
+                  Icon(
+                    Icons.lock_outline,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.receiveOnlyWallet,
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
             ],
             if (canSend || canReceive)
               Row(

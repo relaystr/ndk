@@ -51,6 +51,7 @@ class NwcWalletProvider implements WalletProvider {
       name: name,
       supportedUnits: supportedUnits,
       nwcUrl: nwcUrl,
+      providerId: metadata[NwcWallet.kProviderIdMetadataKey] as String?,
       metadata: metadata,
     );
   }

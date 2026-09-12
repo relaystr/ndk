@@ -137,6 +137,24 @@ abstract class AppLocalizations {
   /// **'LNbits Admin Key'**
   String get lnbitsAdminKey;
 
+  /// No description provided for @lnbitsKeyType.
+  ///
+  /// In en, this message translates to:
+  /// **'LNbits key type'**
+  String get lnbitsKeyType;
+
+  /// No description provided for @lnbitsInvoiceReadKey.
+  ///
+  /// In en, this message translates to:
+  /// **'LNbits invoice/read key'**
+  String get lnbitsInvoiceReadKey;
+
+  /// No description provided for @lnbitsReadOnlyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive-only wallet: view balance and history, and create invoices. Sending payments is disabled.'**
+  String get lnbitsReadOnlyDescription;
+
   /// No description provided for @lnbitsUrl.
   ///
   /// In en, this message translates to:
@@ -2405,6 +2423,18 @@ abstract class AppLocalizations {
   /// **'Paste'**
   String get paste;
 
+  /// No description provided for @clearInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear input'**
+  String get clearInput;
+
+  /// No description provided for @pasteOrEnter.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste or type'**
+  String get pasteOrEnter;
+
   /// Label indicating a value comes from user's profile
   ///
   /// In en, this message translates to:
@@ -2890,6 +2920,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Recent community reviews'**
   String get walletDetailCommunityReviews;
+
+  /// No description provided for @refreshBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh balance'**
+  String get refreshBalance;
+
+  /// No description provided for @balanceRefreshed.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance refreshed'**
+  String get balanceRefreshed;
 }
 
 class _AppLocalizationsDelegate

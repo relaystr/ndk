@@ -19,6 +19,16 @@ class AppLocalizationsIt extends AppLocalizations {
   String get lnbitsAdminKey => 'Chiave amministratore LNbits';
 
   @override
+  String get lnbitsKeyType => 'Tipo di chiave LNbits';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'Chiave fatture/lettura LNbits';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Portafoglio di sola ricezione: visualizza saldo e cronologia e crea fatture. L’invio di pagamenti è disabilitato.';
+
+  @override
   String get lnbitsUrl => 'URL LNbits';
 
   @override
@@ -1205,6 +1215,12 @@ class AppLocalizationsIt extends AppLocalizations {
   String get paste => 'Incolla';
 
   @override
+  String get clearInput => 'Cancella testo';
+
+  @override
+  String get pasteOrEnter => 'Incolla o digita';
+
+  @override
   String get fromYourProfile => 'Dal tuo profilo';
 
   @override
@@ -1476,4 +1492,10 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get walletDetailCommunityReviews =>
       'Recensioni recenti della community';
+
+  @override
+  String get refreshBalance => 'Aggiorna saldo';
+
+  @override
+  String get balanceRefreshed => 'Saldo aggiornato';
 }

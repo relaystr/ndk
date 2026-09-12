@@ -2,6 +2,9 @@
   "lnbitsWalletOption": "LNbits",
   "lnbitsConnectionInstructions": "В LNbits выберите кошелёк для подключения, откройте его, нажмите «Документация API» и скопируйте ключ администратора. Вставьте его ниже:",
   "lnbitsAdminKey": "Ключ администратора LNbits",
+  "lnbitsKeyType": "Тип ключа LNbits",
+  "lnbitsInvoiceReadKey": "Ключ счетов/чтения LNbits",
+  "lnbitsReadOnlyDescription": "Кошелёк только для получения: просмотр баланса и истории, создание счетов. Отправка платежей отключена.",
   "lnbitsUrl": "URL LNbits",
   "lnbitsCredentialsRequired": "Введите ключ администратора и URL LNbits.",
   "lnbitsWalletAdded": "Кошелёк LNbits добавлен",
@@ -415,6 +418,8 @@
   "scanNwcInstructions": "Отсканируйте QR-код из приложения кошелька NWC",
   "invalidNwcUri": "Неверный URI NWC",
   "paste": "Вставить",
+  "clearInput": "Очистить поле",
+  "pasteOrEnter": "Вставить или ввести",
   "fromYourProfile": "Из вашего профиля",
   "orEnterManually": "Или введите вручную:",
   "budgetUsedOf": "Бюджет: {used} / {total}",
@@ -454,5 +459,7 @@
   "walletName": "Название кошелька",
   "walletNameHint": "Введите название кошелька",
   "save": "Сохранить",
-  "walletRenamed": "Кошелек переименован"
+  "walletRenamed": "Кошелек переименован",
+  "refreshBalance": "Обновить баланс",
+  "balanceRefreshed": "Баланс обновлён"
 }

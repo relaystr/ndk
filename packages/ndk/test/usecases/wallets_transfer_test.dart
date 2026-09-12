@@ -30,6 +30,14 @@ void main() {
       [sourceProvider, destinationProvider],
     );
     addTearDown(wallets.dispose);
+    final recentStream = wallets.getRecentTransactionsStream(source.id);
+    final pendingStream = wallets.getPendingTransactionsStream(destination.id);
+    final recentSubscription = recentStream.listen((_) {});
+    final pendingSubscription = pendingStream.listen((_) {});
+    addTearDown(recentSubscription.cancel);
+    addTearDown(pendingSubscription.cancel);
+    await recentStream.first;
+    await pendingStream.first;
 
     expect(
       wallets.compatibleTransferProtocol(
@@ -51,6 +59,12 @@ void main() {
     expect(sourceProvider.paidPayment, 'bitcoin:?lno=lno1offer');
     expect(sourceProvider.paidAmountMsat, 21000);
     expect(sourceProvider.paidMetadata, isNull);
+    expect(sourceProvider.balanceRequests, 1);
+    expect(destinationProvider.balanceRequests, 1);
+    expect(sourceProvider.recentTransactionRequests, 2);
+    expect(sourceProvider.pendingTransactionRequests, 0);
+    expect(destinationProvider.recentTransactionRequests, 0);
+    expect(destinationProvider.pendingTransactionRequests, 2);
   });
 
   test('transfers between legacy wallets with a fresh BOLT11 invoice',
@@ -67,6 +81,7 @@ void main() {
     );
     final sourceProvider = _TestWalletProvider(source.type);
     final destinationProvider = _TestWalletProvider(destination.type)
+      ..failBalanceRefresh = true
       ..invoiceToReceive = 'lnbc1internaltransfer';
     final wallets = await _wallets(
       [source, destination],
@@ -83,6 +98,8 @@ void main() {
     expect(result.protocol, WalletPaymentProtocol.bolt11);
     expect(destinationProvider.receivedAmountSats, 42);
     expect(sourceProvider.paidInvoice, 'lnbc1internaltransfer');
+    expect(sourceProvider.balanceRequests, 1);
+    expect(destinationProvider.balanceRequests, 1);
     expect(
       result.payment,
       'bitcoin:?lightning=lnbc1internaltransfer',
@@ -198,6 +215,10 @@ class _TestWalletProvider implements WalletProvider {
   int? paidAmountMsat;
   Map<String, dynamic>? paidMetadata;
   Map<String, dynamic>? receivedMetadata;
+  int balanceRequests = 0;
+  int recentTransactionRequests = 0;
+  int pendingTransactionRequests = 0;
+  bool failBalanceRefresh = false;
 
   _TestWalletProvider(this.type);
 
@@ -214,16 +235,27 @@ class _TestWalletProvider implements WalletProvider {
   Stream<List<Wallet>> get discoveredWallets => Stream.value(const []);
 
   @override
-  Stream<List<WalletBalance>> getBalances(Wallet wallet) =>
-      Stream.value(const []);
+  Stream<List<WalletBalance>> getBalances(Wallet wallet) {
+    balanceRequests++;
+    if (failBalanceRefresh) {
+      return Stream.error(StateError('balance unavailable'));
+    }
+    return Stream.value([
+      WalletBalance(walletId: wallet.id, unit: 'sat', amount: 1),
+    ]);
+  }
 
   @override
-  Stream<List<WalletTransaction>> getPendingTransactions(Wallet wallet) =>
-      Stream.value(const []);
+  Stream<List<WalletTransaction>> getPendingTransactions(Wallet wallet) {
+    pendingTransactionRequests++;
+    return Stream.value(const []);
+  }
 
   @override
-  Stream<List<WalletTransaction>> getRecentTransactions(Wallet wallet) =>
-      Stream.value(const []);
+  Stream<List<WalletTransaction>> getRecentTransactions(Wallet wallet) {
+    recentTransactionRequests++;
+    return Stream.value(const []);
+  }
 
   @override
   Future<Wallet?> initialize(Wallet wallet) async => null;

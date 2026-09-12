@@ -2,6 +2,9 @@
   "lnbitsWalletOption": "LNbits",
   "lnbitsConnectionInstructions": "Wähle in LNbits die Wallet aus, die du verbinden möchtest, öffne sie, klicke auf API-Dokumentation und kopiere den Admin Key. Füge ihn unten ein:",
   "lnbitsAdminKey": "LNbits Admin Key",
+  "lnbitsKeyType": "LNbits-Schlüsseltyp",
+  "lnbitsInvoiceReadKey": "LNbits Rechnungs-/Leseschlüssel",
+  "lnbitsReadOnlyDescription": "Nur-Empfangs-Wallet: Guthaben und Verlauf anzeigen und Rechnungen erstellen. Zahlungen sind deaktiviert.",
   "lnbitsUrl": "LNbits-URL",
   "lnbitsCredentialsRequired": "Gib den LNbits Admin Key und die URL ein.",
   "lnbitsWalletAdded": "LNbits-Wallet erfolgreich hinzugefügt",
@@ -473,6 +476,8 @@
   "scanNwcInstructions": "Scannen Sie den QR-Code aus Ihrer NWC-Wallet-App",
   "invalidNwcUri": "Ungültige NWC-URI",
   "paste": "Einfügen",
+  "clearInput": "Eingabe löschen",
+  "pasteOrEnter": "Einfügen oder eingeben",
   "fromYourProfile": "Aus deinem Profil",
   "orEnterManually": "Oder manuell eingeben:",
   "budgetUsedOf": "Budget: {used} / {total}",
@@ -512,5 +517,7 @@
   "walletName": "Wallet-Name",
   "walletNameHint": "Wallet-Namen eingeben",
   "save": "Speichern",
-  "walletRenamed": "Wallet umbenannt"
+  "walletRenamed": "Wallet umbenannt",
+  "refreshBalance": "Guthaben aktualisieren",
+  "balanceRefreshed": "Guthaben aktualisiert"
 }

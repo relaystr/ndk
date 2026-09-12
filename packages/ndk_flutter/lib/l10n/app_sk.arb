@@ -2,6 +2,9 @@
   "lnbitsWalletOption": "LNbits",
   "lnbitsConnectionInstructions": "V LNbits vyberte peňaženku, ktorú chcete pripojiť, otvorte ju, kliknite na Dokumentáciu API a skopírujte kľúč správcu. Vložte ho nižšie:",
   "lnbitsAdminKey": "Kľúč správcu LNbits",
+  "lnbitsKeyType": "Typ kľúča LNbits",
+  "lnbitsInvoiceReadKey": "Kľúč faktúr/čítania LNbits",
+  "lnbitsReadOnlyDescription": "Peňaženka len na prijímanie: zobrazuje zostatok a históriu a vytvára faktúry. Odosielanie platieb je vypnuté.",
   "lnbitsUrl": "URL LNbits",
   "lnbitsCredentialsRequired": "Zadajte kľúč správcu aj URL LNbits.",
   "lnbitsWalletAdded": "Peňaženka LNbits bola pridaná",
@@ -473,6 +476,8 @@
   "scanNwcInstructions": "Naskenujte QR kód z vašej NWC peňaženkovej aplikácie",
   "invalidNwcUri": "Neplatné NWC URI",
   "paste": "Vložiť",
+  "clearInput": "Vymazať vstup",
+  "pasteOrEnter": "Prilepiť alebo zadať",
   "fromYourProfile": "Z vášho profilu",
   "orEnterManually": "Alebo zadajte manuálne:",
   "renameWallet": "Premenovať",
@@ -534,5 +539,7 @@
         "description": "Number of restored proofs"
       }
     }
-  }
+  },
+  "refreshBalance": "Obnoviť zostatok",
+  "balanceRefreshed": "Zostatok obnovený"
 }

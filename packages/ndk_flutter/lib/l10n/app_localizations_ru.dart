@@ -19,6 +19,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get lnbitsAdminKey => 'Ключ администратора LNbits';
 
   @override
+  String get lnbitsKeyType => 'Тип ключа LNbits';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'Ключ счетов/чтения LNbits';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Кошелёк только для получения: просмотр баланса и истории, создание счетов. Отправка платежей отключена.';
+
+  @override
   String get lnbitsUrl => 'URL LNbits';
 
   @override
@@ -1202,6 +1212,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get paste => 'Вставить';
 
   @override
+  String get clearInput => 'Очистить поле';
+
+  @override
+  String get pasteOrEnter => 'Вставить или ввести';
+
+  @override
   String get fromYourProfile => 'Из вашего профиля';
 
   @override
@@ -1473,4 +1489,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get walletDetailCommunityReviews => 'Недавние отзывы сообщества';
+
+  @override
+  String get refreshBalance => 'Обновить баланс';
+
+  @override
+  String get balanceRefreshed => 'Баланс обновлён';
 }

@@ -1,15 +1,17 @@
 import '../../wallet.dart';
 import '../../wallet_type.dart';
 
-/// Wallet backed by an LNbits instance and wallet Admin Key.
+/// Wallet backed by an LNbits instance and wallet API key.
 class LnBitsWallet extends Wallet {
   static const String urlMetadataKey = 'lnbitsUrl';
   static const String adminKeyMetadataKey = 'adminKey';
   static const String remoteWalletIdMetadataKey = 'remoteWalletId';
+  static const String readOnlyMetadataKey = 'readOnly';
 
   final String lnbitsUrl;
   final String adminKey;
   final String? remoteWalletId;
+  final bool readOnly;
 
   LnBitsWallet({
     required super.id,
@@ -19,12 +21,14 @@ class LnBitsWallet extends Wallet {
     required this.lnbitsUrl,
     required this.adminKey,
     this.remoteWalletId,
+    this.readOnly = false,
     Map<String, dynamic>? metadata,
   }) : super(
           metadata: Map.unmodifiable({
             ...(metadata ?? const {}),
             urlMetadataKey: lnbitsUrl,
             adminKeyMetadataKey: adminKey,
+            readOnlyMetadataKey: readOnly,
             if (remoteWalletId != null)
               remoteWalletIdMetadataKey: remoteWalletId,
           }),
@@ -34,7 +38,7 @@ class LnBitsWallet extends Wallet {
   bool get canReceive => true;
 
   @override
-  bool get canSend => true;
+  bool get canSend => !readOnly;
 
   @override
   Map<String, dynamic> toMetadata() => metadata;
@@ -63,6 +67,7 @@ class LnBitsWallet extends Wallet {
       lnbitsUrl: url,
       adminKey: adminKey,
       remoteWalletId: metadata[remoteWalletIdMetadataKey] as String?,
+      readOnly: metadata[readOnlyMetadataKey] as bool? ?? false,
       metadata: metadata,
     );
   }

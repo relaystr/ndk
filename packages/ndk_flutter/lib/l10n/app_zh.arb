@@ -2,6 +2,9 @@
   "lnbitsWalletOption": "LNbits",
   "lnbitsConnectionInstructions": "在 LNbits 中选择并打开要连接的钱包，点击 API 文档并复制管理员密钥。粘贴到下方：",
   "lnbitsAdminKey": "LNbits 管理员密钥",
+  "lnbitsKeyType": "LNbits 密钥类型",
+  "lnbitsInvoiceReadKey": "LNbits 发票/只读密钥",
+  "lnbitsReadOnlyDescription": "仅收款钱包：可查看余额和历史记录并创建发票，无法发送付款。",
   "lnbitsUrl": "LNbits URL",
   "lnbitsCredentialsRequired": "请输入 LNbits 管理员密钥和 URL。",
   "lnbitsWalletAdded": "LNbits 钱包已添加",
@@ -415,6 +418,8 @@
   "scanNwcInstructions": "从您的NWC钱包应用扫描二维码",
   "invalidNwcUri": "无效的NWC URI",
   "paste": "粘贴",
+  "clearInput": "清除输入",
+  "pasteOrEnter": "粘贴或输入",
   "fromYourProfile": "来自您的个人资料",
   "orEnterManually": "或手动输入:",
   "budgetUsedOf": "预算：{used} / {total}",
@@ -454,5 +459,7 @@
   "walletName": "钱包名称",
   "walletNameHint": "输入钱包名称",
   "save": "保存",
-  "walletRenamed": "钱包已重命名"
+  "walletRenamed": "钱包已重命名",
+  "refreshBalance": "刷新余额",
+  "balanceRefreshed": "余额已刷新"
 }

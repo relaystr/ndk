@@ -19,6 +19,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get lnbitsAdminKey => 'LNbits管理者キー';
 
   @override
+  String get lnbitsKeyType => 'LNbitsキーの種類';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'LNbits請求書・読み取りキー';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      '受信専用ウォレット：残高と履歴の表示、請求書の作成ができます。支払いの送信は無効です。';
+
+  @override
   String get lnbitsUrl => 'LNbits URL';
 
   @override
@@ -1183,6 +1193,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get paste => '貼り付け';
 
   @override
+  String get clearInput => '入力を消去';
+
+  @override
+  String get pasteOrEnter => '貼り付けまたは入力';
+
+  @override
   String get fromYourProfile => 'プロフィールから';
 
   @override
@@ -1451,4 +1467,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get walletDetailCommunityReviews => '最近のコミュニティレビュー';
+
+  @override
+  String get refreshBalance => '残高を更新';
+
+  @override
+  String get balanceRefreshed => '残高を更新しました';
 }

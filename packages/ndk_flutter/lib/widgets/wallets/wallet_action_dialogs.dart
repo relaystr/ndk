@@ -174,7 +174,9 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
   void showReceiveFlow(BuildContext context, Wallet wallet) {
     if (wallet is Bolt12Wallet) {
       _showBolt12OfferDialog(context, wallet);
-    } else if (wallet is NwcWallet || wallet is LnurlWallet) {
+    } else if (wallet is CashuWallet) {
+      _showReceiveDialog(context, wallet);
+    } else if (wallet.supportsBolt11InvoiceReceive) {
       _showCreateInvoiceDialog(context, wallet);
     } else {
       _showReceiveDialog(context, wallet);
@@ -546,7 +548,7 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                   onTap: () =>
                       Navigator.pop(sheetContext, _WalletSendAction.invoice),
                 ),
-              ] else if (wallet is NwcWallet) ...[
+              ] else if (wallet.supportsBolt11InvoicePay) ...[
                 ListTile(
                   leading: const Icon(Icons.flash_on),
                   title: Text(l10n.payInvoiceTitle),
@@ -981,13 +983,22 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                         break;
                       }
                     }
-                  } else if (wallet is NwcWallet) {
+                  } else if (wallet.supportsBolt11InvoicePay) {
                     final response = await ndkFlutter.ndk.wallets.send(
                       walletId: wallet.id,
                       invoice: invoice,
                     );
                     if (response.errorCode == null &&
                         response.preimage != null) {
+                      if (wallet is LnBitsWallet) {
+                        try {
+                          await ndkFlutter.ndk.wallets.refreshBalance(
+                            wallet.id,
+                          );
+                        } catch (_) {
+                          // Payment succeeded; background polling will retry.
+                        }
+                      }
                       if (!mounted) return;
                       navigator.pop();
                       scaffoldMessenger.showSnackBar(
@@ -1125,7 +1136,7 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                         scaffoldMessenger,
                       );
                     }
-                  } else if (wallet is NwcWallet || wallet is LnurlWallet) {
+                  } else if (wallet.supportsBolt11InvoiceReceive) {
                     final invoice = await ndkFlutter.ndk.wallets.receive(
                       walletId: wallet.id,
                       amountSats: amount,

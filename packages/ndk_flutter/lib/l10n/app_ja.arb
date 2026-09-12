@@ -2,6 +2,9 @@
   "lnbitsWalletOption": "LNbits",
   "lnbitsConnectionInstructions": "LNbitsで接続するウォレットを選んで開き、APIドキュメントを押して管理者キーをコピーしてください。下に貼り付けます：",
   "lnbitsAdminKey": "LNbits管理者キー",
+  "lnbitsKeyType": "LNbitsキーの種類",
+  "lnbitsInvoiceReadKey": "LNbits請求書・読み取りキー",
+  "lnbitsReadOnlyDescription": "受信専用ウォレット：残高と履歴の表示、請求書の作成ができます。支払いの送信は無効です。",
   "lnbitsUrl": "LNbits URL",
   "lnbitsCredentialsRequired": "LNbits管理者キーとURLを入力してください。",
   "lnbitsWalletAdded": "LNbitsウォレットを追加しました",
@@ -415,6 +418,8 @@
   "scanNwcInstructions": "NWCウォレットアプリからQRコードをスキャンしてください",
   "invalidNwcUri": "無効なNWC URI",
   "paste": "貼り付け",
+  "clearInput": "入力を消去",
+  "pasteOrEnter": "貼り付けまたは入力",
   "fromYourProfile": "プロフィールから",
   "orEnterManually": "または手動で入力:",
   "budgetUsedOf": "予算: {used} / {total}",
@@ -454,5 +459,7 @@
   "walletName": "ウォレット名",
   "walletNameHint": "ウォレット名を入力",
   "save": "保存",
-  "walletRenamed": "ウォレット名を変更しました"
+  "walletRenamed": "ウォレット名を変更しました",
+  "refreshBalance": "残高を更新",
+  "balanceRefreshed": "残高を更新しました"
 }

@@ -19,6 +19,16 @@ class AppLocalizationsPt extends AppLocalizations {
   String get lnbitsAdminKey => 'Chave de administrador LNbits';
 
   @override
+  String get lnbitsKeyType => 'Tipo de chave LNbits';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'Chave de fatura/leitura LNbits';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Carteira apenas para receber: consulte saldo e histórico e crie faturas. O envio de pagamentos está desativado.';
+
+  @override
   String get lnbitsUrl => 'URL do LNbits';
 
   @override
@@ -1207,6 +1217,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get paste => 'Colar';
 
   @override
+  String get clearInput => 'Limpar entrada';
+
+  @override
+  String get pasteOrEnter => 'Colar ou digitar';
+
+  @override
   String get fromYourProfile => 'Do seu perfil';
 
   @override
@@ -1479,6 +1495,12 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get walletDetailCommunityReviews =>
       'Avaliações recentes da comunidade';
+
+  @override
+  String get refreshBalance => 'Atualizar saldo';
+
+  @override
+  String get balanceRefreshed => 'Saldo atualizado';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -1494,6 +1516,16 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get lnbitsAdminKey => 'Chave de administrador LNbits';
+
+  @override
+  String get lnbitsKeyType => 'Tipo de chave LNbits';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'Chave de fatura/leitura LNbits';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Carteira somente para receber: consulte saldo e histórico e crie faturas. O envio de pagamentos está desativado.';
 
   @override
   String get lnbitsUrl => 'URL do LNbits';
@@ -2662,6 +2694,12 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get paste => 'Colar';
 
   @override
+  String get clearInput => 'Limpar entrada';
+
+  @override
+  String get pasteOrEnter => 'Colar ou digitar';
+
+  @override
   String get fromYourProfile => 'Do seu perfil';
 
   @override
@@ -2844,4 +2882,10 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   @override
   String get walletDetailCommunityReviews =>
       'Avaliações recentes da comunidade';
+
+  @override
+  String get refreshBalance => 'Atualizar saldo';
+
+  @override
+  String get balanceRefreshed => 'Saldo atualizado';
 }

@@ -2,6 +2,9 @@
   "lnbitsWalletOption": "LNbits",
   "lnbitsConnectionInstructions": "W LNbits wybierz portfel, który chcesz połączyć, otwórz go, kliknij Dokumentacja API i skopiuj klucz administratora. Wklej go poniżej:",
   "lnbitsAdminKey": "Klucz administratora LNbits",
+  "lnbitsKeyType": "Typ klucza LNbits",
+  "lnbitsInvoiceReadKey": "Klucz faktur/odczytu LNbits",
+  "lnbitsReadOnlyDescription": "Portfel tylko do odbioru: wyświetla saldo i historię oraz tworzy faktury. Wysyłanie płatności jest wyłączone.",
   "lnbitsUrl": "Adres URL LNbits",
   "lnbitsCredentialsRequired": "Wprowadź klucz administratora i adres URL LNbits.",
   "lnbitsWalletAdded": "Portfel LNbits został dodany",
@@ -473,6 +476,8 @@
   "scanNwcInstructions": "Zeskanuj kod QR z aplikacji portfela NWC",
   "invalidNwcUri": "Nieprawidłowy URI NWC",
   "paste": "Wklej",
+  "clearInput": "Wyczyść pole",
+  "pasteOrEnter": "Wklej lub wpisz",
   "fromYourProfile": "Z twojego profilu",
   "orEnterManually": "Lub wprowadź ręcznie:",
   "budgetUsedOf": "Budżet: {used} / {total}",
@@ -512,5 +517,7 @@
   "walletName": "Nazwa portfela",
   "walletNameHint": "Wprowadź nazwę portfela",
   "save": "Zapisz",
-  "walletRenamed": "Zmieniono nazwę portfela"
+  "walletRenamed": "Zmieniono nazwę portfela",
+  "refreshBalance": "Odśwież saldo",
+  "balanceRefreshed": "Saldo odświeżone"
 }

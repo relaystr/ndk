@@ -17,11 +17,13 @@ void main() {
             NwcMethod.MAKE_INVOICE.name,
             NwcMethod.PAY_INVOICE.name,
           ],
+          NwcWallet.kProviderIdMetadataKey: 'alby',
         },
       );
 
       expect(wallet.canReceive, isTrue);
       expect(wallet.canSend, isTrue);
+      expect(wallet.providerId, 'alby');
       expect(
         wallet.cachedPermissions,
         containsAll([NwcMethod.MAKE_INVOICE.name, NwcMethod.PAY_INVOICE.name]),
@@ -35,6 +37,7 @@ void main() {
         supportedUnits: {'sat'},
         nwcUrl:
             'nostr+walletconnect://a?relay=wss://relay.example&secret=secret',
+        providerId: 'coinos',
       );
 
       final updated = wallet.withCachedPermissions({
@@ -43,6 +46,7 @@ void main() {
 
       expect(updated.canSend, isTrue);
       expect(updated.canReceive, isFalse);
+      expect(updated.providerId, 'coinos');
       expect(updated.metadata[NwcWallet.kPermissionsMetadataKey], [
         NwcMethod.PAY_INVOICE.name,
       ]);

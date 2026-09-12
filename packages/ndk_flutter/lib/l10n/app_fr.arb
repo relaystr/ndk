@@ -2,6 +2,9 @@
   "lnbitsWalletOption": "LNbits",
   "lnbitsConnectionInstructions": "Dans LNbits, choisissez le portefeuille à connecter, ouvrez-le, cliquez sur Documentation API et copiez la clé administrateur. Collez-la ci-dessous :",
   "lnbitsAdminKey": "Clé administrateur LNbits",
+  "lnbitsKeyType": "Type de clé LNbits",
+  "lnbitsInvoiceReadKey": "Clé de facturation/lecture LNbits",
+  "lnbitsReadOnlyDescription": "Portefeuille de réception uniquement : consultez le solde et l’historique et créez des factures. L’envoi est désactivé.",
   "lnbitsUrl": "URL LNbits",
   "lnbitsCredentialsRequired": "Saisissez la clé administrateur et l’URL LNbits.",
   "lnbitsWalletAdded": "Portefeuille LNbits ajouté",
@@ -415,6 +418,8 @@
   "scanNwcInstructions": "Scannez le code QR de votre application de portefeuille NWC",
   "invalidNwcUri": "URI NWC invalide",
   "paste": "Coller",
+  "clearInput": "Effacer la saisie",
+  "pasteOrEnter": "Coller ou saisir",
   "fromYourProfile": "De votre profil",
   "orEnterManually": "Ou saisissez manuellement:",
   "budgetUsedOf": "Budget : {used} / {total}",
@@ -454,5 +459,7 @@
   "walletName": "Nom du portefeuille",
   "walletNameHint": "Saisir le nom du portefeuille",
   "save": "Enregistrer",
-  "walletRenamed": "Portefeuille renommé"
+  "walletRenamed": "Portefeuille renommé",
+  "refreshBalance": "Actualiser le solde",
+  "balanceRefreshed": "Solde actualisé"
 }

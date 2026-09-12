@@ -123,6 +123,7 @@ class _NWalletCardListState extends State<NWalletCardList> {
         name: wallet.name,
         supportedUnits: wallet.supportedUnits,
         nwcUrl: wallet.nwcUrl,
+        providerId: wallet.providerId,
         metadata: metadata,
       );
     }

@@ -480,6 +480,22 @@ class Wallets {
     return _walletBalanceStreams[walletId]!.stream;
   }
 
+  /// Fetches current balances from the wallet provider immediately.
+  Future<List<WalletBalance>> refreshBalance(String walletId) async {
+    await _initializationFuture;
+    final wallet = await _getWalletForOperation(walletId);
+    final provider = _providers[wallet.type];
+    if (provider == null) {
+      throw StateError('No provider registered for wallet type ${wallet.type}');
+    }
+
+    final balances = await provider.getBalances(wallet).first;
+    _walletsBalances[walletId] = balances;
+    _walletBalanceStreams[walletId]?.add(balances);
+    _updateCombinedStreams();
+    return balances;
+  }
+
   Stream<List<WalletTransaction>> getRecentTransactionsStream(String walletId) {
     _initRecentTransactionStream(walletId);
     return _walletRecentTransactionStreams[walletId]!.stream;
@@ -745,6 +761,7 @@ class Wallets {
       final selectedProtocol = payResponse.instructionType == 'bolt12'
           ? WalletPaymentProtocol.bolt12
           : WalletPaymentProtocol.bolt11;
+      await _refreshTransferredWalletData(source.id, destination.id);
       return WalletTransferResult(
         sourceWalletId: source.id,
         destinationWalletId: destination.id,
@@ -766,6 +783,7 @@ class Wallets {
         payInvoiceResponse.errorMessage ?? 'Wallet transfer failed',
       );
     }
+    await _refreshTransferredWalletData(source.id, destination.id);
     return WalletTransferResult(
       sourceWalletId: source.id,
       destinationWalletId: destination.id,
@@ -774,6 +792,66 @@ class Wallets {
       receiveResponse: receiveResponse,
       payInvoiceResponse: payInvoiceResponse,
     );
+  }
+
+  Future<void> _refreshTransferredWalletData(
+    String sourceWalletId,
+    String destinationWalletId,
+  ) async {
+    await Future.wait(
+      {sourceWalletId, destinationWalletId}.map((walletId) async {
+        await Future.wait([
+          _refreshBalanceAfterTransfer(walletId),
+          _refreshActiveTransactionStreamsAfterTransfer(walletId),
+        ]);
+      }),
+    );
+  }
+
+  Future<void> _refreshBalanceAfterTransfer(String walletId) async {
+    try {
+      await refreshBalance(walletId);
+    } catch (_) {
+      // Transfer succeeded. Existing balance streams can retry later.
+    }
+  }
+
+  Future<void> _refreshActiveTransactionStreamsAfterTransfer(
+    String walletId,
+  ) async {
+    final recentStream = _walletRecentTransactionStreams[walletId];
+    final pendingStream = _walletPendingTransactionStreams[walletId];
+    final recentIsActive = recentStream?.hasListener ?? false;
+    final pendingIsActive = pendingStream?.hasListener ?? false;
+    if (!recentIsActive && !pendingIsActive) return;
+
+    try {
+      final wallet = await _getWalletForOperation(walletId);
+      final provider = _providers[wallet.type];
+      if (provider == null) return;
+
+      await Future.wait([
+        if (recentIsActive)
+          provider.getRecentTransactions(wallet).first.then((transactions) {
+            final completed = transactions
+                .where((transaction) => transaction.state.isDone)
+                .toList();
+            _walletsRecentTransactions[walletId] = completed;
+            recentStream!.add(completed);
+          }),
+        if (pendingIsActive)
+          provider.getPendingTransactions(wallet).first.then((transactions) {
+            final pending = transactions
+                .where((transaction) => transaction.state.isPending)
+                .toList();
+            _walletsPendingTransactions[walletId] = pending;
+            pendingStream!.add(pending);
+          }),
+      ]);
+      _updateCombinedStreams();
+    } catch (_) {
+      // Transfer succeeded. Existing transaction streams can retry later.
+    }
   }
 
   Future<Wallet> _getWalletForOperation(String walletId) async {

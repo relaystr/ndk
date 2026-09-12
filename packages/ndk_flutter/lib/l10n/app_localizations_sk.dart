@@ -19,6 +19,16 @@ class AppLocalizationsSk extends AppLocalizations {
   String get lnbitsAdminKey => 'Kľúč správcu LNbits';
 
   @override
+  String get lnbitsKeyType => 'Typ kľúča LNbits';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'Kľúč faktúr/čítania LNbits';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Peňaženka len na prijímanie: zobrazuje zostatok a históriu a vytvára faktúry. Odosielanie platieb je vypnuté.';
+
+  @override
   String get lnbitsUrl => 'URL LNbits';
 
   @override
@@ -1199,6 +1209,12 @@ class AppLocalizationsSk extends AppLocalizations {
   String get paste => 'Vložiť';
 
   @override
+  String get clearInput => 'Vymazať vstup';
+
+  @override
+  String get pasteOrEnter => 'Prilepiť alebo zadať';
+
+  @override
   String get fromYourProfile => 'Z vášho profilu';
 
   @override
@@ -1470,4 +1486,10 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get walletDetailCommunityReviews => 'Najnovšie recenzie komunity';
+
+  @override
+  String get refreshBalance => 'Obnoviť zostatok';
+
+  @override
+  String get balanceRefreshed => 'Zostatok obnovený';
 }
