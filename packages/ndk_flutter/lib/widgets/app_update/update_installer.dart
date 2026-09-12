@@ -56,12 +56,11 @@ class AndroidPackageInstaller extends UpdateInstaller {
 
   @override
   Future<UpdateInstallResult> downloadAndInstall(SoftwareAsset asset) async {
-    final url = asset.url;
-    if (url == null) {
+    if (asset.urls.isEmpty) {
       throw StateError('Android update asset has no download URL');
     }
     final result = await _channel.invokeMethod<String>('downloadAndInstall', {
-      'url': url,
+      'urls': asset.urls,
       'sha256': asset.sha256,
       'packageId': asset.identifier,
       'versionCode': asset.versionCode,

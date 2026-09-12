@@ -305,6 +305,7 @@ class NAppUpdateController extends ChangeNotifier with WidgetsBindingObserver {
         if (_previousInstalledVersionCode == null) {
           await _rememberInstalledVersion(installed.versionCode);
         }
+        if (!_canCommitEvaluation(generation)) return;
         _setState(
           NAppUpdateState(
             status: NAppUpdateStatus.installed,

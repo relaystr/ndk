@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
@@ -169,5 +170,53 @@ void main() {
     expect(readOnlyController.hasExternalUpdate, isTrue);
     expect(readOnlyController.state.update, isNull);
     readOnlyController.dispose();
+  });
+
+  test('Android installer sends every asset URL in publisher order', () async {
+    const channel = MethodChannel('ndk/app_updates');
+    MethodCall? capturedCall;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+          capturedCall = call;
+          return 'awaitingUserAction';
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null),
+    );
+    final asset = SoftwareAsset.fromEvent(
+      Nip01Event(
+        id: 'asset',
+        pubKey: 'publisher',
+        kind: softwareAssetKind,
+        tags: const [
+          ['i', 'app'],
+          ['version', '2.0.0'],
+          ['m', androidPackageMimeType],
+          [
+            'x',
+            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          ],
+          ['url', 'https://github.example/app.apk'],
+          ['url', 'https://cdn.example/app.apk'],
+          ['version_code', '2'],
+          [
+            'apk_certificate_hash',
+            'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+          ],
+        ],
+        content: '',
+        createdAt: 1,
+      ),
+    );
+
+    final result = await AndroidPackageInstaller().downloadAndInstall(asset);
+
+    expect(result, UpdateInstallResult.awaitingUserAction);
+    expect(capturedCall?.method, 'downloadAndInstall');
+    expect(capturedCall?.arguments['urls'], [
+      'https://github.example/app.apk',
+      'https://cdn.example/app.apk',
+    ]);
   });
 }

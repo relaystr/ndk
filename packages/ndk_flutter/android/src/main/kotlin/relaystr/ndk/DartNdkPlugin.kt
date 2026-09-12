@@ -166,7 +166,7 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             result.success("permissionRequired")
             return
         }
-        val url = call.argument<String>("url")
+        val urls = call.argument<List<String>>("urls") ?: emptyList()
         val expectedHash = call.argument<String>("sha256")?.normalizedHash()
         val packageId = call.argument<String>("packageId")
         val versionCode = (call.argument<Number>("versionCode"))?.toLong()
@@ -175,7 +175,7 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             (call.argument<List<String>>("certificateHashes") ?: emptyList())
                 .map { it.normalizedHash() }
                 .toSet()
-        if (url == null || expectedHash == null || packageId == null || versionCode == null ||
+        if (urls.isEmpty() || expectedHash == null || packageId == null || versionCode == null ||
             (expectedSize != null && expectedSize < 0)) {
             result.error("invalid_arguments", "Missing update asset metadata", null)
             return
@@ -197,51 +197,25 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         Thread {
             try {
                 val apk = operation.apk
-                val connection = openUpdateConnection(url, operation)
-                val total = connection.getHeaderField("Content-Length")?.toLongOrNull() ?: -1L
-                val byteLimit = minOf(expectedSize ?: MAX_APK_BYTES, MAX_APK_BYTES)
-                check(total < 0 || total <= byteLimit) { "APK exceeds download size limit" }
-                val digest = MessageDigest.getInstance("SHA-256")
-                connection.getInputStream().use { input ->
-                    operation.input = input
-                    FileOutputStream(apk).use { output ->
-                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                        var downloaded = 0L
-                        var lastProgressPercentage = -1
-                        while (true) {
-                            if (operation.cancelled.get()) break
-                            val count = input.read(buffer)
-                            if (count < 0) break
-                            downloaded += count
-                            check(downloaded <= byteLimit) {
-                                "APK exceeds download size limit"
-                            }
-                            output.write(buffer, 0, count)
-                            digest.update(buffer, 0, count)
-                            if (total > 0) {
-                                val percentage =
-                                    ((downloaded.toDouble() / total) * 100)
-                                        .roundToInt()
-                                        .coerceAtMost(99)
-                                if (percentage != lastProgressPercentage) {
-                                    lastProgressPercentage = percentage
-                                    emitProgress(percentage / 100.0)
-                                }
-                            }
-                        }
-                        if (operation.cancelled.get()) {
-                            completeUpdate(operation, "cancelled")
-                            return@Thread
-                        }
-                        check(expectedSize == null || downloaded == expectedSize) {
-                            "Downloaded APK size mismatch"
-                        }
-                        if (total > 0) emitProgress(1.0)
+                var lastDownloadError: Throwable? = null
+                for (url in urls) {
+                    try {
+                        downloadUpdateApk(
+                            url,
+                            apk,
+                            operation,
+                            expectedHash,
+                            expectedSize,
+                        )
+                        lastDownloadError = null
+                        break
+                    } catch (error: Throwable) {
+                        lastDownloadError = error
+                        apk.delete()
+                        if (operation.cancelled.get()) break
                     }
                 }
-                operation.input = null
-                val actualHash = digest.digest().joinToString("") { "%02x".format(it) }
-                check(actualHash == expectedHash) { "Downloaded APK SHA-256 mismatch" }
+                if (lastDownloadError != null) throw lastDownloadError
 
                 val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES
@@ -307,6 +281,58 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 operation.connection?.disconnect()
             }
         }.start()
+    }
+
+    private fun downloadUpdateApk(
+        url: String,
+        apk: File,
+        operation: UpdateDownload,
+        expectedHash: String,
+        expectedSize: Long?,
+    ) {
+        try {
+            val connection = openUpdateConnection(url, operation)
+            val total = connection.getHeaderField("Content-Length")?.toLongOrNull() ?: -1L
+            val byteLimit = minOf(expectedSize ?: MAX_APK_BYTES, MAX_APK_BYTES)
+            check(total < 0 || total <= byteLimit) { "APK exceeds download size limit" }
+            val digest = MessageDigest.getInstance("SHA-256")
+            connection.getInputStream().use { input ->
+                operation.input = input
+                FileOutputStream(apk).use { output ->
+                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                    var downloaded = 0L
+                    var lastProgressPercentage = -1
+                    while (true) {
+                        check(!operation.cancelled.get()) { "Update download cancelled" }
+                        val count = input.read(buffer)
+                        if (count < 0) break
+                        downloaded += count
+                        check(downloaded <= byteLimit) { "APK exceeds download size limit" }
+                        output.write(buffer, 0, count)
+                        digest.update(buffer, 0, count)
+                        if (total > 0) {
+                            val percentage = ((downloaded.toDouble() / total) * 100)
+                                .roundToInt()
+                                .coerceAtMost(99)
+                            if (percentage != lastProgressPercentage) {
+                                lastProgressPercentage = percentage
+                                emitProgress(percentage / 100.0)
+                            }
+                        }
+                    }
+                    check(expectedSize == null || downloaded == expectedSize) {
+                        "Downloaded APK size mismatch"
+                    }
+                    if (total > 0) emitProgress(1.0)
+                }
+            }
+            val actualHash = digest.digest().joinToString("") { "%02x".format(it) }
+            check(actualHash == expectedHash) { "Downloaded APK SHA-256 mismatch" }
+        } finally {
+            operation.input = null
+            operation.connection?.disconnect()
+            operation.connection = null
+        }
     }
 
     private fun cancelUpdateDownload(result: Result) {

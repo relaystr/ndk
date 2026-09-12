@@ -43,6 +43,24 @@ class _QueryRequests implements Requests {
   }
 }
 
+class _CapturingRequests implements Requests {
+  final List<Set<String>?> explicitRelayCalls = [];
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    if (invocation.memberName == #query) {
+      final relays =
+          invocation.namedArguments[#explicitRelays] as Iterable<String>?;
+      explicitRelayCalls.add(relays?.toSet());
+      return NdkResponse(
+        'software-query-${explicitRelayCalls.length}',
+        const Stream<Nip01Event>.empty(),
+      );
+    }
+    return super.noSuchMethod(invocation);
+  }
+}
+
 void main() {
   const publisher =
       'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
@@ -193,6 +211,7 @@ void main() {
       ['m', androidPackageMimeType],
       ['x', hash],
       ['url', 'https://example.com/app.apk'],
+      ['url', 'https://cdn.example.com/app.apk'],
       ['version_code', '12'],
       ['f', 'android-arm64-v8a'],
       ['min_platform_version', '24'],
@@ -200,6 +219,29 @@ void main() {
     ]));
     expect(asset.versionCode, 12);
     expect(asset.certificateHashes, [certificate]);
+    expect(asset.urls, [
+      'https://example.com/app.apk',
+      'https://cdn.example.com/app.apk',
+    ]);
+    expect(asset.url, 'https://example.com/app.apk');
+  });
+
+  test('asset relay hints supplement default relay resolution', () async {
+    final requests = _CapturingRequests();
+    final release = SoftwareRelease.fromEvent(event(softwareReleaseKind, [
+      ['i', 'com.example.app'],
+      ['version', '1.2.0'],
+      ['d', 'com.example.app@1.2.0'],
+      ['c', 'main'],
+      ['e', hash, 'wss://hint.example'],
+    ]));
+
+    await Software(requests: requests).resolveAssets(release);
+
+    expect(requests.explicitRelayCalls, [
+      null,
+      {'wss://hint.example'}
+    ]);
   });
 
   test('rejects malformed release coordinate and incomplete Android asset', () {

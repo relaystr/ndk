@@ -164,16 +164,29 @@ class Software {
     final hintedRelays = releaseList
         .expand((release) => release.assets)
         .map((asset) => asset.relayHint)
-        .whereType<String>();
-    final explicitRelays = {...?relays, ...hintedRelays};
-    final events = await _requests
-        .query(
+        .whereType<String>()
+        .toSet();
+    final resolvedRelays = {...?relays};
+    final responses = [
+      _requests.query(
+        filter: Filter(ids: ids.toList(), kinds: const [softwareAssetKind]),
+        explicitRelays: resolvedRelays.isEmpty
+            ? null
+            : {...resolvedRelays, ...hintedRelays},
+        timeout: timeout,
+        name: 'software-assets',
+      ),
+      if (resolvedRelays.isEmpty && hintedRelays.isNotEmpty)
+        _requests.query(
           filter: Filter(ids: ids.toList(), kinds: const [softwareAssetKind]),
-          explicitRelays: explicitRelays.isEmpty ? null : explicitRelays,
+          explicitRelays: hintedRelays,
           timeout: timeout,
-          name: 'software-assets',
-        )
-        .future;
+          name: 'software-assets-hints',
+        ),
+    ];
+    final events =
+        (await Future.wait(responses.map((response) => response.future)))
+            .expand((events) => events);
     final assetsById = <String, SoftwareAsset>{
       for (final asset in events
           .where((event) => ids.contains(event.id))
@@ -216,7 +229,7 @@ class Software {
       for (final asset in assetsByReleaseId[release.event.id] ?? const []) {
         final versionCode = asset.versionCode;
         if (asset.mimeType != androidPackageMimeType ||
-            asset.url == null ||
+            asset.urls.isEmpty ||
             asset.identifier != installed.packageId ||
             versionCode == null ||
             (asset.minPlatformVersion ?? 0) > installed.platformVersion ||

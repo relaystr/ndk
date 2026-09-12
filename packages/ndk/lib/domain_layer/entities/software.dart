@@ -157,7 +157,8 @@ class SoftwareAsset {
   final String version;
   final String mimeType;
   final String sha256;
-  final String? url;
+  final List<String> urls;
+  String? get url => urls.firstOrNull;
   final int? size;
   final List<String> platforms;
   final int? minPlatformVersion;
@@ -172,7 +173,7 @@ class SoftwareAsset {
     required this.version,
     required this.mimeType,
     required this.sha256,
-    required this.url,
+    required this.urls,
     required this.size,
     required this.platforms,
     required this.minPlatformVersion,
@@ -223,7 +224,7 @@ class SoftwareAsset {
       version: _requiredTag(event, 'version'),
       mimeType: mimeType,
       sha256: hash,
-      url: _optionalTag(event, 'url'),
+      urls: _tags(event, 'url'),
       size: parseIntTag('size'),
       platforms: _tags(event, 'f'),
       minPlatformVersion: parseIntTag('min_platform_version'),
