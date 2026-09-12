@@ -9,6 +9,13 @@ class CashuQuote {
 
   final CashuKeypair quoteKey;
 
+  /// The derivation counter the [quoteKey] was derived from.
+  ///
+  /// `-1` means the key was not derived from the seed (quotes written before
+  /// seed-derived quote keys landed). Such keys are not recoverable from the
+  /// seed alone.
+  final int quoteKeyCounter;
+
   /// expires in seconds
   final int expiry;
   final String mintUrl;
@@ -22,12 +29,14 @@ class CashuQuote {
     required this.expiry,
     required this.mintUrl,
     required this.quoteKey,
+    this.quoteKeyCounter = -1,
   });
 
   factory CashuQuote.fromServerMap({
     required Map<String, dynamic> map,
     required String mintUrl,
     required CashuKeypair quoteKey,
+    required int quoteKeyCounter,
   }) {
     return CashuQuote(
       quoteId: map['quote'] as String,
@@ -38,6 +47,7 @@ class CashuQuote {
       expiry: map['expiry'] as int,
       mintUrl: mintUrl,
       quoteKey: quoteKey,
+      quoteKeyCounter: quoteKeyCounter,
     );
   }
 
@@ -51,6 +61,7 @@ class CashuQuote {
       expiry: json['expiry'] as int,
       mintUrl: json['mintUrl'] as String,
       quoteKey: CashuKeypair.fromJson(json['quoteKey'] as Map<String, dynamic>),
+      quoteKeyCounter: json['quoteKeyCounter'] as int? ?? -1,
     );
   }
 
@@ -64,6 +75,7 @@ class CashuQuote {
       'expiry': expiry,
       'mintUrl': mintUrl,
       'quoteKey': quoteKey.toJson(),
+      'quoteKeyCounter': quoteKeyCounter,
     };
   }
 }
