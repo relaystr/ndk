@@ -24,6 +24,25 @@ class _WatchRequests implements Requests {
   }
 }
 
+class _QueryRequests implements Requests {
+  final NdkResponse response;
+
+  _QueryRequests(RelayRequestStatus status)
+      : response = NdkResponse(
+          'software-query-test',
+          const Stream<Nip01Event>.empty(),
+          relayOutcomes: () => {
+            'wss://relay.example': RelayRequestOutcome(status),
+          },
+        );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    if (invocation.memberName == #query) return response;
+    return super.noSuchMethod(invocation);
+  }
+}
+
 void main() {
   const publisher =
       'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
@@ -31,6 +50,10 @@ void main() {
       'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
   const certificate =
       'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
+  const appRef = SoftwareAppRef(
+    publisher: publisher,
+    identifier: 'com.example.app',
+  );
 
   Nip01Event event(
     int kind,
@@ -63,6 +86,21 @@ void main() {
         content: content,
         createdAt: createdAt,
       );
+
+  test('getApp distinguishes missing application from relay failure', () async {
+    final missing = Software(
+      requests: _QueryRequests(RelayRequestStatus.eose),
+    );
+    expect(await missing.getApp(app: appRef), isNull);
+
+    final failed = Software(
+      requests: _QueryRequests(RelayRequestStatus.timedOut),
+    );
+    expect(
+      failed.getApp(app: appRef),
+      throwsA(isA<SoftwareDiscoveryException>()),
+    );
+  });
 
   test('watch emits only changed releases and closes its subscription',
       () async {

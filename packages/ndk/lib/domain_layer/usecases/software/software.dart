@@ -15,19 +15,26 @@ class Software {
     Iterable<String>? relays,
     Duration? timeout,
   }) async {
-    final events = await _requests
-        .query(
-          filter: Filter(
-            authors: [app.publisher],
-            kinds: const [softwareApplicationKind],
-            dTags: [app.identifier],
-            limit: 1,
-          ),
-          explicitRelays: relays,
-          timeout: timeout,
-          name: 'software-app',
-        )
-        .future;
+    final response = _requests.query(
+      filter: Filter(
+        authors: [app.publisher],
+        kinds: const [softwareApplicationKind],
+        dTags: [app.identifier],
+        limit: 1,
+      ),
+      explicitRelays: relays,
+      timeout: timeout,
+      name: 'software-app',
+    );
+    final events = await response.future;
+    if (events.isEmpty &&
+        !response.relayOutcomes.values.any(
+          (outcome) => outcome.status == RelayRequestStatus.eose,
+        )) {
+      throw const SoftwareDiscoveryException(
+        'No relay completed software application discovery',
+      );
+    }
     final parsed = events
         .map(_parseApp)
         .whereType<SoftwareApp>()
