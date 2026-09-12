@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_webrtc_zxing/flutter_webrtc_zxing.dart' as webrtc_zxing;
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart' as ndk_l10n;
@@ -31,18 +32,24 @@ class _WalletQrScannerDialog extends StatefulWidget {
 class _WalletQrScannerDialogState extends State<_WalletQrScannerDialog> {
   MobileScannerController? _scannerController;
   bool _hasScanned = false;
+  bool _cameraPaused = false;
   String? _errorMessage;
   bool _closingAfterSuccess = false;
 
-  bool get _hasCamera =>
-      !kIsWeb &&
-      (defaultTargetPlatform == TargetPlatform.android ||
-          defaultTargetPlatform == TargetPlatform.iOS);
+  bool get _usesMobileScanner =>
+      kIsWeb ||
+      defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS;
+
+  bool get _usesWebRtcScanner =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.linux;
+
+  bool get _hasCamera => _usesMobileScanner || _usesWebRtcScanner;
 
   @override
   void initState() {
     super.initState();
-    if (_hasCamera) {
+    if (_usesMobileScanner) {
       _scannerController = MobileScannerController(
         detectionSpeed: DetectionSpeed.normal,
         facing: CameraFacing.back,
@@ -95,6 +102,20 @@ class _WalletQrScannerDialogState extends State<_WalletQrScannerDialog> {
     }
   }
 
+  void _onWebRtcBarcodeDetected(webrtc_zxing.Code code) {
+    if (_hasScanned) return;
+    final rawValue = code.text?.trim();
+    if (rawValue == null || rawValue.isEmpty) return;
+
+    setState(() => _hasScanned = true);
+    Navigator.of(context).pop(WalletInputScanResult.value(rawValue));
+  }
+
+  void _onWebRtcScannerCreated(Object? _, Exception? error) {
+    if (!mounted || error == null) return;
+    setState(() => _errorMessage = error.toString());
+  }
+
   Future<void> _pasteFromClipboard() async {
     final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
     if (!mounted) return;
@@ -105,6 +126,11 @@ class _WalletQrScannerDialogState extends State<_WalletQrScannerDialog> {
     String initialValue = '',
     bool nwcOnly = false,
   }) async {
+    if (_usesWebRtcScanner && mounted) {
+      setState(() => _cameraPaused = true);
+    }
+    await _scannerController?.stop();
+    if (!mounted) return;
     final result = await showDialog<_ManualWalletInputResult>(
       context: context,
       builder: (_) => _ManualWalletInputDialog(
@@ -115,7 +141,12 @@ class _WalletQrScannerDialogState extends State<_WalletQrScannerDialog> {
       ),
     );
 
-    if (!mounted || result == null) return;
+    if (!mounted) return;
+    if (result == null) {
+      if (_usesWebRtcScanner) setState(() => _cameraPaused = false);
+      await _scannerController?.start();
+      return;
+    }
     if (result.connectionStarted) {
       Navigator.of(context).pop(
         const WalletInputScanResult.connectionStarted(),
@@ -130,6 +161,9 @@ class _WalletQrScannerDialogState extends State<_WalletQrScannerDialog> {
   }
 
   Future<void> _chooseWallet() async {
+    if (_usesWebRtcScanner && mounted) {
+      setState(() => _cameraPaused = true);
+    }
     await _scannerController?.stop();
     if (!mounted) return;
     final result = await showDialog<WalletInputScanResult>(
@@ -140,6 +174,9 @@ class _WalletQrScannerDialogState extends State<_WalletQrScannerDialog> {
     );
     if (!mounted) return;
     if (result == null) {
+      if (_usesWebRtcScanner && mounted) {
+        setState(() => _cameraPaused = false);
+      }
       await _scannerController?.start();
       return;
     }
@@ -195,10 +232,26 @@ class _WalletQrScannerDialogState extends State<_WalletQrScannerDialog> {
                   Expanded(
                     child: Stack(
                       children: [
-                        MobileScanner(
-                          controller: _scannerController!,
-                          onDetect: _onBarcodeDetected,
-                        ),
+                        if (_cameraPaused)
+                          const ColoredBox(color: Colors.black)
+                        else if (_usesWebRtcScanner)
+                          webrtc_zxing.ReaderWidget(
+                            codeFormat: webrtc_zxing.Format.qrCode,
+                            cropPercent: 0.7,
+                            scanDelay: const Duration(milliseconds: 250),
+                            scanDelaySuccess: const Duration(milliseconds: 250),
+                            showGallery: false,
+                            showToggleCamera: false,
+                            showScannerOverlay: false,
+                            onScan: _onWebRtcBarcodeDetected,
+                            onRendererCreated: _onWebRtcScannerCreated,
+                          )
+                        else
+                          MobileScanner(
+                            controller: _scannerController!,
+                            onDetect: _onBarcodeDetected,
+                            errorBuilder: _mobileScannerError,
+                          ),
                         Center(
                           child: Container(
                             width: 250,
@@ -297,6 +350,25 @@ class _WalletQrScannerDialogState extends State<_WalletQrScannerDialog> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _mobileScannerError(
+    BuildContext context,
+    MobileScannerException error,
+  ) {
+    return ColoredBox(
+      color: Colors.black,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            error.toString(),
+            style: const TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
+        ),
       ),
     );
   }
@@ -443,6 +515,7 @@ class _ManualWalletInputDialogState extends State<_ManualWalletInputDialog> {
   late final TextEditingController _controller;
   WalletInputKind? _kind;
   bool _isLaunchingWallet = false;
+  bool _isScanningQr = false;
 
   bool get _isValid =>
       _kind != null && (!widget.nwcOnly || _kind == WalletInputKind.nwc);
@@ -488,6 +561,23 @@ class _ManualWalletInputDialogState extends State<_ManualWalletInputDialog> {
     }
   }
 
+  Future<void> _scanQrCode() async {
+    if (_isScanningQr) return;
+    setState(() => _isScanningQr = true);
+    try {
+      final value = await showDialog<String>(
+        context: context,
+        builder: (_) => const _QrCodeScannerDialog(),
+      );
+      if (!mounted || value == null) return;
+      _controller.text = value;
+      _controller.selection = TextSelection.collapsed(offset: value.length);
+      setState(() => _kind = classifyWalletInput(value));
+    } finally {
+      if (mounted) setState(() => _isScanningQr = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = ndk_l10n.AppLocalizations.of(context)!;
@@ -519,6 +609,20 @@ class _ManualWalletInputDialogState extends State<_ManualWalletInputDialog> {
                 hintText: widget.nwcOnly
                     ? l10n.nwcConnectionUriHint
                     : widget.supportedInputDescription,
+                suffixIcon: widget.nwcOnly
+                    ? IconButton(
+                        onPressed: _isScanningQr ? null : _scanQrCode,
+                        tooltip: l10n.scanWalletQrCode,
+                        icon: _isScanningQr
+                            ? const SizedBox.square(
+                                dimension: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.qr_code_scanner),
+                      )
+                    : null,
               ),
             ),
             if (widget.nwcOnly && widget.connectWalletApp != null) ...[
@@ -589,6 +693,147 @@ class _ManualWalletInputResult {
   const _ManualWalletInputResult.connectionStarted()
       : value = null,
         connectionStarted = true;
+}
+
+class _QrCodeScannerDialog extends StatefulWidget {
+  const _QrCodeScannerDialog();
+
+  @override
+  State<_QrCodeScannerDialog> createState() => _QrCodeScannerDialogState();
+}
+
+class _QrCodeScannerDialogState extends State<_QrCodeScannerDialog> {
+  bool _hasScanned = false;
+  String? _error;
+
+  bool get _usesMobileScanner =>
+      kIsWeb ||
+      defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS;
+
+  bool get _usesWebRtcScanner =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.linux;
+
+  void _complete(String? value) {
+    final normalized = value?.trim();
+    if (_hasScanned || normalized == null || normalized.isEmpty) return;
+    _hasScanned = true;
+    Navigator.of(context).pop(normalized);
+  }
+
+  void _onMobileScan(BarcodeCapture capture) {
+    for (final barcode in capture.barcodes) {
+      final value = barcode.rawValue;
+      if (value?.trim().isNotEmpty == true) {
+        _complete(value);
+        return;
+      }
+    }
+  }
+
+  void _onWebRtcScannerCreated(Object? _, Exception? error) {
+    if (!mounted || error == null) return;
+    setState(() => _error = error.toString());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = ndk_l10n.AppLocalizations.of(context)!;
+    return Dialog(
+      backgroundColor: Colors.black,
+      child: SizedBox(
+        width: 400,
+        height: 560,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.scanWalletQrCode,
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (_usesWebRtcScanner)
+                    webrtc_zxing.ReaderWidget(
+                      codeFormat: webrtc_zxing.Format.qrCode,
+                      cropPercent: 0.7,
+                      scanDelay: const Duration(milliseconds: 250),
+                      scanDelaySuccess: const Duration(milliseconds: 250),
+                      showGallery: false,
+                      showToggleCamera: false,
+                      showScannerOverlay: false,
+                      onScan: (code) => _complete(code.text),
+                      onRendererCreated: _onWebRtcScannerCreated,
+                    )
+                  else if (_usesMobileScanner)
+                    MobileScanner(
+                      onDetect: _onMobileScan,
+                      errorBuilder: (context, error) => Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Text(
+                            error.toString(),
+                            style: const TextStyle(color: Colors.white),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    Center(
+                      child: Text(
+                        l10n.cameraNotAvailable,
+                        style: const TextStyle(color: Colors.white70),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  Center(
+                    child: Container(
+                      width: 250,
+                      height: 250,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white, width: 2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  if (_error != null)
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        color: Colors.black87,
+                        child: Text(
+                          _error!,
+                          style: const TextStyle(color: Colors.white),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _WalletChooserDialog extends StatefulWidget {
@@ -1223,7 +1468,7 @@ class _AlbyChooserDialog extends StatelessWidget {
                   _albyGoOption == null ? null : () => _connectAlbyGo(context),
             ),
             ListTile(
-              leading: const Icon(Icons.key),
+              leading: const _NwcIcon(),
               title: Text(l10n.manualNwcConnection),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => _manualNwc(context),
