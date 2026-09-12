@@ -186,7 +186,6 @@ void main() {
       await cashuSeed.setSeedPhrase(seedPhrase: seedPhraseSentence);
       final expectedKey = await DartCashuKeyDerivation().deriveQuoteKey(
         seedBytes: Uint8List.fromList(cashuSeed.getSeedBytes()),
-        mintUrl: devMintUrl,
         counter: counter,
       );
       expect(

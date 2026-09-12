@@ -66,7 +66,6 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
   @override
   Future<CashuKeypair> deriveQuoteKey({
     required Uint8List seedBytes,
-    required String mintUrl,
     required int counter,
   }) async {
     final handle = _deriveQuoteKeyWithSeed(

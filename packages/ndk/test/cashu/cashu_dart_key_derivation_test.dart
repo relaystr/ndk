@@ -304,19 +304,15 @@ void main() {
     });
 
     group('NUT-20 quote key derivation', () {
-      const mintUrlA = "https://mint.minibits.cash";
-
-      test('is deterministic for the same seed, mint and counter', () async {
+      test('is deterministic for the same seed and counter', () async {
         final derivation = DartCashuKeyDerivation();
 
         final first = await derivation.deriveQuoteKey(
           seedBytes: seedBytes,
-          mintUrl: mintUrlA,
           counter: 3,
         );
         final second = await derivation.deriveQuoteKey(
           seedBytes: seedBytes,
-          mintUrl: mintUrlA,
           counter: 3,
         );
 
@@ -330,7 +326,6 @@ void main() {
 
         final keypair = await derivation.deriveQuoteKey(
           seedBytes: seedBytes,
-          mintUrl: mintUrlA,
           counter: 0,
         );
 
@@ -358,7 +353,6 @@ void main() {
         for (var counter = 0; counter < 10; counter++) {
           final keypair = await derivation.deriveQuoteKey(
             seedBytes: seedBytes,
-            mintUrl: mintUrlA,
             counter: counter,
           );
           keys.add(keypair.publicKey);
@@ -373,7 +367,6 @@ void main() {
 
         final target = await derivation.deriveQuoteKey(
           seedBytes: seedBytes,
-          mintUrl: mintUrlA,
           counter: scanCounter,
         );
 
@@ -382,7 +375,6 @@ void main() {
         for (var counter = 0; counter <= scanCounter; counter++) {
           final candidate = await derivation.deriveQuoteKey(
             seedBytes: seedBytes,
-            mintUrl: mintUrlA,
             counter: counter,
           );
           if (candidate.publicKey == target.publicKey) {
