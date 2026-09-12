@@ -1,4 +1,5 @@
 import '../config/bootstrap_relays.dart';
+import '../config/indexer_relays.dart';
 import '../config/nip85_defaults.dart';
 import '../config/broadcast_defaults.dart';
 import '../config/logger_defaults.dart';
@@ -44,6 +45,12 @@ class NdkConfig {
   ///
   /// Defaults to [DEFAULT_BOOTSTRAP_RELAYS].
   List<String> bootstrapRelays;
+
+  /// A list of relay URLs that index nip65 relay lists (kind 10002), and for
+  /// some of them metadata (kind 0), for arbitrary pubkeys.
+  ///
+  /// Defaults to [DEFAULT_INDEXER_RELAYS].
+  List<String> indexerRelays;
 
   /// filters that are applied to the output stream
   List<EventFilter> eventOutFilters;
@@ -124,6 +131,7 @@ class NdkConfig {
   /// [engine] The engine mode to use (defaults to RELAY_SETS). \
   /// [ignoreRelays] A list of relay URLs to ignore (defaults to an empty list). \
   /// [bootstrapRelays] A list of initial relay URLs (defaults to DEFAULT_BOOTSTRAP_RELAYS). \
+  /// [indexerRelays] A list of relay URLs indexing nip65 relay lists (defaults to DEFAULT_INDEXER_RELAYS). \
   /// [eventOutFilters] A list of filters to apply to the output stream (defaults to an empty list). \
   /// [defaultQueryTimeout] The default timeout for queries (defaults to DEFAULT_QUERY_TIMEOUT). \
   /// [logLevel] The log level for the NDK (defaults to warning).
@@ -136,6 +144,7 @@ class NdkConfig {
     this.engine = NdkEngine.RELAY_SETS,
     this.ignoreRelays = const [],
     this.bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS,
+    this.indexerRelays = DEFAULT_INDEXER_RELAYS,
     this.eventOutFilters = const [],
     this.defaultQueryTimeout = RequestDefaults.DEFAULT_QUERY_TIMEOUT,
     this.defaultBroadcastTimeout = BroadcastDefaults.TIMEOUT,
