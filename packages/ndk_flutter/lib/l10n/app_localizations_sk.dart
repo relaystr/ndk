@@ -9,6 +9,55 @@ class AppLocalizationsSk extends AppLocalizations {
   AppLocalizationsSk([String locale = 'sk']) : super(locale);
 
   @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'V LNbits vyberte peňaženku, ktorú chcete pripojiť, otvorte ju, kliknite na Dokumentáciu API a skopírujte kľúč správcu. Vložte ho nižšie:';
+
+  @override
+  String get lnbitsAdminKey => 'Kľúč správcu LNbits';
+
+  @override
+  String get lnbitsKeyType => 'Typ kľúča LNbits';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'Kľúč faktúr/čítania LNbits';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Peňaženka len na prijímanie: zobrazuje zostatok a históriu a vytvára faktúry. Odosielanie platieb je vypnuté.';
+
+  @override
+  String get lnbitsUrl => 'URL LNbits';
+
+  @override
+  String get lnbitsCredentialsRequired => 'Zadajte kľúč správcu aj URL LNbits.';
+
+  @override
+  String get lnbitsWalletAdded => 'Peňaženka LNbits bola pridaná';
+
+  @override
+  String get walletDetailWalletId => 'ID peňaženky';
+
+  @override
+  String get saveBackupToFile => 'Uložiť zálohu do súboru';
+
+  @override
+  String get backupSavedToFile => 'Záloha bola uložená do súboru';
+
+  @override
+  String get restoreFromFile => 'Obnoviť zo súboru';
+
+  @override
+  String get backupFileReadFailed =>
+      'Vybraný súbor zálohy sa nepodarilo prečítať.';
+
+  @override
+  String get fetchingWalletConnectionInfo =>
+      'Načítavajú sa údaje pripojenia peňaženky…';
+
+  @override
   String get createAccount => 'Vytvorte si účet';
 
   @override
@@ -772,6 +821,27 @@ class AppLocalizationsSk extends AppLocalizations {
   String get payInvoiceTitle => 'Zaplatiť faktúru';
 
   @override
+  String get sendToWallet => 'Send to Wallet';
+
+  @override
+  String get sendToWalletDescription => 'Transfer to another compatible wallet';
+
+  @override
+  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
+
+  @override
+  String get noCompatibleReceivingWalletsDescription =>
+      'Add or connect another wallet that can receive a payment supported by this wallet.';
+
+  @override
+  String get destinationWallet => 'Destination wallet';
+
+  @override
+  String walletTransferSubmitted(String walletName) {
+    return 'Payment sent to $walletName';
+  }
+
+  @override
   String get invoice => 'Faktúra';
 
   @override
@@ -967,6 +1037,90 @@ class AppLocalizationsSk extends AppLocalizations {
   String get addWalletTitle => 'Pridať peňaženku';
 
   @override
+  String get addWalletDescription =>
+      'Naskenujte podporovaný QR kód peňaženky, vložte údaje alebo sa pripojte cez aplikáciu peňaženky.';
+
+  @override
+  String get scanWalletQrCode => 'Naskenovať QR kód peňaženky';
+
+  @override
+  String get connectWithWallet => 'Pripojiť peňaženku';
+
+  @override
+  String get chooseWalletApp => 'Vybrať aplikáciu peňaženky';
+
+  @override
+  String get oneClickConnect => 'Pripojiť jedným kliknutím';
+
+  @override
+  String get chooseWallet => 'Vybrať peňaženku';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => 'Ručné pripojenie NWC';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return 'Dokončite pripojenie v $walletName';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return 'Pripája sa $walletName…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '$walletName pripojená';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return 'Nepodarilo sa pripojiť $walletName';
+  }
+
+  @override
+  String get retry => 'Skúsiť znova';
+
+  @override
+  String get walletUnreachable => 'Peňaženka je nedostupná';
+
+  @override
+  String get chooseAnotherWallet => 'Vybrať inú peňaženku';
+
+  @override
+  String get chooseWalletAppDescription =>
+      'Schváľte pripojenie NWC v nainštalovanej peňaženke';
+
+  @override
+  String get walletInput => 'Adresa alebo pripojenie peňaženky';
+
+  @override
+  String get walletInputHint =>
+      'NWC, adresa Lightning/BIP353, ponuka BOLT12/BIP321 alebo HTTPS URL Cashu mintu';
+
+  @override
+  String get unsupportedWalletInput =>
+      'Táto adresa alebo pripojenie peňaženky nie je podporované.';
+
+  @override
+  String get detected => 'Rozpoznané';
+
+  @override
+  String get lightningAddressInputType => 'Adresa Lightning alebo BIP353';
+
+  @override
+  String get manualWalletSetup => 'Nastaviť ručne';
+
+  @override
   String get chooseWalletType => 'Vyberte typ peňaženky';
 
   @override
@@ -984,6 +1138,31 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => 'Vybrať Cashu mint';
+
+  @override
+  String get cashuMintRatingsNotice =>
+      'Hodnotenia komunity pochádzajú z podpísaných recenzií Nostr. Vysoké hodnotenie nezaručuje bezpečnosť mintu.';
+
+  @override
+  String get cashuMintDiscoveryFailed => 'Návrhy mintov sa nepodarilo načítať.';
+
+  @override
+  String get noCashuMintSuggestions =>
+      'Nenašli sa žiadne dostupné návrhy mintov.';
+
+  @override
+  String get noRatingsYet => 'Zatiaľ bez hodnotení';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · $count recenzií';
+  }
+
+  @override
+  String get enterMintUrlManually => 'Zadať URL mintu ručne';
 
   @override
   String get cashuWalletTypeSubtitle =>
@@ -1006,6 +1185,10 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'V Alby Go ťuknite na „Odoslať“ a potom naskenujte tento QR kód.';
 
   @override
   String get manualOption => 'Manuálne';
@@ -1031,6 +1214,12 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get paste => 'Vložiť';
+
+  @override
+  String get clearInput => 'Vymazať vstup';
+
+  @override
+  String get pasteOrEnter => 'Prilepiť alebo zadať';
 
   @override
   String get fromYourProfile => 'Z vášho profilu';
@@ -1352,4 +1541,181 @@ class AppLocalizationsSk extends AppLocalizations {
   String restoreSuccess(int count) {
     return 'Obnovených $count dôkazov zo zálohy';
   }
+
+  @override
+  String get bolt12Wallet => 'Peňaženka BOLT12';
+
+  @override
+  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
+
+  @override
+  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
+
+  @override
+  String get anyAmount => 'Any amount';
+
+  @override
+  String get blindedRoute => 'Blinded';
+
+  @override
+  String fromAmountSats(String amount) {
+    return 'From $amount sats';
+  }
+
+  @override
+  String fromAmountMsats(String amount) {
+    return 'From $amount msats';
+  }
+
+  @override
+  String fromCurrencyAmount(String amount, String currency) {
+    return 'From $amount $currency';
+  }
+
+  @override
+  String bolt12Expires(String date) {
+    return 'Expires $date';
+  }
+
+  @override
+  String get bolt12WalletTypeTitle => 'Ponuka BOLT12';
+
+  @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
+
+  @override
+  String get bolt12WalletTypeSubtitle =>
+      'Receive-only wallet using a reusable offer';
+
+  @override
+  String get addBolt12WalletTitle => 'Pridať peňaženku BOLT12';
+
+  @override
+  String get enterBolt12Input =>
+      'Zadajte alebo naskenujte ponuku lno, URI bitcoin:?lno=… alebo adresu BIP353.';
+
+  @override
+  String get bolt12Input => 'Platobný cieľ BOLT12';
+
+  @override
+  String get bolt12InputHint =>
+      'lno1…, bitcoin:?lno=… alebo používateľ@doména.com';
+
+  @override
+  String get walletNameOptional => 'Názov peňaženky (voliteľné)';
+
+  @override
+  String get scanBolt12QrCodeTitle => 'Naskenovať QR kód BOLT12';
+
+  @override
+  String get invalidBolt12QrCode =>
+      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
+
+  @override
+  String get pleaseEnterBolt12Input =>
+      'Zadajte ponuku BOLT12 alebo adresu BIP353.';
+
+  @override
+  String get bolt12WalletAdded => 'Peňaženka BOLT12 bola pridaná!';
+
+  @override
+  String get bolt12OfferTitle => 'Receive with BOLT12';
+
+  @override
+  String get bolt12OfferInstructions =>
+      'Share this reusable offer to receive a Lightning payment.';
+
+  @override
+  String get confirm => 'Potvrdiť';
+
+  @override
+  String get reviewWallet => 'Skontrolovať peňaženku';
+
+  @override
+  String get confirmWalletTitle => 'Potvrdiť peňaženku';
+
+  @override
+  String get confirmWalletDescription =>
+      'Pred pridaním peňaženky skontrolujte tieto údaje.';
+
+  @override
+  String get walletDetailType => 'Typ peňaženky';
+
+  @override
+  String get walletDetailAddress => 'Adresa';
+
+  @override
+  String get walletDetailDomain => 'Doména';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => 'Verejný kľúč';
+
+  @override
+  String get walletDetailRelay => 'Relay';
+
+  @override
+  String get walletDetailRelays => 'Relaye';
+
+  @override
+  String get walletDetailSecret => 'Tajný údaj pripojenia';
+
+  @override
+  String get walletSecretHidden => 'Prítomný a z bezpečnostných dôvodov skrytý';
+
+  @override
+  String get walletDetailDescription => 'Popis';
+
+  @override
+  String get walletDetailDetails => 'Podrobnosti';
+
+  @override
+  String get walletDetailIssuer => 'Vydavateľ';
+
+  @override
+  String get walletDetailAmount => 'Suma';
+
+  @override
+  String get walletDetailCurrency => 'Mena';
+
+  @override
+  String get walletDetailExpiry => 'Platnosť vyprší';
+
+  @override
+  String get walletDetailNodeId => 'ID uzla';
+
+  @override
+  String get walletDetailOffer => 'Ponuka BOLT12';
+
+  @override
+  String get walletDetailVersion => 'Verzia';
+
+  @override
+  String get walletDetailUnits => 'Podporované jednotky';
+
+  @override
+  String get walletDetailContact => 'Kontakt';
+
+  @override
+  String get walletDetailTerms => 'Podmienky služby';
+
+  @override
+  String get walletDetailMessage => 'Správa';
+
+  @override
+  String get walletDetailCommunityRating => 'Hodnotenie komunity';
+
+  @override
+  String get walletDetailCommunityReviews => 'Najnovšie recenzie komunity';
+
+  @override
+  String get refreshBalance => 'Obnoviť zostatok';
+
+  @override
+  String get balanceRefreshed => 'Zostatok obnovený';
 }

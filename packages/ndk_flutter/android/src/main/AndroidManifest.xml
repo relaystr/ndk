@@ -2,6 +2,7 @@
     <!-- Required on Android 11+ to detect and launch a NIP-55 external signer
          via the nostrsigner: scheme. -->
     <queries>
+        <package android:name="com.getalby.mobile" />
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="nostrsigner" />

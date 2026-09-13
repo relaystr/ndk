@@ -380,16 +380,16 @@ class EventEvictionPlanner {
     // Addressable/replaceable events are deleted by coordinate (`a` tag), so a
     // later version published after the deletion stays visible (NIP-09 only
     // deletes coordinate matches with created_at <= the deletion).
-    final coordinate = _coordinateKey(target);
+    final conflictKey = EventCacheStateRecord.conflictKeyFor(target);
 
     for (final event in deletionEvents) {
       if (event.pubKey != target.pubKey) continue;
       if (event.getTags('e').contains(target.id.toLowerCase())) {
         return true;
       }
-      if (coordinate != null &&
+      if (conflictKey != null &&
           event.createdAt >= target.createdAt &&
-          event.getTags('a').contains(coordinate)) {
+          EventCacheStateRecord.deletionCoversConflictKey(event, conflictKey)) {
         return true;
       }
     }

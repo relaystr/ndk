@@ -18,7 +18,9 @@ import 'requests/make_hold_invoice.dart'; // Add import for MakeHoldInvoiceReque
 import 'requests/cancel_hold_invoice.dart'; // Add import for CancelHoldInvoiceRequest
 import 'requests/settle_hold_invoice.dart'; // Add import for SettleHoldInvoiceRequest
 import 'requests/nwc_request.dart';
+import 'requests/pay.dart';
 import 'requests/pay_invoice.dart';
+import 'requests/receive.dart';
 import 'responses/nwc_response.dart';
 
 /// Main entry point for the NWC (Nostr Wallet Connect - NIP47 ) usecase
@@ -61,16 +63,23 @@ class Nwc {
 
   /// Connects to a given nostr+walletconnect:// uri,
   /// checking for 13194 event info,
-  /// and optionally doing a `get_info` request (default false).
+  /// and optionally doing a `get_info` request (default false). When
+  /// [requireGetInfoResponse] is true, missing authorization fails connection.
   /// It subscribes for notifications
   Future<NwcConnection> connect(
     String uri, {
     bool doGetInfoMethod = false,
+    bool requireGetInfoResponse = false,
     bool useETagForEachRequest = false,
     bool ignoreCapabilitiesCheck = false,
     Function(String?)? onError,
     Duration? timeout,
   }) async {
+    if (requireGetInfoResponse && !doGetInfoMethod) {
+      throw ArgumentError(
+        'requireGetInfoResponse requires doGetInfoMethod',
+      );
+    }
     var parsedUri = NostrWalletConnectUri.parseConnectionUri(uri);
     var relays = parsedUri.relays.map((r) => Uri.decodeFull(r)).toList();
     var filter = Filter(
@@ -121,13 +130,20 @@ class Nwc {
 
       await _subscribeToNotificationsAndResponses(connection);
 
-      if (doGetInfoMethod &&
-          (ignoreCapabilitiesCheck ||
-              connection.permissions.contains(NwcMethod.GET_INFO.name))) {
+      if (doGetInfoMethod) {
         try {
-          await getInfo(connection, timeout: timeout);
+          if (ignoreCapabilitiesCheck ||
+              connection.permissions.contains(NwcMethod.GET_INFO.name)) {
+            await getInfo(connection, timeout: timeout);
+          } else if (requireGetInfoResponse) {
+            throw StateError('Wallet does not advertise get_info');
+          }
         } catch (e) {
           onError?.call("timeout get_info");
+          if (requireGetInfoResponse) {
+            await disconnect(connection);
+            rethrow;
+          }
         }
       }
       Logger.log.i(() => "NWC ${connection.uri} connected");
@@ -135,6 +151,9 @@ class Nwc {
       completer.complete(connection);
     } else {
       onError?.call("not found");
+      if (requireGetInfoResponse) {
+        throw StateError('NWC info event not found');
+      }
       completer.complete(
         NwcConnection(parsedUri, eventSignerFactory: _eventSignerFactory),
       );
@@ -210,6 +229,10 @@ class Nwc {
           response = MakeInvoiceResponse.deserialize(data);
         } else if (data['result_type'] == NwcMethod.PAY_INVOICE.name) {
           response = PayInvoiceResponse.deserialize(data);
+        } else if (data['result_type'] == NwcMethod.PAY.name) {
+          response = PayResponse.deserialize(data);
+        } else if (data['result_type'] == NwcMethod.RECEIVE.name) {
+          response = ReceiveResponse.deserialize(data);
         } else if (data['result_type'] == NwcMethod.LIST_TRANSACTIONS.name) {
           response = ListTransactionsResponse.deserialize(data);
         } else if (data['result_type'] == NwcMethod.LOOKUP_INVOICE.name) {
@@ -516,6 +539,48 @@ class Nwc {
     return _executeRequest<PayInvoiceResponse>(
       connection,
       PayInvoiceRequest(invoice: invoice, maxFeeMsat: maxFeeMsat),
+      timeout: timeout,
+    );
+  }
+
+  /// Pays a Lightning instruction from a BIP-321 URI using NWC-321.
+  Future<PayResponse> pay(
+    NwcConnection connection, {
+    required String payment,
+    int? amountMsat,
+    int? maxFeeMsat,
+    String? payerNote,
+    Map<String, dynamic>? metadata,
+    Duration? timeout,
+  }) async {
+    return _executeRequest<PayResponse>(
+      connection,
+      PayRequest(
+        payment: payment,
+        amountMsat: amountMsat,
+        maxFeeMsat: maxFeeMsat,
+        payerNote: payerNote,
+        metadata: metadata,
+      ),
+      timeout: timeout,
+    );
+  }
+
+  /// Creates a BIP-321 URI containing a Lightning receive instruction.
+  Future<ReceiveResponse> receive(
+    NwcConnection connection, {
+    int? amountMsat,
+    String? description,
+    Map<String, dynamic>? metadata,
+    Duration? timeout,
+  }) async {
+    return _executeRequest<ReceiveResponse>(
+      connection,
+      ReceiveRequest(
+        amountMsat: amountMsat,
+        description: description,
+        metadata: metadata,
+      ),
       timeout: timeout,
     );
   }

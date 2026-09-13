@@ -9,6 +9,56 @@ class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
   @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'No LNbits, escolha a carteira que pretende ligar, abra-a, clique em Documentação da API e copie a chave de administrador. Cole-a abaixo:';
+
+  @override
+  String get lnbitsAdminKey => 'Chave de administrador LNbits';
+
+  @override
+  String get lnbitsKeyType => 'Tipo de chave LNbits';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'Chave de fatura/leitura LNbits';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Carteira apenas para receber: consulte saldo e histórico e crie faturas. O envio de pagamentos está desativado.';
+
+  @override
+  String get lnbitsUrl => 'URL do LNbits';
+
+  @override
+  String get lnbitsCredentialsRequired =>
+      'Introduza a chave de administrador e o URL do LNbits.';
+
+  @override
+  String get lnbitsWalletAdded => 'Carteira LNbits adicionada';
+
+  @override
+  String get walletDetailWalletId => 'ID da carteira';
+
+  @override
+  String get saveBackupToFile => 'Guardar cópia num ficheiro';
+
+  @override
+  String get backupSavedToFile => 'Cópia guardada num ficheiro';
+
+  @override
+  String get restoreFromFile => 'Restaurar de um ficheiro';
+
+  @override
+  String get backupFileReadFailed =>
+      'Não foi possível ler o ficheiro de cópia selecionado.';
+
+  @override
+  String get fetchingWalletConnectionInfo =>
+      'A obter informações de ligação da carteira…';
+
+  @override
   String get createAccount => 'Criar a sua conta';
 
   @override
@@ -776,6 +826,27 @@ class AppLocalizationsPt extends AppLocalizations {
   String get payInvoiceTitle => 'Pagar fatura';
 
   @override
+  String get sendToWallet => 'Send to Wallet';
+
+  @override
+  String get sendToWalletDescription => 'Transfer to another compatible wallet';
+
+  @override
+  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
+
+  @override
+  String get noCompatibleReceivingWalletsDescription =>
+      'Add or connect another wallet that can receive a payment supported by this wallet.';
+
+  @override
+  String get destinationWallet => 'Destination wallet';
+
+  @override
+  String walletTransferSubmitted(String walletName) {
+    return 'Payment sent to $walletName';
+  }
+
+  @override
   String get invoice => 'Fatura';
 
   @override
@@ -973,6 +1044,90 @@ class AppLocalizationsPt extends AppLocalizations {
   String get addWalletTitle => 'Adicionar carteira';
 
   @override
+  String get addWalletDescription =>
+      'Digitalize o código QR de uma carteira compatível, cole os dados ou ligue através de uma aplicação de carteira.';
+
+  @override
+  String get scanWalletQrCode => 'Digitalizar QR da carteira';
+
+  @override
+  String get connectWithWallet => 'Ligar a uma carteira';
+
+  @override
+  String get chooseWalletApp => 'Escolher aplicação de carteira';
+
+  @override
+  String get oneClickConnect => 'Ligação com 1 clique';
+
+  @override
+  String get chooseWallet => 'Escolher carteira';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => 'Ligação NWC manual';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return 'Conclua a ligação em $walletName';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return 'A ligar a $walletName…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '$walletName ligada';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return 'Não foi possível ligar a $walletName';
+  }
+
+  @override
+  String get retry => 'Tentar novamente';
+
+  @override
+  String get walletUnreachable => 'Carteira inacessível';
+
+  @override
+  String get chooseAnotherWallet => 'Escolher outra carteira';
+
+  @override
+  String get chooseWalletAppDescription =>
+      'Aprove uma ligação NWC numa carteira instalada';
+
+  @override
+  String get walletInput => 'Endereço ou ligação da carteira';
+
+  @override
+  String get walletInputHint =>
+      'NWC, endereço Lightning/BIP353, oferta BOLT12/BIP321 ou URL HTTPS de um mint Cashu';
+
+  @override
+  String get unsupportedWalletInput =>
+      'Este endereço ou ligação de carteira não é compatível.';
+
+  @override
+  String get detected => 'Detetado';
+
+  @override
+  String get lightningAddressInputType => 'Endereço Lightning ou BIP353';
+
+  @override
+  String get manualWalletSetup => 'Configurar manualmente';
+
+  @override
   String get chooseWalletType => 'Escolha o tipo de carteira';
 
   @override
@@ -990,6 +1145,32 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => 'Escolher mint Cashu';
+
+  @override
+  String get cashuMintRatingsNotice =>
+      'As avaliações da comunidade provêm de análises Nostr assinadas. Uma avaliação alta não garante que um mint seja seguro.';
+
+  @override
+  String get cashuMintDiscoveryFailed =>
+      'Não foi possível carregar sugestões de mints.';
+
+  @override
+  String get noCashuMintSuggestions =>
+      'Não foram encontradas sugestões de mints disponíveis.';
+
+  @override
+  String get noRatingsYet => 'Ainda sem avaliações';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · $count avaliações';
+  }
+
+  @override
+  String get enterMintUrlManually => 'Introduzir URL do mint manualmente';
 
   @override
   String get cashuWalletTypeSubtitle =>
@@ -1012,6 +1193,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'No Alby Go, toque em «Enviar» e depois leia este código QR.';
 
   @override
   String get manualOption => 'Manual';
@@ -1037,6 +1222,12 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get paste => 'Colar';
+
+  @override
+  String get clearInput => 'Limpar entrada';
+
+  @override
+  String get pasteOrEnter => 'Colar ou digitar';
 
   @override
   String get fromYourProfile => 'Do seu perfil';
@@ -1358,11 +1549,239 @@ class AppLocalizationsPt extends AppLocalizations {
   String restoreSuccess(int count) {
     return 'Restored $count proofs from backup';
   }
+
+  @override
+  String get bolt12Wallet => 'Carteira BOLT12';
+
+  @override
+  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
+
+  @override
+  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
+
+  @override
+  String get anyAmount => 'Any amount';
+
+  @override
+  String get blindedRoute => 'Blinded';
+
+  @override
+  String fromAmountSats(String amount) {
+    return 'From $amount sats';
+  }
+
+  @override
+  String fromAmountMsats(String amount) {
+    return 'From $amount msats';
+  }
+
+  @override
+  String fromCurrencyAmount(String amount, String currency) {
+    return 'From $amount $currency';
+  }
+
+  @override
+  String bolt12Expires(String date) {
+    return 'Expires $date';
+  }
+
+  @override
+  String get bolt12WalletTypeTitle => 'Oferta BOLT12';
+
+  @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
+
+  @override
+  String get bolt12WalletTypeSubtitle =>
+      'Receive-only wallet using a reusable offer';
+
+  @override
+  String get addBolt12WalletTitle => 'Adicionar carteira BOLT12';
+
+  @override
+  String get enterBolt12Input =>
+      'Introduza ou digitalize uma oferta lno, um URI bitcoin:?lno=… ou um endereço BIP353.';
+
+  @override
+  String get bolt12Input => 'Destino de pagamento BOLT12';
+
+  @override
+  String get bolt12InputHint =>
+      'lno1…, bitcoin:?lno=… ou utilizador@dominio.com';
+
+  @override
+  String get walletNameOptional => 'Nome da carteira (opcional)';
+
+  @override
+  String get scanBolt12QrCodeTitle => 'Digitalizar código QR BOLT12';
+
+  @override
+  String get invalidBolt12QrCode =>
+      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
+
+  @override
+  String get pleaseEnterBolt12Input =>
+      'Introduza uma oferta BOLT12 ou um endereço BIP353.';
+
+  @override
+  String get bolt12WalletAdded => 'Carteira BOLT12 adicionada!';
+
+  @override
+  String get bolt12OfferTitle => 'Receive with BOLT12';
+
+  @override
+  String get bolt12OfferInstructions =>
+      'Share this reusable offer to receive a Lightning payment.';
+
+  @override
+  String get confirm => 'Confirmar';
+
+  @override
+  String get reviewWallet => 'Rever carteira';
+
+  @override
+  String get confirmWalletTitle => 'Confirmar carteira';
+
+  @override
+  String get confirmWalletDescription =>
+      'Reveja estes dados antes de adicionar a carteira.';
+
+  @override
+  String get walletDetailType => 'Tipo de carteira';
+
+  @override
+  String get walletDetailAddress => 'Endereço';
+
+  @override
+  String get walletDetailDomain => 'Domínio';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => 'Chave pública';
+
+  @override
+  String get walletDetailRelay => 'Relay';
+
+  @override
+  String get walletDetailRelays => 'Relays';
+
+  @override
+  String get walletDetailSecret => 'Segredo da ligação';
+
+  @override
+  String get walletSecretHidden => 'Presente e oculto por segurança';
+
+  @override
+  String get walletDetailDescription => 'Descrição';
+
+  @override
+  String get walletDetailDetails => 'Detalhes';
+
+  @override
+  String get walletDetailIssuer => 'Emissor';
+
+  @override
+  String get walletDetailAmount => 'Montante';
+
+  @override
+  String get walletDetailCurrency => 'Moeda';
+
+  @override
+  String get walletDetailExpiry => 'Expira';
+
+  @override
+  String get walletDetailNodeId => 'ID do nó';
+
+  @override
+  String get walletDetailOffer => 'Oferta BOLT12';
+
+  @override
+  String get walletDetailVersion => 'Versão';
+
+  @override
+  String get walletDetailUnits => 'Unidades suportadas';
+
+  @override
+  String get walletDetailContact => 'Contacto';
+
+  @override
+  String get walletDetailTerms => 'Termos de serviço';
+
+  @override
+  String get walletDetailMessage => 'Mensagem';
+
+  @override
+  String get walletDetailCommunityRating => 'Avaliação da comunidade';
+
+  @override
+  String get walletDetailCommunityReviews =>
+      'Avaliações recentes da comunidade';
+
+  @override
+  String get refreshBalance => 'Atualizar saldo';
+
+  @override
+  String get balanceRefreshed => 'Saldo atualizado';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
 class AppLocalizationsPtBr extends AppLocalizationsPt {
   AppLocalizationsPtBr() : super('pt_BR');
+
+  @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'No LNbits, escolha a carteira que deseja conectar, abra-a, clique em Documentação da API e copie a chave de administrador. Cole-a abaixo:';
+
+  @override
+  String get lnbitsAdminKey => 'Chave de administrador LNbits';
+
+  @override
+  String get lnbitsKeyType => 'Tipo de chave LNbits';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'Chave de fatura/leitura LNbits';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Carteira somente para receber: consulte saldo e histórico e crie faturas. O envio de pagamentos está desativado.';
+
+  @override
+  String get lnbitsUrl => 'URL do LNbits';
+
+  @override
+  String get lnbitsCredentialsRequired =>
+      'Insira a chave de administrador e a URL do LNbits.';
+
+  @override
+  String get lnbitsWalletAdded => 'Carteira LNbits adicionada';
+
+  @override
+  String get walletDetailWalletId => 'ID da carteira';
+
+  @override
+  String get saveBackupToFile => 'Salvar backup em arquivo';
+
+  @override
+  String get backupSavedToFile => 'Backup salvo em arquivo';
+
+  @override
+  String get restoreFromFile => 'Restaurar de arquivo';
+
+  @override
+  String get backupFileReadFailed =>
+      'Não foi possível ler o arquivo de backup selecionado.';
+
+  @override
+  String get fetchingWalletConnectionInfo =>
+      'Obtendo informações de conexão da carteira…';
 
   @override
   String get createAccount => 'Criar sua conta';
@@ -2328,6 +2747,90 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get addWalletTitle => 'Adicionar carteira';
 
   @override
+  String get addWalletDescription =>
+      'Escaneie o código QR de uma carteira compatível, cole os dados ou conecte por um aplicativo de carteira.';
+
+  @override
+  String get scanWalletQrCode => 'Escanear QR da carteira';
+
+  @override
+  String get connectWithWallet => 'Conectar com uma carteira';
+
+  @override
+  String get chooseWalletApp => 'Escolher aplicativo de carteira';
+
+  @override
+  String get oneClickConnect => 'Conexão com 1 clique';
+
+  @override
+  String get chooseWallet => 'Escolher carteira';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => 'Conexão NWC manual';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return 'Conclua a conexão em $walletName';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return 'Conectando a $walletName…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '$walletName conectada';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return 'Não foi possível conectar a $walletName';
+  }
+
+  @override
+  String get retry => 'Tentar novamente';
+
+  @override
+  String get walletUnreachable => 'Carteira inacessível';
+
+  @override
+  String get chooseAnotherWallet => 'Escolher outra carteira';
+
+  @override
+  String get chooseWalletAppDescription =>
+      'Aprove uma conexão NWC em uma carteira instalada';
+
+  @override
+  String get walletInput => 'Endereço ou conexão da carteira';
+
+  @override
+  String get walletInputHint =>
+      'NWC, endereço Lightning/BIP353, oferta BOLT12/BIP321 ou URL HTTPS de um mint Cashu';
+
+  @override
+  String get unsupportedWalletInput =>
+      'Este endereço ou conexão de carteira não é compatível.';
+
+  @override
+  String get detected => 'Detectado';
+
+  @override
+  String get lightningAddressInputType => 'Endereço Lightning ou BIP353';
+
+  @override
+  String get manualWalletSetup => 'Configurar manualmente';
+
+  @override
   String get chooseWalletType => 'Escolha o tipo de carteira';
 
   @override
@@ -2345,6 +2848,32 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => 'Escolher mint Cashu';
+
+  @override
+  String get cashuMintRatingsNotice =>
+      'As avaliações da comunidade vêm de análises Nostr assinadas. Uma avaliação alta não garante que um mint seja seguro.';
+
+  @override
+  String get cashuMintDiscoveryFailed =>
+      'Não foi possível carregar sugestões de mints.';
+
+  @override
+  String get noCashuMintSuggestions =>
+      'Nenhuma sugestão de mint disponível foi encontrada.';
+
+  @override
+  String get noRatingsYet => 'Ainda sem avaliações';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · $count avaliações';
+  }
+
+  @override
+  String get enterMintUrlManually => 'Inserir URL do mint manualmente';
 
   @override
   String get cashuWalletTypeSubtitle =>
@@ -2367,6 +2896,10 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'No Alby Go, toque em “Enviar” e escaneie este código QR.';
 
   @override
   String get manualOption => 'Manual';
@@ -2392,6 +2925,12 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get paste => 'Colar';
+
+  @override
+  String get clearInput => 'Limpar entrada';
+
+  @override
+  String get pasteOrEnter => 'Colar ou digitar';
 
   @override
   String get fromYourProfile => 'Do seu perfil';
@@ -2671,4 +3210,132 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get appUpdateViewStatus => 'Ver status da atualização';
+  String get bolt12Wallet => 'Carteira BOLT12';
+
+  @override
+  String get bolt12WalletTypeTitle => 'Oferta BOLT12';
+
+  @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
+
+  @override
+  String get addBolt12WalletTitle => 'Adicionar carteira BOLT12';
+
+  @override
+  String get enterBolt12Input =>
+      'Insira ou escaneie uma oferta lno, um URI bitcoin:?lno=… ou um endereço BIP353.';
+
+  @override
+  String get bolt12Input => 'Destino de pagamento BOLT12';
+
+  @override
+  String get bolt12InputHint => 'lno1…, bitcoin:?lno=… ou usuario@dominio.com';
+
+  @override
+  String get walletNameOptional => 'Nome da carteira (opcional)';
+
+  @override
+  String get scanBolt12QrCodeTitle => 'Escanear código QR BOLT12';
+
+  @override
+  String get pleaseEnterBolt12Input =>
+      'Insira uma oferta BOLT12 ou um endereço BIP353.';
+
+  @override
+  String get bolt12WalletAdded => 'Carteira BOLT12 adicionada!';
+
+  @override
+  String get confirm => 'Confirmar';
+
+  @override
+  String get reviewWallet => 'Revisar carteira';
+
+  @override
+  String get confirmWalletTitle => 'Confirmar carteira';
+
+  @override
+  String get confirmWalletDescription =>
+      'Revise estes dados antes de adicionar a carteira.';
+
+  @override
+  String get walletDetailType => 'Tipo de carteira';
+
+  @override
+  String get walletDetailAddress => 'Endereço';
+
+  @override
+  String get walletDetailDomain => 'Domínio';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => 'Chave pública';
+
+  @override
+  String get walletDetailRelay => 'Relay';
+
+  @override
+  String get walletDetailRelays => 'Relays';
+
+  @override
+  String get walletDetailSecret => 'Segredo da conexão';
+
+  @override
+  String get walletSecretHidden => 'Presente e oculto por segurança';
+
+  @override
+  String get walletDetailDescription => 'Descrição';
+
+  @override
+  String get walletDetailDetails => 'Detalhes';
+
+  @override
+  String get walletDetailIssuer => 'Emissor';
+
+  @override
+  String get walletDetailAmount => 'Valor';
+
+  @override
+  String get walletDetailCurrency => 'Moeda';
+
+  @override
+  String get walletDetailExpiry => 'Expira';
+
+  @override
+  String get walletDetailNodeId => 'ID do nó';
+
+  @override
+  String get walletDetailOffer => 'Oferta BOLT12';
+
+  @override
+  String get walletDetailVersion => 'Versão';
+
+  @override
+  String get walletDetailUnits => 'Unidades compatíveis';
+
+  @override
+  String get walletDetailContact => 'Contato';
+
+  @override
+  String get walletDetailTerms => 'Termos de serviço';
+
+  @override
+  String get walletDetailMessage => 'Mensagem';
+
+  @override
+  String get walletDetailCommunityRating => 'Avaliação da comunidade';
+
+  @override
+  String get walletDetailCommunityReviews =>
+      'Avaliações recentes da comunidade';
+
+  @override
+  String get refreshBalance => 'Atualizar saldo';
+
+  @override
+  String get balanceRefreshed => 'Saldo atualizado';
 }

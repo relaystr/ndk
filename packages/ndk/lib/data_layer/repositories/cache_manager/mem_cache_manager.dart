@@ -7,6 +7,7 @@ import '../../../domain_layer/entities/cache_eviction.dart';
 import '../../../domain_layer/entities/contact_list.dart';
 import '../../../domain_layer/entities/event_cache_records.dart';
 import '../../../domain_layer/entities/filter_fetched_ranges.dart';
+import '../../../domain_layer/entities/hidden_event.dart';
 import '../../../domain_layer/entities/metadata.dart';
 import '../../../domain_layer/entities/nip_65.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
@@ -15,8 +16,8 @@ import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';
 import '../../../domain_layer/entities/wallet/wallet.dart';
 import '../../../domain_layer/repositories/cache_manager.dart';
-import '../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../shared/nips/nip01/event_eviction_planner.dart';
+import '../../../shared/nips/nip01/event_visibility_resolver.dart';
 
 /// In memory database implementation
 /// benefits: very fast
@@ -70,6 +71,10 @@ class MemCacheManager implements CacheManager {
   /// In memory storage for filter fetched range records
   /// Key is filterHash:relayUrl:rangeStart
   Map<String, FilterFetchedRangeRecord> filterFetchedRangeRecords = {};
+
+  late final EventVisibilityResolver _visibility = EventVisibilityResolver(
+    _loadRawEvents,
+  );
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -614,6 +619,56 @@ class MemCacheManager implements CacheManager {
     );
   }
 
+  @override
+  Future<List<HiddenEvent>> loadHiddenEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    List<String>? coordinates,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+    String? search,
+    int? limit,
+    Set<HiddenEventReason> reasons = kAllHiddenEventReasons,
+  }) {
+    return _visibility.loadHiddenEvents(
+      ids: ids,
+      pubKeys: pubKeys,
+      kinds: kinds,
+      coordinates: coordinates,
+      tags: tags,
+      since: since,
+      until: until,
+      search: search,
+      limit: limit,
+      reasons: reasons,
+    );
+  }
+
+  Future<List<Nip01Event>> _loadRawEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+    String? search,
+    int? limit,
+  }) {
+    return _loadEventsInternal(
+      ids: ids,
+      pubKeys: pubKeys,
+      kinds: kinds,
+      tags: tags,
+      since: since,
+      until: until,
+      search: search,
+      limit: limit,
+      applyVisibilityRules: false,
+    );
+  }
+
   Future<List<Nip01Event>> _loadEventsInternal({
     List<String>? ids,
     List<String>? pubKeys,
@@ -687,7 +742,7 @@ class MemCacheManager implements CacheManager {
     }
 
     if (applyVisibilityRules) {
-      result = _applyEventVisibilityRules(result);
+      result = await _visibility.filterVisible(result);
     }
 
     result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -1046,81 +1101,6 @@ class MemCacheManager implements CacheManager {
 
   String _eventSourceKey(String eventId, String relayUrl) {
     return '$eventId|$relayUrl';
-  }
-
-  List<Nip01Event> _applyEventVisibilityRules(List<Nip01Event> events) {
-    final visible = <Nip01Event>[];
-    final replaceableWinners = <String, Nip01Event>{};
-    final now = Nip01Event.secondsSinceEpoch();
-
-    for (final event in events) {
-      if (_isExpired(event, now)) continue;
-      if (_isDeletedByAuthor(event)) continue;
-
-      final coordinateKey = _coordinateKey(event);
-      if (coordinateKey == null) {
-        visible.add(event);
-        continue;
-      }
-
-      final current = replaceableWinners[coordinateKey];
-      if (current == null || _isMoreRecentReplaceable(event, current)) {
-        replaceableWinners[coordinateKey] = event;
-      }
-    }
-
-    visible.addAll(replaceableWinners.values);
-    return visible;
-  }
-
-  bool _isDeletedByAuthor(Nip01Event target) {
-    if (target.kind == 5) return false;
-
-    // Addressable/replaceable events are deleted by coordinate (`a` tag), so a
-    // later version published after the deletion stays visible (NIP-09 only
-    // deletes coordinate matches with created_at <= the deletion).
-    final coordinate = _coordinateKey(target);
-
-    for (final event in events.values) {
-      if (event.kind != 5) continue;
-      if (event.pubKey != target.pubKey) continue;
-      if (event.getTags('e').contains(target.id.toLowerCase())) {
-        return true;
-      }
-      if (coordinate != null &&
-          event.createdAt >= target.createdAt &&
-          event.getTags('a').contains(coordinate)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  bool _isExpired(Nip01Event event, int now) {
-    final expirationValue = event.getFirstTag('expiration');
-    if (expirationValue == null) return false;
-    final expiration = int.tryParse(expirationValue);
-    if (expiration == null) return false;
-    return expiration <= now;
-  }
-
-  String? _coordinateKey(Nip01Event event) {
-    if (!_isReplaceableKind(event.kind)) return null;
-    final dTag = event.getDtag() ?? '';
-    return '${event.kind}:${event.pubKey}:$dTag';
-  }
-
-  bool _isReplaceableKind(int kind) {
-    return EventKindClassification.isReplaceableKind(kind);
-  }
-
-  bool _isMoreRecentReplaceable(Nip01Event candidate, Nip01Event current) {
-    if (candidate.createdAt != current.createdAt) {
-      return candidate.createdAt > current.createdAt;
-    }
-
-    return candidate.id.compareTo(current.id) < 0;
   }
 
   Future<Nip01Event?> _loadLatestVisibleEvent({

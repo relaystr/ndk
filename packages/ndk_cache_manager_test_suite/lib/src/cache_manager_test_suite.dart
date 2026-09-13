@@ -32,6 +32,7 @@ part 'cache_manager_test_suite_contact_list.dart';
 part 'cache_manager_test_suite_cashu.dart';
 part 'cache_manager_test_suite_eviction.dart';
 part 'cache_manager_test_suite_event.dart';
+part 'cache_manager_test_suite_hidden_event.dart';
 part 'cache_manager_test_suite_metadata.dart';
 part 'cache_manager_test_suite_nip05.dart';
 part 'cache_manager_test_suite_relay_set.dart';
@@ -87,6 +88,10 @@ void runCacheManagerTestSuite({
 
     group('Event Operations', () {
       _runEventTests(() => cacheManager, eventSignerFactory);
+    });
+
+    group('Hidden Event Operations', () {
+      _runHiddenEventTests(() => cacheManager);
     });
 
     group('Metadata Operations', () {

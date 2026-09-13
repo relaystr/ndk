@@ -458,6 +458,59 @@ class EventCacheStateRecord {
   bool isExpiredAt(int timestamp) =>
       expirationAt != null && expirationAt! <= timestamp;
 
+  /// The NIP-01 conflict domain of [event]: `kind:pubkey:d-tag` for addressable
+  /// kinds, `kind:pubkey` for other replaceable kinds, null for the rest.
+  static String? conflictKeyFor(Nip01Event event) =>
+      _buildReplaceableConflictKey(event, event.getDtag());
+
+  /// Normalizes a caller supplied conflict domain so it compares equal to
+  /// [conflictKeyFor].
+  ///
+  /// Accepts NIP-01 `a` tag values, whose d-tag segment is present but empty
+  /// for non addressable kinds. Returns null when [coordinate] is malformed or
+  /// names a kind that has no conflict domain.
+  ///
+  /// Only the kind is parsed. NIP-01 mandates lowercase hex for the pubkey and
+  /// leaves the d-tag an arbitrary string, so both compare byte for byte the
+  /// way a relay compares them.
+  static String? normalizeConflictKey(String coordinate) {
+    final parts = coordinate.split(':');
+    if (parts.length < 2) return null;
+    final kind = int.tryParse(parts[0]);
+    if (kind == null || parts[1].isEmpty) return null;
+    final pubKey = parts[1];
+
+    if (EventKindClassification.isParameterizedReplaceableKind(kind)) {
+      final dTag = parts.length > 2 ? parts.sublist(2).join(':') : '';
+      return '$kind:$pubKey:$dTag';
+    }
+    if (!EventKindClassification.isReplaceableKind(kind)) return null;
+    // A non addressable kind has no d-tag, so only an empty trailing segment
+    // is a spelling of the same domain. Anything else is a different request.
+    if (parts.length > 3 || (parts.length == 3 && parts[2].isNotEmpty)) {
+      return null;
+    }
+    return '$kind:$pubKey';
+  }
+
+  /// Whether [deletion] covers [conflictKey] through one of its `a` tags.
+  ///
+  /// Reads the tags directly because [Nip01Event.getTags] trims and lowercases
+  /// values, which would drop bytes of the d-tag carried by the coordinate.
+  static bool deletionCoversConflictKey(
+    Nip01Event deletion,
+    String conflictKey,
+  ) {
+    for (final tag in deletion.tags) {
+      if (tag.length > 1 &&
+          tag[0] == 'a' &&
+          normalizeConflictKey(tag[1]) == conflictKey) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'eventId': eventId,
@@ -565,7 +618,7 @@ class EventCacheStateRecord {
       }
       if (replaceableConflictKey != null &&
           event.createdAt >= target.createdAt &&
-          event.getTags('a').contains(replaceableConflictKey)) {
+          deletionCoversConflictKey(event, replaceableConflictKey)) {
         return event;
       }
     }

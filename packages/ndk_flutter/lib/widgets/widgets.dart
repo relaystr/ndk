@@ -19,3 +19,5 @@ export 'app_update/n_app_update_widgets.dart';
 export 'app_update/n_app_version.dart';
 export 'app_update/n_release_engagement.dart';
 export 'app_update/update_installer.dart';
+export 'wallets/n_lnbits_icon.dart';
+export 'wallets/n_wallet_input_dialog.dart';

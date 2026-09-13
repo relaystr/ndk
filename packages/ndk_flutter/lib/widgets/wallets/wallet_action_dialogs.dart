@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ndk/entities.dart';
@@ -5,6 +8,8 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 
 import '../../l10n/app_localizations.dart';
+
+enum _WalletSendAction { token, invoice, transfer }
 
 /// Funding transactions reclaimable via [Cashu.retrieveFunds]: they carry a
 /// mint quote, method and used keysets. Pending sends/redeems have none and are
@@ -167,11 +172,83 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
 
   /// Receive flow that picks the right dialog per wallet type.
   void showReceiveFlow(BuildContext context, Wallet wallet) {
-    if (wallet is NwcWallet || wallet is LnurlWallet) {
+    if (wallet is Bolt12Wallet) {
+      _showBolt12OfferDialog(context, wallet);
+    } else if (wallet is CashuWallet) {
+      _showReceiveDialog(context, wallet);
+    } else if (wallet.supportsBolt11InvoiceReceive) {
       _showCreateInvoiceDialog(context, wallet);
     } else {
       _showReceiveDialog(context, wallet);
     }
+  }
+
+  void _showBolt12OfferDialog(BuildContext context, Bolt12Wallet wallet) {
+    final l10n = AppLocalizations.of(context)!;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.bolt12OfferTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.bolt12OfferInstructions),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: 220,
+              child: PrettyQrView.data(
+                data: wallet.offer.toUpperCase(),
+                errorCorrectLevel: QrErrorCorrectLevel.M,
+                decoration: const PrettyQrDecoration(
+                  quietZone: PrettyQrQuietZone.standard,
+                  background: Colors.white,
+                  shape: PrettyQrSmoothSymbol(
+                    color: Colors.black,
+                    roundFactor: 0.3,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              constraints: const BoxConstraints(maxHeight: 120),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: SingleChildScrollView(
+                child: SelectableText(
+                  wallet.offer,
+                  style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.close),
+          ),
+          TextButton.icon(
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: wallet.offer));
+              scaffoldMessenger.showSnackBar(
+                SnackBar(
+                  content: Text(l10n.copied),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            icon: const Icon(Icons.copy),
+            label: Text(l10n.copy),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Reclaims all reclaimable pending funding transactions of [wallet].
@@ -214,6 +291,20 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                 setDialogState(() => generating = false);
                 displayError(e.toString());
               }
+            }
+
+            Future<void> saveToFile() async {
+              final json = backupJson;
+              if (json == null) return;
+              final path = await FilePicker.platform.saveFile(
+                dialogTitle: l10n.saveBackupToFile,
+                fileName:
+                    'cashu-backup-${DateTime.now().toUtc().toIso8601String().replaceAll(':', '-')}.json',
+                type: FileType.custom,
+                allowedExtensions: const ['json'],
+                bytes: Uint8List.fromList(utf8.encode(json)),
+              );
+              if (path != null) displaySuccess(l10n.backupSavedToFile);
             }
 
             return AlertDialog(
@@ -278,7 +369,7 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                       generating ? l10n.generatingBackup : l10n.backup,
                     ),
                   )
-                else
+                else ...[
                   TextButton(
                     onPressed: () async {
                       await Clipboard.setData(ClipboardData(text: backupJson!));
@@ -286,6 +377,12 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                     },
                     child: Text(l10n.copyBackup),
                   ),
+                  TextButton.icon(
+                    onPressed: saveToFile,
+                    icon: const Icon(Icons.save_alt),
+                    label: Text(l10n.saveBackupToFile),
+                  ),
+                ],
               ],
             );
           },
@@ -308,6 +405,25 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            Future<void> chooseBackupFile() async {
+              final picked = await FilePicker.platform.pickFiles(
+                type: FileType.custom,
+                allowedExtensions: const ['json'],
+                withData: true,
+              );
+              if (picked == null) return;
+              final bytes = picked.files.single.bytes;
+              if (bytes == null) {
+                displayError(l10n.backupFileReadFailed);
+                return;
+              }
+              try {
+                controller.text = utf8.decode(bytes);
+              } catch (_) {
+                displayError(l10n.backupFileReadFailed);
+              }
+            }
+
             return AlertDialog(
               title: Text(l10n.cashuRestoreTitle),
               content: TextField(
@@ -320,6 +436,11 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                 ),
               ),
               actions: [
+                TextButton.icon(
+                  onPressed: restoring ? null : chooseBackupFile,
+                  icon: const Icon(Icons.file_open),
+                  label: Text(l10n.restoreFromFile),
+                ),
                 TextButton(
                   onPressed: restoring
                       ? null
@@ -376,15 +497,29 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
     );
   }
 
-  void showSendDialog(BuildContext context, Wallet wallet) {
+  Future<void> showSendDialog(BuildContext context, Wallet wallet) async {
     final l10n = AppLocalizations.of(context)!;
-    showModalBottomSheet(
+    final wallets = await ndkFlutter.ndk.wallets.getWallets();
+    if (!context.mounted) return;
+    final destinations = wallets
+        .where(
+          (destination) =>
+              destination.id != wallet.id &&
+              ndkFlutter.ndk.wallets.compatibleTransferProtocol(
+                    source: wallet,
+                    destination: destination,
+                  ) !=
+                  null,
+        )
+        .toList();
+
+    final action = await showModalBottomSheet<_WalletSendAction>(
       context: context,
       isScrollControlled: true,
-      builder: (context) {
+      builder: (sheetContext) {
         return Padding(
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
             left: 16,
             right: 16,
             top: 16,
@@ -395,7 +530,7 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
             children: [
               Text(
                 l10n.sendOptionsTitle,
-                style: Theme.of(context).textTheme.headlineSmall,
+                style: Theme.of(sheetContext).textTheme.headlineSmall,
               ),
               const SizedBox(height: 16),
               if (wallet is CashuWallet) ...[
@@ -403,36 +538,264 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                   leading: const Icon(Icons.receipt),
                   title: Text(l10n.sendByToken),
                   subtitle: Text(l10n.sendByTokenDescription),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _showSendTokenDialog(context, wallet);
-                  },
+                  onTap: () =>
+                      Navigator.pop(sheetContext, _WalletSendAction.token),
                 ),
                 ListTile(
                   leading: const Icon(Icons.flash_on),
                   title: Text(l10n.sendByLightning),
                   subtitle: Text(l10n.sendByLightningDescription),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _showPayInvoiceDialog(context, wallet);
-                  },
+                  onTap: () =>
+                      Navigator.pop(sheetContext, _WalletSendAction.invoice),
                 ),
-              ] else if (wallet is NwcWallet) ...[
+              ] else if (wallet.supportsBolt11InvoicePay) ...[
                 ListTile(
                   leading: const Icon(Icons.flash_on),
                   title: Text(l10n.payInvoiceTitle),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _showPayInvoiceDialog(context, wallet);
-                  },
+                  onTap: () =>
+                      Navigator.pop(sheetContext, _WalletSendAction.invoice),
                 ),
               ],
+              ListTile(
+                leading: const Icon(Icons.swap_horiz),
+                title: Text(l10n.sendToWallet),
+                subtitle: Text(
+                  destinations.isEmpty
+                      ? l10n.noCompatibleReceivingWallets
+                      : l10n.sendToWalletDescription,
+                ),
+                onTap: () =>
+                    Navigator.pop(sheetContext, _WalletSendAction.transfer),
+              ),
               const SizedBox(height: 16),
             ],
           ),
         );
       },
     );
+
+    if (!context.mounted || action == null) return;
+    switch (action) {
+      case _WalletSendAction.token:
+        _showSendTokenDialog(context, wallet as CashuWallet);
+      case _WalletSendAction.invoice:
+        _showPayInvoiceDialog(context, wallet);
+      case _WalletSendAction.transfer:
+        if (destinations.isEmpty) {
+          await _showNoCompatibleWalletsDialog(context);
+        } else {
+          await _showWalletTransferDialog(context, wallet, destinations);
+        }
+    }
+  }
+
+  Future<void> _showNoCompatibleWalletsDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.noCompatibleReceivingWallets),
+        content: Text(l10n.noCompatibleReceivingWalletsDescription),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.close),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showWalletTransferDialog(
+    BuildContext context,
+    Wallet source,
+    List<Wallet> destinations,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final amountController = TextEditingController();
+    var selectedDestination = destinations.first;
+    var sending = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final offerAmount = _bolt12OfferAmount(selectedDestination);
+          return AlertDialog(
+            title: Text(l10n.sendToWallet),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DropdownButtonFormField<String>(
+                  initialValue: selectedDestination.id,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: l10n.destinationWallet,
+                  ),
+                  isExpanded: true,
+                  items: [
+                    for (final destination in destinations)
+                      DropdownMenuItem(
+                        value: destination.id,
+                        child: Text(
+                          _walletDisplayName(l10n, destination),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                  ],
+                  onChanged: sending
+                      ? null
+                      : (walletId) {
+                          if (walletId == null) return;
+                          setDialogState(() {
+                            selectedDestination = destinations.firstWhere(
+                              (wallet) => wallet.id == walletId,
+                            );
+                            amountController.clear();
+                          });
+                        },
+                ),
+                const SizedBox(height: 16),
+                if (offerAmount != null)
+                  InputDecorator(
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: l10n.amount,
+                    ),
+                    child: Text(
+                      _bolt12OfferAmountLabel(selectedDestination, offerAmount),
+                    ),
+                  )
+                else
+                  TextField(
+                    controller: amountController,
+                    enabled: !sending,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: l10n.amount,
+                      suffixText: l10n.sats,
+                      hintText: l10n.amountHint,
+                    ),
+                  ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: sending
+                    ? null
+                    : () => Navigator.of(dialogContext).pop(),
+                child: Text(l10n.cancel),
+              ),
+              FilledButton(
+                onPressed: sending
+                    ? null
+                    : () async {
+                        final fixedOfferAmount = _bolt12OfferAmount(
+                          selectedDestination,
+                        );
+                        final int? amountMsat;
+                        if (fixedOfferAmount != null) {
+                          // The offer already defines its amount. Omitting the
+                          // pay parameter avoids conflicting with it.
+                          amountMsat = null;
+                        } else {
+                          final amountSats = int.tryParse(
+                            amountController.text.trim(),
+                          );
+                          if (amountSats == null || amountSats <= 0) {
+                            displayError(l10n.pleaseEnterValidAmount);
+                            return;
+                          }
+                          amountMsat = amountSats * 1000;
+                        }
+
+                        setDialogState(() => sending = true);
+                        try {
+                          await ndkFlutter.ndk.wallets.transfer(
+                            sourceWalletId: source.id,
+                            destinationWalletId: selectedDestination.id,
+                            amountMsat: amountMsat,
+                          );
+                          if (!mounted || !dialogContext.mounted) return;
+                          Navigator.of(dialogContext).pop();
+                          displaySuccess(
+                            l10n.walletTransferSubmitted(
+                              _walletDisplayName(l10n, selectedDestination),
+                            ),
+                          );
+                        } catch (error) {
+                          if (!mounted || !dialogContext.mounted) return;
+                          setDialogState(() => sending = false);
+                          displayError(error.toString());
+                        }
+                      },
+                child: sending
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l10n.send),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    amountController.dispose();
+  }
+
+  int? _bolt12OfferAmount(Wallet wallet) {
+    if (wallet is! Bolt12Wallet) return null;
+    final amount = int.tryParse(wallet.amount ?? '');
+    return amount != null && amount > 0 ? amount : null;
+  }
+
+  String _bolt12OfferAmountLabel(Wallet wallet, int amount) {
+    if (wallet is Bolt12Wallet && wallet.currency?.isNotEmpty == true) {
+      return '$amount ${wallet.currency!.toUpperCase()}';
+    }
+    if (amount % 1000 == 0) return '${amount ~/ 1000} sats';
+    return '$amount msats';
+  }
+
+  String _walletDisplayName(AppLocalizations l10n, Wallet wallet) {
+    final name = wallet.name.trim();
+    if (name.isNotEmpty) return name;
+
+    if (wallet is CashuWallet) {
+      final mintName = wallet.mintInfo.name?.trim();
+      if (mintName?.isNotEmpty == true) return mintName!;
+      final mintUri = Uri.tryParse(wallet.mintUrl);
+      if (mintUri?.host.isNotEmpty == true) return mintUri!.host;
+      return '${l10n.cashuWallet} · ${_shortWalletIdentifier(wallet.id)}';
+    }
+    if (wallet is LnurlWallet) {
+      final identifier = wallet.identifier.trim();
+      if (identifier.isNotEmpty) return identifier;
+      return '${l10n.lnurlWallet} · ${_shortWalletIdentifier(wallet.id)}';
+    }
+    if (wallet is Bolt12Wallet) {
+      final bip353Address = wallet.bip353Address?.trim();
+      if (bip353Address?.isNotEmpty == true) return bip353Address!;
+      final issuer = wallet.issuer?.trim();
+      if (issuer?.isNotEmpty == true) return issuer!;
+      return '${l10n.bolt12Wallet} · ${_shortWalletIdentifier(wallet.offer)}';
+    }
+    if (wallet is NwcWallet) {
+      return '${l10n.nwcWallet} · ${_shortWalletIdentifier(wallet.id)}';
+    }
+    return _shortWalletIdentifier(wallet.id);
+  }
+
+  String _shortWalletIdentifier(String value) {
+    final normalized = value.trim();
+    if (normalized.isEmpty) return '—';
+    if (normalized.length <= 18) return normalized;
+    return '${normalized.substring(0, 9)}…'
+        '${normalized.substring(normalized.length - 6)}';
   }
 
   void _showReceiveDialog(BuildContext context, Wallet wallet) {
@@ -620,13 +983,22 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                         break;
                       }
                     }
-                  } else if (wallet is NwcWallet) {
+                  } else if (wallet.supportsBolt11InvoicePay) {
                     final response = await ndkFlutter.ndk.wallets.send(
                       walletId: wallet.id,
                       invoice: invoice,
                     );
                     if (response.errorCode == null &&
                         response.preimage != null) {
+                      if (wallet is LnBitsWallet) {
+                        try {
+                          await ndkFlutter.ndk.wallets.refreshBalance(
+                            wallet.id,
+                          );
+                        } catch (_) {
+                          // Payment succeeded; background polling will retry.
+                        }
+                      }
                       if (!mounted) return;
                       navigator.pop();
                       scaffoldMessenger.showSnackBar(
@@ -764,7 +1136,7 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                         scaffoldMessenger,
                       );
                     }
-                  } else if (wallet is NwcWallet || wallet is LnurlWallet) {
+                  } else if (wallet.supportsBolt11InvoiceReceive) {
                     final invoice = await ndkFlutter.ndk.wallets.receive(
                       walletId: wallet.id,
                       amountSats: amount,

@@ -19,6 +19,8 @@ import '../domain_layer/entities/relay_connectivity.dart';
 import '../domain_layer/entities/wallet/providers/cashu/cashu_wallet_provider.dart';
 import '../domain_layer/entities/wallet/providers/nwc/nwc_wallet_provider.dart';
 import '../domain_layer/entities/wallet/providers/lnurl/lnurl_wallet_provider.dart';
+import '../domain_layer/entities/wallet/providers/bolt12/bolt12_wallet_provider.dart';
+import '../domain_layer/entities/wallet/providers/lnbits/lnbits_wallet_provider.dart';
 import '../domain_layer/repositories/blossom.dart';
 import '../domain_layer/repositories/cashu_repo.dart';
 import '../domain_layer/repositories/lnurl_transport.dart';
@@ -32,6 +34,7 @@ import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/cache_eviction/cache_eviction_scheduler.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cashu/cashu.dart';
+import '../domain_layer/usecases/cashu/cashu_mint_recommendations.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/decrypted_event_payloads/decrypted_event_payloads.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
@@ -255,6 +258,7 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
       cashuUserSeedphrase: _ndkConfig.cashuUserSeedphrase,
       cashuKeyDerivation: DartCashuKeyDerivation(),
+      mintRecommendations: CashuMintRecommendations(requests: requests),
     );
 
     // Create wallet providers
@@ -317,6 +321,8 @@ class Initialization {
 
     // Create LNURL wallet provider after lnurl is initialized
     final lnurlProvider = LnurlWalletProvider(lnurl);
+    const bolt12Provider = Bolt12WalletProvider();
+    final lnbitsProvider = LnBitsWalletProvider();
 
     zaps = Zaps(requests: requests, nwc: nwc, lnurl: lnurl);
 
@@ -364,7 +370,13 @@ class Initialization {
     connectivity = Connectivy(relayManager);
 
     wallets = Wallets(
-      providers: [cashuProvider, nwcProvider, lnurlProvider],
+      providers: [
+        cashuProvider,
+        nwcProvider,
+        lnurlProvider,
+        bolt12Provider,
+        lnbitsProvider,
+      ],
       repository: _ndkConfig.walletsRepo!,
     );
     proofOfWork = ProofOfWork();

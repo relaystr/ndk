@@ -1,4 +1,6 @@
 import '../../usecases/nwc/responses/pay_invoice_response.dart';
+import '../../usecases/nwc/responses/pay_response.dart';
+import '../../usecases/nwc/responses/receive_response.dart';
 import 'wallet.dart';
 import 'wallet_balance.dart';
 import 'wallet_transaction.dart';
@@ -48,6 +50,25 @@ abstract class WalletProvider {
 
   /// Receive by creating a Lightning Invoice
   Future<String> receive(Wallet wallet, int amountSats);
+
+  /// Pays a payment instruction selected from a BIP-321 URI.
+  Future<PayResponse> payBip321(
+    Wallet wallet, {
+    required String payment,
+    int? amountMsat,
+    String? payerNote,
+    Map<String, dynamic>? metadata,
+    Duration? timeout,
+  });
+
+  /// Creates a BIP-321 URI using a provider-supported payment instruction.
+  Future<ReceiveResponse> receiveBip321(
+    Wallet wallet, {
+    int? amountMsat,
+    String? description,
+    Map<String, dynamic>? metadata,
+    Duration? timeout,
+  });
 
   /// Stream of wallets discovered by this provider
   /// For auto-discovery (e.g., Cashu mints, NWC connections from events)

@@ -29,6 +29,9 @@ class NWalletCardList extends StatefulWidget {
   /// Custom icon configuration for LNURL wallets
   final WalletIconConfig? lnurlIcon;
 
+  /// Custom icon configuration for BOLT12 wallets
+  final WalletIconConfig? bolt12Icon;
+
   /// Whether to show the add-wallet template card.
   final bool showAddWalletCard;
 
@@ -44,6 +47,7 @@ class NWalletCardList extends StatefulWidget {
     this.cashuIcon,
     this.nwcIcon,
     this.lnurlIcon,
+    this.bolt12Icon,
     this.showAddWalletCard = true,
   });
 
@@ -119,6 +123,7 @@ class _NWalletCardListState extends State<NWalletCardList> {
         name: wallet.name,
         supportedUnits: wallet.supportedUnits,
         nwcUrl: wallet.nwcUrl,
+        providerId: wallet.providerId,
         metadata: metadata,
       );
     }
@@ -132,6 +137,25 @@ class _NWalletCardListState extends State<NWalletCardList> {
         minSendable: wallet.minSendable,
         maxSendable: wallet.maxSendable,
         metadataFetchedAt: wallet.metadataFetchedAt,
+        metadata: metadata,
+      );
+    }
+    if (wallet is Bolt12Wallet) {
+      return Bolt12Wallet(
+        id: wallet.id,
+        name: wallet.name,
+        supportedUnits: wallet.supportedUnits,
+        offer: wallet.offer,
+        source: wallet.source,
+        bip353Address: wallet.bip353Address,
+        description: wallet.description,
+        nodeId: wallet.nodeId,
+        amount: wallet.amount,
+        issuer: wallet.issuer,
+        currency: wallet.currency,
+        expiresAt: wallet.expiresAt,
+        quantityMax: wallet.quantityMax,
+        hasBlindedPaths: wallet.hasBlindedPaths,
         metadata: metadata,
       );
     }
@@ -253,6 +277,7 @@ class _NWalletCardListState extends State<NWalletCardList> {
                 cashuIcon: widget.cashuIcon,
                 nwcIcon: widget.nwcIcon,
                 lnurlIcon: widget.lnurlIcon,
+                bolt12Icon: widget.bolt12Icon,
               ),
             );
           },

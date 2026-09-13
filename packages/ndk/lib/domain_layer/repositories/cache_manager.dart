@@ -5,6 +5,7 @@ import '../entities/cache_eviction.dart';
 import '../entities/contact_list.dart';
 import '../entities/event_cache_records.dart';
 import '../entities/filter_fetched_ranges.dart';
+import '../entities/hidden_event.dart';
 import '../entities/metadata.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/nip_05.dart';
@@ -24,7 +25,8 @@ import '../entities/user_relay_list.dart';
 ///
 /// Backend authors should treat this class as a behavior contract, not just a
 /// list of CRUD methods. The most important behavioral expectations are:
-/// - [loadEvents] returns *visible* events only
+/// - [loadEvents] returns *visible* events only, [loadHiddenEvents] is the only
+///   read that returns superseded, deleted or expired rows
 /// - metadata/contact list loaders are convenience views over the generic event
 ///   store, not separate authoritative silos
 /// - provenance and delivery targets are separate concerns
@@ -152,6 +154,44 @@ abstract class CacheManager {
     String? search,
     int? limit,
   });
+
+  /// Loads the events [loadEvents] hides, newest first.
+  ///
+  /// A superseded version of a replaceable event, an author-deleted event and
+  /// an expired event all stay stored, and [loadEvents] never returns them.
+  /// This read exposes them, which is what an app needs to show the edit
+  /// history of an addressable event or the content behind a deletion.
+  ///
+  /// Filters combine with AND and behave like the [loadEvents] ones, with two
+  /// additions:
+  /// - [coordinates]: replaceable conflict domains, `kind:pubkey:d-tag` for
+  ///   addressable kinds and `kind:pubkey` for other replaceable kinds. A
+  ///   trailing empty d-tag is accepted, so a NIP-01 `a` tag value can be
+  ///   passed as is.
+  /// - [reasons]: which hidden categories to return. Pass a single reason to
+  ///   ask a precise question, for example only `superseded` to list previous
+  ///   versions without resurfacing deleted content.
+  ///
+  /// [limit] applies after hidden events are selected, unlike the pre-filter
+  /// limit some backends push into their query for visible reads.
+  ///
+  /// Eviction removes exactly these rows: [EvictionPolicy] sweeps superseded
+  /// and deleted events by default. An app that shows history must disable
+  /// those two sweeps, otherwise what it wants to display is swept in the
+  /// background.
+  Future<List<HiddenEvent>> loadHiddenEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    List<String>? coordinates,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+    String? search,
+    int? limit,
+    Set<HiddenEventReason> reasons = kAllHiddenEventReasons,
+  });
+
   Future<void> removeEvent(String id);
 
   /// Remove events from cache with flexible filtering.

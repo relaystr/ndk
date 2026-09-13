@@ -252,7 +252,7 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
                             appName: 'NDK sample app',
                             relays: [
                               "wss://relay.damus.io",
-                              "wss://relay.primal.net",
+                              "wss://nos.lol",
                               "wss://relay.nmail.li",
                             ],
                           ),
