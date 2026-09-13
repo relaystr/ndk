@@ -1,3 +1,7 @@
+## 0.10.0-dev.4
+
+ - **FIX**(flutter): support file_picker 12.
+
 ## 0.10.0-dev.3
 
  - **FEAT**(wallets): add LNbits provider.
