@@ -343,12 +343,7 @@ class _NAppUpdateDialogState extends State<NAppUpdateDialog> {
               ),
               if (release != null) ...[
                 const SizedBox(height: 16),
-                _ReleaseFacts(release: release, summary: true),
-                const SizedBox(height: 12),
-                _ReleaseSummaryActions(
-                  controller: controller,
-                  release: release,
-                ),
+                _ReleaseSummaryTile(controller: controller, release: release),
               ],
             ],
           ),
@@ -396,12 +391,6 @@ class _NAppUpdateDialogState extends State<NAppUpdateDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _ReleaseFacts(
-                release: update.release,
-                asset: update.asset,
-                summary: true,
-              ),
-              const SizedBox(height: 16),
               if (update.release.releaseNotes.isNotEmpty)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -419,7 +408,7 @@ class _NAppUpdateDialogState extends State<NAppUpdateDialog> {
                   ],
                 ),
               const SizedBox(height: 12),
-              _ReleaseSummaryActions(
+              _ReleaseSummaryTile(
                 controller: controller,
                 release: update.release,
                 asset: update.asset,
@@ -646,13 +635,8 @@ class _ReleaseBadge extends StatelessWidget {
 class _ReleaseFacts extends StatelessWidget {
   final SoftwareRelease release;
   final SoftwareAsset? asset;
-  final bool summary;
 
-  const _ReleaseFacts({
-    required this.release,
-    this.asset,
-    this.summary = false,
-  });
+  const _ReleaseFacts({required this.release, this.asset});
 
   @override
   Widget build(BuildContext context) {
@@ -662,14 +646,14 @@ class _ReleaseFacts extends StatelessWidget {
     );
     final metadata = <String>[
       l10n.appUpdatePublishedOn(published),
-      if (!summary) l10n.appUpdateChannel(release.channel),
+      l10n.appUpdateChannel(release.channel),
     ];
     final facts = <String>[
-      if (!summary && (asset?.platforms.isNotEmpty ?? false))
+      if (asset?.platforms.isNotEmpty ?? false)
         l10n.appUpdateArchitecture(asset!.platforms.join(', ')),
-      if (!summary && asset?.size != null)
+      if (asset?.size != null)
         l10n.appUpdateSizeMb((asset!.size! / 1048576).toStringAsFixed(1)),
-      if (!summary && asset?.versionCode != null)
+      if (asset?.versionCode != null)
         l10n.appUpdateVersionCode(asset!.versionCode!),
     ];
     final theme = Theme.of(context);
@@ -710,22 +694,22 @@ class _ReleaseFacts extends StatelessWidget {
   }
 }
 
-class _ReleaseSummaryActions extends StatefulWidget {
+class _ReleaseSummaryTile extends StatefulWidget {
   final NAppUpdateController controller;
   final SoftwareRelease release;
   final SoftwareAsset? asset;
 
-  const _ReleaseSummaryActions({
+  const _ReleaseSummaryTile({
     required this.controller,
     required this.release,
     this.asset,
   });
 
   @override
-  State<_ReleaseSummaryActions> createState() => _ReleaseSummaryActionsState();
+  State<_ReleaseSummaryTile> createState() => _ReleaseSummaryTileState();
 }
 
-class _ReleaseSummaryActionsState extends State<_ReleaseSummaryActions> {
+class _ReleaseSummaryTileState extends State<_ReleaseSummaryTile> {
   late NReleaseEngagementController engagement;
   NReleaseEngagementController? detailsEngagement;
   bool detailsOpen = false;
@@ -749,7 +733,7 @@ class _ReleaseSummaryActionsState extends State<_ReleaseSummaryActions> {
   }
 
   @override
-  void didUpdateWidget(covariant _ReleaseSummaryActions oldWidget) {
+  void didUpdateWidget(covariant _ReleaseSummaryTile oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.release.event.id == widget.release.event.id) return;
     if (!identical(engagement, detailsEngagement)) engagement.dispose();
@@ -787,6 +771,11 @@ class _ReleaseSummaryActionsState extends State<_ReleaseSummaryActions> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final published = MaterialLocalizations.of(context).formatMediumDate(
+      DateTime.fromMillisecondsSinceEpoch(
+        widget.release.event.createdAt * 1000,
+      ),
+    );
     return ListenableBuilder(
       listenable: engagement,
       builder: (context, _) {
@@ -796,38 +785,55 @@ class _ReleaseSummaryActionsState extends State<_ReleaseSummaryActions> {
         final commentCount = awaitingResults
             ? '—'
             : '${social.comments.length}';
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
+        final secondaryStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        );
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(
+            widget.release.version,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Tooltip(
-                message: l10n.appUpdateZapSummary(
-                  social.zapCount,
-                  social.zapAmountSats,
-                ),
-                child: ActionChip(
-                  avatar: const Icon(Icons.bolt, size: 18),
-                  label: Text(zapCount),
-                  onPressed: _showDetails,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Tooltip(
-                message: l10n.appUpdateCommentCount(social.comments.length),
-                child: ActionChip(
-                  avatar: const Icon(Icons.chat_bubble_outline, size: 18),
-                  label: Text(commentCount),
-                  onPressed: _showDetails,
-                ),
-              ),
-              const SizedBox(width: 8),
-              ActionChip(
-                avatar: const Icon(Icons.article_outlined, size: 18),
-                label: Text(l10n.appUpdateReleaseDetails),
-                onPressed: _showDetails,
+              const SizedBox(height: 4),
+              Text(l10n.appUpdatePublishedOn(published), style: secondaryStyle),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Tooltip(
+                    message: l10n.appUpdateZapSummary(
+                      social.zapCount,
+                      social.zapAmountSats,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.bolt, size: 18),
+                        const SizedBox(width: 2),
+                        Text(zapCount, style: secondaryStyle),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Tooltip(
+                    message: l10n.appUpdateCommentCount(social.comments.length),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.chat_bubble_outline, size: 18),
+                        const SizedBox(width: 4),
+                        Text(commentCount, style: secondaryStyle),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: _showDetails,
         );
       },
     );
