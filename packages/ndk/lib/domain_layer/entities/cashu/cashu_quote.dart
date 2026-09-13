@@ -78,6 +78,24 @@ class CashuQuote {
       'quoteKeyCounter': quoteKeyCounter,
     };
   }
+
+  CashuQuote copyWith({
+    CashuQuoteState? state,
+    CashuKeypair? quoteKey,
+    int? quoteKeyCounter,
+  }) {
+    return CashuQuote(
+      quoteId: quoteId,
+      request: request,
+      amount: amount,
+      unit: unit,
+      state: state ?? this.state,
+      expiry: expiry,
+      mintUrl: mintUrl,
+      quoteKey: quoteKey ?? this.quoteKey,
+      quoteKeyCounter: quoteKeyCounter ?? this.quoteKeyCounter,
+    );
+  }
 }
 
 enum CashuQuoteState {
