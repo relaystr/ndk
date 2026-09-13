@@ -14,6 +14,8 @@ dev_dependencies:
   test: ^1.16.0
   lints: ^4.0.0
 
-dependency_overrides: 
+dependency_overrides:
   ndk:
     path: ../ndk
+  ndk_web_socket_client:
+    path: ../web_socket_client
