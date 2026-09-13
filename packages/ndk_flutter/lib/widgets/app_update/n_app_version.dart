@@ -106,14 +106,8 @@ class _NAppVersionState extends State<NAppVersion> {
                 ?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
           ),
           if (updateAvailable) ...[
-            const SizedBox(width: 4),
-            Icon(
-              externalUpdateAvailable
-                  ? Icons.open_in_new
-                  : Icons.system_update_alt_rounded,
-              size: 14,
-              color: Theme.of(context).colorScheme.tertiary,
-            ),
+            const SizedBox(width: 8),
+            const _ReleaseBadge(),
           ],
         ],
       );
@@ -141,5 +135,30 @@ class _NAppVersionState extends State<NAppVersion> {
         ),
       );
     },
+  );
+}
+
+class _ReleaseBadge extends StatelessWidget {
+  const _ReleaseBadge();
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    // The parent already announces the available version and button action.
+    child: Container(
+      width: 20,
+      height: 20,
+      decoration: BoxDecoration(
+        color: const Color(0xFF15803D),
+        borderRadius: BorderRadius.circular(6),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x2615803D),
+            offset: Offset(0, 2),
+            blurRadius: 4,
+          ),
+        ],
+      ),
+      child: const Icon(Icons.download_rounded, size: 14, color: Colors.white),
+    ),
   );
 }
