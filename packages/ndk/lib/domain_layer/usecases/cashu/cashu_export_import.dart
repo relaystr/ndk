@@ -102,20 +102,20 @@ class CashuStateExportImport {
       });
     }
 
-    // NUT-20 quote key derivation counters, one per mint. The reserved
-    // `quote-key` slot cannot collide with a real keyset id (keyset ids are
-    // always hex), so the counter round-trips through the same structure.
-    for (final mintUrl in mintUrls) {
-      final counter = await _cacheManagerCashu.getCashuSecretCounter(
-        mintUrl: mintUrl,
-        keysetId: kQuoteKeyDerivationCounterSlot,
-      );
-      countersJson.add({
-        'mintUrl': mintUrl,
-        'keysetId': kQuoteKeyDerivationCounterSlot,
-        'counter': counter,
-      });
-    }
+    // NUT-20 quote key derivation counter. Quote keys are derived from a
+    // global, mint-independent counter that lives in a single reserved slot.
+    // The reserved `quote-key` key cannot collide with a real keyset id
+    // (keyset ids are always hex), so the counter round-trips through the same
+    // structure.
+    final quoteKeyCounter = await _cacheManagerCashu.getCashuSecretCounter(
+      mintUrl: kQuoteKeyDerivationCounterSlot,
+      keysetId: kQuoteKeyDerivationCounterSlot,
+    );
+    countersJson.add({
+      'mintUrl': kQuoteKeyDerivationCounterSlot,
+      'keysetId': kQuoteKeyDerivationCounterSlot,
+      'counter': quoteKeyCounter,
+    });
 
     final export = <String, dynamic>{
       'type': exportType,
