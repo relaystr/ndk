@@ -1,6 +1,12 @@
 name: tests
 on: [push, workflow_dispatch]
 jobs:
+  release-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash .github/scripts/tests/release-pr-title-test.sh
+
   tests:
     runs-on: ubuntu-latest
     defaults:
