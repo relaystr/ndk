@@ -13,9 +13,25 @@ class _UnusedAccounts implements Accounts {
       throw StateError('Accounts are not needed for this layout test');
 }
 
+class _UnusedMetadatas implements Metadatas {
+  @override
+  Future<Metadata?> loadMetadata(
+    String pubKey, {
+    bool forceRefresh = false,
+    Duration idleTimeout = Duration.zero,
+  }) async => null;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      throw StateError('Unexpected metadata call: ${invocation.memberName}');
+}
+
 class _UnusedNdk implements Ndk {
   @override
   final Accounts accounts = _UnusedAccounts();
+
+  @override
+  final Metadatas metadata = _UnusedMetadatas();
 
   @override
   dynamic noSuchMethod(Invocation invocation) =>
@@ -63,6 +79,41 @@ class _DialogController extends ChangeNotifier implements NAppUpdateController {
       throw StateError('Unexpected call: ${invocation.memberName}');
 }
 
+SoftwareRelease _release() => SoftwareRelease(
+  identifier: 'app',
+  version: '1.0.0',
+  channel: 'main',
+  releaseNotes: '',
+  assets: const [],
+  event: Nip01Event(
+    id: 'release',
+    pubKey: '0000000000000000000000000000000000000000000000000000000000000000',
+    kind: softwareReleaseKind,
+    tags: const [],
+    content: '',
+    createdAt: 1,
+  ),
+);
+
+_DialogController _controller() {
+  final release = _release();
+  return _DialogController(
+    NAppUpdateState(
+      status: NAppUpdateStatus.upToDate,
+      currentRelease: release,
+      latestRelease: release,
+      releases: [release],
+    ),
+  );
+}
+
+Widget _app(_DialogController controller) => MaterialApp(
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('de'),
+  home: NAppUpdateDialog(controller: controller),
+);
+
 void main() {
   testWidgets('release summary navigation tile fits narrow dialog', (
     tester,
@@ -71,39 +122,9 @@ void main() {
     tester.view.physicalSize = const Size(300, 640);
     addTearDown(tester.view.reset);
 
-    final release = SoftwareRelease(
-      identifier: 'app',
-      version: '1.0.0',
-      channel: 'main',
-      releaseNotes: '',
-      assets: const [],
-      event: Nip01Event(
-        id: 'release',
-        pubKey:
-            '0000000000000000000000000000000000000000000000000000000000000000',
-        kind: softwareReleaseKind,
-        tags: const [],
-        content: '',
-        createdAt: 1,
-      ),
-    );
-    final controller = _DialogController(
-      NAppUpdateState(
-        status: NAppUpdateStatus.upToDate,
-        currentRelease: release,
-        latestRelease: release,
-        releases: [release],
-      ),
-    );
+    final controller = _controller();
 
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('de'),
-        home: NAppUpdateDialog(controller: controller),
-      ),
-    );
+    await tester.pumpWidget(_app(controller));
     await tester.pumpAndSettle();
 
     expect(find.byType(ListTile), findsOneWidget);
@@ -114,6 +135,69 @@ void main() {
     expect(find.byIcon(Icons.chevron_right), findsOneWidget);
     expect(tester.widget<ListTile>(find.byType(ListTile)).onTap, isNotNull);
     expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    controller.dispose();
+  });
+
+  testWidgets('release details use bounded dialog with persistent close', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1000, 800);
+    addTearDown(tester.view.reset);
+    final controller = _controller();
+
+    await tester.pumpWidget(_app(controller));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(ListTile));
+    await tester.pumpAndSettle();
+
+    final dialogContent = find.byKey(
+      const ValueKey('release-details-dialog-content'),
+    );
+    expect(dialogContent, findsOneWidget);
+    expect(tester.getSize(dialogContent).width, lessThanOrEqualTo(640));
+    expect(tester.getSize(dialogContent).height, lessThanOrEqualTo(720));
+    expect(find.byIcon(Icons.close), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.close), findsNothing);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    controller.dispose();
+  });
+
+  testWidgets('release details use full-screen dialog on compact width', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(390, 844);
+    addTearDown(tester.view.reset);
+    final controller = _controller();
+
+    await tester.pumpWidget(_app(controller));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(ListTile));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('release-details-dialog-content')),
+      findsNothing,
+    );
+    final dialog = find.ancestor(
+      of: find.byIcon(Icons.close),
+      matching: find.byType(Dialog),
+    );
+    expect(dialog, findsOneWidget);
+    expect(tester.getSize(dialog), const Size(390, 844));
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.close), findsNothing);
 
     await tester.pumpWidget(const SizedBox.shrink());
     controller.dispose();

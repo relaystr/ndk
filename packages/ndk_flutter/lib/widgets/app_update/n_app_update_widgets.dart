@@ -860,10 +860,8 @@ class NReleaseDetailsSheet extends StatefulWidget {
     SoftwareRelease release, {
     SoftwareAsset? asset,
     NReleaseEngagementController? engagement,
-  }) => showModalBottomSheet<void>(
+  }) => showDialog<void>(
     context: context,
-    isScrollControlled: true,
-    showDragHandle: true,
     builder: (_) => NReleaseDetailsSheet(
       controller: controller,
       release: release,
@@ -934,260 +932,300 @@ class _NReleaseDetailsSheetState extends State<NReleaseDetailsSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return AnimatedPadding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOut,
-      child: SafeArea(
-        child: FractionallySizedBox(
-          heightFactor: 0.9,
-          child: ListenableBuilder(
-            listenable: detailsListenable,
-            builder: (context, _) {
-              final social = engagement.state;
-              final releases = _releaseChoices;
-              final selectedIndex = releases.indexWhere(
-                (release) => release.event.id == selectedRelease.event.id,
-              );
-              final installedVersion =
-                  widget.controller.state.installed?.version ??
-                  widget.controller.currentVersion;
-              final asset = _selectedAsset;
-              final publisher = social.publisher;
-              final publisherName =
-                  publisher?.displayName ??
-                  publisher?.name ??
-                  widget.controller.ndkFlutter.formatNpub(
-                    selectedRelease.event.pubKey,
-                  );
-              return ListView(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-                children: [
-                  DefaultTabController(
-                    key: ValueKey(
-                      releases.map((release) => release.event.id).join(':'),
-                    ),
-                    length: releases.length,
-                    initialIndex: selectedIndex < 0 ? 0 : selectedIndex,
-                    child: TabBar(
-                      isScrollable: true,
-                      tabAlignment: TabAlignment.start,
-                      onTap: (index) {
-                        setState(() => selectedRelease = releases[index]);
-                      },
-                      tabs: [
-                        for (final release in releases)
-                          Tooltip(
-                            message: release.version == installedVersion
-                                ? l10n.appUpdateInstalledBadge
-                                : release.event.id ==
-                                      widget
-                                          .controller
-                                          .state
-                                          .update
-                                          ?.release
-                                          .event
-                                          .id
-                                ? l10n.appUpdateAvailableBadge
-                                : release.event.id == releases.first.event.id
-                                ? l10n.appUpdateLatestBadge
-                                : l10n.appUpdateReleaseVersion(release.version),
-                            child: Tab(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(release.version),
-                                  if (release.version == installedVersion ||
-                                      release.event.id ==
-                                          widget
-                                              .controller
-                                              .state
-                                              .update
-                                              ?.release
-                                              .event
-                                              .id) ...[
-                                    const SizedBox(width: 6),
-                                    Icon(
-                                      release.version == installedVersion
-                                          ? Icons.phone_android
-                                          : Icons.system_update_alt_rounded,
-                                      size: 16,
+    final mediaSize = MediaQuery.sizeOf(context);
+    final useFullScreen = mediaSize.width < 600 || mediaSize.height < 500;
+    final content = SafeArea(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.appUpdateReleaseDetails,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  tooltip: l10n.appUpdateClose,
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: ListenableBuilder(
+              listenable: detailsListenable,
+              builder: (context, _) {
+                final social = engagement.state;
+                final releases = _releaseChoices;
+                final selectedIndex = releases.indexWhere(
+                  (release) => release.event.id == selectedRelease.event.id,
+                );
+                final installedVersion =
+                    widget.controller.state.installed?.version ??
+                    widget.controller.currentVersion;
+                final asset = _selectedAsset;
+                final publisher = social.publisher;
+                final publisherName =
+                    publisher?.displayName ??
+                    publisher?.name ??
+                    widget.controller.ndkFlutter.formatNpub(
+                      selectedRelease.event.pubKey,
+                    );
+                return ListView(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                  children: [
+                    DefaultTabController(
+                      key: ValueKey(
+                        releases.map((release) => release.event.id).join(':'),
+                      ),
+                      length: releases.length,
+                      initialIndex: selectedIndex < 0 ? 0 : selectedIndex,
+                      child: TabBar(
+                        isScrollable: true,
+                        tabAlignment: TabAlignment.start,
+                        onTap: (index) {
+                          setState(() => selectedRelease = releases[index]);
+                        },
+                        tabs: [
+                          for (final release in releases)
+                            Tooltip(
+                              message: release.version == installedVersion
+                                  ? l10n.appUpdateInstalledBadge
+                                  : release.event.id ==
+                                        widget
+                                            .controller
+                                            .state
+                                            .update
+                                            ?.release
+                                            .event
+                                            .id
+                                  ? l10n.appUpdateAvailableBadge
+                                  : release.event.id == releases.first.event.id
+                                  ? l10n.appUpdateLatestBadge
+                                  : l10n.appUpdateReleaseVersion(
+                                      release.version,
                                     ),
+                              child: Tab(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(release.version),
+                                    if (release.version == installedVersion ||
+                                        release.event.id ==
+                                            widget
+                                                .controller
+                                                .state
+                                                .update
+                                                ?.release
+                                                .event
+                                                .id) ...[
+                                      const SizedBox(width: 6),
+                                      Icon(
+                                        release.version == installedVersion
+                                            ? Icons.phone_android
+                                            : Icons.system_update_alt_rounded,
+                                        size: 16,
+                                      ),
+                                    ],
                                   ],
-                                ],
+                                ),
                               ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 180),
-                    switchInCurve: Curves.easeOutCubic,
-                    layoutBuilder: (currentChild, previousChildren) => Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [...previousChildren, ?currentChild],
-                    ),
-                    child: _ReleaseSpecificDetails(
-                      key: ValueKey(selectedRelease.event.id),
-                      controller: widget.controller,
-                      release: selectedRelease,
-                      asset: asset,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  _SectionDivider(label: l10n.appUpdateAcrossAllReleases),
-                  const SizedBox(height: 24),
-                  Text(
-                    l10n.appUpdatePublisher,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: NPicture(
-                      ndkFlutter: widget.controller.ndkFlutter,
-                      pubkey: selectedRelease.event.pubKey,
-                      metadata: publisher,
-                      circleAvatarRadius: 20,
-                    ),
-                    title: Text(publisherName),
-                    subtitle: Text(
-                      publisher?.cleanNip05 ??
-                          widget.controller.ndkFlutter.formatNpub(
-                            selectedRelease.event.pubKey,
-                          ),
-                    ),
-                  ),
-                  _TrustLine(
-                    icon: Icons.verified_user_outlined,
-                    text: l10n.appUpdatePublisherSignatureVerified,
-                  ),
-                  const SizedBox(height: 28),
-                  if (social.loading) const LinearProgressIndicator(),
-                  if (social.loading && social.hasLoaded)
-                    const SizedBox(height: 14),
-                  if (social.hasLoaded) ...[
-                    if (social.zapContributors.isNotEmpty) ...[
-                      _ZapSummary(
+                    const SizedBox(height: 16),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 180),
+                      switchInCurve: Curves.easeOutCubic,
+                      layoutBuilder: (currentChild, previousChildren) => Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [...previousChildren, ?currentChild],
+                      ),
+                      child: _ReleaseSpecificDetails(
+                        key: ValueKey(selectedRelease.event.id),
                         controller: widget.controller,
-                        totalSats: social.zapAmountSats,
-                        contributors: social.zapContributors,
+                        release: selectedRelease,
+                        asset: asset,
                       ),
-                      const SizedBox(height: 14),
-                    ] else
-                      _SocialMetric(
-                        icon: Icons.bolt,
-                        label: l10n.appUpdateZapSummary(
-                          social.zapCount,
-                          social.zapAmountSats,
-                        ),
-                      ),
-                    Wrap(
-                      spacing: 16,
-                      runSpacing: 10,
-                      children: [
-                        _SocialMetric(
-                          icon: Icons.favorite_border,
-                          label: l10n.appUpdateReactionCount(
-                            social.reactionCount,
-                          ),
-                        ),
-                        _SocialMetric(
-                          icon: Icons.chat_bubble_outline,
-                          label: l10n.appUpdateCommentCount(
-                            social.comments.length,
-                          ),
-                        ),
-                      ],
                     ),
-                  ],
-                  if (social.error != null) ...[
-                    const SizedBox(height: 8),
-                    if (!social.errorFromPosting)
-                      Text(l10n.appUpdateSocialLoadFailed),
+                    const SizedBox(height: 32),
+                    _SectionDivider(label: l10n.appUpdateAcrossAllReleases),
+                    const SizedBox(height: 24),
                     Text(
-                      social.error!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
+                      l10n.appUpdatePublisher,
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    if (!social.errorFromPosting)
-                      TextButton.icon(
-                        onPressed: engagement.load,
-                        icon: const Icon(Icons.refresh),
-                        label: Text(l10n.appUpdateCheckAgain),
-                      ),
-                  ],
-                  const SizedBox(height: 24),
-                  Text(
-                    l10n.appUpdateComments,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  if (social.hasLoaded && social.comments.isEmpty)
-                    Text(l10n.appUpdateNoComments),
-                  for (final comment in social.comments)
+                    const SizedBox(height: 8),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: NPicture(
                         ndkFlutter: widget.controller.ndkFlutter,
-                        pubkey: comment.event.pubKey,
-                        metadata: comment.author,
+                        pubkey: selectedRelease.event.pubKey,
+                        metadata: publisher,
                         circleAvatarRadius: 20,
                       ),
-                      title: Text(comment.authorName),
-                      subtitle: Text(comment.content),
-                      trailing: Text(
-                        MaterialLocalizations.of(context).formatCompactDate(
-                          DateTime.fromMillisecondsSinceEpoch(
-                            comment.event.createdAt * 1000,
+                      title: Text(
+                        publisherName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        publisher?.cleanNip05 ??
+                            widget.controller.ndkFlutter.formatNpub(
+                              selectedRelease.event.pubKey,
+                            ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    _TrustLine(
+                      icon: Icons.verified_user_outlined,
+                      text: l10n.appUpdatePublisherSignatureVerified,
+                    ),
+                    const SizedBox(height: 28),
+                    if (social.loading) const LinearProgressIndicator(),
+                    if (social.loading && social.hasLoaded)
+                      const SizedBox(height: 14),
+                    if (social.hasLoaded) ...[
+                      if (social.zapContributors.isNotEmpty) ...[
+                        _ZapSummary(
+                          controller: widget.controller,
+                          totalSats: social.zapAmountSats,
+                          contributors: social.zapContributors,
+                        ),
+                        const SizedBox(height: 14),
+                      ] else
+                        _SocialMetric(
+                          icon: Icons.bolt,
+                          label: l10n.appUpdateZapSummary(
+                            social.zapCount,
+                            social.zapAmountSats,
+                          ),
+                        ),
+                      Wrap(
+                        spacing: 16,
+                        runSpacing: 10,
+                        children: [
+                          _SocialMetric(
+                            icon: Icons.favorite_border,
+                            label: l10n.appUpdateReactionCount(
+                              social.reactionCount,
+                            ),
+                          ),
+                          _SocialMetric(
+                            icon: Icons.chat_bubble_outline,
+                            label: l10n.appUpdateCommentCount(
+                              social.comments.length,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (social.error != null) ...[
+                      const SizedBox(height: 8),
+                      if (!social.errorFromPosting)
+                        Text(l10n.appUpdateSocialLoadFailed),
+                      Text(
+                        social.error!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                      if (!social.errorFromPosting)
+                        TextButton.icon(
+                          onPressed: engagement.load,
+                          icon: const Icon(Icons.refresh),
+                          label: Text(l10n.appUpdateCheckAgain),
+                        ),
+                    ],
+                    const SizedBox(height: 24),
+                    Text(
+                      l10n.appUpdateComments,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    if (social.hasLoaded && social.comments.isEmpty)
+                      Text(l10n.appUpdateNoComments),
+                    for (final comment in social.comments)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: NPicture(
+                          ndkFlutter: widget.controller.ndkFlutter,
+                          pubkey: comment.event.pubKey,
+                          metadata: comment.author,
+                          circleAvatarRadius: 20,
+                        ),
+                        title: Text(comment.authorName),
+                        subtitle: Text(comment.content),
+                        trailing: Text(
+                          MaterialLocalizations.of(context).formatCompactDate(
+                            DateTime.fromMillisecondsSinceEpoch(
+                              comment.event.createdAt * 1000,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  const SizedBox(height: 12),
-                  if (engagement.canComment) ...[
-                    TextField(
-                      controller: commentController,
-                      minLines: 2,
-                      maxLines: 5,
-                      maxLength: 500,
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        hintText: l10n.appUpdateCommentHint,
+                    const SizedBox(height: 12),
+                    if (engagement.canComment) ...[
+                      TextField(
+                        controller: commentController,
+                        minLines: 2,
+                        maxLines: 5,
+                        maxLength: 500,
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          hintText: l10n.appUpdateCommentHint,
+                        ),
                       ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: FilledButton.icon(
-                        onPressed: social.posting
-                            ? null
-                            : () async {
-                                final posted = await engagement.postComment(
-                                  commentController.text,
-                                );
-                                if (!mounted) return;
-                                if (posted) commentController.clear();
-                              },
-                        icon: social.posting
-                            ? const SizedBox.square(
-                                dimension: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.send),
-                        label: Text(l10n.appUpdatePostComment),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: FilledButton.icon(
+                          onPressed: social.posting
+                              ? null
+                              : () async {
+                                  final posted = await engagement.postComment(
+                                    commentController.text,
+                                  );
+                                  if (!mounted) return;
+                                  if (posted) commentController.clear();
+                                },
+                          icon: social.posting
+                              ? const SizedBox.square(
+                                  dimension: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.send),
+                          label: Text(l10n.appUpdatePostComment),
+                        ),
                       ),
-                    ),
-                  ] else
-                    Text(l10n.appUpdateSignInToComment),
-                ],
-              );
-            },
+                    ] else
+                      Text(l10n.appUpdateSignInToComment),
+                  ],
+                );
+              },
+            ),
           ),
+        ],
+      ),
+    );
+    if (useFullScreen) return Dialog.fullscreen(child: content);
+    return Dialog(
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 640, maxHeight: 720),
+        child: SizedBox(
+          key: const ValueKey('release-details-dialog-content'),
+          width: 640,
+          height: mediaSize.height * 0.85,
+          child: content,
         ),
       ),
     );
@@ -1261,12 +1299,18 @@ class _SectionDivider extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     children: [
       const Expanded(child: Divider()),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Text(
-          label,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+      Flexible(
+        flex: 5,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       ),
