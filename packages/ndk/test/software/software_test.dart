@@ -43,6 +43,27 @@ class _QueryRequests implements Requests {
   }
 }
 
+class _EventQueryRequests implements Requests {
+  final NdkResponse response;
+
+  _EventQueryRequests(Iterable<Nip01Event> events)
+      : response = NdkResponse(
+          'software-event-query-test',
+          Stream.fromIterable(events),
+          relayOutcomes: () => const {
+            'wss://relay.example': RelayRequestOutcome(
+              RelayRequestStatus.eose,
+            ),
+          },
+        );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    if (invocation.memberName == #query) return response;
+    return super.noSuchMethod(invocation);
+  }
+}
+
 class _CapturingRequests implements Requests {
   final List<Set<String>?> explicitRelayCalls = [];
 
@@ -178,6 +199,32 @@ void main() {
       ],
     );
     expect(requests.closedRequestId, requests.response.requestId);
+  });
+
+  test('getReleases keeps newest addressable event for each version', () async {
+    Nip01Event release(String version, int createdAt) => networkEvent(
+          softwareReleaseKind,
+          [
+            ['i', 'com.example.app'],
+            ['version', version],
+            ['d', 'com.example.app@$version'],
+            ['c', 'main'],
+            ['e', hash],
+          ],
+          createdAt: createdAt,
+        );
+
+    final oldCopy = release('1.0.0', 100);
+    final newCopy = release('1.0.0', 200);
+    final otherVersion = release('2.0.0', 150);
+    final releases = await Software(
+      requests: _EventQueryRequests([oldCopy, otherVersion, newCopy]),
+    ).getReleases(app: appRef);
+
+    expect(releases.map((release) => release.event.id), [
+      newCopy.id,
+      otherVersion.id,
+    ]);
   });
 
   test('parses current NIP-82 application, release, and Android asset tags',

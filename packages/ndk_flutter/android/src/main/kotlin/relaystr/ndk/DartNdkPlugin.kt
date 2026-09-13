@@ -156,6 +156,14 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     }
 
     private fun downloadAndInstall(call: MethodCall, result: Result) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            result.error(
+                "unsupported_platform",
+                "In-app APK installation requires Android 7 or newer",
+                null,
+            )
+            return
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
             !_context.packageManager.canRequestPackageInstalls()) {
             val intent = Intent(

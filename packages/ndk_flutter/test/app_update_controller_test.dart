@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ndk/ndk.dart';
@@ -43,8 +44,10 @@ class _UnusedRequests implements Requests {
 
 class _ReleaseSoftware extends Software {
   final List<SoftwareRelease> releases;
+  final Map<String, List<SoftwareAsset>> assets;
 
-  _ReleaseSoftware(this.releases) : super(requests: _UnusedRequests());
+  _ReleaseSoftware(this.releases, {this.assets = const {}})
+    : super(requests: _UnusedRequests());
 
   @override
   Future<List<SoftwareRelease>> getReleases({
@@ -53,18 +56,47 @@ class _ReleaseSoftware extends Software {
     Iterable<String>? relays,
     Duration? timeout,
   }) async => releases;
+
+  @override
+  Future<Map<String, List<SoftwareAsset>>> resolveAssetsForReleases(
+    Iterable<SoftwareRelease> releases, {
+    Iterable<String>? relays,
+    Duration? timeout,
+  }) async => assets;
 }
 
 class _ReleaseNdk implements Ndk {
   @override
   final Software software;
 
-  _ReleaseNdk(List<SoftwareRelease> releases)
-    : software = _ReleaseSoftware(releases);
+  _ReleaseNdk(
+    List<SoftwareRelease> releases, {
+    Map<String, List<SoftwareAsset>> assets = const {},
+  }) : software = _ReleaseSoftware(releases, assets: assets);
 
   @override
   dynamic noSuchMethod(Invocation invocation) =>
       throw StateError('Unexpected NDK call: ${invocation.memberName}');
+}
+
+class _ControllableInstaller extends UpdateInstaller {
+  final InstalledSoftware installed;
+  final result = Completer<UpdateInstallResult>();
+  int downloadCalls = 0;
+
+  _ControllableInstaller(this.installed);
+
+  @override
+  Stream<double> get progress => const Stream.empty();
+
+  @override
+  Future<InstalledSoftware> getInstalledSoftware() async => installed;
+
+  @override
+  Future<UpdateInstallResult> downloadAndInstall(SoftwareAsset asset) {
+    downloadCalls++;
+    return result.future;
+  }
 }
 
 class _ReadOnlyInstaller extends UpdateInstaller {
@@ -97,6 +129,28 @@ SoftwareRelease _release(String version, int createdAt) => SoftwareRelease(
     tags: const [],
     content: '',
     createdAt: createdAt,
+  ),
+);
+
+SoftwareAsset _asset() => SoftwareAsset.fromEvent(
+  Nip01Event(
+    id: 'asset',
+    pubKey: 'publisher',
+    kind: softwareAssetKind,
+    tags: const [
+      ['i', 'app'],
+      ['version', '2.0.0'],
+      ['m', androidPackageMimeType],
+      ['x', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
+      ['url', 'https://example.com/app.apk'],
+      ['version_code', '2'],
+      [
+        'apk_certificate_hash',
+        'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      ],
+    ],
+    content: '',
+    createdAt: 2,
   ),
 );
 
@@ -170,6 +224,85 @@ void main() {
     expect(readOnlyController.hasExternalUpdate, isTrue);
     expect(readOnlyController.state.update, isNull);
     readOnlyController.dispose();
+  });
+
+  test('Android versions before 7 do not expose in-app updates', () async {
+    final release = _release('2.0.0', 2);
+    final asset = _asset();
+    final oldAndroidInstaller = _ControllableInstaller(
+      const InstalledSoftware(
+        packageId: 'app',
+        version: '1.0.0',
+        versionCode: 1,
+        platformVersion: 23,
+        platforms: ['android-arm64-v8a'],
+        certificateHashes: [
+          'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+        ],
+      ),
+    );
+    final oldAndroidController = NAppUpdateController(
+      ndkFlutter: NdkFlutter(
+        ndk: _ReleaseNdk(
+          [release],
+          assets: {
+            release.event.id: [asset],
+          },
+        ),
+      ),
+      app: const SoftwareAppRef(publisher: 'publisher', identifier: 'app'),
+      installer: oldAndroidInstaller,
+      installationEnabled: true,
+    );
+
+    await oldAndroidController.start();
+    await oldAndroidController.downloadAndInstall();
+
+    expect(oldAndroidController.state.update, isNull);
+    expect(oldAndroidInstaller.downloadCalls, 0);
+    oldAndroidController.dispose();
+  });
+
+  test('resume during download preserves download state', () async {
+    final release = _release('2.0.0', 2);
+    final asset = _asset();
+    final activeInstaller = _ControllableInstaller(
+      const InstalledSoftware(
+        packageId: 'app',
+        version: '1.0.0',
+        versionCode: 1,
+        platformVersion: 35,
+        platforms: ['android-arm64-v8a'],
+        certificateHashes: [
+          'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+        ],
+      ),
+    );
+    final activeController = NAppUpdateController(
+      ndkFlutter: NdkFlutter(
+        ndk: _ReleaseNdk(
+          [release],
+          assets: {
+            release.event.id: [asset],
+          },
+        ),
+      ),
+      app: const SoftwareAppRef(publisher: 'publisher', identifier: 'app'),
+      installer: activeInstaller,
+      installationEnabled: true,
+    );
+    await activeController.start();
+
+    final installing = activeController.downloadAndInstall();
+    expect(activeController.state.status, NAppUpdateStatus.downloading);
+    activeController.didChangeAppLifecycleState(AppLifecycleState.resumed);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(activeController.state.status, NAppUpdateStatus.downloading);
+    expect(activeController.state.progress, isNull);
+    activeInstaller.result.complete(UpdateInstallResult.cancelled);
+    await installing;
+    activeController.dispose();
   });
 
   test('Android installer sends every asset URL in publisher order', () async {

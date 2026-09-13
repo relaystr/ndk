@@ -264,7 +264,7 @@ class Software {
     SoftwareAppRef app,
     String channel,
   ) {
-    final releases = events
+    final parsed = events
         .map((event) => _parseRelease(event))
         .whereType<SoftwareRelease>()
         .where(
@@ -272,8 +272,16 @@ class Software {
               release.event.pubKey == app.publisher &&
               release.identifier == app.identifier &&
               release.channel == channel,
-        )
-        .toList();
+        );
+    final newestByVersion = <String, SoftwareRelease>{};
+    for (final release in parsed) {
+      final previous = newestByVersion[release.version];
+      if (previous == null ||
+          previous.event.createdAt < release.event.createdAt) {
+        newestByVersion[release.version] = release;
+      }
+    }
+    final releases = newestByVersion.values.toList();
     releases.sort((a, b) => b.event.createdAt.compareTo(a.event.createdAt));
     return releases;
   }

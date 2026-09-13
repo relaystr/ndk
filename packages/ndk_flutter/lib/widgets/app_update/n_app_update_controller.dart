@@ -221,6 +221,7 @@ class NAppUpdateController extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> checkNow({bool allowDuringInstaller = false}) async {
     if (_disposed) return;
+    if (_installOperationActive) return;
     if (_checking) {
       await _checkCompleter?.future;
       return;
@@ -294,6 +295,27 @@ class NAppUpdateController extends ChangeNotifier with WidgetsBindingObserver {
       final installed =
           _state.installed ?? await installer.getInstalledSoftware();
       if (_disposed) return;
+      if (installed.platformVersion < 24) {
+        SoftwareRelease? currentRelease;
+        for (final release in releases) {
+          if (release.version == installed.version) {
+            currentRelease = release;
+            break;
+          }
+        }
+        if (!_canCommitEvaluation(generation)) return;
+        _setState(
+          NAppUpdateState(
+            status: NAppUpdateStatus.upToDate,
+            installed: installed,
+            currentRelease: currentRelease,
+            latestRelease: releases.firstOrNull,
+            releases: List.unmodifiable(releases),
+            lastChecked: DateTime.now(),
+          ),
+        );
+        return;
+      }
       final previousUpdate = _state.update;
       if (previousUpdate != null &&
           installed.packageId == previousUpdate.asset.identifier &&
@@ -491,6 +513,7 @@ class NAppUpdateController extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> downloadAndInstall() async {
     final update = _state.update;
     if (!installationEnabled ||
+        (_state.installed?.platformVersion ?? 0) < 24 ||
         update == null ||
         _installOperationActive ||
         _preservesInstallerState) {
