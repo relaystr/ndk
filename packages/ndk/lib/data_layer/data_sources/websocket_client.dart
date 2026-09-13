@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:web_socket_client/web_socket_client.dart';
+import 'package:ndk_web_socket_client/ndk_web_socket_client.dart';
 
 // coverage:ignore-start
 class WebsocketDSClient {

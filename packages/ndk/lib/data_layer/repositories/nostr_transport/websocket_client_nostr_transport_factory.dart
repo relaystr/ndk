@@ -1,11 +1,15 @@
 import 'package:ndk/data_layer/repositories/nostr_transport/websocket_client_nostr_transport.dart';
-import 'package:web_socket_client/web_socket_client.dart';
+import 'package:ndk_web_socket_client/ndk_web_socket_client.dart';
 
 import '../../../domain_layer/repositories/nostr_transport.dart';
 import '../../../shared/helpers/relay_helper.dart';
 import '../../data_sources/websocket_client.dart';
 
 class WebSocketClientNostrTransportFactory implements NostrTransportFactory {
+  WebSocketClientNostrTransportFactory({this.compressionEnabled = true});
+
+  final bool compressionEnabled;
+
   @override
   NostrTransport call(
     String url, {
@@ -28,6 +32,7 @@ class WebSocketClientNostrTransportFactory implements NostrTransportFactory {
       timeout: Duration(seconds: 3600),
       pingInterval: Duration(seconds: 10),
       binaryType: 'arraybuffer',
+      compressionEnabled: compressionEnabled,
     );
 
     final WebsocketDSClient myDataSource = WebsocketDSClient(client, myUrl);

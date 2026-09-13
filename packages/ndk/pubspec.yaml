@@ -35,7 +35,7 @@ dependencies:
   pointycastle: ">=3.0.0 <5.0.0"
   rxdart: ^0.28.0
   equatable: ^2.0.8
-  web_socket_client: ^0.2.1
+  ndk_web_socket_client: ^0.1.0
   elliptic: ^0.3.12
   cryptography: ^2.9.0
   meta: ">=1.10.0 <2.0.0"

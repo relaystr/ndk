@@ -64,6 +64,8 @@ dev_dependencies:
     sdk: flutter
 
 dependency_overrides:
+  ndk_web_socket_client:
+    path: ../web_socket_client
   ndk:
     path: ../ndk
   ndk_flutter:

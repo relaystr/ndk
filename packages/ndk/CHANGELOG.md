@@ -6,6 +6,7 @@
  - **FIX**: stop spending the reconciliation budget on waiting for a signer.
  - **FIX**: raise an impossible reconciliation from the call, not from its future.
  - **FEAT**: let a negentropy reconciliation say which identity it may use.
+ - **FEAT**: add native WebSocket compression opt-out.
  - **BREAKING** **FEAT**(accounts): add accountsStream.
 
 ## 0.10.0-dev.1

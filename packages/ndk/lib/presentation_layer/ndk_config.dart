@@ -73,6 +73,14 @@ class NdkConfig {
   /// User agent string for Http requests and websockets.
   String userAgent;
 
+  /// Whether native WebSocket connections negotiate per-message compression.
+  ///
+  /// Defaults to true, preserving existing behavior. Disable this to reduce
+  /// memory and codec overhead at the cost of sending more bytes for
+  /// compressible traffic. Browser WebSocket APIs do not expose compression
+  /// controls, so this option has no effect on web builds.
+  bool webSocketCompression;
+
   /// Enable fetched ranges tracking.
   /// When enabled, NDK tracks which time ranges have been fetched from which relays.
   /// Disabled by default for performance.
@@ -128,6 +136,7 @@ class NdkConfig {
   /// [defaultQueryTimeout] The default timeout for queries (defaults to DEFAULT_QUERY_TIMEOUT). \
   /// [logLevel] The log level for the NDK (defaults to warning).
   /// [cashuUserSeedphrase] The cashu user seed phrase, required for using cashu features
+  /// [webSocketCompression] Whether native WebSockets negotiate compression.
   NdkConfig({
     required this.eventVerifier,
     required this.cache,
@@ -144,6 +153,7 @@ class NdkConfig {
     this.defaultBroadcastSaveToCache = BroadcastDefaults.SAVE_TO_CACHE,
     this.logLevel = defaultLogLevel,
     this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
+    this.webSocketCompression = true,
     this.cashuUserSeedphrase,
     this.fetchedRangesEnabled = false,
     // ignore: deprecated_member_use_from_same_package
