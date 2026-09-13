@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789292248432,
+  "lastUpdate": 1789294098931,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -36,6 +36,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1568562,
             "range": "1554152-1581440",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "frnandu",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "615c767b26efb704a9bb27ffccb3d390d2a0f252",
+          "message": "Merge pull request #821 from relaystr/release-34749758580\n\nchore(prerelease): publish ndk 0.10.0-dev.3",
+          "timestamp": "2026-09-13T12:06:44+02:00",
+          "tree_id": "1c702bcc7b89cdd108235be539b72cd320ae6e00",
+          "url": "https://github.com/relaystr/ndk/commit/615c767b26efb704a9bb27ffccb3d390d2a0f252"
+        },
+        "date": 1789294096565,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 28174,
+            "range": "28123-30525",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 894126,
+            "range": "892748-896068",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
