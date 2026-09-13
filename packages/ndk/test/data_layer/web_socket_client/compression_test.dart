@@ -4,7 +4,7 @@ library;
 import 'dart:async';
 import 'dart:io' as io;
 
-import 'package:ndk_web_socket_client/ndk_web_socket_client.dart';
+import 'package:ndk/src/web_socket_client/web_socket_client.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -17,5 +17,3 @@ dev_dependencies:
 dependency_overrides:
   ndk:
     path: ../ndk
-  ndk_web_socket_client:
-    path: ../web_socket_client

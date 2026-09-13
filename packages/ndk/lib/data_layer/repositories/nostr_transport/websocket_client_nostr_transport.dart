@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:ndk_web_socket_client/ndk_web_socket_client.dart';
+import '../../../src/web_socket_client/web_socket_client.dart';
 
 import '../../../domain_layer/repositories/nostr_transport.dart';
 import '../../../shared/logger/logger.dart';

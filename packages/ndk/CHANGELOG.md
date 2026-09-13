@@ -1,5 +1,7 @@
 ## 0.10.0-dev.2
 
+ - **REFACTOR**: internalize the WebSocket client and remove wrapper package dependencies.
+
 > Note: This release has breaking changes.
 
  - **FIX**: end a reconciliation whose signer refuses to answer the challenge.

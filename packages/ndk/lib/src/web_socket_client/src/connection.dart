@@ -1,6 +1,13 @@
 import 'dart:async';
 
-import 'package:ndk_web_socket_client/ndk_web_socket_client.dart';
+import 'package:ndk/src/web_socket_client/web_socket_client.dart';
+
+/// An object which contains information regarding the
+/// current WebSocket connection.
+abstract class Connection extends Stream<ConnectionState> {
+  /// The current state of the WebSocket connection.
+  ConnectionState get state;
+}
 
 /// {@template connection_controller}
 /// A WebSocket connection controller.

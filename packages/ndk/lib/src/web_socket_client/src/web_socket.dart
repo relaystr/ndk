@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:ndk_web_socket_client/src/_web_socket_channel/_web_socket_channel.dart'
-    if (dart.library.io) 'package:ndk_web_socket_client/src/_web_socket_channel/_web_socket_channel_io.dart'
-    if (dart.library.js_interop) 'package:ndk_web_socket_client/src/_web_socket_channel/_web_socket_channel_html.dart';
-import 'package:ndk_web_socket_client/src/_web_socket_connect/_web_socket_connect.dart'
-    if (dart.library.io) 'package:ndk_web_socket_client/src/_web_socket_connect/_web_socket_connect_io.dart'
-    if (dart.library.js_interop) 'package:ndk_web_socket_client/src/_web_socket_connect/_web_socket_connect_html.dart';
-import 'package:ndk_web_socket_client/src/connection.dart';
-import 'package:ndk_web_socket_client/ndk_web_socket_client.dart';
+import 'package:ndk/src/web_socket_client/src/_web_socket_channel/_web_socket_channel.dart'
+    if (dart.library.io) 'package:ndk/src/web_socket_client/src/_web_socket_channel/_web_socket_channel_io.dart'
+    if (dart.library.js_interop) 'package:ndk/src/web_socket_client/src/_web_socket_channel/_web_socket_channel_html.dart';
+import 'package:ndk/src/web_socket_client/src/_web_socket_connect/_web_socket_connect.dart'
+    if (dart.library.io) 'package:ndk/src/web_socket_client/src/_web_socket_connect/_web_socket_connect_io.dart'
+    if (dart.library.js_interop) 'package:ndk/src/web_socket_client/src/_web_socket_connect/_web_socket_connect_html.dart';
+import 'package:ndk/src/web_socket_client/src/connection.dart';
+import 'package:ndk/src/web_socket_client/web_socket_client.dart';
 
 /// The default backoff strategy.
 final _defaultBackoff = BinaryExponentialBackoff(
