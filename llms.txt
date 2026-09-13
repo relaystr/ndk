@@ -56,7 +56,7 @@
 
 ## ndk_flutter
 
-- [QR scanner](https://dart-nostr.com/ndk_flutter/qr-scanner.md): Some ndk_flutter widgets can read a value from a QR code. For example, the wallet widgets let the user scan an NWC connection URI (nostr+walletconnect://...) instead of typing it.
+- [QR scanner](https://dart-nostr.com/ndk_flutter/qr-scanner.md): The add-wallet flow accepts NWC connection URIs, Lightning and BIP353 addresses, BOLT12 offers, BIP321 URIs, and HTTPS Cashu mint URLs from one QR scanner.
 
 ## Concepts
 

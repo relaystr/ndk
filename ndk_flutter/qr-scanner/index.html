@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.842449580163">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.842609353569">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 4.6.0">
@@ -12,7 +12,7 @@
     <!-- Primary Meta Tags -->
     <title>QR scanner</title>
     <meta name="title" content="QR scanner">
-    <meta name="description" content="Some ndk_flutter widgets can read a value from a QR code. For example, the wallet widgets let the user scan an NWC connection URI (nostr+walletconnect://...) instead of typing it.">
+    <meta name="description" content="The add-wallet flow accepts NWC connection URIs, Lightning and BIP353 addresses, BOLT12 offers, BIP321 URIs, and HTTPS Cashu mint URLs from one QR scanner.">
 
     <!-- Canonical -->
     <link rel="canonical" href="https://dart-nostr.com/ndk_flutter/qr-scanner/">
@@ -22,7 +22,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dart-nostr.com/ndk_flutter/qr-scanner/">
     <meta property="og:title" content="QR scanner">
-    <meta property="og:description" content="Some ndk_flutter widgets can read a value from a QR code. For example, the wallet widgets let the user scan an NWC connection URI (nostr+walletconnect://...) instead of typing it.">
+    <meta property="og:description" content="The add-wallet flow accepts NWC connection URIs, Lightning and BIP353 addresses, BOLT12 offers, BIP321 URIs, and HTTPS Cashu mint URLs from one QR scanner.">
     <meta property="og:site_name" content="NDK">
     <meta property="og:locale" content="en_US">
 
@@ -30,19 +30,19 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://dart-nostr.com/ndk_flutter/qr-scanner/">
     <meta name="twitter:title" content="QR scanner">
-    <meta name="twitter:description" content="Some ndk_flutter widgets can read a value from a QR code. For example, the wallet widgets let the user scan an NWC connection URI (nostr+walletconnect://...) instead of typing it.">
+    <meta name="twitter:description" content="The add-wallet flow accepts NWC connection URIs, Lightning and BIP353 addresses, BOLT12 offers, BIP321 URIs, and HTTPS Cashu mint URLs from one QR scanner.">
 
     <!-- Alternate Markdown -->
     <link rel="alternate" type="text/markdown" href="https://dart-nostr.com/ndk_flutter/qr-scanner.md">
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.6.0.842449580163" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.842609353569" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.842449580163" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.842609353569" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.842449580163" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.842449580163" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.842609353569" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.842609353569" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -59,7 +59,7 @@
                 <div class="flex items-center px-2 md:px-6">
                     <a id="retype-branding-logo" href="https://dart-nostr.com/" class="flex items-center leading-snug text-2xl">
                         <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
-                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.10.0-dev.2</span>
+                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.10.0-dev.3</span>
                 </div>
     
                 <span class="hidden h-8 border-r md:inline-block border-base-border"></span>
@@ -155,34 +155,130 @@
 
                 <!-- Page content  -->
 <h1 id="qr-scanner">QR scanner</h1>
-<p>Some <code translate="no" v-pre>ndk_flutter</code> widgets can read a value from a QR code. For example, the wallet widgets
-let the user scan an NWC connection URI (<code translate="no" v-pre>nostr+walletconnect://...</code>) instead of typing it.</p>
+<p>The add-wallet flow accepts NWC connection URIs, Lightning and BIP353 addresses, BOLT12
+offers, BIP321 URIs, and HTTPS Cashu mint URLs from one QR scanner.</p>
 <p><code translate="no" v-pre>ndk_flutter</code> does <strong>not</strong> bundle a camera/scanner dependency. Instead you provide your own
 scanner, so you stay in control of the camera plugin, runtime permissions, and the UI. When you
-don&#x27;t provide one, the scan button is hidden and users can still paste a value manually.</p>
+don&#x27;t provide one, users can still paste a value manually. The shared wallet-input screen is
+the sole add-wallet entry point; the previous intermediate Add Wallet screen no longer exists.
+Your scanner remains responsible for camera-permission rationale and denial handling.</p>
 <h2 id="provide-a-scanner">Provide a scanner</h2>
-<p>A scanner is a callback that opens your scanning UI and returns the scanned string, or <code translate="no" v-pre>null</code>
-if the user cancels:</p>
+<p>A scanner is a callback that opens your scanning UI and returns a scanned value, a launched
+wallet connection, or <code translate="no" v-pre>null</code> if the user cancels:</p>
 <div id="provide-a-scanner-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">typedef NwcUriScanner = Future&lt;String?&gt; Function(BuildContext context);</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">typedef WalletInputScanner = Future&lt;WalletInputScanResult?&gt; Function(
+  BuildContext context,
+  WalletInputScannerConfiguration configuration,
+);</code></pre>
 </doc-codeblock></div>
 <p>Pass it to the widget (or dialog) that needs it. For wallets, that&#x27;s <code translate="no" v-pre>NWallets</code>:</p>
 <div id="provide-a-scanner-wire-a-scanner-into-nwallets" class="codeblock-wrapper"><doc-codeblock>
 <div class="codeblock-title">wire a scanner into NWallets</div>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">body: NWallets(
-  key: _walletsKey,
-  ndkFlutter: ndkFlutter,
-  nwcUriScanner: scanNwcUri,
-),</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(title: Text(context.l10n.tabWallets)),</code></pre>
 </doc-codeblock></div>
-<p>The same <code translate="no" v-pre>nwcUriScanner:</code> parameter is accepted by the standalone add-wallet dialogs:</p>
+<p>Pass the scanner to the unified dialog directly when you do not use <code translate="no" v-pre>NWallets</code>:</p>
 <div id="provide-a-scanner-code-2" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">showAddNwcWalletDialog(context, ndkFlutter, nwcUriScanner: scanNwcUri);
-showNwcConnectionOptionsDialog(context, ndkFlutter, nwcUriScanner: scanNwcUri);</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">showAddWalletTypeDialog(
+  context,
+  ndkFlutter,
+  walletInputScanner: scanWalletInput,
+);</code></pre>
 </doc-codeblock></div>
-<p>The widgets validate the scanned value (e.g. that an NWC URI starts with
-<code translate="no" v-pre>nostr+walletconnect://</code>) and show an error for anything else, so your callback only needs to
-return the raw scanned string.</p>
+<p>Show <code translate="no" v-pre>configuration.supportedInputDescription</code> in the scanner so users know which QR codes
+work. Render <code translate="no" v-pre>configuration.connectionOptions</code> beside camera and paste controls to expose the
+standard installed-wallet chooser, Alby Go, custom providers, and web-wallet integrations
+directly from the scanner. Listen to <code translate="no" v-pre>configuration.connectionState</code> while an external flow is
+active. Keep the scanner open through <code translate="no" v-pre>awaitingReturn</code>, <code translate="no" v-pre>connecting</code>, and <code translate="no" v-pre>failed</code>; use
+<code translate="no" v-pre>retryPendingConnection</code> and <code translate="no" v-pre>cancelPendingConnection</code> for retry and back actions. Return
+<code translate="no" v-pre>WalletInputScanResult.connectionStarted()</code> after the state reaches <code translate="no" v-pre>connected</code>.</p>
+<p>The widget classifies and validates scanned values. Return scanned values as
+<code translate="no" v-pre>WalletInputScanResult.value(rawText)</code>. For pasted or
+typed values, pass <code translate="no" v-pre>manuallyEntered: true</code> so confirmation allows editing.
+Legacy <code translate="no" v-pre>nwcUriScanner</code> and <code translate="no" v-pre>bolt12InputScanner</code> callbacks remain available on their
+type-specific dialogs.</p>
+<h2 id="wallet-assisted-nwc-connections">Wallet-assisted NWC connections</h2>
+<p>On Android and iOS, the unified flow includes the standard NWC wallet chooser and Alby Go.
+Add installed or web wallet integrations with <code translate="no" v-pre>nwcConnectionOptions</code>:</p>
+<p>Alby Go uses the branded <code translate="no" v-pre>nostr+walletauth+alby://</code> NWC-08 flow. If direct app launch
+fails because Alby Go is not installed, the same authorization request is shown as a QR
+code. Web and desktop platforms show this QR directly for scanning with Alby Go on a phone.
+The client keeps its generated secret locally, verifies any returned <code translate="no" v-pre>state</code> tag,
+discovers the wallet-service public key from its kind <code translate="no" v-pre>13194</code> info event, and honors any
+wallet-service <code translate="no" v-pre>relay</code> tag.</p>
+<p>Wallet-auth requests include <code translate="no" v-pre>state</code>. For compatibility with deployed Alby implementations,
+responses and info events may omit it; a present but mismatched state is always rejected.
+Separate-phone QR requests omit <code translate="no" v-pre>return_to</code> because no same-device callback is possible.</p>
+<p>Coinos uses its fixed service public key and <code translate="no" v-pre>wss://relay.coinos.io</code>. Because its info event
+is not addressed to the generated client key, the client subscribes to info events from that
+fixed service key and keeps validating later events until the approved connection works.
+No manual confirmation is required.</p>
+<div id="wallet-assisted-nwc-connections-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">NWallets(
+  ndkFlutter: ndkFlutter,
+  walletInputScanner: scanWalletInput,
+  nwcConnectionOptions: [
+    NwcConnectionOption(
+      label: 'My web wallet',
+      subtitle: 'Approve the connection in your browser',
+      connect: (context, ndkFlutter, coordinator) {
+        const callback = 'myapp://nwc';
+        return coordinator.connectWithUri(
+          context,
+          launchUri: Uri.parse(
+            'https://wallet.example/connect?callback=myapp%3A%2F%2Fnwc',
+          ),
+          callback: callback,
+          walletName: 'My web wallet',
+        );
+      },
+    ),
+  ],
+)</code></pre>
+</doc-codeblock></div>
+<p>Client-key web wallets can receive configurable app metadata and a freshly generated public
+key. Default Alby Cloud, Alby Go, and Coinos connections keep a live discovery dialog open
+until a usable info event arrives or the user cancels:</p>
+<div id="wallet-assisted-nwc-connections-code-2" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">NwcConnectionOption(
+  id: 'coinos',
+  label: 'Coinos',
+  connect: (context, ndkFlutter, coordinator) {
+    return coordinator.connectWebWalletAuth(
+      context,
+      authorizationEndpoint: Uri.parse('https://coinos.io/apps/new'),
+      appName: 'My app',
+      discoveryRelay: 'wss://relay.coinos.io',
+      callback: 'myapp://nwc',
+      walletName: 'Coinos',
+      walletServicePubkey:
+          'ba80990666ef0b6f4ba5059347beb13242921e54669e680064ca755256a1e3a6',
+      allowUntaggedInfoEvent: true,
+    );
+  },
+)</code></pre>
+</doc-codeblock></div>
+<p>Call <code translate="no" v-pre>NWalletsState.resumePendingWalletAuth()</code> from mobile resumed lifecycle callbacks.
+Legacy providers without client-tagged discovery events are revalidated every five
+seconds while their connection screen remains open.</p>
+<p>Use NWC-07 callback flow to launch <code translate="no" v-pre>nostrnwc://connect</code>. Android resolves it using
+normal system intent handling, including user defaults and multiple compatible apps:</p>
+<div id="wallet-assisted-nwc-connections-code-3" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">return coordinator.connectInstalledWallet(
+  context,
+  config: const AlbyGoConnectConfig(
+    appName: 'My app',
+    appIconUrl: 'https://example.com/icon.png',
+    callback: 'myapp://nwc',
+  ),
+);</code></pre>
+</doc-codeblock></div>
+<p>Forward callback URLs to <code translate="no" v-pre>NWalletsState.onProtocolUrlReceived</code>. Wallet-auth callback results
+return <code translate="no" v-pre>relay_url</code> and <code translate="no" v-pre>wallet_pubkey</code>; when <code translate="no" v-pre>state</code> is present, it must match. Legacy providers
+may return a <code translate="no" v-pre>nostr+walletconnect://</code> value in a callback query parameter.</p>
 <h2 id="example-scanning-with-mobile_scanner">Example: scanning with mobile_scanner</h2>
 <p>The sample app implements the callback with
 <a href="https://pub.dev/packages/mobile_scanner"><code translate="no" v-pre>mobile_scanner</code></a>. Add it to <strong>your</strong> app (not to
@@ -191,18 +287,17 @@ return the raw scanned string.</p>
 <pre translate="no" class="language-bash"><code v-pre class="language-bash">flutter pub add mobile_scanner</code></pre>
 </doc-codeblock></div>
 <p>The callback just opens a dialog that wraps the camera view and pops the first decoded value:</p>
-<div id="example-scanning-with-mobile_scanner-scannwcuri-callback" class="codeblock-wrapper"><doc-codeblock>
-<div class="codeblock-title">scanNwcUri callback</div>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">Future&lt;String?&gt; scanNwcUri(BuildContext context) {
-  return showDialog&lt;String?&gt;(
-    context: context,
-    builder: (context) =&gt; const _NwcQrScannerDialog(),
-  );
-}</code></pre>
+<div id="example-scanning-with-mobile_scanner-scanwalletinput-callback" class="codeblock-wrapper"><doc-codeblock>
+<div class="codeblock-title">scanWalletInput callback</div>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// Camera adapter only. Wallet input UI and navigation belong to ndk_flutter.
+Widget buildWalletQrScanner(
+  BuildContext context,
+  ValueChanged&lt;String&gt; onScan,
+  ValueChanged&lt;Object&gt; onError,
+) {</code></pre>
 </doc-codeblock></div>
-<p>The full dialog lives in
-<a href="https://github.com/relaystr/ndk/blob/master/packages/sample-app/lib/nwc_qr_scanner.dart"><code translate="no" v-pre>packages/sample-app/lib/nwc_qr_scanner.dart</code></a>.
-It adds a camera preview, a paste fallback, error handling, and a desktop/web-safe layout.</p>
+<p><code translate="no" v-pre>packages/sample-app/lib/nwc_qr_scanner.dart</code> only adapts the host camera implementation.
+Wallet choices, paste/manual input, errors, and layout live in <code translate="no" v-pre>ndk_flutter</code>.</p>
 
                 
                 <!-- Required only on API pages -->
