@@ -548,7 +548,7 @@
   "appUpdateChangelog": "Muutosloki", "appUpdateReleaseHistory": "Versiohistoria", "appUpdateInstalledBadge": "Asennettu", "appUpdateAvailableBadge": "Päivitys saatavilla", "appUpdateLatestBadge": "Uusin", "appUpdateNoReleases": "Yhtään versiota ei ole vielä julkaistu.", "appUpdateAcrossAllReleases": "Kaikissa versioissa",
   "appUpdateSatsBy": "sats käyttäjiltä",
   "appUpdateReleaseDetails": "Julkaisun tiedot", "appUpdateWhatsNew": "Uutta", "appUpdatePublishedOn": "Julkaistu {date}", "appUpdateChannel": "Kanava: {channel}", "appUpdateArchitecture": "Arkkitehtuuri: {architecture}", "appUpdateVersionCode": "Koontiversio {versionCode}", "appUpdateReleaseVersion": "Julkaisu {version}", "appUpdateNoReleaseNotes": "Julkaisutietoja ei ole julkaistu.", "appUpdatePublisher": "Julkaisija", "appUpdatePublisherSignatureVerified": "Nostr-tapahtuman allekirjoitus vahvistettu", "appUpdateCertificateDeclared": "Julkaisijan ilmoittama Android-allekirjoitusvarmenne", "appUpdateSource": "Latauslähde: {host}", "appUpdateCommunity": "Yhteisö", "appUpdateZapSummary": "{count} zappia · {sats} satsia", "appUpdateReactionCount": "{count} reaktiota", "appUpdateCommentCount": "{count} kommenttia", "appUpdateSocialLoadFailed": "Yhteisön toimintaa ei voitu ladata.", "appUpdateComments": "Kommentit", "appUpdateNoComments": "Ei vielä kommentteja.", "appUpdateCommentHint": "Jaa palautetta tästä julkaisusta", "appUpdatePostComment": "Lähetä kommentti", "appUpdateSignInToComment": "Kirjaudu Nostr-tilillä kommentoidaksesi.", "appUpdateTechnicalDetails": "Tekniset tiedot",
-  "appUpdateViewStatus": "Näytä päivityksen tila"
+  "appUpdateViewStatus": "Näytä päivityksen tila",
   "refreshBalance": "Päivitä saldo",
   "balanceRefreshed": "Saldo päivitetty"
 }

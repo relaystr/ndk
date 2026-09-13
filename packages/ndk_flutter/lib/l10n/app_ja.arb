@@ -490,7 +490,7 @@
   "appUpdateChangelog": "変更履歴", "appUpdateReleaseHistory": "リリース履歴", "appUpdateInstalledBadge": "インストール済み", "appUpdateAvailableBadge": "更新可能", "appUpdateLatestBadge": "最新", "appUpdateNoReleases": "まだリリースは公開されていません。", "appUpdateAcrossAllReleases": "すべてのリリース共通",
   "appUpdateSatsBy": "sats、送信者",
   "appUpdateReleaseDetails": "リリース詳細", "appUpdateWhatsNew": "新機能", "appUpdatePublishedOn": "{date} に公開", "appUpdateChannel": "チャンネル: {channel}", "appUpdateArchitecture": "アーキテクチャ: {architecture}", "appUpdateVersionCode": "ビルド {versionCode}", "appUpdateReleaseVersion": "リリース {version}", "appUpdateNoReleaseNotes": "リリースノートはありません。", "appUpdatePublisher": "公開者", "appUpdatePublisherSignatureVerified": "Nostrイベントの署名を確認済み", "appUpdateCertificateDeclared": "公開者がAndroid署名証明書を宣言済み", "appUpdateSource": "ダウンロード元: {host}", "appUpdateCommunity": "コミュニティ", "appUpdateZapSummary": "{count} zap・{sats} sats", "appUpdateReactionCount": "リアクション {count}件", "appUpdateCommentCount": "コメント {count}件", "appUpdateSocialLoadFailed": "コミュニティ情報を読み込めませんでした。", "appUpdateComments": "コメント", "appUpdateNoComments": "コメントはまだありません。", "appUpdateCommentHint": "このリリースへの感想を共有", "appUpdatePostComment": "コメントを投稿", "appUpdateSignInToComment": "コメントするにはNostrアカウントでログインしてください。", "appUpdateTechnicalDetails": "技術情報",
-  "appUpdateViewStatus": "更新状態を表示"
+  "appUpdateViewStatus": "更新状態を表示",
   "refreshBalance": "残高を更新",
   "balanceRefreshed": "残高を更新しました"
 }

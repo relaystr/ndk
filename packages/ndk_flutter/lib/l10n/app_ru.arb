@@ -490,7 +490,7 @@
   "appUpdateChangelog": "Журнал изменений", "appUpdateReleaseHistory": "История версий", "appUpdateInstalledBadge": "Установлена", "appUpdateAvailableBadge": "Доступно обновление", "appUpdateLatestBadge": "Последняя", "appUpdateNoReleases": "Пока не опубликовано ни одной версии.", "appUpdateAcrossAllReleases": "Для всех версий",
   "appUpdateSatsBy": "сат от",
   "appUpdateReleaseDetails": "Сведения о выпуске", "appUpdateWhatsNew": "Что нового", "appUpdatePublishedOn": "Опубликовано {date}", "appUpdateChannel": "Канал: {channel}", "appUpdateArchitecture": "Архитектура: {architecture}", "appUpdateVersionCode": "Сборка {versionCode}", "appUpdateReleaseVersion": "Версия {version}", "appUpdateNoReleaseNotes": "Примечания к выпуску не опубликованы.", "appUpdatePublisher": "Издатель", "appUpdatePublisherSignatureVerified": "Подпись события Nostr проверена", "appUpdateCertificateDeclared": "Издатель указал сертификат подписи Android", "appUpdateSource": "Источник загрузки: {host}", "appUpdateCommunity": "Сообщество", "appUpdateZapSummary": "Запов: {count} · {sats} сат", "appUpdateReactionCount": "Реакций: {count}", "appUpdateCommentCount": "Комментариев: {count}", "appUpdateSocialLoadFailed": "Не удалось загрузить активность сообщества.", "appUpdateComments": "Комментарии", "appUpdateNoComments": "Комментариев пока нет.", "appUpdateCommentHint": "Оставьте отзыв об этой версии", "appUpdatePostComment": "Опубликовать комментарий", "appUpdateSignInToComment": "Войдите в аккаунт Nostr, чтобы комментировать.", "appUpdateTechnicalDetails": "Технические сведения",
-  "appUpdateViewStatus": "Показать статус обновления"
+  "appUpdateViewStatus": "Показать статус обновления",
   "refreshBalance": "Обновить баланс",
   "balanceRefreshed": "Баланс обновлён"
 }

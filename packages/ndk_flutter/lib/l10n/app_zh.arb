@@ -490,7 +490,7 @@
   "appUpdateChangelog": "更新日志", "appUpdateReleaseHistory": "版本历史", "appUpdateInstalledBadge": "已安装", "appUpdateAvailableBadge": "有可用更新", "appUpdateLatestBadge": "最新", "appUpdateNoReleases": "尚未发布任何版本。", "appUpdateAcrossAllReleases": "所有版本共有",
   "appUpdateSatsBy": "sats，来自",
   "appUpdateReleaseDetails": "版本详情", "appUpdateWhatsNew": "更新内容", "appUpdatePublishedOn": "发布于 {date}", "appUpdateChannel": "频道：{channel}", "appUpdateArchitecture": "架构：{architecture}", "appUpdateVersionCode": "构建 {versionCode}", "appUpdateReleaseVersion": "版本 {version}", "appUpdateNoReleaseNotes": "未发布版本说明。", "appUpdatePublisher": "发布者", "appUpdatePublisherSignatureVerified": "Nostr 事件签名已验证", "appUpdateCertificateDeclared": "发布者已声明 Android 签名证书", "appUpdateSource": "下载来源：{host}", "appUpdateCommunity": "社区", "appUpdateZapSummary": "{count} 次打赏 · {sats} sats", "appUpdateReactionCount": "{count} 条回应", "appUpdateCommentCount": "{count} 条评论", "appUpdateSocialLoadFailed": "无法加载社区动态。", "appUpdateComments": "评论", "appUpdateNoComments": "暂无评论。", "appUpdateCommentHint": "分享对此版本的反馈", "appUpdatePostComment": "发表评论", "appUpdateSignInToComment": "登录 Nostr 账户后即可评论。", "appUpdateTechnicalDetails": "技术详情",
-  "appUpdateViewStatus": "查看更新状态"
+  "appUpdateViewStatus": "查看更新状态",
   "refreshBalance": "刷新余额",
   "balanceRefreshed": "余额已刷新"
 }
