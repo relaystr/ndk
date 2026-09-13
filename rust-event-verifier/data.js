@@ -1,0 +1,46 @@
+window.BENCHMARK_DATA = {
+  "lastUpdate": 1789292248432,
+  "repoUrl": "https://github.com/relaystr/ndk",
+  "entries": {
+    "Rust event verifier": [
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "frnandu",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5a620249c0e7c066bd73d759e1ec9099957c7dd0",
+          "message": "Merge pull request #767 from relaystr/fix/rust-event-verifier-memory\n\nperf: improve rust verifier memory usage",
+          "timestamp": "2026-09-13T11:34:36+02:00",
+          "tree_id": "7ac48e2a8b61bb09305a141c42db67accd1dd9d2",
+          "url": "https://github.com/relaystr/ndk/commit/5a620249c0e7c066bd73d759e1ec9099957c7dd0"
+        },
+        "date": 1789292246441,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 45412.8,
+            "range": "45224-52072",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1568562,
+            "range": "1554152-1581440",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      }
+    ]
+  }
+}
