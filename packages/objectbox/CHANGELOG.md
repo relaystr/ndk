@@ -1,3 +1,9 @@
+## 0.2.12-dev.12
+
+> Note: This release has breaking changes.
+
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
 ## 0.2.12-dev.10
 
  - **FIX**: dart format with standalone SDK 3.12.2 (match CI).

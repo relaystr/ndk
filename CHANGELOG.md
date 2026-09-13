@@ -3,6 +3,60 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.10.0-dev.3`](#ndk---v0100-dev3)
+ - [`ndk_drift` - `v0.1.1-dev.12`](#ndk_drift---v011-dev12)
+ - [`ndk_objectbox` - `v0.2.12-dev.12`](#ndk_objectbox---v0212-dev12)
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.10.0-dev.3`](#ndk_flutter---v0100-dev3)
+
+---
+
+#### `ndk` - `v0.10.0-dev.3`
+
+ - **PERF**(cache): batch visibility context reads.
+ - **PERF**: improve rust verifier memory usage.
+ - **FIX**(metadata): cache the metadata event that was broadcast.
+ - **FIX**(cache): compare conflict coordinates byte for byte.
+ - **FIX**(cache): keep d-tag whitespace when matching deletion coordinates.
+ - **FIX**: address Rust verifier review feedback.
+ - **FIX**(cache): keep d-tag case when matching deletion coordinates.
+ - **FIX**(cache): stop a limited read from dropping visible events.
+ - **FIX**: missing amount in bip321.
+ - **FIX**: add tbs.
+ - **FIX**: not add lnurl wallet if invalid.
+ - **FEAT**(wallets): add LNbits provider.
+ - **FEAT**: packed event verification in rust.
+ - **FEAT**(nwc): add optional maxFeeMsat to pay (NWC-321 max_fee).
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
+#### `ndk_drift` - `v0.1.1-dev.12`
+
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
+#### `ndk_objectbox` - `v0.2.12-dev.12`
+
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
+#### `ndk_flutter` - `v0.10.0-dev.3`
+
+ - **FEAT**(wallets): add LNbits provider.
+
+
 ## 2026-09-11
 
 ### Changes
