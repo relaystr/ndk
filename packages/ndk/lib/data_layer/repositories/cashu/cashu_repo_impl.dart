@@ -150,9 +150,9 @@ class CashuRepoImpl implements CashuRepo {
     required String unit,
     required String method,
     String description = '',
+    required CashuKeypair quoteKey,
+    required int quoteKeyCounter,
   }) async {
-    CashuKeypair quoteKey = CashuKeypair.generateCashuKeyPair();
-
     final url = CashuTools.composeUrl(
       mintUrl: mintUrl,
       path: 'mint/quote/$method',
@@ -186,6 +186,7 @@ class CashuRepoImpl implements CashuRepo {
       map: responseBody,
       mintUrl: mintUrl,
       quoteKey: quoteKey,
+      quoteKeyCounter: quoteKeyCounter,
     );
   }
 
