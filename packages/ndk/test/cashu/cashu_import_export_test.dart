@@ -59,9 +59,9 @@ void main() {
       keysetId: 'keyset1',
       counter: 42,
     );
-    // quote key derivation counter occupies the reserved non-hex slot
+    // quote key derivation counter occupies the reserved global slot
     await srcCache.setCashuSecretCounter(
-      mintUrl: mintUrl,
+      mintUrl: kQuoteKeyDerivationCounterSlot,
       keysetId: kQuoteKeyDerivationCounterSlot,
       counter: 7,
     );
@@ -107,7 +107,7 @@ void main() {
     expect(restoredCounter, equals(42));
 
     final restoredQuoteKeyCounter = await dstCache.getCashuSecretCounter(
-      mintUrl: mintUrl,
+      mintUrl: kQuoteKeyDerivationCounterSlot,
       keysetId: kQuoteKeyDerivationCounterSlot,
     );
     expect(restoredQuoteKeyCounter, equals(7));
