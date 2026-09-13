@@ -41,6 +41,7 @@ void main() {
         cache: MemCacheManager(),
         engine: NdkEngine.JIT,
         bootstrapRelays: [fast.url],
+        indexerRelays: [],
       ),
     );
 
