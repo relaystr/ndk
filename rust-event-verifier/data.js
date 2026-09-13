@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789309257539,
+  "lastUpdate": 1789310173750,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -188,6 +188,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1686910,
             "range": "1659220-1737796",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "frnandu",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "775e3ed2e0e699ed802945a60e22ae33660724f0",
+          "message": "Merge pull request #826 from relaystr/release-34762315873\n\nchore(prerelease): publish ndk_flutter 0.10.0-dev.4",
+          "timestamp": "2026-09-13T16:34:00+02:00",
+          "tree_id": "0cb4ccb2417945a942d1d0f62ac79a38b4e113c5",
+          "url": "https://github.com/relaystr/ndk/commit/775e3ed2e0e699ed802945a60e22ae33660724f0"
+        },
+        "date": 1789310171797,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 44921.8,
+            "range": "44584-47209",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1546486,
+            "range": "1535668-1594200",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
