@@ -1,4 +1,13 @@
 enum ErrorCode {
+  badRequest('BAD_REQUEST', 'The request contains an invalid parameter.'),
+  unsupportedPaymentInstruction(
+    'UNSUPPORTED_PAYMENT_INSTRUCTION',
+    'The wallet cannot select a supported payment instruction.',
+  ),
+  unsupportedNetwork(
+    'UNSUPPORTED_NETWORK',
+    'The payment instruction uses a different Bitcoin network.',
+  ),
   rateLimited(
     'RATE_LIMITED',
     'The client is sending commands too fast. It should retry in a few seconds.',

@@ -67,6 +67,20 @@ class NWallets extends StatefulWidget {
   /// Optional host-provided scanner for NWC QR codes.
   final NwcUriScanner? nwcUriScanner;
 
+  /// Optional host-provided scanner for BOLT12/BIP321/BIP353 QR codes.
+  final Bolt12InputScanner? bolt12InputScanner;
+
+  /// Optional host-provided scanner accepting every supported wallet input.
+  final WalletInputScanner? walletInputScanner;
+
+  /// Wallet apps or web services offering assisted NWC authorization.
+  /// Null enables Alby Cloud and Coinos presets; an empty list disables them.
+  final List<NwcConnectionOption>? nwcConnectionOptions;
+
+  /// Camera preview/decoder for the shared wallet input UI. Optional: paste and
+  /// wallet selection work without any camera dependency.
+  final WalletQrScannerBuilder? walletQrScannerBuilder;
+
   /// Custom icon configuration for Cashu wallets
   final WalletIconConfig? cashuIcon;
 
@@ -75,6 +89,9 @@ class NWallets extends StatefulWidget {
 
   /// Custom icon configuration for LNURL wallets
   final WalletIconConfig? lnurlIcon;
+
+  /// Custom icon configuration for BOLT12 wallets
+  final WalletIconConfig? bolt12Icon;
 
   const NWallets({
     super.key,
@@ -98,9 +115,14 @@ class NWallets extends StatefulWidget {
     this.albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
     this.nwcWalletAuthCoordinator,
     this.nwcUriScanner,
+    this.bolt12InputScanner,
+    this.walletInputScanner,
+    this.nwcConnectionOptions,
+    this.walletQrScannerBuilder,
     this.cashuIcon,
     this.nwcIcon,
     this.lnurlIcon,
+    this.bolt12Icon,
   });
 
   @override
@@ -116,6 +138,26 @@ class NWalletsState extends State<NWallets> {
     super.initState();
     _nwcWalletAuthCoordinator =
         widget.nwcWalletAuthCoordinator ?? NwcWalletAuthCoordinator();
+    _nwcWalletAuthCoordinator.connectionState.addListener(
+      _onWalletConnectionStateChanged,
+    );
+  }
+
+  @override
+  void dispose() {
+    _nwcWalletAuthCoordinator.connectionState.removeListener(
+      _onWalletConnectionStateChanged,
+    );
+    super.dispose();
+  }
+
+  void _onWalletConnectionStateChanged() {
+    if (!mounted ||
+        _nwcWalletAuthCoordinator.connectionState.value.phase !=
+            WalletConnectionPhase.connected) {
+      return;
+    }
+    _selectConnectedWallet();
   }
 
   Future<bool> onProtocolUrlReceived(String url) async {
@@ -126,7 +168,22 @@ class NWalletsState extends State<NWallets> {
     );
 
     if (!handled || !mounted) return handled;
+    _selectConnectedWallet();
+    return handled;
+  }
 
+  /// Completes pending external-wallet authorization after host app resumes.
+  Future<bool> resumePendingWalletAuth() async {
+    final handled = await _nwcWalletAuthCoordinator.handleAppResume(
+      context,
+      widget.ndkFlutter,
+    );
+    if (!handled || !mounted) return handled;
+    _selectConnectedWallet();
+    return handled;
+  }
+
+  void _selectConnectedWallet() {
     final connectedWalletId = _nwcWalletAuthCoordinator
         .takeLastConnectedWalletId();
     if (connectedWalletId != null) {
@@ -135,7 +192,6 @@ class NWalletsState extends State<NWallets> {
       });
       widget.onWalletSelected?.call(connectedWalletId);
     }
-    return handled;
   }
 
   @override
@@ -181,6 +237,7 @@ class NWalletsState extends State<NWallets> {
                 cashuIcon: widget.cashuIcon,
                 nwcIcon: widget.nwcIcon,
                 lnurlIcon: widget.lnurlIcon,
+                bolt12Icon: widget.bolt12Icon,
               ),
             ),
           ],
@@ -216,6 +273,7 @@ class NWalletsState extends State<NWallets> {
                 cashuIcon: widget.cashuIcon,
                 nwcIcon: widget.nwcIcon,
                 lnurlIcon: widget.lnurlIcon,
+                bolt12Icon: widget.bolt12Icon,
               ),
             ),
             if (showActionsSection) ...[
@@ -268,7 +326,11 @@ class NWalletsState extends State<NWallets> {
       widget.ndkFlutter,
       albyGoConnectConfig: widget.albyGoConnectConfig,
       nwcWalletAuthCoordinator: _nwcWalletAuthCoordinator,
+      walletInputScanner: widget.walletInputScanner,
+      walletQrScannerBuilder: widget.walletQrScannerBuilder,
+      nwcConnectionOptions: widget.nwcConnectionOptions,
       nwcUriScanner: widget.nwcUriScanner,
+      bolt12InputScanner: widget.bolt12InputScanner,
     );
   }
 }

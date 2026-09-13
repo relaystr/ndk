@@ -38,6 +38,9 @@ export 'domain_layer/usecases/nwc/responses/get_budget_response.dart';
 export 'domain_layer/usecases/nwc/responses/get_info_response.dart';
 export 'domain_layer/usecases/nwc/responses/make_invoice_response.dart';
 export 'domain_layer/usecases/nwc/responses/pay_invoice_response.dart';
+export 'domain_layer/usecases/nwc/responses/pay_response.dart';
+export 'domain_layer/usecases/nwc/responses/receive_response.dart';
+export 'domain_layer/entities/wallet/bip321.dart';
 export 'domain_layer/usecases/nwc/responses/list_transactions_response.dart';
 export 'domain_layer/usecases/nwc/responses/lookup_invoice_response.dart';
 export 'domain_layer/usecases/nwc/nwc_connection.dart';
@@ -110,6 +113,8 @@ export 'domain_layer/usecases/decrypted_event_payloads/decrypted_event_payloads.
 export 'domain_layer/usecases/cache_eviction/cache_eviction_scheduler.dart';
 export 'domain_layer/usecases/dms/dms.dart';
 export 'domain_layer/usecases/cashu/cashu.dart';
+export 'domain_layer/usecases/cashu/cashu_mint_recommendations.dart';
+export 'domain_layer/entities/cashu/cashu_mint_recommendation.dart';
 export 'domain_layer/usecases/cashu/cashu_seed.dart';
 export 'domain_layer/usecases/cashu/cashu_export_import.dart';
 export 'domain_layer/entities/cashu/cashu_blinded_message.dart';

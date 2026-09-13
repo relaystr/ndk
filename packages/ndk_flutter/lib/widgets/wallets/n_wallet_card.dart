@@ -5,6 +5,8 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
+import 'n_cashu_mint_icon.dart';
+import 'n_nwc_wallet_icon.dart';
 import 'wallet_action_dialogs.dart';
 
 /// Configuration for wallet type icons
@@ -58,6 +60,9 @@ class NWalletCard extends StatefulWidget {
   /// Custom icon configuration for LNURL wallets
   final WalletIconConfig? lnurlIcon;
 
+  /// Custom icon configuration for BOLT12 wallets
+  final WalletIconConfig? bolt12Icon;
+
   const NWalletCard({
     super.key,
     required this.wallet,
@@ -73,6 +78,7 @@ class NWalletCard extends StatefulWidget {
     this.cashuIcon,
     this.nwcIcon,
     this.lnurlIcon,
+    this.bolt12Icon,
   });
 
   @override
@@ -84,6 +90,9 @@ class _NWalletCardState extends State<NWalletCard>
   List<Color>? _customGradientColors;
   GetBudgetResponse? _budgetResponse;
   bool _isFetchingBudget = false;
+  bool _isRefreshingBalance = false;
+  bool _isWalletAvailable = true;
+  int _connectionCheckGeneration = 0;
 
   @override
   NdkFlutter get ndkFlutter => widget.ndkFlutter;
@@ -102,6 +111,28 @@ class _NWalletCardState extends State<NWalletCard>
     _loadCustomColor();
     _initializeNwcBalanceIfNeeded();
     _fetchBudgetIfNeeded();
+    _checkWalletConnection();
+  }
+
+  Future<void> _checkWalletConnection() async {
+    final generation = ++_connectionCheckGeneration;
+    final walletId = widget.wallet.id;
+    try {
+      await widget.ndkFlutter.ndk.wallets
+          .reconnectWallet(walletId)
+          .timeout(const Duration(seconds: 10));
+      if (mounted &&
+          widget.wallet.id == walletId &&
+          generation == _connectionCheckGeneration) {
+        setState(() => _isWalletAvailable = true);
+      }
+    } catch (_) {
+      if (mounted &&
+          widget.wallet.id == walletId &&
+          generation == _connectionCheckGeneration) {
+        setState(() => _isWalletAvailable = false);
+      }
+    }
   }
 
   void _initializeNwcBalanceIfNeeded() {
@@ -167,6 +198,10 @@ class _NWalletCardState extends State<NWalletCard>
           _budgetResponse = budget;
         });
       }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isWalletAvailable = false);
+      }
     } finally {
       _isFetchingBudget = false;
     }
@@ -200,6 +235,11 @@ class _NWalletCardState extends State<NWalletCard>
     final isCurrentNwc = widget.wallet is NwcWallet;
     final isOldNwc = oldWidget.wallet is NwcWallet;
     final walletIdChanged = oldWidget.wallet.id != widget.wallet.id;
+
+    if (walletIdChanged) {
+      _isWalletAvailable = true;
+      _checkWalletConnection();
+    }
 
     if (isCurrentNwc) {
       _initializeNwcBalanceIfNeeded();
@@ -247,14 +287,19 @@ class _NWalletCardState extends State<NWalletCard>
     final bool isCashu = widget.wallet is CashuWallet;
     final bool isNwc = widget.wallet is NwcWallet;
     final bool isLnurl = widget.wallet is LnurlWallet;
+    final bool isBolt12 = widget.wallet is Bolt12Wallet;
+    final bool isLnBits = widget.wallet is LnBitsWallet;
     final nwcPermissions = isNwc
         ? _nwcPermissions(widget.wallet as NwcWallet)
         : const <String>{};
     final bool canShowNwcBalance =
         !isNwc || nwcPermissions.contains(NwcMethod.GET_BALANCE.name);
     final bool showBudgetInfo = isNwc && _shouldShowBudgetInfo();
-    final bool isNwcReceiveOnly =
-        isNwc && widget.wallet.canReceive && !widget.wallet.canSend;
+    final bool showReceiveOnlyLabel =
+        (isNwc || isLnurl || isLnBits) &&
+        widget.wallet.canReceive &&
+        !widget.wallet.canSend;
+    final bool isWalletUnavailable = !_isWalletAvailable;
 
     final String walletName;
     if (isCashu) {
@@ -267,6 +312,10 @@ class _NWalletCardState extends State<NWalletCard>
       walletName = (widget.wallet as NwcWallet).name;
     } else if (isLnurl) {
       walletName = (widget.wallet as LnurlWallet).name;
+    } else if (isBolt12) {
+      walletName = (widget.wallet as Bolt12Wallet).name;
+    } else if (isLnBits) {
+      walletName = (widget.wallet as LnBitsWallet).name;
     } else {
       walletName = l10n.unknownWalletType;
     }
@@ -284,6 +333,19 @@ class _NWalletCardState extends State<NWalletCard>
       subtitle = lnurlWallet.identifier == lnurlWallet.name
           ? ''
           : lnurlWallet.identifier;
+    } else if (isBolt12) {
+      final bolt12Wallet = widget.wallet as Bolt12Wallet;
+      subtitle =
+          _nonEmpty(bolt12Wallet.bip353Address) ??
+          _nonEmpty(bolt12Wallet.issuer) ??
+          (bolt12Wallet.hasBlindedPaths
+              ? l10n.bolt12PrivateOfferSubtitle
+              : l10n.bolt12WalletSubtitle);
+    } else if (isLnBits) {
+      subtitle = (widget.wallet as LnBitsWallet).lnbitsUrl.replaceFirst(
+        RegExp(r'^https?://'),
+        '',
+      );
     } else {
       subtitle = '';
     }
@@ -303,10 +365,19 @@ class _NWalletCardState extends State<NWalletCard>
             .toColor();
         gradientColors = [color, lighterColor];
       } else {
-        gradientColors = _getDefaultGradientColors(isCashu, isNwc, isLnurl);
+        gradientColors = _getDefaultGradientColors(
+          isCashu,
+          isNwc,
+          isLnurl,
+          isBolt12,
+          isLnBits,
+        );
       }
     }
-    final Color shadowColor = gradientColors[0];
+    final effectiveGradientColors = isWalletUnavailable
+        ? [Colors.grey.shade700, Colors.grey.shade500]
+        : gradientColors;
+    final Color shadowColor = effectiveGradientColors[0];
 
     // Determine icon configuration based on wallet type
     final WalletIconConfig iconConfig;
@@ -324,6 +395,14 @@ class _NWalletCardState extends State<NWalletCard>
       iconConfig = widget.lnurlIcon ?? const WalletIconConfig();
       defaultAssetName = null; // LNURL uses bolt icon, not PNG
       fallbackIcon = Icons.bolt;
+    } else if (isBolt12) {
+      iconConfig = widget.bolt12Icon ?? const WalletIconConfig();
+      defaultAssetName = null;
+      fallbackIcon = Icons.electric_bolt;
+    } else if (isLnBits) {
+      iconConfig = const WalletIconConfig();
+      defaultAssetName = null;
+      fallbackIcon = Icons.bolt;
     } else {
       iconConfig = const WalletIconConfig();
       defaultAssetName = 'wallet.png';
@@ -333,7 +412,19 @@ class _NWalletCardState extends State<NWalletCard>
     // Build main icon widget (full color, not monochromatic)
     final Widget mainIcon =
         iconConfig.iconWidget ??
-        (defaultAssetName != null
+        (isCashu
+            ? NCashuMintIcon(
+                wallet: widget.wallet as CashuWallet,
+                size: iconConfig.iconSize,
+              )
+            : isNwc
+            ? NNwcWalletIcon(
+                wallet: widget.wallet as NwcWallet,
+                size: iconConfig.iconSize,
+              )
+            : isLnBits
+            ? NLnBitsIcon(size: iconConfig.iconSize)
+            : defaultAssetName != null
             ? Image.asset(
                 'assets/images/$defaultAssetName',
                 package: 'ndk_flutter',
@@ -356,7 +447,12 @@ class _NWalletCardState extends State<NWalletCard>
     // Build background widget
     final Widget backgroundWidget =
         iconConfig.backgroundWidget ??
-        (defaultAssetName != null
+        (isLnBits
+            ? Opacity(
+                opacity: iconConfig.backgroundOpacity,
+                child: NLnBitsIcon(size: iconConfig.backgroundSize),
+              )
+            : defaultAssetName != null
             ? Image.asset(
                 'assets/images/$defaultAssetName',
                 package: 'ndk_flutter',
@@ -379,8 +475,40 @@ class _NWalletCardState extends State<NWalletCard>
                 color: Colors.white.withAlpha(30),
               ));
 
+    const unavailableColorFilter = ColorFilter.matrix(<double>[
+      0.2126,
+      0.7152,
+      0.0722,
+      0,
+      0,
+      0.2126,
+      0.7152,
+      0.0722,
+      0,
+      0,
+      0.2126,
+      0.7152,
+      0.0722,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+    ]);
+    final effectiveMainIcon = isWalletUnavailable
+        ? ColorFiltered(colorFilter: unavailableColorFilter, child: mainIcon)
+        : mainIcon;
+    final effectiveBackgroundWidget = isWalletUnavailable
+        ? ColorFiltered(
+            colorFilter: unavailableColorFilter,
+            child: backgroundWidget,
+          )
+        : backgroundWidget;
+
     return GestureDetector(
-      onTap: widget.onTap,
+      onTap: isWalletUnavailable ? null : widget.onTap,
       child: Container(
         width: widget.width,
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -389,7 +517,7 @@ class _NWalletCardState extends State<NWalletCard>
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: gradientColors,
+            colors: effectiveGradientColors,
           ),
           boxShadow: [
             BoxShadow(
@@ -404,7 +532,7 @@ class _NWalletCardState extends State<NWalletCard>
         ),
         child: Stack(
           children: [
-            Positioned(right: -20, top: -20, child: backgroundWidget),
+            Positioned(right: -20, top: -20, child: effectiveBackgroundWidget),
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -414,7 +542,52 @@ class _NWalletCardState extends State<NWalletCard>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      mainIcon,
+                      effectiveMainIcon,
+                      if (showReceiveOnlyLabel)
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 12, right: 28),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Tooltip(
+                                message: l10n.receiveOnlyWallet,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withAlpha(32),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.lock_outline,
+                                        color: Colors.white,
+                                        size: 12,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Flexible(
+                                        child: Text(
+                                          l10n.receiveOnlyWallet,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       // if (widget.isSelected)
                       //   Container(
                       //     margin: const EdgeInsets.only(right: 32),
@@ -462,21 +635,18 @@ class _NWalletCardState extends State<NWalletCard>
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
-                      if (isNwcReceiveOnly) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          l10n.receiveOnlyWallet,
-                          style: TextStyle(
-                            color: Colors.white.withAlpha(200),
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
                       SizedBox(height: showBudgetInfo ? 4 : 16),
-                      isLnurl
+                      isWalletUnavailable
+                          ? _buildUnavailableInfo(context)
+                          : isLnurl
                           ? _buildLnurlInfo(
                               context,
                               widget.wallet as LnurlWallet,
+                            )
+                          : isBolt12
+                          ? _buildBolt12Info(
+                              context,
+                              widget.wallet as Bolt12Wallet,
                             )
                           : (canShowNwcBalance
                                 ? _buildBalance(context)
@@ -511,7 +681,7 @@ class _NWalletCardState extends State<NWalletCard>
                   final actionItems = <PopupMenuEntry<String>>[
                     PopupMenuItem(
                       value: 'send',
-                      enabled: widget.wallet.canSend,
+                      enabled: !isWalletUnavailable && widget.wallet.canSend,
                       child: Row(
                         children: [
                           const Icon(Icons.send, size: 20),
@@ -522,7 +692,7 @@ class _NWalletCardState extends State<NWalletCard>
                     ),
                     PopupMenuItem(
                       value: 'receive',
-                      enabled: widget.wallet.canReceive,
+                      enabled: !isWalletUnavailable && widget.wallet.canReceive,
                       child: Row(
                         children: [
                           const Icon(Icons.download, size: 20),
@@ -534,7 +704,7 @@ class _NWalletCardState extends State<NWalletCard>
                     if (isCashuWallet)
                       PopupMenuItem(
                         value: 'reclaim',
-                        enabled: reclaimable.isNotEmpty,
+                        enabled: !isWalletUnavailable && reclaimable.isNotEmpty,
                         child: Row(
                           children: [
                             const Icon(Icons.replay, size: 20),
@@ -571,7 +741,9 @@ class _NWalletCardState extends State<NWalletCard>
                     if (widget.wallet.canReceive)
                       PopupMenuItem(
                         value: 'set_default_receive',
-                        enabled: !widget.isDefaultForReceiving,
+                        enabled:
+                            !isWalletUnavailable &&
+                            !widget.isDefaultForReceiving,
                         child: Row(
                           children: [
                             Icon(
@@ -595,7 +767,8 @@ class _NWalletCardState extends State<NWalletCard>
                     if (widget.wallet.canSend)
                       PopupMenuItem(
                         value: 'set_default_send',
-                        enabled: !widget.isDefaultForSending,
+                        enabled:
+                            !isWalletUnavailable && !widget.isDefaultForSending,
                         child: Row(
                           children: [
                             Icon(
@@ -805,6 +978,8 @@ class _NWalletCardState extends State<NWalletCard>
     bool isCashu,
     bool isNwc,
     bool isLnurl,
+    bool isBolt12,
+    bool isLnBits,
   ) {
     if (isCashu) {
       return [const Color(0xFF7F38CA), const Color(0xFF9B5AD8)];
@@ -815,6 +990,10 @@ class _NWalletCardState extends State<NWalletCard>
       ];
     } else if (isLnurl) {
       return [const Color(0xFFFFB300), const Color(0xFFFFC107)];
+    } else if (isBolt12) {
+      return [const Color(0xFF1B5E20), const Color(0xFF43A047)];
+    } else if (isLnBits) {
+      return [const Color(0xFF21172F), const Color(0xFF3B2853)];
     } else {
       return [Colors.grey[700]!, Colors.grey[400]!];
     }
@@ -1003,6 +1182,7 @@ class _NWalletCardState extends State<NWalletCard>
             name: w.name,
             supportedUnits: w.supportedUnits,
             nwcUrl: w.nwcUrl,
+            providerId: w.providerId,
             metadata: updatedMetadata,
           );
         } else if (widget.wallet is LnurlWallet) {
@@ -1016,6 +1196,25 @@ class _NWalletCardState extends State<NWalletCard>
             minSendable: w.minSendable,
             maxSendable: w.maxSendable,
             metadataFetchedAt: w.metadataFetchedAt,
+            metadata: updatedMetadata,
+          );
+        } else if (widget.wallet is Bolt12Wallet) {
+          final w = widget.wallet as Bolt12Wallet;
+          updatedWallet = Bolt12Wallet(
+            id: w.id,
+            name: w.name,
+            supportedUnits: w.supportedUnits,
+            offer: w.offer,
+            source: w.source,
+            bip353Address: w.bip353Address,
+            description: w.description,
+            nodeId: w.nodeId,
+            amount: w.amount,
+            issuer: w.issuer,
+            currency: w.currency,
+            expiresAt: w.expiresAt,
+            quantityMax: w.quantityMax,
+            hasBlindedPaths: w.hasBlindedPaths,
             metadata: updatedMetadata,
           );
         } else {
@@ -1043,11 +1242,6 @@ class _NWalletCardState extends State<NWalletCard>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l10n.receiveOnlyWallet,
-            style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
             l10n.receiveRange(
               lnWallet.minSendable! ~/ 1000,
               lnWallet.maxSendable! ~/ 1000,
@@ -1065,6 +1259,116 @@ class _NWalletCardState extends State<NWalletCard>
     return Text(
       l10n.limitsUnavailable,
       style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 12),
+    );
+  }
+
+  Widget _buildBolt12Info(BuildContext context, Bolt12Wallet wallet) {
+    final l10n = AppLocalizations.of(context)!;
+    final description = _nonEmpty(wallet.description);
+    final summary = <String>[
+      l10n.receiveOnlyWallet,
+      _formatBolt12Amount(context, wallet),
+      if (wallet.hasBlindedPaths) l10n.blindedRoute,
+      if (wallet.expiresAt != null)
+        l10n.bolt12Expires(
+          DateFormat.yMd(Localizations.localeOf(context).toString()).format(
+            DateTime.fromMillisecondsSinceEpoch(
+              wallet.expiresAt! * 1000,
+              isUtc: true,
+            ).toLocal(),
+          ),
+        ),
+    ].join(' · ');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          description ?? _shortBolt12Offer(wallet.offer),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          summary,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 12),
+        ),
+      ],
+    );
+  }
+
+  String _formatBolt12Amount(BuildContext context, Bolt12Wallet wallet) {
+    final l10n = AppLocalizations.of(context)!;
+    final rawAmount = _nonEmpty(wallet.amount);
+    final amount = rawAmount == null ? null : int.tryParse(rawAmount);
+    if (rawAmount == null || amount == 0) return l10n.anyAmount;
+
+    final formatter = NumberFormat.decimalPattern(
+      Localizations.localeOf(context).toString(),
+    );
+    final formattedAmount = amount == null
+        ? rawAmount
+        : formatter.format(amount);
+    final currency = _nonEmpty(wallet.currency);
+    if (currency != null) {
+      return l10n.fromCurrencyAmount(formattedAmount, currency.toUpperCase());
+    }
+    if (amount != null && amount % 1000 == 0) {
+      return l10n.fromAmountSats(formatter.format(amount ~/ 1000));
+    }
+    return l10n.fromAmountMsats(formattedAmount);
+  }
+
+  String _shortBolt12Offer(String offer) {
+    if (offer.length <= 18) return offer;
+    return '${offer.substring(0, 9)}…${offer.substring(offer.length - 6)}';
+  }
+
+  String? _nonEmpty(String? value) {
+    final normalized = value?.trim();
+    return normalized == null || normalized.isEmpty ? null : normalized;
+  }
+
+  Widget _buildUnavailableInfo(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
+      children: [
+        const Icon(Icons.cloud_off_outlined, color: Colors.white, size: 20),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            l10n.walletUnreachable,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white.withAlpha(220),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        IconButton(
+          tooltip: l10n.retry,
+          color: Colors.white,
+          visualDensity: VisualDensity.compact,
+          onPressed: _isRefreshingBalance ? null : _refreshBalance,
+          icon: _isRefreshingBalance
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Icon(Icons.refresh),
+        ),
+      ],
     );
   }
 
@@ -1109,10 +1413,72 @@ class _NWalletCardState extends State<NWalletCard>
                 fontSize: unitFontSize,
               ),
             ),
+            if (widget.wallet is LnBitsWallet ||
+                widget.wallet is NwcWallet) ...[
+              const Spacer(),
+              IconButton(
+                tooltip: l10n.refreshBalance,
+                color: Colors.white,
+                visualDensity: VisualDensity.compact,
+                onPressed: _isRefreshingBalance ? null : _refreshBalance,
+                icon: _isRefreshingBalance
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.refresh),
+              ),
+            ],
           ],
         );
       },
     );
+  }
+
+  Future<void> _refreshBalance() async {
+    final generation = ++_connectionCheckGeneration;
+    final walletId = widget.wallet.id;
+    final wasUnavailable = !_isWalletAvailable;
+    setState(() => _isRefreshingBalance = true);
+    try {
+      await widget.ndkFlutter.ndk.wallets
+          .reconnectWallet(walletId)
+          .timeout(const Duration(seconds: 10));
+      final canRefreshBalance =
+          widget.wallet is LnBitsWallet ||
+          (widget.wallet is NwcWallet &&
+              _nwcPermissions(
+                widget.wallet as NwcWallet,
+              ).contains(NwcMethod.GET_BALANCE.name));
+      if (canRefreshBalance) {
+        await widget.ndkFlutter.ndk.wallets
+            .refreshBalance(walletId)
+            .timeout(const Duration(seconds: 10));
+      }
+      if (mounted &&
+          widget.wallet.id == walletId &&
+          generation == _connectionCheckGeneration) {
+        setState(() => _isWalletAvailable = true);
+        final l10n = AppLocalizations.of(context)!;
+        displaySuccess(
+          wasUnavailable
+              ? l10n.walletConnectionConnected(widget.wallet.name)
+              : l10n.balanceRefreshed,
+        );
+      }
+    } catch (error) {
+      if (mounted &&
+          widget.wallet.id == walletId &&
+          generation == _connectionCheckGeneration) {
+        setState(() => _isWalletAvailable = false);
+        displayError(error.toString());
+      }
+    } finally {
+      if (mounted) setState(() => _isRefreshingBalance = false);
+    }
   }
 
   bool _shouldShowBudgetInfo() {

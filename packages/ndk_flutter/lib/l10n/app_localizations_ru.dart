@@ -9,6 +9,56 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'В LNbits выберите кошелёк для подключения, откройте его, нажмите «Документация API» и скопируйте ключ администратора. Вставьте его ниже:';
+
+  @override
+  String get lnbitsAdminKey => 'Ключ администратора LNbits';
+
+  @override
+  String get lnbitsKeyType => 'Тип ключа LNbits';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'Ключ счетов/чтения LNbits';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Кошелёк только для получения: просмотр баланса и истории, создание счетов. Отправка платежей отключена.';
+
+  @override
+  String get lnbitsUrl => 'URL LNbits';
+
+  @override
+  String get lnbitsCredentialsRequired =>
+      'Введите ключ администратора и URL LNbits.';
+
+  @override
+  String get lnbitsWalletAdded => 'Кошелёк LNbits добавлен';
+
+  @override
+  String get walletDetailWalletId => 'ID кошелька';
+
+  @override
+  String get saveBackupToFile => 'Сохранить резервную копию в файл';
+
+  @override
+  String get backupSavedToFile => 'Резервная копия сохранена в файл';
+
+  @override
+  String get restoreFromFile => 'Восстановить из файла';
+
+  @override
+  String get backupFileReadFailed =>
+      'Не удалось прочитать выбранный файл резервной копии.';
+
+  @override
+  String get fetchingWalletConnectionInfo =>
+      'Получение данных подключения кошелька…';
+
+  @override
   String get createAccount => 'Создать аккаунт';
 
   @override
@@ -771,6 +821,27 @@ class AppLocalizationsRu extends AppLocalizations {
   String get payInvoiceTitle => 'Оплатить Счёт';
 
   @override
+  String get sendToWallet => 'Send to Wallet';
+
+  @override
+  String get sendToWalletDescription => 'Transfer to another compatible wallet';
+
+  @override
+  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
+
+  @override
+  String get noCompatibleReceivingWalletsDescription =>
+      'Add or connect another wallet that can receive a payment supported by this wallet.';
+
+  @override
+  String get destinationWallet => 'Destination wallet';
+
+  @override
+  String walletTransferSubmitted(String walletName) {
+    return 'Payment sent to $walletName';
+  }
+
+  @override
   String get invoice => 'Счёт';
 
   @override
@@ -967,6 +1038,90 @@ class AppLocalizationsRu extends AppLocalizations {
   String get addWalletTitle => 'Добавить Кошелёк';
 
   @override
+  String get addWalletDescription =>
+      'Отсканируйте поддерживаемый QR-код кошелька, вставьте данные или подключитесь через приложение кошелька.';
+
+  @override
+  String get scanWalletQrCode => 'Сканировать QR-код кошелька';
+
+  @override
+  String get connectWithWallet => 'Подключить кошелёк';
+
+  @override
+  String get chooseWalletApp => 'Выбрать приложение кошелька';
+
+  @override
+  String get oneClickConnect => 'Подключить в 1 клик';
+
+  @override
+  String get chooseWallet => 'Выбрать кошелёк';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => 'Ручное подключение NWC';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return 'Завершите подключение в $walletName';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return 'Подключение к $walletName…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '$walletName подключён';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return 'Не удалось подключить $walletName';
+  }
+
+  @override
+  String get retry => 'Повторить';
+
+  @override
+  String get walletUnreachable => 'Кошелёк недоступен';
+
+  @override
+  String get chooseAnotherWallet => 'Выбрать другой кошелёк';
+
+  @override
+  String get chooseWalletAppDescription =>
+      'Подтвердите NWC-подключение в установленном кошельке';
+
+  @override
+  String get walletInput => 'Адрес или подключение кошелька';
+
+  @override
+  String get walletInputHint =>
+      'NWC, адрес Lightning/BIP353, предложение BOLT12/BIP321 или HTTPS-адрес минта Cashu';
+
+  @override
+  String get unsupportedWalletInput =>
+      'Этот адрес или подключение кошелька не поддерживается.';
+
+  @override
+  String get detected => 'Обнаружено';
+
+  @override
+  String get lightningAddressInputType => 'Адрес Lightning или BIP353';
+
+  @override
+  String get manualWalletSetup => 'Настроить вручную';
+
+  @override
   String get chooseWalletType => 'Выберите тип кошелька';
 
   @override
@@ -985,6 +1140,32 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => 'Выбрать минт Cashu';
+
+  @override
+  String get cashuMintRatingsNotice =>
+      'Оценки сообщества взяты из подписанных отзывов Nostr. Высокая оценка не гарантирует безопасность минта.';
+
+  @override
+  String get cashuMintDiscoveryFailed =>
+      'Не удалось загрузить предложения минтов.';
+
+  @override
+  String get noCashuMintSuggestions =>
+      'Доступные предложения минтов не найдены.';
+
+  @override
+  String get noRatingsYet => 'Оценок пока нет';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · отзывов: $count';
+  }
+
+  @override
+  String get enterMintUrlManually => 'Ввести URL минта вручную';
 
   @override
   String get cashuWalletTypeSubtitle =>
@@ -1007,6 +1188,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'В Alby Go нажмите «Отправить», затем отсканируйте этот QR-код.';
 
   @override
   String get manualOption => 'Вручную';
@@ -1032,6 +1217,12 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get paste => 'Вставить';
+
+  @override
+  String get clearInput => 'Очистить поле';
+
+  @override
+  String get pasteOrEnter => 'Вставить или ввести';
 
   @override
   String get fromYourProfile => 'Из вашего профиля';
@@ -1134,4 +1325,181 @@ class AppLocalizationsRu extends AppLocalizations {
   String restoreSuccess(int count) {
     return 'Restored $count proofs from backup';
   }
+
+  @override
+  String get bolt12Wallet => 'Кошелёк BOLT12';
+
+  @override
+  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
+
+  @override
+  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
+
+  @override
+  String get anyAmount => 'Any amount';
+
+  @override
+  String get blindedRoute => 'Blinded';
+
+  @override
+  String fromAmountSats(String amount) {
+    return 'From $amount sats';
+  }
+
+  @override
+  String fromAmountMsats(String amount) {
+    return 'From $amount msats';
+  }
+
+  @override
+  String fromCurrencyAmount(String amount, String currency) {
+    return 'From $amount $currency';
+  }
+
+  @override
+  String bolt12Expires(String date) {
+    return 'Expires $date';
+  }
+
+  @override
+  String get bolt12WalletTypeTitle => 'Предложение BOLT12';
+
+  @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
+
+  @override
+  String get bolt12WalletTypeSubtitle =>
+      'Receive-only wallet using a reusable offer';
+
+  @override
+  String get addBolt12WalletTitle => 'Добавить кошелёк BOLT12';
+
+  @override
+  String get enterBolt12Input =>
+      'Введите или отсканируйте предложение lno, URI bitcoin:?lno=… или адрес BIP353.';
+
+  @override
+  String get bolt12Input => 'Цель платежа BOLT12';
+
+  @override
+  String get bolt12InputHint =>
+      'lno1…, bitcoin:?lno=… или пользователь@домен.com';
+
+  @override
+  String get walletNameOptional => 'Название кошелька (необязательно)';
+
+  @override
+  String get scanBolt12QrCodeTitle => 'Сканировать QR-код BOLT12';
+
+  @override
+  String get invalidBolt12QrCode =>
+      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
+
+  @override
+  String get pleaseEnterBolt12Input =>
+      'Введите предложение BOLT12 или адрес BIP353.';
+
+  @override
+  String get bolt12WalletAdded => 'Кошелёк BOLT12 успешно добавлен!';
+
+  @override
+  String get bolt12OfferTitle => 'Receive with BOLT12';
+
+  @override
+  String get bolt12OfferInstructions =>
+      'Share this reusable offer to receive a Lightning payment.';
+
+  @override
+  String get confirm => 'Подтвердить';
+
+  @override
+  String get reviewWallet => 'Проверить кошелёк';
+
+  @override
+  String get confirmWalletTitle => 'Подтвердить кошелёк';
+
+  @override
+  String get confirmWalletDescription =>
+      'Проверьте эти данные перед добавлением кошелька.';
+
+  @override
+  String get walletDetailType => 'Тип кошелька';
+
+  @override
+  String get walletDetailAddress => 'Адрес';
+
+  @override
+  String get walletDetailDomain => 'Домен';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => 'Публичный ключ';
+
+  @override
+  String get walletDetailRelay => 'Ретранслятор';
+
+  @override
+  String get walletDetailRelays => 'Ретрансляторы';
+
+  @override
+  String get walletDetailSecret => 'Секрет подключения';
+
+  @override
+  String get walletSecretHidden => 'Присутствует и скрыт для безопасности';
+
+  @override
+  String get walletDetailDescription => 'Описание';
+
+  @override
+  String get walletDetailDetails => 'Сведения';
+
+  @override
+  String get walletDetailIssuer => 'Эмитент';
+
+  @override
+  String get walletDetailAmount => 'Сумма';
+
+  @override
+  String get walletDetailCurrency => 'Валюта';
+
+  @override
+  String get walletDetailExpiry => 'Истекает';
+
+  @override
+  String get walletDetailNodeId => 'ID узла';
+
+  @override
+  String get walletDetailOffer => 'Предложение BOLT12';
+
+  @override
+  String get walletDetailVersion => 'Версия';
+
+  @override
+  String get walletDetailUnits => 'Поддерживаемые единицы';
+
+  @override
+  String get walletDetailContact => 'Контакт';
+
+  @override
+  String get walletDetailTerms => 'Условия использования';
+
+  @override
+  String get walletDetailMessage => 'Сообщение';
+
+  @override
+  String get walletDetailCommunityRating => 'Оценка сообщества';
+
+  @override
+  String get walletDetailCommunityReviews => 'Недавние отзывы сообщества';
+
+  @override
+  String get refreshBalance => 'Обновить баланс';
+
+  @override
+  String get balanceRefreshed => 'Баланс обновлён';
 }

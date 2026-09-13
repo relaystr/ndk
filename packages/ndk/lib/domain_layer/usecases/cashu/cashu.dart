@@ -7,6 +7,7 @@ import '../../entities/cashu/cashu_blinded_message.dart';
 import '../../entities/cashu/cashu_blinded_signature.dart';
 import '../../entities/cashu/cashu_mint_balance.dart';
 import '../../entities/cashu/cashu_mint_info.dart';
+import '../../entities/cashu/cashu_mint_recommendation.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../entities/cashu/cashu_quote.dart';
 import '../../entities/cashu/cashu_restore_result.dart';
@@ -23,6 +24,7 @@ import 'cashu_export_import.dart';
 import 'cashu_bdhke.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_keysets.dart';
+import 'cashu_mint_recommendations.dart';
 import 'cashu_proof_select.dart';
 import 'cashu_restore.dart';
 import 'cashu_seed.dart';
@@ -41,6 +43,7 @@ class Cashu {
   late final CashuSeed _cashuSeed;
 
   late final CashuStateExportImport _cashuExportImport;
+  final CashuMintRecommendations? _mintRecommendations;
 
   final CashuKeyDerivation _cashuKeyDerivation;
 
@@ -49,11 +52,13 @@ class Cashu {
     required WalletsRepo walletsRepo,
     required CacheManager cacheManager,
     required CashuKeyDerivation cashuKeyDerivation,
+    CashuMintRecommendations? mintRecommendations,
     CashuUserSeedphrase? cashuUserSeedphrase,
   })  : _cashuRepo = cashuRepo,
         _walletsRepo = walletsRepo,
         _cacheManager = cacheManager,
-        _cashuKeyDerivation = cashuKeyDerivation {
+        _cashuKeyDerivation = cashuKeyDerivation,
+        _mintRecommendations = mintRecommendations {
     _cashuKeysets = CashuKeysets(
       cashuRepo: _cashuRepo,
       cacheManager: _cacheManager,
@@ -77,6 +82,13 @@ class Cashu {
       );
     }
   }
+
+  /// Cashu mint discovery and community reviews.
+  CashuMintRecommendations get mintRecommendations =>
+      _mintRecommendations ??
+      (throw StateError(
+        'Cashu NIP-87 requires an NDK Requests instance',
+      ));
 
   /// mints this usecase has interacted with \
   ///? does not mark trusted mints!
@@ -498,6 +510,45 @@ class Cashu {
   /// throws if the mint info cannot be fetched
   Future<CashuMintInfo> getMintInfoNetwork({required String mintUrl}) {
     return _cashuRepo.getMintInfo(mintUrl: mintUrl);
+  }
+
+  /// Gets mint metadata from cache, falling back to NUT-06 `/v1/info`.
+  Future<CashuMintInfo> getMintInfo({
+    required String mintUrl,
+    bool forceRefresh = false,
+  }) async {
+    if (!forceRefresh) {
+      final cached = await _cacheManager.getMintInfos(mintUrls: [mintUrl]);
+      if (cached != null && cached.isNotEmpty) return cached.first;
+    }
+    final info = await _cashuRepo.getMintInfo(mintUrl: mintUrl);
+    await _cacheManager.saveMintInfo(mintInfo: info);
+    return info;
+  }
+
+  /// Discovers ranked Cashu mint recommendations from community events.
+  /// Mint metadata is intentionally left unloaded for lazy list rendering.
+  Future<List<CashuMintRecommendation>> discoverMintRecommendations({
+    int? limit,
+    bool forceRefresh = false,
+  }) async {
+    final ranked = await mintRecommendations.discoverMints(
+      forceRefresh: forceRefresh,
+    );
+    return limit == null ? ranked : ranked.take(limit).toList();
+  }
+
+  /// Lazily enriches one recommendation with cached NUT-06 mint metadata.
+  Future<CashuMintRecommendation> enrichMintRecommendation(
+    CashuMintRecommendation recommendation, {
+    Duration timeout = const Duration(seconds: 6),
+    bool forceRefresh = false,
+  }) async {
+    final info = await getMintInfo(
+      mintUrl: recommendation.url,
+      forceRefresh: forceRefresh,
+    ).timeout(timeout);
+    return recommendation.copyWith(mintInfo: info);
   }
 
   /// checks if the mint can be fetched \

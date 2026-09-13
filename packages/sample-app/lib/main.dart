@@ -21,6 +21,7 @@ bool signerAppAvailable = false;
 
 late Ndk ndk;
 final ndkFlutter = NdkFlutter(ndk: ndk);
+Future<void> Function(String url)? activeWalletProtocolHandler;
 final localeNotifier = ValueNotifier<Locale>(const Locale('en'));
 DmLiveState? _dmLiveState;
 DmLiveState get dmLiveState => _dmLiveState ??= DmLiveState(ndk: ndk)..start();
@@ -101,7 +102,12 @@ class _MyAppState extends State<MyApp> with ProtocolListener {
     try {
       final uri = Uri.parse(url);
       if (uri.scheme == 'ndk' && uri.host == 'nwc') {
-        appRouter.go('/wallets', extra: url);
+        final handler = activeWalletProtocolHandler;
+        if (handler != null) {
+          handler(url);
+        } else {
+          appRouter.go('/wallets', extra: url);
+        }
       }
     } catch (e) {
       print('MyApp: Error parsing protocol URL: $e');
