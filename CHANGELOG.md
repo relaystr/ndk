@@ -11,6 +11,27 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.10.0-dev.4`](#ndk_flutter---v0100-dev4)
+
+---
+
+#### `ndk_flutter` - `v0.10.0-dev.4`
+
+ - **FIX**(flutter): support file_picker 12.
+
+
+## 2026-09-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - [`ndk` - `v0.10.0-dev.3`](#ndk---v0100-dev3)
 - [`ndk_drift` - `v0.1.1-dev.15`](#ndk_drift---v011-dev15)
  - [`ndk_objectbox` - `v0.2.12-dev.12`](#ndk_objectbox---v0212-dev12)
