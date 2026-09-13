@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789308810971,
+  "lastUpdate": 1789309257539,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -150,6 +150,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1704700,
             "range": "1702514-1709348",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "frnandu",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "119a3d2ceb1405b3c16f0cee6ed536355042e00e",
+          "message": "Merge pull request #813 from relaystr/chore/remove-brb-io-connect-guard\n\nchore: stop refusing connections to brb.io",
+          "timestamp": "2026-09-13T16:19:12+02:00",
+          "tree_id": "4feade5645ac98d8e993b8ec9d2c398324148395",
+          "url": "https://github.com/relaystr/ndk/commit/119a3d2ceb1405b3c16f0cee6ed536355042e00e"
+        },
+        "date": 1789309255460,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 52254,
+            "range": "51554-66394",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1686910,
+            "range": "1659220-1737796",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
