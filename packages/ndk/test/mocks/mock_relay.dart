@@ -80,6 +80,8 @@ class MockRelay {
         0,
         (count, subscriptions) => count + subscriptions.length,
       );
+  int get totalRequestedSubscriptionCount => _requestedSubscriptions.values
+      .fold<int>(0, (count, subscriptions) => count + subscriptions.length);
   bool signEvents;
   bool requireAuthForRequests;
   bool requireAuthForEvents;

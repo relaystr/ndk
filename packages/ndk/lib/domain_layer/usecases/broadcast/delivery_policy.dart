@@ -54,6 +54,7 @@ class DeliveryPolicy {
     'too large',
     'forbidden',
     'policy violation',
+    'tag must reference',
   ];
 
   static final RegExp _kindNotAllowedPattern = RegExp(

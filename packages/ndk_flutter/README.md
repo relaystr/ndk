@@ -55,6 +55,23 @@ NSwitchAccount(ndkFlutter: ndkFlutter);
 
 By default, the logged-in user is used for user widgets; you can override it by passing a `pubkey` parameter.
 
+### Android app updates
+
+See the complete [software update guide](../../doc/usecases/software.md) for
+NIP-82 publishing requirements, controller setup, widgets, and installer
+validation.
+
+Apps using `AndroidPackageInstaller` must opt into APK installation in their
+application manifest:
+
+```xml
+<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+```
+
+This restricted permission is not added automatically by `ndk_flutter`. Only
+declare it when installing updates is a core app feature and applicable store
+policies permit that use.
+
 ## TODO
 
 - [ ] NUserProfile optionnal show nsec and copy

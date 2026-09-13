@@ -8,4 +8,15 @@
             <data android:scheme="nostrsigner" />
         </intent>
     </queries>
+    <application>
+        <provider
+            android:name="relaystr.ndk.NdkUpdateFileProvider"
+            android:authorities="${applicationId}.ndk_updates"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/ndk_update_paths" />
+        </provider>
+    </application>
 </manifest>

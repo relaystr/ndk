@@ -1319,6 +1319,222 @@ class AppLocalizationsFi extends AppLocalizations {
   String get restoringBackup => 'Restoring backup...';
 
   @override
+  String appUpdateVersionAvailable(String version) {
+    return 'Versio $version saatavilla';
+  }
+
+  @override
+  String get appUpdateLater => 'Myöhemmin';
+
+  @override
+  String get appUpdateView => 'Näytä päivitys';
+
+  @override
+  String get appUpdateChecking => 'Tarkistetaan päivityksiä…';
+
+  @override
+  String get appUpdateCheckFailed => 'Päivitysten tarkistus epäonnistui';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return 'Asennettu: $version';
+  }
+
+  @override
+  String get appUpdatesTitle => 'Sovelluspäivitykset';
+
+  @override
+  String get appUpdateNone => 'Päivityksiä ei ole saatavilla';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return 'Päivitys $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size Mt';
+  }
+
+  @override
+  String get appUpdateAllowInstalls =>
+      'Salli asennukset tästä sovelluksesta ja napauta sitten Päivitä uudelleen.';
+
+  @override
+  String get appUpdateCompleteInstallation =>
+      'Viimeistele asennus Androidin järjestelmäasennuksessa.';
+
+  @override
+  String get appUpdateFailed => 'Päivitys epäonnistui';
+
+  @override
+  String get appUpdateCancel => 'Peruuta';
+
+  @override
+  String get appUpdateAction => 'Päivitä';
+
+  @override
+  String get appUpdateDownload => 'Lataa';
+
+  @override
+  String get appUpdateUpToDate => 'Sovellus on ajan tasalla';
+
+  @override
+  String get appUpdateAheadOfPublished => 'Uudempi kuin julkaistu versio';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return 'Asennettu versio $installedVersion on uudempi kuin viimeisin julkaistu versio $publishedVersion. Julkaisutiedot näkyvät, kun tämä versio julkaistaan.';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage => 'Päivityksiä ei voitu tarkistaa.';
+
+  @override
+  String appUpdateLatest(String version) {
+    return 'Versio $version on uusin saatavilla oleva versio.';
+  }
+
+  @override
+  String get appUpdateClose => 'Sulje';
+
+  @override
+  String get appUpdateCheckAgain => 'Tarkista uudelleen';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return 'Asennettu versio $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return 'Asennettu versio $installedVersion. Päivitys $availableVersion saatavilla.';
+  }
+
+  @override
+  String get appUpdateChangelog => 'Muutosloki';
+
+  @override
+  String get appUpdateReleaseHistory => 'Versiohistoria';
+
+  @override
+  String get appUpdateInstalledBadge => 'Asennettu';
+
+  @override
+  String get appUpdateAvailableBadge => 'Päivitys saatavilla';
+
+  @override
+  String get appUpdateLatestBadge => 'Uusin';
+
+  @override
+  String get appUpdateNoReleases => 'Yhtään versiota ei ole vielä julkaistu.';
+
+  @override
+  String get appUpdateAcrossAllReleases => 'Kaikissa versioissa';
+
+  @override
+  String get appUpdateReleaseDetails => 'Julkaisun tiedot';
+
+  @override
+  String get appUpdateWhatsNew => 'Uutta';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return 'Julkaistu $date';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return 'Kanava: $channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return 'Arkkitehtuuri: $architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return 'Koontiversio $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return 'Julkaisu $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes => 'Julkaisutietoja ei ole julkaistu.';
+
+  @override
+  String get appUpdatePublisher => 'Julkaisija';
+
+  @override
+  String get appUpdatePublisherSignatureVerified =>
+      'Nostr-tapahtuman allekirjoitus vahvistettu';
+
+  @override
+  String get appUpdateCertificateDeclared =>
+      'Julkaisijan ilmoittama Android-allekirjoitusvarmenne';
+
+  @override
+  String appUpdateSource(String host) {
+    return 'Latauslähde: $host';
+  }
+
+  @override
+  String get appUpdateCommunity => 'Yhteisö';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return '$count zappia · $sats satsia';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'sats käyttäjiltä';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return '$count reaktiota';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return '$count kommenttia';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed => 'Yhteisön toimintaa ei voitu ladata.';
+
+  @override
+  String get appUpdateComments => 'Kommentit';
+
+  @override
+  String get appUpdateNoComments => 'Ei vielä kommentteja.';
+
+  @override
+  String get appUpdateCommentHint => 'Jaa palautetta tästä julkaisusta';
+
+  @override
+  String get appUpdatePostComment => 'Lähetä kommentti';
+
+  @override
+  String get appUpdateSignInToComment =>
+      'Kirjaudu Nostr-tilillä kommentoidaksesi.';
+
+  @override
+  String get appUpdateTechnicalDetails => 'Tekniset tiedot';
+
+  @override
+  String get appUpdateViewStatus => 'Näytä päivityksen tila';
+
+  @override
   String restoreSuccess(int count) {
     return 'Restored $count proofs from backup';
   }

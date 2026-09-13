@@ -58,6 +58,7 @@ import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/search/search.dart';
+import '../domain_layer/usecases/software/software.dart';
 import '../domain_layer/usecases/ta/trusted_assertions.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 import '../domain_layer/usecases/wallets/wallets.dart';
@@ -103,6 +104,7 @@ class Initialization {
   late Blossom blossom;
   late BlossomUserServerList blossomUserServerList;
   late Search search;
+  late Software software;
   late GiftWrap giftWrap;
   late Dms dms;
   late Connectivy connectivity;
@@ -340,6 +342,7 @@ class Initialization {
     files = Files(blossom: blossom);
 
     search = Search(cacheManager: _ndkConfig.cache, requests: requests);
+    software = Software(requests: requests);
 
     fetchedRanges = FetchedRanges(cacheManager: _ndkConfig.cache);
 

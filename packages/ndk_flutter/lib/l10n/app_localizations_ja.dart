@@ -1303,6 +1303,218 @@ class AppLocalizationsJa extends AppLocalizations {
   String get restoringBackup => 'Restoring backup...';
 
   @override
+  String appUpdateVersionAvailable(String version) {
+    return 'バージョン $version を利用できます';
+  }
+
+  @override
+  String get appUpdateLater => '後で';
+
+  @override
+  String get appUpdateView => '更新を表示';
+
+  @override
+  String get appUpdateChecking => '更新を確認中…';
+
+  @override
+  String get appUpdateCheckFailed => '更新の確認に失敗しました';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return 'インストール済み: $version';
+  }
+
+  @override
+  String get appUpdatesTitle => 'アプリの更新';
+
+  @override
+  String get appUpdateNone => '利用できる更新はありません';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return '更新 $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String get appUpdateAllowInstalls => 'このアプリからのインストールを許可し、もう一度「更新」をタップしてください。';
+
+  @override
+  String get appUpdateCompleteInstallation =>
+      'Android システムインストーラーでインストールを完了してください。';
+
+  @override
+  String get appUpdateFailed => '更新に失敗しました';
+
+  @override
+  String get appUpdateCancel => 'キャンセル';
+
+  @override
+  String get appUpdateAction => '更新';
+
+  @override
+  String get appUpdateDownload => 'ダウンロード';
+
+  @override
+  String get appUpdateUpToDate => '最新の状態です';
+
+  @override
+  String get appUpdateAheadOfPublished => '公開版より新しいバージョン';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return 'インストール済みバージョン $installedVersion は、最新の公開版 $publishedVersion より新しいものです。このバージョンが公開されるとリリース詳細が表示されます。';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage => '更新を確認できませんでした。';
+
+  @override
+  String appUpdateLatest(String version) {
+    return 'バージョン $version が利用可能な最新バージョンです。';
+  }
+
+  @override
+  String get appUpdateClose => '閉じる';
+
+  @override
+  String get appUpdateCheckAgain => '再確認';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return 'インストール済みバージョン $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return 'インストール済みバージョン $installedVersion。更新 $availableVersion を利用できます。';
+  }
+
+  @override
+  String get appUpdateChangelog => '変更履歴';
+
+  @override
+  String get appUpdateReleaseHistory => 'リリース履歴';
+
+  @override
+  String get appUpdateInstalledBadge => 'インストール済み';
+
+  @override
+  String get appUpdateAvailableBadge => '更新可能';
+
+  @override
+  String get appUpdateLatestBadge => '最新';
+
+  @override
+  String get appUpdateNoReleases => 'まだリリースは公開されていません。';
+
+  @override
+  String get appUpdateAcrossAllReleases => 'すべてのリリース共通';
+
+  @override
+  String get appUpdateReleaseDetails => 'リリース詳細';
+
+  @override
+  String get appUpdateWhatsNew => '新機能';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return '$date に公開';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return 'チャンネル: $channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return 'アーキテクチャ: $architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return 'ビルド $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return 'リリース $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes => 'リリースノートはありません。';
+
+  @override
+  String get appUpdatePublisher => '公開者';
+
+  @override
+  String get appUpdatePublisherSignatureVerified => 'Nostrイベントの署名を確認済み';
+
+  @override
+  String get appUpdateCertificateDeclared => '公開者がAndroid署名証明書を宣言済み';
+
+  @override
+  String appUpdateSource(String host) {
+    return 'ダウンロード元: $host';
+  }
+
+  @override
+  String get appUpdateCommunity => 'コミュニティ';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return '$count zap・$sats sats';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'sats、送信者';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return 'リアクション $count件';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return 'コメント $count件';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed => 'コミュニティ情報を読み込めませんでした。';
+
+  @override
+  String get appUpdateComments => 'コメント';
+
+  @override
+  String get appUpdateNoComments => 'コメントはまだありません。';
+
+  @override
+  String get appUpdateCommentHint => 'このリリースへの感想を共有';
+
+  @override
+  String get appUpdatePostComment => 'コメントを投稿';
+
+  @override
+  String get appUpdateSignInToComment => 'コメントするにはNostrアカウントでログインしてください。';
+
+  @override
+  String get appUpdateTechnicalDetails => '技術情報';
+
+  @override
+  String get appUpdateViewStatus => '更新状態を表示';
+
+  @override
   String restoreSuccess(int count) {
     return 'Restored $count proofs from backup';
   }
