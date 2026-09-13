@@ -30,7 +30,7 @@ dependencies:
     sdk: flutter
   flutter_secure_storage: ">=8.0.0 <11.0.0"
   flutter_svg: ^2.2.1
-  file_picker: ^10.3.10
+  file_picker: ^12.3.0
   http: ">=1.0.0 <2.0.0"
   intl: ^0.20.2
   ndk: ^0.10.0-dev.2
