@@ -5,7 +5,7 @@ coverage:
     project:
       default:
         target: auto      # baseline = previous commit's coverage
-        threshold: 5%     # ✅ allow up to 5% drop — tune this to your X
+        threshold: 5%     # allow up to a 5% coverage drop
     patch:
       default:
-        target: 80%          # only require 80% of NEW lines to be covere
+        target: 80%       # require 80% coverage of new lines

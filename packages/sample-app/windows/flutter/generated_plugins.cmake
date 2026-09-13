@@ -3,12 +3,12 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  app_links
   file_selector_windows
   flutter_secure_storage_windows
   flutter_webrtc
   media_kit_libs_windows_video
   media_kit_video
-  protocol_handler_windows
   url_launcher_windows
   volume_controller
 )

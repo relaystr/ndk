@@ -1,4 +1,8 @@
+import 'dart:ffi';
+
+import 'package:ffi/ffi.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/src/rust_lib.dart' as rust_lib;
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
@@ -180,6 +184,41 @@ void main() {
       expect(result, isTrue);
     });
 
+    // NUL cannot cross the current null-terminated string FFI; Rust hash tests
+    // cover its serialization directly along with all other control characters.
+    for (var code = 1; code < 0x20; code++) {
+      for (final inTag in [false, true]) {
+        test('verifies control character $code in ${inTag ? 'tag' : 'content'}',
+            () async {
+          final value = 'before${String.fromCharCode(code)}after';
+          final tags = inTag
+              ? [
+                  ['t', value],
+                ]
+              : <List<String>>[];
+          final content = inTag ? '' : value;
+          final id = Nip01Utils.calculateEventIdSync(
+            pubKey: keyPair.publicKey,
+            createdAt: 1726215220,
+            kind: 1,
+            tags: tags,
+            content: content,
+          );
+          final event = Nip01Event(
+            id: id,
+            pubKey: keyPair.publicKey,
+            createdAt: 1726215220,
+            kind: 1,
+            tags: tags,
+            content: content,
+            sig: Bip340.sign(id, keyPair.privateKey!),
+          );
+
+          expect(await verifier.verify(event), isTrue);
+        });
+      }
+    }
+
     test('rejects malformed fixed-size signature fields', () async {
       final event = Nip01Event(
         id: 'z' * 64,
@@ -188,6 +227,104 @@ void main() {
         tags: const [],
         content: '',
         sig: '0' * 128,
+      );
+
+      expect(await verifier.verify(event), isFalse);
+    });
+
+    test(
+        'rejects malformed packed FFI inputs for the combined id/PoW/'
+        'signature check', () {
+      const packedLength = 64 + 64 + 128;
+      const oversizedLength = packedLength + 10;
+      final truncatedPacked = calloc<Uint8>(packedLength - 10);
+      final packed = malloc<Uint8>(oversizedLength);
+      final content = ''.toNativeUtf8();
+
+      try {
+        packed.asTypedList(packedLength).fillRange(0, packedLength, 0x7a);
+
+        expect(
+          rust_lib.verifyNostrEventPackedNative(
+            truncatedPacked,
+            packedLength - 10,
+            0,
+            1,
+            nullptr,
+            nullptr,
+            0,
+            content,
+          ),
+          0,
+        );
+        expect(
+          rust_lib.verifyNostrEventPackedNative(
+            packed,
+            oversizedLength,
+            0,
+            1,
+            nullptr,
+            nullptr,
+            0,
+            content,
+          ),
+          0,
+        );
+        expect(
+          rust_lib.verifyNostrEventPackedNative(
+            Pointer.fromAddress(0),
+            packedLength,
+            0,
+            1,
+            nullptr,
+            nullptr,
+            0,
+            content,
+          ),
+          0,
+        );
+        // Well-formed but non-matching id/pubkey/signature: id hash won't match.
+        expect(
+          rust_lib.verifyNostrEventPackedNative(
+            packed,
+            packedLength,
+            0,
+            1,
+            nullptr,
+            nullptr,
+            0,
+            content,
+          ),
+          0,
+        );
+      } finally {
+        calloc.free(truncatedPacked);
+        malloc.free(packed);
+        malloc.free(content);
+      }
+    });
+
+    test('rejects event whose declared proof-of-work target is not met',
+        () async {
+      final createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final tags = [
+        ['nonce', '1', '255'],
+      ];
+      final id = Nip01Utils.calculateEventIdSync(
+        pubKey: keyPair.publicKey,
+        createdAt: createdAt,
+        kind: 1,
+        tags: tags,
+        content: 'pow test',
+      );
+      final event = Nip01Event(
+        id: id,
+        pubKey: keyPair.publicKey,
+        createdAt: createdAt,
+        kind: 1,
+        tags: tags,
+        content: 'pow test',
+        sig: Bip340.sign(id, keyPair.privateKey!),
       );
 
       expect(await verifier.verify(event), isFalse);

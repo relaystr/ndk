@@ -296,7 +296,7 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
             Future<void> saveToFile() async {
               final json = backupJson;
               if (json == null) return;
-              final path = await FilePicker.platform.saveFile(
+              final path = await FilePicker.saveFile(
                 dialogTitle: l10n.saveBackupToFile,
                 fileName:
                     'cashu-backup-${DateTime.now().toUtc().toIso8601String().replaceAll(':', '-')}.json',
@@ -406,19 +406,13 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             Future<void> chooseBackupFile() async {
-              final picked = await FilePicker.platform.pickFiles(
+              final picked = await FilePicker.pickFile(
                 type: FileType.custom,
                 allowedExtensions: const ['json'],
-                withData: true,
               );
               if (picked == null) return;
-              final bytes = picked.files.single.bytes;
-              if (bytes == null) {
-                displayError(l10n.backupFileReadFailed);
-                return;
-              }
               try {
-                controller.text = utf8.decode(bytes);
+                controller.text = utf8.decode(await picked.readAsBytes());
               } catch (_) {
                 displayError(l10n.backupFileReadFailed);
               }

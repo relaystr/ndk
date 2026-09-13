@@ -1,3 +1,23 @@
+## 0.10.0-dev.3
+
+> Note: This release has breaking changes.
+
+ - **PERF**(cache): batch visibility context reads.
+ - **PERF**: improve rust verifier memory usage.
+ - **FIX**(metadata): cache the metadata event that was broadcast.
+ - **FIX**(cache): compare conflict coordinates byte for byte.
+ - **FIX**(cache): keep d-tag whitespace when matching deletion coordinates.
+ - **FIX**: address Rust verifier review feedback.
+ - **FIX**(cache): keep d-tag case when matching deletion coordinates.
+ - **FIX**(cache): stop a limited read from dropping visible events.
+ - **FIX**: missing amount in bip321.
+ - **FIX**: add tbs.
+ - **FIX**: not add lnurl wallet if invalid.
+ - **FEAT**(wallets): add LNbits provider.
+ - **FEAT**: packed event verification in rust.
+ - **FEAT**(nwc): add optional maxFeeMsat to pay (NWC-321 max_fee).
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
 ## 0.10.0-dev.2
 
 > Note: This release has breaking changes.

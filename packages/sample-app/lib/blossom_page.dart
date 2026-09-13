@@ -121,14 +121,13 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
 
   Future<void> _pickAndUploadFile() async {
     // Pick a file
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    final file = await FilePicker.pickFile();
 
-    if (result == null) {
+    if (file == null) {
       return;
     }
 
     // On web, path is null but bytes are available
-    final file = result.files.single;
     if (!kIsWeb && file.path == null) {
       return;
     }

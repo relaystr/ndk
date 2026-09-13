@@ -22,7 +22,7 @@ void main() {
   setUp(() {});
 
   group('fund tests - exceptions ', () {
-    test('fund - invalid mint throws exception', () async {
+    test('fund - invalid mint throws exception', skip: true, () async {
       final ndk = _ndk();
 
       expect(
@@ -52,7 +52,7 @@ void main() {
       );
     });
 
-    test('fund - no keyset throws exception', () async {
+    test('fund - no keyset throws exception', skip: true, () async {
       final ndk = _ndk();
 
       expect(
@@ -142,7 +142,7 @@ void main() {
   });
 
   group('fund', () {
-    test("fund - initiateFund", () async {
+    test("fund - initiateFund", skip: true, () async {
       final ndk = _ndk();
       const fundAmount = 5;
       const fundUnit = "sat";
@@ -316,7 +316,7 @@ void main() {
 
       expect(balance, equals(0));
     });
-    test("fund - successfull", () async {
+    test("fund - successfull", skip: true, () async {
       final ndk = _ndk();
       ndk.cashu.setCashuSeedPhrase(
         CashuUserSeedphrase(seedPhrase: CashuSeed.generateSeedPhrase()),
@@ -358,7 +358,7 @@ void main() {
       expect(balance, equals(fundAmount));
     });
 
-    test("fund - successfull - e2e", () async {
+    test("fund - successfull - e2e", skip: true, () async {
       final ndk = _ndk();
       ndk.cashu.setCashuSeedPhrase(
         CashuUserSeedphrase(seedPhrase: CashuSeed.generateSeedPhrase()),

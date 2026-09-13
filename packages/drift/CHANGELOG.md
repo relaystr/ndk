@@ -1,3 +1,14 @@
+## 0.1.1-dev.15
+
+> Note: This release has breaking changes.
+
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
 ## 0.1.1-dev.11
 
  - **FIX**(drift): bump drift_flutter to ^0.3.0.
