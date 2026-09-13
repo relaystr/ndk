@@ -12,7 +12,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 Packages with breaking changes:
 
  - [`ndk` - `v0.10.0-dev.3`](#ndk---v0100-dev3)
- - [`ndk_drift` - `v0.1.1-dev.12`](#ndk_drift---v011-dev12)
+- [`ndk_drift` - `v0.1.1-dev.15`](#ndk_drift---v011-dev15)
  - [`ndk_objectbox` - `v0.2.12-dev.12`](#ndk_objectbox---v0212-dev12)
 
 Packages with other changes:
@@ -39,7 +39,7 @@ Packages with other changes:
  - **FEAT**(nwc): add optional maxFeeMsat to pay (NWC-321 max_fee).
  - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
 
-#### `ndk_drift` - `v0.1.1-dev.12`
+#### `ndk_drift` - `v0.1.1-dev.15`
 
  - **FIX**(drift): bump drift_flutter to ^0.3.0.
  - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
