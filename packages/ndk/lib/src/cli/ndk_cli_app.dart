@@ -6,6 +6,7 @@ import 'package:ndk/ndk.dart';
 
 import 'cli_accounts_store.dart';
 import 'cli_command.dart';
+import 'native_library_errors.dart';
 
 class NdkCliApp {
   final String appName;
@@ -242,19 +243,12 @@ class _CliEventVerifier implements EventVerifier {
       _enableFallback();
       return _fallbackVerifier.verify(event);
     } on ArgumentError catch (error) {
-      if (!_isNativeLibraryLoadError(error)) {
+      if (!isNativeLibraryLoadError(error)) {
         rethrow;
       }
       _enableFallback();
       return _fallbackVerifier.verify(event);
     }
-  }
-
-  bool _isNativeLibraryLoadError(ArgumentError error) {
-    final message = error.toString().toLowerCase();
-    return message.contains('dynamic library') ||
-        message.contains('verify_nostr_event') ||
-        message.contains('failed to load');
   }
 
   void _enableFallback() {

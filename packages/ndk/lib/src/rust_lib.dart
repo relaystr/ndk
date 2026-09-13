@@ -13,41 +13,32 @@ final class QsBuffer extends Struct {
 
 // ── Existing Nostr / Schnorr bindings ──────────────────────────────────
 
-/// Verifies a Nostr event signature.
-/// Returns 1 if valid, 0 if invalid.
+/// Verifies id derivation, NIP-13 proof-of-work, and the Schnorr signature of a
+/// Nostr event from one packed ASCII buffer containing event id (64 bytes),
+/// pubkey (64 bytes), and signature (128 bytes), plus the remaining fields
+/// needed to recompute the id hash. Replaces the previous
+/// `Nip01Utils.isIdValid` (Dart-side JSON re-serialization and re-hashing) with
+/// a single native call.
 @Native<
     Int32 Function(
-      Pointer<Utf8>, // eventIdHex
-      Pointer<Utf8>, // pubKeyHex
+      Pointer<Uint8>, // packed
+      IntPtr, // packedLength
       Uint64, // createdAt
       Uint32, // kind
       Pointer<Pointer<Utf8>>, // tagsData
       Pointer<Uint32>, // tagsLengths
       Uint32, // tagsCount
       Pointer<Utf8>, // content
-      Pointer<Utf8>, // signatureHex
-    )>(symbol: 'verify_nostr_event')
-external int verifyNostrEventNative(
-  Pointer<Utf8> eventIdHex,
-  Pointer<Utf8> pubKeyHex,
+    )>(symbol: 'verify_nostr_event_packed')
+external int verifyNostrEventPackedNative(
+  Pointer<Uint8> packed,
+  int packedLength,
   int createdAt,
   int kind,
   Pointer<Pointer<Utf8>> tagsData,
   Pointer<Uint32> tagsLengths,
   int tagsCount,
   Pointer<Utf8> content,
-  Pointer<Utf8> signatureHex,
-);
-
-/// Verifies a Nostr Schnorr signature from one packed ASCII buffer containing
-/// event id (64 bytes), pubkey (64 bytes), and signature (128 bytes).
-@Native<Int32 Function(Pointer<Uint8>, IntPtr)>(
-  symbol: 'verify_schnorr_signature_packed',
-  isLeaf: true,
-)
-external int verifySchnorrSignaturePackedNative(
-  Pointer<Uint8> packed,
-  int packedLength,
 );
 
 // ── Quantum-Secure ML-DSA (FIPS 204) bindings ──────────────────────────
