@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ndk/entities.dart' show Bolt12Wallet, Wallet;
@@ -88,7 +89,7 @@ void main() {
         );
       }
     }
-  });
+  }, skip: kIsWeb ? 'ARB source validation requires a filesystem.' : false);
 
   testWidgets(
     'Polish BOLT12 card and transfer labels do not fall back to English',
