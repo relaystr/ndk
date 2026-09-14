@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789387483611,
+  "lastUpdate": 1789421515839,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -302,6 +302,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1322138,
             "range": "1288400-1366070",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "fmar",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "frnandu@atomicmail.io",
+            "name": "fmar",
+            "username": "frnandu"
+          },
+          "distinct": true,
+          "id": "fa02d19a7d361f06f00cf542f9f2f9fd85cb09df",
+          "message": "add bip321 to nwc pay example",
+          "timestamp": "2026-09-14T23:29:51+02:00",
+          "tree_id": "e191de05c5d014d9a472ff57f101cf046198f976",
+          "url": "https://github.com/relaystr/ndk/commit/fa02d19a7d361f06f00cf542f9f2f9fd85cb09df"
+        },
+        "date": 1789421513228,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 52175.6,
+            "range": "51951-57451",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1702416,
+            "range": "1693098-1728728",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
