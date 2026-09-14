@@ -722,7 +722,7 @@ class Cashu {
   Future<CashuKeypair?> recoverQuoteKey({
     required String mintUrl,
     required String lockedPubkey,
-    int maxScan = 10000,
+    int maxScan = CashuConfig.defaultQuoteKeyScanLimit,
   }) async {
     final counter = await _findQuoteKeyCounter(
       mintUrl: mintUrl,
@@ -744,7 +744,7 @@ class Cashu {
   Future<int?> _findQuoteKeyCounter({
     required String mintUrl,
     required String lockedPubkey,
-    int maxScan = 10000,
+    int maxScan = CashuConfig.defaultQuoteKeyScanLimit,
   }) async {
     await preflightChecks();
 
@@ -1018,6 +1018,108 @@ class Cashu {
         );
       }
     }
+  }
+
+  /// Completes a mint quote identified by [quoteID] on [mintUrl].
+  ///
+  /// Fetches the quote from the mint
+  /// (GET /v1/mint/quote/{method}/{quote_id}) to learn the public key it was
+  /// locked to, recovers the matching private key by scanning the
+  /// seed-derived quote-key counter, and completes the mint. A local
+  /// transaction record is created when none exists, or updated when one does,
+  /// so the recorded state reflects the outcome either way.
+  ///
+  /// Returns the final transaction (`completed`, or `failed` when the mint
+  /// rejected the request).
+  Future<CashuWalletTransaction> recoverAndCompleteQuote({
+    required String mintUrl,
+    required String quoteID,
+    String method = 'bolt11',
+    int maxScan = CashuConfig.defaultQuoteKeyScanLimit,
+  }) async {
+    await preflightChecks();
+
+    // ask the mint for the quote to learn the locked pubkey and its state
+    final serverQuote = await _cashuRepo.getMintQuoteByQuoteId(
+      mintUrl: mintUrl,
+      quoteID: quoteID,
+      method: method,
+    );
+
+    final lockedPubkey = serverQuote.quoteKey.publicKey;
+    if (lockedPubkey.isEmpty) {
+      throw Exception(
+        'Mint did not lock quote $quoteID to a pubkey, no key to recover',
+      );
+    }
+
+    // recover the private lock key by scanning seed-derived counters
+    final counter = await _findQuoteKeyCounter(
+      mintUrl: mintUrl,
+      lockedPubkey: lockedPubkey,
+      maxScan: maxScan,
+    );
+    if (counter == null) {
+      throw Exception(
+        'No seed-derived quote key matches lock pubkey $lockedPubkey of '
+        'quote $quoteID',
+      );
+    }
+    final quoteKey = await _cashuKeyDerivation.deriveQuoteKey(
+      seedBytes: Uint8List.fromList(_cashuSeed.getSeedBytes()),
+      counter: counter,
+    );
+
+    final quote = serverQuote.copyWith(
+      state: serverQuote.state,
+      quoteKey: quoteKey,
+      quoteKeyCounter: counter,
+    );
+
+    // find the local record of this quote or create a fresh one
+    final transactions = await _walletsRepo.getTransactions(
+      walletType: WalletType.CASHU,
+    );
+    CashuWalletTransaction? existing;
+    for (final tx in transactions.whereType<CashuWalletTransaction>()) {
+      if (tx.mintUrl == mintUrl && tx.qoute?.quoteId == quoteID) {
+        existing = tx;
+        break;
+      }
+    }
+
+    CashuWalletTransaction draft;
+    if (existing == null) {
+      final keysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
+      final keyset = CashuTools.filterKeysetsByUnitActive(
+        keysets: keysets,
+        unit: serverQuote.unit,
+      );
+
+      draft = CashuWalletTransaction(
+        id: quoteID,
+        walletId: mintUrl,
+        changeAmount: serverQuote.amount,
+        unit: serverQuote.unit,
+        walletType: WalletType.CASHU,
+        state: WalletTransactionState.pending,
+        mintUrl: mintUrl,
+        method: method,
+        usedKeysets: [keyset],
+        qoute: quote,
+        initiatedDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
+    } else {
+      draft = existing.copyWith(
+        state: WalletTransactionState.pending,
+        qoute: quote,
+      );
+    }
+
+    // complete the mint: waits for payment, marks the transaction `completed`
+    // (or `failed`) and saves the minted proofs
+    final events = await retrieveFunds(draftTransaction: draft).toList();
+    return events.last;
   }
 
   /// retrieve funds from a pending funding transaction \

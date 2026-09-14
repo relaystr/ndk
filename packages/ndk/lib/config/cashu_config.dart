@@ -19,4 +19,12 @@ class CashuConfig {
 
   /// Timeout for network requests to mint - fails fast if mint is offline
   static const Duration NETWORK_TIMEOUT = Duration(seconds: 10);
+
+  /// Default cap for [Cashu._findQuoteKeyCounter]'s counter scan when the
+  /// persisted quote-key counter slot is unavailable. Each scanned counter
+  /// derives a keypair (a handful of EC point operations), so a very large
+  /// limit can turn an automatic, unattended recovery (e.g. on startup) into a
+  /// multi-minute CPU-bound scan. Callers recovering an intentionally
+  /// high-counter quote can pass a larger `maxScan` explicitly.
+  static const int defaultQuoteKeyScanLimit = 1000;
 }
