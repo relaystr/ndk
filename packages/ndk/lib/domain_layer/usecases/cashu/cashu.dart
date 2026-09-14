@@ -784,6 +784,10 @@ class Cashu {
   /// Quotes that were paid while the app was closed are marked `PAID` here so
   /// they can be completed with [retrieveFunds]. Runs automatically on startup
   /// once a seed phrase is available (see [_scheduleStartupResume]).
+  ///
+  /// Returns every pending funding transaction that was refreshed (in storage
+  /// order), so callers can build a complete per-mint work list for key
+  /// recovery and fund retrieval - not just the ones whose state changed.
   Future<List<CashuWalletTransaction>> updatePendingQuotes() async {
     await preflightChecks();
 
@@ -804,7 +808,7 @@ class Cashu {
       () => 'Refreshing state of ${pendingFunding.length} pending quotes',
     );
 
-    final updatedTransactions = <CashuWalletTransaction>[];
+    final refreshedTransactions = <CashuWalletTransaction>[];
     for (final tx in pendingFunding) {
       final quote = tx.qoute!;
       final method = tx.method;
@@ -818,12 +822,13 @@ class Cashu {
           method: method,
         );
 
+        final refreshedTx = tx.copyWith(
+          qoute: quote.copyWith(state: freshState),
+        );
+        await _addAndSavePendingTransaction(refreshedTx);
+        refreshedTransactions.add(refreshedTx);
+
         if (freshState != quote.state) {
-          final updatedTx = tx.copyWith(
-            qoute: quote.copyWith(state: freshState),
-          );
-          await _addAndSavePendingTransaction(updatedTx);
-          updatedTransactions.add(updatedTx);
           Logger.log.i(
             () => 'Quote ${quote.quoteId} state is now $freshState',
           );
@@ -834,7 +839,7 @@ class Cashu {
         );
       }
     }
-    return updatedTransactions;
+    return refreshedTransactions;
   }
 
   /// One-shot startup refresh: re-fetches pending quote states once the seed
@@ -849,16 +854,21 @@ class Cashu {
     }
     _startupResumeAttempted = true;
 
-    updatePendingQuotes().then((updatedTransactions) {
-      if (updatedTransactions.isNotEmpty) {
-        Logger.log.i(
-          () =>
-              'Successfully refreshed ${updatedTransactions.length} pending quotes',
-        );
-        final mintUrls = updatedTransactions.map((tx) => tx.mintUrl).toSet();
-        for (final mintUrl in mintUrls) {
-          unawaited(_recoverPendingQuoteKeys(mintUrl));
-        }
+    updatePendingQuotes().then((refreshedTransactions) async {
+      if (refreshedTransactions.isEmpty) {
+        return;
+      }
+      Logger.log.i(
+        () =>
+            'Successfully refreshed ${refreshedTransactions.length} pending quotes',
+      );
+
+      // recover and complete on every mint that still has pending funding,
+      // whether the quote was already marked paid locally or not
+      final mintUrls = refreshedTransactions.map((tx) => tx.mintUrl).toSet();
+      for (final mintUrl in mintUrls) {
+        await _recoverPendingQuoteKeys(mintUrl);
+        await _completePaidPendingQuotes(mintUrl);
       }
     }).catchError(
       (Object e) => Logger.log.e(
