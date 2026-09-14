@@ -172,24 +172,6 @@ void main() async {
       await relay1.stopServer();
     });
 
-    test('Try to connect to wss://brb.io', skip: true, () async {
-      RelayManager manager = RelayManager(
-        nostrTransportFactory: webSocketNostrTransportFactory,
-        bootstrapRelays: [],
-        globalState: GlobalState(),
-      );
-
-      try {
-        await manager.connectRelay(
-          dirtyUrl: "wss://brb.io",
-          connectionSource: ConnectionSource.seed,
-        );
-        fail("should throw exception");
-      } catch (e) {
-        // success
-      }
-    });
-
     test(
         'CLOSED message bug - should not remove entire request from inFlightRequests',
         () async {
