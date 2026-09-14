@@ -812,24 +812,24 @@ class AppLocalizationsJa extends AppLocalizations {
   String get payInvoiceTitle => '請求書を支払う';
 
   @override
-  String get sendToWallet => 'Send to Wallet';
+  String get sendToWallet => 'ウォレットに送金';
 
   @override
-  String get sendToWalletDescription => 'Transfer to another compatible wallet';
+  String get sendToWalletDescription => '別の対応ウォレットに送金';
 
   @override
-  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
+  String get noCompatibleReceivingWallets => '受取可能な対応ウォレットがありません';
 
   @override
   String get noCompatibleReceivingWalletsDescription =>
-      'Add or connect another wallet that can receive a payment supported by this wallet.';
+      'このウォレットが対応する支払いを受け取れる別のウォレットを追加または接続してください。';
 
   @override
-  String get destinationWallet => 'Destination wallet';
+  String get destinationWallet => '送金先ウォレット';
 
   @override
   String walletTransferSubmitted(String walletName) {
-    return 'Payment sent to $walletName';
+    return '$walletName に送金しました';
   }
 
   @override
@@ -1266,41 +1266,41 @@ class AppLocalizationsJa extends AppLocalizations {
   String get budgetNever => 'なし';
 
   @override
-  String get backup => 'Backup';
+  String get backup => 'バックアップ';
 
   @override
-  String get restore => 'Restore';
+  String get restore => '復元';
 
   @override
-  String get cashuBackupTitle => 'Cashu Backup';
+  String get cashuBackupTitle => 'Cashuバックアップ';
 
   @override
   String get cashuBackupWarning =>
-      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+      'このバックアップにはecashの証明が含まれ、その保有者は資金を使用できます。公開せず、安全な場所に保管してください。リカバリーフレーズは別途バックアップしてください。';
 
   @override
-  String get generatingBackup => 'Generating backup...';
+  String get generatingBackup => 'バックアップを作成中...';
 
   @override
-  String get copyBackup => 'Copy backup';
+  String get copyBackup => 'バックアップをコピー';
 
   @override
-  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+  String get backupCopiedToClipboard => 'バックアップをクリップボードにコピーしました';
 
   @override
-  String get cashuRestoreTitle => 'Restore Cashu Backup';
+  String get cashuRestoreTitle => 'Cashuバックアップを復元';
 
   @override
-  String get backupJson => 'Backup JSON';
+  String get backupJson => 'JSONバックアップ';
 
   @override
-  String get backupJsonHint => 'Paste your backup JSON here';
+  String get backupJsonHint => 'JSONバックアップをここに貼り付けてください';
 
   @override
-  String get pleaseEnterBackup => 'Please enter a backup';
+  String get pleaseEnterBackup => 'バックアップを入力してください';
 
   @override
-  String get restoringBackup => 'Restoring backup...';
+  String get restoringBackup => 'バックアップを復元中...';
 
   @override
   String appUpdateVersionAvailable(String version) {
@@ -1516,42 +1516,42 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String restoreSuccess(int count) {
-    return 'Restored $count proofs from backup';
+    return 'バックアップから復元した証明の数: $count';
   }
 
   @override
   String get bolt12Wallet => 'BOLT12ウォレット';
 
   @override
-  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
+  String get bolt12WalletSubtitle => '再利用可能なLightningオファー';
 
   @override
-  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
+  String get bolt12PrivateOfferSubtitle => '再利用可能なプライベートオファー';
 
   @override
-  String get anyAmount => 'Any amount';
+  String get anyAmount => '任意の金額';
 
   @override
-  String get blindedRoute => 'Blinded';
+  String get blindedRoute => '秘匿ルート';
 
   @override
   String fromAmountSats(String amount) {
-    return 'From $amount sats';
+    return '$amount satsから';
   }
 
   @override
   String fromAmountMsats(String amount) {
-    return 'From $amount msats';
+    return '$amount msatsから';
   }
 
   @override
   String fromCurrencyAmount(String amount, String currency) {
-    return 'From $amount $currency';
+    return '$amount $currencyから';
   }
 
   @override
   String bolt12Expires(String date) {
-    return 'Expires $date';
+    return '有効期限: $date';
   }
 
   @override
@@ -1564,8 +1564,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get lnurlProtocol => 'LNURL';
 
   @override
-  String get bolt12WalletTypeSubtitle =>
-      'Receive-only wallet using a reusable offer';
+  String get bolt12WalletTypeSubtitle => '再利用可能なオファーを使う受取専用ウォレット';
 
   @override
   String get addBolt12WalletTitle => 'BOLT12ウォレットを追加';
@@ -1588,7 +1587,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get invalidBolt12QrCode =>
-      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
+      'このQRコードにはBOLT12、BIP321、BIP353の支払い先が含まれていません。';
 
   @override
   String get pleaseEnterBolt12Input => 'BOLT12オファーまたはBIP353アドレスを入力してください。';
@@ -1597,11 +1596,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get bolt12WalletAdded => 'BOLT12ウォレットを追加しました！';
 
   @override
-  String get bolt12OfferTitle => 'Receive with BOLT12';
+  String get bolt12OfferTitle => 'BOLT12で受け取る';
 
   @override
   String get bolt12OfferInstructions =>
-      'Share this reusable offer to receive a Lightning payment.';
+      'この再利用可能なオファーを共有してLightningの支払いを受け取ります。';
 
   @override
   String get confirm => '確認';

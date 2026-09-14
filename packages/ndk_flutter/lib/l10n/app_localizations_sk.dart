@@ -821,24 +821,26 @@ class AppLocalizationsSk extends AppLocalizations {
   String get payInvoiceTitle => 'Zaplatiť faktúru';
 
   @override
-  String get sendToWallet => 'Send to Wallet';
+  String get sendToWallet => 'Poslať do peňaženky';
 
   @override
-  String get sendToWalletDescription => 'Transfer to another compatible wallet';
+  String get sendToWalletDescription =>
+      'Previesť do inej kompatibilnej peňaženky';
 
   @override
-  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
+  String get noCompatibleReceivingWallets =>
+      'Žiadne kompatibilné prijímacie peňaženky';
 
   @override
   String get noCompatibleReceivingWalletsDescription =>
-      'Add or connect another wallet that can receive a payment supported by this wallet.';
+      'Pridaj alebo pripoj inú peňaženku, ktorá dokáže prijať platbu podporovanú touto peňaženkou.';
 
   @override
-  String get destinationWallet => 'Destination wallet';
+  String get destinationWallet => 'Cieľová peňaženka';
 
   @override
   String walletTransferSubmitted(String walletName) {
-    return 'Payment sent to $walletName';
+    return 'Platba odoslaná do peňaženky $walletName';
   }
 
   @override
@@ -1546,35 +1548,36 @@ class AppLocalizationsSk extends AppLocalizations {
   String get bolt12Wallet => 'Peňaženka BOLT12';
 
   @override
-  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
+  String get bolt12WalletSubtitle => 'Opakovane použiteľná ponuka Lightning';
 
   @override
-  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
+  String get bolt12PrivateOfferSubtitle =>
+      'Súkromná opakovane použiteľná ponuka';
 
   @override
-  String get anyAmount => 'Any amount';
+  String get anyAmount => 'Ľubovoľná suma';
 
   @override
-  String get blindedRoute => 'Blinded';
+  String get blindedRoute => 'Skrytá trasa';
 
   @override
   String fromAmountSats(String amount) {
-    return 'From $amount sats';
+    return 'Od $amount sat';
   }
 
   @override
   String fromAmountMsats(String amount) {
-    return 'From $amount msats';
+    return 'Od $amount msat';
   }
 
   @override
   String fromCurrencyAmount(String amount, String currency) {
-    return 'From $amount $currency';
+    return 'Od $amount $currency';
   }
 
   @override
   String bolt12Expires(String date) {
-    return 'Expires $date';
+    return 'Platnosť do $date';
   }
 
   @override
@@ -1588,7 +1591,7 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get bolt12WalletTypeSubtitle =>
-      'Receive-only wallet using a reusable offer';
+      'Peňaženka iba na prijímanie s opakovane použiteľnou ponukou';
 
   @override
   String get addBolt12WalletTitle => 'Pridať peňaženku BOLT12';
@@ -1612,7 +1615,7 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get invalidBolt12QrCode =>
-      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
+      'QR kód neobsahuje cieľ platby BOLT12, BIP321 ani BIP353.';
 
   @override
   String get pleaseEnterBolt12Input =>
@@ -1622,11 +1625,11 @@ class AppLocalizationsSk extends AppLocalizations {
   String get bolt12WalletAdded => 'Peňaženka BOLT12 bola pridaná!';
 
   @override
-  String get bolt12OfferTitle => 'Receive with BOLT12';
+  String get bolt12OfferTitle => 'Prijať cez BOLT12';
 
   @override
   String get bolt12OfferInstructions =>
-      'Share this reusable offer to receive a Lightning payment.';
+      'Zdieľaj túto opakovane použiteľnú ponuku a prijmi platbu Lightning.';
 
   @override
   String get confirm => 'Potvrdiť';

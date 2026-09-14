@@ -822,24 +822,26 @@ class AppLocalizationsDe extends AppLocalizations {
   String get payInvoiceTitle => 'Rechnung bezahlen';
 
   @override
-  String get sendToWallet => 'Send to Wallet';
+  String get sendToWallet => 'An Wallet senden';
 
   @override
-  String get sendToWalletDescription => 'Transfer to another compatible wallet';
+  String get sendToWalletDescription =>
+      'An eine andere kompatible Wallet übertragen';
 
   @override
-  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
+  String get noCompatibleReceivingWallets =>
+      'Keine kompatiblen Empfangs-Wallets';
 
   @override
   String get noCompatibleReceivingWalletsDescription =>
-      'Add or connect another wallet that can receive a payment supported by this wallet.';
+      'Füge eine andere Wallet hinzu oder verbinde sie, die eine von dieser Wallet unterstützte Zahlung empfangen kann.';
 
   @override
-  String get destinationWallet => 'Destination wallet';
+  String get destinationWallet => 'Ziel-Wallet';
 
   @override
   String walletTransferSubmitted(String walletName) {
-    return 'Payment sent to $walletName';
+    return 'Zahlung an $walletName gesendet';
   }
 
   @override
@@ -1286,41 +1288,42 @@ class AppLocalizationsDe extends AppLocalizations {
   String get budgetNever => 'Nie';
 
   @override
-  String get backup => 'Backup';
+  String get backup => 'Sicherung';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Wiederherstellen';
 
   @override
-  String get cashuBackupTitle => 'Cashu Backup';
+  String get cashuBackupTitle => 'Cashu-Sicherung';
 
   @override
   String get cashuBackupWarning =>
-      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+      'Diese Sicherung enthält deine Ecash-Nachweise. Wer sie besitzt, kann das Guthaben ausgeben. Halte sie geheim und bewahre sie sicher auf. Deine Wiederherstellungsphrase wird separat gesichert.';
 
   @override
-  String get generatingBackup => 'Generating backup...';
+  String get generatingBackup => 'Sicherung wird erstellt...';
 
   @override
-  String get copyBackup => 'Copy backup';
+  String get copyBackup => 'Sicherung kopieren';
 
   @override
-  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+  String get backupCopiedToClipboard =>
+      'Sicherung in die Zwischenablage kopiert';
 
   @override
-  String get cashuRestoreTitle => 'Restore Cashu Backup';
+  String get cashuRestoreTitle => 'Cashu-Sicherung wiederherstellen';
 
   @override
-  String get backupJson => 'Backup JSON';
+  String get backupJson => 'JSON-Sicherung';
 
   @override
-  String get backupJsonHint => 'Paste your backup JSON here';
+  String get backupJsonHint => 'Füge hier deine JSON-Sicherung ein';
 
   @override
-  String get pleaseEnterBackup => 'Please enter a backup';
+  String get pleaseEnterBackup => 'Bitte gib eine Sicherung ein';
 
   @override
-  String get restoringBackup => 'Restoring backup...';
+  String get restoringBackup => 'Sicherung wird wiederhergestellt...';
 
   @override
   String appUpdateVersionAvailable(String version) {
@@ -1544,42 +1547,43 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String restoreSuccess(int count) {
-    return 'Restored $count proofs from backup';
+    return 'Aus der Sicherung wiederhergestellte Nachweise: $count';
   }
 
   @override
   String get bolt12Wallet => 'BOLT12-Wallet';
 
   @override
-  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
+  String get bolt12WalletSubtitle => 'Wiederverwendbares Lightning-Angebot';
 
   @override
-  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
+  String get bolt12PrivateOfferSubtitle =>
+      'Privates wiederverwendbares Angebot';
 
   @override
-  String get anyAmount => 'Any amount';
+  String get anyAmount => 'Beliebiger Betrag';
 
   @override
-  String get blindedRoute => 'Blinded';
+  String get blindedRoute => 'Verborgene Route';
 
   @override
   String fromAmountSats(String amount) {
-    return 'From $amount sats';
+    return 'Ab $amount Sats';
   }
 
   @override
   String fromAmountMsats(String amount) {
-    return 'From $amount msats';
+    return 'Ab $amount msats';
   }
 
   @override
   String fromCurrencyAmount(String amount, String currency) {
-    return 'From $amount $currency';
+    return 'Ab $amount $currency';
   }
 
   @override
   String bolt12Expires(String date) {
-    return 'Expires $date';
+    return 'Läuft am $date ab';
   }
 
   @override
@@ -1593,7 +1597,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get bolt12WalletTypeSubtitle =>
-      'Receive-only wallet using a reusable offer';
+      'Reine Empfangs-Wallet mit wiederverwendbarem Angebot';
 
   @override
   String get addBolt12WalletTitle => 'BOLT12-Wallet hinzufügen';
@@ -1616,7 +1620,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get invalidBolt12QrCode =>
-      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
+      'Der QR-Code enthält kein BOLT12-, BIP321- oder BIP353-Zahlungsziel.';
 
   @override
   String get pleaseEnterBolt12Input =>
@@ -1626,11 +1630,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get bolt12WalletAdded => 'BOLT12-Wallet erfolgreich hinzugefügt!';
 
   @override
-  String get bolt12OfferTitle => 'Receive with BOLT12';
+  String get bolt12OfferTitle => 'Mit BOLT12 empfangen';
 
   @override
   String get bolt12OfferInstructions =>
-      'Share this reusable offer to receive a Lightning payment.';
+      'Teile dieses wiederverwendbare Angebot, um eine Lightning-Zahlung zu empfangen.';
 
   @override
   String get confirm => 'Bestätigen';

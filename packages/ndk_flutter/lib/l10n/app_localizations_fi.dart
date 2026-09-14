@@ -821,24 +821,26 @@ class AppLocalizationsFi extends AppLocalizations {
   String get payInvoiceTitle => 'Maksa lasku';
 
   @override
-  String get sendToWallet => 'Send to Wallet';
+  String get sendToWallet => 'Lähetä lompakkoon';
 
   @override
-  String get sendToWalletDescription => 'Transfer to another compatible wallet';
+  String get sendToWalletDescription =>
+      'Siirrä toiseen yhteensopivaan lompakkoon';
 
   @override
-  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
+  String get noCompatibleReceivingWallets =>
+      'Ei yhteensopivia vastaanottavia lompakoita';
 
   @override
   String get noCompatibleReceivingWalletsDescription =>
-      'Add or connect another wallet that can receive a payment supported by this wallet.';
+      'Lisää tai yhdistä toinen lompakko, joka voi vastaanottaa tämän lompakon tukeman maksun.';
 
   @override
-  String get destinationWallet => 'Destination wallet';
+  String get destinationWallet => 'Kohdelompakko';
 
   @override
   String walletTransferSubmitted(String walletName) {
-    return 'Payment sent to $walletName';
+    return 'Maksu lähetetty lompakkoon $walletName';
   }
 
   @override
@@ -1282,41 +1284,41 @@ class AppLocalizationsFi extends AppLocalizations {
   String get budgetNever => 'Ei koskaan';
 
   @override
-  String get backup => 'Backup';
+  String get backup => 'Varmuuskopio';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Palauta';
 
   @override
-  String get cashuBackupTitle => 'Cashu Backup';
+  String get cashuBackupTitle => 'Cashu-varmuuskopio';
 
   @override
   String get cashuBackupWarning =>
-      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+      'Tämä varmuuskopio sisältää ecash-todisteesi, joiden haltija voi käyttää varat. Pidä se yksityisenä ja säilytä turvallisessa paikassa. Palautuslause varmuuskopioidaan erikseen.';
 
   @override
-  String get generatingBackup => 'Generating backup...';
+  String get generatingBackup => 'Luodaan varmuuskopiota...';
 
   @override
-  String get copyBackup => 'Copy backup';
+  String get copyBackup => 'Kopioi varmuuskopio';
 
   @override
-  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+  String get backupCopiedToClipboard => 'Varmuuskopio kopioitu leikepöydälle';
 
   @override
-  String get cashuRestoreTitle => 'Restore Cashu Backup';
+  String get cashuRestoreTitle => 'Palauta Cashu-varmuuskopio';
 
   @override
-  String get backupJson => 'Backup JSON';
+  String get backupJson => 'JSON-varmuuskopio';
 
   @override
-  String get backupJsonHint => 'Paste your backup JSON here';
+  String get backupJsonHint => 'Liitä JSON-varmuuskopiosi tähän';
 
   @override
-  String get pleaseEnterBackup => 'Please enter a backup';
+  String get pleaseEnterBackup => 'Anna varmuuskopio';
 
   @override
-  String get restoringBackup => 'Restoring backup...';
+  String get restoringBackup => 'Palautetaan varmuuskopiota...';
 
   @override
   String appUpdateVersionAvailable(String version) {
@@ -1536,42 +1538,43 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String restoreSuccess(int count) {
-    return 'Restored $count proofs from backup';
+    return 'Varmuuskopiosta palautettuja todisteita: $count';
   }
 
   @override
   String get bolt12Wallet => 'BOLT12-lompakko';
 
   @override
-  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
+  String get bolt12WalletSubtitle => 'Uudelleenkäytettävä Lightning-tarjous';
 
   @override
-  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
+  String get bolt12PrivateOfferSubtitle =>
+      'Yksityinen uudelleenkäytettävä tarjous';
 
   @override
-  String get anyAmount => 'Any amount';
+  String get anyAmount => 'Mikä tahansa summa';
 
   @override
-  String get blindedRoute => 'Blinded';
+  String get blindedRoute => 'Piilotettu reitti';
 
   @override
   String fromAmountSats(String amount) {
-    return 'From $amount sats';
+    return 'Alkaen $amount sats';
   }
 
   @override
   String fromAmountMsats(String amount) {
-    return 'From $amount msats';
+    return 'Alkaen $amount msats';
   }
 
   @override
   String fromCurrencyAmount(String amount, String currency) {
-    return 'From $amount $currency';
+    return 'Alkaen $amount $currency';
   }
 
   @override
   String bolt12Expires(String date) {
-    return 'Expires $date';
+    return 'Vanhenee $date';
   }
 
   @override
@@ -1585,7 +1588,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get bolt12WalletTypeSubtitle =>
-      'Receive-only wallet using a reusable offer';
+      'Vain vastaanottoon tarkoitettu lompakko uudelleenkäytettävällä tarjouksella';
 
   @override
   String get addBolt12WalletTitle => 'Lisää BOLT12-lompakko';
@@ -1609,7 +1612,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get invalidBolt12QrCode =>
-      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
+      'QR-koodi ei sisällä BOLT12-, BIP321- tai BIP353-maksukohdetta.';
 
   @override
   String get pleaseEnterBolt12Input =>
@@ -1619,11 +1622,11 @@ class AppLocalizationsFi extends AppLocalizations {
   String get bolt12WalletAdded => 'BOLT12-lompakko lisätty!';
 
   @override
-  String get bolt12OfferTitle => 'Receive with BOLT12';
+  String get bolt12OfferTitle => 'Vastaanota BOLT12:lla';
 
   @override
   String get bolt12OfferInstructions =>
-      'Share this reusable offer to receive a Lightning payment.';
+      'Jaa tämä uudelleenkäytettävä tarjous vastaanottaaksesi Lightning-maksun.';
 
   @override
   String get confirm => 'Vahvista';
