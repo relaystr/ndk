@@ -39,6 +39,17 @@ abstract class CashuRepo {
     required String method,
   });
 
+  /// Fetches a single mint quote by id (NUT-20 GET quote).
+  ///
+  /// The returned quote's `quoteKey.publicKey` is the pubkey the mint locked
+  /// the quote to (empty when the mint does not lock quotes). The private key
+  /// and counter are unknown and are left blank (`-1`).
+  Future<CashuQuote> getMintQuoteByQuoteId({
+    required String mintUrl,
+    required String quoteID,
+    required String method,
+  });
+
   Future<List<CashuBlindedSignature>> mintTokens({
     required String mintUrl,
     required String quote,
