@@ -16,6 +16,10 @@ Pay a BOLT11 invoice through a BIP-321 `lightning` instruction:
 
 `NWC_URI=nostr+walletconnect://.... INVOICE=lnbc... dart pay.dart`
 
+Pay a BIP-321 URI directly, including one with a BOLT12 `lno` offer:
+
+`NWC_URI=nostr+walletconnect://.... BIP321='bitcoin:?lno=lno1...' dart pay.dart`
+
 If the invoice has no amount, also provide `AMOUNT_MSAT`:
 
 `NWC_URI=nostr+walletconnect://.... INVOICE=lnbc... AMOUNT_MSAT=21000 dart pay.dart`

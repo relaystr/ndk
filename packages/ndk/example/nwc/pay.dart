@@ -7,18 +7,19 @@ import 'package:ndk/ndk.dart';
 void main() async {
   final ndk = Ndk.emptyBootstrapRelaysConfig();
 
-  // Provide an NWC connection URI and the BOLT11 invoice to pay.
+  // Provide an NWC connection URI and either a BIP-321 URI or BOLT11 invoice.
   final nwcUri = Platform.environment['NWC_URI']!;
-  final invoice = Platform.environment['INVOICE']!;
+  final bip321 = Platform.environment['BIP321'];
+  final invoice = Platform.environment['INVOICE'];
   final amountMsat = int.tryParse(
     Platform.environment['AMOUNT_MSAT'] ?? '',
   );
 
   final connection = await ndk.nwc.connect(nwcUri);
 
-  // NWC-321 expects a BIP-321 URI. This example contains only a BOLT11
-  // `lightning` instruction.
-  final payment = Bip321.fromBolt11(invoice);
+  // NWC-321 expects a BIP-321 URI. Accept direct BIP-321 input, including
+  // BOLT12 `lno` offers, or wrap a BOLT11 invoice in `lightning`.
+  final payment = bip321 ?? Bip321.fromBolt11(invoice!);
 
   final response = await ndk.nwc.pay(
     connection,
