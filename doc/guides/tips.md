@@ -69,3 +69,24 @@ myquery.stream
 });
 
 ```
+
+## reduce native WebSocket memory overhead
+
+Native applications can opt out of `permessage-deflate` negotiation:
+
+```dart
+final ndk = Ndk(
+  NdkConfig(
+    cache: MemCacheManager(),
+    eventVerifier: Bip340EventVerifier(),
+    webSocketCompression: false,
+  ),
+);
+```
+
+Disabling compression can reduce memory and codec overhead for long-running
+services, but sends more bytes for compressible traffic and can perform worse
+on bandwidth-constrained links. Compression remains enabled by default.
+
+Browser WebSocket APIs do not expose compression negotiation controls, so this
+setting has no effect on web builds.

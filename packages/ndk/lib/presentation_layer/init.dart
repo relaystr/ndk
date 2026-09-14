@@ -77,8 +77,8 @@ class Initialization {
 
   /// repositories with no dependencies
 
-  final _webSocketNostrTransportFactory =
-      WebSocketClientNostrTransportFactory();
+  late final WebSocketClientNostrTransportFactory
+      _webSocketNostrTransportFactory;
 
   /// state obj
 
@@ -130,6 +130,10 @@ class Initialization {
         _ndkConfig = ndkConfig {
     // Configure global WebSocket User-Agent on dart:io platforms
     configureDefaultUserAgent(ndkConfig.userAgent);
+
+    _webSocketNostrTransportFactory = WebSocketClientNostrTransportFactory(
+      compressionEnabled: ndkConfig.webSocketCompression,
+    );
 
     accounts = Accounts(_ndkConfig.eventSignerFactory);
 
