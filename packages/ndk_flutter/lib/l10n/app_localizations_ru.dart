@@ -821,24 +821,26 @@ class AppLocalizationsRu extends AppLocalizations {
   String get payInvoiceTitle => 'Оплатить Счёт';
 
   @override
-  String get sendToWallet => 'Send to Wallet';
+  String get sendToWallet => 'Отправить на кошелёк';
 
   @override
-  String get sendToWalletDescription => 'Transfer to another compatible wallet';
+  String get sendToWalletDescription =>
+      'Перевести на другой совместимый кошелёк';
 
   @override
-  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
+  String get noCompatibleReceivingWallets =>
+      'Нет совместимых кошельков для получения';
 
   @override
   String get noCompatibleReceivingWalletsDescription =>
-      'Add or connect another wallet that can receive a payment supported by this wallet.';
+      'Добавьте или подключите другой кошелёк, который может принять платёж, поддерживаемый этим кошельком.';
 
   @override
-  String get destinationWallet => 'Destination wallet';
+  String get destinationWallet => 'Кошелёк получателя';
 
   @override
   String walletTransferSubmitted(String walletName) {
-    return 'Payment sent to $walletName';
+    return 'Платёж отправлен на $walletName';
   }
 
   @override
@@ -1285,80 +1287,298 @@ class AppLocalizationsRu extends AppLocalizations {
   String get budgetNever => 'Никогда';
 
   @override
-  String get backup => 'Backup';
+  String get backup => 'Резервная копия';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Восстановить';
 
   @override
-  String get cashuBackupTitle => 'Cashu Backup';
+  String get cashuBackupTitle => 'Резервная копия Cashu';
 
   @override
   String get cashuBackupWarning =>
-      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+      'Эта копия содержит ваши доказательства ecash, позволяющие их владельцу потратить средства. Не раскрывайте её и храните в безопасном месте. Резервная копия фразы восстановления создаётся отдельно.';
 
   @override
-  String get generatingBackup => 'Generating backup...';
+  String get generatingBackup => 'Создание резервной копии...';
 
   @override
-  String get copyBackup => 'Copy backup';
+  String get copyBackup => 'Копировать резервную копию';
 
   @override
-  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+  String get backupCopiedToClipboard =>
+      'Резервная копия скопирована в буфер обмена';
 
   @override
-  String get cashuRestoreTitle => 'Restore Cashu Backup';
+  String get cashuRestoreTitle => 'Восстановить резервную копию Cashu';
 
   @override
-  String get backupJson => 'Backup JSON';
+  String get backupJson => 'Резервная копия JSON';
 
   @override
-  String get backupJsonHint => 'Paste your backup JSON here';
+  String get backupJsonHint => 'Вставьте сюда резервную копию JSON';
 
   @override
-  String get pleaseEnterBackup => 'Please enter a backup';
+  String get pleaseEnterBackup => 'Введите резервную копию';
 
   @override
-  String get restoringBackup => 'Restoring backup...';
+  String get restoringBackup => 'Восстановление резервной копии...';
+
+  @override
+  String appUpdateVersionAvailable(String version) {
+    return 'Доступна версия $version';
+  }
+
+  @override
+  String get appUpdateLater => 'Позже';
+
+  @override
+  String get appUpdateView => 'Показать обновление';
+
+  @override
+  String get appUpdateChecking => 'Проверка обновлений…';
+
+  @override
+  String get appUpdateCheckFailed => 'Не удалось проверить обновления';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return 'Установлена: $version';
+  }
+
+  @override
+  String get appUpdatesTitle => 'Обновления приложения';
+
+  @override
+  String get appUpdateNone => 'Обновлений нет';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return 'Обновление $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size МБ';
+  }
+
+  @override
+  String get appUpdateAllowInstalls =>
+      'Разрешите установку из этого приложения, затем снова нажмите «Обновить».';
+
+  @override
+  String get appUpdateCompleteInstallation =>
+      'Завершите установку в системном установщике Android.';
+
+  @override
+  String get appUpdateFailed => 'Обновление не удалось';
+
+  @override
+  String get appUpdateCancel => 'Отмена';
+
+  @override
+  String get appUpdateAction => 'Обновить';
+
+  @override
+  String get appUpdateDownload => 'Скачать';
+
+  @override
+  String get appUpdateUpToDate => 'У вас последняя версия';
+
+  @override
+  String get appUpdateAheadOfPublished => 'Новее опубликованной версии';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return 'Установленная версия $installedVersion новее последней опубликованной версии $publishedVersion. Сведения появятся после публикации этой версии.';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage => 'Не удалось проверить обновления.';
+
+  @override
+  String appUpdateLatest(String version) {
+    return 'Версия $version — самая новая из доступных.';
+  }
+
+  @override
+  String get appUpdateClose => 'Закрыть';
+
+  @override
+  String get appUpdateCheckAgain => 'Проверить снова';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return 'Установлена версия $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return 'Установлена версия $installedVersion. Доступно обновление $availableVersion.';
+  }
+
+  @override
+  String get appUpdateChangelog => 'Журнал изменений';
+
+  @override
+  String get appUpdateReleaseHistory => 'История версий';
+
+  @override
+  String get appUpdateInstalledBadge => 'Установлена';
+
+  @override
+  String get appUpdateAvailableBadge => 'Доступно обновление';
+
+  @override
+  String get appUpdateLatestBadge => 'Последняя';
+
+  @override
+  String get appUpdateNoReleases => 'Пока не опубликовано ни одной версии.';
+
+  @override
+  String get appUpdateAcrossAllReleases => 'Для всех версий';
+
+  @override
+  String get appUpdateReleaseDetails => 'Сведения о выпуске';
+
+  @override
+  String get appUpdateWhatsNew => 'Что нового';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return 'Опубликовано $date';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return 'Канал: $channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return 'Архитектура: $architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return 'Сборка $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return 'Версия $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes => 'Примечания к выпуску не опубликованы.';
+
+  @override
+  String get appUpdatePublisher => 'Издатель';
+
+  @override
+  String get appUpdatePublisherSignatureVerified =>
+      'Подпись события Nostr проверена';
+
+  @override
+  String get appUpdateCertificateDeclared =>
+      'Издатель указал сертификат подписи Android';
+
+  @override
+  String appUpdateSource(String host) {
+    return 'Источник загрузки: $host';
+  }
+
+  @override
+  String get appUpdateCommunity => 'Сообщество';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return 'Запов: $count · $sats сат';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'сат от';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return 'Реакций: $count';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return 'Комментариев: $count';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed =>
+      'Не удалось загрузить активность сообщества.';
+
+  @override
+  String get appUpdateComments => 'Комментарии';
+
+  @override
+  String get appUpdateNoComments => 'Комментариев пока нет.';
+
+  @override
+  String get appUpdateCommentHint => 'Оставьте отзыв об этой версии';
+
+  @override
+  String get appUpdatePostComment => 'Опубликовать комментарий';
+
+  @override
+  String get appUpdateSignInToComment =>
+      'Войдите в аккаунт Nostr, чтобы комментировать.';
+
+  @override
+  String get appUpdateTechnicalDetails => 'Технические сведения';
+
+  @override
+  String get appUpdateViewStatus => 'Показать статус обновления';
 
   @override
   String restoreSuccess(int count) {
-    return 'Restored $count proofs from backup';
+    return 'Восстановлено доказательств из резервной копии: $count';
   }
 
   @override
   String get bolt12Wallet => 'Кошелёк BOLT12';
 
   @override
-  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
+  String get bolt12WalletSubtitle => 'Многоразовое предложение Lightning';
 
   @override
-  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
+  String get bolt12PrivateOfferSubtitle => 'Приватное многоразовое предложение';
 
   @override
-  String get anyAmount => 'Any amount';
+  String get anyAmount => 'Любая сумма';
 
   @override
-  String get blindedRoute => 'Blinded';
+  String get blindedRoute => 'Скрытый маршрут';
 
   @override
   String fromAmountSats(String amount) {
-    return 'From $amount sats';
+    return 'От $amount сат';
   }
 
   @override
   String fromAmountMsats(String amount) {
-    return 'From $amount msats';
+    return 'От $amount мсат';
   }
 
   @override
   String fromCurrencyAmount(String amount, String currency) {
-    return 'From $amount $currency';
+    return 'От $amount $currency';
   }
 
   @override
   String bolt12Expires(String date) {
-    return 'Expires $date';
+    return 'Истекает $date';
   }
 
   @override
@@ -1372,7 +1592,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get bolt12WalletTypeSubtitle =>
-      'Receive-only wallet using a reusable offer';
+      'Кошелёк только для получения с многоразовым предложением';
 
   @override
   String get addBolt12WalletTitle => 'Добавить кошелёк BOLT12';
@@ -1396,7 +1616,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get invalidBolt12QrCode =>
-      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
+      'QR-код не содержит адресата платежа BOLT12, BIP321 или BIP353.';
 
   @override
   String get pleaseEnterBolt12Input =>
@@ -1406,11 +1626,11 @@ class AppLocalizationsRu extends AppLocalizations {
   String get bolt12WalletAdded => 'Кошелёк BOLT12 успешно добавлен!';
 
   @override
-  String get bolt12OfferTitle => 'Receive with BOLT12';
+  String get bolt12OfferTitle => 'Получить через BOLT12';
 
   @override
   String get bolt12OfferInstructions =>
-      'Share this reusable offer to receive a Lightning payment.';
+      'Поделитесь этим многоразовым предложением, чтобы получить платёж Lightning.';
 
   @override
   String get confirm => 'Подтвердить';

@@ -50,10 +50,23 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          '${l10n.appBarTitle} · v$packageVersion',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                l10n.appBarTitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const Text(' · '),
+            NAppVersion(
+              controller: appUpdater,
+              fallbackVersion: packageVersion,
+              style: Theme.of(context).appBarTheme.titleTextStyle,
+            ),
+          ],
         ),
         actions: [
           NLocaleSwitcher(

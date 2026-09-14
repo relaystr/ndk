@@ -1315,6 +1315,223 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restoringBackup => 'Restoring backup...';
 
   @override
+  String appUpdateVersionAvailable(String version) {
+    return 'Version $version available';
+  }
+
+  @override
+  String get appUpdateLater => 'Later';
+
+  @override
+  String get appUpdateView => 'View update';
+
+  @override
+  String get appUpdateChecking => 'Checking for updates…';
+
+  @override
+  String get appUpdateCheckFailed => 'Update check failed';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return 'Installed $version';
+  }
+
+  @override
+  String get appUpdatesTitle => 'App updates';
+
+  @override
+  String get appUpdateNone => 'No update available';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return 'Update $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String get appUpdateAllowInstalls =>
+      'Allow installs from this app, then tap Update again.';
+
+  @override
+  String get appUpdateCompleteInstallation =>
+      'Complete installation in Android system installer.';
+
+  @override
+  String get appUpdateFailed => 'Update failed';
+
+  @override
+  String get appUpdateCancel => 'Cancel';
+
+  @override
+  String get appUpdateAction => 'Update';
+
+  @override
+  String get appUpdateDownload => 'Download';
+
+  @override
+  String get appUpdateUpToDate => 'You’re up to date';
+
+  @override
+  String get appUpdateAheadOfPublished => 'Newer than published';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return 'Installed version $installedVersion is newer than latest published version $publishedVersion. Release details will appear after this version is published.';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage => 'Could not check for updates.';
+
+  @override
+  String appUpdateLatest(String version) {
+    return 'Version $version is the latest available version.';
+  }
+
+  @override
+  String get appUpdateClose => 'Close';
+
+  @override
+  String get appUpdateCheckAgain => 'Check again';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return 'Installed version $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return 'Installed version $installedVersion. Update $availableVersion available.';
+  }
+
+  @override
+  String get appUpdateChangelog => 'Changelog';
+
+  @override
+  String get appUpdateReleaseHistory => 'Release history';
+
+  @override
+  String get appUpdateInstalledBadge => 'Installed';
+
+  @override
+  String get appUpdateAvailableBadge => 'Update available';
+
+  @override
+  String get appUpdateLatestBadge => 'Latest';
+
+  @override
+  String get appUpdateNoReleases => 'No releases have been published yet.';
+
+  @override
+  String get appUpdateAcrossAllReleases => 'Across all releases';
+
+  @override
+  String get appUpdateReleaseDetails => 'Release details';
+
+  @override
+  String get appUpdateWhatsNew => 'What’s new';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return 'Published $date';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return 'Channel: $channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return 'Architecture: $architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return 'Build $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return 'Release $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes => 'No release notes were published.';
+
+  @override
+  String get appUpdatePublisher => 'Publisher';
+
+  @override
+  String get appUpdatePublisherSignatureVerified =>
+      'Nostr event signature verified';
+
+  @override
+  String get appUpdateCertificateDeclared =>
+      'Android signing certificate declared by publisher';
+
+  @override
+  String appUpdateSource(String host) {
+    return 'Download source: $host';
+  }
+
+  @override
+  String get appUpdateCommunity => 'Community';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return '$count zaps · $sats sats';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'sats by';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return '$count reactions';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return '$count comments';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed =>
+      'Community activity could not be loaded.';
+
+  @override
+  String get appUpdateComments => 'Comments';
+
+  @override
+  String get appUpdateNoComments => 'No comments yet.';
+
+  @override
+  String get appUpdateCommentHint => 'Share feedback about this release';
+
+  @override
+  String get appUpdatePostComment => 'Post comment';
+
+  @override
+  String get appUpdateSignInToComment =>
+      'Sign in with a Nostr account to comment.';
+
+  @override
+  String get appUpdateTechnicalDetails => 'Technical details';
+
+  @override
+  String get appUpdateViewStatus => 'View update status';
+
+  @override
   String restoreSuccess(int count) {
     return 'Restored $count proofs from backup';
   }

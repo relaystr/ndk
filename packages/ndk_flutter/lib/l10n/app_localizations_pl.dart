@@ -825,24 +825,25 @@ class AppLocalizationsPl extends AppLocalizations {
   String get payInvoiceTitle => 'Zapłać fakturę';
 
   @override
-  String get sendToWallet => 'Send to Wallet';
+  String get sendToWallet => 'Wyślij do portfela';
 
   @override
-  String get sendToWalletDescription => 'Transfer to another compatible wallet';
+  String get sendToWalletDescription => 'Przelej do innego zgodnego portfela';
 
   @override
-  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
+  String get noCompatibleReceivingWallets =>
+      'Brak zgodnych portfeli odbiorczych';
 
   @override
   String get noCompatibleReceivingWalletsDescription =>
-      'Add or connect another wallet that can receive a payment supported by this wallet.';
+      'Dodaj lub połącz inny portfel, który może odebrać płatność obsługiwaną przez ten portfel.';
 
   @override
-  String get destinationWallet => 'Destination wallet';
+  String get destinationWallet => 'Portfel docelowy';
 
   @override
   String walletTransferSubmitted(String walletName) {
-    return 'Payment sent to $walletName';
+    return 'Płatność wysłana do portfela $walletName';
   }
 
   @override
@@ -1286,80 +1287,299 @@ class AppLocalizationsPl extends AppLocalizations {
   String get budgetNever => 'Nigdy';
 
   @override
-  String get backup => 'Backup';
+  String get backup => 'Kopia zapasowa';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Przywróć';
 
   @override
-  String get cashuBackupTitle => 'Cashu Backup';
+  String get cashuBackupTitle => 'Kopia zapasowa Cashu';
 
   @override
   String get cashuBackupWarning =>
-      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+      'Ta kopia zapasowa zawiera dowody ecash, których posiadanie umożliwia wydanie środków. Zachowaj ją w tajemnicy i przechowuj w bezpiecznym miejscu. Kopię frazy odzyskiwania zapisuje się osobno.';
 
   @override
-  String get generatingBackup => 'Generating backup...';
+  String get generatingBackup => 'Tworzenie kopii zapasowej...';
 
   @override
-  String get copyBackup => 'Copy backup';
+  String get copyBackup => 'Kopiuj kopię zapasową';
 
   @override
-  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+  String get backupCopiedToClipboard => 'Kopia zapasowa skopiowana do schowka';
 
   @override
-  String get cashuRestoreTitle => 'Restore Cashu Backup';
+  String get cashuRestoreTitle => 'Przywróć kopię zapasową Cashu';
 
   @override
-  String get backupJson => 'Backup JSON';
+  String get backupJson => 'Kopia zapasowa JSON';
 
   @override
-  String get backupJsonHint => 'Paste your backup JSON here';
+  String get backupJsonHint => 'Wklej tutaj kopię zapasową w formacie JSON';
 
   @override
-  String get pleaseEnterBackup => 'Please enter a backup';
+  String get pleaseEnterBackup => 'Wprowadź kopię zapasową';
 
   @override
-  String get restoringBackup => 'Restoring backup...';
+  String get restoringBackup => 'Przywracanie kopii zapasowej...';
+
+  @override
+  String appUpdateVersionAvailable(String version) {
+    return 'Dostępna wersja $version';
+  }
+
+  @override
+  String get appUpdateLater => 'Później';
+
+  @override
+  String get appUpdateView => 'Wyświetl aktualizację';
+
+  @override
+  String get appUpdateChecking => 'Sprawdzanie aktualizacji…';
+
+  @override
+  String get appUpdateCheckFailed => 'Nie udało się sprawdzić aktualizacji';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return 'Zainstalowano: $version';
+  }
+
+  @override
+  String get appUpdatesTitle => 'Aktualizacje aplikacji';
+
+  @override
+  String get appUpdateNone => 'Brak dostępnych aktualizacji';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return 'Aktualizacja $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String get appUpdateAllowInstalls =>
+      'Zezwól na instalowanie z tej aplikacji, a następnie ponownie wybierz Aktualizuj.';
+
+  @override
+  String get appUpdateCompleteInstallation =>
+      'Dokończ instalację w instalatorze systemu Android.';
+
+  @override
+  String get appUpdateFailed => 'Aktualizacja nie powiodła się';
+
+  @override
+  String get appUpdateCancel => 'Anuluj';
+
+  @override
+  String get appUpdateAction => 'Aktualizuj';
+
+  @override
+  String get appUpdateDownload => 'Pobierz';
+
+  @override
+  String get appUpdateUpToDate => 'Aplikacja jest aktualna';
+
+  @override
+  String get appUpdateAheadOfPublished => 'Wersja nowsza niż opublikowana';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return 'Zainstalowana wersja $installedVersion jest nowsza niż ostatnia opublikowana wersja $publishedVersion. Szczegóły pojawią się po opublikowaniu tej wersji.';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage =>
+      'Nie udało się sprawdzić aktualizacji.';
+
+  @override
+  String appUpdateLatest(String version) {
+    return 'Wersja $version jest najnowszą dostępną wersją.';
+  }
+
+  @override
+  String get appUpdateClose => 'Zamknij';
+
+  @override
+  String get appUpdateCheckAgain => 'Sprawdź ponownie';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return 'Zainstalowana wersja $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return 'Zainstalowana wersja $installedVersion. Dostępna aktualizacja $availableVersion.';
+  }
+
+  @override
+  String get appUpdateChangelog => 'Lista zmian';
+
+  @override
+  String get appUpdateReleaseHistory => 'Historia wydań';
+
+  @override
+  String get appUpdateInstalledBadge => 'Zainstalowana';
+
+  @override
+  String get appUpdateAvailableBadge => 'Dostępna aktualizacja';
+
+  @override
+  String get appUpdateLatestBadge => 'Najnowsza';
+
+  @override
+  String get appUpdateNoReleases => 'Nie opublikowano jeszcze żadnych wydań.';
+
+  @override
+  String get appUpdateAcrossAllReleases => 'We wszystkich wydaniach';
+
+  @override
+  String get appUpdateReleaseDetails => 'Szczegóły wydania';
+
+  @override
+  String get appUpdateWhatsNew => 'Co nowego';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return 'Opublikowano $date';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return 'Kanał: $channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return 'Architektura: $architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return 'Kompilacja $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return 'Wydanie $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes =>
+      'Nie opublikowano informacji o wydaniu.';
+
+  @override
+  String get appUpdatePublisher => 'Wydawca';
+
+  @override
+  String get appUpdatePublisherSignatureVerified =>
+      'Zweryfikowano podpis zdarzenia Nostr';
+
+  @override
+  String get appUpdateCertificateDeclared =>
+      'Certyfikat podpisu Android zadeklarowany przez wydawcę';
+
+  @override
+  String appUpdateSource(String host) {
+    return 'Źródło pobierania: $host';
+  }
+
+  @override
+  String get appUpdateCommunity => 'Społeczność';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return '$count zapów · $sats satów';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'satów od';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return 'Reakcje: $count';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return 'Komentarze: $count';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed =>
+      'Nie udało się wczytać aktywności społeczności.';
+
+  @override
+  String get appUpdateComments => 'Komentarze';
+
+  @override
+  String get appUpdateNoComments => 'Brak komentarzy.';
+
+  @override
+  String get appUpdateCommentHint => 'Podziel się opinią o tym wydaniu';
+
+  @override
+  String get appUpdatePostComment => 'Opublikuj komentarz';
+
+  @override
+  String get appUpdateSignInToComment =>
+      'Zaloguj się na konto Nostr, aby komentować.';
+
+  @override
+  String get appUpdateTechnicalDetails => 'Szczegóły techniczne';
+
+  @override
+  String get appUpdateViewStatus => 'Wyświetl stan aktualizacji';
 
   @override
   String restoreSuccess(int count) {
-    return 'Restored $count proofs from backup';
+    return 'Liczba dowodów przywróconych z kopii zapasowej: $count';
   }
 
   @override
   String get bolt12Wallet => 'Portfel BOLT12';
 
   @override
-  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
+  String get bolt12WalletSubtitle => 'Wielorazowa oferta Lightning';
 
   @override
-  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
+  String get bolt12PrivateOfferSubtitle => 'Prywatna oferta wielorazowa';
 
   @override
-  String get anyAmount => 'Any amount';
+  String get anyAmount => 'Dowolna kwota';
 
   @override
-  String get blindedRoute => 'Blinded';
+  String get blindedRoute => 'Ukryta trasa';
 
   @override
   String fromAmountSats(String amount) {
-    return 'From $amount sats';
+    return 'Od $amount sat';
   }
 
   @override
   String fromAmountMsats(String amount) {
-    return 'From $amount msats';
+    return 'Od $amount msat';
   }
 
   @override
   String fromCurrencyAmount(String amount, String currency) {
-    return 'From $amount $currency';
+    return 'Od $amount $currency';
   }
 
   @override
   String bolt12Expires(String date) {
-    return 'Expires $date';
+    return 'Wygasa $date';
   }
 
   @override
@@ -1373,7 +1593,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get bolt12WalletTypeSubtitle =>
-      'Receive-only wallet using a reusable offer';
+      'Portfel tylko do odbioru z ofertą wielorazową';
 
   @override
   String get addBolt12WalletTitle => 'Dodaj portfel BOLT12';
@@ -1397,7 +1617,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get invalidBolt12QrCode =>
-      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
+      'Kod QR nie zawiera celu płatności BOLT12, BIP321 ani BIP353.';
 
   @override
   String get pleaseEnterBolt12Input =>
@@ -1407,11 +1627,11 @@ class AppLocalizationsPl extends AppLocalizations {
   String get bolt12WalletAdded => 'Dodano portfel BOLT12!';
 
   @override
-  String get bolt12OfferTitle => 'Receive with BOLT12';
+  String get bolt12OfferTitle => 'Odbierz przez BOLT12';
 
   @override
   String get bolt12OfferInstructions =>
-      'Share this reusable offer to receive a Lightning payment.';
+      'Udostępnij tę ofertę wielorazową, aby otrzymać płatność Lightning.';
 
   @override
   String get confirm => 'Potwierdź';

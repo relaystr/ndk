@@ -811,24 +811,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get payInvoiceTitle => '支付发票';
 
   @override
-  String get sendToWallet => 'Send to Wallet';
+  String get sendToWallet => '发送到钱包';
 
   @override
-  String get sendToWalletDescription => 'Transfer to another compatible wallet';
+  String get sendToWalletDescription => '转账到其他兼容的钱包';
 
   @override
-  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
+  String get noCompatibleReceivingWallets => '没有兼容的收款钱包';
 
   @override
   String get noCompatibleReceivingWalletsDescription =>
-      'Add or connect another wallet that can receive a payment supported by this wallet.';
+      '添加或连接另一个可以接收此钱包所支持付款的钱包。';
 
   @override
-  String get destinationWallet => 'Destination wallet';
+  String get destinationWallet => '目标钱包';
 
   @override
   String walletTransferSubmitted(String walletName) {
-    return 'Payment sent to $walletName';
+    return '已向 $walletName 付款';
   }
 
   @override
@@ -1261,80 +1261,291 @@ class AppLocalizationsZh extends AppLocalizations {
   String get budgetNever => '从不';
 
   @override
-  String get backup => 'Backup';
+  String get backup => '备份';
 
   @override
-  String get restore => 'Restore';
+  String get restore => '恢复';
 
   @override
-  String get cashuBackupTitle => 'Cashu Backup';
+  String get cashuBackupTitle => 'Cashu 备份';
 
   @override
   String get cashuBackupWarning =>
-      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+      '此备份包含您的 ecash 凭证，持有凭证的人即可花费资金。请勿公开，并将其保存在安全的地方。助记词需单独备份。';
 
   @override
-  String get generatingBackup => 'Generating backup...';
+  String get generatingBackup => '正在生成备份...';
 
   @override
-  String get copyBackup => 'Copy backup';
+  String get copyBackup => '复制备份';
 
   @override
-  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+  String get backupCopiedToClipboard => '备份已复制到剪贴板';
 
   @override
-  String get cashuRestoreTitle => 'Restore Cashu Backup';
+  String get cashuRestoreTitle => '恢复 Cashu 备份';
 
   @override
-  String get backupJson => 'Backup JSON';
+  String get backupJson => 'JSON 备份';
 
   @override
-  String get backupJsonHint => 'Paste your backup JSON here';
+  String get backupJsonHint => '在此粘贴您的 JSON 备份';
 
   @override
-  String get pleaseEnterBackup => 'Please enter a backup';
+  String get pleaseEnterBackup => '请输入备份';
 
   @override
-  String get restoringBackup => 'Restoring backup...';
+  String get restoringBackup => '正在恢复备份...';
+
+  @override
+  String appUpdateVersionAvailable(String version) {
+    return '版本 $version 可用';
+  }
+
+  @override
+  String get appUpdateLater => '稍后';
+
+  @override
+  String get appUpdateView => '查看更新';
+
+  @override
+  String get appUpdateChecking => '正在检查更新…';
+
+  @override
+  String get appUpdateCheckFailed => '检查更新失败';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return '已安装：$version';
+  }
+
+  @override
+  String get appUpdatesTitle => '应用更新';
+
+  @override
+  String get appUpdateNone => '没有可用更新';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return '更新 $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String get appUpdateAllowInstalls => '允许从此应用安装，然后再次点击“更新”。';
+
+  @override
+  String get appUpdateCompleteInstallation => '请在 Android 系统安装程序中完成安装。';
+
+  @override
+  String get appUpdateFailed => '更新失败';
+
+  @override
+  String get appUpdateCancel => '取消';
+
+  @override
+  String get appUpdateAction => '更新';
+
+  @override
+  String get appUpdateDownload => '下载';
+
+  @override
+  String get appUpdateUpToDate => '已是最新版本';
+
+  @override
+  String get appUpdateAheadOfPublished => '比已发布版本更新';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return '已安装版本 $installedVersion 比最新发布版本 $publishedVersion 更新。发布此版本后将显示版本详情。';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage => '无法检查更新。';
+
+  @override
+  String appUpdateLatest(String version) {
+    return '版本 $version 是当前最新版本。';
+  }
+
+  @override
+  String get appUpdateClose => '关闭';
+
+  @override
+  String get appUpdateCheckAgain => '重新检查';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return '已安装版本 $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return '已安装版本 $installedVersion。更新 $availableVersion 可用。';
+  }
+
+  @override
+  String get appUpdateChangelog => '更新日志';
+
+  @override
+  String get appUpdateReleaseHistory => '版本历史';
+
+  @override
+  String get appUpdateInstalledBadge => '已安装';
+
+  @override
+  String get appUpdateAvailableBadge => '有可用更新';
+
+  @override
+  String get appUpdateLatestBadge => '最新';
+
+  @override
+  String get appUpdateNoReleases => '尚未发布任何版本。';
+
+  @override
+  String get appUpdateAcrossAllReleases => '所有版本共有';
+
+  @override
+  String get appUpdateReleaseDetails => '版本详情';
+
+  @override
+  String get appUpdateWhatsNew => '更新内容';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return '发布于 $date';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return '频道：$channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return '架构：$architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return '构建 $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return '版本 $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes => '未发布版本说明。';
+
+  @override
+  String get appUpdatePublisher => '发布者';
+
+  @override
+  String get appUpdatePublisherSignatureVerified => 'Nostr 事件签名已验证';
+
+  @override
+  String get appUpdateCertificateDeclared => '发布者已声明 Android 签名证书';
+
+  @override
+  String appUpdateSource(String host) {
+    return '下载来源：$host';
+  }
+
+  @override
+  String get appUpdateCommunity => '社区';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return '$count 次打赏 · $sats sats';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'sats，来自';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return '$count 条回应';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return '$count 条评论';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed => '无法加载社区动态。';
+
+  @override
+  String get appUpdateComments => '评论';
+
+  @override
+  String get appUpdateNoComments => '暂无评论。';
+
+  @override
+  String get appUpdateCommentHint => '分享对此版本的反馈';
+
+  @override
+  String get appUpdatePostComment => '发表评论';
+
+  @override
+  String get appUpdateSignInToComment => '登录 Nostr 账户后即可评论。';
+
+  @override
+  String get appUpdateTechnicalDetails => '技术详情';
+
+  @override
+  String get appUpdateViewStatus => '查看更新状态';
 
   @override
   String restoreSuccess(int count) {
-    return 'Restored $count proofs from backup';
+    return '已从备份恢复 $count 份凭证';
   }
 
   @override
   String get bolt12Wallet => 'BOLT12 钱包';
 
   @override
-  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
+  String get bolt12WalletSubtitle => '可重复使用的 Lightning 报价';
 
   @override
-  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
+  String get bolt12PrivateOfferSubtitle => '可重复使用的私密报价';
 
   @override
-  String get anyAmount => 'Any amount';
+  String get anyAmount => '任意金额';
 
   @override
-  String get blindedRoute => 'Blinded';
+  String get blindedRoute => '隐藏路由';
 
   @override
   String fromAmountSats(String amount) {
-    return 'From $amount sats';
+    return '$amount sats 起';
   }
 
   @override
   String fromAmountMsats(String amount) {
-    return 'From $amount msats';
+    return '$amount msats 起';
   }
 
   @override
   String fromCurrencyAmount(String amount, String currency) {
-    return 'From $amount $currency';
+    return '$amount $currency 起';
   }
 
   @override
   String bolt12Expires(String date) {
-    return 'Expires $date';
+    return '到期时间：$date';
   }
 
   @override
@@ -1347,8 +1558,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get lnurlProtocol => 'LNURL';
 
   @override
-  String get bolt12WalletTypeSubtitle =>
-      'Receive-only wallet using a reusable offer';
+  String get bolt12WalletTypeSubtitle => '使用可重复报价的仅收款钱包';
 
   @override
   String get addBolt12WalletTitle => '添加 BOLT12 钱包';
@@ -1369,8 +1579,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scanBolt12QrCodeTitle => '扫描 BOLT12 二维码';
 
   @override
-  String get invalidBolt12QrCode =>
-      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
+  String get invalidBolt12QrCode => '此二维码不包含 BOLT12、BIP321 或 BIP353 付款目标。';
 
   @override
   String get pleaseEnterBolt12Input => '请输入 BOLT12 报价或 BIP353 地址。';
@@ -1379,11 +1588,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bolt12WalletAdded => 'BOLT12 钱包添加成功！';
 
   @override
-  String get bolt12OfferTitle => 'Receive with BOLT12';
+  String get bolt12OfferTitle => '通过 BOLT12 收款';
 
   @override
-  String get bolt12OfferInstructions =>
-      'Share this reusable offer to receive a Lightning payment.';
+  String get bolt12OfferInstructions => '分享此可重复使用的报价以接收 Lightning 付款。';
 
   @override
   String get confirm => '确认';

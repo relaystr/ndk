@@ -1596,6 +1596,8 @@ class _NWalletCardState extends State<NWalletCard>
   Future<void> _defaultDeleteHandler(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
     final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final wallets = widget.ndkFlutter.ndk.wallets;
+    final walletId = widget.wallet.id;
 
     final bool? confirmed = await showDialog<bool>(
       context: context,
@@ -1611,7 +1613,7 @@ class _NWalletCardState extends State<NWalletCard>
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
               style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(dialogContext).colorScheme.error,
               ),
               child: Text(l10n.delete),
             ),
@@ -1623,8 +1625,9 @@ class _NWalletCardState extends State<NWalletCard>
     if (confirmed != true) return;
 
     try {
-      await widget.ndkFlutter.ndk.wallets.removeWallet(widget.wallet.id);
+      await wallets.removeWallet(walletId);
     } catch (e) {
+      if (!scaffoldMessenger.mounted) return;
       scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Text(l10n.error(e.toString())),

@@ -23,7 +23,8 @@ import 'protocol_registration.dart';
 bool signerAppAvailable = false;
 
 late Ndk ndk;
-final ndkFlutter = NdkFlutter(ndk: ndk);
+late NdkFlutter ndkFlutter;
+late NAppUpdateController appUpdater;
 Future<void> Function(String url)? activeWalletProtocolHandler;
 final localeNotifier = ValueNotifier<Locale>(const Locale('en'));
 final appLinks = AppLinks();
@@ -66,6 +67,20 @@ Future<void> main() async {
       cashuUserSeedphrase: CashuUserSeedphrase(seedPhrase: cashuSeedPhrase),
     ),
   );
+  ndkFlutter = NdkFlutter(ndk: ndk);
+  appUpdater = NAppUpdateController.self(
+    ndkFlutter: ndkFlutter,
+    app: const SoftwareAppRef(
+      publisher:
+          '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177',
+      identifier: 'relaystr.ndk.sample',
+    ),
+    currentVersion: packageVersion,
+    externalUpdateUrl: Uri.parse('https://github.com/relaystr/ndk/'),
+    channel: 'main',
+    relays: const ['wss://relay.zapstore.dev'],
+  );
+  unawaited(appUpdater.start());
   final _ = dmLiveState;
 
   await ndkFlutter.restoreAccountsState();
@@ -113,6 +128,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     _linkSubscription?.cancel();
+    appUpdater.dispose();
     super.dispose();
   }
 

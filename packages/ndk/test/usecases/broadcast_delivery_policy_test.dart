@@ -236,6 +236,17 @@ void main() {
         ),
         RelayDeliveryState.permanentFailure,
       );
+      expect(
+        policy.resolveNextState(
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: true,
+            broadcastSuccessful: false,
+            msg: "kind 1111: 'A' tag must reference a kind 32267",
+          ),
+        ),
+        RelayDeliveryState.permanentFailure,
+      );
     });
 
     test('keeps rate-limited and error prefixes retryable', () {

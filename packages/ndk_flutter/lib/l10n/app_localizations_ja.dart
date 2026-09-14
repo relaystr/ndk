@@ -812,24 +812,24 @@ class AppLocalizationsJa extends AppLocalizations {
   String get payInvoiceTitle => '請求書を支払う';
 
   @override
-  String get sendToWallet => 'Send to Wallet';
+  String get sendToWallet => 'ウォレットに送金';
 
   @override
-  String get sendToWalletDescription => 'Transfer to another compatible wallet';
+  String get sendToWalletDescription => '別の対応ウォレットに送金';
 
   @override
-  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
+  String get noCompatibleReceivingWallets => '受取可能な対応ウォレットがありません';
 
   @override
   String get noCompatibleReceivingWalletsDescription =>
-      'Add or connect another wallet that can receive a payment supported by this wallet.';
+      'このウォレットが対応する支払いを受け取れる別のウォレットを追加または接続してください。';
 
   @override
-  String get destinationWallet => 'Destination wallet';
+  String get destinationWallet => '送金先ウォレット';
 
   @override
   String walletTransferSubmitted(String walletName) {
-    return 'Payment sent to $walletName';
+    return '$walletName に送金しました';
   }
 
   @override
@@ -1266,80 +1266,292 @@ class AppLocalizationsJa extends AppLocalizations {
   String get budgetNever => 'なし';
 
   @override
-  String get backup => 'Backup';
+  String get backup => 'バックアップ';
 
   @override
-  String get restore => 'Restore';
+  String get restore => '復元';
 
   @override
-  String get cashuBackupTitle => 'Cashu Backup';
+  String get cashuBackupTitle => 'Cashuバックアップ';
 
   @override
   String get cashuBackupWarning =>
-      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+      'このバックアップにはecashの証明が含まれ、その保有者は資金を使用できます。公開せず、安全な場所に保管してください。リカバリーフレーズは別途バックアップしてください。';
 
   @override
-  String get generatingBackup => 'Generating backup...';
+  String get generatingBackup => 'バックアップを作成中...';
 
   @override
-  String get copyBackup => 'Copy backup';
+  String get copyBackup => 'バックアップをコピー';
 
   @override
-  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+  String get backupCopiedToClipboard => 'バックアップをクリップボードにコピーしました';
 
   @override
-  String get cashuRestoreTitle => 'Restore Cashu Backup';
+  String get cashuRestoreTitle => 'Cashuバックアップを復元';
 
   @override
-  String get backupJson => 'Backup JSON';
+  String get backupJson => 'JSONバックアップ';
 
   @override
-  String get backupJsonHint => 'Paste your backup JSON here';
+  String get backupJsonHint => 'JSONバックアップをここに貼り付けてください';
 
   @override
-  String get pleaseEnterBackup => 'Please enter a backup';
+  String get pleaseEnterBackup => 'バックアップを入力してください';
 
   @override
-  String get restoringBackup => 'Restoring backup...';
+  String get restoringBackup => 'バックアップを復元中...';
+
+  @override
+  String appUpdateVersionAvailable(String version) {
+    return 'バージョン $version を利用できます';
+  }
+
+  @override
+  String get appUpdateLater => '後で';
+
+  @override
+  String get appUpdateView => '更新を表示';
+
+  @override
+  String get appUpdateChecking => '更新を確認中…';
+
+  @override
+  String get appUpdateCheckFailed => '更新の確認に失敗しました';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return 'インストール済み: $version';
+  }
+
+  @override
+  String get appUpdatesTitle => 'アプリの更新';
+
+  @override
+  String get appUpdateNone => '利用できる更新はありません';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return '更新 $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String get appUpdateAllowInstalls => 'このアプリからのインストールを許可し、もう一度「更新」をタップしてください。';
+
+  @override
+  String get appUpdateCompleteInstallation =>
+      'Android システムインストーラーでインストールを完了してください。';
+
+  @override
+  String get appUpdateFailed => '更新に失敗しました';
+
+  @override
+  String get appUpdateCancel => 'キャンセル';
+
+  @override
+  String get appUpdateAction => '更新';
+
+  @override
+  String get appUpdateDownload => 'ダウンロード';
+
+  @override
+  String get appUpdateUpToDate => '最新の状態です';
+
+  @override
+  String get appUpdateAheadOfPublished => '公開版より新しいバージョン';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return 'インストール済みバージョン $installedVersion は、最新の公開版 $publishedVersion より新しいものです。このバージョンが公開されるとリリース詳細が表示されます。';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage => '更新を確認できませんでした。';
+
+  @override
+  String appUpdateLatest(String version) {
+    return 'バージョン $version が利用可能な最新バージョンです。';
+  }
+
+  @override
+  String get appUpdateClose => '閉じる';
+
+  @override
+  String get appUpdateCheckAgain => '再確認';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return 'インストール済みバージョン $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return 'インストール済みバージョン $installedVersion。更新 $availableVersion を利用できます。';
+  }
+
+  @override
+  String get appUpdateChangelog => '変更履歴';
+
+  @override
+  String get appUpdateReleaseHistory => 'リリース履歴';
+
+  @override
+  String get appUpdateInstalledBadge => 'インストール済み';
+
+  @override
+  String get appUpdateAvailableBadge => '更新可能';
+
+  @override
+  String get appUpdateLatestBadge => '最新';
+
+  @override
+  String get appUpdateNoReleases => 'まだリリースは公開されていません。';
+
+  @override
+  String get appUpdateAcrossAllReleases => 'すべてのリリース共通';
+
+  @override
+  String get appUpdateReleaseDetails => 'リリース詳細';
+
+  @override
+  String get appUpdateWhatsNew => '新機能';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return '$date に公開';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return 'チャンネル: $channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return 'アーキテクチャ: $architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return 'ビルド $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return 'リリース $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes => 'リリースノートはありません。';
+
+  @override
+  String get appUpdatePublisher => '公開者';
+
+  @override
+  String get appUpdatePublisherSignatureVerified => 'Nostrイベントの署名を確認済み';
+
+  @override
+  String get appUpdateCertificateDeclared => '公開者がAndroid署名証明書を宣言済み';
+
+  @override
+  String appUpdateSource(String host) {
+    return 'ダウンロード元: $host';
+  }
+
+  @override
+  String get appUpdateCommunity => 'コミュニティ';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return '$count zap・$sats sats';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'sats、送信者';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return 'リアクション $count件';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return 'コメント $count件';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed => 'コミュニティ情報を読み込めませんでした。';
+
+  @override
+  String get appUpdateComments => 'コメント';
+
+  @override
+  String get appUpdateNoComments => 'コメントはまだありません。';
+
+  @override
+  String get appUpdateCommentHint => 'このリリースへの感想を共有';
+
+  @override
+  String get appUpdatePostComment => 'コメントを投稿';
+
+  @override
+  String get appUpdateSignInToComment => 'コメントするにはNostrアカウントでログインしてください。';
+
+  @override
+  String get appUpdateTechnicalDetails => '技術情報';
+
+  @override
+  String get appUpdateViewStatus => '更新状態を表示';
 
   @override
   String restoreSuccess(int count) {
-    return 'Restored $count proofs from backup';
+    return 'バックアップから復元した証明の数: $count';
   }
 
   @override
   String get bolt12Wallet => 'BOLT12ウォレット';
 
   @override
-  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
+  String get bolt12WalletSubtitle => '再利用可能なLightningオファー';
 
   @override
-  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
+  String get bolt12PrivateOfferSubtitle => '再利用可能なプライベートオファー';
 
   @override
-  String get anyAmount => 'Any amount';
+  String get anyAmount => '任意の金額';
 
   @override
-  String get blindedRoute => 'Blinded';
+  String get blindedRoute => '秘匿ルート';
 
   @override
   String fromAmountSats(String amount) {
-    return 'From $amount sats';
+    return '$amount satsから';
   }
 
   @override
   String fromAmountMsats(String amount) {
-    return 'From $amount msats';
+    return '$amount msatsから';
   }
 
   @override
   String fromCurrencyAmount(String amount, String currency) {
-    return 'From $amount $currency';
+    return '$amount $currencyから';
   }
 
   @override
   String bolt12Expires(String date) {
-    return 'Expires $date';
+    return '有効期限: $date';
   }
 
   @override
@@ -1352,8 +1564,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get lnurlProtocol => 'LNURL';
 
   @override
-  String get bolt12WalletTypeSubtitle =>
-      'Receive-only wallet using a reusable offer';
+  String get bolt12WalletTypeSubtitle => '再利用可能なオファーを使う受取専用ウォレット';
 
   @override
   String get addBolt12WalletTitle => 'BOLT12ウォレットを追加';
@@ -1376,7 +1587,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get invalidBolt12QrCode =>
-      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
+      'このQRコードにはBOLT12、BIP321、BIP353の支払い先が含まれていません。';
 
   @override
   String get pleaseEnterBolt12Input => 'BOLT12オファーまたはBIP353アドレスを入力してください。';
@@ -1385,11 +1596,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get bolt12WalletAdded => 'BOLT12ウォレットを追加しました！';
 
   @override
-  String get bolt12OfferTitle => 'Receive with BOLT12';
+  String get bolt12OfferTitle => 'BOLT12で受け取る';
 
   @override
   String get bolt12OfferInstructions =>
-      'Share this reusable offer to receive a Lightning payment.';
+      'この再利用可能なオファーを共有してLightningの支払いを受け取ります。';
 
   @override
   String get confirm => '確認';

@@ -821,24 +821,26 @@ class AppLocalizationsSk extends AppLocalizations {
   String get payInvoiceTitle => 'Zaplatiť faktúru';
 
   @override
-  String get sendToWallet => 'Send to Wallet';
+  String get sendToWallet => 'Poslať do peňaženky';
 
   @override
-  String get sendToWalletDescription => 'Transfer to another compatible wallet';
+  String get sendToWalletDescription =>
+      'Previesť do inej kompatibilnej peňaženky';
 
   @override
-  String get noCompatibleReceivingWallets => 'No compatible receiving wallets';
+  String get noCompatibleReceivingWallets =>
+      'Žiadne kompatibilné prijímacie peňaženky';
 
   @override
   String get noCompatibleReceivingWalletsDescription =>
-      'Add or connect another wallet that can receive a payment supported by this wallet.';
+      'Pridaj alebo pripoj inú peňaženku, ktorá dokáže prijať platbu podporovanú touto peňaženkou.';
 
   @override
-  String get destinationWallet => 'Destination wallet';
+  String get destinationWallet => 'Cieľová peňaženka';
 
   @override
   String walletTransferSubmitted(String walletName) {
-    return 'Payment sent to $walletName';
+    return 'Platba odoslaná do peňaženky $walletName';
   }
 
   @override
@@ -1319,6 +1321,225 @@ class AppLocalizationsSk extends AppLocalizations {
   String get restoringBackup => 'Obnovuje sa záloha...';
 
   @override
+  String appUpdateVersionAvailable(String version) {
+    return 'Verzia $version je k dispozícii';
+  }
+
+  @override
+  String get appUpdateLater => 'Neskôr';
+
+  @override
+  String get appUpdateView => 'Zobraziť aktualizáciu';
+
+  @override
+  String get appUpdateChecking => 'Kontrolujú sa aktualizácie…';
+
+  @override
+  String get appUpdateCheckFailed => 'Kontrola aktualizácií zlyhala';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return 'Nainštalovaná: $version';
+  }
+
+  @override
+  String get appUpdatesTitle => 'Aktualizácie aplikácie';
+
+  @override
+  String get appUpdateNone => 'Nie je k dispozícii žiadna aktualizácia';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return 'Aktualizácia $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String get appUpdateAllowInstalls =>
+      'Povoľte inštalácie z tejto aplikácie a potom znova klepnite na Aktualizovať.';
+
+  @override
+  String get appUpdateCompleteInstallation =>
+      'Dokončite inštaláciu v systémovom inštalátore Android.';
+
+  @override
+  String get appUpdateFailed => 'Aktualizácia zlyhala';
+
+  @override
+  String get appUpdateCancel => 'Zrušiť';
+
+  @override
+  String get appUpdateAction => 'Aktualizovať';
+
+  @override
+  String get appUpdateDownload => 'Stiahnuť';
+
+  @override
+  String get appUpdateUpToDate => 'Aplikácia je aktuálna';
+
+  @override
+  String get appUpdateAheadOfPublished => 'Novšia než publikovaná verzia';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return 'Nainštalovaná verzia $installedVersion je novšia než posledná publikovaná verzia $publishedVersion. Podrobnosti sa zobrazia po publikovaní tejto verzie.';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage =>
+      'Aktualizácie sa nepodarilo skontrolovať.';
+
+  @override
+  String appUpdateLatest(String version) {
+    return 'Verzia $version je najnovšia dostupná verzia.';
+  }
+
+  @override
+  String get appUpdateClose => 'Zavrieť';
+
+  @override
+  String get appUpdateCheckAgain => 'Skontrolovať znova';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return 'Nainštalovaná verzia $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return 'Nainštalovaná verzia $installedVersion. Aktualizácia $availableVersion je k dispozícii.';
+  }
+
+  @override
+  String get appUpdateChangelog => 'Zoznam zmien';
+
+  @override
+  String get appUpdateReleaseHistory => 'História vydaní';
+
+  @override
+  String get appUpdateInstalledBadge => 'Nainštalovaná';
+
+  @override
+  String get appUpdateAvailableBadge => 'Dostupná aktualizácia';
+
+  @override
+  String get appUpdateLatestBadge => 'Najnovšia';
+
+  @override
+  String get appUpdateNoReleases => 'Zatiaľ neboli publikované žiadne vydania.';
+
+  @override
+  String get appUpdateAcrossAllReleases => 'Vo všetkých vydaniach';
+
+  @override
+  String get appUpdateReleaseDetails => 'Podrobnosti vydania';
+
+  @override
+  String get appUpdateWhatsNew => 'Čo je nové';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return 'Publikované $date';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return 'Kanál: $channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return 'Architektúra: $architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return 'Zostava $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return 'Vydanie $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes =>
+      'Neboli publikované poznámky k vydaniu.';
+
+  @override
+  String get appUpdatePublisher => 'Vydavateľ';
+
+  @override
+  String get appUpdatePublisherSignatureVerified =>
+      'Podpis udalosti Nostr bol overený';
+
+  @override
+  String get appUpdateCertificateDeclared =>
+      'Certifikát podpisu Android deklarovaný vydavateľom';
+
+  @override
+  String appUpdateSource(String host) {
+    return 'Zdroj sťahovania: $host';
+  }
+
+  @override
+  String get appUpdateCommunity => 'Komunita';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return '$count zapov · $sats satov';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'satov od';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return 'Reakcie: $count';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return 'Komentáre: $count';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed =>
+      'Aktivitu komunity sa nepodarilo načítať.';
+
+  @override
+  String get appUpdateComments => 'Komentáre';
+
+  @override
+  String get appUpdateNoComments => 'Zatiaľ žiadne komentáre.';
+
+  @override
+  String get appUpdateCommentHint => 'Podeľte sa o názor na toto vydanie';
+
+  @override
+  String get appUpdatePostComment => 'Publikovať komentár';
+
+  @override
+  String get appUpdateSignInToComment =>
+      'Ak chcete komentovať, prihláste sa účtom Nostr.';
+
+  @override
+  String get appUpdateTechnicalDetails => 'Technické podrobnosti';
+
+  @override
+  String get appUpdateViewStatus => 'Zobraziť stav aktualizácie';
+
+  @override
   String restoreSuccess(int count) {
     return 'Obnovených $count dôkazov zo zálohy';
   }
@@ -1327,35 +1548,36 @@ class AppLocalizationsSk extends AppLocalizations {
   String get bolt12Wallet => 'Peňaženka BOLT12';
 
   @override
-  String get bolt12WalletSubtitle => 'Reusable Lightning offer';
+  String get bolt12WalletSubtitle => 'Opakovane použiteľná ponuka Lightning';
 
   @override
-  String get bolt12PrivateOfferSubtitle => 'Reusable private offer';
+  String get bolt12PrivateOfferSubtitle =>
+      'Súkromná opakovane použiteľná ponuka';
 
   @override
-  String get anyAmount => 'Any amount';
+  String get anyAmount => 'Ľubovoľná suma';
 
   @override
-  String get blindedRoute => 'Blinded';
+  String get blindedRoute => 'Skrytá trasa';
 
   @override
   String fromAmountSats(String amount) {
-    return 'From $amount sats';
+    return 'Od $amount sat';
   }
 
   @override
   String fromAmountMsats(String amount) {
-    return 'From $amount msats';
+    return 'Od $amount msat';
   }
 
   @override
   String fromCurrencyAmount(String amount, String currency) {
-    return 'From $amount $currency';
+    return 'Od $amount $currency';
   }
 
   @override
   String bolt12Expires(String date) {
-    return 'Expires $date';
+    return 'Platnosť do $date';
   }
 
   @override
@@ -1369,7 +1591,7 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get bolt12WalletTypeSubtitle =>
-      'Receive-only wallet using a reusable offer';
+      'Peňaženka iba na prijímanie s opakovane použiteľnou ponukou';
 
   @override
   String get addBolt12WalletTitle => 'Pridať peňaženku BOLT12';
@@ -1393,7 +1615,7 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get invalidBolt12QrCode =>
-      'The QR code is not a BOLT12, BIP321, or BIP353 payment target.';
+      'QR kód neobsahuje cieľ platby BOLT12, BIP321 ani BIP353.';
 
   @override
   String get pleaseEnterBolt12Input =>
@@ -1403,11 +1625,11 @@ class AppLocalizationsSk extends AppLocalizations {
   String get bolt12WalletAdded => 'Peňaženka BOLT12 bola pridaná!';
 
   @override
-  String get bolt12OfferTitle => 'Receive with BOLT12';
+  String get bolt12OfferTitle => 'Prijať cez BOLT12';
 
   @override
   String get bolt12OfferInstructions =>
-      'Share this reusable offer to receive a Lightning payment.';
+      'Zdieľaj túto opakovane použiteľnú ponuku a prijmi platbu Lightning.';
 
   @override
   String get confirm => 'Potvrdiť';
