@@ -158,6 +158,65 @@ void main() {
     expect(stored.qoute!.state, equals(CashuQuoteState.paid));
   });
 
+  test(
+      'auto-startup recovers the lock key and completes the full flow for '
+      'locally paid quotes', () async {
+    final seedPhraseSentence = seedPhrase.seedPhrase;
+    final seed = CashuSeed();
+    await seed.setSeedPhrase(seedPhrase: seedPhraseSentence);
+    final derivation = DartCashuKeyDerivation();
+
+    const targetCounter = 3;
+    final recoveredKeypair = await derivation.deriveQuoteKey(
+      seedBytes: Uint8List.fromList(seed.getSeedBytes()),
+      counter: targetCounter,
+    );
+
+    // a locally paid quote whose record lost the private key and counter
+    final pendingTx = _pendingFundTx(
+      quoteKey: CashuKeypair(
+        privateKey: '00' * 32,
+        publicKey: recoveredKeypair.publicKey,
+      ),
+      state: CashuQuoteState.paid,
+    );
+
+    final wallets = MemWalletsRepo();
+    await wallets.saveTransactions([pendingTx]);
+
+    // 4 quote keys were assigned so far (counters 0..3)
+    final cache = MemCacheManager();
+    await cache.setCashuSecretCounter(
+      mintUrl: kQuoteKeyDerivationCounterSlot,
+      keysetId: kQuoteKeyDerivationCounterSlot,
+      counter: 4,
+    );
+
+    _cashu(
+      wallets: wallets,
+      cache: cache,
+      seedPhrase: seedPhrase,
+    );
+
+    // the startup refresh persists the fresh (PAID) state, then the wallet
+    // recovers the seed-derived lock key from the counter scan and reaches
+    // the completion step (skipped here since the record lacks usedKeysets)
+    var stored = await _storedTx(wallets);
+    var waited = 0;
+    while ((stored.qoute!.quoteKeyCounter != targetCounter ||
+            stored.qoute!.state != CashuQuoteState.paid) &&
+        waited < 200) {
+      await Future<void>.delayed(Duration.zero);
+      stored = await _storedTx(wallets);
+      waited++;
+    }
+
+    expect(stored.qoute!.state, equals(CashuQuoteState.paid));
+    expect(
+        stored.qoute!.quoteKey.privateKey, equals(recoveredKeypair.privateKey));
+    expect(stored.qoute!.quoteKeyCounter, equals(targetCounter));
+  });
+
   test('restore recovers the quote keys of pending funding quotes', () async {
     final seedPhraseSentence = seedPhrase.seedPhrase;
     final seed = CashuSeed();
