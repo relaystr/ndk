@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789310173750,
+  "lastUpdate": 1789379953356,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -226,6 +226,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1546486,
             "range": "1535668-1594200",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "frnandu",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2359d1c844aa3738271f9457ac983ee0ee386675",
+          "message": "Merge pull request #823 from relaystr/frnandu/feat-add-websocket-compression-opt-out-for-lower\n\nfeat: add websocket compression opt out",
+          "timestamp": "2026-09-14T11:57:10+02:00",
+          "tree_id": "4bbe53a453d1d09eddcb73e0d0cea76d83c38fa8",
+          "url": "https://github.com/relaystr/ndk/commit/2359d1c844aa3738271f9457ac983ee0ee386675"
+        },
+        "date": 1789379950279,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 34738.4,
+            "range": "34442-38632",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1283954,
+            "range": "1242574-1311640",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
