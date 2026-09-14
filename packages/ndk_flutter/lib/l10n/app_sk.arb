@@ -572,5 +572,23 @@
     }
   },
   "refreshBalance": "Obnoviť zostatok",
-  "balanceRefreshed": "Zostatok obnovený"
+  "balanceRefreshed": "Zostatok obnovený",
+  "sendToWallet": "Poslať do peňaženky",
+  "sendToWalletDescription": "Previesť do inej kompatibilnej peňaženky",
+  "noCompatibleReceivingWallets": "Žiadne kompatibilné prijímacie peňaženky",
+  "noCompatibleReceivingWalletsDescription": "Pridaj alebo pripoj inú peňaženku, ktorá dokáže prijať platbu podporovanú touto peňaženkou.",
+  "destinationWallet": "Cieľová peňaženka",
+  "walletTransferSubmitted": "Platba odoslaná do peňaženky {walletName}",
+  "bolt12WalletSubtitle": "Opakovane použiteľná ponuka Lightning",
+  "bolt12PrivateOfferSubtitle": "Súkromná opakovane použiteľná ponuka",
+  "anyAmount": "Ľubovoľná suma",
+  "blindedRoute": "Skrytá trasa",
+  "fromAmountSats": "Od {amount} sat",
+  "fromAmountMsats": "Od {amount} msat",
+  "fromCurrencyAmount": "Od {amount} {currency}",
+  "bolt12Expires": "Platnosť do {date}",
+  "bolt12WalletTypeSubtitle": "Peňaženka iba na prijímanie s opakovane použiteľnou ponukou",
+  "invalidBolt12QrCode": "QR kód neobsahuje cieľ platby BOLT12, BIP321 ani BIP353.",
+  "bolt12OfferTitle": "Prijať cez BOLT12",
+  "bolt12OfferInstructions": "Zdieľaj túto opakovane použiteľnú ponuku a prijmi platbu Lightning."
 }
