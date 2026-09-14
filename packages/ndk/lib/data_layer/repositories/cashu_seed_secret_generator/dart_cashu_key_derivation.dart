@@ -31,6 +31,13 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
 
   DartCashuKeyDerivation();
 
+  // Caches the constant `m/129373'/20'/0'/0'` prefix of the quote-key path
+  // per seed so scanning many counters (e.g. quote-key recovery) doesn't
+  // re-derive the master key and shared parent - each of which needs several
+  // EC point computations - from scratch on every single counter.
+  Uint8List? _cachedQuoteKeySeed;
+  Bip32Keys? _cachedQuoteKeyParent;
+
   @override
   Future<CashuSeedDeriveSecretResult> deriveSecret({
     required Uint8List seedBytes,
@@ -77,18 +84,25 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
 
   /// Deterministic derivation of a NUT-20 mint quote lock key.
   ///
-  static String _deriveQuoteKeyWithSeed({
+  String _deriveQuoteKeyWithSeed({
     required Uint8List seed,
     required int counter,
   }) {
-    final masterKey = Bip32Keys.fromSeed(seed);
+    // The `m/129373'/20'/0'/0'` prefix is the same for every counter derived
+    // from a given seed, so it is cached and only the final (unhardened)
+    // counter step is derived on each call.
+    Bip32Keys parent;
+    if (_cachedQuoteKeyParent != null && identical(seed, _cachedQuoteKeySeed)) {
+      parent = _cachedQuoteKeyParent!;
+    } else {
+      parent = Bip32Keys.fromSeed(seed).derivePath("m/129373'/20'/0'/0'");
+      _cachedQuoteKeySeed = seed;
+      _cachedQuoteKeyParent = parent;
+    }
 
-    // Derive shared parent path once
-    final master = masterKey.derivePath(
-      "m/129373'/20'/0'/0'/$counter",
-    );
+    final child = parent.derivePath("$counter");
 
-    return hex.encode(master.private!);
+    return hex.encode(child.private!);
   }
 
   /// Modern derivation method with explicit seed parameter
