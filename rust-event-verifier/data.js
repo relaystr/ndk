@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789379953356,
+  "lastUpdate": 1789387483611,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -264,6 +264,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1283954,
             "range": "1242574-1311640",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "fmar",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "frnandu@atomicmail.io",
+            "name": "fmar",
+            "username": "frnandu"
+          },
+          "distinct": true,
+          "id": "4ca6ec551645f5689ee52946041710bb67b89049",
+          "message": "Merge branch fix/wallet-i18n",
+          "timestamp": "2026-09-14T14:01:08+02:00",
+          "tree_id": "d563351307452f1e3a8efcf789cdcff15d52c1bf",
+          "url": "https://github.com/relaystr/ndk/commit/4ca6ec551645f5689ee52946041710bb67b89049"
+        },
+        "date": 1789387481101,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 34282.4,
+            "range": "33848-37067",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1322138,
+            "range": "1288400-1366070",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
