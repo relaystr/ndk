@@ -709,7 +709,7 @@ class Cashu {
     // The slot holds the number of quote keys assigned so far (counters 0..
     // slot-1 are used). When local data is gone the slot is 0, so fall back
     // to the caller-provided cap.
-    final scanUpperBound = slotCounter > 0 ? slotCounter : maxScan;
+    final scanUpperBound = slotCounter > maxScan ? slotCounter : maxScan;
 
     for (var counter = 0; counter < scanUpperBound; counter++) {
       final keypair = await _cashuKeyDerivation.deriveQuoteKey(
