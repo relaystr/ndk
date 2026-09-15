@@ -1496,5 +1496,123 @@
         "description": "Number of restored proofs"
       }
     }
+  },
+  "cashuQuoteRecoveryTitle": "Recover Mint Quote",
+  "@cashuQuoteRecoveryTitle": {
+    "description": "Title of the dialog to recover a mint quote"
+  },
+  "recoverQuote": "Recover quote",
+  "@recoverQuote": {
+    "description": "Menu item / button to start recovering a mint quote"
+  },
+  "enterQuoteId": "Enter the mint quote ID to recover. The lock key is recovered from your seed phrase.",
+  "@enterQuoteId": {
+    "description": "Prompt to enter a mint quote ID"
+  },
+  "quoteId": "Quote ID",
+  "@quoteId": {
+    "description": "Label for the quote ID input field"
+  },
+  "quoteIdHint": "Paste the quote ID here",
+  "@quoteIdHint": {
+    "description": "Hint text for the quote ID input field"
+  },
+  "pleaseEnterQuoteId": "Please enter a quote ID",
+  "@pleaseEnterQuoteId": {
+    "description": "Validation message when the quote ID field is empty"
+  },
+  "recoveringQuote": "Recovering quote...",
+  "@recoveringQuote": {
+    "description": "Button label while a quote recovery is in progress"
+  },
+  "cashuQuoteRecoveryStageFetchingQuote": "Fetching quote from mint...",
+  "@cashuQuoteRecoveryStageFetchingQuote": {
+    "description": "Progress line while the quote is fetched from the mint"
+  },
+  "cashuQuoteRecoveryStageRecoveringKey": "Recovering lock key from your seed...",
+  "@cashuQuoteRecoveryStageRecoveringKey": {
+    "description": "Progress line while the lock key is recovered by scanning seed-derived counters"
+  },
+  "cashuQuoteRecoveryStageCompletingMint": "Completing mint...",
+  "@cashuQuoteRecoveryStageCompletingMint": {
+    "description": "Progress line while the mint is being completed"
+  },
+  "cashuQuoteRecoveryKeyRecovered": "Lock key recovered (derivation counter {counter})",
+  "@cashuQuoteRecoveryKeyRecovered": {
+    "description": "Confirmation shown once the lock key is recovered",
+    "placeholders": {
+      "counter": {
+        "type": "int",
+        "description": "Derivation counter of the recovered lock key"
+      }
+    }
+  },
+  "cashuQuoteRecoveryCompleted": "Quote recovered and funds added to your balance",
+  "@cashuQuoteRecoveryCompleted": {
+    "description": "Success message shown when the quote is recovered and minted"
+  },
+  "quoteRecoveryFailed": "Quote recovery failed",
+  "@quoteRecoveryFailed": {
+    "description": "Error prefix shown when the quote recovery fails"
+  },
+  "restoreFundsFromMint": "Restore funds from mint",
+  "@restoreFundsFromMint": {
+    "description": "Menu item to restore funds from a mint using the seed"
+  },
+  "cashuRestoreFundsTitle": "Restore Funds from Mint",
+  "@cashuRestoreFundsTitle": {
+    "description": "Title of the dialog to restore funds from a mint"
+  },
+  "cashuRestoreDescription": "Scans the mint for proofs derived from your seed and restores them to this wallet.",
+  "@cashuRestoreDescription": {
+    "description": "Explanation shown in the restore-from-mint dialog"
+  },
+  "startRestore": "Start restore",
+  "@startRestore": {
+    "description": "Button to start the restore-from-mint flow"
+  },
+  "cashuRestoreStageFetchingKeysets": "Fetching mint keysets...",
+  "@cashuRestoreStageFetchingKeysets": {
+    "description": "Progress line while the mint keysets are fetched"
+  },
+  "cashuRestoreStageScanning": "Scanning mint for your funds...",
+  "@cashuRestoreStageScanning": {
+    "description": "Progress line while the mint is scanned for seed-derived proofs"
+  },
+  "cashuRestoreScanProgress": "Scanned {keysets} keyset(s) · {proofs} proof(s) found",
+  "@cashuRestoreScanProgress": {
+    "description": "Scan progress in the restore-from-mint dialog",
+    "placeholders": {
+      "keysets": {
+        "type": "int",
+        "description": "Number of keysets scanned"
+      },
+      "proofs": {
+        "type": "int",
+        "description": "Number of proofs found so far"
+      }
+    }
+  },
+  "cashuRestoreStageCompleted": "Restore complete",
+  "@cashuRestoreStageCompleted": {
+    "description": "Progress line shown once the restore-from-mint scan completes"
+  },
+  "cashuRestoreAlsoRestoresQuotes": "Also recovers pending mint quotes",
+  "@cashuRestoreAlsoRestoresQuotes": {
+    "description": "Note shown while restoring that pending mint quotes are recovered too"
+  },
+  "restoredFromMint": "Restored {count} proofs from the mint",
+  "@restoredFromMint": {
+    "description": "Confirmation after a successful restore-from-mint",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "restoreFailed": "Restore failed",
+  "@restoreFailed": {
+    "description": "Error prefix shown when the restore-from-mint fails"
   }
 }

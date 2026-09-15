@@ -565,6 +565,28 @@ class _NWalletCardState extends State<NWalletCard>
                           ],
                         ),
                       ),
+                    if (isCashuWallet)
+                      PopupMenuItem(
+                        value: 'recover_quote',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.find_in_page, size: 20),
+                            const SizedBox(width: 8),
+                            Text(l10n.recoverQuote),
+                          ],
+                        ),
+                      ),
+                    if (isCashuWallet)
+                      PopupMenuItem(
+                        value: 'restore_funds',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.cloud_sync, size: 20),
+                            const SizedBox(width: 8),
+                            Text(l10n.restoreFundsFromMint),
+                          ],
+                        ),
+                      ),
                   ];
 
                   final defaultItems = <PopupMenuEntry<String>>[
@@ -684,6 +706,20 @@ class _NWalletCardState extends State<NWalletCard>
                       break;
                     case 'restore':
                       showRestoreDialog(context, widget.wallet as CashuWallet);
+                      break;
+                    case 'recover_quote':
+                      await showCashuQuoteRecoveryDialog(
+                        context,
+                        ndkFlutter,
+                        defaultMintUrl: (widget.wallet as CashuWallet).mintUrl,
+                      );
+                      break;
+                    case 'restore_funds':
+                      await showCashuRestoreDialog(
+                        context,
+                        ndkFlutter,
+                        defaultMintUrl: (widget.wallet as CashuWallet).mintUrl,
+                      );
                       break;
                     case 'set_default_receive':
                       widget.ndkFlutter.ndk.wallets
