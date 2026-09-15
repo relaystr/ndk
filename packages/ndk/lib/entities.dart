@@ -54,6 +54,7 @@ export 'domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 export 'domain_layer/entities/cashu/cashu_blinded_message.dart';
 export 'domain_layer/entities/cashu/cashu_blinded_signature.dart';
 export 'domain_layer/entities/cashu/cashu_restore_result.dart';
+export 'domain_layer/entities/cashu/cashu_quote_recovery_progress.dart';
 
 /// Wallet entities
 export 'domain_layer/entities/wallet/wallet.dart';

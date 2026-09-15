@@ -12,6 +12,7 @@ import '../../entities/cashu/cashu_mint_balance.dart';
 import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../entities/cashu/cashu_quote.dart';
+import '../../entities/cashu/cashu_quote_recovery_progress.dart';
 import '../../entities/cashu/cashu_restore_result.dart';
 import '../../entities/cashu/cashu_spending_result.dart';
 import '../../entities/cashu/cashu_token.dart';
@@ -988,15 +989,20 @@ class Cashu {
   /// transaction record is created when none exists, or updated when one does,
   /// so the recorded state reflects the outcome either way.
   ///
-  /// Returns the final transaction (`completed`, or `failed` when the mint
-  /// rejected the request).
-  Future<CashuWalletTransaction> recoverAndCompleteQuote({
+  /// emits [CashuQuoteRecoveryProgress] events: the quote fetch,
+  /// the lock-key recovery and - once the counter is found - the mint
+  /// completion, carrying the latest transaction state on every emission.
+  Stream<CashuQuoteRecoveryProgress> recoverAndCompleteQuote({
     required String mintUrl,
     required String quoteID,
     String method = 'bolt11',
     int maxScan = CashuConfig.defaultQuoteKeyScanLimit,
-  }) async {
+  }) async* {
     await preflightChecks();
+
+    yield const CashuQuoteRecoveryProgress(
+      stage: CashuQuoteRecoveryStage.fetchingQuote,
+    );
 
     // ask the mint for the quote to learn the locked pubkey and its state
     final serverQuote = await _cashuRepo.getMintQuoteByQuoteId(
@@ -1011,6 +1017,10 @@ class Cashu {
         'Mint did not lock quote $quoteID to a pubkey, no key to recover',
       );
     }
+
+    yield const CashuQuoteRecoveryProgress(
+      stage: CashuQuoteRecoveryStage.recoveringLockKey,
+    );
 
     // recover the private lock key by scanning seed-derived counters
     final counter = await _findQuoteKeyCounter(
@@ -1047,6 +1057,22 @@ class Cashu {
       }
     }
 
+    // if the quote was already minted locally there is nothing left to do:
+    // return the recovered key and the existing completed transaction instead
+    // of re-minting. Mints reject reused quotes, and re-running the mint here
+    // would otherwise clobber the completed record with a pending one and
+    // surface a confusing error.
+    if (existing != null &&
+        existing.state == WalletTransactionState.completed) {
+      yield CashuQuoteRecoveryProgress(
+        stage: CashuQuoteRecoveryStage.completingMint,
+        derivationCounter: counter,
+        quoteKey: quoteKey,
+        transaction: existing,
+      );
+      return;
+    }
+
     CashuWalletTransaction draft;
     if (existing == null) {
       final keysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
@@ -1077,8 +1103,20 @@ class Cashu {
 
     // complete the mint: waits for payment, marks the transaction `completed`
     // (or `failed`) and saves the minted proofs
-    final events = await retrieveFunds(draftTransaction: draft).toList();
-    return events.last;
+    yield CashuQuoteRecoveryProgress(
+      stage: CashuQuoteRecoveryStage.completingMint,
+      derivationCounter: counter,
+      quoteKey: quoteKey,
+      transaction: draft,
+    );
+    await for (final tx in retrieveFunds(draftTransaction: draft)) {
+      yield CashuQuoteRecoveryProgress(
+        stage: CashuQuoteRecoveryStage.completingMint,
+        derivationCounter: counter,
+        quoteKey: quoteKey,
+        transaction: tx,
+      );
+    }
   }
 
   /// retrieve funds from a pending funding transaction \

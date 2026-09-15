@@ -333,7 +333,7 @@ void main() {
         mintUrl: mockMintUrl,
         quoteID: paidQuoteId,
       ),
-      throwsA(isA<Exception>()),
+      emitsThrough(emitsError(isA<Exception>())),
     );
 
     // the record was created even though the mint rejected the request, and
@@ -420,7 +420,7 @@ void main() {
         mintUrl: mockMintUrl,
         quoteID: paidQuoteId,
       ),
-      throwsA(isA<Exception>()),
+      emitsThrough(emitsError(isA<Exception>())),
     );
 
     // the existing record was kept and updated with the recovered key
@@ -429,6 +429,108 @@ void main() {
     expect(stored.qoute!.quoteId, equals(paidQuoteId));
     expect(
         stored.qoute!.quoteKey.privateKey, equals(recoveredKeypair.privateKey));
+    expect(stored.qoute!.quoteKeyCounter, equals(targetCounter));
+  });
+
+  test(
+      'recoverAndCompleteQuote returns the existing completed quote without '
+      're-minting when the quote was already recovered', () async {
+    final seed = CashuSeed(userSeedPhrase: seedPhrase);
+    final derivation = DartCashuKeyDerivation();
+
+    const targetCounter = 3;
+    final recoveredKeypair = await derivation.deriveQuoteKey(
+      seedBytes: Uint8List.fromList(seed.getSeedBytes()),
+      counter: targetCounter,
+    );
+
+    final mockClient = MockCashuHttpClient();
+    mockClient.setCustomResponse(
+      'GET',
+      '/v1/mint/quote/bolt11/$paidQuoteId',
+      http.Response(
+        jsonEncode({
+          'quote': paidQuoteId,
+          'request': 'lnbc...',
+          'amount': 5,
+          'unit': 'sat',
+          'state': 'PAID',
+          'expiry': DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3600,
+          'pubkey': recoveredKeypair.publicKey,
+        }),
+        200,
+        headers: {'content-type': 'application/json'},
+      ),
+    );
+
+    final cache = MemCacheManager();
+    await cache.setCashuSecretCounter(
+      mintUrl: kQuoteKeyDerivationCounterSlot,
+      keysetId: kQuoteKeyDerivationCounterSlot,
+      counter: 4,
+    );
+
+    // the quote was already recovered and minted locally
+    final existing = CashuWalletTransaction(
+      id: paidQuoteId,
+      walletId: mockMintUrl,
+      changeAmount: 5,
+      unit: 'sat',
+      walletType: WalletType.CASHU,
+      state: WalletTransactionState.completed,
+      mintUrl: mockMintUrl,
+      method: 'bolt11',
+      qoute: CashuQuote(
+        quoteId: paidQuoteId,
+        request: 'lnbc...',
+        amount: 5,
+        unit: 'sat',
+        state: CashuQuoteState.paid,
+        expiry: DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3600,
+        mintUrl: mockMintUrl,
+        quoteKey: recoveredKeypair,
+        quoteKeyCounter: targetCounter,
+      ),
+    );
+    final wallets = MemWalletsRepo();
+    await wallets.saveTransactions([existing]);
+
+    final cashu = _cashu(
+      wallets: wallets,
+      cache: cache,
+      seedPhrase: seedPhrase,
+      mockClient: mockClient,
+    );
+
+    // the streaming variant reports both recovery stages and then returns the
+    // existing completed transaction instead of re-minting
+    final events = await cashu
+        .recoverAndCompleteQuote(
+          mintUrl: mockMintUrl,
+          quoteID: paidQuoteId,
+        )
+        .toList();
+    expect(events.map((e) => e.stage), [
+      CashuQuoteRecoveryStage.fetchingQuote,
+      CashuQuoteRecoveryStage.recoveringLockKey,
+      CashuQuoteRecoveryStage.completingMint,
+    ]);
+    expect(events.last.transaction!.state, WalletTransactionState.completed);
+    expect(events.last.transaction!.id, equals(paidQuoteId));
+
+    final result = await cashu
+        .recoverAndCompleteQuote(
+          mintUrl: mockMintUrl,
+          quoteID: paidQuoteId,
+        )
+        .last;
+    expect(result.transaction!.state, WalletTransactionState.completed);
+    expect(result.transaction!.id, equals(paidQuoteId));
+
+    // the completed record was left untouched (no re-mint, no pending clobber)
+    expect((await wallets.getTransactions()).length, 1);
+    final stored = await _storedTx(wallets);
+    expect(stored.state, WalletTransactionState.completed);
     expect(stored.qoute!.quoteKeyCounter, equals(targetCounter));
   });
 
@@ -778,11 +880,14 @@ void main() {
         seedPhrase: seedPhrase,
       );
 
-      final completed = await wallet2.recoverAndCompleteQuote(
-        mintUrl: devMintUrl,
-        quoteID: quoteId,
-      );
-      expect(completed.state, equals(WalletTransactionState.completed));
+      final completed = await wallet2
+          .recoverAndCompleteQuote(
+            mintUrl: devMintUrl,
+            quoteID: quoteId,
+          )
+          .last;
+      expect(completed.transaction!.state,
+          equals(WalletTransactionState.completed));
 
       // the freshly created record carries the recovered key
       final stored = await _storedTx(wallets2);
