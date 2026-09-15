@@ -241,7 +241,9 @@ class _NAppUpdateDialogState extends State<NAppUpdateDialog> {
   @override
   void initState() {
     super.initState();
-    unawaited(_refresh());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_refresh());
+    });
   }
 
   Future<void> _refresh() async {
