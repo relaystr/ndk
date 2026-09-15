@@ -77,6 +77,10 @@ jobs:
           cp web/drift_worker.js build/web/drift_worker.js
 
       - name: Deploy app into gh-pages /app
+        if: >
+          (inputs.destination_dir || github.event.inputs.destination_dir || 'app') != 'app' ||
+          (startsWith(inputs.deploy_ref || github.ref, 'refs/tags/v') &&
+          !contains(inputs.deploy_ref || github.ref, '-'))
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

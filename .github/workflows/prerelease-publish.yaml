@@ -66,4 +66,12 @@ jobs:
           git tag -a "$release_tag" "$COMMIT_SHA" -m "Release $release_tag"
           git push origin "$release_tag"
           gh workflow run release.yml --ref "$release_tag"
+
+      - name: Deploy documentation for full NDK release
+        if: inputs.package_name == 'ndk' && !contains(inputs.package_version, '-')
+        env:
+          PACKAGE_VERSION: ${{ inputs.package_version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release_tag="v$PACKAGE_VERSION"
           gh workflow run deploy-docs.yml --ref "$release_tag"
