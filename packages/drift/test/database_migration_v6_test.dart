@@ -5,9 +5,13 @@ import 'package:ndk_drift/ndk_drift.dart';
 
 /// Opens a database seeded with the pre-v6 schema (dedicated metadatas and
 /// contact_lists tables) so that opening it triggers the v5 -> v6 migration.
+///
+/// [version] seeds an older schema instead: below 5 the delivery tables do not
+/// exist yet, and the migration has to create them rather than alter them.
 NdkCacheDatabase openV5Database({
   List<String> metadataInserts = const [],
   List<String> contactListInserts = const [],
+  int version = 5,
 }) {
   return NdkCacheDatabase.forTesting(
     NativeDatabase.memory(
@@ -75,13 +79,29 @@ NdkCacheDatabase openV5Database({
             value TEXT
           );
         ''');
+        if (version >= 5) {
+          db.execute('''
+            CREATE TABLE relay_delivery_targets_table (
+              event_id TEXT NOT NULL,
+              relay_url TEXT NOT NULL,
+              reason TEXT NOT NULL,
+              state TEXT NOT NULL,
+              attempt_count INTEGER NOT NULL DEFAULT 0,
+              last_attempt_at INTEGER,
+              next_retry_at INTEGER,
+              last_error TEXT,
+              last_ok_message TEXT,
+              PRIMARY KEY (event_id, relay_url)
+            );
+          ''');
+        }
         for (final statement in metadataInserts) {
           db.execute(statement);
         }
         for (final statement in contactListInserts) {
           db.execute(statement);
         }
-        db.execute('PRAGMA user_version = 5;');
+        db.execute('PRAGMA user_version = $version;');
       },
     ),
   );
@@ -229,4 +249,30 @@ void main() {
 
     await db.close();
   });
+
+  /// A database older than the delivery tables has them created from today's
+  /// definition, auth_canonical included, so the v7 step must not add it again.
+  test(
+    'v4 -> latest creates the delivery tables instead of altering them',
+    () async {
+      final db = openV5Database(version: 4);
+      final cacheManager = DriftCacheManager(db);
+
+      await cacheManager.saveRelayDeliveryTarget(
+        const RelayDeliveryTarget(
+          eventId: 'event-1',
+          relayUrl: 'wss://relay.example',
+          reason: RelayDeliveryReason.explicit,
+          authCanonical: 'require:alicePubKey',
+        ),
+      );
+
+      final targets = await cacheManager.loadRelayDeliveryTargets(
+        eventId: 'event-1',
+      );
+      expect(targets.single.authCanonical, 'require:alicePubKey');
+
+      await db.close();
+    },
+  );
 }
