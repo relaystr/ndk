@@ -3292,6 +3292,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Balance refreshed'**
   String get balanceRefreshed;
+
+  /// Title of the dialog to recover a mint quote
+  ///
+  /// In en, this message translates to:
+  /// **'Recover Mint Quote'**
+  String get cashuQuoteRecoveryTitle;
+
+  /// Menu item / button to start recovering a mint quote
+  ///
+  /// In en, this message translates to:
+  /// **'Recover quote'**
+  String get recoverQuote;
+
+  /// Prompt to enter a mint quote ID
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the mint quote ID to recover. The lock key is recovered from your seed phrase.'**
+  String get enterQuoteId;
+
+  /// Label for the quote ID input field
+  ///
+  /// In en, this message translates to:
+  /// **'Quote ID'**
+  String get quoteId;
+
+  /// Hint text for the quote ID input field
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the quote ID here'**
+  String get quoteIdHint;
+
+  /// Validation message when the quote ID field is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a quote ID'**
+  String get pleaseEnterQuoteId;
+
+  /// Button label while a quote recovery is in progress
+  ///
+  /// In en, this message translates to:
+  /// **'Recovering quote...'**
+  String get recoveringQuote;
+
+  /// Progress line while the quote is fetched from the mint
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching quote from mint...'**
+  String get cashuQuoteRecoveryStageFetchingQuote;
+
+  /// Progress line while the lock key is recovered by scanning seed-derived counters
+  ///
+  /// In en, this message translates to:
+  /// **'Recovering lock key from your seed...'**
+  String get cashuQuoteRecoveryStageRecoveringKey;
+
+  /// Progress line while the mint is being completed
+  ///
+  /// In en, this message translates to:
+  /// **'Completing mint...'**
+  String get cashuQuoteRecoveryStageCompletingMint;
+
+  /// Confirmation shown once the lock key is recovered
+  ///
+  /// In en, this message translates to:
+  /// **'Lock key recovered (derivation counter {counter})'**
+  String cashuQuoteRecoveryKeyRecovered(int counter);
+
+  /// Success message shown when the quote is recovered and minted
+  ///
+  /// In en, this message translates to:
+  /// **'Quote recovered and funds added to your balance'**
+  String get cashuQuoteRecoveryCompleted;
+
+  /// Error prefix shown when the quote recovery fails
+  ///
+  /// In en, this message translates to:
+  /// **'Quote recovery failed'**
+  String get quoteRecoveryFailed;
+
+  /// Menu item to restore funds from a mint using the seed
+  ///
+  /// In en, this message translates to:
+  /// **'Restore funds from mint'**
+  String get restoreFundsFromMint;
+
+  /// Title of the dialog to restore funds from a mint
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Funds from Mint'**
+  String get cashuRestoreFundsTitle;
+
+  /// Explanation shown in the restore-from-mint dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Scans the mint for proofs derived from your seed and restores them to this wallet.'**
+  String get cashuRestoreDescription;
+
+  /// Button to start the restore-from-mint flow
+  ///
+  /// In en, this message translates to:
+  /// **'Start restore'**
+  String get startRestore;
+
+  /// Progress line while the mint keysets are fetched
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching mint keysets...'**
+  String get cashuRestoreStageFetchingKeysets;
+
+  /// Progress line while the mint is scanned for seed-derived proofs
+  ///
+  /// In en, this message translates to:
+  /// **'Scanning mint for your funds...'**
+  String get cashuRestoreStageScanning;
+
+  /// Scan progress in the restore-from-mint dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Scanned {keysets} keyset(s) · {proofs} proof(s) found'**
+  String cashuRestoreScanProgress(int keysets, int proofs);
+
+  /// Progress line shown once the restore-from-mint scan completes
+  ///
+  /// In en, this message translates to:
+  /// **'Restore complete'**
+  String get cashuRestoreStageCompleted;
+
+  /// Note shown while restoring that pending mint quotes are recovered too
+  ///
+  /// In en, this message translates to:
+  /// **'Also recovers pending mint quotes'**
+  String get cashuRestoreAlsoRestoresQuotes;
+
+  /// Confirmation after a successful restore-from-mint
+  ///
+  /// In en, this message translates to:
+  /// **'Restored {count} proofs from the mint'**
+  String restoredFromMint(int count);
+
+  /// Error prefix shown when the restore-from-mint fails
+  ///
+  /// In en, this message translates to:
+  /// **'Restore failed'**
+  String get restoreFailed;
 }
 
 class _AppLocalizationsDelegate
