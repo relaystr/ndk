@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:rxdart/rxdart.dart';
 
 import '../../../config/cashu_config.dart';
@@ -5,11 +8,13 @@ import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/cashu/cashu_blinded_message.dart';
 import '../../entities/cashu/cashu_blinded_signature.dart';
+import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_mint_balance.dart';
 import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_mint_recommendation.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../entities/cashu/cashu_quote.dart';
+import '../../entities/cashu/cashu_quote_recovery_progress.dart';
 import '../../entities/cashu/cashu_restore_result.dart';
 import '../../entities/cashu/cashu_spending_result.dart';
 import '../../entities/cashu/cashu_token.dart';
@@ -23,6 +28,7 @@ import '../../repositories/wallets_repo.dart';
 import 'cashu_export_import.dart';
 import 'cashu_bdhke.dart';
 import 'cashu_cache_decorator.dart';
+import 'cashu_keypair.dart';
 import 'cashu_keysets.dart';
 import 'cashu_mint_recommendations.dart';
 import 'cashu_proof_select.dart';
@@ -46,6 +52,9 @@ class Cashu {
   final CashuMintRecommendations? _mintRecommendations;
 
   final CashuKeyDerivation _cashuKeyDerivation;
+
+  /// guards the one-shot startup refresh of pending quotes
+  bool _startupResumeAttempted = false;
 
   Cashu({
     required CashuRepo cashuRepo,
@@ -81,6 +90,8 @@ class Cashu {
             'Cashu initialized without user seed phrase, cashu features will not work \nSet the seed phrase using NdkConfig or Cashu.setCashuSeedPhrase()',
       );
     }
+
+    _scheduleStartupResume();
   }
 
   /// Cashu mint discovery and community reviews.
@@ -111,6 +122,7 @@ class Cashu {
   /// you can use CashuSeed.generateSeedPhrase() to generate a new seed phrase
   void setCashuSeedPhrase(CashuUserSeedphrase userSeedPhrase) {
     _cashuSeed.setSeedPhrase(seedPhrase: userSeedPhrase.seedPhrase);
+    _scheduleStartupResume();
   }
 
   /// Get the cashu seed instance
@@ -306,6 +318,15 @@ class Cashu {
       // Yield progress update
       yield result;
     }
+
+    // Recover the private keys of pending funding quotes for this mint so
+    // quotes that were paid before local data was lost can still be minted
+    // (see recoverQuoteKey).
+    await _recoverPendingQuoteKeys(mintUrl);
+
+    // Paid quotes whose keys were recovered are completed here so the funds
+    // become spendable proofs again.
+    await _completePaidPendingQuotes(mintUrl);
 
     Logger.log.i(() => 'Restore completed');
   }
@@ -643,12 +664,25 @@ class Cashu {
       unit: unit,
     );
 
+    final quoteKeyCounter =
+        await _cacheManagerCashu.getAndIncrementDerivationCounter(
+      keysetId: kQuoteKeyDerivationCounterSlot,
+      mintUrl: kQuoteKeyDerivationCounterSlot,
+    );
+
+    final quoteKey = await _cashuKeyDerivation.deriveQuoteKey(
+      seedBytes: Uint8List.fromList(_cashuSeed.getSeedBytes()),
+      counter: quoteKeyCounter,
+    );
+
     final quote = await _cashuRepo.getMintQuote(
       mintUrl: mintUrl,
       amount: amount,
       unit: unit,
       method: method,
       description: memo ?? '',
+      quoteKey: quoteKey,
+      quoteKeyCounter: quoteKeyCounter,
     );
 
     CashuWalletTransaction draftTransaction = CashuWalletTransaction(
@@ -672,6 +706,485 @@ class Cashu {
     await _walletsRepo.saveTransactions([draftTransaction]);
 
     return draftTransaction;
+  }
+
+  /// Recover the private key for a NUT-20 mint quote lock key using the seed.
+  ///
+  /// Mints lock issuance to the `pubkey` sent when the quote was created. NDK
+  /// derives these keys from the wallet seed, so a paid but unminted quote can
+  /// still be completed after local data loss by scanning counters until the
+  /// derived public key matches the `pubkey` the mint locked the quote to.
+  ///
+  /// [lockedPubkey] is the compressed public key of the quote lock (the
+  /// `pubkey` the mint has on file for the quote). [maxScan] limits how many
+  /// counters are scanned when the persisted counter slot is gone.
+  ///
+  /// Returns the matching [CashuKeypair] (whose private key signs the mint
+  /// request) or `null` when no counter derives to [lockedPubkey].
+  Future<CashuKeypair?> recoverQuoteKey({
+    required String mintUrl,
+    required String lockedPubkey,
+    int maxScan = CashuConfig.defaultQuoteKeyScanLimit,
+  }) async {
+    final counter = await _findQuoteKeyCounter(
+      mintUrl: mintUrl,
+      lockedPubkey: lockedPubkey,
+      maxScan: maxScan,
+    );
+    if (counter == null) {
+      return null;
+    }
+
+    return _cashuKeyDerivation.deriveQuoteKey(
+      seedBytes: Uint8List.fromList(_cashuSeed.getSeedBytes()),
+      counter: counter,
+    );
+  }
+
+  /// Scans derivation counters to find the counter whose quote lock key has
+  /// public key [lockedPubkey]. Returns the counter or `null`.
+  Future<int?> _findQuoteKeyCounter({
+    required String mintUrl,
+    required String lockedPubkey,
+    int maxScan = CashuConfig.defaultQuoteKeyScanLimit,
+  }) async {
+    await preflightChecks();
+
+    final seedBytes = Uint8List.fromList(_cashuSeed.getSeedBytes());
+
+    final slotCounter = await _cacheManagerCashu.getCashuSecretCounter(
+      // Quote keys are derived from a global, mint-independent counter (see
+      // initiateFund), so the counter lives in a single global slot.
+      mintUrl: kQuoteKeyDerivationCounterSlot,
+      keysetId: kQuoteKeyDerivationCounterSlot,
+    );
+
+    // The slot holds the number of quote keys assigned so far (counters 0..
+    // slot-1 are used). When local data is gone the slot is 0, so fall back
+    // to the caller-provided cap.
+    final scanUpperBound = slotCounter > maxScan ? slotCounter : maxScan;
+
+    for (var counter = 0; counter < scanUpperBound; counter++) {
+      final keypair = await _cashuKeyDerivation.deriveQuoteKey(
+        seedBytes: seedBytes,
+        counter: counter,
+      );
+      if (keypair.publicKey == lockedPubkey) {
+        Logger.log.i(
+          () => 'Recovered quote lock key for $mintUrl at counter $counter',
+        );
+        return counter;
+      }
+    }
+
+    return null;
+  }
+
+  /// Re-fetches the state of every locally stored pending quote from its mint
+  /// and persists the fresh state on the quote.
+  ///
+  /// Quotes that were paid while the app was closed are marked `PAID` here so
+  /// they can be completed with [retrieveFunds]. Runs automatically on startup
+  /// once a seed phrase is available (see [_scheduleStartupResume]).
+  ///
+  /// Returns every pending funding transaction that was refreshed (in storage
+  /// order), so callers can build a complete per-mint work list for key
+  /// recovery and fund retrieval - not just the ones whose state changed.
+  Future<List<CashuWalletTransaction>> updatePendingQuotes() async {
+    await preflightChecks();
+
+    final transactions = await _walletsRepo.getTransactions(
+      walletType: WalletType.CASHU,
+    );
+
+    final pendingFunding = transactions
+        .whereType<CashuWalletTransaction>()
+        .where((tx) => tx.state.isPending && tx.qoute != null)
+        .toList();
+
+    if (pendingFunding.isEmpty) {
+      return [];
+    }
+
+    Logger.log.i(
+      () => 'Refreshing state of ${pendingFunding.length} pending quotes',
+    );
+
+    final refreshedTransactions = <CashuWalletTransaction>[];
+    for (final tx in pendingFunding) {
+      final quote = tx.qoute!;
+      final method = tx.method;
+      if (method == null) {
+        continue;
+      }
+      try {
+        final freshState = await _cashuRepo.checkMintQuoteState(
+          mintUrl: tx.mintUrl,
+          quoteID: quote.quoteId,
+          method: method,
+        );
+
+        final refreshedTx = tx.copyWith(
+          qoute: quote.copyWith(state: freshState),
+        );
+        await _addAndSavePendingTransaction(refreshedTx);
+        refreshedTransactions.add(refreshedTx);
+
+        if (freshState != quote.state) {
+          Logger.log.i(
+            () => 'Quote ${quote.quoteId} state is now $freshState',
+          );
+        }
+      } catch (e) {
+        Logger.log.e(
+          () => 'Failed to refresh state of quote ${quote.quoteId}: $e',
+        );
+      }
+    }
+    return refreshedTransactions;
+  }
+
+  /// One-shot startup refresh: re-fetches pending quote states once the seed
+  /// phrase is available. Ran again from [setCashuSeedPhrase] when the seed is
+  /// set after construction.
+  void _scheduleStartupResume() {
+    if (_startupResumeAttempted) {
+      return;
+    }
+    if (!_cashuSeed.isSeedPhraseSet) {
+      return;
+    }
+    _startupResumeAttempted = true;
+
+    updatePendingQuotes().then((refreshedTransactions) async {
+      if (refreshedTransactions.isEmpty) {
+        return;
+      }
+      Logger.log.i(
+        () =>
+            'Successfully refreshed ${refreshedTransactions.length} pending quotes',
+      );
+
+      // recover and complete on every mint that still has pending funding,
+      // whether the quote was already marked paid locally or not
+      final mintUrls = refreshedTransactions.map((tx) => tx.mintUrl).toSet();
+      for (final mintUrl in mintUrls) {
+        await _recoverPendingQuoteKeys(mintUrl);
+        await _completePaidPendingQuotes(mintUrl);
+      }
+    }).catchError(
+      (Object e) => Logger.log.e(
+        () => 'Startup pending quote refresh failed: $e',
+      ),
+    );
+  }
+
+  /// Recover the seed-derived quote keys of the pending funding transactions
+  /// for [mintUrl] and persist them (used by [restore]).
+  ///
+  /// Quotes created with deterministic keys carry their derivation counter
+  /// ([CashuQuote.quoteKeyCounter]), so the key can be re-derived straight
+  /// from that counter - the locked pubkey the mint has on file is NOT needed.
+  /// When the counter is lost as well, falls back to scanning counters until
+  /// one derives to the public key recorded on the transaction.
+  Future<void> _recoverPendingQuoteKeys(String mintUrl) async {
+    final transactions = await _walletsRepo.getTransactions(
+      walletType: WalletType.CASHU,
+      walletId: mintUrl,
+    );
+
+    final pendingFunding = transactions
+        .whereType<CashuWalletTransaction>()
+        .where((tx) => tx.state.isPending && tx.qoute != null)
+        .toList();
+
+    if (pendingFunding.isEmpty) {
+      return;
+    }
+
+    Logger.log.i(
+      () => 'Recovering quote keys for ${pendingFunding.length} pending '
+          'funding transactions on $mintUrl',
+    );
+
+    for (final tx in pendingFunding) {
+      final quote = tx.qoute!;
+      try {
+        final counter = quote.quoteKeyCounter >= 0
+            ? quote.quoteKeyCounter
+            : await _findQuoteKeyCounter(
+                mintUrl: mintUrl,
+                lockedPubkey: quote.quoteKey.publicKey,
+              );
+
+        if (counter == null) {
+          // The key was not derived from the seed (e.g. it was created before
+          // deterministic quote keys landed); the persisted key still works.
+          Logger.log.w(
+            () => 'Quote ${quote.quoteId} key is not recoverable from the '
+                'seed, keeping persisted key',
+          );
+          continue;
+        }
+
+        final keypair = await _cashuKeyDerivation.deriveQuoteKey(
+          seedBytes: Uint8List.fromList(_cashuSeed.getSeedBytes()),
+          counter: counter,
+        );
+
+        if (keypair.privateKey != quote.quoteKey.privateKey ||
+            counter != quote.quoteKeyCounter) {
+          final updatedTx = tx.copyWith(
+            qoute: quote.copyWith(
+              quoteKey: keypair,
+              quoteKeyCounter: counter,
+            ),
+          );
+          await _addAndSavePendingTransaction(updatedTx);
+          Logger.log.i(
+            () => 'Recovered quote key for quote ${quote.quoteId} at '
+                'counter $counter',
+          );
+        }
+      } catch (e) {
+        Logger.log.e(
+          () => 'Failed to recover quote key for quote ${quote.quoteId}: $e',
+        );
+      }
+    }
+  }
+
+  /// Completes pending funding quotes that were paid but never minted so the
+  /// recovered funds become spendable proofs again.
+  ///
+  /// Runs at the end of [restore] after [_recoverPendingQuoteKeys]. Quotes
+  /// already marked paid on the mint are completed right away; quotes still
+  /// unpaid are re-checked until [_pendingQuotePayTimeout] elapses (dev mints
+  /// auto-pay invoices shortly after creation).
+  Future<void> _completePaidPendingQuotes(String mintUrl) async {
+    final transactions = await _walletsRepo.getTransactions(
+      walletType: WalletType.CASHU,
+      walletId: mintUrl,
+    );
+
+    final pendingFunding = transactions
+        .whereType<CashuWalletTransaction>()
+        .where((tx) => tx.state.isPending && tx.qoute != null)
+        .toList();
+
+    if (pendingFunding.isEmpty) {
+      return;
+    }
+
+    Logger.log.i(
+      () => 'Completing paid pending quotes for ${pendingFunding.length} '
+          'funding transactions on $mintUrl',
+    );
+
+    for (final tx in pendingFunding) {
+      final quote = tx.qoute!;
+      final method = tx.method;
+      if (method == null || tx.usedKeysets == null) {
+        // without a method or a recorded keyset there is nothing to mint
+        // against, the quote key may still have been recovered above
+        continue;
+      }
+
+      // wait (bounded) for the quote to be paid, then complete it
+      var paid = quote.state == CashuQuoteState.paid;
+      final deadline = DateTime.now().add(CashuConfig.QUOTE_PAY_TIMEOUT);
+      while (!paid && DateTime.now().isBefore(deadline)) {
+        try {
+          paid = await _cashuRepo.checkMintQuoteState(
+                mintUrl: mintUrl,
+                quoteID: quote.quoteId,
+                method: method,
+              ) ==
+              CashuQuoteState.paid;
+          if (!paid) {
+            await Future<void>.delayed(CashuConfig.QUOTE_PAY_RETRY_INTERVAL);
+          }
+        } catch (e) {
+          Logger.log.e(
+            () => 'Failed to check state of quote ${quote.quoteId}: $e',
+          );
+          break;
+        }
+      }
+
+      if (!paid) {
+        Logger.log.i(
+          () => 'Quote ${quote.quoteId} is not paid yet, skipping completion',
+        );
+        continue;
+      }
+
+      try {
+        await retrieveFunds(draftTransaction: tx).toList();
+        Logger.log.i(
+          () => 'Completed previously paid quote ${quote.quoteId}',
+        );
+      } catch (e) {
+        Logger.log.e(
+          () => 'Failed to complete paid quote ${quote.quoteId}: $e',
+        );
+      }
+    }
+  }
+
+  /// Completes a mint quote identified by [quoteID] on [mintUrl].
+  ///
+  /// Fetches the quote from the mint
+  /// (GET /v1/mint/quote/{method}/{quote_id}) to learn the public key it was
+  /// locked to, recovers the matching private key by scanning the
+  /// seed-derived quote-key counter, and completes the mint. A local
+  /// transaction record is created when none exists, or updated when one does,
+  /// so the recorded state reflects the outcome either way.
+  ///
+  /// emits [CashuQuoteRecoveryProgress] events: the quote fetch,
+  /// the lock-key recovery and - once the counter is found - the mint
+  /// completion, carrying the latest transaction state on every emission.
+  Stream<CashuQuoteRecoveryProgress> recoverAndCompleteQuote({
+    required String mintUrl,
+    required String quoteID,
+    String method = 'bolt11',
+    int maxScan = CashuConfig.defaultQuoteKeyScanLimit,
+  }) async* {
+    await preflightChecks();
+
+    yield const CashuQuoteRecoveryProgress(
+      stage: CashuQuoteRecoveryStage.fetchingQuote,
+    );
+
+    // ask the mint for the quote to learn the locked pubkey and its state
+    final serverQuote = await _cashuRepo.getMintQuoteByQuoteId(
+      mintUrl: mintUrl,
+      quoteID: quoteID,
+      method: method,
+    );
+
+    final lockedPubkey = serverQuote.quoteKey.publicKey;
+    if (lockedPubkey.isEmpty) {
+      throw Exception(
+        'Mint did not lock quote $quoteID to a pubkey, no key to recover',
+      );
+    }
+
+    yield const CashuQuoteRecoveryProgress(
+      stage: CashuQuoteRecoveryStage.recoveringLockKey,
+    );
+
+    // recover the private lock key by scanning seed-derived counters
+    final counter = await _findQuoteKeyCounter(
+      mintUrl: mintUrl,
+      lockedPubkey: lockedPubkey,
+      maxScan: maxScan,
+    );
+    if (counter == null) {
+      throw Exception(
+        'No seed-derived quote key matches lock pubkey $lockedPubkey of '
+        'quote $quoteID',
+      );
+    }
+    final quoteKey = await _cashuKeyDerivation.deriveQuoteKey(
+      seedBytes: Uint8List.fromList(_cashuSeed.getSeedBytes()),
+      counter: counter,
+    );
+
+    final quote = serverQuote.copyWith(
+      state: serverQuote.state,
+      quoteKey: quoteKey,
+      quoteKeyCounter: counter,
+    );
+
+    // find the local record of this quote or create a fresh one
+    final transactions = await _walletsRepo.getTransactions(
+      walletType: WalletType.CASHU,
+    );
+    CashuWalletTransaction? existing;
+    for (final tx in transactions.whereType<CashuWalletTransaction>()) {
+      if (tx.mintUrl == mintUrl && tx.qoute?.quoteId == quoteID) {
+        existing = tx;
+        break;
+      }
+    }
+
+    // if the quote was already minted locally there is nothing left to do:
+    // return the recovered key and the existing completed transaction instead
+    // of re-minting. Mints reject reused quotes, and re-running the mint here
+    // would otherwise clobber the completed record with a pending one and
+    // surface a confusing error.
+    if (existing != null &&
+        existing.state == WalletTransactionState.completed) {
+      yield CashuQuoteRecoveryProgress(
+        stage: CashuQuoteRecoveryStage.completingMint,
+        derivationCounter: counter,
+        quoteKey: quoteKey,
+        transaction: existing,
+      );
+      return;
+    }
+
+    CashuWalletTransaction draft;
+    if (existing == null) {
+      final keysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
+      final keyset = CashuTools.filterKeysetsByUnitActive(
+        keysets: keysets,
+        unit: serverQuote.unit,
+      );
+
+      draft = CashuWalletTransaction(
+        id: quoteID,
+        walletId: mintUrl,
+        changeAmount: serverQuote.amount,
+        unit: serverQuote.unit,
+        walletType: WalletType.CASHU,
+        state: WalletTransactionState.pending,
+        mintUrl: mintUrl,
+        method: method,
+        usedKeysets: [keyset],
+        qoute: quote,
+        initiatedDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
+    } else {
+      // surviving records may have missing method or keyset
+      String? recoveredMethod = existing.method;
+      recoveredMethod ??= method;
+
+      List<CahsuKeyset>? recoveredKeysets = existing.usedKeysets;
+      if (recoveredKeysets == null || recoveredKeysets.isEmpty) {
+        final keysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
+        final keyset = CashuTools.filterKeysetsByUnitActive(
+          keysets: keysets,
+          unit: serverQuote.unit,
+        );
+        recoveredKeysets = [keyset];
+      }
+
+      draft = existing.copyWith(
+        state: WalletTransactionState.pending,
+        qoute: quote,
+        method: recoveredMethod,
+        usedKeysets: recoveredKeysets,
+      );
+    }
+
+    // complete the mint: waits for payment, marks the transaction `completed`
+    // (or `failed`) and saves the minted proofs
+    yield CashuQuoteRecoveryProgress(
+      stage: CashuQuoteRecoveryStage.completingMint,
+      derivationCounter: counter,
+      quoteKey: quoteKey,
+      transaction: draft,
+    );
+    await for (final tx in retrieveFunds(draftTransaction: draft)) {
+      yield CashuQuoteRecoveryProgress(
+        stage: CashuQuoteRecoveryStage.completingMint,
+        derivationCounter: counter,
+        quoteKey: quoteKey,
+        transaction: tx,
+      );
+    }
   }
 
   /// retrieve funds from a pending funding transaction \

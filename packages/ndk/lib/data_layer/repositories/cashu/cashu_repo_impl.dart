@@ -150,9 +150,9 @@ class CashuRepoImpl implements CashuRepo {
     required String unit,
     required String method,
     String description = '',
+    required CashuKeypair quoteKey,
+    required int quoteKeyCounter,
   }) async {
-    CashuKeypair quoteKey = CashuKeypair.generateCashuKeyPair();
-
     final url = CashuTools.composeUrl(
       mintUrl: mintUrl,
       path: 'mint/quote/$method',
@@ -186,6 +186,7 @@ class CashuRepoImpl implements CashuRepo {
       map: responseBody,
       mintUrl: mintUrl,
       quoteKey: quoteKey,
+      quoteKeyCounter: quoteKeyCounter,
     );
   }
 
@@ -214,6 +215,41 @@ class CashuRepoImpl implements CashuRepo {
     }
 
     return CashuQuoteState.fromValue(responseBody['state'] as String);
+  }
+
+  @override
+  Future<CashuQuote> getMintQuoteByQuoteId({
+    required String mintUrl,
+    required String quoteID,
+    required String method,
+  }) async {
+    final url = CashuTools.composeUrl(
+      mintUrl: mintUrl,
+      path: 'mint/quote/$method/$quoteID',
+    );
+
+    final response = await client.get(url: Uri.parse(url), headers: headers);
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error getting mint quote: ${response.statusCode}, ${response.body}',
+      );
+    }
+
+    final responseBody = jsonDecode(response.body);
+    if (responseBody is! Map<String, dynamic>) {
+      throw Exception('Invalid response format: $responseBody');
+    }
+
+    return CashuQuote.fromServerMap(
+      map: responseBody,
+      mintUrl: mintUrl,
+      quoteKey: CashuKeypair(
+        privateKey: '',
+        publicKey: (responseBody['pubkey'] as String?) ?? '',
+      ),
+      quoteKeyCounter: -1,
+    );
   }
 
   @override

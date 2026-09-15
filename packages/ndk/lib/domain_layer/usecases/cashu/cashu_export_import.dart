@@ -7,6 +7,7 @@ import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../entities/wallet/wallet_transaction.dart';
 import '../../entities/wallet/wallet_type.dart';
+import '../../repositories/cashu_key_derivation.dart';
 import '../../repositories/wallets_repo.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_seed.dart';
@@ -100,6 +101,21 @@ class CashuStateExportImport {
         'counter': counter,
       });
     }
+
+    // NUT-20 quote key derivation counter. Quote keys are derived from a
+    // global, mint-independent counter that lives in a single reserved slot.
+    // The reserved `quote-key` key cannot collide with a real keyset id
+    // (keyset ids are always hex), so the counter round-trips through the same
+    // structure.
+    final quoteKeyCounter = await _cacheManagerCashu.getCashuSecretCounter(
+      mintUrl: kQuoteKeyDerivationCounterSlot,
+      keysetId: kQuoteKeyDerivationCounterSlot,
+    );
+    countersJson.add({
+      'mintUrl': kQuoteKeyDerivationCounterSlot,
+      'keysetId': kQuoteKeyDerivationCounterSlot,
+      'counter': quoteKeyCounter,
+    });
 
     final export = <String, dynamic>{
       'type': exportType,
