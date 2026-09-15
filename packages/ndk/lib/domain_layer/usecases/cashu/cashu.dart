@@ -8,6 +8,7 @@ import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/cashu/cashu_blinded_message.dart';
 import '../../entities/cashu/cashu_blinded_signature.dart';
+import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_mint_balance.dart';
 import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
@@ -1095,9 +1096,25 @@ class Cashu {
         initiatedDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       );
     } else {
+      // surviving records may have missing method or keyset
+      String? recoveredMethod = existing.method;
+      recoveredMethod ??= method;
+
+      List<CahsuKeyset>? recoveredKeysets = existing.usedKeysets;
+      if (recoveredKeysets == null || recoveredKeysets.isEmpty) {
+        final keysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
+        final keyset = CashuTools.filterKeysetsByUnitActive(
+          keysets: keysets,
+          unit: serverQuote.unit,
+        );
+        recoveredKeysets = [keyset];
+      }
+
       draft = existing.copyWith(
         state: WalletTransactionState.pending,
         qoute: quote,
+        method: recoveredMethod,
+        usedKeysets: recoveredKeysets,
       );
     }
 
