@@ -64,8 +64,8 @@ class NMotdController extends ChangeNotifier {
   /// Whether [motd] decides whether the popup should be shown.
   ///
   /// The message is shown when it exists, was not dismissed yet, and
-  /// (optionally) its `version` tag is newer than [appVersion]. When either
-  /// version is missing, no version filtering is applied.
+  /// (optionally) [appVersion] meets the event's `version` minimum tag. When
+  /// either version is missing, no version filtering is applied.
   bool shouldShow({String? appVersion}) {
     if (_status != NMotdStatus.loaded) return false;
     final motd = _current;
@@ -74,7 +74,7 @@ class NMotdController extends ChangeNotifier {
 
     final eventVersion = motd.version;
     if (eventVersion != null && appVersion != null) {
-      if (compareVersions(eventVersion, appVersion) <= 0) return false;
+      if (compareVersions(appVersion, eventVersion) < 0) return false;
     }
     return true;
   }

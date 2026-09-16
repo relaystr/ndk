@@ -26,10 +26,10 @@ class MotdData {
   /// "Message of the Day" title.
   final String? title;
 
-  /// Optional version this message applies to.
+  /// Optional minimum app version this message applies to.
   ///
   /// When both this value and the supplied app version are present, the popup
-  /// is only shown if this version is newer than the app version.
+  /// is hidden only when the app version is older than this version.
   final String? version;
 
   /// Unix timestamp of the event.

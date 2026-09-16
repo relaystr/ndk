@@ -12,8 +12,8 @@ import 'n_motd_controller.dart';
 ///
 /// Place it anywhere in the widget tree (e.g. on the home screen). The app
 /// developer supplies the current app version via [appVersion]; when both the
-/// event `version` tag and [appVersion] are present, the popup only appears if
-/// the event version is newer.
+/// event `version` tag and [appVersion] are present, the popup is hidden only
+/// when the app version is older than the event minimum version.
 class NMotdPopup extends StatefulWidget {
   /// Controller holding the Message of the Day state.
   final NMotdController controller;

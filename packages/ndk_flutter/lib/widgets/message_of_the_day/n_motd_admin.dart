@@ -136,9 +136,18 @@ class _NMotdAdminState extends State<NMotdAdmin> {
     });
 
     try {
+      // Parameterized replaceable events (kind 30078) are replaced by newest
+      // created_at, so two updates within the same second can leave the old
+      // content on relays. Ensure the new timestamp exceeds the existing one.
+      final nowSec = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final existingCreatedAt = _existing?.createdAt;
+      final createdAt = existingCreatedAt == null
+          ? nowSec
+          : (nowSec > existingCreatedAt ? nowSec : existingCreatedAt + 1);
       final event = Nip01Event(
         pubKey: widget.authorPubkey,
         kind: MotdData.kKind,
+        createdAt: createdAt,
         tags: [
           ["d", widget.dTagValue],
           if (title.isNotEmpty) ["title", title],
