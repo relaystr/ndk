@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789591760049,
+  "lastUpdate": 1789594242713,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -416,6 +416,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1740934,
             "range": "1725232-1764168",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "frnandu",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "daa5b3caaaa9f8a8b743f40ac1d8e0d45b55f91c",
+          "message": "Merge pull request #830 from relaystr/release-35148662800\n\nchore(prerelease): publish ndk_drift 0.1.1-dev.16, ndk 0.10.0-dev.4, ndk_flutter 0.10.0-dev.5, ndk_objectbox 0.2.12-dev.13",
+          "timestamp": "2026-09-16T23:28:50+02:00",
+          "tree_id": "933d9dd1825c59b07a5b798133b1cf143c6c8b5a",
+          "url": "https://github.com/relaystr/ndk/commit/daa5b3caaaa9f8a8b743f40ac1d8e0d45b55f91c"
+        },
+        "date": 1789594239945,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 45007,
+            "range": "44837-48085",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1640220,
+            "range": "1629170-1670352",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
