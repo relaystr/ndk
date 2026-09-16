@@ -1,3 +1,8 @@
+## 0.10.0-dev.4
+
+ - **FIX**: address app update review feedback.
+ - **FEAT**(updates): add NIP-82 release support.
+
 ## 0.10.0-dev.3
 
 > Note: This release has breaking changes.

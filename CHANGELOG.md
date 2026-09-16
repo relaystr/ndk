@@ -3,6 +3,48 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-16
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0-dev.4`](#ndk---v0100-dev4)
+ - [`ndk_flutter` - `v0.10.0-dev.5`](#ndk_flutter---v0100-dev5)
+ - [`ndk_objectbox` - `v0.2.12-dev.13`](#ndk_objectbox---v0212-dev13)
+ - [`ndk_drift` - `v0.1.1-dev.16`](#ndk_drift---v011-dev16)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.13`
+ - `ndk_drift` - `v0.1.1-dev.16`
+
+---
+
+#### `ndk` - `v0.10.0-dev.4`
+
+ - **FIX**: address app update review feedback.
+ - **FEAT**(updates): add NIP-82 release support.
+
+#### `ndk_flutter` - `v0.10.0-dev.5`
+
+ - **FIX**(l10n): translate wallet flows.
+ - **FIX**(ndk_flutter): adapt release details modal.
+ - **FIX**(ndk_flutter): unify release summary row.
+ - **FIX**: address app update review feedback.
+ - **FIX**(flutter): keep wallet delete dialog safe.
+ - **FEAT**(flutter): add download update badge.
+ - **FEAT**(updates): add NIP-82 release support.
+
+
 ## 2026-09-13
 
 ### Changes

@@ -1,3 +1,13 @@
+## 0.10.0-dev.5
+
+ - **FIX**(l10n): translate wallet flows.
+ - **FIX**(ndk_flutter): adapt release details modal.
+ - **FIX**(ndk_flutter): unify release summary row.
+ - **FIX**: address app update review feedback.
+ - **FIX**(flutter): keep wallet delete dialog safe.
+ - **FEAT**(flutter): add download update badge.
+ - **FEAT**(updates): add NIP-82 release support.
+
 ## 0.10.0-dev.4
 
  - **FIX**(flutter): support file_picker 12.
