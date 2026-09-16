@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789483303293,
+  "lastUpdate": 1789591760049,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -378,6 +378,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1531906,
             "range": "1520272-1581958",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "frnandu",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "83db992571af5a97cb4a15040fe93c1eae719478",
+          "message": "Merge pull request #803 from relaystr/feat/nip-82-applications-releases-zapstore-support\n\nfeat: nip-82 applications releases zapstore support",
+          "timestamp": "2026-09-16T22:47:24+02:00",
+          "tree_id": "778552d4fa27e27bba0566964e29b659681a6ac4",
+          "url": "https://github.com/relaystr/ndk/commit/83db992571af5a97cb4a15040fe93c1eae719478"
+        },
+        "date": 1789591756594,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 50413,
+            "range": "50324-56229",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1740934,
+            "range": "1725232-1764168",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
