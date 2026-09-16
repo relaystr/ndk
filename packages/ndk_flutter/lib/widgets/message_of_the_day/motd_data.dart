@@ -20,6 +20,12 @@ class MotdData {
   /// Optional link shown as a second button in the popup.
   final String? url;
 
+  /// Optional title displayed in the popup header.
+  ///
+  /// When absent (or empty), the widget falls back to the localized default
+  /// "Message of the Day" title.
+  final String? title;
+
   /// Optional version this message applies to.
   ///
   /// When both this value and the supplied app version are present, the popup
@@ -34,6 +40,7 @@ class MotdData {
     required this.pubKey,
     required this.message,
     this.url,
+    this.title,
     this.version,
     required this.createdAt,
   });
@@ -48,6 +55,7 @@ class MotdData {
       pubKey: event.pubKey,
       message: event.content,
       url: event.getFirstTag('url'),
+      title: event.getFirstTag('title'),
       version: event.getFirstTag('version'),
       createdAt: event.createdAt,
     );

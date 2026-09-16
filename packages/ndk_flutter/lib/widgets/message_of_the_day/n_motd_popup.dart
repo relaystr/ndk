@@ -124,12 +124,7 @@ class _NMotdDialog extends StatelessWidget {
       backgroundColor: config.backgroundColor,
       shape: config.shape,
       contentPadding: config.contentPadding,
-      title: config.title != null || l10n != null
-          ? Text(
-              config.title ?? l10n!.motdTitle,
-              style: config.titleStyle,
-            )
-          : null,
+      title: _buildTitle(l10n, config, motd),
       content: SingleChildScrollView(
         child: Text(
           motd.message,
@@ -172,5 +167,22 @@ class _NMotdDialog extends StatelessWidget {
       );
     }
     return dialog;
+  }
+
+  /// Resolves the popup title: an event-provided `title` tag wins, otherwise
+  /// the widget-level [NMotdConfig.title] is used, falling back to the
+  /// localized default "Message of the Day".
+  Widget? _buildTitle(
+    AppLocalizations? l10n,
+    NMotdConfig config,
+    MotdData motd,
+  ) {
+    final eventTitle = motd.title?.trim();
+    final hasEventTitle = eventTitle != null && eventTitle.isNotEmpty;
+    if (!hasEventTitle && config.title == null && l10n == null) return null;
+    return Text(
+      hasEventTitle ? eventTitle : (config.title ?? l10n!.motdTitle),
+      style: config.titleStyle,
+    );
   }
 }

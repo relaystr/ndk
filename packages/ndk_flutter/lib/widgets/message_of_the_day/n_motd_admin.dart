@@ -38,6 +38,7 @@ class NMotdAdmin extends StatefulWidget {
 enum _AdminStatus { idle, loading, saving, deleting, error }
 
 class _NMotdAdminState extends State<NMotdAdmin> {
+  final TextEditingController _titleController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
   final TextEditingController _versionController = TextEditingController();
@@ -55,6 +56,7 @@ class _NMotdAdminState extends State<NMotdAdmin> {
 
   @override
   void dispose() {
+    _titleController.dispose();
     _messageController.dispose();
     _urlController.dispose();
     _versionController.dispose();
@@ -86,6 +88,7 @@ class _NMotdAdminState extends State<NMotdAdmin> {
       if (!mounted) return;
       setState(() {
         _existing = latest == null ? null : MotdData.fromEvent(latest);
+        _titleController.text = _existing?.title ?? '';
         _messageController.text = _existing?.message ?? '';
         _urlController.text = _existing?.url ?? '';
         if (_existing?.version != null && _versionController.text.isEmpty) {
@@ -123,6 +126,7 @@ class _NMotdAdminState extends State<NMotdAdmin> {
       return;
     }
 
+    final title = _titleController.text.trim();
     final url = _urlController.text.trim();
     final version = _versionController.text.trim();
 
@@ -137,6 +141,7 @@ class _NMotdAdminState extends State<NMotdAdmin> {
         kind: MotdData.kKind,
         tags: [
           ["d", widget.dTagValue],
+          if (title.isNotEmpty) ["title", title],
           if (url.isNotEmpty) ["url", url],
           if (version.isNotEmpty) ["version", version],
         ],
@@ -156,6 +161,7 @@ class _NMotdAdminState extends State<NMotdAdmin> {
           pubKey: event.pubKey,
           message: message,
           url: url.isEmpty ? null : url,
+          title: title.isEmpty ? null : title,
           version: version.isEmpty ? null : version,
           createdAt: event.createdAt,
         );
@@ -202,6 +208,7 @@ class _NMotdAdminState extends State<NMotdAdmin> {
         kind: MotdData.kKind,
         tags: [
           ["d", widget.dTagValue],
+          if (existing.title != null) ["title", existing.title!],
           if (existing.url != null) ["url", existing.url!],
           if (existing.version != null) ["version", existing.version!],
         ],
@@ -217,6 +224,7 @@ class _NMotdAdminState extends State<NMotdAdmin> {
       if (!mounted) return;
       setState(() {
         _existing = null;
+        _titleController.clear();
         _messageController.clear();
         _urlController.clear();
         _versionController.text = widget.appVersion ?? '';
@@ -255,6 +263,17 @@ class _NMotdAdminState extends State<NMotdAdmin> {
                 child: Center(child: CircularProgressIndicator()),
               )
             else ...[
+              TextField(
+                controller: _titleController,
+                decoration: InputDecoration(
+                  labelText:
+                      l10n?.motdAdminTitleLabel ?? 'Title (optional)',
+                  hintText: l10n?.motdAdminTitleHint ??
+                      'Leave empty to use the default title',
+                ),
+                enabled: !busy,
+              ),
+              const SizedBox(height: 12),
               TextField(
                 controller: _messageController,
                 minLines: 3,

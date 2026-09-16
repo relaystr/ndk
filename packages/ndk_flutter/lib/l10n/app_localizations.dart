@@ -3293,11 +3293,23 @@ abstract class AppLocalizations {
   /// **'Balance refreshed'**
   String get balanceRefreshed;
 
-  /// Title of the message of the day popup
+  /// Default title of the message of the day popup, used when the event does not provide its own title
   ///
   /// In en, this message translates to:
   /// **'Message of the day'**
   String get motdTitle;
+
+  /// Label for the title input in the message of the day admin
+  ///
+  /// In en, this message translates to:
+  /// **'Title (optional)'**
+  String get motdAdminTitleLabel;
+
+  /// Hint for the title input in the message of the day admin
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty to use the default title'**
+  String get motdAdminTitleHint;
 
   /// Button that opens the link attached to the message of the day
   ///

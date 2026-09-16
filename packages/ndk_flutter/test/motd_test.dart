@@ -175,6 +175,34 @@ void main() {
       expect(controller.shouldShow(), isTrue);
     });
 
+    test('parses title, url and version tags', () async {
+      final controller = NMotdController(
+        ndkFlutter: NdkFlutter(
+          ndk: _StubNdk([
+            _motdEvent(
+              id: 'event-1',
+              tags: const [
+                ['d', 'motd'],
+                ['title', 'Hello from the team'],
+                ['url', 'https://example.com'],
+                ['version', '2.0.0'],
+              ],
+            ),
+          ]),
+        ),
+        authorPubkey: 'author',
+      );
+      await controller.start();
+
+      expect(controller.current?.title, 'Hello from the team');
+      expect(controller.current?.url, 'https://example.com');
+      expect(controller.current?.version, '2.0.0');
+      expect(
+        controller.shouldShow(appVersion: '1.0.0'),
+        isTrue,
+      );
+    });
+
     test('parses url and version tags', () async {
       final controller = NMotdController(
         ndkFlutter: NdkFlutter(

@@ -242,4 +242,52 @@ void main() {
     expect(find.text('Got it'), findsOneWidget);
     expect(find.text('Read more'), findsOneWidget);
   });
+
+  testWidgets('falls back to the localized default title without a title tag',
+      (tester) async {
+    final controller = NMotdController(
+      ndkFlutter: NdkFlutter(
+        ndk: _StubNdk([
+          _motdEvent(id: 'event-1', content: 'Hello world'),
+        ]),
+      ),
+      authorPubkey: 'author',
+    );
+    await controller.start();
+
+    await _pump(tester, controller);
+
+    expect(find.text('Message of the day'), findsOneWidget);
+    expect(find.text('Hello world'), findsOneWidget);
+  });
+
+  testWidgets('uses the event title tag over the config title',
+      (tester) async {
+    final controller = NMotdController(
+      ndkFlutter: NdkFlutter(
+        ndk: _StubNdk([
+          _motdEvent(
+            id: 'event-1',
+            content: 'Hi there',
+            tags: const [
+              ['d', 'motd'],
+              ['title', 'Breaking news'],
+            ],
+          ),
+        ]),
+      ),
+      authorPubkey: 'author',
+    );
+    await controller.start();
+
+    await _pump(
+      tester,
+      controller,
+      config: const NMotdConfig(title: 'Custom title'),
+    );
+
+    expect(find.text('Breaking news'), findsOneWidget);
+    expect(find.text('Custom title'), findsNothing);
+    expect(find.text('Message of the day'), findsNothing);
+  });
 }

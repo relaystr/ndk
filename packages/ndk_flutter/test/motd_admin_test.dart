@@ -169,7 +169,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('creates a kind 30078 event with message, url and version',
+  testWidgets('creates a kind 30078 event with title, message, url and version',
       (tester) async {
     final signer = _FakeSigner(_author);
     final ndk = _StubNdk(
@@ -179,12 +179,13 @@ void main() {
     );
     await _pump(tester, ndk);
 
-    await tester.enterText(find.byType(TextField).first, 'Welcome!');
+    await tester.enterText(find.byType(TextField).at(0), 'Big news');
+    await tester.enterText(find.byType(TextField).at(1), 'Welcome!');
     await tester.enterText(
-      find.byType(TextField).at(1),
+      find.byType(TextField).at(2),
       'https://example.com',
     );
-    await tester.enterText(find.byType(TextField).at(2), '1.2.0');
+    await tester.enterText(find.byType(TextField).at(3), '1.2.0');
     await tester.tap(find.text('Publish'));
     await tester.pumpAndSettle();
 
@@ -194,6 +195,7 @@ void main() {
     expect(event.pubKey, _author);
     expect(event.content, 'Welcome!');
     expect(event.getTags('d').first, 'motd');
+    expect(event.getFirstTag('title'), 'Big news');
     expect(event.getTags('url').first, 'https://example.com');
     expect(event.getTags('version').first, '1.2.0');
   });
@@ -234,6 +236,7 @@ void main() {
       kind: MotdData.kKind,
       tags: const [
         ['d', 'motd'],
+        ['title', 'Great news'],
         ['url', 'https://example.com'],
         ['version', '2.0.0'],
       ],
@@ -248,6 +251,7 @@ void main() {
     await _pump(tester, ndk);
 
     expect(find.text('Old message'), findsOneWidget);
+    expect(find.text('Great news'), findsOneWidget);
     expect(find.text('https://example.com'), findsOneWidget);
     expect(find.text('2.0.0'), findsOneWidget);
     expect(find.text('Update'), findsOneWidget);
@@ -271,7 +275,7 @@ void main() {
     );
     await _pump(tester, ndk);
 
-    await tester.enterText(find.byType(TextField).first, 'Not allowed');
+    await tester.enterText(find.byType(TextField).at(1), 'Not allowed');
     await tester.tap(find.text('Publish'));
     await tester.pumpAndSettle();
 

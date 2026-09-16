@@ -1781,7 +1781,15 @@
   "balanceRefreshed": "Balance refreshed",
   "motdTitle": "Message of the day",
   "@motdTitle": {
-    "description": "Title of the message of the day popup"
+    "description": "Default title of the message of the day popup, used when the event does not provide its own title"
+  },
+  "motdAdminTitleLabel": "Title (optional)",
+  "@motdAdminTitleLabel": {
+    "description": "Label for the title input in the message of the day admin"
+  },
+  "motdAdminTitleHint": "Leave empty to use the default title",
+  "@motdAdminTitleHint": {
+    "description": "Hint for the title input in the message of the day admin"
   },
   "motdOpenLinkButton": "Learn more",
   "@motdOpenLinkButton": {

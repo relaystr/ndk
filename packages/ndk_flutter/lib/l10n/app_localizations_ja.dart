@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -1695,6 +1694,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get motdTitle => 'Message of the day';
+
+  @override
+  String get motdAdminTitleLabel => 'Title (optional)';
+
+  @override
+  String get motdAdminTitleHint => 'Leave empty to use the default title';
 
   @override
   String get motdOpenLinkButton => 'Learn more';
