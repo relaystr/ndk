@@ -14,4 +14,5 @@ icon: bookmark
 | **query**           | get data once and close the request               | get request                 |
 | **subscription**    | stream of events as they come in                  | stream of data              |
 | **bootstrapRelays** | default relays to connect; Used to get Nip65 data | seed relays, initial relays |
+| **indexerRelays**   | relays indexing Nip65 (and often kind 0) for any pubkey | indexers, directory relays |
 | **engine**          | optimized network resolver for nostr requests     | -                           |

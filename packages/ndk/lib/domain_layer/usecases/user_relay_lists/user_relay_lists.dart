@@ -24,6 +24,8 @@ class UserRelayLists {
   final CacheManager _cacheManager;
   final Broadcast _broadcast;
   final Accounts _accounts;
+  final List<String> _indexerRelays;
+  final List<String> _bootstrapRelays;
 
   /// user relay lists usecase
   UserRelayLists({
@@ -31,10 +33,14 @@ class UserRelayLists {
     required CacheManager cacheManager,
     required Broadcast broadcast,
     required Accounts accounts,
+    required List<String> indexerRelays,
+    required List<String> bootstrapRelays,
   })  : _cacheManager = cacheManager,
         _requests = requests,
         _broadcast = broadcast,
-        _accounts = accounts;
+        _accounts = accounts,
+        _indexerRelays = indexerRelays,
+        _bootstrapRelays = bootstrapRelays;
 
   EventSigner get _signer {
     if (_accounts.isNotLoggedIn) {
@@ -44,11 +50,16 @@ class UserRelayLists {
   }
 
   // TODO try to use generic query with cacheRead/Write mechanism
-  /// load missing user relay lists from nip65 or kind 3 (kind02)
+  /// load missing user relay lists from nip65 or kind 3 (kind02) \
+  /// queried on the indexer and bootstrap relays, since inbox/outbox cannot be
+  /// resolved before these very lists are known \
+  ///
+  /// [additionalRelays] queried on top of those
   Future<void> loadMissingRelayListsFromNip65OrNip02(
     List<String> pubKeys, {
     Function(String stepName, int count, int total)? onProgress,
     bool forceRefresh = false,
+    Iterable<String>? additionalRelays,
   }) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
@@ -76,6 +87,11 @@ class UserRelayLists {
           missingPubKeys.length,
         );
       }
+      final lookupRelays = {
+        ..._indexerRelays,
+        ..._bootstrapRelays,
+        ...?additionalRelays,
+      };
       try {
         await for (final event in (_requests.query(
           //                timeout: missingPubKeys.length > 1 ? 10 : 3,
@@ -86,6 +102,7 @@ class UserRelayLists {
               kinds: [Nip65.kKind, ContactList.kKind],
             ),
           ],
+          explicitRelays: lookupRelays.isEmpty ? null : lookupRelays,
         )).stream) {
           switch (event.kind) {
             case Nip65.kKind:
@@ -160,15 +177,18 @@ class UserRelayLists {
   Future<UserRelayList?> getSingleUserRelayList(
     String pubKey, {
     bool forceRefresh = false,
+    Iterable<String>? additionalRelays,
   }) async {
     UserRelayList? userRelayList = await _cacheManager.loadUserRelayList(
       pubKey,
     );
 
     if (userRelayList == null || forceRefresh) {
-      await loadMissingRelayListsFromNip65OrNip02([
-        pubKey,
-      ], forceRefresh: forceRefresh);
+      await loadMissingRelayListsFromNip65OrNip02(
+        [pubKey],
+        forceRefresh: forceRefresh,
+        additionalRelays: additionalRelays,
+      );
       userRelayList = await _cacheManager.loadUserRelayList(pubKey);
     }
     return userRelayList;
@@ -248,6 +268,10 @@ class UserRelayLists {
       userRelayList = await getSingleUserRelayList(
         _signer.getPublicKey(),
         forceRefresh: true,
+
+        /// indexers can lag behind an edit another client just wrote to the
+        /// user own relays, and a stale list here means losing relays
+        additionalRelays: userRelayList?.relays.keys,
       );
     }
     return userRelayList;
