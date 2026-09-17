@@ -105,9 +105,22 @@ void main() {
       [_pendingFundTx(quoteKey: CashuKeypair.generateCashuKeyPair())],
     );
 
+    // Quote-state operations are serialized: the constructor-triggered
+    // startup refresh and an explicit call on the same wallet must not run
+    // concurrently, so wait for the startup refresh (which performs the
+    // first refresh of the just-saved quote) before calling explicitly.
+    var stored = await _storedTx(wallets);
+    var waited = 0;
+    while (stored.qoute!.state != CashuQuoteState.paid && waited < 50) {
+      await Future<void>.delayed(Duration.zero);
+      stored = await _storedTx(wallets);
+      waited++;
+    }
+
+    // with the startup refresh done the explicit call is safe to run
     await cashu.updatePendingQuotes();
 
-    final stored = await _storedTx(wallets);
+    stored = await _storedTx(wallets);
     expect(stored.qoute!.state, equals(CashuQuoteState.paid));
   });
 
