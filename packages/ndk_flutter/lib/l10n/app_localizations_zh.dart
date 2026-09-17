@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -1685,86 +1684,80 @@ class AppLocalizationsZh extends AppLocalizations {
   String get balanceRefreshed => '余额已刷新';
 
   @override
-  String get cashuQuoteRecoveryTitle => 'Recover Mint Quote';
+  String get cashuQuoteRecoveryTitle => '恢复铸币报价';
 
   @override
-  String get recoverQuote => 'Recover quote';
+  String get recoverQuote => '恢复报价';
 
   @override
-  String get enterQuoteId =>
-      'Enter the mint quote ID to recover. The lock key is recovered from your seed phrase.';
+  String get enterQuoteId => '输入要恢复的铸币报价 ID。锁定密钥将从您的助记词中恢复。';
 
   @override
-  String get quoteId => 'Quote ID';
+  String get quoteId => '报价 ID';
 
   @override
-  String get quoteIdHint => 'Paste the quote ID here';
+  String get quoteIdHint => '在此粘贴报价 ID';
 
   @override
-  String get pleaseEnterQuoteId => 'Please enter a quote ID';
+  String get pleaseEnterQuoteId => '请输入报价 ID';
 
   @override
-  String get recoveringQuote => 'Recovering quote...';
+  String get cashuQuoteRecoveryStageFetchingQuote => '正在从铸币厂获取报价…';
 
   @override
-  String get cashuQuoteRecoveryStageFetchingQuote =>
-      'Fetching quote from mint...';
+  String get cashuQuoteRecoveryStageRecoveringKey => '正在从您的助记词中恢复锁定密钥…';
 
   @override
-  String get cashuQuoteRecoveryStageRecoveringKey =>
-      'Recovering lock key from your seed...';
-
-  @override
-  String get cashuQuoteRecoveryStageCompletingMint => 'Completing mint...';
+  String get cashuQuoteRecoveryStageCompletingMint => '正在完成铸币…';
 
   @override
   String cashuQuoteRecoveryKeyRecovered(int counter) {
-    return 'Lock key recovered (derivation counter $counter)';
+    return '锁定密钥已恢复（派生计数器 $counter）';
   }
 
   @override
-  String get cashuQuoteRecoveryCompleted =>
-      'Quote recovered and funds added to your balance';
+  String get cashuQuoteRecoveryCompleted => '报价已恢复，资金已添加到您的余额中';
 
   @override
-  String get quoteRecoveryFailed => 'Quote recovery failed';
+  String get quoteRecoveryFailed => '报价恢复失败';
 
   @override
-  String get restoreFundsFromMint => 'Restore funds from mint';
+  String get restoreFundsFromMint => '从铸币厂恢复资金';
 
   @override
-  String get cashuRestoreFundsTitle => 'Restore Funds from Mint';
+  String get cashuRestoreFundsTitle => '从铸币厂恢复资金';
 
   @override
-  String get cashuRestoreDescription =>
-      'Scans the mint for proofs derived from your seed and restores them to this wallet.';
+  String get cashuRestoreDescription => '扫描铸币厂中由您的助记词派生的凭证，并将其恢复到该钱包中。';
 
   @override
-  String get startRestore => 'Start restore';
+  String get startRestore => '开始恢复';
 
   @override
-  String get cashuRestoreStageFetchingKeysets => 'Fetching mint keysets...';
+  String get cashuRestoreStageFetchingKeysets => '正在获取铸币厂密钥集…';
 
   @override
-  String get cashuRestoreStageScanning => 'Scanning mint for your funds...';
+  String get cashuRestoreStageScanning => '正在扫描铸币厂以查找您的资金…';
 
   @override
   String cashuRestoreScanProgress(int keysets, int proofs) {
-    return 'Scanned $keysets keyset(s) · $proofs proof(s) found';
+    return '已扫描 $keysets 个密钥集 · 找到 $proofs 个凭证';
   }
 
   @override
-  String get cashuRestoreStageCompleted => 'Restore complete';
+  String get cashuRestoreStageCompleted => '恢复完成';
 
   @override
-  String get cashuRestoreAlsoRestoresQuotes =>
-      'Also recovers pending mint quotes';
+  String get cashuRestoreAlsoRestoresQuotes => '同时恢复待处理的铸币报价';
 
   @override
   String restoredFromMint(int count) {
-    return 'Restored $count proofs from the mint';
+    return '已从铸币厂恢复 $count 个凭证';
   }
 
   @override
-  String get restoreFailed => 'Restore failed';
+  String get restoreFailed => '恢复失败';
+
+  @override
+  String get restoreFromBackup => '从备份恢复';
 }

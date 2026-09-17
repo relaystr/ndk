@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -1733,9 +1732,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pleaseEnterQuoteId => 'Please enter a quote ID';
 
   @override
-  String get recoveringQuote => 'Recovering quote...';
-
-  @override
   String get cashuQuoteRecoveryStageFetchingQuote =>
       'Fetching quote from mint...';
 
@@ -1796,4 +1792,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get restoreFailed => 'Restore failed';
+
+  @override
+  String get restoreFromBackup => 'Restore from backup';
 }

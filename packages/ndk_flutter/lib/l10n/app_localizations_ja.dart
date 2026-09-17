@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -1694,86 +1693,81 @@ class AppLocalizationsJa extends AppLocalizations {
   String get balanceRefreshed => '残高を更新しました';
 
   @override
-  String get cashuQuoteRecoveryTitle => 'Recover Mint Quote';
+  String get cashuQuoteRecoveryTitle => 'ミント見積を復元';
 
   @override
-  String get recoverQuote => 'Recover quote';
+  String get recoverQuote => '見積を復元';
 
   @override
-  String get enterQuoteId =>
-      'Enter the mint quote ID to recover. The lock key is recovered from your seed phrase.';
+  String get enterQuoteId => '復元するミント見積IDを入力してください。ロックキーはシードフレーズから復元されます。';
 
   @override
-  String get quoteId => 'Quote ID';
+  String get quoteId => '見積ID';
 
   @override
-  String get quoteIdHint => 'Paste the quote ID here';
+  String get quoteIdHint => '見積IDをここに貼り付けてください';
 
   @override
-  String get pleaseEnterQuoteId => 'Please enter a quote ID';
+  String get pleaseEnterQuoteId => '見積IDを入力してください';
 
   @override
-  String get recoveringQuote => 'Recovering quote...';
+  String get cashuQuoteRecoveryStageFetchingQuote => 'ミントから見積を取得中...';
 
   @override
-  String get cashuQuoteRecoveryStageFetchingQuote =>
-      'Fetching quote from mint...';
+  String get cashuQuoteRecoveryStageRecoveringKey => 'シードからロックキーを復元中...';
 
   @override
-  String get cashuQuoteRecoveryStageRecoveringKey =>
-      'Recovering lock key from your seed...';
-
-  @override
-  String get cashuQuoteRecoveryStageCompletingMint => 'Completing mint...';
+  String get cashuQuoteRecoveryStageCompletingMint => 'ミントを完了中...';
 
   @override
   String cashuQuoteRecoveryKeyRecovered(int counter) {
-    return 'Lock key recovered (derivation counter $counter)';
+    return 'ロックキーが復元されました（導出カウンター $counter）';
   }
 
   @override
-  String get cashuQuoteRecoveryCompleted =>
-      'Quote recovered and funds added to your balance';
+  String get cashuQuoteRecoveryCompleted => '見積が復元され、資金が残高に追加されました';
 
   @override
-  String get quoteRecoveryFailed => 'Quote recovery failed';
+  String get quoteRecoveryFailed => '見積の復元に失敗しました';
 
   @override
-  String get restoreFundsFromMint => 'Restore funds from mint';
+  String get restoreFundsFromMint => 'ミントから資金を復元';
 
   @override
-  String get cashuRestoreFundsTitle => 'Restore Funds from Mint';
+  String get cashuRestoreFundsTitle => 'ミントから資金を復元';
 
   @override
   String get cashuRestoreDescription =>
-      'Scans the mint for proofs derived from your seed and restores them to this wallet.';
+      'シードから導出された証明をミントからスキャンし、このウォレットに復元します。';
 
   @override
-  String get startRestore => 'Start restore';
+  String get startRestore => '復元を開始';
 
   @override
-  String get cashuRestoreStageFetchingKeysets => 'Fetching mint keysets...';
+  String get cashuRestoreStageFetchingKeysets => 'ミントのキーセットを取得中...';
 
   @override
-  String get cashuRestoreStageScanning => 'Scanning mint for your funds...';
+  String get cashuRestoreStageScanning => 'ミントで資金をスキャン中...';
 
   @override
   String cashuRestoreScanProgress(int keysets, int proofs) {
-    return 'Scanned $keysets keyset(s) · $proofs proof(s) found';
+    return '$keysets個のキーセットをスキャン完了 · $proofs件の証明を発見';
   }
 
   @override
-  String get cashuRestoreStageCompleted => 'Restore complete';
+  String get cashuRestoreStageCompleted => '復元完了';
 
   @override
-  String get cashuRestoreAlsoRestoresQuotes =>
-      'Also recovers pending mint quotes';
+  String get cashuRestoreAlsoRestoresQuotes => '保留中のミント見積も復元します';
 
   @override
   String restoredFromMint(int count) {
-    return 'Restored $count proofs from the mint';
+    return 'ミントから$count件の証明を復元しました';
   }
 
   @override
-  String get restoreFailed => 'Restore failed';
+  String get restoreFailed => '復元に失敗しました';
+
+  @override
+  String get restoreFromBackup => 'バックアップから復元';
 }

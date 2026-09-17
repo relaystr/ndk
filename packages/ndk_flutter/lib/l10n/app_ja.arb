@@ -487,9 +487,37 @@
   "appUpdateCheckAgain": "再確認",
   "appUpdateInstalledVersion": "インストール済みバージョン {version}",
   "appUpdateInstalledAndAvailable": "インストール済みバージョン {installedVersion}。更新 {availableVersion} を利用できます。",
-  "appUpdateChangelog": "変更履歴", "appUpdateReleaseHistory": "リリース履歴", "appUpdateInstalledBadge": "インストール済み", "appUpdateAvailableBadge": "更新可能", "appUpdateLatestBadge": "最新", "appUpdateNoReleases": "まだリリースは公開されていません。", "appUpdateAcrossAllReleases": "すべてのリリース共通",
+  "appUpdateChangelog": "変更履歴",
+  "appUpdateReleaseHistory": "リリース履歴",
+  "appUpdateInstalledBadge": "インストール済み",
+  "appUpdateAvailableBadge": "更新可能",
+  "appUpdateLatestBadge": "最新",
+  "appUpdateNoReleases": "まだリリースは公開されていません。",
+  "appUpdateAcrossAllReleases": "すべてのリリース共通",
   "appUpdateSatsBy": "sats、送信者",
-  "appUpdateReleaseDetails": "リリース詳細", "appUpdateWhatsNew": "新機能", "appUpdatePublishedOn": "{date} に公開", "appUpdateChannel": "チャンネル: {channel}", "appUpdateArchitecture": "アーキテクチャ: {architecture}", "appUpdateVersionCode": "ビルド {versionCode}", "appUpdateReleaseVersion": "リリース {version}", "appUpdateNoReleaseNotes": "リリースノートはありません。", "appUpdatePublisher": "公開者", "appUpdatePublisherSignatureVerified": "Nostrイベントの署名を確認済み", "appUpdateCertificateDeclared": "公開者がAndroid署名証明書を宣言済み", "appUpdateSource": "ダウンロード元: {host}", "appUpdateCommunity": "コミュニティ", "appUpdateZapSummary": "{count} zap・{sats} sats", "appUpdateReactionCount": "リアクション {count}件", "appUpdateCommentCount": "コメント {count}件", "appUpdateSocialLoadFailed": "コミュニティ情報を読み込めませんでした。", "appUpdateComments": "コメント", "appUpdateNoComments": "コメントはまだありません。", "appUpdateCommentHint": "このリリースへの感想を共有", "appUpdatePostComment": "コメントを投稿", "appUpdateSignInToComment": "コメントするにはNostrアカウントでログインしてください。", "appUpdateTechnicalDetails": "技術情報",
+  "appUpdateReleaseDetails": "リリース詳細",
+  "appUpdateWhatsNew": "新機能",
+  "appUpdatePublishedOn": "{date} に公開",
+  "appUpdateChannel": "チャンネル: {channel}",
+  "appUpdateArchitecture": "アーキテクチャ: {architecture}",
+  "appUpdateVersionCode": "ビルド {versionCode}",
+  "appUpdateReleaseVersion": "リリース {version}",
+  "appUpdateNoReleaseNotes": "リリースノートはありません。",
+  "appUpdatePublisher": "公開者",
+  "appUpdatePublisherSignatureVerified": "Nostrイベントの署名を確認済み",
+  "appUpdateCertificateDeclared": "公開者がAndroid署名証明書を宣言済み",
+  "appUpdateSource": "ダウンロード元: {host}",
+  "appUpdateCommunity": "コミュニティ",
+  "appUpdateZapSummary": "{count} zap・{sats} sats",
+  "appUpdateReactionCount": "リアクション {count}件",
+  "appUpdateCommentCount": "コメント {count}件",
+  "appUpdateSocialLoadFailed": "コミュニティ情報を読み込めませんでした。",
+  "appUpdateComments": "コメント",
+  "appUpdateNoComments": "コメントはまだありません。",
+  "appUpdateCommentHint": "このリリースへの感想を共有",
+  "appUpdatePostComment": "コメントを投稿",
+  "appUpdateSignInToComment": "コメントするにはNostrアカウントでログインしてください。",
+  "appUpdateTechnicalDetails": "技術情報",
   "appUpdateViewStatus": "更新状態を表示",
   "refreshBalance": "残高を更新",
   "balanceRefreshed": "残高を更新しました",
@@ -523,5 +551,72 @@
   "bolt12WalletTypeSubtitle": "再利用可能なオファーを使う受取専用ウォレット",
   "invalidBolt12QrCode": "このQRコードにはBOLT12、BIP321、BIP353の支払い先が含まれていません。",
   "bolt12OfferTitle": "BOLT12で受け取る",
-  "bolt12OfferInstructions": "この再利用可能なオファーを共有してLightningの支払いを受け取ります。"
+  "bolt12OfferInstructions": "この再利用可能なオファーを共有してLightningの支払いを受け取ります。",
+  "restoreFromBackup": "バックアップから復元",
+  "@restoreFromBackup": {
+    "description": "Label for restoring a Cashu wallet from a backup JSON"
+  },
+  "@restoreSuccess": {
+    "description": "Confirmation after a successful restore",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "cashuQuoteRecoveryTitle": "ミント見積を復元",
+  "recoverQuote": "見積を復元",
+  "enterQuoteId": "復元するミント見積IDを入力してください。ロックキーはシードフレーズから復元されます。",
+  "quoteId": "見積ID",
+  "quoteIdHint": "見積IDをここに貼り付けてください",
+  "pleaseEnterQuoteId": "見積IDを入力してください",
+  "cashuQuoteRecoveryStageFetchingQuote": "ミントから見積を取得中...",
+  "cashuQuoteRecoveryStageRecoveringKey": "シードからロックキーを復元中...",
+  "cashuQuoteRecoveryStageCompletingMint": "ミントを完了中...",
+  "cashuQuoteRecoveryKeyRecovered": "ロックキーが復元されました（導出カウンター {counter}）",
+  "@cashuQuoteRecoveryKeyRecovered": {
+    "description": "Confirmation shown once the lock key is recovered",
+    "placeholders": {
+      "counter": {
+        "type": "int",
+        "description": "Derivation counter of the recovered lock key"
+      }
+    }
+  },
+  "cashuQuoteRecoveryCompleted": "見積が復元され、資金が残高に追加されました",
+  "quoteRecoveryFailed": "見積の復元に失敗しました",
+  "restoreFundsFromMint": "ミントから資金を復元",
+  "cashuRestoreFundsTitle": "ミントから資金を復元",
+  "cashuRestoreDescription": "シードから導出された証明をミントからスキャンし、このウォレットに復元します。",
+  "startRestore": "復元を開始",
+  "cashuRestoreStageFetchingKeysets": "ミントのキーセットを取得中...",
+  "cashuRestoreStageScanning": "ミントで資金をスキャン中...",
+  "cashuRestoreScanProgress": "{keysets}個のキーセットをスキャン完了 · {proofs}件の証明を発見",
+  "@cashuRestoreScanProgress": {
+    "description": "Scan progress in the restore-from-mint dialog",
+    "placeholders": {
+      "keysets": {
+        "type": "int",
+        "description": "Number of keysets scanned"
+      },
+      "proofs": {
+        "type": "int",
+        "description": "Number of proofs found so far"
+      }
+    }
+  },
+  "cashuRestoreStageCompleted": "復元完了",
+  "cashuRestoreAlsoRestoresQuotes": "保留中のミント見積も復元します",
+  "restoredFromMint": "ミントから{count}件の証明を復元しました",
+  "@restoredFromMint": {
+    "description": "Confirmation after a successful restore-from-mint",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "restoreFailed": "復元に失敗しました"
 }

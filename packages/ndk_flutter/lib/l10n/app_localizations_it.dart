@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -1731,86 +1730,89 @@ class AppLocalizationsIt extends AppLocalizations {
   String get balanceRefreshed => 'Saldo aggiornato';
 
   @override
-  String get cashuQuoteRecoveryTitle => 'Recover Mint Quote';
+  String get cashuQuoteRecoveryTitle => 'Recupero preventivo mint';
 
   @override
-  String get recoverQuote => 'Recover quote';
+  String get recoverQuote => 'Recupera preventivo';
 
   @override
   String get enterQuoteId =>
-      'Enter the mint quote ID to recover. The lock key is recovered from your seed phrase.';
+      'Inserisci l\'ID del preventivo mint da recuperare. La chiave di blocco viene recuperata dalla tua frase seed.';
 
   @override
-  String get quoteId => 'Quote ID';
+  String get quoteId => 'ID preventivo';
 
   @override
-  String get quoteIdHint => 'Paste the quote ID here';
+  String get quoteIdHint => 'Incolla qui l\'ID del preventivo';
 
   @override
-  String get pleaseEnterQuoteId => 'Please enter a quote ID';
-
-  @override
-  String get recoveringQuote => 'Recovering quote...';
+  String get pleaseEnterQuoteId => 'Inserisci un ID preventivo';
 
   @override
   String get cashuQuoteRecoveryStageFetchingQuote =>
-      'Fetching quote from mint...';
+      'Recupero del preventivo dal mint...';
 
   @override
   String get cashuQuoteRecoveryStageRecoveringKey =>
-      'Recovering lock key from your seed...';
+      'Recupero della chiave di blocco dalla frase seed...';
 
   @override
-  String get cashuQuoteRecoveryStageCompletingMint => 'Completing mint...';
+  String get cashuQuoteRecoveryStageCompletingMint =>
+      'Completamento del mint...';
 
   @override
   String cashuQuoteRecoveryKeyRecovered(int counter) {
-    return 'Lock key recovered (derivation counter $counter)';
+    return 'Chiave di blocco recuperata (contatore di derivazione $counter)';
   }
 
   @override
   String get cashuQuoteRecoveryCompleted =>
-      'Quote recovered and funds added to your balance';
+      'Preventivo recuperato e fondi aggiunti al tuo saldo';
 
   @override
-  String get quoteRecoveryFailed => 'Quote recovery failed';
+  String get quoteRecoveryFailed => 'Recupero del preventivo non riuscito';
 
   @override
-  String get restoreFundsFromMint => 'Restore funds from mint';
+  String get restoreFundsFromMint => 'Ripristina fondi dal mint';
 
   @override
-  String get cashuRestoreFundsTitle => 'Restore Funds from Mint';
+  String get cashuRestoreFundsTitle => 'Ripristina fondi dal mint';
 
   @override
   String get cashuRestoreDescription =>
-      'Scans the mint for proofs derived from your seed and restores them to this wallet.';
+      'Scansiona il mint alla ricerca di prove derivate dalla tua frase seed e le ripristina in questo portafoglio.';
 
   @override
-  String get startRestore => 'Start restore';
+  String get startRestore => 'Avvia ripristino';
 
   @override
-  String get cashuRestoreStageFetchingKeysets => 'Fetching mint keysets...';
+  String get cashuRestoreStageFetchingKeysets =>
+      'Recupero dei keyset del mint...';
 
   @override
-  String get cashuRestoreStageScanning => 'Scanning mint for your funds...';
+  String get cashuRestoreStageScanning =>
+      'Scansione del mint alla ricerca dei tuoi fondi...';
 
   @override
   String cashuRestoreScanProgress(int keysets, int proofs) {
-    return 'Scanned $keysets keyset(s) · $proofs proof(s) found';
+    return 'Scansionati $keysets keyset · trovate $proofs prove';
   }
 
   @override
-  String get cashuRestoreStageCompleted => 'Restore complete';
+  String get cashuRestoreStageCompleted => 'Ripristino completato';
 
   @override
   String get cashuRestoreAlsoRestoresQuotes =>
-      'Also recovers pending mint quotes';
+      'Recupera anche i preventivi mint in sospeso';
 
   @override
   String restoredFromMint(int count) {
-    return 'Restored $count proofs from the mint';
+    return 'Ripristinate $count prove dal mint';
   }
 
   @override
-  String get restoreFailed => 'Restore failed';
+  String get restoreFailed => 'Ripristino non riuscito';
+
+  @override
+  String get restoreFromBackup => 'Ripristina da backup';
 }

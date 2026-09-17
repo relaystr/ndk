@@ -133,7 +133,7 @@ class _CashuRestoreInputDialogState extends State<_CashuRestoreInputDialog> {
               suffixIcon: IconButton(
                 onPressed: _pasteMintUrl,
                 icon: const Icon(Icons.paste),
-                tooltip: l10n.copy,
+                tooltip: l10n.paste,
               ),
             ),
           ),

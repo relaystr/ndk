@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -1722,86 +1721,89 @@ class AppLocalizationsFi extends AppLocalizations {
   String get balanceRefreshed => 'Saldo päivitetty';
 
   @override
-  String get cashuQuoteRecoveryTitle => 'Recover Mint Quote';
+  String get cashuQuoteRecoveryTitle => 'Palauta Mint-tarjous';
 
   @override
-  String get recoverQuote => 'Recover quote';
+  String get recoverQuote => 'Palauta tarjous';
 
   @override
   String get enterQuoteId =>
-      'Enter the mint quote ID to recover. The lock key is recovered from your seed phrase.';
+      'Anna palautettavan mint-tarjouksen tunnus. Lukkoavain palautetaan siemenlauseestasi.';
 
   @override
-  String get quoteId => 'Quote ID';
+  String get quoteId => 'Tarjouksen tunnus';
 
   @override
-  String get quoteIdHint => 'Paste the quote ID here';
+  String get quoteIdHint => 'Liitä tarjouksen tunnus tähän';
 
   @override
-  String get pleaseEnterQuoteId => 'Please enter a quote ID';
-
-  @override
-  String get recoveringQuote => 'Recovering quote...';
+  String get pleaseEnterQuoteId => 'Anna tarjouksen tunnus';
 
   @override
   String get cashuQuoteRecoveryStageFetchingQuote =>
-      'Fetching quote from mint...';
+      'Haetaan tarjousta mintistä...';
 
   @override
   String get cashuQuoteRecoveryStageRecoveringKey =>
-      'Recovering lock key from your seed...';
+      'Palautetaan lukkoavainta siemenlauseestasi...';
 
   @override
-  String get cashuQuoteRecoveryStageCompletingMint => 'Completing mint...';
+  String get cashuQuoteRecoveryStageCompletingMint =>
+      'Suoritetaan mintti valmiiksi...';
 
   @override
   String cashuQuoteRecoveryKeyRecovered(int counter) {
-    return 'Lock key recovered (derivation counter $counter)';
+    return 'Lukkoavain palautettu (johtamislaskuri $counter)';
   }
 
   @override
   String get cashuQuoteRecoveryCompleted =>
-      'Quote recovered and funds added to your balance';
+      'Tarjous palautettu ja varat lisätty saldoosi';
 
   @override
-  String get quoteRecoveryFailed => 'Quote recovery failed';
+  String get quoteRecoveryFailed => 'Tarjouksen palautus epäonnistui';
 
   @override
-  String get restoreFundsFromMint => 'Restore funds from mint';
+  String get restoreFundsFromMint => 'Palauta varat mintistä';
 
   @override
-  String get cashuRestoreFundsTitle => 'Restore Funds from Mint';
+  String get cashuRestoreFundsTitle => 'Palauta varat mintistä';
 
   @override
   String get cashuRestoreDescription =>
-      'Scans the mint for proofs derived from your seed and restores them to this wallet.';
+      'Skannaa minttiä siemenlauseestasi johdettujen todistusten suhteen ja palauttaa ne tähän lompakkoon.';
 
   @override
-  String get startRestore => 'Start restore';
+  String get startRestore => 'Aloita palautus';
 
   @override
-  String get cashuRestoreStageFetchingKeysets => 'Fetching mint keysets...';
+  String get cashuRestoreStageFetchingKeysets =>
+      'Haetaan mint-avainjoukkoja...';
 
   @override
-  String get cashuRestoreStageScanning => 'Scanning mint for your funds...';
+  String get cashuRestoreStageScanning =>
+      'Skannataan minttiä varojesi suhteen...';
 
   @override
   String cashuRestoreScanProgress(int keysets, int proofs) {
-    return 'Scanned $keysets keyset(s) · $proofs proof(s) found';
+    return 'Skannattu $keysets avainjoukko(a) · Löydetty $proofs todistus(ta)';
   }
 
   @override
-  String get cashuRestoreStageCompleted => 'Restore complete';
+  String get cashuRestoreStageCompleted => 'Palautus valmis';
 
   @override
   String get cashuRestoreAlsoRestoresQuotes =>
-      'Also recovers pending mint quotes';
+      'Palauttaa myös odottavat mint-tarjoukset';
 
   @override
   String restoredFromMint(int count) {
-    return 'Restored $count proofs from the mint';
+    return 'Palautettiin $count todistusta mintistä';
   }
 
   @override
-  String get restoreFailed => 'Restore failed';
+  String get restoreFailed => 'Palautus epäonnistui';
+
+  @override
+  String get restoreFromBackup => 'Palauta varmuuskopiosta';
 }

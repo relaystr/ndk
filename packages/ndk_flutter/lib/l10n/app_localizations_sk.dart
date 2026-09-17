@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -1724,86 +1723,88 @@ class AppLocalizationsSk extends AppLocalizations {
   String get balanceRefreshed => 'Zostatok obnovený';
 
   @override
-  String get cashuQuoteRecoveryTitle => 'Recover Mint Quote';
+  String get cashuQuoteRecoveryTitle => 'Obnoviť mint ponuku';
 
   @override
-  String get recoverQuote => 'Recover quote';
+  String get recoverQuote => 'Obnoviť ponuku';
 
   @override
   String get enterQuoteId =>
-      'Enter the mint quote ID to recover. The lock key is recovered from your seed phrase.';
+      'Zadajte ID mint ponuky na obnovenie. Lock kľúč sa obnoví z vašej seed frázy.';
 
   @override
-  String get quoteId => 'Quote ID';
+  String get quoteId => 'ID ponuky';
 
   @override
-  String get quoteIdHint => 'Paste the quote ID here';
+  String get quoteIdHint => 'Sem vložte ID ponuky';
 
   @override
-  String get pleaseEnterQuoteId => 'Please enter a quote ID';
-
-  @override
-  String get recoveringQuote => 'Recovering quote...';
+  String get pleaseEnterQuoteId => 'Zadajte ID ponuky';
 
   @override
   String get cashuQuoteRecoveryStageFetchingQuote =>
-      'Fetching quote from mint...';
+      'Načítava sa ponuka z mintu...';
 
   @override
   String get cashuQuoteRecoveryStageRecoveringKey =>
-      'Recovering lock key from your seed...';
+      'Obnovuje sa lock kľúč z vašej seed...';
 
   @override
-  String get cashuQuoteRecoveryStageCompletingMint => 'Completing mint...';
+  String get cashuQuoteRecoveryStageCompletingMint => 'Dokončuje sa mint...';
 
   @override
   String cashuQuoteRecoveryKeyRecovered(int counter) {
-    return 'Lock key recovered (derivation counter $counter)';
+    return 'Lock kľúč obnovený (derivačný čítač $counter)';
   }
 
   @override
   String get cashuQuoteRecoveryCompleted =>
-      'Quote recovered and funds added to your balance';
+      'Ponuka obnovená a prostriedky pridané do vášho zostatku';
 
   @override
-  String get quoteRecoveryFailed => 'Quote recovery failed';
+  String get quoteRecoveryFailed => 'Obnovenie ponuky zlyhalo';
 
   @override
-  String get restoreFundsFromMint => 'Restore funds from mint';
+  String get restoreFundsFromMint => 'Obnoviť prostriedky z mintu';
 
   @override
-  String get cashuRestoreFundsTitle => 'Restore Funds from Mint';
+  String get cashuRestoreFundsTitle => 'Obnoviť prostriedky z mintu';
 
   @override
   String get cashuRestoreDescription =>
-      'Scans the mint for proofs derived from your seed and restores them to this wallet.';
+      'Prehľadá mint, či neobsahuje dôkazy odvodené z vašej seed, a obnoví ich do tejto peňaženky.';
 
   @override
-  String get startRestore => 'Start restore';
+  String get startRestore => 'Spustiť obnovenie';
 
   @override
-  String get cashuRestoreStageFetchingKeysets => 'Fetching mint keysets...';
+  String get cashuRestoreStageFetchingKeysets =>
+      'Načítavajú sa mint keysety...';
 
   @override
-  String get cashuRestoreStageScanning => 'Scanning mint for your funds...';
+  String get cashuRestoreStageScanning =>
+      'Prehľadáva sa mint pre vaše prostriedky...';
 
   @override
   String cashuRestoreScanProgress(int keysets, int proofs) {
-    return 'Scanned $keysets keyset(s) · $proofs proof(s) found';
+    return 'Preskenovaných $keysets keyset(-ov) · nájdených $proofs dôkaz(-ov)';
   }
 
   @override
-  String get cashuRestoreStageCompleted => 'Restore complete';
+  String get cashuRestoreStageCompleted => 'Obnovenie dokončené';
 
   @override
   String get cashuRestoreAlsoRestoresQuotes =>
-      'Also recovers pending mint quotes';
+      'Obnoví tiež čakajúce mint ponuky';
 
   @override
   String restoredFromMint(int count) {
-    return 'Restored $count proofs from the mint';
+    return 'Obnovených $count dôkazov z mintu';
   }
 
   @override
-  String get restoreFailed => 'Restore failed';
+  String get restoreFailed => 'Obnovenie zlyhalo';
+
+  @override
+  String get restoreFromBackup => 'Obnoviť zo zálohy';
 }
