@@ -731,7 +731,7 @@ class _NWalletCardState extends State<NWalletCard>
                           children: [
                             const Icon(Icons.settings_backup_restore, size: 20),
                             const SizedBox(width: 8),
-                            Text(l10n.restore),
+                            Text(l10n.restoreFromBackup),
                           ],
                         ),
                       ),

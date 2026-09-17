@@ -487,9 +487,37 @@
   "appUpdateCheckAgain": "重新检查",
   "appUpdateInstalledVersion": "已安装版本 {version}",
   "appUpdateInstalledAndAvailable": "已安装版本 {installedVersion}。更新 {availableVersion} 可用。",
-  "appUpdateChangelog": "更新日志", "appUpdateReleaseHistory": "版本历史", "appUpdateInstalledBadge": "已安装", "appUpdateAvailableBadge": "有可用更新", "appUpdateLatestBadge": "最新", "appUpdateNoReleases": "尚未发布任何版本。", "appUpdateAcrossAllReleases": "所有版本共有",
+  "appUpdateChangelog": "更新日志",
+  "appUpdateReleaseHistory": "版本历史",
+  "appUpdateInstalledBadge": "已安装",
+  "appUpdateAvailableBadge": "有可用更新",
+  "appUpdateLatestBadge": "最新",
+  "appUpdateNoReleases": "尚未发布任何版本。",
+  "appUpdateAcrossAllReleases": "所有版本共有",
   "appUpdateSatsBy": "sats，来自",
-  "appUpdateReleaseDetails": "版本详情", "appUpdateWhatsNew": "更新内容", "appUpdatePublishedOn": "发布于 {date}", "appUpdateChannel": "频道：{channel}", "appUpdateArchitecture": "架构：{architecture}", "appUpdateVersionCode": "构建 {versionCode}", "appUpdateReleaseVersion": "版本 {version}", "appUpdateNoReleaseNotes": "未发布版本说明。", "appUpdatePublisher": "发布者", "appUpdatePublisherSignatureVerified": "Nostr 事件签名已验证", "appUpdateCertificateDeclared": "发布者已声明 Android 签名证书", "appUpdateSource": "下载来源：{host}", "appUpdateCommunity": "社区", "appUpdateZapSummary": "{count} 次打赏 · {sats} sats", "appUpdateReactionCount": "{count} 条回应", "appUpdateCommentCount": "{count} 条评论", "appUpdateSocialLoadFailed": "无法加载社区动态。", "appUpdateComments": "评论", "appUpdateNoComments": "暂无评论。", "appUpdateCommentHint": "分享对此版本的反馈", "appUpdatePostComment": "发表评论", "appUpdateSignInToComment": "登录 Nostr 账户后即可评论。", "appUpdateTechnicalDetails": "技术详情",
+  "appUpdateReleaseDetails": "版本详情",
+  "appUpdateWhatsNew": "更新内容",
+  "appUpdatePublishedOn": "发布于 {date}",
+  "appUpdateChannel": "频道：{channel}",
+  "appUpdateArchitecture": "架构：{architecture}",
+  "appUpdateVersionCode": "构建 {versionCode}",
+  "appUpdateReleaseVersion": "版本 {version}",
+  "appUpdateNoReleaseNotes": "未发布版本说明。",
+  "appUpdatePublisher": "发布者",
+  "appUpdatePublisherSignatureVerified": "Nostr 事件签名已验证",
+  "appUpdateCertificateDeclared": "发布者已声明 Android 签名证书",
+  "appUpdateSource": "下载来源：{host}",
+  "appUpdateCommunity": "社区",
+  "appUpdateZapSummary": "{count} 次打赏 · {sats} sats",
+  "appUpdateReactionCount": "{count} 条回应",
+  "appUpdateCommentCount": "{count} 条评论",
+  "appUpdateSocialLoadFailed": "无法加载社区动态。",
+  "appUpdateComments": "评论",
+  "appUpdateNoComments": "暂无评论。",
+  "appUpdateCommentHint": "分享对此版本的反馈",
+  "appUpdatePostComment": "发表评论",
+  "appUpdateSignInToComment": "登录 Nostr 账户后即可评论。",
+  "appUpdateTechnicalDetails": "技术详情",
   "appUpdateViewStatus": "查看更新状态",
   "refreshBalance": "刷新余额",
   "balanceRefreshed": "余额已刷新",
@@ -523,5 +551,72 @@
   "bolt12WalletTypeSubtitle": "使用可重复报价的仅收款钱包",
   "invalidBolt12QrCode": "此二维码不包含 BOLT12、BIP321 或 BIP353 付款目标。",
   "bolt12OfferTitle": "通过 BOLT12 收款",
-  "bolt12OfferInstructions": "分享此可重复使用的报价以接收 Lightning 付款。"
+  "bolt12OfferInstructions": "分享此可重复使用的报价以接收 Lightning 付款。",
+  "restoreFromBackup": "从备份恢复",
+  "@restoreFromBackup": {
+    "description": "Label for restoring a Cashu wallet from a backup JSON"
+  },
+  "@restoreSuccess": {
+    "description": "Confirmation after a successful restore",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "cashuQuoteRecoveryTitle": "恢复铸币报价",
+  "recoverQuote": "恢复报价",
+  "enterQuoteId": "输入要恢复的铸币报价 ID。锁定密钥将从您的助记词中恢复。",
+  "quoteId": "报价 ID",
+  "quoteIdHint": "在此粘贴报价 ID",
+  "pleaseEnterQuoteId": "请输入报价 ID",
+  "cashuQuoteRecoveryStageFetchingQuote": "正在从铸币厂获取报价…",
+  "cashuQuoteRecoveryStageRecoveringKey": "正在从您的助记词中恢复锁定密钥…",
+  "cashuQuoteRecoveryStageCompletingMint": "正在完成铸币…",
+  "cashuQuoteRecoveryKeyRecovered": "锁定密钥已恢复（派生计数器 {counter}）",
+  "@cashuQuoteRecoveryKeyRecovered": {
+    "description": "Confirmation shown once the lock key is recovered",
+    "placeholders": {
+      "counter": {
+        "type": "int",
+        "description": "Derivation counter of the recovered lock key"
+      }
+    }
+  },
+  "cashuQuoteRecoveryCompleted": "报价已恢复，资金已添加到您的余额中",
+  "quoteRecoveryFailed": "报价恢复失败",
+  "restoreFundsFromMint": "从铸币厂恢复资金",
+  "cashuRestoreFundsTitle": "从铸币厂恢复资金",
+  "cashuRestoreDescription": "扫描铸币厂中由您的助记词派生的凭证，并将其恢复到该钱包中。",
+  "startRestore": "开始恢复",
+  "cashuRestoreStageFetchingKeysets": "正在获取铸币厂密钥集…",
+  "cashuRestoreStageScanning": "正在扫描铸币厂以查找您的资金…",
+  "cashuRestoreScanProgress": "已扫描 {keysets} 个密钥集 · 找到 {proofs} 个凭证",
+  "@cashuRestoreScanProgress": {
+    "description": "Scan progress in the restore-from-mint dialog",
+    "placeholders": {
+      "keysets": {
+        "type": "int",
+        "description": "Number of keysets scanned"
+      },
+      "proofs": {
+        "type": "int",
+        "description": "Number of proofs found so far"
+      }
+    }
+  },
+  "cashuRestoreStageCompleted": "恢复完成",
+  "cashuRestoreAlsoRestoresQuotes": "同时恢复待处理的铸币报价",
+  "restoredFromMint": "已从铸币厂恢复 {count} 个凭证",
+  "@restoredFromMint": {
+    "description": "Confirmation after a successful restore-from-mint",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "restoreFailed": "恢复失败"
 }

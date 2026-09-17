@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -1727,86 +1726,89 @@ class AppLocalizationsEs extends AppLocalizations {
   String get balanceRefreshed => 'Saldo actualizado';
 
   @override
-  String get cashuQuoteRecoveryTitle => 'Recover Mint Quote';
+  String get cashuQuoteRecoveryTitle => 'Recuperar cotización de acuñación';
 
   @override
-  String get recoverQuote => 'Recover quote';
+  String get recoverQuote => 'Recuperar cotización';
 
   @override
   String get enterQuoteId =>
-      'Enter the mint quote ID to recover. The lock key is recovered from your seed phrase.';
+      'Ingresa el ID de la cotización de acuñación a recuperar. La clave de bloqueo se recupera desde tu frase semilla.';
 
   @override
-  String get quoteId => 'Quote ID';
+  String get quoteId => 'ID de cotización';
 
   @override
-  String get quoteIdHint => 'Paste the quote ID here';
+  String get quoteIdHint => 'Pega el ID de la cotización aquí';
 
   @override
-  String get pleaseEnterQuoteId => 'Please enter a quote ID';
-
-  @override
-  String get recoveringQuote => 'Recovering quote...';
+  String get pleaseEnterQuoteId => 'Por favor, ingresa un ID de cotización';
 
   @override
   String get cashuQuoteRecoveryStageFetchingQuote =>
-      'Fetching quote from mint...';
+      'Obteniendo cotización de la acuñadora...';
 
   @override
   String get cashuQuoteRecoveryStageRecoveringKey =>
-      'Recovering lock key from your seed...';
+      'Recuperando clave de bloqueo desde tu semilla...';
 
   @override
-  String get cashuQuoteRecoveryStageCompletingMint => 'Completing mint...';
+  String get cashuQuoteRecoveryStageCompletingMint =>
+      'Completando acuñación...';
 
   @override
   String cashuQuoteRecoveryKeyRecovered(int counter) {
-    return 'Lock key recovered (derivation counter $counter)';
+    return 'Clave de bloqueo recuperada (contador de derivación $counter)';
   }
 
   @override
   String get cashuQuoteRecoveryCompleted =>
-      'Quote recovered and funds added to your balance';
+      'Cotización recuperada y fondos agregados a tu saldo';
 
   @override
-  String get quoteRecoveryFailed => 'Quote recovery failed';
+  String get quoteRecoveryFailed => 'Error al recuperar la cotización';
 
   @override
-  String get restoreFundsFromMint => 'Restore funds from mint';
+  String get restoreFundsFromMint => 'Restaurar fondos desde la acuñadora';
 
   @override
-  String get cashuRestoreFundsTitle => 'Restore Funds from Mint';
+  String get cashuRestoreFundsTitle => 'Restaurar fondos desde la acuñadora';
 
   @override
   String get cashuRestoreDescription =>
-      'Scans the mint for proofs derived from your seed and restores them to this wallet.';
+      'Busca comprobantes derivados de tu semilla en la acuñadora y los restaura en esta cartera.';
 
   @override
-  String get startRestore => 'Start restore';
+  String get startRestore => 'Iniciar restauración';
 
   @override
-  String get cashuRestoreStageFetchingKeysets => 'Fetching mint keysets...';
+  String get cashuRestoreStageFetchingKeysets =>
+      'Obteniendo conjuntos de claves de la acuñadora...';
 
   @override
-  String get cashuRestoreStageScanning => 'Scanning mint for your funds...';
+  String get cashuRestoreStageScanning =>
+      'Escaneando la acuñadora en busca de tus fondos...';
 
   @override
   String cashuRestoreScanProgress(int keysets, int proofs) {
-    return 'Scanned $keysets keyset(s) · $proofs proof(s) found';
+    return 'Se escanearon $keysets conjuntos de claves · $proofs comprobante(s) encontrado(s)';
   }
 
   @override
-  String get cashuRestoreStageCompleted => 'Restore complete';
+  String get cashuRestoreStageCompleted => 'Restauración completa';
 
   @override
   String get cashuRestoreAlsoRestoresQuotes =>
-      'Also recovers pending mint quotes';
+      'También recupera cotizaciones de acuñación pendientes';
 
   @override
   String restoredFromMint(int count) {
-    return 'Restored $count proofs from the mint';
+    return 'Se restauraron $count comprobantes desde la acuñadora';
   }
 
   @override
-  String get restoreFailed => 'Restore failed';
+  String get restoreFailed => 'Error en la restauración';
+
+  @override
+  String get restoreFromBackup => 'Restaurar desde copia de seguridad';
 }

@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -1728,86 +1727,88 @@ class AppLocalizationsFr extends AppLocalizations {
   String get balanceRefreshed => 'Solde actualisé';
 
   @override
-  String get cashuQuoteRecoveryTitle => 'Recover Mint Quote';
+  String get cashuQuoteRecoveryTitle => 'Récupérer un devis de mint';
 
   @override
-  String get recoverQuote => 'Recover quote';
+  String get recoverQuote => 'Récupérer le devis';
 
   @override
   String get enterQuoteId =>
-      'Enter the mint quote ID to recover. The lock key is recovered from your seed phrase.';
+      'Saisissez l\'identifiant du devis de mint à récupérer. La clé de verrouillage est dérivée de votre phrase de récupération.';
 
   @override
-  String get quoteId => 'Quote ID';
+  String get quoteId => 'Identifiant du devis';
 
   @override
-  String get quoteIdHint => 'Paste the quote ID here';
+  String get quoteIdHint => 'Collez l\'identifiant du devis ici';
 
   @override
-  String get pleaseEnterQuoteId => 'Please enter a quote ID';
-
-  @override
-  String get recoveringQuote => 'Recovering quote...';
+  String get pleaseEnterQuoteId => 'Veuillez saisir un identifiant de devis';
 
   @override
   String get cashuQuoteRecoveryStageFetchingQuote =>
-      'Fetching quote from mint...';
+      'Récupération du devis auprès du mint…';
 
   @override
   String get cashuQuoteRecoveryStageRecoveringKey =>
-      'Recovering lock key from your seed...';
+      'Récupération de la clé de verrouillage depuis votre graine…';
 
   @override
-  String get cashuQuoteRecoveryStageCompletingMint => 'Completing mint...';
+  String get cashuQuoteRecoveryStageCompletingMint => 'Finalisation du mint…';
 
   @override
   String cashuQuoteRecoveryKeyRecovered(int counter) {
-    return 'Lock key recovered (derivation counter $counter)';
+    return 'Clé de verrouillage récupérée (compteur de dérivation $counter)';
   }
 
   @override
   String get cashuQuoteRecoveryCompleted =>
-      'Quote recovered and funds added to your balance';
+      'Devis récupéré et fonds ajoutés à votre solde';
 
   @override
-  String get quoteRecoveryFailed => 'Quote recovery failed';
+  String get quoteRecoveryFailed => 'Échec de la récupération du devis';
 
   @override
-  String get restoreFundsFromMint => 'Restore funds from mint';
+  String get restoreFundsFromMint => 'Restaurer les fonds depuis le mint';
 
   @override
-  String get cashuRestoreFundsTitle => 'Restore Funds from Mint';
+  String get cashuRestoreFundsTitle => 'Restaurer les fonds depuis le mint';
 
   @override
   String get cashuRestoreDescription =>
-      'Scans the mint for proofs derived from your seed and restores them to this wallet.';
+      'Recherche les preuves dérivées de votre graine auprès du mint et les restaure dans ce portefeuille.';
 
   @override
-  String get startRestore => 'Start restore';
+  String get startRestore => 'Lancer la restauration';
 
   @override
-  String get cashuRestoreStageFetchingKeysets => 'Fetching mint keysets...';
+  String get cashuRestoreStageFetchingKeysets =>
+      'Récupération des jeux de clés du mint…';
 
   @override
-  String get cashuRestoreStageScanning => 'Scanning mint for your funds...';
+  String get cashuRestoreStageScanning =>
+      'Scan du mint à la recherche de vos fonds…';
 
   @override
   String cashuRestoreScanProgress(int keysets, int proofs) {
-    return 'Scanned $keysets keyset(s) · $proofs proof(s) found';
+    return '$keysets jeu(x) de clés scanné(s) · $proofs preuve(s) trouvée(s)';
   }
 
   @override
-  String get cashuRestoreStageCompleted => 'Restore complete';
+  String get cashuRestoreStageCompleted => 'Restauration terminée';
 
   @override
   String get cashuRestoreAlsoRestoresQuotes =>
-      'Also recovers pending mint quotes';
+      'Récupère également les devis de mint en attente';
 
   @override
   String restoredFromMint(int count) {
-    return 'Restored $count proofs from the mint';
+    return '$count preuve(s) restaurée(s) depuis le mint';
   }
 
   @override
-  String get restoreFailed => 'Restore failed';
+  String get restoreFailed => 'Échec de la restauration';
+
+  @override
+  String get restoreFromBackup => 'Restaurer depuis une sauvegarde';
 }

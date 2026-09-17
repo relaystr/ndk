@@ -545,8 +545,37 @@
   "appUpdateCheckAgain": "Erneut prüfen",
   "appUpdateInstalledVersion": "Installierte Version {version}",
   "appUpdateInstalledAndAvailable": "Installierte Version {installedVersion}. Update {availableVersion} verfügbar.",
-  "appUpdateChangelog": "Änderungsprotokoll", "appUpdateReleaseHistory": "Versionsverlauf", "appUpdateInstalledBadge": "Installiert", "appUpdateAvailableBadge": "Update verfügbar", "appUpdateLatestBadge": "Neueste", "appUpdateNoReleases": "Es wurden noch keine Versionen veröffentlicht.", "appUpdateAcrossAllReleases": "Über alle Versionen hinweg",
-  "appUpdateReleaseDetails": "Versionsdetails", "appUpdateWhatsNew": "Neuigkeiten", "appUpdatePublishedOn": "Veröffentlicht am {date}", "appUpdateChannel": "Kanal: {channel}", "appUpdateArchitecture": "Architektur: {architecture}", "appUpdateVersionCode": "Build {versionCode}", "appUpdateReleaseVersion": "Version {version}", "appUpdateNoReleaseNotes": "Keine Versionshinweise veröffentlicht.", "appUpdatePublisher": "Herausgeber", "appUpdatePublisherSignatureVerified": "Nostr-Ereignissignatur verifiziert", "appUpdateCertificateDeclared": "Android-Signaturzertifikat vom Herausgeber angegeben", "appUpdateSource": "Downloadquelle: {host}", "appUpdateCommunity": "Community", "appUpdateZapSummary": "{count} Zaps · {sats} Sats", "appUpdateSatsBy": "Sats von", "appUpdateReactionCount": "{count} Reaktionen", "appUpdateCommentCount": "{count} Kommentare", "appUpdateSocialLoadFailed": "Community-Aktivität konnte nicht geladen werden.", "appUpdateComments": "Kommentare", "appUpdateNoComments": "Noch keine Kommentare.", "appUpdateCommentHint": "Feedback zu dieser Version teilen", "appUpdatePostComment": "Kommentar senden", "appUpdateSignInToComment": "Mit einem Nostr-Konto anmelden, um zu kommentieren.", "appUpdateTechnicalDetails": "Technische Details",
+  "appUpdateChangelog": "Änderungsprotokoll",
+  "appUpdateReleaseHistory": "Versionsverlauf",
+  "appUpdateInstalledBadge": "Installiert",
+  "appUpdateAvailableBadge": "Update verfügbar",
+  "appUpdateLatestBadge": "Neueste",
+  "appUpdateNoReleases": "Es wurden noch keine Versionen veröffentlicht.",
+  "appUpdateAcrossAllReleases": "Über alle Versionen hinweg",
+  "appUpdateReleaseDetails": "Versionsdetails",
+  "appUpdateWhatsNew": "Neuigkeiten",
+  "appUpdatePublishedOn": "Veröffentlicht am {date}",
+  "appUpdateChannel": "Kanal: {channel}",
+  "appUpdateArchitecture": "Architektur: {architecture}",
+  "appUpdateVersionCode": "Build {versionCode}",
+  "appUpdateReleaseVersion": "Version {version}",
+  "appUpdateNoReleaseNotes": "Keine Versionshinweise veröffentlicht.",
+  "appUpdatePublisher": "Herausgeber",
+  "appUpdatePublisherSignatureVerified": "Nostr-Ereignissignatur verifiziert",
+  "appUpdateCertificateDeclared": "Android-Signaturzertifikat vom Herausgeber angegeben",
+  "appUpdateSource": "Downloadquelle: {host}",
+  "appUpdateCommunity": "Community",
+  "appUpdateZapSummary": "{count} Zaps · {sats} Sats",
+  "appUpdateSatsBy": "Sats von",
+  "appUpdateReactionCount": "{count} Reaktionen",
+  "appUpdateCommentCount": "{count} Kommentare",
+  "appUpdateSocialLoadFailed": "Community-Aktivität konnte nicht geladen werden.",
+  "appUpdateComments": "Kommentare",
+  "appUpdateNoComments": "Noch keine Kommentare.",
+  "appUpdateCommentHint": "Feedback zu dieser Version teilen",
+  "appUpdatePostComment": "Kommentar senden",
+  "appUpdateSignInToComment": "Mit einem Nostr-Konto anmelden, um zu kommentieren.",
+  "appUpdateTechnicalDetails": "Technische Details",
   "appUpdateViewStatus": "Update-Status anzeigen",
   "refreshBalance": "Guthaben aktualisieren",
   "balanceRefreshed": "Guthaben aktualisiert",
@@ -580,5 +609,72 @@
   "bolt12WalletTypeSubtitle": "Reine Empfangs-Wallet mit wiederverwendbarem Angebot",
   "invalidBolt12QrCode": "Der QR-Code enthält kein BOLT12-, BIP321- oder BIP353-Zahlungsziel.",
   "bolt12OfferTitle": "Mit BOLT12 empfangen",
-  "bolt12OfferInstructions": "Teile dieses wiederverwendbare Angebot, um eine Lightning-Zahlung zu empfangen."
+  "bolt12OfferInstructions": "Teile dieses wiederverwendbare Angebot, um eine Lightning-Zahlung zu empfangen.",
+  "restoreFromBackup": "Aus Backup wiederherstellen",
+  "@restoreFromBackup": {
+    "description": "Label for restoring a Cashu wallet from a backup JSON"
+  },
+  "@restoreSuccess": {
+    "description": "Confirmation after a successful restore",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "cashuQuoteRecoveryTitle": "Mint-Angebot wiederherstellen",
+  "recoverQuote": "Angebot wiederherstellen",
+  "enterQuoteId": "Gib die Mint-Quoten-ID ein, die wiederhergestellt werden soll. Der Lock-Key wird aus deiner Seed-Phrase wiederhergestellt.",
+  "quoteId": "Quoten-ID",
+  "quoteIdHint": "Füge die Quoten-ID hier ein",
+  "pleaseEnterQuoteId": "Bitte eine Quoten-ID eingeben",
+  "cashuQuoteRecoveryStageFetchingQuote": "Angebot wird vom Mint abgerufen...",
+  "cashuQuoteRecoveryStageRecoveringKey": "Lock-Key wird aus deiner Seed wiederhergestellt...",
+  "cashuQuoteRecoveryStageCompletingMint": "Mint wird abgeschlossen...",
+  "cashuQuoteRecoveryKeyRecovered": "Lock-Key wiederhergestellt (Ableitungszähler {counter})",
+  "@cashuQuoteRecoveryKeyRecovered": {
+    "description": "Confirmation shown once the lock key is recovered",
+    "placeholders": {
+      "counter": {
+        "type": "int",
+        "description": "Derivation counter of the recovered lock key"
+      }
+    }
+  },
+  "cashuQuoteRecoveryCompleted": "Angebot wiederhergestellt und Guthaben deinem Konto hinzugefügt",
+  "quoteRecoveryFailed": "Angebotswiederherstellung fehlgeschlagen",
+  "restoreFundsFromMint": "Gelder vom Mint wiederherstellen",
+  "cashuRestoreFundsTitle": "Gelder vom Mint wiederherstellen",
+  "cashuRestoreDescription": "Durchsucht den Mint nach Nachweisen, die aus deiner Seed abgeleitet wurden, und stellt sie in dieser Wallet wieder her.",
+  "startRestore": "Wiederherstellung starten",
+  "cashuRestoreStageFetchingKeysets": "Mint-Keysets werden abgerufen...",
+  "cashuRestoreStageScanning": "Mint wird nach deinen Geldern durchsucht...",
+  "cashuRestoreScanProgress": "{keysets} Keyset(s) durchsucht · {proofs} Nachweis(e) gefunden",
+  "@cashuRestoreScanProgress": {
+    "description": "Scan progress in the restore-from-mint dialog",
+    "placeholders": {
+      "keysets": {
+        "type": "int",
+        "description": "Number of keysets scanned"
+      },
+      "proofs": {
+        "type": "int",
+        "description": "Number of proofs found so far"
+      }
+    }
+  },
+  "cashuRestoreStageCompleted": "Wiederherstellung abgeschlossen",
+  "cashuRestoreAlsoRestoresQuotes": "Stellt auch ausstehende Mint-Angebote wieder her",
+  "restoredFromMint": "{count} Nachweise vom Mint wiederhergestellt",
+  "@restoredFromMint": {
+    "description": "Confirmation after a successful restore-from-mint",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "restoreFailed": "Wiederherstellung fehlgeschlagen"
 }

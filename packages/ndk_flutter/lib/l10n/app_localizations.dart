@@ -3329,12 +3329,6 @@ abstract class AppLocalizations {
   /// **'Please enter a quote ID'**
   String get pleaseEnterQuoteId;
 
-  /// Button label while a quote recovery is in progress
-  ///
-  /// In en, this message translates to:
-  /// **'Recovering quote...'**
-  String get recoveringQuote;
-
   /// Progress line while the quote is fetched from the mint
   ///
   /// In en, this message translates to:
@@ -3436,6 +3430,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Restore failed'**
   String get restoreFailed;
+
+  /// Label for restoring a Cashu wallet from a backup JSON
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from backup'**
+  String get restoreFromBackup;
 }
 
 class _AppLocalizationsDelegate

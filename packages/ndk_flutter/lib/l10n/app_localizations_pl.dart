@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -1726,86 +1725,89 @@ class AppLocalizationsPl extends AppLocalizations {
   String get balanceRefreshed => 'Saldo odświeżone';
 
   @override
-  String get cashuQuoteRecoveryTitle => 'Recover Mint Quote';
+  String get cashuQuoteRecoveryTitle => 'Odzyskaj wycenę mennicy';
 
   @override
-  String get recoverQuote => 'Recover quote';
+  String get recoverQuote => 'Odzyskaj wycenę';
 
   @override
   String get enterQuoteId =>
-      'Enter the mint quote ID to recover. The lock key is recovered from your seed phrase.';
+      'Wprowadź identyfikator wyceny mennicy do odzyskania. Klucz blokowany jest odtwarzany z Twojej frazy odzyskiwania.';
 
   @override
-  String get quoteId => 'Quote ID';
+  String get quoteId => 'Identyfikator wyceny';
 
   @override
-  String get quoteIdHint => 'Paste the quote ID here';
+  String get quoteIdHint => 'Wklej tutaj identyfikator wyceny';
 
   @override
-  String get pleaseEnterQuoteId => 'Please enter a quote ID';
-
-  @override
-  String get recoveringQuote => 'Recovering quote...';
+  String get pleaseEnterQuoteId => 'Proszę wprowadzić identyfikator wyceny';
 
   @override
   String get cashuQuoteRecoveryStageFetchingQuote =>
-      'Fetching quote from mint...';
+      'Pobieranie wyceny z mennicy...';
 
   @override
   String get cashuQuoteRecoveryStageRecoveringKey =>
-      'Recovering lock key from your seed...';
+      'Odtwarzanie klucza blokowanego z frazy odzyskiwania...';
 
   @override
-  String get cashuQuoteRecoveryStageCompletingMint => 'Completing mint...';
+  String get cashuQuoteRecoveryStageCompletingMint =>
+      'Finalizowanie mennicy...';
 
   @override
   String cashuQuoteRecoveryKeyRecovered(int counter) {
-    return 'Lock key recovered (derivation counter $counter)';
+    return 'Klucz blokowany odzyskany (licznik wywodzenia $counter)';
   }
 
   @override
   String get cashuQuoteRecoveryCompleted =>
-      'Quote recovered and funds added to your balance';
+      'Wycena odzyskana i środki dodane do salda';
 
   @override
-  String get quoteRecoveryFailed => 'Quote recovery failed';
+  String get quoteRecoveryFailed => 'Nie udało się odzyskać wyceny';
 
   @override
-  String get restoreFundsFromMint => 'Restore funds from mint';
+  String get restoreFundsFromMint => 'Przywróć środki z mennicy';
 
   @override
-  String get cashuRestoreFundsTitle => 'Restore Funds from Mint';
+  String get cashuRestoreFundsTitle => 'Przywróć środki z mennicy';
 
   @override
   String get cashuRestoreDescription =>
-      'Scans the mint for proofs derived from your seed and restores them to this wallet.';
+      'Przeszukuje mennicę w poszukiwaniu dowodów wywodzących się z Twojej frazy odzyskiwania i przywraca je do tego portfela.';
 
   @override
-  String get startRestore => 'Start restore';
+  String get startRestore => 'Rozpocznij przywracanie';
 
   @override
-  String get cashuRestoreStageFetchingKeysets => 'Fetching mint keysets...';
+  String get cashuRestoreStageFetchingKeysets =>
+      'Pobieranie zestawów kluczy mennicy...';
 
   @override
-  String get cashuRestoreStageScanning => 'Scanning mint for your funds...';
+  String get cashuRestoreStageScanning =>
+      'Przeszukiwanie mennicy w poszukiwaniu Twoich środków...';
 
   @override
   String cashuRestoreScanProgress(int keysets, int proofs) {
-    return 'Scanned $keysets keyset(s) · $proofs proof(s) found';
+    return 'Przeszukano $keysets zestaw(ów) kluczy · znaleziono $proofs dowod(ów)';
   }
 
   @override
-  String get cashuRestoreStageCompleted => 'Restore complete';
+  String get cashuRestoreStageCompleted => 'Przywracanie zakończone';
 
   @override
   String get cashuRestoreAlsoRestoresQuotes =>
-      'Also recovers pending mint quotes';
+      'Przywraca również oczekujące wyceny mennicy';
 
   @override
   String restoredFromMint(int count) {
-    return 'Restored $count proofs from the mint';
+    return 'Przywrócono $count dowodów z mennicy';
   }
 
   @override
-  String get restoreFailed => 'Restore failed';
+  String get restoreFailed => 'Przywracanie nieudane';
+
+  @override
+  String get restoreFromBackup => 'Odzyskaj z kopii zapasowej';
 }

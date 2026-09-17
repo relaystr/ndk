@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -1730,86 +1729,89 @@ class AppLocalizationsDe extends AppLocalizations {
   String get balanceRefreshed => 'Guthaben aktualisiert';
 
   @override
-  String get cashuQuoteRecoveryTitle => 'Recover Mint Quote';
+  String get cashuQuoteRecoveryTitle => 'Mint-Angebot wiederherstellen';
 
   @override
-  String get recoverQuote => 'Recover quote';
+  String get recoverQuote => 'Angebot wiederherstellen';
 
   @override
   String get enterQuoteId =>
-      'Enter the mint quote ID to recover. The lock key is recovered from your seed phrase.';
+      'Gib die Mint-Quoten-ID ein, die wiederhergestellt werden soll. Der Lock-Key wird aus deiner Seed-Phrase wiederhergestellt.';
 
   @override
-  String get quoteId => 'Quote ID';
+  String get quoteId => 'Quoten-ID';
 
   @override
-  String get quoteIdHint => 'Paste the quote ID here';
+  String get quoteIdHint => 'Füge die Quoten-ID hier ein';
 
   @override
-  String get pleaseEnterQuoteId => 'Please enter a quote ID';
-
-  @override
-  String get recoveringQuote => 'Recovering quote...';
+  String get pleaseEnterQuoteId => 'Bitte eine Quoten-ID eingeben';
 
   @override
   String get cashuQuoteRecoveryStageFetchingQuote =>
-      'Fetching quote from mint...';
+      'Angebot wird vom Mint abgerufen...';
 
   @override
   String get cashuQuoteRecoveryStageRecoveringKey =>
-      'Recovering lock key from your seed...';
+      'Lock-Key wird aus deiner Seed wiederhergestellt...';
 
   @override
-  String get cashuQuoteRecoveryStageCompletingMint => 'Completing mint...';
+  String get cashuQuoteRecoveryStageCompletingMint =>
+      'Mint wird abgeschlossen...';
 
   @override
   String cashuQuoteRecoveryKeyRecovered(int counter) {
-    return 'Lock key recovered (derivation counter $counter)';
+    return 'Lock-Key wiederhergestellt (Ableitungszähler $counter)';
   }
 
   @override
   String get cashuQuoteRecoveryCompleted =>
-      'Quote recovered and funds added to your balance';
+      'Angebot wiederhergestellt und Guthaben deinem Konto hinzugefügt';
 
   @override
-  String get quoteRecoveryFailed => 'Quote recovery failed';
+  String get quoteRecoveryFailed => 'Angebotswiederherstellung fehlgeschlagen';
 
   @override
-  String get restoreFundsFromMint => 'Restore funds from mint';
+  String get restoreFundsFromMint => 'Gelder vom Mint wiederherstellen';
 
   @override
-  String get cashuRestoreFundsTitle => 'Restore Funds from Mint';
+  String get cashuRestoreFundsTitle => 'Gelder vom Mint wiederherstellen';
 
   @override
   String get cashuRestoreDescription =>
-      'Scans the mint for proofs derived from your seed and restores them to this wallet.';
+      'Durchsucht den Mint nach Nachweisen, die aus deiner Seed abgeleitet wurden, und stellt sie in dieser Wallet wieder her.';
 
   @override
-  String get startRestore => 'Start restore';
+  String get startRestore => 'Wiederherstellung starten';
 
   @override
-  String get cashuRestoreStageFetchingKeysets => 'Fetching mint keysets...';
+  String get cashuRestoreStageFetchingKeysets =>
+      'Mint-Keysets werden abgerufen...';
 
   @override
-  String get cashuRestoreStageScanning => 'Scanning mint for your funds...';
+  String get cashuRestoreStageScanning =>
+      'Mint wird nach deinen Geldern durchsucht...';
 
   @override
   String cashuRestoreScanProgress(int keysets, int proofs) {
-    return 'Scanned $keysets keyset(s) · $proofs proof(s) found';
+    return '$keysets Keyset(s) durchsucht · $proofs Nachweis(e) gefunden';
   }
 
   @override
-  String get cashuRestoreStageCompleted => 'Restore complete';
+  String get cashuRestoreStageCompleted => 'Wiederherstellung abgeschlossen';
 
   @override
   String get cashuRestoreAlsoRestoresQuotes =>
-      'Also recovers pending mint quotes';
+      'Stellt auch ausstehende Mint-Angebote wieder her';
 
   @override
   String restoredFromMint(int count) {
-    return 'Restored $count proofs from the mint';
+    return '$count Nachweise vom Mint wiederhergestellt';
   }
 
   @override
-  String get restoreFailed => 'Restore failed';
+  String get restoreFailed => 'Wiederherstellung fehlgeschlagen';
+
+  @override
+  String get restoreFromBackup => 'Aus Backup wiederherstellen';
 }

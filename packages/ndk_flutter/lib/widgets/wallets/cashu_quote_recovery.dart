@@ -105,19 +105,14 @@ class _CashuQuoteRecoveryInputDialogState
 
       if (transaction != null) {
         final completed = transaction.state == WalletTransactionState.completed;
-        final detail = transaction.completionMsg?.trim() ?? '';
-        scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text(
-              completed
-                  ? l10n.cashuQuoteRecoveryCompleted
-                  : detail.isNotEmpty
-                  ? '${l10n.quoteRecoveryFailed}: $detail'
-                  : l10n.quoteRecoveryFailed,
+        if (completed) {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(l10n.cashuQuoteRecoveryCompleted),
+              backgroundColor: Colors.green,
             ),
-            backgroundColor: completed ? Colors.green : Colors.red,
-          ),
-        );
+          );
+        }
       }
 
       if (mounted) Navigator.of(context).pop(transaction);
@@ -170,7 +165,7 @@ class _CashuQuoteRecoveryInputDialogState
               suffixIcon: IconButton(
                 onPressed: _pasteQuoteId,
                 icon: const Icon(Icons.paste),
-                tooltip: l10n.copy,
+                tooltip: l10n.paste,
               ),
             ),
           ),
