@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789594242713,
+  "lastUpdate": 1789652153244,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -454,6 +454,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1640220,
             "range": "1629170-1670352",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "58687994+1-leo@users.noreply.github.com",
+            "name": "Leo",
+            "username": "1-leo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2325f3f0105fcf8142adb9cd536ea1b1f73d5811",
+          "message": "Merge pull request #818 from relaystr/1-leo/cashu-mint-quote-lock-key-is-random-and-unrecove\n\nfeat: deterministic cashu quote key",
+          "timestamp": "2026-09-17T15:33:58+02:00",
+          "tree_id": "5f454c45aed7ed1cd12ff97cfd8c46ec09744845",
+          "url": "https://github.com/relaystr/ndk/commit/2325f3f0105fcf8142adb9cd536ea1b1f73d5811"
+        },
+        "date": 1789652149816,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 43159.2,
+            "range": "42988-45931",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1646216,
+            "range": "1634268-1661170",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
