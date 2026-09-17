@@ -1,3 +1,7 @@
+## 0.10.0-dev.6
+
+ - Update a dependency to the latest release.
+
 ## 0.10.0-dev.5
 
  - **FIX**(l10n): translate wallet flows.

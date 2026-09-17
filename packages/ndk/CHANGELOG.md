@@ -1,3 +1,17 @@
+## 0.10.0-dev.5
+
+ - **PERF**: cache master key for cashu quote.
+ - **FIX**: guard cashu quote op (on autostart).
+ - **FIX**: backfill method, usedKeysets if missing.
+ - **FIX**: scanUpperBound.
+ - **FIX**: updatePendingQuotes to return all refreshed transactions.
+ - **FIX**: global quote counter.
+ - **FEAT**: ensureMintCounterSafety.
+ - **FEAT**: streamable recoverAndCompleteQuote().
+ - **FEAT**: recoverAndCompleteQuote() api.
+ - **FEAT**: auto resume pending transactions.
+ - **FEAT**: determenistic cashu quote key.
+
 ## 0.10.0-dev.4
 
  - **FIX**: address app update review feedback.
