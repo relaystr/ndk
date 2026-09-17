@@ -64,6 +64,12 @@ class NdkConfig {
   /// Store this securely! Seed phrase allow full access to cashu funds!
   final CashuUserSeedphrase? cashuUserSeedphrase;
 
+  /// when false (default), automatic cashu quote completion on startup
+  /// requires an explicit `Cashu.restore()` call for the mint/unit first;
+  /// when true, it instead runs a bounded NUT-09 scan itself to verify the
+  /// mint derivation counter before minting. See [Cashu.retrieveFunds].
+  bool autoVerifyMintCounters;
+
   /// whether to save broadcasted events to cache by default
   bool defaultBroadcastSaveToCache;
 
@@ -155,6 +161,7 @@ class NdkConfig {
     this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
     this.webSocketCompression = true,
     this.cashuUserSeedphrase,
+    this.autoVerifyMintCounters = false,
     this.fetchedRangesEnabled = false,
     // ignore: deprecated_member_use_from_same_package
     this.eagerAuth = false,

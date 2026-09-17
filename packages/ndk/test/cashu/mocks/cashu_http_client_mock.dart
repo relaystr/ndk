@@ -4,6 +4,7 @@ import 'dart:convert';
 
 class MockCashuHttpClient extends http.BaseClient {
   final Map<String, dynamic> _responses = {};
+  final Map<String, List<http.Response>> _sequencedResponses = {};
   final List<http.Request> capturedRequests = [];
 
   MockCashuHttpClient() {
@@ -323,6 +324,16 @@ class MockCashuHttpClient extends http.BaseClient {
     _responses['$method:$path'] = response;
   }
 
+  /// Serves [responses] one per request (in order); when exhausted, requests
+  /// fall back to [_responses] / the default 404.
+  void setSequencedCustomResponses(
+    String method,
+    String path,
+    List<http.Response> responses,
+  ) {
+    _sequencedResponses['$method:$path'] = List.of(responses);
+  }
+
   void setNetworkError(String method, String path) {
     _responses['$method:$path'] = 'NETWORK_ERROR';
   }
@@ -332,6 +343,16 @@ class MockCashuHttpClient extends http.BaseClient {
     capturedRequests.add(request as http.Request);
 
     final key = '${request.method}:${request.url.path}';
+
+    final sequenced = _sequencedResponses[key];
+    if (sequenced != null && sequenced.isNotEmpty) {
+      final response = sequenced.removeAt(0);
+      return http.StreamedResponse(
+        Stream.value(utf8.encode(response.body)),
+        response.statusCode,
+        headers: response.headers,
+      );
+    }
 
     if (_responses.containsKey(key)) {
       final response = _responses[key];
