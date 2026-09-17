@@ -53,6 +53,18 @@ class Cashu {
 
   final CashuKeyDerivation _cashuKeyDerivation;
 
+  late final CashuRestore _cashuRestore;
+
+  /// when false (default), automatic/recovery mint completions require an
+  /// explicit [restore] call for the mint+keyset first (see
+  /// [_ensureMintCounterSafety]); when true, they instead run a bounded NUT-09
+  /// scan themselves before minting
+  final bool _autoVerifyMintCounters;
+
+  /// "mintUrl|keysetId" pairs whose derivation counter is known to be safe
+  /// (verified against the mint) in this process lifetime
+  final Set<String> _verifiedMintCounters = {};
+
   /// guards the one-shot startup refresh of pending quotes
   bool _startupResumeAttempted = false;
 
@@ -63,11 +75,13 @@ class Cashu {
     required CashuKeyDerivation cashuKeyDerivation,
     CashuMintRecommendations? mintRecommendations,
     CashuUserSeedphrase? cashuUserSeedphrase,
+    bool autoVerifyMintCounters = false,
   })  : _cashuRepo = cashuRepo,
         _walletsRepo = walletsRepo,
         _cacheManager = cacheManager,
         _cashuKeyDerivation = cashuKeyDerivation,
-        _mintRecommendations = mintRecommendations {
+        _mintRecommendations = mintRecommendations,
+        _autoVerifyMintCounters = autoVerifyMintCounters {
     _cashuKeysets = CashuKeysets(
       cashuRepo: _cashuRepo,
       cacheManager: _cacheManager,
@@ -82,6 +96,12 @@ class Cashu {
     _cashuExportImport = CashuStateExportImport(
       cacheManagerCashu: _cacheManagerCashu,
       walletsRepo: _walletsRepo,
+      cashuSeed: _cashuSeed,
+    );
+    _cashuRestore = CashuRestore(
+      cashuRepo: _cashuRepo,
+      cashuKeyDerivation: _cashuKeyDerivation,
+      cacheManager: _cacheManagerCashu,
       cashuSeed: _cashuSeed,
     );
     if (cashuUserSeedphrase == null) {
@@ -242,16 +262,8 @@ class Cashu {
 
     Logger.log.i(() => 'Found ${keysets.length} keysets for unit $unit');
 
-    // Create restore instance
-    final cashuRestore = CashuRestore(
-      cashuRepo: _cashuRepo,
-      cashuKeyDerivation: _cashuKeyDerivation,
-      cacheManager: _cacheManagerCashu,
-      cashuSeed: _cashuSeed,
-    );
-
     // Restore all keysets and yield progress
-    await for (final result in cashuRestore.restoreAllKeysets(
+    await for (final result in _cashuRestore.restoreAllKeysets(
       mintUrl: mintUrl,
       keysets: keysets,
       startCounter: startCounter,
@@ -263,60 +275,17 @@ class Cashu {
           .expand((keysetResult) => keysetResult.restoredProofs)
           .toList();
 
-      if (newProofs.isNotEmpty) {
-        // Check which proofs are actually unspent
-        try {
-          final proofStates = await _cashuRepo.checkTokenState(
-            proofPubkeys: newProofs.map((p) => p.Y).toList(),
-            mintUrl: mintUrl,
-          );
-
-          // Filter out spent proofs
-          final unspentProofs = <CashuProof>[];
-          for (int i = 0; i < newProofs.length; i++) {
-            if (i < proofStates.length &&
-                proofStates[i].state == CashuProofState.unspend) {
-              unspentProofs.add(newProofs[i]);
-            }
-          }
-
-          if (unspentProofs.isNotEmpty) {
-            await _cacheManagerCashu.saveProofs(
-              proofs: unspentProofs,
-              mintUrl: mintUrl,
-            );
-            Logger.log.i(
-              () =>
-                  'Saved ${unspentProofs.length} unspent proofs to cache (filtered out ${newProofs.length - unspentProofs.length} spent proofs)',
-            );
-
-            // Update balance stream
-            await _updateBalances();
-          } else {
-            Logger.log.i(
-              () =>
-                  'All ${newProofs.length} restored proofs were already spent, skipping save',
-            );
-          }
-        } catch (e) {
-          Logger.log.e(() => 'Error checking proof states during restore: $e');
-          // If we can't check state, save the proofs anyway (better to have duplicates than lose proofs)
-          await _cacheManagerCashu.saveProofs(
-            proofs: newProofs,
-            mintUrl: mintUrl,
-          );
-          Logger.log.w(
-            () =>
-                'Saved ${newProofs.length} proofs without state check due to error',
-          );
-
-          // Update balance stream
-          await _updateBalances();
-        }
-      }
+      await _saveDiscoveredProofs(newProofs: newProofs, mintUrl: mintUrl);
 
       // Yield progress update
       yield result;
+    }
+
+    // the scan above reconciled these keysets' counters with the mint, so
+    // automatic completion no longer needs to re-verify them (see
+    // _ensureMintCounterSafety)
+    for (final keyset in keysets) {
+      _verifiedMintCounters.add('$mintUrl|${keyset.id}');
     }
 
     // Recover the private keys of pending funding quotes for this mint so
@@ -329,6 +298,116 @@ class Cashu {
     await _completePaidPendingQuotes(mintUrl);
 
     Logger.log.i(() => 'Restore completed');
+  }
+
+  /// Checks [newProofs] against the mint's spent-state and persists the
+  /// unspent ones, falling back to saving all of them if the check fails.
+  Future<void> _saveDiscoveredProofs({
+    required List<CashuProof> newProofs,
+    required String mintUrl,
+  }) async {
+    if (newProofs.isEmpty) {
+      return;
+    }
+    try {
+      final proofStates = await _cashuRepo.checkTokenState(
+        proofPubkeys: newProofs.map((p) => p.Y).toList(),
+        mintUrl: mintUrl,
+      );
+
+      final unspentProofs = <CashuProof>[];
+      for (int i = 0; i < newProofs.length; i++) {
+        if (i < proofStates.length &&
+            proofStates[i].state == CashuProofState.unspend) {
+          unspentProofs.add(newProofs[i]);
+        }
+      }
+
+      if (unspentProofs.isNotEmpty) {
+        await _cacheManagerCashu.saveProofs(
+          proofs: unspentProofs,
+          mintUrl: mintUrl,
+        );
+        Logger.log.i(
+          () =>
+              'Saved ${unspentProofs.length} unspent proofs to cache (filtered out ${newProofs.length - unspentProofs.length} spent proofs)',
+        );
+        await _updateBalances();
+      } else {
+        Logger.log.i(
+          () =>
+              'All ${newProofs.length} restored proofs were already spent, skipping save',
+        );
+      }
+    } catch (e) {
+      Logger.log.e(() => 'Error checking proof states during restore: $e');
+      // If we can't check state, save the proofs anyway (better to have duplicates than lose proofs)
+      await _cacheManagerCashu.saveProofs(
+        proofs: newProofs,
+        mintUrl: mintUrl,
+      );
+      Logger.log.w(
+        () =>
+            'Saved ${newProofs.length} proofs without state check due to error',
+      );
+      await _updateBalances();
+    }
+  }
+
+  /// Ensures the derivation counter for [mintUrl]+[keyset] is safe to mint
+  /// against before [retrieveFunds] derives new blinded messages from it.
+  ///
+  /// A locally cached counter can silently reset to 0 if the proof cache is
+  /// lost while pending transactions survive elsewhere (see
+  /// [CashuCounterVerificationRequiredException]), which would re-derive
+  /// already-used secrets. By default this throws until [restore] has been
+  /// called for this mint/unit in the current process; when
+  /// [_autoVerifyMintCounters] is enabled it instead runs a bounded NUT-09
+  /// scan itself to reconcile and bump the counter.
+  Future<void> _ensureMintCounterSafety({
+    required String mintUrl,
+    required String unit,
+    required CahsuKeyset keyset,
+  }) async {
+    final key = '$mintUrl|${keyset.id}';
+    if (_verifiedMintCounters.contains(key)) {
+      return;
+    }
+
+    if (!_autoVerifyMintCounters) {
+      throw CashuCounterVerificationRequiredException(
+        mintUrl: mintUrl,
+        unit: unit,
+      );
+    }
+
+    Logger.log.i(
+      () => 'Auto-verifying derivation counter for $mintUrl keyset '
+          '${keyset.id} before minting',
+    );
+
+    final result = await _cashuRestore.restoreKeyset(
+      mintUrl: mintUrl,
+      keyset: keyset,
+      startCounter: 0,
+      batchSize: 100,
+      gapLimit: 2,
+    );
+
+    if (result.lastUsedCounter >= 0) {
+      await _cacheManagerCashu.setDerivationCounter(
+        keysetId: keyset.id,
+        mintUrl: mintUrl,
+        counter: result.lastUsedCounter + 1,
+      );
+    }
+
+    await _saveDiscoveredProofs(
+      newProofs: result.restoredProofs,
+      mintUrl: mintUrl,
+    );
+
+    _verifiedMintCounters.add(key);
   }
 
   Future<int> getBalanceMintUnit({
@@ -961,6 +1040,13 @@ class Cashu {
   /// already marked paid on the mint are completed right away; quotes still
   /// unpaid are re-checked until [_pendingQuotePayTimeout] elapses (dev mints
   /// auto-pay invoices shortly after creation).
+  ///
+  /// Unlike [restore]'s own call to this method (whose keysets it just
+  /// verified), calls from the constructor-triggered [_scheduleStartupResume]
+  /// have never verified this mint's derivation counter, so minting here
+  /// requires [CashuWalletTransaction.usedKeysets] to already be
+  /// counter-verified (see [_ensureMintCounterSafety]) - otherwise the
+  /// attempt is skipped and retried on the next opportunity.
   Future<void> _completePaidPendingQuotes(String mintUrl) async {
     final transactions = await _walletsRepo.getTransactions(
       walletType: WalletType.CASHU,
@@ -1020,9 +1106,16 @@ class Cashu {
       }
 
       try {
-        await retrieveFunds(draftTransaction: tx).toList();
+        await retrieveFunds(
+          draftTransaction: tx,
+          verifyCounterSafety: true,
+        ).toList();
         Logger.log.i(
           () => 'Completed previously paid quote ${quote.quoteId}',
+        );
+      } on CashuCounterVerificationRequiredException catch (e) {
+        Logger.log.w(
+          () => 'Skipping auto-completion of quote ${quote.quoteId}: $e',
         );
       } catch (e) {
         Logger.log.e(
@@ -1040,6 +1133,12 @@ class Cashu {
   /// seed-derived quote-key counter, and completes the mint. A local
   /// transaction record is created when none exists, or updated when one does,
   /// so the recorded state reflects the outcome either way.
+  ///
+  /// This is a deliberate, caller-invoked recovery: unlike the automatic
+  /// startup path, it is not gated behind [_ensureMintCounterSafety]. Prefer
+  /// calling [restore] for this mint/unit beforehand when the local
+  /// derivation counter may be stale, to avoid reusing an already-used
+  /// blinded-message counter.
   ///
   /// emits [CashuQuoteRecoveryProgress] events: the quote fetch,
   /// the lock-key recovery and - once the counter is found - the mint
@@ -1189,10 +1288,15 @@ class Cashu {
 
   /// retrieve funds from a pending funding transaction \
   /// [draftTransaction] - the draft transaction from initiateFund() \
+  /// [verifyCounterSafety] - set by automatic/recovery callers (startup resume,
+  /// [recoverAndCompleteQuote]) to require the mint's derivation counter to be
+  /// verified before minting; see [_ensureMintCounterSafety]. Leave `false`
+  /// for the normal manual initiateFund -> retrieveFunds flow. \
   /// Returns a stream of [CashuWalletTransaction] that emits the transaction state as it progresses.
   /// Throws if the draft transaction is missing required fields.
   Stream<CashuWalletTransaction> retrieveFunds({
     required CashuWalletTransaction draftTransaction,
+    bool verifyCounterSafety = false,
   }) async* {
     await preflightChecks();
     if (draftTransaction.qoute == null) {
@@ -1256,6 +1360,17 @@ class Cashu {
       }
 
       await Future.delayed(CashuConfig.FUNDING_CHECK_INTERVAL);
+    }
+
+    // verify the derivation counter before deriving new blinded messages -
+    // the pending record (with any recovered quote key) is already persisted
+    // above, so this only blocks the risky minting step
+    if (verifyCounterSafety) {
+      await _ensureMintCounterSafety(
+        mintUrl: mintUrl,
+        unit: draftTransaction.unit,
+        keyset: draftTransaction.usedKeysets!.first,
+      );
     }
 
     List<int> splittedAmounts = CashuTools.splitAmount(quote.amount);
@@ -2077,4 +2192,25 @@ void _changeProofState({
   for (final proof in proofs) {
     proof.state = state;
   }
+}
+
+/// Thrown by [Cashu.retrieveFunds] (when `verifyCounterSafety` is set) if the
+/// derivation counter for [mintUrl]/[unit] has not been reconciled with the
+/// mint in this process. Call `Cashu.restore(mintUrl: ..., unit: ...)` first,
+/// or construct [Cashu] with `autoVerifyMintCounters: true`.
+class CashuCounterVerificationRequiredException implements Exception {
+  final String mintUrl;
+  final String unit;
+
+  CashuCounterVerificationRequiredException({
+    required this.mintUrl,
+    required this.unit,
+  });
+
+  @override
+  String toString() =>
+      'CashuCounterVerificationRequiredException: derivation counters for '
+      '$mintUrl/$unit are not verified in this session. Call '
+      'Cashu.restore(mintUrl: "$mintUrl", unit: "$unit") before automatic '
+      'fund retrieval, or construct Cashu with autoVerifyMintCounters: true.';
 }

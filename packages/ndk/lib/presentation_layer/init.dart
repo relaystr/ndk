@@ -263,6 +263,7 @@ class Initialization {
       cashuUserSeedphrase: _ndkConfig.cashuUserSeedphrase,
       cashuKeyDerivation: DartCashuKeyDerivation(),
       mintRecommendations: CashuMintRecommendations(requests: requests),
+      autoVerifyMintCounters: _ndkConfig.autoVerifyMintCounters,
     );
 
     // Create wallet providers

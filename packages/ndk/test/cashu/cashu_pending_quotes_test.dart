@@ -53,6 +53,7 @@ Cashu _cashu({
   required CacheManager cache,
   required CashuUserSeedphrase seedPhrase,
   MockCashuHttpClient? mockClient,
+  bool autoVerifyMintCounters = false,
 }) {
   final repo = CashuRepoImpl(
     client: HttpRequestDS(mockClient ?? MockCashuHttpClient()),
@@ -63,6 +64,7 @@ Cashu _cashu({
     cacheManager: cache,
     cashuKeyDerivation: DartCashuKeyDerivation(),
     cashuUserSeedphrase: seedPhrase,
+    autoVerifyMintCounters: autoVerifyMintCounters,
   );
 }
 
@@ -532,6 +534,109 @@ void main() {
     final stored = await _storedTx(wallets);
     expect(stored.state, WalletTransactionState.completed);
     expect(stored.qoute!.quoteKeyCounter, equals(targetCounter));
+  });
+
+  test(
+      'automatic startup completion does not mint until the mint counter is '
+      'verified', () async {
+    final mockClient = MockCashuHttpClient();
+
+    // the original wallet creates the funding quote (fetching the real
+    // keyset from the mock mint)
+    final origin = _cashu(
+      wallets: MemWalletsRepo(),
+      cache: MemCacheManager(),
+      seedPhrase: seedPhrase,
+      mockClient: mockClient,
+    );
+    final draft = await origin.initiateFund(
+      mintUrl: mockMintUrl,
+      amount: 5,
+      unit: 'sat',
+      method: 'bolt11',
+    );
+
+    // simulate data loss: the transaction record survives (e.g. a separate
+    // wallets repo), but the proof/counter cache is fresh
+    final survivedWallets = MemWalletsRepo();
+    await survivedWallets.saveTransactions([draft]);
+
+    _cashu(
+      wallets: survivedWallets,
+      cache: MemCacheManager(),
+      seedPhrase: seedPhrase,
+      mockClient: mockClient,
+    );
+
+    // let the unawaited startup refresh run to completion
+    for (var i = 0; i < 100; i++) {
+      await Future<void>.delayed(Duration.zero);
+    }
+
+    expect(
+      mockClient.capturedRequests.any(
+          (r) => r.method == 'POST' && r.url.path.contains('/mint/bolt11')),
+      isFalse,
+      reason: 'minting must not be attempted before the counter is verified',
+    );
+    final stored = await _storedTx(survivedWallets);
+    expect(stored.state, equals(WalletTransactionState.pending));
+  });
+
+  test(
+      'automatic startup completion mints once autoVerifyMintCounters scans '
+      'the mint', () async {
+    final mockClient = MockCashuHttpClient();
+    mockClient.setCustomResponse(
+      'POST',
+      '/v1/restore',
+      http.Response(
+        jsonEncode({'outputs': [], 'signatures': []}),
+        200,
+        headers: {'content-type': 'application/json'},
+      ),
+    );
+
+    final origin = _cashu(
+      wallets: MemWalletsRepo(),
+      cache: MemCacheManager(),
+      seedPhrase: seedPhrase,
+      mockClient: mockClient,
+    );
+    final draft = await origin.initiateFund(
+      mintUrl: mockMintUrl,
+      amount: 5,
+      unit: 'sat',
+      method: 'bolt11',
+    );
+
+    final survivedWallets = MemWalletsRepo();
+    await survivedWallets.saveTransactions([draft]);
+
+    _cashu(
+      wallets: survivedWallets,
+      cache: MemCacheManager(),
+      seedPhrase: seedPhrase,
+      mockClient: mockClient,
+      autoVerifyMintCounters: true,
+    );
+
+    for (var i = 0; i < 100; i++) {
+      await Future<void>.delayed(Duration.zero);
+    }
+
+    expect(
+      mockClient.capturedRequests
+          .any((r) => r.method == 'POST' && r.url.path == '/v1/restore'),
+      isTrue,
+      reason: 'auto-verify must scan the mint before minting',
+    );
+    expect(
+      mockClient.capturedRequests.any(
+          (r) => r.method == 'POST' && r.url.path.contains('/mint/bolt11')),
+      isTrue,
+      reason: 'minting should proceed once the counter is verified',
+    );
   });
 
   group('dev mint integration - dev.mint.camelus.app', () {
