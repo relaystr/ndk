@@ -592,7 +592,7 @@
   "startRestore": "Iniciar restauración",
   "cashuRestoreStageFetchingKeysets": "Obteniendo conjuntos de claves de la acuñadora...",
   "cashuRestoreStageScanning": "Escaneando la acuñadora en busca de tus fondos...",
-  "cashuRestoreScanProgress": "Se escanearon {keysets} conjuntos de claves · {proofs} comprobante(s) encontrado(s)",
+  "cashuRestoreScanProgress": "{keysets, plural, zero{No se escanearon conjuntos de claves} one{Se escaneó 1 conjunto de claves} other{Se escanearon {keysets} conjuntos de claves}} · {proofs, plural, zero{No se encontraron comprobantes} one{Se encontró 1 comprobante} other{Se encontraron {proofs} comprobantes}}",
   "@cashuRestoreScanProgress": {
     "description": "Scan progress in the restore-from-mint dialog",
     "placeholders": {
@@ -608,7 +608,7 @@
   },
   "cashuRestoreStageCompleted": "Restauración completa",
   "cashuRestoreAlsoRestoresQuotes": "También recupera cotizaciones de acuñación pendientes",
-  "restoredFromMint": "Se restauraron {count} comprobantes desde la acuñadora",
+  "restoredFromMint": "{count, plural, zero{No se restauraron comprobantes} one{Se restauró 1 comprobante} other{Se restauraron {count} comprobantes}} desde la acuñadora",
   "@restoredFromMint": {
     "description": "Confirmation after a successful restore-from-mint",
     "placeholders": {

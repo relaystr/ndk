@@ -1791,7 +1791,21 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String cashuRestoreScanProgress(int keysets, int proofs) {
-    return 'Se escanearon $keysets conjuntos de claves · $proofs comprobante(s) encontrado(s)';
+    String _temp0 = intl.Intl.pluralLogic(
+      keysets,
+      locale: localeName,
+      other: 'Se escanearon $keysets conjuntos de claves',
+      one: 'Se escaneó 1 conjunto de claves',
+      zero: 'No se escanearon conjuntos de claves',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      proofs,
+      locale: localeName,
+      other: 'Se encontraron $proofs comprobantes',
+      one: 'Se encontró 1 comprobante',
+      zero: 'No se encontraron comprobantes',
+    );
+    return '$_temp0 · $_temp1';
   }
 
   @override
@@ -1803,7 +1817,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String restoredFromMint(int count) {
-    return 'Se restauraron $count comprobantes desde la acuñadora';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se restauraron $count comprobantes',
+      one: 'Se restauró 1 comprobante',
+      zero: 'No se restauraron comprobantes',
+    );
+    return '$_temp0 desde la acuñadora';
   }
 
   @override
