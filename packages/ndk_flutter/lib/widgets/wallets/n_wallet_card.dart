@@ -715,45 +715,12 @@ class _NWalletCardState extends State<NWalletCard>
                       ),
                     if (isCashuWallet)
                       PopupMenuItem(
-                        value: 'backup',
+                        value: 'cashu_restore',
                         child: Row(
                           children: [
-                            const Icon(Icons.backup, size: 20),
+                            const Icon(Icons.restore, size: 20),
                             const SizedBox(width: 8),
-                            Text(l10n.backup),
-                          ],
-                        ),
-                      ),
-                    if (isCashuWallet)
-                      PopupMenuItem(
-                        value: 'restore',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.settings_backup_restore, size: 20),
-                            const SizedBox(width: 8),
-                            Text(l10n.restoreFromBackup),
-                          ],
-                        ),
-                      ),
-                    if (isCashuWallet)
-                      PopupMenuItem(
-                        value: 'recover_quote',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.find_in_page, size: 20),
-                            const SizedBox(width: 8),
-                            Text(l10n.recoverQuote),
-                          ],
-                        ),
-                      ),
-                    if (isCashuWallet)
-                      PopupMenuItem(
-                        value: 'restore_funds',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.cloud_sync, size: 20),
-                            const SizedBox(width: 8),
-                            Text(l10n.restoreFundsFromMint),
+                            Text(l10n.restore),
                           ],
                         ),
                       ),
@@ -874,25 +841,8 @@ class _NWalletCardState extends State<NWalletCard>
                         widget.wallet as CashuWallet,
                       );
                       break;
-                    case 'backup':
-                      showBackupDialog(context, widget.wallet as CashuWallet);
-                      break;
-                    case 'restore':
-                      showRestoreDialog(context, widget.wallet as CashuWallet);
-                      break;
-                    case 'recover_quote':
-                      await showCashuQuoteRecoveryDialog(
-                        context,
-                        ndkFlutter,
-                        defaultMintUrl: (widget.wallet as CashuWallet).mintUrl,
-                      );
-                      break;
-                    case 'restore_funds':
-                      await showCashuRestoreDialog(
-                        context,
-                        ndkFlutter,
-                        defaultMintUrl: (widget.wallet as CashuWallet).mintUrl,
-                      );
+                    case 'cashu_restore':
+                      await _showCashuRestoreOptions();
                       break;
                     case 'set_default_receive':
                       widget.ndkFlutter.ndk.wallets
@@ -1268,6 +1218,102 @@ class _NWalletCardState extends State<NWalletCard>
           );
         }
       }
+    }
+  }
+
+  /// Shows the restore/backup options sheet for the current Cashu wallet. The
+  /// card menu exposes a single "Restore" entry (see the `cashu_restore` menu
+  /// value) which reveals all restore options here: backup, restore from
+  /// backup, recover quote, restore funds from mint and seed phrase override.
+  Future<void> _showCashuRestoreOptions() async {
+    final l10n = AppLocalizations.of(context)!;
+    final wallet = widget.wallet as CashuWallet;
+
+    final String? option = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        Widget optionTile({
+          required IconData icon,
+          required String label,
+          required String value,
+        }) {
+          return ListTile(
+            leading: Icon(icon),
+            title: Text(label),
+            onTap: () => Navigator.of(sheetContext).pop(value),
+          );
+        }
+
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                child: Text(
+                  l10n.cashuRestoreMenuTitle,
+                  style: Theme.of(sheetContext).textTheme.titleLarge,
+                ),
+              ),
+              optionTile(
+                icon: Icons.backup,
+                label: l10n.backup,
+                value: 'backup',
+              ),
+              optionTile(
+                icon: Icons.settings_backup_restore,
+                label: l10n.restoreFromBackup,
+                value: 'restore',
+              ),
+              optionTile(
+                icon: Icons.find_in_page,
+                label: l10n.recoverQuote,
+                value: 'recover_quote',
+              ),
+              optionTile(
+                icon: Icons.cloud_sync,
+                label: l10n.restoreFundsFromMint,
+                value: 'restore_funds',
+              ),
+              optionTile(
+                icon: Icons.key,
+                label: l10n.cashuSeedPhraseOption,
+                value: 'seed_phrase',
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (!mounted || option == null) return;
+    switch (option) {
+      case 'backup':
+        showBackupDialog(context, wallet);
+        break;
+      case 'restore':
+        showRestoreDialog(context, wallet);
+        break;
+      case 'recover_quote':
+        await showCashuQuoteRecoveryDialog(
+          context,
+          ndkFlutter,
+          defaultMintUrl: wallet.mintUrl,
+        );
+        break;
+      case 'restore_funds':
+        await showCashuRestoreDialog(
+          context,
+          ndkFlutter,
+          defaultMintUrl: wallet.mintUrl,
+        );
+        break;
+      case 'seed_phrase':
+        await showCashuSeedPhraseDialog(context, ndkFlutter);
+        break;
     }
   }
 

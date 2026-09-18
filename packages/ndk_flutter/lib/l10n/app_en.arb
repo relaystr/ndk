@@ -2030,5 +2030,49 @@
   "restoreFromBackup": "Restore from backup",
   "@restoreFromBackup": {
     "description": "Label for restoring a Cashu wallet from a backup JSON"
+  },
+  "cashuRestoreMenuTitle": "Restore & backup",
+  "@cashuRestoreMenuTitle": {
+    "description": "Title of the sheet that reveals all cashu restore and backup options"
+  },
+  "cashuSeedPhraseOption": "Set seed phrase",
+  "@cashuSeedPhraseOption": {
+    "description": "Menu entry to set or override the global cashu seed phrase"
+  },
+  "cashuSeedPhraseTitle": "Cashu seed phrase",
+  "@cashuSeedPhraseTitle": {
+    "description": "Title of the dialog to set or override the global cashu seed phrase"
+  },
+  "cashuSeedPhraseWarning": "This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.",
+  "@cashuSeedPhraseWarning": {
+    "description": "Warning shown before overriding the global cashu seed phrase"
+  },
+  "cashuSeedPhraseInstructions": "Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.",
+  "@cashuSeedPhraseInstructions": {
+    "description": "Instructions for entering the seed phrase"
+  },
+  "cashuSeedPhraseLabel": "Seed phrase",
+  "@cashuSeedPhraseLabel": {
+    "description": "Label for the seed phrase input field"
+  },
+  "cashuSeedPhraseHint": "Paste your seed phrase here",
+  "@cashuSeedPhraseHint": {
+    "description": "Hint text for the seed phrase input field"
+  },
+  "cashuSeedPhraseConfirmChange": "I understand this changes the seed for all Cashu wallets",
+  "@cashuSeedPhraseConfirmChange": {
+    "description": "Checkbox confirmation before overriding the seed phrase"
+  },
+  "cashuSeedPhraseInvalid": "That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.",
+  "@cashuSeedPhraseInvalid": {
+    "description": "Validation message for an invalid seed phrase"
+  },
+  "cashuSeedPhraseUpdated": "Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.",
+  "@cashuSeedPhraseUpdated": {
+    "description": "Confirmation shown after the seed phrase is updated"
+  },
+  "cashuSeedPhraseUpdateFailed": "Could not update the seed phrase",
+  "@cashuSeedPhraseUpdateFailed": {
+    "description": "Error prefix shown when updating the seed phrase fails"
   }
 }

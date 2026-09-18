@@ -1807,4 +1807,42 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get restoreFromBackup => 'Obnoviť zo zálohy';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Restore & backup';
+
+  @override
+  String get cashuSeedPhraseOption => 'Set seed phrase';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Cashu seed phrase';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Seed phrase';
+
+  @override
+  String get cashuSeedPhraseHint => 'Paste your seed phrase here';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'I understand this changes the seed for all Cashu wallets';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed => 'Could not update the seed phrase';
 }
