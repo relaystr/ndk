@@ -676,5 +676,16 @@
       }
     }
   },
-  "restoreFailed": "Przywracanie nieudane"
+  "restoreFailed": "Przywracanie nieudane",
+  "cashuRestoreMenuTitle": "Restore & backup",
+  "cashuSeedPhraseOption": "Set seed phrase",
+  "cashuSeedPhraseTitle": "Cashu seed phrase",
+  "cashuSeedPhraseWarning": "This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.",
+  "cashuSeedPhraseInstructions": "Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.",
+  "cashuSeedPhraseLabel": "Seed phrase",
+  "cashuSeedPhraseHint": "Paste your seed phrase here",
+  "cashuSeedPhraseConfirmChange": "I understand this changes the seed for all Cashu wallets",
+  "cashuSeedPhraseInvalid": "That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.",
+  "cashuSeedPhraseUpdated": "Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.",
+  "cashuSeedPhraseUpdateFailed": "Could not update the seed phrase"
 }

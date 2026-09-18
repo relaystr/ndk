@@ -3436,6 +3436,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Restore from backup'**
   String get restoreFromBackup;
+
+  /// Title of the sheet that reveals all cashu restore and backup options
+  ///
+  /// In en, this message translates to:
+  /// **'Restore & backup'**
+  String get cashuRestoreMenuTitle;
+
+  /// Menu entry to set or override the global cashu seed phrase
+  ///
+  /// In en, this message translates to:
+  /// **'Set seed phrase'**
+  String get cashuSeedPhraseOption;
+
+  /// Title of the dialog to set or override the global cashu seed phrase
+  ///
+  /// In en, this message translates to:
+  /// **'Cashu seed phrase'**
+  String get cashuSeedPhraseTitle;
+
+  /// Warning shown before overriding the global cashu seed phrase
+  ///
+  /// In en, this message translates to:
+  /// **'This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.'**
+  String get cashuSeedPhraseWarning;
+
+  /// Instructions for entering the seed phrase
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.'**
+  String get cashuSeedPhraseInstructions;
+
+  /// Label for the seed phrase input field
+  ///
+  /// In en, this message translates to:
+  /// **'Seed phrase'**
+  String get cashuSeedPhraseLabel;
+
+  /// Hint text for the seed phrase input field
+  ///
+  /// In en, this message translates to:
+  /// **'Paste your seed phrase here'**
+  String get cashuSeedPhraseHint;
+
+  /// Checkbox confirmation before overriding the seed phrase
+  ///
+  /// In en, this message translates to:
+  /// **'I understand this changes the seed for all Cashu wallets'**
+  String get cashuSeedPhraseConfirmChange;
+
+  /// Validation message for an invalid seed phrase
+  ///
+  /// In en, this message translates to:
+  /// **'That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.'**
+  String get cashuSeedPhraseInvalid;
+
+  /// Confirmation shown after the seed phrase is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.'**
+  String get cashuSeedPhraseUpdated;
+
+  /// Error prefix shown when updating the seed phrase fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update the seed phrase'**
+  String get cashuSeedPhraseUpdateFailed;
 }
 
 class _AppLocalizationsDelegate
