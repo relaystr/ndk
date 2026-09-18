@@ -677,15 +677,15 @@
     }
   },
   "restoreFailed": "Przywracanie nieudane",
-  "cashuRestoreMenuTitle": "Restore & backup",
-  "cashuSeedPhraseOption": "Set seed phrase",
-  "cashuSeedPhraseTitle": "Cashu seed phrase",
-  "cashuSeedPhraseWarning": "This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.",
-  "cashuSeedPhraseInstructions": "Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.",
-  "cashuSeedPhraseLabel": "Seed phrase",
-  "cashuSeedPhraseHint": "Paste your seed phrase here",
-  "cashuSeedPhraseConfirmChange": "I understand this changes the seed for all Cashu wallets",
-  "cashuSeedPhraseInvalid": "That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.",
-  "cashuSeedPhraseUpdated": "Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.",
-  "cashuSeedPhraseUpdateFailed": "Could not update the seed phrase"
+  "cashuRestoreMenuTitle": "Przywracanie i kopia zapasowa",
+  "cashuSeedPhraseOption": "Ustaw frazę odzyskiwania",
+  "cashuSeedPhraseTitle": "Fraza odzyskiwania Cashu",
+  "cashuSeedPhraseWarning": "Ta fraza odzyskiwania jest wspólna dla WSZYSTKICH portfeli Cashu. To jedyny sposób na odzyskanie środków po utracie tego urządzenia. Zmiana jej zastępuje frazę używaną do wyprowadzania kluczy dla każdego portfela Cashu, więc środki otrzymane pod poprzednią frazą nie będą już mogły zostać znalezione automatycznie.",
+  "cashuSeedPhraseInstructions": "Wprowadź frazę odzyskiwania, której chcesz użyć (12, 15, 18, 21 lub 24 słowa). Zmieniaj frazę tylko podczas przywracania portfeli z już zapisanej frazy.",
+  "cashuSeedPhraseLabel": "Fraza odzyskiwania",
+  "cashuSeedPhraseHint": "Wklej tutaj swoją frazę odzyskiwania",
+  "cashuSeedPhraseConfirmChange": "Rozumiem, że to zmienia frazę dla wszystkich portfeli Cashu",
+  "cashuSeedPhraseInvalid": "To nie wygląda na prawidłową frazę odzyskiwania. Sprawdź, czy wszystkie słowa są poprawnie napisane i we właściwej kolejności.",
+  "cashuSeedPhraseUpdated": "Fraza odzyskiwania zaktualizowana. Obowiązuje teraz dla wszystkich portfeli Cashu. Zrób kopię zapasową nowej frazy.",
+  "cashuSeedPhraseUpdateFailed": "Nie udało się zaktualizować frazy odzyskiwania"
 }

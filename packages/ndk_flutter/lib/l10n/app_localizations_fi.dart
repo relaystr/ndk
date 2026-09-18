@@ -1808,40 +1808,40 @@ class AppLocalizationsFi extends AppLocalizations {
   String get restoreFromBackup => 'Palauta varmuuskopiosta';
 
   @override
-  String get cashuRestoreMenuTitle => 'Restore & backup';
+  String get cashuRestoreMenuTitle => 'Palautus ja varmuuskopiointi';
 
   @override
-  String get cashuSeedPhraseOption => 'Set seed phrase';
+  String get cashuSeedPhraseOption => 'Aseta siemenlause';
 
   @override
-  String get cashuSeedPhraseTitle => 'Cashu seed phrase';
+  String get cashuSeedPhraseTitle => 'Cashu-siemenlause';
 
   @override
   String get cashuSeedPhraseWarning =>
-      'This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.';
+      'Tämä siemenlause on KAIKKIEN Cashu-lompakoiden yhteinen. Se on ainoa tapa palauttaa varasi, jos menetät tämän laitteen. Sen muuttaminen korvaa siemenen, josta johdetaan avaimet jokaiseen Cashu-lompakkoon, joten aiemman siemenen alla vastaanotettuja varoja ei voida enää löytää automaattisesti.';
 
   @override
   String get cashuSeedPhraseInstructions =>
-      'Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.';
+      'Anna käytettävä palautuslause (12, 15, 18, 21 tai 24 sanaa). Muuta siementä vain, kun palautat lompakoita jo tallentamastasi lauseesta.';
 
   @override
-  String get cashuSeedPhraseLabel => 'Seed phrase';
+  String get cashuSeedPhraseLabel => 'Siemenlause';
 
   @override
-  String get cashuSeedPhraseHint => 'Paste your seed phrase here';
+  String get cashuSeedPhraseHint => 'Liitä siemenlauseesi tähän';
 
   @override
   String get cashuSeedPhraseConfirmChange =>
-      'I understand this changes the seed for all Cashu wallets';
+      'Ymmärrän, että tämä muuttaa siemenen kaikille Cashu-lompakoille';
 
   @override
   String get cashuSeedPhraseInvalid =>
-      'That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.';
+      'Tämä ei näytä kelvolliselta siemenlauseelta. Tarkista, että kaikki sanat on kirjoitettu oikein ja oikeassa järjestyksessä.';
 
   @override
   String get cashuSeedPhraseUpdated =>
-      'Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.';
+      'Siemenlause päivitetty. Se koskee nyt kaikkia Cashu-lompakoita. Varmuuskopioi uusi lause.';
 
   @override
-  String get cashuSeedPhraseUpdateFailed => 'Could not update the seed phrase';
+  String get cashuSeedPhraseUpdateFailed => 'Siemenlausetta ei voitu päivittää';
 }

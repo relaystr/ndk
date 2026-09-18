@@ -619,15 +619,15 @@
     }
   },
   "restoreFailed": "Error en la restauración",
-  "cashuRestoreMenuTitle": "Restore & backup",
-  "cashuSeedPhraseOption": "Set seed phrase",
-  "cashuSeedPhraseTitle": "Cashu seed phrase",
-  "cashuSeedPhraseWarning": "This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.",
-  "cashuSeedPhraseInstructions": "Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.",
-  "cashuSeedPhraseLabel": "Seed phrase",
-  "cashuSeedPhraseHint": "Paste your seed phrase here",
-  "cashuSeedPhraseConfirmChange": "I understand this changes the seed for all Cashu wallets",
-  "cashuSeedPhraseInvalid": "That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.",
-  "cashuSeedPhraseUpdated": "Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.",
-  "cashuSeedPhraseUpdateFailed": "Could not update the seed phrase"
+  "cashuRestoreMenuTitle": "Restaurar y copia de seguridad",
+  "cashuSeedPhraseOption": "Establecer frase semilla",
+  "cashuSeedPhraseTitle": "Frase semilla de Cashu",
+  "cashuSeedPhraseWarning": "Esta frase semilla es compartida por TODAS las carteras Cashu. Es la única forma de recuperar tus fondos si pierdes este dispositivo. Cambiarla reemplaza la semilla utilizada para derivar las claves de cada cartera Cashu, por lo que los fondos recibidos con la semilla anterior ya no se podrán encontrar automáticamente.",
+  "cashuSeedPhraseInstructions": "Ingresa la frase de recuperación que quieras usar (12, 15, 18, 21 o 24 palabras). Cambia la semilla solo al restaurar carteras desde una frase que ya hayas guardado.",
+  "cashuSeedPhraseLabel": "Frase semilla",
+  "cashuSeedPhraseHint": "Pega aquí tu frase semilla",
+  "cashuSeedPhraseConfirmChange": "Entiendo que esto cambia la semilla de todas las carteras Cashu",
+  "cashuSeedPhraseInvalid": "Eso no parece una frase semilla válida. Comprueba que todas las palabras estén escritas correctamente y en el orden correcto.",
+  "cashuSeedPhraseUpdated": "Frase semilla actualizada. Ahora se aplica a todas las carteras Cashu. Haz una copia de seguridad de la nueva frase.",
+  "cashuSeedPhraseUpdateFailed": "No se pudo actualizar la frase semilla"
 }

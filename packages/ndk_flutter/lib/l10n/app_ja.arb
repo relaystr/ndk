@@ -619,15 +619,15 @@
     }
   },
   "restoreFailed": "復元に失敗しました",
-  "cashuRestoreMenuTitle": "Restore & backup",
-  "cashuSeedPhraseOption": "Set seed phrase",
-  "cashuSeedPhraseTitle": "Cashu seed phrase",
-  "cashuSeedPhraseWarning": "This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.",
-  "cashuSeedPhraseInstructions": "Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.",
-  "cashuSeedPhraseLabel": "Seed phrase",
-  "cashuSeedPhraseHint": "Paste your seed phrase here",
-  "cashuSeedPhraseConfirmChange": "I understand this changes the seed for all Cashu wallets",
-  "cashuSeedPhraseInvalid": "That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.",
-  "cashuSeedPhraseUpdated": "Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.",
-  "cashuSeedPhraseUpdateFailed": "Could not update the seed phrase"
+  "cashuRestoreMenuTitle": "復元とバックアップ",
+  "cashuSeedPhraseOption": "シードフレーズを設定",
+  "cashuSeedPhraseTitle": "Cashuシードフレーズ",
+  "cashuSeedPhraseWarning": "このシードフレーズは、すべてのCashuウォレットで共有されます。この端末を紛失した場合、資金を回復する唯一の方法です。変更すると、すべてのCashuウォレットの鍵を導出するために使用されるシードが置き換えられるため、以前のシードで受け取った資金は自動的に見つからなくなります。",
+  "cashuSeedPhraseInstructions": "使用するリカバリーフレーズを入力してください（12、15、18、21、または24語）。すでに保存したフレーズからウォレットを復元する場合にのみシードを変更してください。",
+  "cashuSeedPhraseLabel": "シードフレーズ",
+  "cashuSeedPhraseHint": "ここにシードフレーズを貼り付けてください",
+  "cashuSeedPhraseConfirmChange": "すべてのCashuウォレットのシードが変更されることを理解しています",
+  "cashuSeedPhraseInvalid": "有効なシードフレーズのようには見えません。すべての単語が正しく、正しい順序で綴られているか確認してください。",
+  "cashuSeedPhraseUpdated": "シードフレーズが更新されました。現在はすべてのCashuウォレットに適用されます。新しいフレーズをバックアップしてください。",
+  "cashuSeedPhraseUpdateFailed": "シードフレーズを更新できませんでした"
 }

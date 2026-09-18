@@ -1772,40 +1772,40 @@ class AppLocalizationsJa extends AppLocalizations {
   String get restoreFromBackup => 'バックアップから復元';
 
   @override
-  String get cashuRestoreMenuTitle => 'Restore & backup';
+  String get cashuRestoreMenuTitle => '復元とバックアップ';
 
   @override
-  String get cashuSeedPhraseOption => 'Set seed phrase';
+  String get cashuSeedPhraseOption => 'シードフレーズを設定';
 
   @override
-  String get cashuSeedPhraseTitle => 'Cashu seed phrase';
+  String get cashuSeedPhraseTitle => 'Cashuシードフレーズ';
 
   @override
   String get cashuSeedPhraseWarning =>
-      'This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.';
+      'このシードフレーズは、すべてのCashuウォレットで共有されます。この端末を紛失した場合、資金を回復する唯一の方法です。変更すると、すべてのCashuウォレットの鍵を導出するために使用されるシードが置き換えられるため、以前のシードで受け取った資金は自動的に見つからなくなります。';
 
   @override
   String get cashuSeedPhraseInstructions =>
-      'Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.';
+      '使用するリカバリーフレーズを入力してください（12、15、18、21、または24語）。すでに保存したフレーズからウォレットを復元する場合にのみシードを変更してください。';
 
   @override
-  String get cashuSeedPhraseLabel => 'Seed phrase';
+  String get cashuSeedPhraseLabel => 'シードフレーズ';
 
   @override
-  String get cashuSeedPhraseHint => 'Paste your seed phrase here';
+  String get cashuSeedPhraseHint => 'ここにシードフレーズを貼り付けてください';
 
   @override
   String get cashuSeedPhraseConfirmChange =>
-      'I understand this changes the seed for all Cashu wallets';
+      'すべてのCashuウォレットのシードが変更されることを理解しています';
 
   @override
   String get cashuSeedPhraseInvalid =>
-      'That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.';
+      '有効なシードフレーズのようには見えません。すべての単語が正しく、正しい順序で綴られているか確認してください。';
 
   @override
   String get cashuSeedPhraseUpdated =>
-      'Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.';
+      'シードフレーズが更新されました。現在はすべてのCashuウォレットに適用されます。新しいフレーズをバックアップしてください。';
 
   @override
-  String get cashuSeedPhraseUpdateFailed => 'Could not update the seed phrase';
+  String get cashuSeedPhraseUpdateFailed => 'シードフレーズを更新できませんでした';
 }

@@ -1818,42 +1818,43 @@ class AppLocalizationsPt extends AppLocalizations {
   String get restoreFromBackup => 'Restaurar a partir de backup';
 
   @override
-  String get cashuRestoreMenuTitle => 'Restore & backup';
+  String get cashuRestoreMenuTitle => 'Restaurar e backup';
 
   @override
-  String get cashuSeedPhraseOption => 'Set seed phrase';
+  String get cashuSeedPhraseOption => 'Definir frase semente';
 
   @override
-  String get cashuSeedPhraseTitle => 'Cashu seed phrase';
+  String get cashuSeedPhraseTitle => 'Frase semente Cashu';
 
   @override
   String get cashuSeedPhraseWarning =>
-      'This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.';
+      'Esta frase semente é partilhada por TODAS as carteiras Cashu. É a única forma de recuperar os seus fundos depois de perder este dispositivo. Alterá-la substitui a semente utilizada para derivar as chaves de todas as carteiras Cashu, pelo que os fundos recebidos com a semente anterior deixarão de ser encontrados automaticamente.';
 
   @override
   String get cashuSeedPhraseInstructions =>
-      'Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.';
+      'Introduza a frase de recuperação que pretende utilizar (12, 15, 18, 21 ou 24 palavras). Altere a semente apenas quando restaurar carteiras a partir de uma frase que já guardou.';
 
   @override
-  String get cashuSeedPhraseLabel => 'Seed phrase';
+  String get cashuSeedPhraseLabel => 'Frase semente';
 
   @override
-  String get cashuSeedPhraseHint => 'Paste your seed phrase here';
+  String get cashuSeedPhraseHint => 'Cole aqui a sua frase semente';
 
   @override
   String get cashuSeedPhraseConfirmChange =>
-      'I understand this changes the seed for all Cashu wallets';
+      'Entendo que isto altera a semente de todas as carteiras Cashu';
 
   @override
   String get cashuSeedPhraseInvalid =>
-      'That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.';
+      'Isso não parece uma frase semente válida. Verifique se todas as palavras estão escritas corretamente e na ordem certa.';
 
   @override
   String get cashuSeedPhraseUpdated =>
-      'Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.';
+      'Frase semente atualizada. Passa a aplicar-se a todas as carteiras Cashu. Faça uma cópia de segurança da nova frase.';
 
   @override
-  String get cashuSeedPhraseUpdateFailed => 'Could not update the seed phrase';
+  String get cashuSeedPhraseUpdateFailed =>
+      'Não foi possível atualizar a frase semente';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -3667,40 +3668,41 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get restoreFromBackup => 'Restaurar a partir de backup';
 
   @override
-  String get cashuRestoreMenuTitle => 'Restore & backup';
+  String get cashuRestoreMenuTitle => 'Restaurar e backup';
 
   @override
-  String get cashuSeedPhraseOption => 'Set seed phrase';
+  String get cashuSeedPhraseOption => 'Definir frase semente';
 
   @override
-  String get cashuSeedPhraseTitle => 'Cashu seed phrase';
+  String get cashuSeedPhraseTitle => 'Frase semente Cashu';
 
   @override
   String get cashuSeedPhraseWarning =>
-      'This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.';
+      'Esta frase semente é compartilhada por TODAS as carteiras Cashu. É a única forma de recuperar seus fundos depois de perder este dispositivo. Alterá-la substitui a semente usada para derivar as chaves de todas as carteiras Cashu, portanto os fundos recebidos sob a semente anterior não poderão mais ser encontrados automaticamente.';
 
   @override
   String get cashuSeedPhraseInstructions =>
-      'Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.';
+      'Insira a frase de recuperação que deseja usar (12, 15, 18, 21 ou 24 palavras). Altere a semente apenas ao restaurar carteiras a partir de uma frase que você já salvou.';
 
   @override
-  String get cashuSeedPhraseLabel => 'Seed phrase';
+  String get cashuSeedPhraseLabel => 'Frase semente';
 
   @override
-  String get cashuSeedPhraseHint => 'Paste your seed phrase here';
+  String get cashuSeedPhraseHint => 'Cole sua frase semente aqui';
 
   @override
   String get cashuSeedPhraseConfirmChange =>
-      'I understand this changes the seed for all Cashu wallets';
+      'Entendo que isso altera a semente de todas as carteiras Cashu';
 
   @override
   String get cashuSeedPhraseInvalid =>
-      'That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.';
+      'Isso não parece uma frase semente válida. Verifique se todas as palavras estão escritas corretamente e na ordem certa.';
 
   @override
   String get cashuSeedPhraseUpdated =>
-      'Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.';
+      'Frase semente atualizada. Agora ela se aplica a todas as carteiras Cashu. Faça backup da nova frase.';
 
   @override
-  String get cashuSeedPhraseUpdateFailed => 'Could not update the seed phrase';
+  String get cashuSeedPhraseUpdateFailed =>
+      'Não foi possível atualizar a frase semente';
 }
