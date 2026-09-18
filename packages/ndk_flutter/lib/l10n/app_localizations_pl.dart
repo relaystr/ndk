@@ -1812,40 +1812,41 @@ class AppLocalizationsPl extends AppLocalizations {
   String get restoreFromBackup => 'Odzyskaj z kopii zapasowej';
 
   @override
-  String get cashuRestoreMenuTitle => 'Restore & backup';
+  String get cashuRestoreMenuTitle => 'Przywracanie i kopia zapasowa';
 
   @override
-  String get cashuSeedPhraseOption => 'Set seed phrase';
+  String get cashuSeedPhraseOption => 'Ustaw frazę odzyskiwania';
 
   @override
-  String get cashuSeedPhraseTitle => 'Cashu seed phrase';
+  String get cashuSeedPhraseTitle => 'Fraza odzyskiwania Cashu';
 
   @override
   String get cashuSeedPhraseWarning =>
-      'This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.';
+      'Ta fraza odzyskiwania jest wspólna dla WSZYSTKICH portfeli Cashu. To jedyny sposób na odzyskanie środków po utracie tego urządzenia. Zmiana jej zastępuje frazę używaną do wyprowadzania kluczy dla każdego portfela Cashu, więc środki otrzymane pod poprzednią frazą nie będą już mogły zostać znalezione automatycznie.';
 
   @override
   String get cashuSeedPhraseInstructions =>
-      'Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.';
+      'Wprowadź frazę odzyskiwania, której chcesz użyć (12, 15, 18, 21 lub 24 słowa). Zmieniaj frazę tylko podczas przywracania portfeli z już zapisanej frazy.';
 
   @override
-  String get cashuSeedPhraseLabel => 'Seed phrase';
+  String get cashuSeedPhraseLabel => 'Fraza odzyskiwania';
 
   @override
-  String get cashuSeedPhraseHint => 'Paste your seed phrase here';
+  String get cashuSeedPhraseHint => 'Wklej tutaj swoją frazę odzyskiwania';
 
   @override
   String get cashuSeedPhraseConfirmChange =>
-      'I understand this changes the seed for all Cashu wallets';
+      'Rozumiem, że to zmienia frazę dla wszystkich portfeli Cashu';
 
   @override
   String get cashuSeedPhraseInvalid =>
-      'That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.';
+      'To nie wygląda na prawidłową frazę odzyskiwania. Sprawdź, czy wszystkie słowa są poprawnie napisane i we właściwej kolejności.';
 
   @override
   String get cashuSeedPhraseUpdated =>
-      'Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.';
+      'Fraza odzyskiwania zaktualizowana. Obowiązuje teraz dla wszystkich portfeli Cashu. Zrób kopię zapasową nowej frazy.';
 
   @override
-  String get cashuSeedPhraseUpdateFailed => 'Could not update the seed phrase';
+  String get cashuSeedPhraseUpdateFailed =>
+      'Nie udało się zaktualizować frazy odzyskiwania';
 }

@@ -1762,40 +1762,37 @@ class AppLocalizationsZh extends AppLocalizations {
   String get restoreFromBackup => '从备份恢复';
 
   @override
-  String get cashuRestoreMenuTitle => 'Restore & backup';
+  String get cashuRestoreMenuTitle => '恢复与备份';
 
   @override
-  String get cashuSeedPhraseOption => 'Set seed phrase';
+  String get cashuSeedPhraseOption => '设置助记词';
 
   @override
-  String get cashuSeedPhraseTitle => 'Cashu seed phrase';
+  String get cashuSeedPhraseTitle => 'Cashu 助记词';
 
   @override
   String get cashuSeedPhraseWarning =>
-      'This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.';
+      '此助记词由所有 Cashu 钱包共享。这是您在丢失此设备后恢复资金的唯一方法。更改它会替换用于为每个 Cashu 钱包派生密钥的助记词，因此使用先前助记词收到的资金将无法再自动找到。';
 
   @override
   String get cashuSeedPhraseInstructions =>
-      'Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.';
+      '输入您要使用的恢复短语（12、15、18、21 或 24 个单词）。仅在从您已保存的短语恢复钱包时更改助记词。';
 
   @override
-  String get cashuSeedPhraseLabel => 'Seed phrase';
+  String get cashuSeedPhraseLabel => '助记词';
 
   @override
-  String get cashuSeedPhraseHint => 'Paste your seed phrase here';
+  String get cashuSeedPhraseHint => '在此粘贴您的助记词';
 
   @override
-  String get cashuSeedPhraseConfirmChange =>
-      'I understand this changes the seed for all Cashu wallets';
+  String get cashuSeedPhraseConfirmChange => '我了解这会更改所有 Cashu 钱包的助记词';
 
   @override
-  String get cashuSeedPhraseInvalid =>
-      'That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.';
+  String get cashuSeedPhraseInvalid => '这看起来不是有效的助记词。请检查所有单词是否拼写正确且顺序正确。';
 
   @override
-  String get cashuSeedPhraseUpdated =>
-      'Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.';
+  String get cashuSeedPhraseUpdated => '助记词已更新。现在适用于所有 Cashu 钱包。请备份新的助记词。';
 
   @override
-  String get cashuSeedPhraseUpdateFailed => 'Could not update the seed phrase';
+  String get cashuSeedPhraseUpdateFailed => '无法更新助记词';
 }

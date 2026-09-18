@@ -1809,40 +1809,41 @@ class AppLocalizationsSk extends AppLocalizations {
   String get restoreFromBackup => 'Obnoviť zo zálohy';
 
   @override
-  String get cashuRestoreMenuTitle => 'Restore & backup';
+  String get cashuRestoreMenuTitle => 'Obnovenie a zálohovanie';
 
   @override
-  String get cashuSeedPhraseOption => 'Set seed phrase';
+  String get cashuSeedPhraseOption => 'Nastaviť seed frázu';
 
   @override
-  String get cashuSeedPhraseTitle => 'Cashu seed phrase';
+  String get cashuSeedPhraseTitle => 'Cashu seed fráza';
 
   @override
   String get cashuSeedPhraseWarning =>
-      'This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.';
+      'Táto seed fráza je spoločná pre VŠETKY Cashu peňaženky. Je to jediný spôsob, ako obnoviť vaše prostriedky po strate tohto zariadenia. Jej zmenou sa nahradí seed používaná na odvodenie kľúčov pre každú Cashu peňaženku, takže prostriedky prijaté pod predchádzajúcou seed sa už nebudú dať nájsť automaticky.';
 
   @override
   String get cashuSeedPhraseInstructions =>
-      'Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.';
+      'Zadajte frázu na obnovenie, ktorú chcete použiť (12, 15, 18, 21 alebo 24 slov). Seed meňte len pri obnove peňaženiek z frázy, ktorú ste si už uložili.';
 
   @override
-  String get cashuSeedPhraseLabel => 'Seed phrase';
+  String get cashuSeedPhraseLabel => 'Seed fráza';
 
   @override
-  String get cashuSeedPhraseHint => 'Paste your seed phrase here';
+  String get cashuSeedPhraseHint => 'Vložte sem svoju seed frázu';
 
   @override
   String get cashuSeedPhraseConfirmChange =>
-      'I understand this changes the seed for all Cashu wallets';
+      'Rozumiem, že to zmení seed pre všetky Cashu peňaženky';
 
   @override
   String get cashuSeedPhraseInvalid =>
-      'That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.';
+      'Toto nevyzerá ako platná seed fráza. Skontrolujte, či sú všetky slová napísané správne a v správnom poradí.';
 
   @override
   String get cashuSeedPhraseUpdated =>
-      'Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.';
+      'Seed fráza aktualizovaná. Teraz sa vzťahuje na všetky Cashu peňaženky. Zálohujte si novú frázu.';
 
   @override
-  String get cashuSeedPhraseUpdateFailed => 'Could not update the seed phrase';
+  String get cashuSeedPhraseUpdateFailed =>
+      'Seed frázu sa nepodarilo aktualizovať';
 }

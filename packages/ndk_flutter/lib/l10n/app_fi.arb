@@ -677,15 +677,15 @@
     }
   },
   "restoreFailed": "Palautus epäonnistui",
-  "cashuRestoreMenuTitle": "Restore & backup",
-  "cashuSeedPhraseOption": "Set seed phrase",
-  "cashuSeedPhraseTitle": "Cashu seed phrase",
-  "cashuSeedPhraseWarning": "This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.",
-  "cashuSeedPhraseInstructions": "Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.",
-  "cashuSeedPhraseLabel": "Seed phrase",
-  "cashuSeedPhraseHint": "Paste your seed phrase here",
-  "cashuSeedPhraseConfirmChange": "I understand this changes the seed for all Cashu wallets",
-  "cashuSeedPhraseInvalid": "That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.",
-  "cashuSeedPhraseUpdated": "Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.",
-  "cashuSeedPhraseUpdateFailed": "Could not update the seed phrase"
+  "cashuRestoreMenuTitle": "Palautus ja varmuuskopiointi",
+  "cashuSeedPhraseOption": "Aseta siemenlause",
+  "cashuSeedPhraseTitle": "Cashu-siemenlause",
+  "cashuSeedPhraseWarning": "Tämä siemenlause on KAIKKIEN Cashu-lompakoiden yhteinen. Se on ainoa tapa palauttaa varasi, jos menetät tämän laitteen. Sen muuttaminen korvaa siemenen, josta johdetaan avaimet jokaiseen Cashu-lompakkoon, joten aiemman siemenen alla vastaanotettuja varoja ei voida enää löytää automaattisesti.",
+  "cashuSeedPhraseInstructions": "Anna käytettävä palautuslause (12, 15, 18, 21 tai 24 sanaa). Muuta siementä vain, kun palautat lompakoita jo tallentamastasi lauseesta.",
+  "cashuSeedPhraseLabel": "Siemenlause",
+  "cashuSeedPhraseHint": "Liitä siemenlauseesi tähän",
+  "cashuSeedPhraseConfirmChange": "Ymmärrän, että tämä muuttaa siemenen kaikille Cashu-lompakoille",
+  "cashuSeedPhraseInvalid": "Tämä ei näytä kelvolliselta siemenlauseelta. Tarkista, että kaikki sanat on kirjoitettu oikein ja oikeassa järjestyksessä.",
+  "cashuSeedPhraseUpdated": "Siemenlause päivitetty. Se koskee nyt kaikkia Cashu-lompakoita. Varmuuskopioi uusi lause.",
+  "cashuSeedPhraseUpdateFailed": "Siemenlausetta ei voitu päivittää"
 }

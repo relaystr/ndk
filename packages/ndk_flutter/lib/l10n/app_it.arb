@@ -677,15 +677,15 @@
     }
   },
   "restoreFailed": "Ripristino non riuscito",
-  "cashuRestoreMenuTitle": "Restore & backup",
-  "cashuSeedPhraseOption": "Set seed phrase",
-  "cashuSeedPhraseTitle": "Cashu seed phrase",
-  "cashuSeedPhraseWarning": "This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.",
-  "cashuSeedPhraseInstructions": "Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.",
-  "cashuSeedPhraseLabel": "Seed phrase",
-  "cashuSeedPhraseHint": "Paste your seed phrase here",
-  "cashuSeedPhraseConfirmChange": "I understand this changes the seed for all Cashu wallets",
-  "cashuSeedPhraseInvalid": "That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.",
-  "cashuSeedPhraseUpdated": "Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.",
-  "cashuSeedPhraseUpdateFailed": "Could not update the seed phrase"
+  "cashuRestoreMenuTitle": "Ripristino e copia di sicurezza",
+  "cashuSeedPhraseOption": "Imposta la frase seed",
+  "cashuSeedPhraseTitle": "Frase seed Cashu",
+  "cashuSeedPhraseWarning": "Questa frase seed è condivisa da TUTTI i portafogli Cashu. È l'unico modo per recuperare i tuoi fondi dopo aver perso questo dispositivo. Modificarla sostituisce la seed usata per derivare le chiavi di ogni portafoglio Cashu, quindi i fondi ricevuti con la seed precedente non potranno più essere trovati automaticamente.",
+  "cashuSeedPhraseInstructions": "Inserisci la frase di recupero che vuoi usare (12, 15, 18, 21 o 24 parole). Cambia la seed solo quando ripristini portafogli da una frase che hai già salvato.",
+  "cashuSeedPhraseLabel": "Frase seed",
+  "cashuSeedPhraseHint": "Incolla qui la tua frase seed",
+  "cashuSeedPhraseConfirmChange": "Capisco che questo cambia la seed per tutti i portafogli Cashu",
+  "cashuSeedPhraseInvalid": "Non sembra una frase seed valida. Controlla che tutte le parole siano scritte correttamente e nell'ordine giusto.",
+  "cashuSeedPhraseUpdated": "Frase seed aggiornata. Ora si applica a tutti i portafogli Cashu. Crea una copia di sicurezza della nuova frase.",
+  "cashuSeedPhraseUpdateFailed": "Impossibile aggiornare la frase seed"
 }
