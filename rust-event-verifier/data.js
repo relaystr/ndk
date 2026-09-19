@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789652153244,
+  "lastUpdate": 1789817893636,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -492,6 +492,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1646216,
             "range": "1634268-1661170",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3fb319dae79ba90712c2abd9a4192974ab309297",
+          "message": "Merge pull request #805 from relaystr/feat/relay-auth-broadcast\n\nfeat: let a broadcast say which identity it may be attributed to",
+          "timestamp": "2026-09-19T13:36:28+02:00",
+          "tree_id": "1aa592944be4d6fb4d7c8df11b13d232c6e82b76",
+          "url": "https://github.com/relaystr/ndk/commit/3fb319dae79ba90712c2abd9a4192974ab309297"
+        },
+        "date": 1789817890839,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 39828.4,
+            "range": "39655-42169",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1317984,
+            "range": "1316192-1320282",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
