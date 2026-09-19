@@ -24,96 +24,99 @@ void main() {
 
   const url = 'wss://relay.example.com';
 
-  group('RelayAuth identity', () {
+  group('AuthPolicy identity', () {
     test('never is a single value', () {
-      expect(const RelayAuth.never(), same(const RelayAuth.never()));
-      expect(const RelayAuth.never().account, isNull);
+      expect(const AuthPolicy.never(), same(const AuthPolicy.never()));
+      expect(const AuthPolicy.never().account, isNull);
     });
 
     test('two policies for the same pubkey are equal', () {
       expect(
-          RelayAuth.allow(_signable(keyA)), RelayAuth.allow(_signable(keyA)));
+          AuthPolicy.allow(_signable(keyA)), AuthPolicy.allow(_signable(keyA)));
       expect(
-        RelayAuth.allow(_signable(keyA)).hashCode,
-        RelayAuth.allow(_signable(keyA)).hashCode,
+        AuthPolicy.allow(_signable(keyA)).hashCode,
+        AuthPolicy.allow(_signable(keyA)).hashCode,
       );
     });
 
     test('allow and require are never interchangeable', () {
       final account = _signable(keyA);
 
-      expect(RelayAuth.allow(account), isNot(RelayAuth.require(account)));
-      expect(RelayAuth.allow(account), isNot(const RelayAuth.never()));
+      expect(AuthPolicy.allow(account), isNot(AuthPolicy.require(account)));
+      expect(AuthPolicy.allow(account), isNot(const AuthPolicy.never()));
     });
 
     test('two accounts give two policies', () {
       expect(
-        RelayAuth.allow(_signable(keyA)),
-        isNot(RelayAuth.allow(_signable(keyB))),
+        AuthPolicy.allow(_signable(keyA)),
+        isNot(AuthPolicy.allow(_signable(keyB))),
       );
     });
 
     test('canonical is what the policy prints as', () {
       final account = _signable(keyA);
 
-      expect(const RelayAuth.never().canonical, 'never');
-      expect(RelayAuth.allow(account).canonical, 'allow:${keyA.publicKey}');
-      expect(RelayAuth.require(account).canonical, 'require:${keyA.publicKey}');
+      expect(const AuthPolicy.never().canonical, 'never');
+      expect(AuthPolicy.allow(account).canonical, 'allow:${keyA.publicKey}');
       expect(
-        RelayAuth.require(account).toString(),
-        RelayAuth.require(account).canonical,
+          AuthPolicy.require(account).canonical, 'require:${keyA.publicKey}');
+      expect(
+        AuthPolicy.require(account).toString(),
+        AuthPolicy.require(account).canonical,
       );
     });
   });
 
-  group('RelayAuth.keyFor', () {
+  group('AuthPolicy.keyFor', () {
     test('an absent policy stays anonymous', () {
-      expect(RelayAuth.keyFor(url, null), RelayConnectionKey.anonymous(url));
+      expect(RelayConnectionKey.forAuth(url, null),
+          RelayConnectionKey.anonymous(url));
     });
 
     test('never and allow start anonymous', () {
       expect(
-        RelayAuth.keyFor(url, const RelayAuth.never()),
+        RelayConnectionKey.forAuth(url, const AuthPolicy.never()),
         RelayConnectionKey.anonymous(url),
       );
       expect(
-        RelayAuth.keyFor(url, RelayAuth.allow(_signable(keyA))),
+        RelayConnectionKey.forAuth(url, AuthPolicy.allow(_signable(keyA))),
         RelayConnectionKey.anonymous(url),
       );
     });
 
     test('require binds the connection from the start', () {
       expect(
-        RelayAuth.keyFor(url, RelayAuth.require(_signable(keyA))),
+        RelayConnectionKey.forAuth(url, AuthPolicy.require(_signable(keyA))),
         RelayConnectionKey.authenticated(url, keyA.publicKey),
       );
     });
 
     test('require without a signer has no connection to use', () {
       expect(
-          RelayAuth.keyFor(url, RelayAuth.require(_watchOnly(keyA))), isNull);
+          RelayConnectionKey.forAuth(url, AuthPolicy.require(_watchOnly(keyA))),
+          isNull);
     });
   });
 
-  group('RelayAuth.fromDeprecatedAccounts', () {
+  group('AuthPolicy.fromDeprecatedAccounts', () {
     test('no account keeps the historical default', () {
-      expect(RelayAuth.fromDeprecatedAccounts(null), isNull);
-      expect(RelayAuth.fromDeprecatedAccounts([]), isNull);
+      expect(AuthPolicy.fromDeprecatedAccounts(null), isNull);
+      expect(AuthPolicy.fromDeprecatedAccounts([]), isNull);
     });
 
     test('the first signable account is the one that is used', () {
       final signable = _signable(keyB);
 
       expect(
-        RelayAuth.fromDeprecatedAccounts([_watchOnly(keyA), signable]),
-        RelayAuth.allow(signable),
+        AuthPolicy.fromDeprecatedAccounts([_watchOnly(keyA), signable]),
+        AuthPolicy.allow(signable),
       );
     });
 
     test('a list where nobody can sign never authenticates', () {
       expect(
-        RelayAuth.fromDeprecatedAccounts([_watchOnly(keyA), _watchOnly(keyB)]),
-        const RelayAuth.never(),
+        AuthPolicy.fromDeprecatedAccounts([_watchOnly(keyA), _watchOnly(keyB)]),
+        const AuthPolicy.never(),
       );
     });
   });

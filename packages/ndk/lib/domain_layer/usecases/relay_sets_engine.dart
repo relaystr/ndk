@@ -17,7 +17,7 @@ import '../entities/filter.dart';
 import '../entities/global_state.dart';
 import '../entities/ndk_request.dart';
 import '../entities/nip_01_event.dart';
-import '../entities/relay_auth.dart';
+import '../entities/auth_policy.dart';
 import '../entities/relay_connection_key.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_set.dart';
@@ -131,7 +131,7 @@ class RelaySetsEngine implements NetworkEngine {
   Future<void> doRelayBroadcast(
     String relayUrl,
     Nip01Event nostrEvent, {
-    RelayAuth? auth,
+    AuthPolicy? auth,
   }) async {
     _relayManager.registerRelayBroadcast(
       eventToPublish: nostrEvent,
@@ -176,7 +176,7 @@ class RelaySetsEngine implements NetworkEngine {
       );
       return;
     }
-    if (auth is RelayAuthRequire) {
+    if (auth is AuthPolicyRequire) {
       _relayManager.failBroadcast(
         nostrEvent.id,
         relayUrl,

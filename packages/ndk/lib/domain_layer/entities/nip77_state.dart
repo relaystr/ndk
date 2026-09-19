@@ -5,7 +5,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../shared/nips/nip77/negentropy.dart';
 import 'filter.dart';
-import 'relay_auth.dart';
+import 'auth_policy.dart';
 import 'relay_connection_key.dart';
 
 /// State of a NIP-77 negentropy reconciliation session
@@ -21,7 +21,7 @@ class Nip77State {
   final Filter filter;
 
   /// Which identity this session may be attributed to (NIP-42)
-  final RelayAuth? auth;
+  final AuthPolicy? auth;
 
   /// whether the negotiation already moved from the anonymous connection to a
   /// bound one

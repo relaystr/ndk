@@ -32,15 +32,15 @@ reconciliation may be attributed to, exactly like on
 final response = ndk.nip77.reconcile(
   relayUrl: 'wss://relay.example.com',
   filter: Filter(authors: [myPubkey]),
-  auth: RelayAuth.require(account),
+  auth: AuthPolicy.require(account),
 );
 ```
 
 | policy | connection | what a relay learns |
 | --- | --- | --- |
-| `RelayAuth.never()` | anonymous, always | nothing. A relay that refuses the negotiation without an identity simply does not reconcile |
-| `RelayAuth.allow(a)` | anonymous, moves to one bound to `a` once the relay refuses | who you are, but only after that relay asked |
-| `RelayAuth.require(a)` | bound to `a` from the start | who you are, as soon as it sends a challenge |
+| `AuthPolicy.never()` | anonymous, always | nothing. A relay that refuses the negotiation without an identity simply does not reconcile |
+| `AuthPolicy.allow(a)` | anonymous, moves to one bound to `a` once the relay refuses | who you are, but only after that relay asked |
+| `AuthPolicy.require(a)` | bound to `a` from the start | who you are, as soon as it sends a challenge |
 
 Without `auth`, a refused negotiation authenticates as the currently logged-in
 account, so the relay decides when your identity is revealed. Pass `auth`
@@ -78,7 +78,7 @@ try {
   await ndk.nip77.reconcile(
     relayUrl: 'wss://relay.example.com',
     filter: filter,
-    auth: const RelayAuth.never(),
+    auth: const AuthPolicy.never(),
   ).future;
 } on Nip77AuthRequiredException catch (e) {
   print('Relay wants an identity: ${e.message}');

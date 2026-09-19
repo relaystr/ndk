@@ -77,7 +77,7 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
           await _migrateLegacyMetadatas();
           await _migrateLegacyContactLists();
         }
-        // which identity an event goes to a relay under, see RelayAuth. Only
+        // which identity an event goes to a relay under, see AuthPolicy. Only
         // for a database that already had the table: createTable above builds
         // it from today's definition, column included, so adding it again
         // there would fail on a duplicate

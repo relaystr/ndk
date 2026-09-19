@@ -2,7 +2,7 @@ import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../repositories/cache_manager.dart';
 import '../../../entities/nip_01_event.dart';
-import '../../../entities/relay_auth.dart';
+import '../../../entities/auth_policy.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../relay_manager.dart';
 
@@ -14,7 +14,7 @@ class RelayJitBroadcastSpecificRelaysStrategy {
     required CacheManager cacheManager,
     required RelayManager relayManager,
     required List<String> specificRelays,
-    RelayAuth? auth,
+    AuthPolicy? auth,
   }) async {
     // Deduplicate relay URLs
     final uniqueRelayUrls = specificRelays.toSet().toList();

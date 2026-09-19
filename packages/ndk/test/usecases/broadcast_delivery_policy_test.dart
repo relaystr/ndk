@@ -1,7 +1,7 @@
 import 'package:ndk/domain_layer/entities/broadcast_state.dart';
 import 'package:ndk/domain_layer/entities/event_cache_records.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/entities/relay_auth.dart';
+import 'package:ndk/domain_layer/entities/auth_policy.dart';
 import 'package:ndk/domain_layer/usecases/broadcast/delivery_policy.dart';
 import 'package:test/test.dart';
 
@@ -95,7 +95,7 @@ void main() {
       // no identity may ever be revealed here, so retrying every minute could
       // only ever collect the same refusal
       expect(
-        policy.resolveNextState(refusal, auth: const RelayAuth.never()),
+        policy.resolveNextState(refusal, auth: const AuthPolicy.never()),
         RelayDeliveryState.permanentFailure,
       );
       expect(
