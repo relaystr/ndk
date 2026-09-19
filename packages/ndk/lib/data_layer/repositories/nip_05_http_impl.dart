@@ -1,3 +1,4 @@
+import '../../config/nip_05_defaults.dart';
 import '../../domain_layer/entities/nip_05.dart';
 import '../../domain_layer/repositories/nip_05_repo.dart';
 import '../data_sources/http_request.dart';
@@ -7,8 +8,14 @@ import '../models/nip_05_model.dart';
 class Nip05HttpRepositoryImpl implements Nip05Repository {
   final HttpRequestDS httpDS;
 
+  /// how long to wait for a nostr.json response
+  final Duration timeout;
+
   /// creates a new [Nip05HttpRepositoryImpl] instance
-  Nip05HttpRepositoryImpl({required this.httpDS});
+  Nip05HttpRepositoryImpl({
+    required this.httpDS,
+    this.timeout = NIP_05_REQUEST_TIMEOUT,
+  });
 
   @override
   Future<Nip05?> requestNip05(String nip05, String pubkey) async {
@@ -21,6 +28,7 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
     final json = await httpDS.jsonRequest(
       identifier.url,
       followRedirects: false,
+      timeout: timeout,
     );
 
     Map names = json["names"];
@@ -54,7 +62,11 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
 
     final Map<String, dynamic> json;
     try {
-      json = await httpDS.jsonRequest(identifier.url, followRedirects: false);
+      json = await httpDS.jsonRequest(
+        identifier.url,
+        followRedirects: false,
+        timeout: timeout,
+      );
     } on HttpRequestException catch (e) {
       if (e.statusCode == 404) {
         return null;

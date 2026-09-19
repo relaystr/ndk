@@ -448,6 +448,30 @@ void main() {
       expect(result, isA<Nip05ResolveError>());
     });
 
+    test('aborts the request on a server that never answers', () async {
+      final client = _NeverAnsweringClient();
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(
+        httpDS: HttpRequestDS(client),
+        timeout: const Duration(milliseconds: 50),
+      );
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final resolved = await nip05Usecase.resolve('username@example.com');
+      final checked = await nip05Usecase.check(
+        nip05: 'username@example.com',
+        pubkey: 'pubkey',
+      );
+
+      expect(resolved, isA<Nip05ResolveError>());
+      expect(checked.valid, false);
+      expect(client.aborted, 2);
+    });
+
     test('lowercases the identifier', () async {
       Uri? sentUrl;
       final client = MockClient((request) async {
@@ -653,4 +677,15 @@ void main() {
       expect((result2 as Nip05Found).data.pubKey, equals('pubkey'));
     });
   });
+}
+
+class _NeverAnsweringClient extends http.BaseClient {
+  int aborted = 0;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    await (request as http.Abortable).abortTrigger;
+    aborted++;
+    throw http.RequestAbortedException(request.url);
+  }
 }

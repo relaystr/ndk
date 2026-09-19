@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -52,17 +53,29 @@ class HttpRequestDS {
   Future<Map<String, dynamic>> jsonRequest(
     String url, {
     bool followRedirects = true,
+    Duration? timeout,
   }) async {
     final uri = Uri.parse(url).replace(scheme: 'https');
     const headers = {"Accept": "application/json"};
+
     final http.Response response;
-    if (followRedirects) {
+    if (followRedirects && timeout == null) {
       response = await _client.get(uri, headers: headers);
     } else {
-      final request = http.Request('GET', uri)
+      final abort = Completer<void>();
+      final timer = timeout == null ? null : Timer(timeout, abort.complete);
+      final request = http.AbortableRequest(
+        'GET',
+        uri,
+        abortTrigger: abort.future,
+      )
         ..headers.addAll(headers)
-        ..followRedirects = false;
-      response = await http.Response.fromStream(await _client.send(request));
+        ..followRedirects = followRedirects;
+      try {
+        response = await http.Response.fromStream(await _client.send(request));
+      } finally {
+        timer?.cancel();
+      }
     }
 
     if (!_isSuccessStatus(response.statusCode)) {
