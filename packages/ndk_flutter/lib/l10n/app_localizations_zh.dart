@@ -1682,4 +1682,117 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get balanceRefreshed => '余额已刷新';
+
+  @override
+  String get cashuQuoteRecoveryTitle => '恢复铸币报价';
+
+  @override
+  String get recoverQuote => '恢复报价';
+
+  @override
+  String get enterQuoteId => '输入要恢复的铸币报价 ID。锁定密钥将从您的助记词中恢复。';
+
+  @override
+  String get quoteId => '报价 ID';
+
+  @override
+  String get quoteIdHint => '在此粘贴报价 ID';
+
+  @override
+  String get pleaseEnterQuoteId => '请输入报价 ID';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote => '正在从铸币厂获取报价…';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey => '正在从您的助记词中恢复锁定密钥…';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint => '正在完成铸币…';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return '锁定密钥已恢复（派生计数器 $counter）';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted => '报价已恢复，资金已添加到您的余额中';
+
+  @override
+  String get quoteRecoveryFailed => '报价恢复失败';
+
+  @override
+  String get restoreFundsFromMint => '从铸币厂恢复资金';
+
+  @override
+  String get cashuRestoreFundsTitle => '从铸币厂恢复资金';
+
+  @override
+  String get cashuRestoreDescription => '扫描铸币厂中由您的助记词派生的凭证，并将其恢复到该钱包中。';
+
+  @override
+  String get startRestore => '开始恢复';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets => '正在获取铸币厂密钥集…';
+
+  @override
+  String get cashuRestoreStageScanning => '正在扫描铸币厂以查找您的资金…';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return '已扫描 $keysets 个密钥集 · 找到 $proofs 个凭证';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => '恢复完成';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes => '同时恢复待处理的铸币报价';
+
+  @override
+  String restoredFromMint(int count) {
+    return '已从铸币厂恢复 $count 个凭证';
+  }
+
+  @override
+  String get restoreFailed => '恢复失败';
+
+  @override
+  String get restoreFromBackup => '从备份恢复';
+
+  @override
+  String get cashuRestoreMenuTitle => '恢复与备份';
+
+  @override
+  String get cashuSeedPhraseOption => '设置助记词';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Cashu 助记词';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      '此助记词由所有 Cashu 钱包共享。这是您在丢失此设备后恢复资金的唯一方法。更改它会替换用于为每个 Cashu 钱包派生密钥的助记词，因此使用先前助记词收到的资金将无法再自动找到。';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      '输入您要使用的恢复短语（12、15、18、21 或 24 个单词）。仅在从您已保存的短语恢复钱包时更改助记词。';
+
+  @override
+  String get cashuSeedPhraseLabel => '助记词';
+
+  @override
+  String get cashuSeedPhraseHint => '在此粘贴您的助记词';
+
+  @override
+  String get cashuSeedPhraseConfirmChange => '我了解这会更改所有 Cashu 钱包的助记词';
+
+  @override
+  String get cashuSeedPhraseInvalid => '这看起来不是有效的助记词。请检查所有单词是否拼写正确且顺序正确。';
+
+  @override
+  String get cashuSeedPhraseUpdated => '助记词已更新。现在适用于所有 Cashu 钱包。请备份新的助记词。';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed => '无法更新助记词';
 }

@@ -463,9 +463,37 @@
   "appUpdateCheckAgain": "Verificar novamente",
   "appUpdateInstalledVersion": "Versão instalada {version}",
   "appUpdateInstalledAndAvailable": "Versão instalada {installedVersion}. Atualização {availableVersion} disponível.",
-  "appUpdateChangelog": "Registo de alterações", "appUpdateReleaseHistory": "Histórico de versões", "appUpdateInstalledBadge": "Instalada", "appUpdateAvailableBadge": "Atualização disponível", "appUpdateLatestBadge": "Mais recente", "appUpdateNoReleases": "Ainda não foi publicada nenhuma versão.", "appUpdateAcrossAllReleases": "Em todas as versões",
+  "appUpdateChangelog": "Registo de alterações",
+  "appUpdateReleaseHistory": "Histórico de versões",
+  "appUpdateInstalledBadge": "Instalada",
+  "appUpdateAvailableBadge": "Atualização disponível",
+  "appUpdateLatestBadge": "Mais recente",
+  "appUpdateNoReleases": "Ainda não foi publicada nenhuma versão.",
+  "appUpdateAcrossAllReleases": "Em todas as versões",
   "appUpdateSatsBy": "sats por",
-  "appUpdateReleaseDetails": "Detalhes da versão", "appUpdateWhatsNew": "Novidades", "appUpdatePublishedOn": "Publicado em {date}", "appUpdateChannel": "Canal: {channel}", "appUpdateArchitecture": "Arquitetura: {architecture}", "appUpdateVersionCode": "Compilação {versionCode}", "appUpdateReleaseVersion": "Versão {version}", "appUpdateNoReleaseNotes": "Não foram publicadas notas da versão.", "appUpdatePublisher": "Editor", "appUpdatePublisherSignatureVerified": "Assinatura do evento Nostr verificada", "appUpdateCertificateDeclared": "Certificado de assinatura Android declarado pelo editor", "appUpdateSource": "Fonte da transferência: {host}", "appUpdateCommunity": "Comunidade", "appUpdateZapSummary": "{count} zaps · {sats} sats", "appUpdateReactionCount": "{count} reações", "appUpdateCommentCount": "{count} comentários", "appUpdateSocialLoadFailed": "Não foi possível carregar a atividade da comunidade.", "appUpdateComments": "Comentários", "appUpdateNoComments": "Ainda não há comentários.", "appUpdateCommentHint": "Partilhe a sua opinião sobre esta versão", "appUpdatePostComment": "Publicar comentário", "appUpdateSignInToComment": "Inicie sessão com uma conta Nostr para comentar.", "appUpdateTechnicalDetails": "Detalhes técnicos",
+  "appUpdateReleaseDetails": "Detalhes da versão",
+  "appUpdateWhatsNew": "Novidades",
+  "appUpdatePublishedOn": "Publicado em {date}",
+  "appUpdateChannel": "Canal: {channel}",
+  "appUpdateArchitecture": "Arquitetura: {architecture}",
+  "appUpdateVersionCode": "Compilação {versionCode}",
+  "appUpdateReleaseVersion": "Versão {version}",
+  "appUpdateNoReleaseNotes": "Não foram publicadas notas da versão.",
+  "appUpdatePublisher": "Editor",
+  "appUpdatePublisherSignatureVerified": "Assinatura do evento Nostr verificada",
+  "appUpdateCertificateDeclared": "Certificado de assinatura Android declarado pelo editor",
+  "appUpdateSource": "Fonte da transferência: {host}",
+  "appUpdateCommunity": "Comunidade",
+  "appUpdateZapSummary": "{count} zaps · {sats} sats",
+  "appUpdateReactionCount": "{count} reações",
+  "appUpdateCommentCount": "{count} comentários",
+  "appUpdateSocialLoadFailed": "Não foi possível carregar a atividade da comunidade.",
+  "appUpdateComments": "Comentários",
+  "appUpdateNoComments": "Ainda não há comentários.",
+  "appUpdateCommentHint": "Partilhe a sua opinião sobre esta versão",
+  "appUpdatePostComment": "Publicar comentário",
+  "appUpdateSignInToComment": "Inicie sessão com uma conta Nostr para comentar.",
+  "appUpdateTechnicalDetails": "Detalhes técnicos",
   "appUpdateViewStatus": "Ver estado da atualização",
   "refreshBalance": "Atualizar saldo",
   "balanceRefreshed": "Saldo atualizado",
@@ -499,5 +527,83 @@
   "bolt12WalletTypeSubtitle": "Carteira apenas de receção com oferta reutilizável",
   "invalidBolt12QrCode": "O código QR não contém um destino de pagamento BOLT12, BIP321 ou BIP353.",
   "bolt12OfferTitle": "Receber com BOLT12",
-  "bolt12OfferInstructions": "Partilhe esta oferta reutilizável para receber um pagamento Lightning."
+  "bolt12OfferInstructions": "Partilhe esta oferta reutilizável para receber um pagamento Lightning.",
+  "@restoreFromBackup": {
+    "description": "Label for restoring a Cashu wallet from a backup JSON"
+  },
+  "restoreFromBackup": "Restaurar a partir de backup",
+  "@restoreSuccess": {
+    "description": "Confirmation after a successful restore",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "cashuQuoteRecoveryTitle": "Recuperar Cotação da Mint",
+  "recoverQuote": "Recuperar cotação",
+  "enterQuoteId": "Introduza o ID da cotação da mint a recuperar. A chave de bloqueio é recuperada a partir da sua frase semente.",
+  "quoteId": "ID da cotação",
+  "quoteIdHint": "Cole o ID da cotação aqui",
+  "pleaseEnterQuoteId": "Por favor, introduza um ID de cotação",
+  "cashuQuoteRecoveryStageFetchingQuote": "A obter cotação da mint...",
+  "cashuQuoteRecoveryStageRecoveringKey": "A recuperar chave de bloqueio da sua semente...",
+  "cashuQuoteRecoveryStageCompletingMint": "A completar mint...",
+  "@cashuQuoteRecoveryKeyRecovered": {
+    "description": "Confirmation shown once the lock key is recovered",
+    "placeholders": {
+      "counter": {
+        "type": "int",
+        "description": "Derivation counter of the recovered lock key"
+      }
+    }
+  },
+  "cashuQuoteRecoveryKeyRecovered": "Chave de bloqueio recuperada (contador de derivação {counter})",
+  "cashuQuoteRecoveryCompleted": "Cotação recuperada e fundos adicionados ao seu saldo",
+  "quoteRecoveryFailed": "Falha na recuperação da cotação",
+  "restoreFundsFromMint": "Restaurar fundos da mint",
+  "cashuRestoreFundsTitle": "Restaurar Fundos da Mint",
+  "cashuRestoreDescription": "Procura a mint por provas derivadas da sua semente e restaura-as para esta carteira.",
+  "startRestore": "Iniciar restauração",
+  "cashuRestoreStageFetchingKeysets": "A obter conjuntos de chaves da mint...",
+  "cashuRestoreStageScanning": "A procurar os seus fundos na mint...",
+  "@cashuRestoreScanProgress": {
+    "description": "Scan progress in the restore-from-mint dialog",
+    "placeholders": {
+      "keysets": {
+        "type": "int",
+        "description": "Number of keysets scanned"
+      },
+      "proofs": {
+        "type": "int",
+        "description": "Number of proofs found so far"
+      }
+    }
+  },
+  "cashuRestoreScanProgress": "Verificados {keysets} conjunto(s) de chaves · {proofs} prova(s) encontrada(s)",
+  "cashuRestoreStageCompleted": "Restauração concluída",
+  "cashuRestoreAlsoRestoresQuotes": "Também recupera cotações pendentes da mint",
+  "@restoredFromMint": {
+    "description": "Confirmation after a successful restore-from-mint",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "restoredFromMint": "Restauradas {count} provas da mint",
+  "restoreFailed": "Falha na restauração",
+  "cashuRestoreMenuTitle": "Restaurar e backup",
+  "cashuSeedPhraseOption": "Definir frase semente",
+  "cashuSeedPhraseTitle": "Frase semente Cashu",
+  "cashuSeedPhraseWarning": "Esta frase semente é partilhada por TODAS as carteiras Cashu. É a única forma de recuperar os seus fundos depois de perder este dispositivo. Alterá-la substitui a semente utilizada para derivar as chaves de todas as carteiras Cashu, pelo que os fundos recebidos com a semente anterior deixarão de ser encontrados automaticamente.",
+  "cashuSeedPhraseInstructions": "Introduza a frase de recuperação que pretende utilizar (12, 15, 18, 21 ou 24 palavras). Altere a semente apenas quando restaurar carteiras a partir de uma frase que já guardou.",
+  "cashuSeedPhraseLabel": "Frase semente",
+  "cashuSeedPhraseHint": "Cole aqui a sua frase semente",
+  "cashuSeedPhraseConfirmChange": "Entendo que isto altera a semente de todas as carteiras Cashu",
+  "cashuSeedPhraseInvalid": "Isso não parece uma frase semente válida. Verifique se todas as palavras estão escritas corretamente e na ordem certa.",
+  "cashuSeedPhraseUpdated": "Frase semente atualizada. Passa a aplicar-se a todas as carteiras Cashu. Faça uma cópia de segurança da nova frase.",
+  "cashuSeedPhraseUpdateFailed": "Não foi possível atualizar a frase semente"
 }

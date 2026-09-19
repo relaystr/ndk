@@ -545,9 +545,37 @@
   "appUpdateCheckAgain": "Sprawdź ponownie",
   "appUpdateInstalledVersion": "Zainstalowana wersja {version}",
   "appUpdateInstalledAndAvailable": "Zainstalowana wersja {installedVersion}. Dostępna aktualizacja {availableVersion}.",
-  "appUpdateChangelog": "Lista zmian", "appUpdateReleaseHistory": "Historia wydań", "appUpdateInstalledBadge": "Zainstalowana", "appUpdateAvailableBadge": "Dostępna aktualizacja", "appUpdateLatestBadge": "Najnowsza", "appUpdateNoReleases": "Nie opublikowano jeszcze żadnych wydań.", "appUpdateAcrossAllReleases": "We wszystkich wydaniach",
+  "appUpdateChangelog": "Lista zmian",
+  "appUpdateReleaseHistory": "Historia wydań",
+  "appUpdateInstalledBadge": "Zainstalowana",
+  "appUpdateAvailableBadge": "Dostępna aktualizacja",
+  "appUpdateLatestBadge": "Najnowsza",
+  "appUpdateNoReleases": "Nie opublikowano jeszcze żadnych wydań.",
+  "appUpdateAcrossAllReleases": "We wszystkich wydaniach",
   "appUpdateSatsBy": "satów od",
-  "appUpdateReleaseDetails": "Szczegóły wydania", "appUpdateWhatsNew": "Co nowego", "appUpdatePublishedOn": "Opublikowano {date}", "appUpdateChannel": "Kanał: {channel}", "appUpdateArchitecture": "Architektura: {architecture}", "appUpdateVersionCode": "Kompilacja {versionCode}", "appUpdateReleaseVersion": "Wydanie {version}", "appUpdateNoReleaseNotes": "Nie opublikowano informacji o wydaniu.", "appUpdatePublisher": "Wydawca", "appUpdatePublisherSignatureVerified": "Zweryfikowano podpis zdarzenia Nostr", "appUpdateCertificateDeclared": "Certyfikat podpisu Android zadeklarowany przez wydawcę", "appUpdateSource": "Źródło pobierania: {host}", "appUpdateCommunity": "Społeczność", "appUpdateZapSummary": "{count} zapów · {sats} satów", "appUpdateReactionCount": "Reakcje: {count}", "appUpdateCommentCount": "Komentarze: {count}", "appUpdateSocialLoadFailed": "Nie udało się wczytać aktywności społeczności.", "appUpdateComments": "Komentarze", "appUpdateNoComments": "Brak komentarzy.", "appUpdateCommentHint": "Podziel się opinią o tym wydaniu", "appUpdatePostComment": "Opublikuj komentarz", "appUpdateSignInToComment": "Zaloguj się na konto Nostr, aby komentować.", "appUpdateTechnicalDetails": "Szczegóły techniczne",
+  "appUpdateReleaseDetails": "Szczegóły wydania",
+  "appUpdateWhatsNew": "Co nowego",
+  "appUpdatePublishedOn": "Opublikowano {date}",
+  "appUpdateChannel": "Kanał: {channel}",
+  "appUpdateArchitecture": "Architektura: {architecture}",
+  "appUpdateVersionCode": "Kompilacja {versionCode}",
+  "appUpdateReleaseVersion": "Wydanie {version}",
+  "appUpdateNoReleaseNotes": "Nie opublikowano informacji o wydaniu.",
+  "appUpdatePublisher": "Wydawca",
+  "appUpdatePublisherSignatureVerified": "Zweryfikowano podpis zdarzenia Nostr",
+  "appUpdateCertificateDeclared": "Certyfikat podpisu Android zadeklarowany przez wydawcę",
+  "appUpdateSource": "Źródło pobierania: {host}",
+  "appUpdateCommunity": "Społeczność",
+  "appUpdateZapSummary": "{count} zapów · {sats} satów",
+  "appUpdateReactionCount": "Reakcje: {count}",
+  "appUpdateCommentCount": "Komentarze: {count}",
+  "appUpdateSocialLoadFailed": "Nie udało się wczytać aktywności społeczności.",
+  "appUpdateComments": "Komentarze",
+  "appUpdateNoComments": "Brak komentarzy.",
+  "appUpdateCommentHint": "Podziel się opinią o tym wydaniu",
+  "appUpdatePostComment": "Opublikuj komentarz",
+  "appUpdateSignInToComment": "Zaloguj się na konto Nostr, aby komentować.",
+  "appUpdateTechnicalDetails": "Szczegóły techniczne",
   "appUpdateViewStatus": "Wyświetl stan aktualizacji",
   "refreshBalance": "Odśwież saldo",
   "balanceRefreshed": "Saldo odświeżone",
@@ -581,5 +609,83 @@
   "bolt12WalletTypeSubtitle": "Portfel tylko do odbioru z ofertą wielorazową",
   "invalidBolt12QrCode": "Kod QR nie zawiera celu płatności BOLT12, BIP321 ani BIP353.",
   "bolt12OfferTitle": "Odbierz przez BOLT12",
-  "bolt12OfferInstructions": "Udostępnij tę ofertę wielorazową, aby otrzymać płatność Lightning."
+  "bolt12OfferInstructions": "Udostępnij tę ofertę wielorazową, aby otrzymać płatność Lightning.",
+  "restoreFromBackup": "Odzyskaj z kopii zapasowej",
+  "@restoreFromBackup": {
+    "description": "Label for restoring a Cashu wallet from a backup JSON"
+  },
+  "@restoreSuccess": {
+    "description": "Confirmation after a successful restore",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "cashuQuoteRecoveryTitle": "Odzyskaj wycenę mennicy",
+  "recoverQuote": "Odzyskaj wycenę",
+  "enterQuoteId": "Wprowadź identyfikator wyceny mennicy do odzyskania. Klucz blokowany jest odtwarzany z Twojej frazy odzyskiwania.",
+  "quoteId": "Identyfikator wyceny",
+  "quoteIdHint": "Wklej tutaj identyfikator wyceny",
+  "pleaseEnterQuoteId": "Proszę wprowadzić identyfikator wyceny",
+  "cashuQuoteRecoveryStageFetchingQuote": "Pobieranie wyceny z mennicy...",
+  "cashuQuoteRecoveryStageRecoveringKey": "Odtwarzanie klucza blokowanego z frazy odzyskiwania...",
+  "cashuQuoteRecoveryStageCompletingMint": "Finalizowanie mennicy...",
+  "cashuQuoteRecoveryKeyRecovered": "Klucz blokowany odzyskany (licznik wywodzenia {counter})",
+  "@cashuQuoteRecoveryKeyRecovered": {
+    "description": "Confirmation shown once the lock key is recovered",
+    "placeholders": {
+      "counter": {
+        "type": "int",
+        "description": "Derivation counter of the recovered lock key"
+      }
+    }
+  },
+  "cashuQuoteRecoveryCompleted": "Wycena odzyskana i środki dodane do salda",
+  "quoteRecoveryFailed": "Nie udało się odzyskać wyceny",
+  "restoreFundsFromMint": "Przywróć środki z mennicy",
+  "cashuRestoreFundsTitle": "Przywróć środki z mennicy",
+  "cashuRestoreDescription": "Przeszukuje mennicę w poszukiwaniu dowodów wywodzących się z Twojej frazy odzyskiwania i przywraca je do tego portfela.",
+  "startRestore": "Rozpocznij przywracanie",
+  "cashuRestoreStageFetchingKeysets": "Pobieranie zestawów kluczy mennicy...",
+  "cashuRestoreStageScanning": "Przeszukiwanie mennicy w poszukiwaniu Twoich środków...",
+  "cashuRestoreScanProgress": "Przeszukano {keysets} zestaw(ów) kluczy · znaleziono {proofs} dowod(ów)",
+  "@cashuRestoreScanProgress": {
+    "description": "Scan progress in the restore-from-mint dialog",
+    "placeholders": {
+      "keysets": {
+        "type": "int",
+        "description": "Number of keysets scanned"
+      },
+      "proofs": {
+        "type": "int",
+        "description": "Number of proofs found so far"
+      }
+    }
+  },
+  "cashuRestoreStageCompleted": "Przywracanie zakończone",
+  "cashuRestoreAlsoRestoresQuotes": "Przywraca również oczekujące wyceny mennicy",
+  "restoredFromMint": "Przywrócono {count} dowodów z mennicy",
+  "@restoredFromMint": {
+    "description": "Confirmation after a successful restore-from-mint",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "restoreFailed": "Przywracanie nieudane",
+  "cashuRestoreMenuTitle": "Przywracanie i kopia zapasowa",
+  "cashuSeedPhraseOption": "Ustaw frazę odzyskiwania",
+  "cashuSeedPhraseTitle": "Fraza odzyskiwania Cashu",
+  "cashuSeedPhraseWarning": "Ta fraza odzyskiwania jest wspólna dla WSZYSTKICH portfeli Cashu. To jedyny sposób na odzyskanie środków po utracie tego urządzenia. Zmiana jej zastępuje frazę używaną do wyprowadzania kluczy dla każdego portfela Cashu, więc środki otrzymane pod poprzednią frazą nie będą już mogły zostać znalezione automatycznie.",
+  "cashuSeedPhraseInstructions": "Wprowadź frazę odzyskiwania, której chcesz użyć (12, 15, 18, 21 lub 24 słowa). Zmieniaj frazę tylko podczas przywracania portfeli z już zapisanej frazy.",
+  "cashuSeedPhraseLabel": "Fraza odzyskiwania",
+  "cashuSeedPhraseHint": "Wklej tutaj swoją frazę odzyskiwania",
+  "cashuSeedPhraseConfirmChange": "Rozumiem, że to zmienia frazę dla wszystkich portfeli Cashu",
+  "cashuSeedPhraseInvalid": "To nie wygląda na prawidłową frazę odzyskiwania. Sprawdź, czy wszystkie słowa są poprawnie napisane i we właściwej kolejności.",
+  "cashuSeedPhraseUpdated": "Fraza odzyskiwania zaktualizowana. Obowiązuje teraz dla wszystkich portfeli Cashu. Zrób kopię zapasową nowej frazy.",
+  "cashuSeedPhraseUpdateFailed": "Nie udało się zaktualizować frazy odzyskiwania"
 }

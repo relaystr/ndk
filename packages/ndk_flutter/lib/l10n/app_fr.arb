@@ -487,9 +487,37 @@
   "appUpdateCheckAgain": "Vérifier à nouveau",
   "appUpdateInstalledVersion": "Version installée {version}",
   "appUpdateInstalledAndAvailable": "Version installée {installedVersion}. Mise à jour {availableVersion} disponible.",
-  "appUpdateChangelog": "Journal des modifications", "appUpdateReleaseHistory": "Historique des versions", "appUpdateInstalledBadge": "Installée", "appUpdateAvailableBadge": "Mise à jour disponible", "appUpdateLatestBadge": "Dernière", "appUpdateNoReleases": "Aucune version n’a encore été publiée.", "appUpdateAcrossAllReleases": "Toutes versions confondues",
+  "appUpdateChangelog": "Journal des modifications",
+  "appUpdateReleaseHistory": "Historique des versions",
+  "appUpdateInstalledBadge": "Installée",
+  "appUpdateAvailableBadge": "Mise à jour disponible",
+  "appUpdateLatestBadge": "Dernière",
+  "appUpdateNoReleases": "Aucune version n’a encore été publiée.",
+  "appUpdateAcrossAllReleases": "Toutes versions confondues",
   "appUpdateSatsBy": "sats par",
-  "appUpdateReleaseDetails": "Détails de la version", "appUpdateWhatsNew": "Nouveautés", "appUpdatePublishedOn": "Publié le {date}", "appUpdateChannel": "Canal : {channel}", "appUpdateArchitecture": "Architecture : {architecture}", "appUpdateVersionCode": "Build {versionCode}", "appUpdateReleaseVersion": "Version {version}", "appUpdateNoReleaseNotes": "Aucune note de version publiée.", "appUpdatePublisher": "Éditeur", "appUpdatePublisherSignatureVerified": "Signature de l’événement Nostr vérifiée", "appUpdateCertificateDeclared": "Certificat de signature Android déclaré par l’éditeur", "appUpdateSource": "Source du téléchargement : {host}", "appUpdateCommunity": "Communauté", "appUpdateZapSummary": "{count} zaps · {sats} sats", "appUpdateReactionCount": "{count} réactions", "appUpdateCommentCount": "{count} commentaires", "appUpdateSocialLoadFailed": "Impossible de charger l’activité de la communauté.", "appUpdateComments": "Commentaires", "appUpdateNoComments": "Aucun commentaire pour le moment.", "appUpdateCommentHint": "Partagez votre avis sur cette version", "appUpdatePostComment": "Publier le commentaire", "appUpdateSignInToComment": "Connectez-vous avec un compte Nostr pour commenter.", "appUpdateTechnicalDetails": "Détails techniques",
+  "appUpdateReleaseDetails": "Détails de la version",
+  "appUpdateWhatsNew": "Nouveautés",
+  "appUpdatePublishedOn": "Publié le {date}",
+  "appUpdateChannel": "Canal : {channel}",
+  "appUpdateArchitecture": "Architecture : {architecture}",
+  "appUpdateVersionCode": "Build {versionCode}",
+  "appUpdateReleaseVersion": "Version {version}",
+  "appUpdateNoReleaseNotes": "Aucune note de version publiée.",
+  "appUpdatePublisher": "Éditeur",
+  "appUpdatePublisherSignatureVerified": "Signature de l’événement Nostr vérifiée",
+  "appUpdateCertificateDeclared": "Certificat de signature Android déclaré par l’éditeur",
+  "appUpdateSource": "Source du téléchargement : {host}",
+  "appUpdateCommunity": "Communauté",
+  "appUpdateZapSummary": "{count} zaps · {sats} sats",
+  "appUpdateReactionCount": "{count} réactions",
+  "appUpdateCommentCount": "{count} commentaires",
+  "appUpdateSocialLoadFailed": "Impossible de charger l’activité de la communauté.",
+  "appUpdateComments": "Commentaires",
+  "appUpdateNoComments": "Aucun commentaire pour le moment.",
+  "appUpdateCommentHint": "Partagez votre avis sur cette version",
+  "appUpdatePostComment": "Publier le commentaire",
+  "appUpdateSignInToComment": "Connectez-vous avec un compte Nostr pour commenter.",
+  "appUpdateTechnicalDetails": "Détails techniques",
   "appUpdateViewStatus": "Voir l’état des mises à jour",
   "refreshBalance": "Actualiser le solde",
   "balanceRefreshed": "Solde actualisé",
@@ -523,5 +551,83 @@
   "bolt12WalletTypeSubtitle": "Portefeuille de réception avec offre réutilisable",
   "invalidBolt12QrCode": "Le code QR ne contient pas de destination de paiement BOLT12, BIP321 ou BIP353.",
   "bolt12OfferTitle": "Recevoir avec BOLT12",
-  "bolt12OfferInstructions": "Partagez cette offre réutilisable pour recevoir un paiement Lightning."
+  "bolt12OfferInstructions": "Partagez cette offre réutilisable pour recevoir un paiement Lightning.",
+  "restoreFromBackup": "Restaurer depuis une sauvegarde",
+  "@restoreFromBackup": {
+    "description": "Label for restoring a Cashu wallet from a backup JSON"
+  },
+  "@restoreSuccess": {
+    "description": "Confirmation after a successful restore",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "cashuQuoteRecoveryTitle": "Récupérer un devis de mint",
+  "recoverQuote": "Récupérer le devis",
+  "enterQuoteId": "Saisissez l'identifiant du devis de mint à récupérer. La clé de verrouillage est dérivée de votre phrase de récupération.",
+  "quoteId": "Identifiant du devis",
+  "quoteIdHint": "Collez l'identifiant du devis ici",
+  "pleaseEnterQuoteId": "Veuillez saisir un identifiant de devis",
+  "cashuQuoteRecoveryStageFetchingQuote": "Récupération du devis auprès du mint…",
+  "cashuQuoteRecoveryStageRecoveringKey": "Récupération de la clé de verrouillage depuis votre graine…",
+  "cashuQuoteRecoveryStageCompletingMint": "Finalisation du mint…",
+  "cashuQuoteRecoveryKeyRecovered": "Clé de verrouillage récupérée (compteur de dérivation {counter})",
+  "@cashuQuoteRecoveryKeyRecovered": {
+    "description": "Confirmation shown once the lock key is recovered",
+    "placeholders": {
+      "counter": {
+        "type": "int",
+        "description": "Derivation counter of the recovered lock key"
+      }
+    }
+  },
+  "cashuQuoteRecoveryCompleted": "Devis récupéré et fonds ajoutés à votre solde",
+  "quoteRecoveryFailed": "Échec de la récupération du devis",
+  "restoreFundsFromMint": "Restaurer les fonds depuis le mint",
+  "cashuRestoreFundsTitle": "Restaurer les fonds depuis le mint",
+  "cashuRestoreDescription": "Recherche les preuves dérivées de votre graine auprès du mint et les restaure dans ce portefeuille.",
+  "startRestore": "Lancer la restauration",
+  "cashuRestoreStageFetchingKeysets": "Récupération des jeux de clés du mint…",
+  "cashuRestoreStageScanning": "Scan du mint à la recherche de vos fonds…",
+  "cashuRestoreScanProgress": "{keysets} jeu(x) de clés scanné(s) · {proofs} preuve(s) trouvée(s)",
+  "@cashuRestoreScanProgress": {
+    "description": "Scan progress in the restore-from-mint dialog",
+    "placeholders": {
+      "keysets": {
+        "type": "int",
+        "description": "Number of keysets scanned"
+      },
+      "proofs": {
+        "type": "int",
+        "description": "Number of proofs found so far"
+      }
+    }
+  },
+  "cashuRestoreStageCompleted": "Restauration terminée",
+  "cashuRestoreAlsoRestoresQuotes": "Récupère également les devis de mint en attente",
+  "restoredFromMint": "{count} preuve(s) restaurée(s) depuis le mint",
+  "@restoredFromMint": {
+    "description": "Confirmation after a successful restore-from-mint",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "restoreFailed": "Échec de la restauration",
+  "cashuRestoreMenuTitle": "Restaurer et sauvegarder",
+  "cashuSeedPhraseOption": "Définir la phrase de récupération",
+  "cashuSeedPhraseTitle": "Phrase de récupération Cashu",
+  "cashuSeedPhraseWarning": "Cette phrase de récupération est partagée par TOUS les portefeuilles Cashu. C'est le seul moyen de récupérer vos fonds après la perte de cet appareil. La modifier remplace la graine utilisée pour dériver les clés de chaque portefeuille Cashu ; les fonds reçus avec la graine précédente ne pourront donc plus être retrouvés automatiquement.",
+  "cashuSeedPhraseInstructions": "Saisissez la phrase de récupération que vous souhaitez utiliser (12, 15, 18, 21 ou 24 mots). Ne modifiez la graine que lorsque vous restaurez des portefeuilles à partir d'une phrase déjà sauvegardée.",
+  "cashuSeedPhraseLabel": "Phrase de récupération",
+  "cashuSeedPhraseHint": "Collez votre phrase de récupération ici",
+  "cashuSeedPhraseConfirmChange": "Je comprends que cela change la graine pour tous les portefeuilles Cashu",
+  "cashuSeedPhraseInvalid": "Cela ne ressemble pas à une phrase de récupération valide. Vérifiez que tous les mots sont correctement orthographiés et dans le bon ordre.",
+  "cashuSeedPhraseUpdated": "Phrase de récupération mise à jour. Elle s'applique désormais à tous les portefeuilles Cashu. Sauvegardez la nouvelle phrase.",
+  "cashuSeedPhraseUpdateFailed": "Impossible de mettre à jour la phrase de récupération"
 }

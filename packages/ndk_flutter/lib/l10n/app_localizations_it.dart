@@ -1728,4 +1728,130 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get balanceRefreshed => 'Saldo aggiornato';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Recupero preventivo mint';
+
+  @override
+  String get recoverQuote => 'Recupera preventivo';
+
+  @override
+  String get enterQuoteId =>
+      'Inserisci l\'ID del preventivo mint da recuperare. La chiave di blocco viene recuperata dalla tua frase seed.';
+
+  @override
+  String get quoteId => 'ID preventivo';
+
+  @override
+  String get quoteIdHint => 'Incolla qui l\'ID del preventivo';
+
+  @override
+  String get pleaseEnterQuoteId => 'Inserisci un ID preventivo';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'Recupero del preventivo dal mint...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'Recupero della chiave di blocco dalla frase seed...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint =>
+      'Completamento del mint...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Chiave di blocco recuperata (contatore di derivazione $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Preventivo recuperato e fondi aggiunti al tuo saldo';
+
+  @override
+  String get quoteRecoveryFailed => 'Recupero del preventivo non riuscito';
+
+  @override
+  String get restoreFundsFromMint => 'Ripristina fondi dal mint';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Ripristina fondi dal mint';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Scansiona il mint alla ricerca di prove derivate dalla tua frase seed e le ripristina in questo portafoglio.';
+
+  @override
+  String get startRestore => 'Avvia ripristino';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets =>
+      'Recupero dei keyset del mint...';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'Scansione del mint alla ricerca dei tuoi fondi...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return 'Scansionati $keysets keyset · trovate $proofs prove';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Ripristino completato';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Recupera anche i preventivi mint in sospeso';
+
+  @override
+  String restoredFromMint(int count) {
+    return 'Ripristinate $count prove dal mint';
+  }
+
+  @override
+  String get restoreFailed => 'Ripristino non riuscito';
+
+  @override
+  String get restoreFromBackup => 'Ripristina da backup';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Ripristino e copia di sicurezza';
+
+  @override
+  String get cashuSeedPhraseOption => 'Imposta la frase seed';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Frase seed Cashu';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Questa frase seed è condivisa da TUTTI i portafogli Cashu. È l\'unico modo per recuperare i tuoi fondi dopo aver perso questo dispositivo. Modificarla sostituisce la seed usata per derivare le chiavi di ogni portafoglio Cashu, quindi i fondi ricevuti con la seed precedente non potranno più essere trovati automaticamente.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Inserisci la frase di recupero che vuoi usare (12, 15, 18, 21 o 24 parole). Cambia la seed solo quando ripristini portafogli da una frase che hai già salvato.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Frase seed';
+
+  @override
+  String get cashuSeedPhraseHint => 'Incolla qui la tua frase seed';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Capisco che questo cambia la seed per tutti i portafogli Cashu';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'Non sembra una frase seed valida. Controlla che tutte le parole siano scritte correttamente e nell\'ordine giusto.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Frase seed aggiornata. Ora si applica a tutti i portafogli Cashu. Crea una copia di sicurezza della nuova frase.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed =>
+      'Impossibile aggiornare la frase seed';
 }
