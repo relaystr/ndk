@@ -49,11 +49,21 @@ class HttpRequestDS {
   HttpRequestDS(this._client);
 
   /// make a get request to the given url
-  Future<Map<String, dynamic>> jsonRequest(String url) async {
-    http.Response response = await _client.get(
-      Uri.parse(url).replace(scheme: 'https'),
-      headers: {"Accept": "application/json"},
-    );
+  Future<Map<String, dynamic>> jsonRequest(
+    String url, {
+    bool followRedirects = true,
+  }) async {
+    final uri = Uri.parse(url).replace(scheme: 'https');
+    const headers = {"Accept": "application/json"};
+    final http.Response response;
+    if (followRedirects) {
+      response = await _client.get(uri, headers: headers);
+    } else {
+      final request = http.Request('GET', uri)
+        ..headers.addAll(headers)
+        ..followRedirects = false;
+      response = await http.Response.fromStream(await _client.send(request));
+    }
 
     if (!_isSuccessStatus(response.statusCode)) {
       throw HttpRequestException(

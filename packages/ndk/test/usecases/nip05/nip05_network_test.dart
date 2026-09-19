@@ -428,6 +428,106 @@ void main() {
       expect(result, isA<Nip05NotFound>());
     });
 
+    test('does not follow redirects', () async {
+      http.Request? sent;
+      final client = MockClient((request) async {
+        sent = request;
+        return http.Response('', 301, headers: {'location': 'https://x.test'});
+      });
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('username@example.com');
+
+      expect(sent!.followRedirects, false);
+      expect(result, isA<Nip05ResolveError>());
+    });
+
+    test('lowercases the identifier', () async {
+      Uri? sentUrl;
+      final client = MockClient((request) async {
+        sentUrl = request.url;
+        return requestHandler(request);
+      });
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('UserName@Example.com');
+
+      expect(sentUrl!.host, 'example.com');
+      expect(sentUrl!.queryParameters['name'], 'username');
+      expect(result, isA<Nip05Found>());
+    });
+
+    test('a bare domain resolves as _@domain', () async {
+      Uri? sentUrl;
+      final client = MockClient((request) async {
+        sentUrl = request.url;
+        return requestHandler2(request);
+      });
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('domain.test');
+
+      expect(sentUrl!.queryParameters['name'], '_');
+      expect((result as Nip05Found).data.pubKey, 'pubkey');
+    });
+
+    test('encodes the name in the query', () async {
+      Uri? sentUrl;
+      final client = MockClient((request) async {
+        sentUrl = request.url;
+        return http.Response('{"names": {}}', 200);
+      });
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      await nip05Usecase.resolve('a&name=_@domain.test');
+
+      expect(sentUrl!.queryParametersAll['name'], ['a&name=_']);
+    });
+
+    test('rejects an identifier with several @', () async {
+      var requested = false;
+      final client = MockClient((request) async {
+        requested = true;
+        return requestHandler(request);
+      });
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('a@b@example.com');
+
+      expect(requested, false);
+      expect(result, isA<Nip05NotFound>());
+    });
+
     test('resolve() returns Nip05NotFound on HTTP 404', () async {
       Future<http.Response> notFoundHandler(http.Request request) async {
         return http.Response('', 404);

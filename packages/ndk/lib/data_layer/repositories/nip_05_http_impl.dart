@@ -12,12 +12,16 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
 
   @override
   Future<Nip05?> requestNip05(String nip05, String pubkey) async {
-    String username = nip05.split("@")[0];
-    String url = nip05.split("@")[1];
+    final identifier = _parseIdentifier(nip05);
+    if (identifier == null) {
+      return null;
+    }
 
-    String myUrl = "https://$url/.well-known/nostr.json?name=$username";
-
-    final json = await httpDS.jsonRequest(myUrl);
+    // NIP-05: fetchers MUST ignore HTTP redirects
+    final json = await httpDS.jsonRequest(
+      identifier.url,
+      followRedirects: false,
+    );
 
     Map names = json["names"];
 
@@ -28,7 +32,7 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
       pRelays = List<String>.from(relays[pubkey]);
     }
 
-    bool valid = names[username] == pubkey;
+    bool valid = names[identifier.name] == pubkey;
 
     final result = Nip05Model(
       pubKey: pubkey,
@@ -43,14 +47,14 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
 
   @override
   Future<Nip05?> fetchNip05(String nip05) async {
-    String username = nip05.split("@")[0];
-    String url = nip05.split("@")[1];
-
-    String myUrl = "https://$url/.well-known/nostr.json?name=$username";
+    final identifier = _parseIdentifier(nip05);
+    if (identifier == null) {
+      return null;
+    }
 
     final Map<String, dynamic> json;
     try {
-      json = await httpDS.jsonRequest(myUrl);
+      json = await httpDS.jsonRequest(identifier.url, followRedirects: false);
     } on HttpRequestException catch (e) {
       if (e.statusCode == 404) {
         return null;
@@ -61,7 +65,7 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
     Map names = json["names"];
     Map relays = json["relays"] ?? {};
 
-    String? pubkey = names[username];
+    String? pubkey = names[identifier.name];
 
     if (pubkey == null) {
       return null;
@@ -80,4 +84,26 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
       relays: pRelays,
     );
   }
+}
+
+/// A bare `domain` is the display form of the root identifier `_@domain`.
+({String name, String url})? _parseIdentifier(String nip05) {
+  final parts = nip05.trim().toLowerCase().split("@");
+  final String name;
+  final String domain;
+  if (parts.length == 1) {
+    name = "_";
+    domain = parts[0];
+  } else if (parts.length == 2) {
+    name = parts[0];
+    domain = parts[1];
+  } else {
+    return null;
+  }
+  if (name.isEmpty || domain.isEmpty) {
+    return null;
+  }
+
+  final url = Uri.https(domain, "/.well-known/nostr.json", {"name": name});
+  return (name: name, url: url.toString());
 }
