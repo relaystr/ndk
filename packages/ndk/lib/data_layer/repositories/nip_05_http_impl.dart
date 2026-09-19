@@ -30,11 +30,6 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
 
     bool valid = names[username] == pubkey;
 
-    /// additional check for the case where "_"
-    if (!valid) {
-      valid = names["_"] == pubkey;
-    }
-
     final result = Nip05Model(
       pubKey: pubkey,
       nip05: nip05,
@@ -66,8 +61,7 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
     Map names = json["names"];
     Map relays = json["relays"] ?? {};
 
-    // Get pubkey from username or fallback to "_"
-    String? pubkey = names[username] ?? names["_"];
+    String? pubkey = names[username];
 
     if (pubkey == null) {
       return null;

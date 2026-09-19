@@ -145,11 +145,30 @@ void main() {
       );
 
       var result = await nip05Usecase.check(
-        nip05: 'domain@domain.test',
+        nip05: '_@domain.test',
         pubkey: 'pubkey',
       );
 
       expect(result.valid, true);
+    });
+
+    test('_ entry does not validate other names', () async {
+      final client = MockClient(requestHandler2);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      var result = await nip05Usecase.check(
+        nip05: 'domain@domain.test',
+        pubkey: 'pubkey',
+      );
+
+      expect(result.valid, false);
     });
 
     test('spam requests - check in flight', () async {
@@ -393,6 +412,21 @@ void main() {
         expect(result, isA<Nip05NotFound>());
       },
     );
+
+    test('resolve() does not fall back to the _ entry', () async {
+      final client = MockClient(requestHandler2);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('alice@domain.test');
+
+      expect(result, isA<Nip05NotFound>());
+    });
 
     test('resolve() returns Nip05NotFound on HTTP 404', () async {
       Future<http.Response> notFoundHandler(http.Request request) async {
