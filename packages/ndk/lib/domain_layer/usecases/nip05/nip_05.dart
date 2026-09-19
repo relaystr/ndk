@@ -35,6 +35,11 @@ class Nip05Usecase {
       throw Exception("nip05 or pubkey empty");
     }
 
+    final identifier = Nip05.canonicalIdentifier(nip05);
+    if (identifier == null) {
+      return Nip05(pubKey: pubkey, nip05: nip05);
+    }
+
     final databaseResult = await _database.loadNip05(pubKey: pubkey);
 
     if (databaseResult != null) {
@@ -46,24 +51,24 @@ class Nip05Usecase {
     }
 
     // Check if there's an in-flight request for this nip05
-    if (_inFlightRequests.containsKey(nip05)) {
+    if (_inFlightRequests.containsKey(identifier)) {
       // Wait for the existing request to complete
-      return await _inFlightRequests[nip05]!;
+      return await _inFlightRequests[identifier]!;
     }
 
     // Create a new request and add it to the in-flight map
     final request = _performCheck(
-      nip05,
+      identifier,
       pubkey,
-      Nip05(pubKey: pubkey, nip05: nip05),
+      Nip05(pubKey: pubkey, nip05: identifier),
     );
-    _inFlightRequests[nip05] = request;
+    _inFlightRequests[identifier] = request;
 
     try {
       return await request;
     } finally {
       // Remove the request from the in-flight map once it's completed
-      _inFlightRequests.remove(nip05);
+      _inFlightRequests.remove(identifier);
     }
   }
 
@@ -97,9 +102,15 @@ class Nip05Usecase {
       throw Exception("nip05 empty");
     }
 
+    final identifier = Nip05.canonicalIdentifier(nip05);
+    if (identifier == null) {
+      return const Nip05NotFound();
+    }
+
     // Check cache first
-    final databaseResult = await _database.loadNip05(identifier: nip05);
-    if (databaseResult != null) {
+    final databaseResult = await _database.loadNip05(identifier: identifier);
+    // check() also caches failed verifications, which must not resolve
+    if (databaseResult != null && databaseResult.valid) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       int lastCheck = databaseResult.networkFetchTime ?? 0;
       if (now - lastCheck < NIP_05_VALID_DURATION.inSeconds) {
@@ -108,18 +119,18 @@ class Nip05Usecase {
     }
 
     // Check if there's an in-flight fetch for this nip05
-    if (_inFlightResolves.containsKey(nip05)) {
-      return await _inFlightResolves[nip05]!;
+    if (_inFlightResolves.containsKey(identifier)) {
+      return await _inFlightResolves[identifier]!;
     }
 
     // Create a new fetch and add it to the in-flight map
-    final fetch = _performResolve(nip05);
-    _inFlightResolves[nip05] = fetch;
+    final fetch = _performResolve(identifier);
+    _inFlightResolves[identifier] = fetch;
 
     try {
       return await fetch;
     } finally {
-      _inFlightResolves.remove(nip05);
+      _inFlightResolves.remove(identifier);
     }
   }
 

@@ -552,6 +552,44 @@ void main() {
       expect(result, isA<Nip05NotFound>());
     });
 
+    test('resolve() ignores a failed check() in cache', () async {
+      final client = MockClient((request) async => http.Response('', 404));
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      await nip05Usecase.check(nip05: 'moi@github.com', pubkey: 'attacker');
+      final result = await nip05Usecase.resolve('moi@github.com');
+
+      expect(result, isA<Nip05NotFound>());
+    });
+
+    test('identifiers differing in case share one cache entry', () async {
+      var requests = 0;
+      final client = MockClient((request) async {
+        requests++;
+        return requestHandler(request);
+      });
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final first = await nip05Usecase.resolve(' UserName@Example.com ');
+      final second = await nip05Usecase.resolve('username@example.com');
+
+      expect(requests, 1);
+      expect((first as Nip05Found).data.nip05, 'username@example.com');
+      expect(second, isA<Nip05Found>());
+    });
+
     test('resolve() returns Nip05NotFound on HTTP 404', () async {
       Future<http.Response> notFoundHandler(http.Request request) async {
         return http.Response('', 404);

@@ -98,23 +98,12 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
   }
 }
 
-/// A bare `domain` is the display form of the root identifier `_@domain`.
 ({String name, String url})? _parseIdentifier(String nip05) {
-  final parts = nip05.trim().toLowerCase().split("@");
-  final String name;
-  final String domain;
-  if (parts.length == 1) {
-    name = "_";
-    domain = parts[0];
-  } else if (parts.length == 2) {
-    name = parts[0];
-    domain = parts[1];
-  } else {
+  final canonical = Nip05.canonicalIdentifier(nip05);
+  if (canonical == null) {
     return null;
   }
-  if (name.isEmpty || domain.isEmpty) {
-    return null;
-  }
+  final [name, domain] = canonical.split("@");
 
   final url = Uri.https(domain, "/.well-known/nostr.json", {"name": name});
   return (name: name, url: url.toString());
