@@ -1,4 +1,5 @@
 import '../../shared/helpers/relay_helper.dart';
+import 'auth_policy.dart';
 
 final _hexPubkeyRegex = RegExp(r'^[0-9a-fA-F]{64}$');
 
@@ -31,6 +32,22 @@ class RelayConnectionKey {
     }
     return RelayConnectionKey._(_normalizeUrl(url), pubkey.toLowerCase());
   }
+
+  /// The connection a request under [auth] must use towards [url] (NIP-42).
+  ///
+  /// Null means no connection can satisfy it and nothing may be sent to that
+  /// relay: falling back to the anonymous one is exactly what the caller ruled
+  /// out. A null [auth] keeps the historical default.
+  static RelayConnectionKey? forAuth(String url, AuthPolicy? auth) =>
+      switch (auth) {
+        AuthPolicyRequire(:final account) => account.signer.canSign()
+            ? RelayConnectionKey.authenticated(url, account.pubkey)
+            : null,
+        null ||
+        AuthPolicyNever() ||
+        AuthPolicyAllow() =>
+          RelayConnectionKey.anonymous(url),
+      };
 
   /// whether any identity is bound to this connection
   bool get isAnonymous => pubkey == null;

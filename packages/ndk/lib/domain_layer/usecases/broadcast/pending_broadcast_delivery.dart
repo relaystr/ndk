@@ -6,7 +6,7 @@ import '../../entities/broadcast_state.dart';
 import '../../entities/event_cache_records.dart';
 import '../../entities/nip_01_event.dart';
 import '../../entities/pending_signer_request.dart';
-import '../../entities/relay_auth.dart';
+import '../../entities/auth_policy.dart';
 import '../../entities/signer_request_cancelled_exception.dart';
 import '../../entities/signer_request_rejected_exception.dart';
 import '../../repositories/cache_manager.dart';
@@ -44,7 +44,7 @@ class PendingBroadcastDelivery {
   /// lives: a signer cannot be persisted, so an account the caller handed over
   /// without ever registering it only survives here. What outlives a restart is
   /// the canonical form on the target, see [_authForTarget].
-  final Map<String, RelayAuth> _authPolicies = {};
+  final Map<String, AuthPolicy> _authPolicies = {};
   Iterable<String> Function()? _connectedRelayUrlsProvider;
   Timer? _retryTimer;
   bool _stopped = false;
@@ -204,7 +204,7 @@ class PendingBroadcastDelivery {
     required Nip01Event event,
     required Iterable<String> relayUrls,
     required bool requiresInteractiveSigning,
-    RelayAuth? auth,
+    AuthPolicy? auth,
   }) async {
     if (_stopped) {
       return;
@@ -553,7 +553,7 @@ class PendingBroadcastDelivery {
       return const _AuthResolution(null);
     }
     if (canonical == 'never') {
-      return const _AuthResolution(RelayAuth.never());
+      return const _AuthResolution(AuthPolicy.never());
     }
 
     final separator = canonical.indexOf(':');
@@ -569,15 +569,15 @@ class PendingBroadcastDelivery {
     }
 
     return switch (kind) {
-      'allow' => _AuthResolution(RelayAuth.allow(account)),
-      'require' => _AuthResolution(RelayAuth.require(account)),
+      'allow' => _AuthResolution(AuthPolicy.allow(account)),
+      'require' => _AuthResolution(AuthPolicy.require(account)),
       _ => const _AuthResolution(null),
     };
   }
 
   /// Holds a delivery whose identity is gone until the app supplies it again,
   /// rather than sending it as somebody else. Re-broadcasting the same event
-  /// with [RelayAuth] in hand rewrites the record and resumes it.
+  /// with [AuthPolicy] in hand rewrites the record and resumes it.
   Future<void> _parkUnattributableDelivery(
     RelayDeliveryTarget target,
     EventDeliveryRecord record,
@@ -1257,7 +1257,7 @@ class PendingBroadcastDelivery {
 /// relay manager picks". [unavailable] is different: the caller named an
 /// identity and nobody here can sign for it, so nothing may be sent.
 class _AuthResolution {
-  final RelayAuth? policy;
+  final AuthPolicy? policy;
 
   /// false only for [unavailable]; a const `never` policy would otherwise be
   /// canonically identical to it

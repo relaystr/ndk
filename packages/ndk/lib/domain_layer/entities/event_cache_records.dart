@@ -65,8 +65,8 @@ class RelayDeliveryTarget {
   final String? lastError;
   final String? lastOkMessage;
 
-  /// canonical form of the [RelayAuth] this event goes to this relay under, see
-  /// `RelayAuth.canonical`. It lives here rather than on the event, because the
+  /// canonical form of the [AuthPolicy] this event goes to this relay under, see
+  /// `AuthPolicy.canonical`. It lives here rather than on the event, because the
   /// same event may be published to two relays under two identities. A signer
   /// cannot be persisted, so only the intent is: the account behind a pubkey is
   /// resolved again on retry.

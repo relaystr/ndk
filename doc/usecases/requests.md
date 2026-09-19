@@ -36,7 +36,7 @@ final account = Account(
 // enough, and it can differ from the one that is logged in
 final response = ndk.requests.query(
   filter: Filter(kinds: [1059], authors: [myPubkey]),
-  auth: RelayAuth.allow(account),
+  auth: AuthPolicy.allow(account),
 );
 ```
 
@@ -44,16 +44,16 @@ final response = ndk.requests.query(
 
 | policy | connection | what a relay learns |
 | --- | --- | --- |
-| `RelayAuth.never()` | anonymous, always | nothing. A relay that refuses the request without an identity simply does not serve it, and the request returns what the other relays gave |
-| `RelayAuth.allow(a)` | anonymous, moves to one bound to `a` once a relay refuses | who you are, but only after that relay asked |
-| `RelayAuth.require(a)` | bound to `a` from the start | who you are, as soon as it sends a challenge |
+| `AuthPolicy.never()` | anonymous, always | nothing. A relay that refuses the request without an identity simply does not serve it, and the request returns what the other relays gave |
+| `AuthPolicy.allow(a)` | anonymous, moves to one bound to `a` once a relay refuses | who you are, but only after that relay asked |
+| `AuthPolicy.require(a)` | bound to `a` from the start | who you are, as soon as it sends a challenge |
 
 Report an event without ever being attributable for it:
 
 ```dart
 ndk.requests.query(
   filter: Filter(kinds: [1], ids: [suspiciousEventId]),
-  auth: const RelayAuth.never(),
+  auth: const AuthPolicy.never(),
 );
 ```
 
@@ -62,7 +62,7 @@ Read your own encrypted data, which no relay should serve to anyone else:
 ```dart
 ndk.requests.query(
   filter: Filter(kinds: [1059], authors: [myPubkey]),
-  auth: RelayAuth.require(account),
+  auth: AuthPolicy.require(account),
 );
 ```
 
@@ -102,9 +102,9 @@ when both are given:
 
 | `authenticateAs` | translated to |
 | --- | --- |
-| `[a]` | `RelayAuth.allow(a)` |
-| `[a, b]` | `RelayAuth.allow(a)`, the rest of the list is dropped |
-| a list where no account can sign | `const RelayAuth.never()` |
+| `[a]` | `AuthPolicy.allow(a)` |
+| `[a, b]` | `AuthPolicy.allow(a)`, the rest of the list is dropped |
+| a list where no account can sign | `const AuthPolicy.never()` |
 | not specified | nothing, the default above applies |
 
 A list never authenticated as more than one identity: only the first account

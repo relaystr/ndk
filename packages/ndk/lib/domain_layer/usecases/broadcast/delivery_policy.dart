@@ -1,7 +1,7 @@
 import '../../entities/broadcast_state.dart';
 import '../../entities/event_cache_records.dart';
 import '../../entities/nip_01_event.dart';
-import '../../entities/relay_auth.dart';
+import '../../entities/auth_policy.dart';
 import '../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../shared/nips/nip09/deletion.dart';
 
@@ -86,7 +86,7 @@ class DeliveryPolicy {
   /// judged against what this event is allowed to reveal.
   RelayDeliveryState resolveNextState(
     RelayBroadcastResponse response, {
-    RelayAuth? auth,
+    AuthPolicy? auth,
   }) {
     if (response.okReceived && response.broadcastSuccessful) {
       return RelayDeliveryState.acked;
@@ -106,7 +106,7 @@ class DeliveryPolicy {
         normalizedMsg.startsWith('auth-required')) {
       // no identity may ever be revealed here, so no retry can turn this
       // refusal into an accepted event
-      return auth is RelayAuthNever
+      return auth is AuthPolicyNever
           ? RelayDeliveryState.permanentFailure
           : RelayDeliveryState.authRequired;
     }
