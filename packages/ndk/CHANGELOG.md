@@ -1,3 +1,24 @@
+## 0.10.0-dev.5
+
+ - **PERF**: cache master key for cashu quote.
+ - **FIX**: guard cashu quote op (on autostart).
+ - **FIX**: backfill method, usedKeysets if missing.
+ - **FIX**: scanUpperBound.
+ - **FIX**: updatePendingQuotes to return all refreshed transactions.
+ - **FIX**: global quote counter.
+ - **FIX**: forward the connect timeout to a broadcast's bound connection.
+ - **FIX**(test): keep the connection's identity set with each received event.
+ - **FIX**: stop waking a relay for a delivery parked on a missing identity.
+ - **FIX**: attach a broadcast auth policy to the relay target, not the event.
+ - **FIX**: stop opening an anonymous connection for a required broadcast.
+ - **FIX**: release a broadcast auth policy once its delivery settled.
+ - **FEAT**: ensureMintCounterSafety.
+ - **FEAT**: streamable recoverAndCompleteQuote().
+ - **FEAT**: recoverAndCompleteQuote() api.
+ - **FEAT**: auto resume pending transactions.
+ - **FEAT**: determenistic cashu quote key.
+ - **FEAT**: let a broadcast say which identity it may be attributed to.
+
 ## 0.10.0-dev.4
 
  - **FIX**: address app update review feedback.
