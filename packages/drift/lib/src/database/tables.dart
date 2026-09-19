@@ -111,6 +111,7 @@ class RelayDeliveryTargetsTable extends Table {
   IntColumn get nextRetryAt => integer().nullable()();
   TextColumn get lastError => text().nullable()();
   TextColumn get lastOkMessage => text().nullable()();
+  TextColumn get authCanonical => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {eventId, relayUrl};

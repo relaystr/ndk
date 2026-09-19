@@ -65,6 +65,13 @@ class RelayDeliveryTarget {
   final String? lastError;
   final String? lastOkMessage;
 
+  /// canonical form of the [RelayAuth] this event goes to this relay under, see
+  /// `RelayAuth.canonical`. It lives here rather than on the event, because the
+  /// same event may be published to two relays under two identities. A signer
+  /// cannot be persisted, so only the intent is: the account behind a pubkey is
+  /// resolved again on retry.
+  final String? authCanonical;
+
   const RelayDeliveryTarget({
     required this.eventId,
     required this.relayUrl,
@@ -75,10 +82,15 @@ class RelayDeliveryTarget {
     this.nextRetryAt,
     this.lastError,
     this.lastOkMessage,
+    this.authCanonical,
   });
 
   /// Stable primary key used by cache backends.
-  String get key => '$eventId|$relayUrl';
+  String get key => '${keyPrefixFor(eventId)}$relayUrl';
+
+  /// What [key] of every target of [eventId] starts with, so a caller keyed by
+  /// [key] can find them all without spelling the format out again.
+  static String keyPrefixFor(String eventId) => '$eventId|';
 
   RelayDeliveryTarget copyWith({
     String? eventId,
@@ -90,6 +102,7 @@ class RelayDeliveryTarget {
     Object? nextRetryAt = _noChange,
     Object? lastError = _noChange,
     Object? lastOkMessage = _noChange,
+    Object? authCanonical = _noChange,
   }) {
     return RelayDeliveryTarget(
       eventId: eventId ?? this.eventId,
@@ -109,6 +122,9 @@ class RelayDeliveryTarget {
       lastOkMessage: identical(lastOkMessage, _noChange)
           ? this.lastOkMessage
           : lastOkMessage as String?,
+      authCanonical: identical(authCanonical, _noChange)
+          ? this.authCanonical
+          : authCanonical as String?,
     );
   }
 
@@ -123,6 +139,7 @@ class RelayDeliveryTarget {
       'nextRetryAt': nextRetryAt,
       'lastError': lastError,
       'lastOkMessage': lastOkMessage,
+      'authCanonical': authCanonical,
     };
   }
 
@@ -137,6 +154,7 @@ class RelayDeliveryTarget {
       nextRetryAt: json['nextRetryAt'] as int?,
       lastError: json['lastError'] as String?,
       lastOkMessage: json['lastOkMessage'] as String?,
+      authCanonical: json['authCanonical'] as String?,
     );
   }
 }

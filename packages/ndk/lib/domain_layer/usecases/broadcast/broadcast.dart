@@ -44,6 +44,11 @@ class Broadcast {
   /// [considerDonePercent] the percentage (0.0, 1.0) of relays that need to respond with "OK" for the broadcast to be considered done (overrides the default value) \
   /// [timeout] the timeout for the broadcast (overrides the default timeout) \
   /// [saveToCache] whether to save the event to cache (overrides the default value from config) \
+  /// [auth] which identity this broadcast may be attributed to on relays (NIP-42), see [RelayAuth].
+  /// Without it, a relay answering `auth-required` is answered as the event author, or as the
+  /// logged-in account when no registered account matches. \
+  /// [throws] [BroadcastAuthUnavailableException], before anything is sent, if [auth] requires
+  /// an identity that cannot sign \
   /// [returns] a [NdkBroadcastResponse] object containing the result => success per relay
   NdkBroadcastResponse broadcast({
     required Nip01Event nostrEvent,
@@ -52,6 +57,7 @@ class Broadcast {
     double? considerDonePercent,
     Duration? timeout,
     bool? saveToCache,
+    RelayAuth? auth,
   }) {
     // prep for pending delivery enrollment
     final cleanedSpecificRelays =
@@ -68,6 +74,7 @@ class Broadcast {
       considerDonePercent: considerDonePercent,
       timeout: timeout,
       saveToCache: saveToCache,
+      auth: auth,
     );
     final responseDoneFuture = response.broadcastDoneFuture;
 
@@ -82,6 +89,7 @@ class Broadcast {
         relayUrls: cleanedSpecificRelays,
         requiresInteractiveSigning:
             signer != null && signer.requiresInteractiveSigning,
+        auth: auth,
       );
     }
 
@@ -173,10 +181,12 @@ class Broadcast {
   /// [eventId] the event you want to react to \
   /// [customRelays] relay URls to send the deletion request to specific relays \
   /// [reaction] the reaction, default + (like) can be 🤔 (emoji)
+  /// [auth] which identity this reaction may be attributed to on relays (NIP-42), see [RelayAuth]
   NdkBroadcastResponse broadcastReaction({
     required String eventId,
     Iterable<String>? customRelays,
     String reaction = "+",
+    RelayAuth? auth,
   }) {
     final signer = _checkSinger();
     Nip01Event event = Nip01Event(
@@ -188,7 +198,11 @@ class Broadcast {
       content: reaction,
       createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
-    return broadcast(nostrEvent: event, specificRelays: customRelays);
+    return broadcast(
+      nostrEvent: event,
+      specificRelays: customRelays,
+      auth: auth,
+    );
   }
 
   /// Request a deletion of an event (NIP-09 compliant).
@@ -206,6 +220,7 @@ class Broadcast {
   /// [customRelays] relay URLs to send the deletion request to specific relays
   /// [customSigner] if you want to use a different signer than the default specified in [NdkConfig]
   /// [reason] reason for deletion (content of the deletion event)
+  /// [auth] which identity this deletion may be attributed to on relays (NIP-42), see [RelayAuth]
   NdkBroadcastResponse broadcastDeletion({
     // New API (NIP-09 compliant)
     Nip01Event? event,
@@ -219,6 +234,7 @@ class Broadcast {
     Iterable<String>? customRelays,
     EventSigner? customSigner,
     String reason = "delete",
+    RelayAuth? auth,
   }) {
     final EventSigner mySigner = _checkSinger(customSigner: customSigner);
 
@@ -322,6 +338,7 @@ class Broadcast {
       nostrEvent: deletionEvent,
       specificRelays: customRelays,
       customSigner: mySigner,
+      auth: auth,
     );
   }
 }

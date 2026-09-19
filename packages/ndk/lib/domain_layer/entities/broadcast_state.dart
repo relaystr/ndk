@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 
 import 'nip_01_event.dart';
+import 'relay_auth.dart';
 
 /// hols information about a individual relay broadcast response \
 /// e.g. \
@@ -46,6 +47,9 @@ class BroadcastState {
 
   /// the event being broadcast (stored for potential retries on auth-required)
   Nip01Event? event;
+
+  /// which identity this broadcast may be attributed to on the relays (NIP-42)
+  final RelayAuth? auth;
 
   /// stream controller for state updates
   final BehaviorSubject<BroadcastState> _stateUpdatesController =
@@ -99,7 +103,11 @@ class BroadcastState {
   bool _timeoutStarted = false;
 
   /// creates a new [BroadcastState] instance
-  BroadcastState({required this.timeout, this.considerDonePercent = 1}) {
+  BroadcastState({
+    required this.timeout,
+    this.considerDonePercent = 1,
+    this.auth,
+  }) {
     _networkSubscription = networkController.stream.listen(
       (response) {
         // got a response from a relay
