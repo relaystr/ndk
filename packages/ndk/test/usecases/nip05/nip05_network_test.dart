@@ -225,7 +225,7 @@ void main() {
 
         final oldNip05 = Nip05(
           pubKey: 'test_pubkey',
-          nip05: 'test_nip05',
+          nip05: 'test@example.com',
           valid: true,
           networkFetchTime: oldTimestamp,
         );
@@ -238,7 +238,7 @@ void main() {
         );
 
         final result = await nip05Usecase.check(
-          nip05: 'test_nip05',
+          nip05: 'test@example.com',
           pubkey: 'test_pubkey',
         );
 
@@ -272,7 +272,7 @@ void main() {
             1000);
         final oldNip05 = Nip05(
           pubKey: 'test_pubkey',
-          nip05: 'test_nip05',
+          nip05: 'test@example.com',
           valid: true,
           networkFetchTime: recentTimestamp,
         );
@@ -281,7 +281,7 @@ void main() {
 
         // Test with a duration of 5 days
         final result = await nip05Usecase.check(
-          nip05: 'test_nip05',
+          nip05: 'test@example.com',
           pubkey: 'test_pubkey',
         );
         expect(
@@ -308,7 +308,7 @@ void main() {
           1000);
       final oldNip05 = Nip05(
         pubKey: 'test_pubkey',
-        nip05: 'test_nip05',
+        nip05: 'test@example.com',
         valid: true,
         networkFetchTime: exactTimestamp,
       );
@@ -316,7 +316,7 @@ void main() {
       await cache.saveNip05(oldNip05);
 
       final result = await nip05Usecase.check(
-        nip05: 'test_nip05',
+        nip05: 'test@example.com',
         pubkey: 'test_pubkey',
       );
 
@@ -566,6 +566,52 @@ void main() {
       final result = await nip05Usecase.resolve('moi@github.com');
 
       expect(result, isA<Nip05NotFound>());
+    });
+
+    test('check() does not reuse a cached result for another identifier',
+        () async {
+      final client = MockClient(requestHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final previous = await nip05Usecase.check(
+        nip05: 'username@example.com',
+        pubkey: 'pubkey',
+      );
+      final switched = await nip05Usecase.check(
+        nip05: 'jack@example.com',
+        pubkey: 'pubkey',
+      );
+
+      expect(previous.valid, true);
+      expect(switched.valid, false);
+      expect(switched.nip05, 'jack@example.com');
+    });
+
+    test('concurrent check() calls for different pubkeys are not merged',
+        () async {
+      final client = MockClient(requestHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final results = await Future.wait([
+        nip05Usecase.check(nip05: 'username@example.com', pubkey: 'pubkey'),
+        nip05Usecase.check(nip05: 'username@example.com', pubkey: 'other'),
+      ]);
+
+      expect(results[0].valid, true);
+      expect(results[1].pubKey, 'other');
+      expect(results[1].valid, false);
     });
 
     test('identifiers differing in case share one cache entry', () async {

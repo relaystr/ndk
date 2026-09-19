@@ -8,7 +8,7 @@ import '../../repositories/nip_05_repo.dart';
 class Nip05Usecase {
   // Keep request deduplication local to this use case/NDK instance. Different
   // instances may use different repositories and caches for the same NIP-05.
-  final Map<String, Future<Nip05>> _inFlightRequests = {};
+  final Map<(String, String), Future<Nip05>> _inFlightRequests = {};
   final Map<String, Future<Nip05ResolveResult>> _inFlightResolves = {};
 
   final CacheManager _database;
@@ -37,12 +37,12 @@ class Nip05Usecase {
 
     final identifier = Nip05.canonicalIdentifier(nip05);
     if (identifier == null) {
-      return Nip05(pubKey: pubkey, nip05: nip05);
+      return Nip05(pubKey: pubkey, nip05: nip05, valid: false);
     }
 
     final databaseResult = await _database.loadNip05(pubKey: pubkey);
 
-    if (databaseResult != null) {
+    if (databaseResult != null && databaseResult.nip05 == identifier) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       int lastCheck = databaseResult.networkFetchTime ?? 0;
       if (now - lastCheck < NIP_05_VALID_DURATION.inSeconds) {
@@ -50,10 +50,12 @@ class Nip05Usecase {
       }
     }
 
+    final inFlightKey = (identifier, pubkey);
+
     // Check if there's an in-flight request for this nip05
-    if (_inFlightRequests.containsKey(identifier)) {
+    if (_inFlightRequests.containsKey(inFlightKey)) {
       // Wait for the existing request to complete
-      return await _inFlightRequests[identifier]!;
+      return await _inFlightRequests[inFlightKey]!;
     }
 
     // Create a new request and add it to the in-flight map
@@ -62,13 +64,13 @@ class Nip05Usecase {
       pubkey,
       Nip05(pubKey: pubkey, nip05: identifier),
     );
-    _inFlightRequests[identifier] = request;
+    _inFlightRequests[inFlightKey] = request;
 
     try {
       return await request;
     } finally {
       // Remove the request from the in-flight map once it's completed
-      _inFlightRequests.remove(identifier);
+      _inFlightRequests.remove(inFlightKey);
     }
   }
 
