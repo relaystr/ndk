@@ -14,6 +14,18 @@ class WidgetsDemoPage extends StatefulWidget {
 
 class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
   bool _showLogin = false;
+  NMotdController? _motdController;
+
+  void _showMotdPopup() {
+    final loggedPubkey = ndk.accounts.getPublicKey();
+    if (loggedPubkey == null) return;
+    final controller = NMotdController(
+      ndkFlutter: ndkFlutter,
+      authorPubkey: loggedPubkey,
+    );
+    controller.start();
+    setState(() => _motdController = controller);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -285,6 +297,43 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
                   ),
                 ),
               ),
+            ),
+
+            // NMotdPopup / NMotdAdmin Widget Section
+            _buildSection(
+              title: 'NMotdPopup / NMotdAdmin',
+              description:
+                  'NIP-78 kind 30078 "message of the day" popup and editor. '
+                  'Publish a message with the admin below, then press '
+                  '"Show popup" to preview it.',
+              child: isLoggedIn
+                  ? Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (_motdController != null)
+                              NMotdPopup(
+                                controller: _motdController!,
+                                appVersion: packageVersion,
+                              ),
+                            FilledButton.icon(
+                              onPressed: _showMotdPopup,
+                              icon: const Icon(Icons.campaign),
+                              label: const Text('Show popup'),
+                            ),
+                            const SizedBox(height: 12),
+                            NMotdAdmin(
+                              ndkFlutter: ndkFlutter,
+                              authorPubkey: loggedPubkey,
+                              appVersion: packageVersion,
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : _buildPlaceholder('NMotdPopup / NMotdAdmin widget'),
             ),
 
             const SizedBox(height: 32),
