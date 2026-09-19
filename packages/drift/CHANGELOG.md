@@ -1,3 +1,8 @@
+## 0.1.1-dev.17
+
+ - **FIX**: attach a broadcast auth policy to the relay target, not the event.
+ - **FEAT**: let a broadcast say which identity it may be attributed to.
+
 ## 0.1.1-dev.16
 
  - Update a dependency to the latest release.
