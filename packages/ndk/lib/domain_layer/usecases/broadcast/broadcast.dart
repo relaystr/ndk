@@ -49,6 +49,10 @@ class Broadcast {
   /// logged-in account when no registered account matches. \
   /// [throws] [BroadcastAuthUnavailableException], before anything is sent, if [auth] requires
   /// an identity that cannot sign \
+  /// [retryDelivery] whether this broadcast is persisted and retried until every relay acked it.
+  /// `false` sends once and forgets: nothing is enrolled in pending delivery, so no delivery
+  /// record is written and no retry happens, whatever the relays answer. Only specific-relay
+  /// broadcasts are ever enrolled, so this has no effect on a gossip broadcast. \
   /// [returns] a [NdkBroadcastResponse] object containing the result => success per relay
   NdkBroadcastResponse broadcast({
     required Nip01Event nostrEvent,
@@ -58,6 +62,7 @@ class Broadcast {
     Duration? timeout,
     bool? saveToCache,
     RelayAuth? auth,
+    bool retryDelivery = true,
   }) {
     // prep for pending delivery enrollment
     final cleanedSpecificRelays =
@@ -81,7 +86,8 @@ class Broadcast {
     // enroll in pending delivery for specific-relay broadcasts
     final pendingDelivery = _pendingDelivery;
     Future<void>? pendingEnrollment;
-    if (pendingDelivery != null &&
+    if (retryDelivery &&
+        pendingDelivery != null &&
         cleanedSpecificRelays != null &&
         cleanedSpecificRelays.isNotEmpty) {
       pendingEnrollment = pendingDelivery.enqueueSpecificRelayBroadcast(
@@ -182,11 +188,13 @@ class Broadcast {
   /// [customRelays] relay URls to send the deletion request to specific relays \
   /// [reaction] the reaction, default + (like) can be 🤔 (emoji)
   /// [auth] which identity this reaction may be attributed to on relays (NIP-42), see [RelayAuth]
+  /// [retryDelivery] `false` to send once and forget, see [broadcast]
   NdkBroadcastResponse broadcastReaction({
     required String eventId,
     Iterable<String>? customRelays,
     String reaction = "+",
     RelayAuth? auth,
+    bool retryDelivery = true,
   }) {
     final signer = _checkSinger();
     Nip01Event event = Nip01Event(
@@ -202,6 +210,7 @@ class Broadcast {
       nostrEvent: event,
       specificRelays: customRelays,
       auth: auth,
+      retryDelivery: retryDelivery,
     );
   }
 
@@ -221,6 +230,7 @@ class Broadcast {
   /// [customSigner] if you want to use a different signer than the default specified in [NdkConfig]
   /// [reason] reason for deletion (content of the deletion event)
   /// [auth] which identity this deletion may be attributed to on relays (NIP-42), see [RelayAuth]
+  /// [retryDelivery] `false` to send once and forget, see [broadcast]
   NdkBroadcastResponse broadcastDeletion({
     // New API (NIP-09 compliant)
     Nip01Event? event,
@@ -235,6 +245,7 @@ class Broadcast {
     EventSigner? customSigner,
     String reason = "delete",
     RelayAuth? auth,
+    bool retryDelivery = true,
   }) {
     final EventSigner mySigner = _checkSinger(customSigner: customSigner);
 
@@ -339,6 +350,7 @@ class Broadcast {
       specificRelays: customRelays,
       customSigner: mySigner,
       auth: auth,
+      retryDelivery: retryDelivery,
     );
   }
 }
