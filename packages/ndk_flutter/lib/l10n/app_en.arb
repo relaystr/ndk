@@ -1778,5 +1778,57 @@
   "walletDetailCommunityRating": "Community rating",
   "walletDetailCommunityReviews": "Recent community reviews",
   "refreshBalance": "Refresh balance",
-  "balanceRefreshed": "Balance refreshed"
+  "balanceRefreshed": "Balance refreshed",
+  "motdTitle": "Message of the day",
+  "@motdTitle": {
+    "description": "Default title of the message of the day popup, used when the event does not provide its own title"
+  },
+  "motdAdminTitleLabel": "Title (optional)",
+  "@motdAdminTitleLabel": {
+    "description": "Label for the title input in the message of the day admin"
+  },
+  "motdAdminTitleHint": "Leave empty to use the default title",
+  "@motdAdminTitleHint": {
+    "description": "Hint for the title input in the message of the day admin"
+  },
+  "motdOpenLinkButton": "Learn more",
+  "@motdOpenLinkButton": {
+    "description": "Button that opens the link attached to the message of the day"
+  },
+  "motdAdminTitle": "Message of the Day",
+  "@motdAdminTitle": {
+    "description": "Title of the message of the day admin section"
+  },
+  "motdAdminMessageLabel": "Message",
+  "@motdAdminMessageLabel": {
+    "description": "Label for the message input in the message of the day admin"
+  },
+  "motdAdminMessageHint": "Enter the message to display",
+  "@motdAdminMessageHint": {
+    "description": "Hint for the message input in the message of the day admin"
+  },
+  "motdAdminUrlLabel": "Link (optional)",
+  "@motdAdminUrlLabel": {
+    "description": "Label for the link input in the message of the day admin"
+  },
+  "motdAdminVersionLabel": "Minimum version (optional)",
+  "@motdAdminVersionLabel": {
+    "description": "Label for the version input in the message of the day admin"
+  },
+  "motdAdminCreate": "Publish",
+  "@motdAdminCreate": {
+    "description": "Button to create the message of the day"
+  },
+  "motdAdminUpdate": "Update",
+  "@motdAdminUpdate": {
+    "description": "Button to update the message of the day"
+  },
+  "motdAdminLoggedInRequired": "Log in to manage the message of the day.",
+  "@motdAdminLoggedInRequired": {
+    "description": "Hint shown when the user is not logged in"
+  },
+  "motdAdminMustBeAuthor": "You must be logged in as the message author to manage it.",
+  "@motdAdminMustBeAuthor": {
+    "description": "Error shown when the logged-in account is not the message author"
+  }
 }

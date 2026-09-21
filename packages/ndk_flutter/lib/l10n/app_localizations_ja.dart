@@ -1691,4 +1691,45 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get balanceRefreshed => '残高を更新しました';
+
+  @override
+  String get motdTitle => 'Message of the day';
+
+  @override
+  String get motdAdminTitleLabel => 'Title (optional)';
+
+  @override
+  String get motdAdminTitleHint => 'Leave empty to use the default title';
+
+  @override
+  String get motdOpenLinkButton => 'Learn more';
+
+  @override
+  String get motdAdminTitle => 'Message of the Day';
+
+  @override
+  String get motdAdminMessageLabel => 'Message';
+
+  @override
+  String get motdAdminMessageHint => 'Enter the message to display';
+
+  @override
+  String get motdAdminUrlLabel => 'Link (optional)';
+
+  @override
+  String get motdAdminVersionLabel => 'Minimum version (optional)';
+
+  @override
+  String get motdAdminCreate => 'Publish';
+
+  @override
+  String get motdAdminUpdate => 'Update';
+
+  @override
+  String get motdAdminLoggedInRequired =>
+      'Log in to manage the message of the day.';
+
+  @override
+  String get motdAdminMustBeAuthor =>
+      'You must be logged in as the message author to manage it.';
 }

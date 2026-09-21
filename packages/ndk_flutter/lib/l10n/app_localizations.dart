@@ -3292,6 +3292,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Balance refreshed'**
   String get balanceRefreshed;
+
+  /// Default title of the message of the day popup, used when the event does not provide its own title
+  ///
+  /// In en, this message translates to:
+  /// **'Message of the day'**
+  String get motdTitle;
+
+  /// Label for the title input in the message of the day admin
+  ///
+  /// In en, this message translates to:
+  /// **'Title (optional)'**
+  String get motdAdminTitleLabel;
+
+  /// Hint for the title input in the message of the day admin
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty to use the default title'**
+  String get motdAdminTitleHint;
+
+  /// Button that opens the link attached to the message of the day
+  ///
+  /// In en, this message translates to:
+  /// **'Learn more'**
+  String get motdOpenLinkButton;
+
+  /// Title of the message of the day admin section
+  ///
+  /// In en, this message translates to:
+  /// **'Message of the Day'**
+  String get motdAdminTitle;
+
+  /// Label for the message input in the message of the day admin
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get motdAdminMessageLabel;
+
+  /// Hint for the message input in the message of the day admin
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the message to display'**
+  String get motdAdminMessageHint;
+
+  /// Label for the link input in the message of the day admin
+  ///
+  /// In en, this message translates to:
+  /// **'Link (optional)'**
+  String get motdAdminUrlLabel;
+
+  /// Label for the version input in the message of the day admin
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum version (optional)'**
+  String get motdAdminVersionLabel;
+
+  /// Button to create the message of the day
+  ///
+  /// In en, this message translates to:
+  /// **'Publish'**
+  String get motdAdminCreate;
+
+  /// Button to update the message of the day
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get motdAdminUpdate;
+
+  /// Hint shown when the user is not logged in
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to manage the message of the day.'**
+  String get motdAdminLoggedInRequired;
+
+  /// Error shown when the logged-in account is not the message author
+  ///
+  /// In en, this message translates to:
+  /// **'You must be logged in as the message author to manage it.'**
+  String get motdAdminMustBeAuthor;
 }
 
 class _AppLocalizationsDelegate
