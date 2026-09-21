@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789818225179,
+  "lastUpdate": 1789996295603,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -568,6 +568,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 909362,
             "range": "905568-913178",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6f5491953d349f224dfeb98f8982bce1712fe10e",
+          "message": "Merge pull request #836 from relaystr/refactor/rename-relay-auth-to-auth-policy\n\nrefactor: rename RelayAuth to AuthPolicy",
+          "timestamp": "2026-09-21T15:09:41+02:00",
+          "tree_id": "3e364b67b4fea913cdc105f73868d65e5acc8de3",
+          "url": "https://github.com/relaystr/ndk/commit/6f5491953d349f224dfeb98f8982bce1712fe10e"
+        },
+        "date": 1789996292583,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 28189.6,
+            "range": "27578-30310",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 826692,
+            "range": "808376-845168",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
