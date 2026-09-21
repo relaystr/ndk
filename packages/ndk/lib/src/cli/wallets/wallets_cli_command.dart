@@ -733,7 +733,9 @@ class WalletsCliCommand extends CliCommand {
         'Pass --seed <mnemonic> or set NDK_CASHU_SEED env var.',
       );
     }
-    ndk.cashu.setCashuSeedPhrase(CashuUserSeedphrase(seedPhrase: seed.trim()));
+    await ndk.cashu.setCashuSeedPhrase(
+      CashuUserSeedphrase(seedPhrase: seed.trim()),
+    );
   }
 
   _CashuOpArgs _parseCashuOpArgs(

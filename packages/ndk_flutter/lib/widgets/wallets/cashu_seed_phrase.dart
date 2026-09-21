@@ -83,7 +83,9 @@ class _CashuSeedPhraseDialogState extends State<_CashuSeedPhraseDialog> {
 
   Future<void> _save() async {
     final l10n = AppLocalizations.of(context)!;
-    final phrase = _seedController.text.trim();
+    // Normalize whitespace once (a phrase pasted across several lines must
+    // validate and persist the same string that is applied to the CashuSeed).
+    final phrase = _seedController.text.trim().split(RegExp(r'\s+')).join(' ');
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     final validationError = _validateSeedPhrase(phrase, l10n);
@@ -98,7 +100,9 @@ class _CashuSeedPhraseDialogState extends State<_CashuSeedPhraseDialog> {
     });
     try {
       // Apply on the running instance, then persist for future launches.
-      widget.ndkFlutter.ndk.cashu.setCashuSeedPhrase(
+      // Awaiting the actual seed derivation means a failure surfaces here
+      // instead of as an unhandled async error.
+      await widget.ndkFlutter.ndk.cashu.setCashuSeedPhrase(
         CashuUserSeedphrase(seedPhrase: phrase),
       );
       await widget.seedStore.write(phrase);

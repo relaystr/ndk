@@ -153,9 +153,10 @@ class Cashu {
 
   /// set cashu user seed phrase, required for using cashu features \
   /// ideally use the NdkConfig to set the seed phrase on initialization \
-  /// you can use CashuSeed.generateSeedPhrase() to generate a new seed phrase
-  void setCashuSeedPhrase(CashuUserSeedphrase userSeedPhrase) {
-    _cashuSeed.setSeedPhrase(seedPhrase: userSeedPhrase.seedPhrase);
+  /// you can use CashuSeed.generateSeedPhrase() to generate a new seed phrase \
+  /// throws if the seed phrase is invalid
+  Future<void> setCashuSeedPhrase(CashuUserSeedphrase userSeedPhrase) async {
+    await _cashuSeed.setSeedPhrase(seedPhrase: userSeedPhrase.seedPhrase);
     _scheduleStartupResume();
   }
 
