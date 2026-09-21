@@ -38,15 +38,15 @@ on [requests](/usecases/requests.md#relay-authentication-nip-42):
 ```dart
 final myBroadcast = ndk.broadcast.broadcast(
   nostrEvent: report,
-  auth: const RelayAuth.never(),
+  auth: const AuthPolicy.never(),
 );
 ```
 
 | policy | connection | what a relay learns |
 | --- | --- | --- |
-| `RelayAuth.never()` | anonymous, always | nothing. A relay that refuses the event without an identity simply does not accept it |
-| `RelayAuth.allow(a)` | anonymous, moves to one bound to `a` once the relay refuses | who you are, but only after that relay asked |
-| `RelayAuth.require(a)` | bound to `a` from the start | who you are, as soon as it sends a challenge |
+| `AuthPolicy.never()` | anonymous, always | nothing. A relay that refuses the event without an identity simply does not accept it |
+| `AuthPolicy.allow(a)` | anonymous, moves to one bound to `a` once the relay refuses | who you are, but only after that relay asked |
+| `AuthPolicy.require(a)` | bound to `a` from the start | who you are, as soon as it sends a challenge |
 
 Without `auth`, a refused event authenticates as its author when a registered
 account matches, and as the currently logged-in account otherwise. The relay

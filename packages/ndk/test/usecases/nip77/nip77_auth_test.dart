@@ -64,7 +64,7 @@ void main() async {
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
-        auth: RelayAuth.require(signableAccount(key1)),
+        auth: AuthPolicy.require(signableAccount(key1)),
         timeout: Duration(seconds: 10),
       );
 
@@ -94,7 +94,7 @@ void main() async {
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
-        auth: RelayAuth.allow(signableAccount(key1)),
+        auth: AuthPolicy.allow(signableAccount(key1)),
         timeout: Duration(seconds: 10),
       );
 
@@ -122,7 +122,7 @@ void main() async {
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
-        auth: RelayAuth.allow(signableAccount(key1)),
+        auth: AuthPolicy.allow(signableAccount(key1)),
         timeout: Duration(seconds: 10),
       );
 
@@ -147,7 +147,7 @@ void main() async {
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
-        auth: const RelayAuth.never(),
+        auth: const AuthPolicy.never(),
         timeout: Duration(seconds: 10),
       );
 
@@ -202,7 +202,7 @@ void main() async {
         () => ndk.nip77.reconcile(
           relayUrl: relay.url,
           filter: notesOf(key1),
-          auth: RelayAuth.require(watchOnly),
+          auth: AuthPolicy.require(watchOnly),
           timeout: Duration(seconds: 10),
         ),
         throwsA(isA<Nip77AuthUnavailableException>()),
@@ -231,7 +231,7 @@ void main() async {
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
-        auth: const RelayAuth.never(),
+        auth: const AuthPolicy.never(),
         timeout: Duration(seconds: 10),
       );
 
@@ -265,7 +265,7 @@ void main() async {
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
-        auth: RelayAuth.require(slow),
+        auth: AuthPolicy.require(slow),
         timeout: Duration(seconds: 2),
       );
 
@@ -294,7 +294,7 @@ void main() async {
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
-        auth: RelayAuth.require(
+        auth: AuthPolicy.require(
           Account(
             pubkey: key1.publicKey,
             type: AccountType.privateKey,
@@ -330,7 +330,7 @@ void main() async {
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
-        auth: RelayAuth.allow(
+        auth: AuthPolicy.allow(
           Account(
             pubkey: key1.publicKey,
             type: AccountType.privateKey,

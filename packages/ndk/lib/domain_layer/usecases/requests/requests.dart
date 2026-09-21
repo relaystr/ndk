@@ -13,7 +13,7 @@ import '../../entities/filter.dart';
 import '../../entities/global_state.dart';
 import '../../entities/ndk_request.dart';
 import '../../entities/nip_01_event.dart';
-import '../../entities/relay_auth.dart';
+import '../../entities/auth_policy.dart';
 import '../../entities/relay_connectivity.dart';
 import '../../entities/relay_set.dart';
 import '../../entities/relay_request_outcome.dart';
@@ -179,7 +179,7 @@ class Requests {
   /// [desiredCoverage] The number of relays per pubkey to query, default: 2 \
   /// [timeoutCallbackUserFacing] A user facing timeout callback, this callback should be given to the lib user \
   /// [timeoutCallback] An internal timeout callback, this callback should be used for internal error handling \
-  /// [auth] which identity this query may be attributed to on relays (NIP-42), see [RelayAuth] \
+  /// [auth] which identity this query may be attributed to on relays (NIP-42), see [AuthPolicy] \
   /// [authenticateAs] @deprecated use [auth] instead; [auth] wins when both are given \
   /// [paginate] If true, automatically paginates backwards through time to fetch all events in the range \
   ///
@@ -199,9 +199,9 @@ class Requests {
     Function()? timeoutCallback,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
-    RelayAuth? auth,
+    AuthPolicy? auth,
     @Deprecated(
-      'Use auth: RelayAuth.allow(account) instead. authenticateAs will be removed in a future version.',
+      'Use auth: AuthPolicy.allow(account) instead. authenticateAs will be removed in a future version.',
     )
     List<Account>? authenticateAs,
     bool paginate = false,
@@ -211,7 +211,7 @@ class Requests {
     }
     final effectiveFilters = filter != null ? [filter] : filters!;
     final effectiveAuth =
-        auth ?? RelayAuth.fromDeprecatedAccounts(authenticateAs);
+        auth ?? AuthPolicy.fromDeprecatedAccounts(authenticateAs);
     timeout ??= _defaultQueryTimeout;
 
     if (paginate) {
@@ -260,7 +260,7 @@ class Requests {
   /// [cacheWrite] Whether to write results to cache \
   /// [explicitRelays] A list of specific relays to use, bypassing inbox/outbox \
   /// [desiredCoverage] The number of relays per pubkey to subscribe to, default: 2 \
-  /// [auth] which identity this subscription may be attributed to on relays (NIP-42), see [RelayAuth] \
+  /// [auth] which identity this subscription may be attributed to on relays (NIP-42), see [AuthPolicy] \
   /// [authenticateAs] @deprecated use [auth] instead; [auth] wins when both are given \
   ///
   /// Returns an [NdkResponse] containing the subscription results as stream
@@ -277,9 +277,9 @@ class Requests {
     bool cacheWrite = false,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
-    RelayAuth? auth,
+    AuthPolicy? auth,
     @Deprecated(
-      'Use auth: RelayAuth.allow(account) instead. authenticateAs will be removed in a future version.',
+      'Use auth: AuthPolicy.allow(account) instead. authenticateAs will be removed in a future version.',
     )
     List<Account>? authenticateAs,
   }) {
@@ -288,7 +288,7 @@ class Requests {
     }
     final effectiveFilters = filter != null ? [filter] : filters!;
     final effectiveAuth =
-        auth ?? RelayAuth.fromDeprecatedAccounts(authenticateAs);
+        auth ?? AuthPolicy.fromDeprecatedAccounts(authenticateAs);
     return requestNostrEvent(
       NdkRequest.subscription(
         id ?? "$name-${Helpers.getRandomString(10)}",
@@ -456,7 +456,7 @@ class Requests {
       // connection to go out on, and its timeout would only delay the same
       // empty answer. The cache already had its say above
       final auth = state.request.auth;
-      if (auth is RelayAuthRequire && !auth.account.signer.canSign()) {
+      if (auth is AuthPolicyRequire && !auth.account.signer.canSign()) {
         Logger.log.w(
           () =>
               "${state.id} requires ${auth.account.pubkey}, which cannot sign",
@@ -496,7 +496,7 @@ class Requests {
     Function()? timeoutCallback,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
-    RelayAuth? auth,
+    AuthPolicy? auth,
   }) {
     final requestId = '$name-paginated-${Helpers.getRandomString(10)}';
     final aggregatedController = ReplaySubject<Nip01Event>();

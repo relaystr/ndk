@@ -19,7 +19,7 @@ import '../entities/global_state.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/nostr_message_raw.dart';
 import '../entities/relay.dart';
-import '../entities/relay_auth.dart';
+import '../entities/auth_policy.dart';
 import '../entities/relay_connection_key.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_info.dart';
@@ -1032,7 +1032,7 @@ class RelayManager<T> {
     ConnectionSource connectionSource = ConnectionSource.explicit,
   }) async {
     final auth = state.request.auth;
-    if (auth is! RelayAuthRequire) {
+    if (auth is! AuthPolicyRequire) {
       return picked;
     }
     if (!auth.account.signer.canSign()) {
@@ -1057,11 +1057,11 @@ class RelayManager<T> {
   /// whether or not anything was sent on it.
   Future<RelayConnectivity?> connectionForBroadcast(
     String url,
-    RelayAuth? auth, {
+    AuthPolicy? auth, {
     ConnectionSource connectionSource = ConnectionSource.broadcastSpecific,
     int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT,
   }) async {
-    if (auth is RelayAuthRequire) {
+    if (auth is AuthPolicyRequire) {
       if (!auth.account.signer.canSign()) {
         Logger.log.w(
           () => "Broadcast requires ${auth.account.pubkey}, which cannot sign",
@@ -1092,7 +1092,7 @@ class RelayManager<T> {
 
   /// The account [key] authenticates as. A registered account wins, because
   /// [Accounts] owns its signer's lifetime; otherwise it is the one the caller
-  /// handed to [RelayAuth], which never had to be registered. Both carry
+  /// handed to [AuthPolicy], which never had to be registered. Both carry
   /// [RelayConnectionKey.pubkey], so this only picks a signer, never an
   /// identity.
   Account? _accountFor(RelayConnectionKey key) =>
@@ -1543,12 +1543,12 @@ class RelayManager<T> {
       accountForAuth(state.request.auth);
 
   /// Account [auth] authenticates as, null when it must stay unattributable.
-  Account? accountForAuth(RelayAuth? auth) {
+  Account? accountForAuth(AuthPolicy? auth) {
     switch (auth) {
-      case RelayAuthNever():
+      case AuthPolicyNever():
         return null;
-      case RelayAuthAllow(:final account):
-      case RelayAuthRequire(:final account):
+      case AuthPolicyAllow(:final account):
+      case AuthPolicyRequire(:final account):
         return account.signer.canSign() ? account : null;
       case null:
         // a request that says nothing still authenticates as the logged

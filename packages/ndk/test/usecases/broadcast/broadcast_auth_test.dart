@@ -69,7 +69,7 @@ void broadcastAuthTests(NdkEngine engine) {
           .broadcast(
             nostrEvent: noteFrom(key, "never"),
             specificRelays: [relay.url],
-            auth: const RelayAuth.never(),
+            auth: const AuthPolicy.never(),
           )
           .broadcastDoneFuture;
 
@@ -96,7 +96,7 @@ void broadcastAuthTests(NdkEngine engine) {
             nostrEvent: event,
             specificRelays: [relay.url],
             customSigner: account.signer,
-            auth: RelayAuth.allow(account),
+            auth: AuthPolicy.allow(account),
           )
           .broadcastDoneFuture;
 
@@ -127,7 +127,7 @@ void broadcastAuthTests(NdkEngine engine) {
             nostrEvent: event,
             specificRelays: [relay.url],
             customSigner: account.signer,
-            auth: RelayAuth.allow(account),
+            auth: AuthPolicy.allow(account),
           )
           .broadcastDoneFuture;
 
@@ -154,7 +154,7 @@ void broadcastAuthTests(NdkEngine engine) {
             nostrEvent: event,
             specificRelays: [relay.url],
             customSigner: account.signer,
-            auth: RelayAuth.require(account),
+            auth: AuthPolicy.require(account),
           )
           .broadcastDoneFuture;
 
@@ -191,7 +191,7 @@ void broadcastAuthTests(NdkEngine engine) {
             nostrEvent: noteFrom(key, "require alone"),
             specificRelays: [target.url],
             customSigner: account.signer,
-            auth: RelayAuth.require(account),
+            auth: AuthPolicy.require(account),
           )
           .broadcastDoneFuture;
 
@@ -227,7 +227,7 @@ void broadcastAuthTests(NdkEngine engine) {
             nostrEvent: event,
             specificRelays: [relay.url],
             customSigner: account.signer,
-            auth: RelayAuth.require(account),
+            auth: AuthPolicy.require(account),
           )
           .broadcastDoneFuture;
 
@@ -260,7 +260,7 @@ void broadcastAuthTests(NdkEngine engine) {
             nostrEvent: event,
             specificRelays: [relay.url],
             customSigner: handedOver.signer,
-            auth: RelayAuth.require(handedOver),
+            auth: AuthPolicy.require(handedOver),
           )
           .broadcastDoneFuture;
 
@@ -293,7 +293,7 @@ void broadcastAuthTests(NdkEngine engine) {
           nostrEvent: noteFrom(key, "impossible"),
           specificRelays: [relay.url],
           customSigner: signableAccount(key).signer,
-          auth: RelayAuth.require(watchOnly),
+          auth: AuthPolicy.require(watchOnly),
         ),
         throwsA(isA<BroadcastAuthUnavailableException>()),
       );

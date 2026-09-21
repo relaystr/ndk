@@ -311,7 +311,7 @@ void nip42Tests(NdkEngine engine) {
           kinds: [Nip01Event.kTextNodeKind],
           authors: [key1.publicKey],
         ),
-        auth: RelayAuth.allow(account1),
+        auth: AuthPolicy.allow(account1),
         authenticateAs: [account2],
       );
 
@@ -648,7 +648,7 @@ void nip42Tests(NdkEngine engine) {
     });
   });
 
-  group('NIP-42 RelayAuth [${engine.name}]', () {
+  group('NIP-42 AuthPolicy [${engine.name}]', () {
     final key1 = Bip340.generatePrivateKey();
 
     Nip01Event textNote(KeyPair key, String content) {
@@ -708,7 +708,7 @@ void nip42Tests(NdkEngine engine) {
 
       final response = ndk.requests.query(
         filter: notesOf(key1),
-        auth: const RelayAuth.never(),
+        auth: const AuthPolicy.never(),
       );
 
       expect(await response.future, isEmpty);
@@ -746,7 +746,7 @@ void nip42Tests(NdkEngine engine) {
 
       final response = ndk.requests.query(
         filter: notesOf(key1),
-        auth: RelayAuth.allow(account1),
+        auth: AuthPolicy.allow(account1),
       );
 
       expect(await response.future, isNotEmpty);
@@ -785,7 +785,7 @@ void nip42Tests(NdkEngine engine) {
 
       final response = ndk.requests.query(
         filter: notesOf(key1),
-        auth: RelayAuth.allow(account1),
+        auth: AuthPolicy.allow(account1),
       );
 
       expect(await response.future, isNotEmpty);
@@ -828,7 +828,7 @@ void nip42Tests(NdkEngine engine) {
           requestId,
           filters: [notesOf(key1)],
           timeoutDuration: Duration(seconds: 5),
-          auth: RelayAuth.require(account1),
+          auth: AuthPolicy.require(account1),
         ),
       );
 
@@ -872,7 +872,7 @@ void nip42Tests(NdkEngine engine) {
           requestId,
           filters: [notesOf(key1)],
           timeoutDuration: Duration(seconds: 5),
-          auth: RelayAuth.require(account1),
+          auth: AuthPolicy.require(account1),
         ),
       );
 
@@ -922,7 +922,7 @@ void nip42Tests(NdkEngine engine) {
       final response = ndk.requests.query(
         filter: notesOf(key1),
         explicitRelays: [relay1.url],
-        auth: RelayAuth.require(account1),
+        auth: AuthPolicy.require(account1),
       );
 
       expect(await response.future, isNotEmpty);
@@ -963,7 +963,7 @@ void nip42Tests(NdkEngine engine) {
 
       final response = ndk.requests.query(
         filter: notesOf(key1),
-        auth: RelayAuth.require(signableAccount(key1)),
+        auth: AuthPolicy.require(signableAccount(key1)),
       );
 
       expect(await response.future, isNotEmpty);
@@ -995,7 +995,7 @@ void nip42Tests(NdkEngine engine) {
 
       final response = ndk.requests.query(
         filter: notesOf(key1),
-        auth: RelayAuth.allow(signableAccount(key1)),
+        auth: AuthPolicy.allow(signableAccount(key1)),
       );
 
       expect(await response.future, isNotEmpty);
@@ -1071,7 +1071,7 @@ void nip42Tests(NdkEngine engine) {
         id: subId,
         filter: notesOf(key1),
         explicitRelays: [relay1.url],
-        auth: RelayAuth.require(signableAccount(key1)),
+        auth: AuthPolicy.require(signableAccount(key1)),
       );
 
       // the strategy is still opening the bound connection, and what it
@@ -1134,7 +1134,7 @@ void nip42Tests(NdkEngine engine) {
           .query(
             filter: notesOf(key1),
             explicitRelays: [relayA.url],
-            auth: RelayAuth.require(account1),
+            auth: AuthPolicy.require(account1),
             cacheRead: false,
             cacheWrite: false,
           )
@@ -1144,7 +1144,7 @@ void nip42Tests(NdkEngine engine) {
           .query(
             filter: notesOf(key1),
             explicitRelays: [relayA.url, relayB.url],
-            auth: RelayAuth.require(account1),
+            auth: AuthPolicy.require(account1),
             cacheRead: false,
             cacheWrite: false,
           )
@@ -1198,7 +1198,7 @@ void nip42Tests(NdkEngine engine) {
           .query(
             filter: notesOf(key1),
             explicitRelays: [relayAuth.url, relayPlain.url],
-            auth: RelayAuth.allow(signableAccount(key1)),
+            auth: AuthPolicy.allow(signableAccount(key1)),
             cacheRead: false,
             cacheWrite: false,
           )
@@ -1238,7 +1238,7 @@ void nip42Tests(NdkEngine engine) {
       final stopwatch = Stopwatch()..start();
       final response = ndk.requests.query(
         filter: notesOf(key1),
-        auth: RelayAuth.require(watchOnly),
+        auth: AuthPolicy.require(watchOnly),
         timeout: Duration(seconds: 10),
         timeoutCallback: () => timedOut = true,
       );

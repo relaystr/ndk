@@ -21,7 +21,7 @@ class _Nip77Internal {
     required Filter filter,
     Duration timeout = Nip77.defaultTimeout,
     List<String>? localIds,
-    RelayAuth? auth,
+    AuthPolicy? auth,
   }) {
     final cleanUrl = cleanRelayUrl(relayUrl);
     if (cleanUrl == null) {
@@ -31,7 +31,7 @@ class _Nip77Internal {
     // nothing can carry this reconciliation, and nothing is sent. Raised like
     // the invalid url above rather than through a future the caller has had no
     // chance to listen to yet
-    final connectionKey = RelayAuth.keyFor(cleanUrl, auth);
+    final connectionKey = RelayConnectionKey.forAuth(cleanUrl, auth);
     if (connectionKey == null) {
       throw Nip77AuthUnavailableException(cleanUrl, auth!.account!.pubkey);
     }

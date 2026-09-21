@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 
 import 'nip_01_event.dart';
-import 'relay_auth.dart';
+import 'auth_policy.dart';
 
 /// hols information about a individual relay broadcast response \
 /// e.g. \
@@ -49,7 +49,7 @@ class BroadcastState {
   Nip01Event? event;
 
   /// which identity this broadcast may be attributed to on the relays (NIP-42)
-  final RelayAuth? auth;
+  final AuthPolicy? auth;
 
   /// stream controller for state updates
   final BehaviorSubject<BroadcastState> _stateUpdatesController =
