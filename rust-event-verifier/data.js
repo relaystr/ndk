@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789996295603,
+  "lastUpdate": 1790015300207,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -606,6 +606,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 826692,
             "range": "808376-845168",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "fmar",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "frnandu@atomicmail.io",
+            "name": "fmar",
+            "username": "frnandu"
+          },
+          "distinct": true,
+          "id": "0c09fbb84f44909b80839147d51d1b5520226e36",
+          "message": "cleanup",
+          "timestamp": "2026-09-21T20:26:26+02:00",
+          "tree_id": "a5c62200a19945bdbd97b961a0e671fa09986127",
+          "url": "https://github.com/relaystr/ndk/commit/0c09fbb84f44909b80839147d51d1b5520226e36"
+        },
+        "date": 1790015297456,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 45406.6,
+            "range": "45262-48318",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1624556,
+            "range": "1614206-1699672",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
