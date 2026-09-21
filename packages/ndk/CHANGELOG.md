@@ -1,3 +1,7 @@
+## 0.10.0-dev.6
+
+ - **REFACTOR**: rename RelayAuth to AuthPolicy.
+
 ## 0.10.0-dev.5
 
  - **PERF**: cache master key for cashu quote.

@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-21
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0-dev.6`](#ndk---v0100-dev6)
+ - [`ndk_drift` - `v0.1.1-dev.18`](#ndk_drift---v011-dev18)
+ - [`ndk_objectbox` - `v0.2.12-dev.15`](#ndk_objectbox---v0212-dev15)
+ - [`ndk_flutter` - `v0.10.0-dev.7`](#ndk_flutter---v0100-dev7)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.15`
+ - `ndk_flutter` - `v0.10.0-dev.7`
+
+---
+
+#### `ndk` - `v0.10.0-dev.6`
+
+ - **REFACTOR**: rename RelayAuth to AuthPolicy.
+
+#### `ndk_drift` - `v0.1.1-dev.18`
+
+ - **REFACTOR**: rename RelayAuth to AuthPolicy.
+
+
 ## 2026-09-19
 
 ### Changes
