@@ -36,7 +36,7 @@ void main() {
     test('decrypts the Amethyst-compatible ciphertext plus tag framing',
         () async {
       final ciphertext = _hex(
-        'c8334e228b18508f2542ce4486973164c6ec05bd5e6f60a72916fcf61cf327dcae751877e35ee4',
+        'c41e7140a9386b825a3cbe0cc1c97564dee60420a11ff8421c2a1d983bc1a6e1943f8d',
       );
       final metadata = Nip17FileMetadata(
         url: Uri.parse('https://blossom.example/vector.bin'),
@@ -46,9 +46,9 @@ void main() {
             '000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f',
         decryptionNonce: '101112131415161718191a1b1c1d1e1f',
         encryptedSha256:
-            '83af07e6b24e6a15833ef85e34b598ee66535917f2ba1ed190420f9853b62f5f',
+            '45e51ed111d6ec21bdbd2055bca2c56181fa3459411e245b579e2bfa31e1bedc',
         originalSha256:
-            '09bc44e4cd50386d8f2028b2c8eeefeaefdd98efa0c716cdefcdfb0f512ea468',
+            'e8e08d9908a96172d6a32060714c3a75865acc0078c9087db55cb6cd3b9ed457',
         size: ciphertext.length,
       );
 
@@ -56,7 +56,7 @@ void main() {
         ciphertext: ciphertext,
         metadata: metadata,
       );
-      expect(utf8.decode(plaintext), 'BitBlik NIP-17 evidence');
+      expect(utf8.decode(plaintext), 'NDK NIP-17 evidence');
     });
 
     test('rejects an encrypted hash mismatch before decryption', () async {
