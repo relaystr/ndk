@@ -44,7 +44,7 @@ class Broadcast {
   /// [considerDonePercent] the percentage (0.0, 1.0) of relays that need to respond with "OK" for the broadcast to be considered done (overrides the default value) \
   /// [timeout] the timeout for the broadcast (overrides the default timeout) \
   /// [saveToCache] whether to save the event to cache (overrides the default value from config) \
-  /// [auth] which identity this broadcast may be attributed to on relays (NIP-42), see [RelayAuth].
+  /// [auth] which identity this broadcast may be attributed to on relays (NIP-42), see [AuthPolicy].
   /// Without it, a relay answering `auth-required` is answered as the event author, or as the
   /// logged-in account when no registered account matches. \
   /// [throws] [BroadcastAuthUnavailableException], before anything is sent, if [auth] requires
@@ -61,7 +61,7 @@ class Broadcast {
     double? considerDonePercent,
     Duration? timeout,
     bool? saveToCache,
-    RelayAuth? auth,
+    AuthPolicy? auth,
     bool retryDelivery = true,
   }) {
     // prep for pending delivery enrollment
@@ -187,13 +187,13 @@ class Broadcast {
   /// [eventId] the event you want to react to \
   /// [customRelays] relay URls to send the deletion request to specific relays \
   /// [reaction] the reaction, default + (like) can be 🤔 (emoji)
-  /// [auth] which identity this reaction may be attributed to on relays (NIP-42), see [RelayAuth]
+  /// [auth] which identity this reaction may be attributed to on relays (NIP-42), see [AuthPolicy]
   /// [retryDelivery] `false` to send once and forget, see [broadcast]
   NdkBroadcastResponse broadcastReaction({
     required String eventId,
     Iterable<String>? customRelays,
     String reaction = "+",
-    RelayAuth? auth,
+    AuthPolicy? auth,
     bool retryDelivery = true,
   }) {
     final signer = _checkSinger();
@@ -229,7 +229,7 @@ class Broadcast {
   /// [customRelays] relay URLs to send the deletion request to specific relays
   /// [customSigner] if you want to use a different signer than the default specified in [NdkConfig]
   /// [reason] reason for deletion (content of the deletion event)
-  /// [auth] which identity this deletion may be attributed to on relays (NIP-42), see [RelayAuth]
+  /// [auth] which identity this deletion may be attributed to on relays (NIP-42), see [AuthPolicy]
   /// [retryDelivery] `false` to send once and forget, see [broadcast]
   NdkBroadcastResponse broadcastDeletion({
     // New API (NIP-09 compliant)
@@ -244,7 +244,7 @@ class Broadcast {
     Iterable<String>? customRelays,
     EventSigner? customSigner,
     String reason = "delete",
-    RelayAuth? auth,
+    AuthPolicy? auth,
     bool retryDelivery = true,
   }) {
     final EventSigner mySigner = _checkSinger(customSigner: customSigner);

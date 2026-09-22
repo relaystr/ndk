@@ -154,7 +154,7 @@ void main() async {
         await Future.delayed(Duration(milliseconds: 1));
         final anonymous = ndk.requests.query(
           filter: filter,
-          auth: const RelayAuth.never(),
+          auth: const AuthPolicy.never(),
           cacheWrite: false,
           desiredCoverage: 1,
         );

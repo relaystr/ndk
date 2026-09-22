@@ -2,7 +2,7 @@ import '../../../../shared/logger/logger.dart';
 import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../entities/connection_source.dart';
 import '../../../entities/nip_01_event.dart';
-import '../../../entities/relay_auth.dart';
+import '../../../entities/auth_policy.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../../repositories/cache_manager.dart';
 import '../../relay_manager.dart';
@@ -16,7 +16,7 @@ class RelayJitBroadcastOutboxStrategy {
     required CacheManager cacheManager,
     required RelayManager relayManager,
     required List<String> bootstrapRelays,
-    RelayAuth? auth,
+    AuthPolicy? auth,
   }) async {
     final nip65Data = await UserRelayLists.getUserRelayListCacheLatestSingle(
       pubkey: eventToPublish.pubKey,

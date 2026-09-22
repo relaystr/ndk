@@ -27,7 +27,7 @@ class Nip77NotSupportedException implements Exception {
 
 /// Exception thrown when no connection can carry the reconciliation, because
 /// the identity it requires cannot sign. Falling back to the anonymous
-/// connection is exactly what [RelayAuth.require] ruled out.
+/// connection is exactly what [AuthPolicy.require] ruled out.
 class Nip77AuthUnavailableException implements Exception {
   /// relay the reconciliation was meant for
   final String relayUrl;
@@ -159,7 +159,7 @@ class Nip77 {
   /// [localIds] - Optional pre-computed list of local event IDs to use.
   ///              If not provided, will query the cache using the filter.
   /// [auth] - which identity this reconciliation may be attributed to, see
-  ///          [RelayAuth]. Without it, a relay that refuses the negotiation
+  ///          [AuthPolicy]. Without it, a relay that refuses the negotiation
   ///          without an identity is answered as the logged-in account.
   ///
   /// Returns a [Nip77Response] with streams for real-time updates and
@@ -177,7 +177,7 @@ class Nip77 {
     required Filter filter,
     Duration timeout = defaultTimeout,
     List<String>? localIds,
-    RelayAuth? auth,
+    AuthPolicy? auth,
   }) {
     return _internal.reconcile(
       relayUrl: relayUrl,
