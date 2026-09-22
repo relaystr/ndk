@@ -20,19 +20,93 @@ If no servers are specified the default user server list (kind `10063`) is used 
 The auth events get automatically signed and are valid for:
 :::code source="../../packages/ndk/lib/config/blossom_config.dart" language="dart" range="4-4" title="" :::
 
+## Server authentication (BUD-01)
+
+Some servers only serve a private blob, or only accept an upload, from a client
+that signed a kind `24242` event. The `auth` parameter says which identity a
+server may learn, as on
+[requests](/usecases/requests.md#relay-authentication-nip-42) and
+[broadcasts](/usecases/broadcast.md#relay-authentication-nip-42):
+
+```dart
+final response = await ndk.blossom.getBlob(
+  sha256: hash,
+  serverUrls: ['https://cdn.example.com'],
+  auth: AuthPolicy.allow(account),
+);
+```
+
+| policy | what goes out | what a server learns |
+| --- | --- | --- |
+| `AuthPolicy.never()` | no authorization, ever | nothing. A server that refuses without one simply does not serve the request |
+| `AuthPolicy.allow(a)` | nothing at first, then the signed event once a server answered 401 | who you are, but only after that server asked |
+| `AuthPolicy.require(a)` | the signed event on the first request | who you are, as soon as you ask it for anything |
+
+The account does not have to be one NDK knows. `allow` costs a refused HTTP
+round trip, and for an upload a body sent twice, so prefer `require` when the
+server is known to ask. If `require` names an account that cannot sign, nothing
+is sent and the call throws `BlossomAuthUnavailableException`.
+
+Without `auth`, reads stay anonymous and everything else authorises as the
+logged-in account, or as a throwaway key when none is. This default is expected
+to change.
+
+`useAuth` and `customSigner` are deprecated, and `auth` wins over both:
+
+| old | translated to |
+| --- | --- |
+| `useAuth: false` | `const AuthPolicy.never()` |
+| `useAuth: true` | `AuthPolicy.require(<logged-in account>)` |
+| `customSigner: s` | `AuthPolicy.require(<account for s>)` |
+
 ### methods - Blossom
 
 #### uploadBlob
 
 upload a blob, if serverMediaOptimisation is set to `true` the `/media` endpoint is used.
 
-:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="46-58" title="" :::
+```dart
+Future<List<BlobUploadResult>> uploadBlob({
+  required Uint8List data,
+  List<String>? serverUrls,
+  String? contentType,
+  UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
+  bool serverMediaOptimisation = false,
+  AuthPolicy? auth,
+  String? pubkeyToFetchUserServerList,
+  String? precomputedSha256,
+})
+```
+
+#### uploadBlobFromFile
+
+Reads the file in chunks, so a large file is never held whole in memory.
+
+```dart
+Stream<BlobUploadProgress> uploadBlobFromFile({
+  required String filePath,
+  List<String>? serverUrls,
+  String? contentType,
+  UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
+  bool serverMediaOptimisation = false,
+  AuthPolicy? auth,
+  String? pubkeyToFetchUserServerList,
+  String? precomputedSha256,
+})
+```
 
 #### getBlob
 
 Download the blob and use fallback if the blob is not found or the server is offline.
 
-:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="97-105" title="" :::
+```dart
+Future<BlobResponse> getBlob({
+  required String sha256,
+  AuthPolicy? auth,
+  List<String>? serverUrls,
+  String? pubkeyToFetchUserServerList,
+})
+```
 
 #### checkBlob
 
@@ -40,29 +114,86 @@ Download the blob and use fallback if the blob is not found or the server is off
 if you have a video player that uses a url you can use check to get a valid url first. Example can be found in NDK demo app
 !!!
 
-:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="148-159" title="" :::
+```dart
+Future<String> checkBlob({
+  required String sha256,
+  AuthPolicy? auth,
+  List<String>? serverUrls,
+  String? pubkeyToFetchUserServerList,
+})
+```
 
 #### getBlobStream
 
 Similar to `getBlob`, it streams the data, which is helpful for video files.
 
-:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="202-211" title="" :::
+```dart
+Future<Stream<BlobResponse>> getBlobStream({
+  required String sha256,
+  AuthPolicy? auth,
+  List<String>? serverUrls,
+  String? pubkeyToFetchUserServerList,
+  int chunkSize = 1024 * 1024,
+})
+```
 
 #### listBlobs
 
-:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="254-264" title="" :::
+```dart
+Future<List<BlobDescriptor>> listBlobs({
+  required String pubkey,
+  List<String>? serverUrls,
+  AuthPolicy? auth,
+  DateTime? since,
+  DateTime? until,
+})
+```
 
 #### deleteBlob
 
-:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="301-308" title="" :::
+```dart
+Future<List<BlobDeleteResult>> deleteBlob({
+  required String sha256,
+  List<String>? serverUrls,
+  AuthPolicy? auth,
+  String? pubkeyToFetchUserServerList,
+})
+```
+
+#### mirrorToServers
+
+Copies a blob that already lives somewhere else onto other servers, without
+downloading it first.
+
+```dart
+Future<List<BlobUploadResult>> mirrorToServers({
+  required Uri blossomUrl,
+  required List<String> targetServerUrls,
+  AuthPolicy? auth,
+})
+```
 
 #### directDownload
 
-:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="341-344" title="" :::
+```dart
+Future<BlobResponse> directDownload({required Uri url})
+```
 
 #### report
 
-:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="348-362" title="" :::
+The report is a signed event in the request body, so `never()` signs it with a
+throwaway key rather than sending nothing.
+
+```dart
+Future<int> report({
+  required String sha256,
+  required String eventId,
+  required String reportType,
+  required String reportMsg,
+  required String serverUrl,
+  AuthPolicy? auth,
+})
+```
 
 ### methods - BlossomUserServerList
 
@@ -74,4 +205,4 @@ To get and set the user server list e.g. on settings page, you can use `BlossomU
 
 #### publishUserServerList
 
-:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom_user_server_list.dart" language="dart" range="57-61" title="" :::
+:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom_user_server_list.dart" language="dart" range="54-58" title="" :::
