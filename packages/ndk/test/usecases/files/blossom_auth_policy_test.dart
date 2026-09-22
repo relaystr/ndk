@@ -193,6 +193,63 @@ void main() {
     });
   });
 
+  group('a streamed download', () {
+    late MockBlossomServer ranged;
+    late Blossom rangedClient;
+    late Account rangedOther;
+
+    setUp(() async {
+      ranged = MockBlossomServer(
+        port: policyPort + 1,
+        authRefusalStatus: 401,
+        supportRangeRequests: true,
+      );
+      await ranged.start();
+
+      final key = Bip340.generatePrivateKey();
+      rangedOther = _signable(Bip340.generatePrivateKey());
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: MockEventVerifier(),
+          cache: MemCacheManager(),
+          engine: NdkEngine.JIT,
+        ),
+      );
+      ndk.accounts
+          .loginPrivateKey(pubkey: key.publicKey, privkey: key.privateKey!);
+      rangedClient = ndk.blossom;
+    });
+
+    tearDown(() async => ranged.stop());
+
+    test('pays the refusal once for the whole stream', () async {
+      final url = 'http://localhost:${ranged.port}';
+      final data = Uint8List.fromList(utf8.encode('a' * 64));
+
+      final uploaded =
+          await rangedClient.uploadBlob(data: data, serverUrls: [url]);
+      final sha256 = uploaded.first.descriptor!.sha256;
+      ranged.clearRequests();
+      ranged.requireAuthForReads = true;
+
+      final stream = await rangedClient.getBlobStream(
+        sha256: sha256,
+        serverUrls: [url],
+        chunkSize: 16,
+        auth: AuthPolicy.allow(rangedOther),
+      );
+      final chunks = await stream.toList();
+
+      expect(
+        chunks.map((c) => utf8.decode(c.data)).join(),
+        utf8.decode(data),
+      );
+      expect(ranged.countRequests(hasAuth: false), 1,
+          reason: 'only the very first request should go out bare');
+      expect(ranged.signedEventIds, hasLength(1));
+    });
+  });
+
   group('the deprecated parameters', () {
     test('useAuth true still authorises as the logged-in account', () async {
       final sha256 = await seed('legacy blob');

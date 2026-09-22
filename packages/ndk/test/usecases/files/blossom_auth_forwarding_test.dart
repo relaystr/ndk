@@ -17,6 +17,7 @@ const int rangeServerPort = 30011;
 void main() {
   late MockBlossomServer server;
   late Blossom client;
+  late Account loggedAccount;
   late String serverUrl;
 
   Future<Blossom> startWith(MockBlossomServer s) async {
@@ -36,6 +37,7 @@ void main() {
       pubkey: key.publicKey,
       privkey: key.privateKey!,
     );
+    loggedAccount = ndk.accounts.getLoggedAccount()!;
     return ndk.blossom;
   }
 
@@ -67,7 +69,7 @@ void main() {
 
       await client.checkBlob(
         sha256: sha256,
-        useAuth: true,
+        auth: AuthPolicy.require(loggedAccount),
         serverUrls: [serverUrl],
       );
 
@@ -98,7 +100,7 @@ void main() {
 
       final stream = await client.getBlobStream(
         sha256: sha256,
-        useAuth: true,
+        auth: AuthPolicy.require(loggedAccount),
         serverUrls: [serverUrl],
       );
       await stream.toList();
@@ -121,7 +123,7 @@ void main() {
 
       final stream = await client.getBlobStream(
         sha256: sha256,
-        useAuth: true,
+        auth: AuthPolicy.require(loggedAccount),
         serverUrls: [serverUrl],
         chunkSize: 16,
       );
