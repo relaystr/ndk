@@ -1,0 +1,242 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:test/test.dart';
+
+import '../../mocks/mock_blossom_server.dart';
+import '../../mocks/mock_event_verifier.dart';
+
+const int policyPort = 30040;
+
+Account _signable(KeyPair keyPair) => Account(
+      type: AccountType.privateKey,
+      pubkey: keyPair.publicKey,
+      signer: Bip340EventSigner(
+        privateKey: keyPair.privateKey,
+        publicKey: keyPair.publicKey,
+      ),
+    );
+
+Account _watchOnly(KeyPair keyPair) => Account(
+      type: AccountType.publicKey,
+      pubkey: keyPair.publicKey,
+      signer: Bip340EventSigner(privateKey: null, publicKey: keyPair.publicKey),
+    );
+
+void main() {
+  late MockBlossomServer server;
+  late Blossom client;
+  late Account loggedIn;
+  late Account other;
+  late String serverUrl;
+
+  setUp(() async {
+    server = MockBlossomServer(port: policyPort, authRefusalStatus: 401);
+    await server.start();
+    serverUrl = 'http://localhost:$policyPort';
+
+    final key = Bip340.generatePrivateKey();
+    loggedIn = _signable(key);
+    other = _signable(Bip340.generatePrivateKey());
+
+    final ndk = Ndk(
+      NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.JIT,
+      ),
+    );
+    ndk.accounts
+        .loginPrivateKey(pubkey: key.publicKey, privkey: key.privateKey!);
+    client = ndk.blossom;
+  });
+
+  tearDown(() async => server.stop());
+
+  Future<String> seed(String content) async {
+    final uploaded = await client.uploadBlob(
+      data: Uint8List.fromList(utf8.encode(content)),
+      serverUrls: [serverUrl],
+    );
+    expect(uploaded.first.success, true);
+    server.clearRequests();
+    return uploaded.first.descriptor!.sha256;
+  }
+
+  group('on a server that demands an identity', () {
+    late String sha256;
+
+    setUp(() async {
+      sha256 = await seed('private blob');
+      server.requireAuthForReads = true;
+    });
+
+    test('never() stays anonymous and is simply not served', () async {
+      await expectLater(
+        client.getBlob(
+          sha256: sha256,
+          serverUrls: [serverUrl],
+          auth: const AuthPolicy.never(),
+        ),
+        throwsA(isA<Exception>()),
+      );
+
+      expect(server.countRequests(hasAuth: true), 0);
+    });
+
+    test('allow() reveals the identity only once asked', () async {
+      final blob = await client.getBlob(
+        sha256: sha256,
+        serverUrls: [serverUrl],
+        auth: AuthPolicy.allow(other),
+      );
+
+      expect(utf8.decode(blob.data), 'private blob');
+
+      final gets = server.requests.where((r) => r.method == 'GET').toList();
+      expect(gets, hasLength(2));
+      expect(gets.first.hasAuth, false);
+      expect(gets.last.authPubkey, other.pubkey);
+    });
+
+    test('require() reveals it from the start', () async {
+      await client.getBlob(
+        sha256: sha256,
+        serverUrls: [serverUrl],
+        auth: AuthPolicy.require(other),
+      );
+
+      final gets = server.requests.where((r) => r.method == 'GET').toList();
+      expect(gets, hasLength(1));
+      expect(gets.single.authPubkey, other.pubkey);
+    });
+
+    test('require() with an account that cannot sign sends nothing', () async {
+      final watcher = _watchOnly(Bip340.generatePrivateKey());
+
+      await expectLater(
+        client.getBlob(
+          sha256: sha256,
+          serverUrls: [serverUrl],
+          auth: AuthPolicy.require(watcher),
+        ),
+        throwsA(isA<BlossomAuthUnavailableException>()),
+      );
+
+      expect(server.requests, isEmpty,
+          reason: 'going out bare is what require() rules out');
+    });
+
+    test('allow() with an account that cannot sign behaves as never()',
+        () async {
+      final watcher = _watchOnly(Bip340.generatePrivateKey());
+
+      await expectLater(
+        client.getBlob(
+          sha256: sha256,
+          serverUrls: [serverUrl],
+          auth: AuthPolicy.allow(watcher),
+        ),
+        throwsA(isA<Exception>()),
+      );
+
+      expect(server.countRequests(hasAuth: true), 0);
+    });
+  });
+
+  group('on a server that never asks', () {
+    test('allow() never reveals the identity', () async {
+      final sha256 = await seed('public blob');
+
+      await client.getBlob(
+        sha256: sha256,
+        serverUrls: [serverUrl],
+        auth: AuthPolicy.allow(other),
+      );
+
+      expect(server.countRequests(hasAuth: true), 0);
+      expect(server.countRequests(method: 'GET'), 1);
+    });
+  });
+
+  group('an upload', () {
+    test('authorises as the account auth names, not the logged-in one',
+        () async {
+      final data = Uint8List.fromList(utf8.encode('mine to attribute'));
+
+      await client.uploadBlob(
+        data: data,
+        serverUrls: [serverUrl],
+        auth: AuthPolicy.require(other),
+      );
+
+      final puts = server.requests.where((r) => r.method == 'PUT').toList();
+      expect(puts.single.authPubkey, other.pubkey);
+      expect(puts.single.authPubkey, isNot(loggedIn.pubkey));
+    });
+
+    test('under never() sends no authorization at all', () async {
+      final data = Uint8List.fromList(utf8.encode('anonymous upload'));
+
+      await client.uploadBlob(
+        data: data,
+        serverUrls: [serverUrl],
+        auth: const AuthPolicy.never(),
+      );
+
+      expect(server.countRequests(method: 'PUT', hasAuth: true), 0);
+    });
+  });
+
+  group('the deprecated parameters', () {
+    test('useAuth true still authorises as the logged-in account', () async {
+      final sha256 = await seed('legacy blob');
+      server.requireAuthForReads = true;
+
+      await client.getBlob(
+        sha256: sha256,
+        serverUrls: [serverUrl],
+        useAuth: true,
+      );
+
+      final gets = server.requests.where((r) => r.method == 'GET').toList();
+      expect(gets.single.authPubkey, loggedIn.pubkey);
+    });
+
+    test('customSigner still picks who signs', () async {
+      final sha256 = await seed('legacy signer blob');
+      server.requireAuthForReads = true;
+
+      await client.getBlob(
+        sha256: sha256,
+        serverUrls: [serverUrl],
+        useAuth: true,
+        customSigner: other.signer,
+      );
+
+      expect(server.requests.last.authPubkey, other.pubkey);
+    });
+
+    test('auth wins over both', () async {
+      final sha256 = await seed('contested blob');
+      server.requireAuthForReads = true;
+
+      await client.getBlob(
+        sha256: sha256,
+        serverUrls: [serverUrl],
+        auth: AuthPolicy.require(other),
+        useAuth: false,
+        customSigner: loggedIn.signer,
+      );
+
+      final gets = server.requests.where((r) => r.method == 'GET').toList();
+      expect(gets, hasLength(1), reason: 'useAuth false did not win');
+      expect(gets.single.authPubkey, other.pubkey);
+    });
+  });
+}
