@@ -5,6 +5,7 @@ import 'package:crypto/crypto.dart';
 import '../../../config/blossom_config.dart';
 import '../../../shared/nips/nip01/bip340.dart';
 import '../../entities/blob_upload_progress.dart';
+import '../../entities/blossom_authorization.dart';
 import '../../entities/blossom_blobs.dart';
 import '../../entities/blossom_strategies.dart';
 import '../../entities/nip_01_event.dart';
@@ -43,6 +44,12 @@ class Blossom {
         _userServerList = blossomUserServerList,
         _blossomImpl = blossomRepository,
         _eventSignerFactory = eventSignerFactory;
+
+  /// Sends [signed] from the first request, or nothing at all when the
+  /// operation asked for no authorization.
+  BlossomAuthorization _upfrontOrNone(Nip01Event? signed) => signed == null
+      ? const BlossomAuthorization.none()
+      : BlossomAuthorization.upfront(signed);
 
   /// Gets the signer to use for blossom operations
   /// Priority: customSigner > logged in account signer > temporary signer
@@ -113,7 +120,7 @@ class Blossom {
       dataStreamFactory: () => Stream.value(data),
       contentLength: data.length,
       serverUrls: serverUrls,
-      authorization: signedAuthorization,
+      authorization: _upfrontOrNone(signedAuthorization),
       contentType: contentType,
       strategy: strategy,
       mediaOptimisation: serverMediaOptimisation,
@@ -200,7 +207,7 @@ class Blossom {
     yield* _blossomImpl.uploadBlobFromFile(
       filePath: filePath,
       serverUrls: serverUrls,
-      authorization: signedAuthorization,
+      authorization: _upfrontOrNone(signedAuthorization),
       contentType: contentType,
       strategy: strategy,
       mediaOptimisation: serverMediaOptimisation,
@@ -256,7 +263,7 @@ class Blossom {
           fileUrl: blossomUrl.toString(),
           serverUrl: serverUrl,
           sha256: sha256,
-          authorization: signedAuthorization,
+          authorization: _upfrontOrNone(signedAuthorization),
         ),
       ),
     );
@@ -314,7 +321,7 @@ class Blossom {
 
     return _blossomImpl.getBlob(
       sha256: sha256,
-      authorization: signedAuthorization,
+      authorization: _upfrontOrNone(signedAuthorization),
       serverUrls: serverUrls,
     );
   }
@@ -374,7 +381,7 @@ class Blossom {
     return _blossomImpl.downloadBlobToFile(
       sha256: sha256,
       outputPath: outputPath,
-      authorization: signedAuthorization,
+      authorization: _upfrontOrNone(signedAuthorization),
       serverUrls: serverUrls,
     );
   }
@@ -432,7 +439,7 @@ class Blossom {
 
     return _blossomImpl.checkBlob(
       sha256: sha256,
-      authorization: signedAuthorization,
+      authorization: _upfrontOrNone(signedAuthorization),
       serverUrls: serverUrls,
     );
   }
@@ -486,7 +493,7 @@ class Blossom {
 
     return _blossomImpl.getBlobStream(
       sha256: sha256,
-      authorization: signedAuthorization,
+      authorization: _upfrontOrNone(signedAuthorization),
       serverUrls: serverUrls,
       chunkSize: chunkSize,
     );
@@ -537,7 +544,7 @@ class Blossom {
       since: since,
       until: until,
       serverUrls: serverUrls,
-      authorization: signedAuthorization,
+      authorization: _upfrontOrNone(signedAuthorization),
     );
   }
 
@@ -579,7 +586,7 @@ class Blossom {
     }
     return _blossomImpl.deleteBlob(
       sha256: sha256,
-      authorization: signedAuthorization,
+      authorization: _upfrontOrNone(signedAuthorization),
       serverUrls: serverUrls,
     );
   }

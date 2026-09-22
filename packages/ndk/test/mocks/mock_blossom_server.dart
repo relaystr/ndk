@@ -46,8 +46,9 @@ class MockBlossomServer {
   final int deleteStatusCode;
 
   /// demand an authorization on GET and HEAD too, which a public blossom
-  /// server does not
-  final bool requireAuthForReads;
+  /// server does not. Mutable so a test can seed a blob and only then start
+  /// refusing.
+  bool requireAuthForReads;
 
   /// status a refusal answers with. BUD-01 says 401, some servers say 403
   final int authRefusalStatus;
