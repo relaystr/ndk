@@ -89,6 +89,7 @@ abstract class BlossomRepository {
   Future<Tuple<bool, int?>> supportsRangeRequests({
     required String sha256,
     required String serverUrl,
+    Nip01Event? authorization,
   });
 
   /// Lists blobs from the first successful server

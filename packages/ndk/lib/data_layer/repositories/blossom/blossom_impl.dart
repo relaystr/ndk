@@ -575,7 +575,10 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
     for (final url in serverUrls) {
       try {
-        final response = await client.head(url: Uri.parse('$url/$sha256'));
+        final response = await client.head(
+          url: Uri.parse('$url/$sha256'),
+          headers: headers,
+        );
 
         if (_isSuccessStatus(response.statusCode)) {
           return '$url/$sha256';
@@ -597,9 +600,17 @@ class BlossomRepositoryImpl implements BlossomRepository {
   Future<Tuple<bool, int?>> supportsRangeRequests({
     required String sha256,
     required String serverUrl,
+    Nip01Event? authorization,
   }) async {
     try {
-      final response = await client.head(url: Uri.parse('$serverUrl/$sha256'));
+      final response = await client.head(
+        url: Uri.parse('$serverUrl/$sha256'),
+        headers: <String, String>{
+          if (authorization != null)
+            'Authorization':
+                "Nostr ${Nip01EventModel.fromEntity(authorization).toBase64()}",
+        },
+      );
 
       final acceptRanges = response.headers['accept-ranges'];
       final contentLength = int.tryParse(
@@ -627,6 +638,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
         final rangeResponse = await supportsRangeRequests(
           sha256: sha256,
           serverUrl: url,
+          authorization: authorization,
         );
         if (rangeResponse.first) {
           supportedServer = url;
@@ -640,35 +652,44 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
     if (supportedServer == null || contentLength == null) {
       // Fallback to regular download if no server supports range requests
-      final bytes = await getBlob(sha256: sha256, serverUrls: serverUrls);
+      final bytes = await getBlob(
+        sha256: sha256,
+        serverUrls: serverUrls,
+        authorization: authorization,
+      );
       return Stream.value(bytes);
     }
 
-    // Create a stream controller to manage the chunks
-    final controller = StreamController<BlobResponse>();
+    return _chunkedBlobStream(
+      sha256: sha256,
+      serverUrl: supportedServer,
+      authorization: authorization,
+      contentLength: contentLength,
+      chunkSize: chunkSize,
+    );
+  }
 
-    // Start downloading chunks
+  /// Fetches one range at a time, as the caller reads, so a large blob is
+  /// never held whole in memory.
+  Stream<BlobResponse> _chunkedBlobStream({
+    required String sha256,
+    required String serverUrl,
+    required int contentLength,
+    required int chunkSize,
+    Nip01Event? authorization,
+  }) async* {
     int offset = 0;
     while (offset < contentLength) {
       final end = (offset + chunkSize - 1).clamp(0, contentLength - 1);
-
-      try {
-        final chunk = await getBlob(
-          sha256: sha256,
-          serverUrls: [supportedServer],
-          start: offset,
-          end: end,
-        );
-        controller.add(chunk);
-        offset = end + 1;
-      } catch (e) {
-        await controller.close();
-        rethrow;
-      }
+      yield await getBlob(
+        sha256: sha256,
+        serverUrls: [serverUrl],
+        authorization: authorization,
+        start: offset,
+        end: end,
+      );
+      offset = end + 1;
     }
-
-    await controller.close();
-    return controller.stream;
   }
 
   @override
