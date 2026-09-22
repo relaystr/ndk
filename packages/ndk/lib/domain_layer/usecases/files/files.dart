@@ -1,3 +1,4 @@
+import '../../entities/auth_policy.dart';
 import '../../entities/blob_upload_progress.dart';
 import '../../entities/blossom_blobs.dart';
 import '../../entities/blossom_strategies.dart';
@@ -17,16 +18,20 @@ class Files {
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
   /// if no serverUrls (param or nostr) are found, throws an error
   /// [serverMediaOptimisation] is whether the server should optimise the media [BUD-05], IMPORTANT: the server hash will be different \
+  /// [auth] says which identity the upload may be attributed to, see
+  /// [AuthPolicy].
   Future<List<BlobUploadResult>> upload({
     required NdkFile file,
     List<String>? serverUrls,
     bool serverMediaOptimisation = false,
+    AuthPolicy? auth,
   }) {
     return _blossom.uploadBlob(
       data: file.data,
       serverUrls: serverUrls,
       contentType: file.mimeType,
       serverMediaOptimisation: serverMediaOptimisation,
+      auth: auth,
     );
   }
 
@@ -37,12 +42,15 @@ class Files {
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
   /// if no serverUrls (param or nostr) are found, throws an error
   /// [serverMediaOptimisation] is whether the server should optimise the media [BUD-05], IMPORTANT: the server hash will be different \
+  /// [auth] says which identity the upload may be attributed to, see
+  /// [AuthPolicy].
   Stream<BlobUploadProgress> uploadFromFile({
     required String filePath,
     List<String>? serverUrls,
     String? contentType,
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
     bool serverMediaOptimisation = false,
+    AuthPolicy? auth,
   }) {
     return _blossom.uploadBlobFromFile(
       filePath: filePath,
@@ -50,16 +58,24 @@ class Files {
       contentType: contentType,
       strategy: strategy,
       serverMediaOptimisation: serverMediaOptimisation,
+      auth: auth,
     );
   }
 
   /// deletes a file from the server(s) \
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
+  /// [auth] says which identity the deletion may be attributed to, see
+  /// [AuthPolicy].
   Future<List<BlobDeleteResult>> delete({
     required String sha256,
     List<String>? serverUrls,
+    AuthPolicy? auth,
   }) {
-    return _blossom.deleteBlob(sha256: sha256, serverUrls: serverUrls);
+    return _blossom.deleteBlob(
+      sha256: sha256,
+      serverUrls: serverUrls,
+      auth: auth,
+    );
   }
 
   /// download a file from the server(s) \
@@ -69,10 +85,14 @@ class Files {
   /// [serverUrls] and [pubkey] are used to download from blossom \
   /// if [serverUrls] is null, the userServerList is fetched from nostr (using the pubkey). \
   /// if both [serverUrls] and [pubkey] are null, throws an error.
+  /// [auth] says which identity the download may be attributed to, see
+  /// [AuthPolicy]. It is ignored for a plain url, which is fetched directly
+  /// and never speaks blossom.
   Future<BlobResponse> download({
     required String url,
     List<String>? serverUrls,
     String? pubkey,
+    AuthPolicy? auth,
   }) async {
     // Regular expression to match SHA256 in URLs
     final sha256Match = sha256Regex.firstMatch(url);
@@ -86,6 +106,7 @@ class Files {
         sha256: sha256,
         serverUrls: serverUrls,
         pubkeyToFetchUserServerList: pubkey,
+        auth: auth,
       );
     } else {
       return await _blossom.directDownload(url: Uri.parse(url));
@@ -102,10 +123,17 @@ class Files {
   /// [serverUrls] and [pubkey] are used to download from blossom \
   /// if [serverUrls] is null, the userServerList is fetched from nostr (using the pubkey). \
   /// if both [serverUrls] and [pubkey] are null, throws an error.
+  /// [auth] says which identity the download may be attributed to, see
+  /// [AuthPolicy]. It is ignored for a plain url, which is fetched directly
+  /// and never speaks blossom.
   Future<void> downloadToFile({
     required String url,
     required String outputPath,
-    bool useAuth = false,
+    AuthPolicy? auth,
+    @Deprecated(
+      'Use auth instead. useAuth will be removed in a future version.',
+    )
+    bool? useAuth,
     List<String>? serverUrls,
     String? pubkey,
   }) async {
@@ -120,6 +148,8 @@ class Files {
       return await _blossom.downloadBlobToFile(
         sha256: sha256,
         outputPath: outputPath,
+        auth: auth,
+        // ignore: deprecated_member_use_from_same_package
         useAuth: useAuth,
         serverUrls: serverUrls,
         pubkeyToFetchUserServerList: pubkey,
@@ -137,10 +167,13 @@ class Files {
   /// it its not a blossom url, the url is returned. \
   /// if its a blossom url, blossom is used to check if the blob exists on the server(s) \
   /// returns alive url if the blob exists, throws an error if the blob does not exist
+  /// [auth] says which identity the check may be attributed to, see
+  /// [AuthPolicy]. It is ignored for a plain url, which is returned as is.
   Future<String> checkUrl({
     required String url,
     List<String>? serverUrls,
     String? pubkey,
+    AuthPolicy? auth,
   }) async {
     // Regular expression to match SHA256 in URLs
     final sha256Match = sha256Regex.firstMatch(url);
@@ -154,6 +187,7 @@ class Files {
         sha256: sha256,
         serverUrls: serverUrls,
         pubkeyToFetchUserServerList: pubkey,
+        auth: auth,
       );
     } else {
       return url;
