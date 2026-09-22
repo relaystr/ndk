@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:ndk/config/blossom_config.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
@@ -114,6 +115,20 @@ void main() {
       final gets = server.requests.where((r) => r.method == 'GET').toList();
       expect(gets, hasLength(1));
       expect(gets.single.authPubkey, other.pubkey);
+    });
+
+    test('the authorization it signs is short lived', () async {
+      await client.getBlob(
+        sha256: sha256,
+        serverUrls: [serverUrl],
+        auth: AuthPolicy.require(other),
+      );
+
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      expect(
+        server.requests.single.authExpiration,
+        inInclusiveRange(now, now + BLOSSOM_AUTH_EXPIRATION.inSeconds),
+      );
     });
 
     test('require() with an account that cannot sign sends nothing', () async {
@@ -247,6 +262,62 @@ void main() {
       expect(ranged.countRequests(hasAuth: false), 1,
           reason: 'only the very first request should go out bare');
       expect(ranged.signedEventIds, hasLength(1));
+    });
+  });
+
+  group('a report', () {
+    late String sha256;
+
+    setUp(() async => sha256 = await seed('reported blob'));
+
+    Future<int> report({AuthPolicy? auth}) => client.report(
+          sha256: sha256,
+          eventId: 'e' * 64,
+          reportType: 'malware',
+          reportMsg: 'this blob is malware',
+          serverUrl: serverUrl,
+          auth: auth,
+        );
+
+    test('names the account auth points at', () async {
+      await report(auth: AuthPolicy.require(other));
+
+      expect(server.reports.single['pubkey'], other.pubkey);
+    });
+
+    test('under never() is signed by a throwaway key', () async {
+      await report(auth: const AuthPolicy.never());
+
+      expect(server.reports.single['pubkey'], isNot(loggedIn.pubkey));
+      expect(server.reports.single['pubkey'], isNot(other.pubkey));
+    });
+
+    test('under require() with an account that cannot sign sends nothing',
+        () async {
+      final watcher = _watchOnly(Bip340.generatePrivateKey());
+
+      await expectLater(
+        report(auth: AuthPolicy.require(watcher)),
+        throwsA(isA<BlossomAuthUnavailableException>()),
+      );
+
+      expect(server.reports, isEmpty);
+    });
+
+    test('under allow() with an account that cannot sign stays anonymous',
+        () async {
+      final watcher = _watchOnly(Bip340.generatePrivateKey());
+
+      await report(auth: AuthPolicy.allow(watcher));
+
+      expect(server.reports.single['pubkey'], isNot(loggedIn.pubkey));
+      expect(server.reports.single['pubkey'], isNot(watcher.pubkey));
+    });
+
+    test('without auth still signs as the logged-in account', () async {
+      await report();
+
+      expect(server.reports.single['pubkey'], loggedIn.pubkey);
     });
   });
 

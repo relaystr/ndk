@@ -23,6 +23,9 @@ class MockBlossomRequest {
   final String? authType;
   final String? authPubkey;
 
+  /// value of the auth event's `expiration` tag, as a unix timestamp
+  final int? authExpiration;
+
   MockBlossomRequest({
     required this.method,
     required this.path,
@@ -30,6 +33,7 @@ class MockBlossomRequest {
     this.authEventId,
     this.authType,
     this.authPubkey,
+    this.authExpiration,
   });
 
   @override
@@ -63,6 +67,9 @@ class MockBlossomServer {
 
   /// every request the server received, oldest first
   final List<MockBlossomRequest> requests = [];
+
+  /// every kind 1984 event `/report` received, oldest first
+  final List<Map<String, dynamic>> reports = [];
 
   HttpServer? _server;
 
@@ -124,6 +131,7 @@ class MockBlossomServer {
             authEventId: event?['id'] as String?,
             authType: _tagValue(event, 't'),
             authPubkey: event?['pubkey'] as String?,
+            authExpiration: int.tryParse(_tagValue(event, 'expiration') ?? ''),
           ),
         );
         if (responseDelay != null) {
@@ -484,6 +492,7 @@ class MockBlossomServer {
       if (requestData['kind'] != kReport) {
         return Response.badRequest(body: 'Invalid kind');
       }
+      reports.add(requestData);
       return Response.ok(
         '{"status": "ok"}',
         headers: {'Content-Type': 'application/json'},

@@ -77,7 +77,7 @@ class Blossom {
       tags: [
         ["t", type],
         if (blobSha256 != null) ["x", blobSha256],
-        ["expiration", "${now + BLOSSOM_AUTH_EXPIRATION.inMilliseconds}"],
+        ["expiration", "${now + BLOSSOM_AUTH_EXPIRATION.inSeconds}"],
       ],
     );
   }
@@ -237,7 +237,11 @@ class Blossom {
       return _accounts.getLoggedAccount()!.signer;
     }
 
-    // Create a temporary signer if no account is logged in
+    return _throwawaySigner();
+  }
+
+  /// A fresh key, for something that has to be signed but names nobody.
+  EventSigner _throwawaySigner() {
     final keyPair = Bip340.generatePrivateKey();
     return _eventSignerFactory.create(
       privateKey: keyPair.privateKey!,
@@ -781,14 +785,26 @@ class Blossom {
   }) async {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-    final account = auth?.account;
-    if (auth is AuthPolicyRequire && !account!.signer.canSign()) {
-      throw BlossomAuthUnavailableException(account.pubkey, "report");
-    }
-    final signer = account != null && account.signer.canSign()
-        ? account.signer
+    final EventSigner signer;
+    switch (auth) {
+      case null:
         // ignore: deprecated_member_use_from_same_package
-        : _getSigner(customSigner);
+        signer = _getSigner(customSigner);
+
+      case AuthPolicyNever():
+        signer = _throwawaySigner();
+
+      case AuthPolicyRequire(:final account):
+        if (!account.signer.canSign()) {
+          throw BlossomAuthUnavailableException(account.pubkey, "report");
+        }
+        signer = account.signer;
+
+      case AuthPolicyAllow(:final account):
+        // allow never promised a signature, so an account that cannot give one
+        // reports anonymously rather than as whoever happens to be logged in
+        signer = account.signer.canSign() ? account.signer : _throwawaySigner();
+    }
 
     final Nip01Event reportEvent = Nip01Event(
       content: reportMsg,

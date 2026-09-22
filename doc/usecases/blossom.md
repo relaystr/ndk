@@ -56,7 +56,7 @@ to change.
 | old | translated to |
 | --- | --- |
 | `useAuth: false` | `const AuthPolicy.never()` |
-| `useAuth: true` | `AuthPolicy.require(<logged-in account>)` |
+| `useAuth: true` | `AuthPolicy.require(<logged-in account, or a throwaway key when none is>)` |
 | `customSigner: s` | `AuthPolicy.require(<account for s>)` |
 
 ### methods - Blossom
