@@ -130,10 +130,6 @@ class Files {
     required String url,
     required String outputPath,
     AuthPolicy? auth,
-    @Deprecated(
-      'Use auth instead. useAuth will be removed in a future version.',
-    )
-    bool? useAuth,
     List<String>? serverUrls,
     String? pubkey,
   }) async {
@@ -149,8 +145,6 @@ class Files {
         sha256: sha256,
         outputPath: outputPath,
         auth: auth,
-        // ignore: deprecated_member_use_from_same_package
-        useAuth: useAuth,
         serverUrls: serverUrls,
         pubkeyToFetchUserServerList: pubkey,
       );

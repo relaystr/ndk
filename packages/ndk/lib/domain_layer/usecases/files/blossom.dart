@@ -82,12 +82,11 @@ class Blossom {
     );
   }
 
-  /// The account a bare signer stands for, keeping the logged-in one whole so
-  /// it does not lose its type on the way.
-  Account _accountFor(EventSigner signer) {
-    final logged = _accounts.getLoggedAccount();
-    if (logged != null && identical(logged.signer, signer)) return logged;
+  /// The logged-in account, or a throwaway key when none can sign.
+  Account _defaultAccount() {
+    if (_accounts.canSign) return _accounts.getLoggedAccount()!;
 
+    final signer = _throwawaySigner();
     return Account(
       type: AccountType.privateKey,
       pubkey: signer.getPublicKey(),
@@ -95,31 +94,25 @@ class Blossom {
     );
   }
 
-  /// The policy the deprecated [useAuth] and [customSigner] pair stands for.
-  AuthPolicy _legacyPolicy(bool useAuth, EventSigner? customSigner) => useAuth
-      ? AuthPolicy.require(_accountFor(_getSigner(customSigner)))
-      : const AuthPolicy.never();
-
   /// Turns the caller's intent into what the repository does about the
   /// `Authorization` header.
   ///
-  /// [auth] wins over [useAuth] and [customSigner]. [legacyDefault] is what
-  /// the operation did before [auth] existed, for callers that pass neither.
-  /// [buildEvent] makes the kind 24242 event, because only the operation knows
-  /// its `t` and `x` tags.
+  /// Without [auth], an operation that [authorisesByDefault] requires
+  /// [_defaultAccount], and any other stays anonymous. [buildEvent] makes the
+  /// kind 24242 event, because only the operation knows its `t` and `x` tags.
   ///
   /// Throws [BlossomAuthUnavailableException], before anything is sent, when
   /// [auth] requires an identity that cannot sign.
   Future<_BlossomAuthPlan> _planAuth({
     required AuthPolicy? auth,
-    required bool? useAuth,
-    required EventSigner? customSigner,
-    required bool legacyDefault,
+    required bool authorisesByDefault,
     required String operation,
     required Nip01Event Function(String pubkey) buildEvent,
   }) async {
-    final policy =
-        auth ?? _legacyPolicy(useAuth ?? legacyDefault, customSigner);
+    final policy = auth ??
+        (authorisesByDefault
+            ? AuthPolicy.require(_defaultAccount())
+            : const AuthPolicy.never());
 
     switch (policy) {
       case AuthPolicyNever():
@@ -157,15 +150,11 @@ class Blossom {
   /// blob, and anonymous unless the caller asked otherwise.
   Future<_BlossomAuthPlan> _readAuthPlan({
     required AuthPolicy? auth,
-    required bool? useAuth,
-    required EventSigner? customSigner,
     required String sha256,
   }) =>
       _planAuth(
         auth: auth,
-        useAuth: useAuth,
-        customSigner: customSigner,
-        legacyDefault: false,
+        authorisesByDefault: false,
         operation: "get",
         buildEvent: (pubkey) => _blossomAuthEvent(
           content: "get",
@@ -228,18 +217,6 @@ class Blossom {
     return resolved;
   }
 
-  /// Gets the signer to use for blossom operations
-  /// Priority: customSigner > logged in account signer > temporary signer
-  EventSigner _getSigner(EventSigner? customSigner) {
-    if (customSigner != null) return customSigner;
-
-    if (_accounts.canSign) {
-      return _accounts.getLoggedAccount()!.signer;
-    }
-
-    return _throwawaySigner();
-  }
-
   /// A fresh key, for something that has to be signed but names nobody.
   EventSigner _throwawaySigner() {
     final keyPair = Bip340.generatePrivateKey();
@@ -252,8 +229,6 @@ class Blossom {
   /// upload a blob to the server
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
   /// if the pukey has no UserServerList (kind: 10063), throws an error \
-  /// the current signer is used to sign the request, or [customSigner] if provided \
-  /// if no signer is available, a temporary signer is created \
   /// [strategy] is the upload strategy, default is mirrorAfterSuccess \
   /// [serverMediaOptimisation] is whether the server should optimise the media [BUD-05], IMPORTANT: the server hash will be different \
   /// [precomputedSha256] optional hex sha256 of [data]; if provided, skips local hashing. \
@@ -272,11 +247,6 @@ class Blossom {
     bool serverMediaOptimisation = false,
     AuthPolicy? auth,
     String? pubkeyToFetchUserServerList,
-    @Deprecated(
-      'Use auth: AuthPolicy.require(account) instead. '
-      'customSigner will be removed in a future version.',
-    )
-    EventSigner? customSigner,
     String? precomputedSha256,
   }) async {
     /// sha256 of the data
@@ -286,10 +256,7 @@ class Blossom {
 
     final plan = await _planAuth(
       auth: auth,
-      useAuth: null,
-      // ignore: deprecated_member_use_from_same_package
-      customSigner: customSigner,
-      legacyDefault: true,
+      authorisesByDefault: true,
       operation: authType,
       buildEvent: (pubkey) => _blossomAuthEvent(
         content: authType,
@@ -326,8 +293,6 @@ class Blossom {
   ///
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
   /// if the pubkey has no UserServerList (kind: 10063), throws an error \
-  /// the current signer is used to sign the request, or [customSigner] if provided \
-  /// if no signer is available, a temporary signer is created \
   /// [strategy] is the upload strategy, default is mirrorAfterSuccess \
   /// [serverMediaOptimisation] is whether the server should optimise the media [BUD-05], IMPORTANT: the server hash will be different \
   /// [precomputedSha256] optional hex sha256 of the file; if provided, skips the [UploadPhase.hashing] phase entirely. \
@@ -343,11 +308,6 @@ class Blossom {
     bool serverMediaOptimisation = false,
     AuthPolicy? auth,
     String? pubkeyToFetchUserServerList,
-    @Deprecated(
-      'Use auth: AuthPolicy.require(account) instead. '
-      'customSigner will be removed in a future version.',
-    )
-    EventSigner? customSigner,
     String? precomputedSha256,
   }) async* {
     String? fileHash = precomputedSha256;
@@ -378,10 +338,7 @@ class Blossom {
 
     final plan = await _planAuth(
       auth: auth,
-      useAuth: null,
-      // ignore: deprecated_member_use_from_same_package
-      customSigner: customSigner,
-      legacyDefault: true,
+      authorisesByDefault: true,
       operation: authType,
       buildEvent: (pubkey) => _blossomAuthEvent(
         content: authType,
@@ -412,19 +369,15 @@ class Blossom {
   /// [blossomUrl] is the source URL of the blob to mirror (e.g., https://cdn.example.com/[sha256].jpg)
   ///   The URL must contain a 64-character SHA256 hash
   /// [targetServerUrls] is the list of servers to mirror the blob to
-  /// the current signer is used to sign the mirror request, or [customSigner] if provided \
-  /// if no signer is available, a temporary signer is created
+  /// [auth] says which identity the mirror may be attributed to, see
+  /// [AuthPolicy]. Without it the mirror authorises as the logged-in account,
+  /// or as a throwaway key when none is.
   ///
   /// Throws an [Exception] if no SHA256 hash is detected in the URL
   Future<List<BlobUploadResult>> mirrorToServers({
     required Uri blossomUrl,
     required List<String> targetServerUrls,
     AuthPolicy? auth,
-    @Deprecated(
-      'Use auth: AuthPolicy.require(account) instead. '
-      'customSigner will be removed in a future version.',
-    )
-    EventSigner? customSigner,
   }) async {
     // Extract sha256 from the URL
     final sha256Match = sha256Regex.firstMatch(blossomUrl.toString());
@@ -438,10 +391,7 @@ class Blossom {
 
     final plan = await _planAuth(
       auth: auth,
-      useAuth: null,
-      // ignore: deprecated_member_use_from_same_package
-      customSigner: customSigner,
-      legacyDefault: true,
+      authorisesByDefault: true,
       operation: "upload",
       buildEvent: (pubkey) => _blossomAuthEvent(
         content: "upload",
@@ -476,24 +426,8 @@ class Blossom {
     AuthPolicy? auth,
     List<String>? serverUrls,
     String? pubkeyToFetchUserServerList,
-    @Deprecated(
-      'Use auth instead. useAuth will be removed in a future version.',
-    )
-    bool? useAuth,
-    @Deprecated(
-      'Use auth: AuthPolicy.require(account) instead. '
-      'customSigner will be removed in a future version.',
-    )
-    EventSigner? customSigner,
   }) async {
-    final plan = await _readAuthPlan(
-      auth: auth,
-      // ignore: deprecated_member_use_from_same_package
-      useAuth: useAuth,
-      // ignore: deprecated_member_use_from_same_package
-      customSigner: customSigner,
-      sha256: sha256,
-    );
+    final plan = await _readAuthPlan(auth: auth, sha256: sha256);
 
     final servers = await _resolveReadServers(
       serverUrls: serverUrls,
@@ -521,24 +455,8 @@ class Blossom {
     AuthPolicy? auth,
     List<String>? serverUrls,
     String? pubkeyToFetchUserServerList,
-    @Deprecated(
-      'Use auth instead. useAuth will be removed in a future version.',
-    )
-    bool? useAuth,
-    @Deprecated(
-      'Use auth: AuthPolicy.require(account) instead. '
-      'customSigner will be removed in a future version.',
-    )
-    EventSigner? customSigner,
   }) async {
-    final plan = await _readAuthPlan(
-      auth: auth,
-      // ignore: deprecated_member_use_from_same_package
-      useAuth: useAuth,
-      // ignore: deprecated_member_use_from_same_package
-      customSigner: customSigner,
-      sha256: sha256,
-    );
+    final plan = await _readAuthPlan(auth: auth, sha256: sha256);
 
     final servers = await _resolveReadServers(
       serverUrls: serverUrls,
@@ -566,24 +484,8 @@ class Blossom {
     AuthPolicy? auth,
     List<String>? serverUrls,
     String? pubkeyToFetchUserServerList,
-    @Deprecated(
-      'Use auth instead. useAuth will be removed in a future version.',
-    )
-    bool? useAuth,
-    @Deprecated(
-      'Use auth: AuthPolicy.require(account) instead. '
-      'customSigner will be removed in a future version.',
-    )
-    EventSigner? customSigner,
   }) async {
-    final plan = await _readAuthPlan(
-      auth: auth,
-      // ignore: deprecated_member_use_from_same_package
-      useAuth: useAuth,
-      // ignore: deprecated_member_use_from_same_package
-      customSigner: customSigner,
-      sha256: sha256,
-    );
+    final plan = await _readAuthPlan(auth: auth, sha256: sha256);
 
     final servers = await _resolveReadServers(
       serverUrls: serverUrls,
@@ -608,24 +510,8 @@ class Blossom {
     List<String>? serverUrls,
     String? pubkeyToFetchUserServerList,
     int chunkSize = 1024 * 1024, // 1MB chunks,
-    @Deprecated(
-      'Use auth instead. useAuth will be removed in a future version.',
-    )
-    bool? useAuth,
-    @Deprecated(
-      'Use auth: AuthPolicy.require(account) instead. '
-      'customSigner will be removed in a future version.',
-    )
-    EventSigner? customSigner,
   }) async {
-    final plan = await _readAuthPlan(
-      auth: auth,
-      // ignore: deprecated_member_use_from_same_package
-      useAuth: useAuth,
-      // ignore: deprecated_member_use_from_same_package
-      customSigner: customSigner,
-      sha256: sha256,
-    );
+    final plan = await _readAuthPlan(auth: auth, sha256: sha256);
 
     final servers = await _resolveReadServers(
       serverUrls: serverUrls,
@@ -653,23 +539,10 @@ class Blossom {
     AuthPolicy? auth,
     DateTime? since,
     DateTime? until,
-    @Deprecated(
-      'Use auth instead. useAuth will be removed in a future version.',
-    )
-    bool? useAuth,
-    @Deprecated(
-      'Use auth: AuthPolicy.require(account) instead. '
-      'customSigner will be removed in a future version.',
-    )
-    EventSigner? customSigner,
   }) async {
     final plan = await _planAuth(
       auth: auth,
-      // ignore: deprecated_member_use_from_same_package
-      useAuth: useAuth,
-      // ignore: deprecated_member_use_from_same_package
-      customSigner: customSigner,
-      legacyDefault: true,
+      authorisesByDefault: true,
       operation: "list",
       buildEvent: (owner) => _blossomAuthEvent(
         content: "List Blobs",
@@ -696,29 +569,19 @@ class Blossom {
 
   /// delete a blob
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
-  /// if the pukey has no UserServerList (kind: 10063), throws an error \
-  /// the current signer is used to sign the request, or [customSigner] if provided \
-  /// if no signer is available, a temporary signer is created
+  /// if the pukey has no UserServerList (kind: 10063), throws an error
   /// [auth] says which identity the deletion may be attributed to, see
   /// [AuthPolicy]. Without it the deletion authorises as the logged-in
-  /// account.
+  /// account, or as a throwaway key when none is.
   Future<List<BlobDeleteResult>> deleteBlob({
     required String sha256,
     List<String>? serverUrls,
     AuthPolicy? auth,
     String? pubkeyToFetchUserServerList,
-    @Deprecated(
-      'Use auth: AuthPolicy.require(account) instead. '
-      'customSigner will be removed in a future version.',
-    )
-    EventSigner? customSigner,
   }) async {
     final plan = await _planAuth(
       auth: auth,
-      useAuth: null,
-      // ignore: deprecated_member_use_from_same_package
-      customSigner: customSigner,
-      legacyDefault: true,
+      authorisesByDefault: true,
       operation: "delete",
       buildEvent: (pubkey) => _blossomAuthEvent(
         content: "delete",
@@ -760,13 +623,13 @@ class Blossom {
   /// [reportType] is the type of report, e.g. malware @see nip56
   /// [reportMsg] is the message to send to the server
   /// [serverUrl] server url to report to
-  /// [customSigner] optional custom signer to use for signing the report, if not provided uses the current logged in signer or creates a temporary one
   ///
   /// returns the http status code of the rcv server
   /// [auth] says which identity signs the report, see [AuthPolicy]. The
   /// endpoint takes a signed event as its body, so there is nothing to
   /// withhold: [AuthPolicy.never] signs with a throwaway key, which is what an
-  /// anonymous report is.
+  /// anonymous report is. Without [auth] the logged-in account signs, or a
+  /// throwaway key when none is.
   ///
   /// Throws [BlossomAuthUnavailableException] if [auth] requires an identity
   /// that cannot sign.
@@ -777,19 +640,13 @@ class Blossom {
     required String reportMsg,
     required String serverUrl,
     AuthPolicy? auth,
-    @Deprecated(
-      'Use auth: AuthPolicy.require(account) instead. '
-      'customSigner will be removed in a future version.',
-    )
-    EventSigner? customSigner,
   }) async {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     final EventSigner signer;
     switch (auth) {
       case null:
-        // ignore: deprecated_member_use_from_same_package
-        signer = _getSigner(customSigner);
+        signer = _defaultAccount().signer;
 
       case AuthPolicyNever():
         signer = _throwawaySigner();

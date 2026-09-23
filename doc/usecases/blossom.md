@@ -51,13 +51,13 @@ Without `auth`, reads stay anonymous and everything else authorises as the
 logged-in account, or as a throwaway key when none is. This default is expected
 to change.
 
-`useAuth` and `customSigner` are deprecated, and `auth` wins over both:
+`useAuth` and `customSigner` were removed in favour of `auth`:
 
-| old | translated to |
+| removed | replace with |
 | --- | --- |
-| `useAuth: false` | `const AuthPolicy.never()` |
-| `useAuth: true` | `AuthPolicy.require(<logged-in account, or a throwaway key when none is>)` |
-| `customSigner: s` | `AuthPolicy.require(<account for s>)` |
+| `useAuth: true` | `auth: AuthPolicy.require(account)`, with the logged-in account, or the one holding the `customSigner` passed alongside |
+| `customSigner: s` alone | the same with the account holding `s`, except on a download or a check, where it never signed: drop it |
+| `useAuth: false` | `auth: const AuthPolicy.never()` on `listBlobs`, nothing elsewhere |
 
 ### methods - Blossom
 

@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -318,53 +316,6 @@ void main() {
       await report();
 
       expect(server.reports.single['pubkey'], loggedIn.pubkey);
-    });
-  });
-
-  group('the deprecated parameters', () {
-    test('useAuth true still authorises as the logged-in account', () async {
-      final sha256 = await seed('legacy blob');
-      server.requireAuthForReads = true;
-
-      await client.getBlob(
-        sha256: sha256,
-        serverUrls: [serverUrl],
-        useAuth: true,
-      );
-
-      final gets = server.requests.where((r) => r.method == 'GET').toList();
-      expect(gets.single.authPubkey, loggedIn.pubkey);
-    });
-
-    test('customSigner still picks who signs', () async {
-      final sha256 = await seed('legacy signer blob');
-      server.requireAuthForReads = true;
-
-      await client.getBlob(
-        sha256: sha256,
-        serverUrls: [serverUrl],
-        useAuth: true,
-        customSigner: other.signer,
-      );
-
-      expect(server.requests.last.authPubkey, other.pubkey);
-    });
-
-    test('auth wins over both', () async {
-      final sha256 = await seed('contested blob');
-      server.requireAuthForReads = true;
-
-      await client.getBlob(
-        sha256: sha256,
-        serverUrls: [serverUrl],
-        auth: AuthPolicy.require(other),
-        useAuth: false,
-        customSigner: loggedIn.signer,
-      );
-
-      final gets = server.requests.where((r) => r.method == 'GET').toList();
-      expect(gets, hasLength(1), reason: 'useAuth false did not win');
-      expect(gets.single.authPubkey, other.pubkey);
     });
   });
 }
