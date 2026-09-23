@@ -1,3 +1,13 @@
+## 0.10.0-dev.6
+
+ - **REFACTOR**: rename RelayAuth to AuthPolicy.
+ - **FIX**: match nip05 check cache and dedup on both identifier and pubkey.
+ - **FIX**: key nip05 cache by canonical identifier and skip failed checks in resolve.
+ - **FIX**: abort nip05 requests after a 5s timeout.
+ - **FIX**: ignore nip05 redirects and normalize identifier parsing.
+ - **FIX**: stop resolving unknown names to the _ root entry.
+ - **FEAT**: add retryDelivery opt-out to broadcast.
+
 ## 0.10.0-dev.5
 
  - **PERF**: cache master key for cashu quote.
