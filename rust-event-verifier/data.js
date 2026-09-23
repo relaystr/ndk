@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790155528352,
+  "lastUpdate": 1790164705961,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -758,6 +758,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 850986,
             "range": "811668-860076",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9e5ae6d5c7f8c840689ed4e7740f9af5cbe50ea9",
+          "message": "Merge pull request #840 from relaystr/chore/ndk-sdk-3.9\n\nchore: require Dart SDK 3.9",
+          "timestamp": "2026-09-23T13:56:37+02:00",
+          "tree_id": "46cb17b6b4facb6354aae5252e89e9d313363fcb",
+          "url": "https://github.com/relaystr/ndk/commit/9e5ae6d5c7f8c840689ed4e7740f9af5cbe50ea9"
+        },
+        "date": 1790164703366,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 51232.2,
+            "range": "50963-54522",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1709478,
+            "range": "1704672-1743466",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
