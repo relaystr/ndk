@@ -13,14 +13,18 @@ Nip01Event _authEvent(String content) => Nip01Event(
       content: content,
     );
 
+const _first = 'https://first.example';
+const _second = 'https://second.example';
+const _third = 'https://third.example';
+
 void main() {
   group('BlossomAuthorization.none', () {
     test('never produces an event', () async {
       const auth = BlossomAuthorization.none();
 
       expect(auth.upfront, isNull);
-      expect(auth.resolved, isNull);
-      expect(await auth.onRefusal(), isNull);
+      expect(auth.resolvedFor(_first), isNull);
+      expect(await auth.onRefusal(_first), isNull);
     });
   });
 
@@ -30,8 +34,8 @@ void main() {
       final auth = BlossomAuthorization.upfront(event);
 
       expect(auth.upfront, same(event));
-      expect(auth.resolved, same(event));
-      expect(await auth.onRefusal(), same(event));
+      expect(auth.resolvedFor(_first), same(event));
+      expect(await auth.onRefusal(_first), same(event));
     });
   });
 
@@ -44,7 +48,7 @@ void main() {
       });
 
       expect(auth.upfront, isNull);
-      expect(auth.resolved, isNull);
+      expect(auth.resolvedFor(_first), isNull);
       expect(signed, false, reason: 'building the policy must not sign');
     });
 
@@ -52,10 +56,21 @@ void main() {
       final event = _authEvent('get');
       final auth = BlossomAuthorization.onRefusal(() async => event);
 
-      expect(await auth.onRefusal(), same(event));
-      expect(auth.resolved, same(event),
-          reason: 'the rest of the operation should not pay another refusal');
+      expect(await auth.onRefusal(_first), same(event));
+      expect(auth.resolvedFor(_first), same(event),
+          reason: 'that server should not have to refuse again');
       expect(auth.upfront, isNull);
+    });
+
+    test('keeps the signature from a server that never refused', () async {
+      final auth = BlossomAuthorization.onRefusal(
+        () async => _authEvent('get'),
+      );
+
+      await auth.onRefusal(_first);
+
+      expect(auth.resolvedFor(_second), isNull,
+          reason: 'it never asked, so it must not learn who is asking');
     });
 
     test('signs once for concurrent refusals from several servers', () async {
@@ -68,7 +83,11 @@ void main() {
       });
 
       // three servers refuse before any signature came back
-      final pending = [auth.onRefusal(), auth.onRefusal(), auth.onRefusal()];
+      final pending = [
+        auth.onRefusal(_first),
+        auth.onRefusal(_second),
+        auth.onRefusal(_third),
+      ];
       gate.complete();
       final events = await Future.wait(pending);
 
@@ -84,8 +103,8 @@ void main() {
         return _authEvent('list');
       });
 
-      await auth.onRefusal();
-      await auth.onRefusal();
+      await auth.onRefusal(_first);
+      await auth.onRefusal(_second);
 
       expect(signatures, 1);
     });
@@ -97,14 +116,14 @@ void main() {
         throw SignerRequestCancelledException('request-1');
       });
 
-      await expectLater(
-          auth.onRefusal(), throwsA(isA<SignerRequestCancelledException>()));
-      await expectLater(
-          auth.onRefusal(), throwsA(isA<SignerRequestCancelledException>()));
+      await expectLater(auth.onRefusal(_first),
+          throwsA(isA<SignerRequestCancelledException>()));
+      await expectLater(auth.onRefusal(_second),
+          throwsA(isA<SignerRequestCancelledException>()));
 
       expect(prompts, 1,
           reason: 'the user already declined, asking again is nagging');
-      expect(auth.resolved, isNull);
+      expect(auth.resolvedFor(_first), isNull);
     });
 
     test('an error from the remote signer is asked for again', () async {
@@ -114,10 +133,10 @@ void main() {
         throw SignerRequestRejectedException(requestId: 'request-1');
       });
 
-      await expectLater(
-          auth.onRefusal(), throwsA(isA<SignerRequestRejectedException>()));
-      await expectLater(
-          auth.onRefusal(), throwsA(isA<SignerRequestRejectedException>()));
+      await expectLater(auth.onRefusal(_first),
+          throwsA(isA<SignerRequestRejectedException>()));
+      await expectLater(auth.onRefusal(_second),
+          throwsA(isA<SignerRequestRejectedException>()));
 
       expect(prompts, 2,
           reason: 'a bunker reports an unknown method the same way it reports '
@@ -132,8 +151,8 @@ void main() {
         throw Exception('bunker connection dropped');
       });
 
-      await expectLater(auth.onRefusal(), throwsA(isA<Exception>()));
-      await expectLater(auth.onRefusal(), throwsA(isA<Exception>()));
+      await expectLater(auth.onRefusal(_first), throwsA(isA<Exception>()));
+      await expectLater(auth.onRefusal(_second), throwsA(isA<Exception>()));
 
       expect(prompts, 2,
           reason: 'a timeout says nothing about whether the user would agree');
@@ -149,10 +168,10 @@ void main() {
         return event;
       });
 
-      await expectLater(auth.onRefusal(), throwsA(isA<Exception>()));
+      await expectLater(auth.onRefusal(_first), throwsA(isA<Exception>()));
 
-      expect(await auth.onRefusal(), same(event));
-      expect(auth.resolved, same(event));
+      expect(await auth.onRefusal(_second), same(event));
+      expect(auth.resolvedFor(_second), same(event));
     });
   });
 }

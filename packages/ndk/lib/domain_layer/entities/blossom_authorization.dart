@@ -9,7 +9,8 @@ typedef BlossomAuthorizationSigner = Future<Nip01Event> Function();
 /// One operation may talk to several servers. The three cases differ only in
 /// *when* the kind 24242 event is signed, never in what it says: the event is
 /// not bound to a server, so one signature covers every server the operation
-/// reaches.
+/// reaches. Under [BlossomAuthorization.onRefusal] it still goes only to the
+/// servers that refused a request without it.
 ///
 /// This is the repository-facing half of [AuthPolicy]: the usecase decides
 /// which identity may be revealed, this decides when the header goes out.
@@ -33,20 +34,22 @@ sealed class BlossomAuthorization {
   /// request goes out bare.
   Nip01Event? get upfront;
 
-  /// The event a refused request may be replayed with, null when a refusal is
-  /// final. Signs on the first call and returns that same signature to every
-  /// later caller, so one operation signs once however many servers refuse.
-  /// That matters for remote signers, where each signature is a prompt in
-  /// front of the user.
+  /// The event a request [serverUrl] refused may be replayed with, null when a
+  /// refusal is final. Signs on the first call and returns that same signature
+  /// to every later caller, so one operation signs once however many servers
+  /// refuse. That matters for remote signers, where each signature is a prompt
+  /// in front of the user.
   ///
   /// A signature the user cancelled is remembered too, so the remaining
   /// servers do not prompt again for something already declined. A signature
   /// that failed for any other reason is not: the next server asks again.
-  Future<Nip01Event?> onRefusal();
+  Future<Nip01Event?> onRefusal(String serverUrl);
 
-  /// The event a refusal already produced, null while none has. Lets the rest
-  /// of the operation send it from the start rather than pay a refusal each.
-  Nip01Event? get resolved;
+  /// The event a refusal from [serverUrl] already produced, null while that
+  /// server has not refused. Lets the rest of the operation send it to that
+  /// server from the start rather than pay a refusal each time, without
+  /// showing it to a server that never asked.
+  Nip01Event? resolvedFor(String serverUrl);
 }
 
 /// Never authorises, see [BlossomAuthorization.none].
@@ -58,10 +61,10 @@ class BlossomAuthorizationNone extends BlossomAuthorization {
   Nip01Event? get upfront => null;
 
   @override
-  Future<Nip01Event?> onRefusal() async => null;
+  Future<Nip01Event?> onRefusal(String serverUrl) async => null;
 
   @override
-  Nip01Event? get resolved => null;
+  Nip01Event? resolvedFor(String serverUrl) => null;
 
   @override
   String toString() => 'BlossomAuthorization.none';
@@ -79,10 +82,10 @@ class BlossomAuthorizationUpfront extends BlossomAuthorization {
   Nip01Event? get upfront => event;
 
   @override
-  Future<Nip01Event?> onRefusal() async => event;
+  Future<Nip01Event?> onRefusal(String serverUrl) async => event;
 
   @override
-  Nip01Event? get resolved => event;
+  Nip01Event? resolvedFor(String serverUrl) => event;
 
   @override
   String toString() => 'BlossomAuthorization.upfront(${event.id})';
@@ -98,6 +101,8 @@ class BlossomAuthorizationOnRefusal extends BlossomAuthorization {
 
   Nip01Event? _resolved;
 
+  final Set<String> _refusedBy = {};
+
   /// signs with [sign] the first time a server refuses
   BlossomAuthorizationOnRefusal(BlossomAuthorizationSigner sign) : _sign = sign;
 
@@ -105,7 +110,9 @@ class BlossomAuthorizationOnRefusal extends BlossomAuthorization {
   Nip01Event? get upfront => null;
 
   @override
-  Future<Nip01Event?> onRefusal() {
+  Future<Nip01Event?> onRefusal(String serverUrl) {
+    _refusedBy.add(serverUrl);
+
     final pending = _signed;
     if (pending != null) return pending;
 
@@ -123,7 +130,8 @@ class BlossomAuthorizationOnRefusal extends BlossomAuthorization {
   }
 
   @override
-  Nip01Event? get resolved => _resolved;
+  Nip01Event? resolvedFor(String serverUrl) =>
+      _refusedBy.contains(serverUrl) ? _resolved : null;
 
   @override
   String toString() => 'BlossomAuthorization.onRefusal';

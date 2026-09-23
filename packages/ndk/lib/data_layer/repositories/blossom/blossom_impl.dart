@@ -29,23 +29,24 @@ bool _isAuthRefusal(Object error, {required bool sentAuth}) =>
     error is HttpRequestException &&
     (error.statusCode == 401 || (!sentAuth && error.statusCode == 403));
 
-/// What to send before anything has been refused: the upfront event, or the
-/// one an earlier refusal in this same operation already signed.
-Nip01Event? _initial(BlossomAuthorization authorization) =>
-    authorization.upfront ?? authorization.resolved;
+/// What to send [serverUrl] before it refuses: the upfront event, or the one
+/// an earlier refusal from that same server already signed.
+Nip01Event? _initial(BlossomAuthorization authorization, String serverUrl) =>
+    authorization.upfront ?? authorization.resolvedFor(serverUrl);
 
 /// Sends, and sends once more with a freshly signed event if the server
 /// answered by asking for one.
 Future<T> _withAuthRetry<T>(
   BlossomAuthorization authorization,
+  String serverUrl,
   Future<T> Function(Nip01Event? authEvent) send,
 ) async {
-  final initial = _initial(authorization);
+  final initial = _initial(authorization, serverUrl);
   try {
     return await send(initial);
   } catch (e) {
     if (!_isAuthRefusal(e, sentAuth: initial != null)) rethrow;
-    final signed = await authorization.onRefusal();
+    final signed = await authorization.onRefusal(serverUrl);
     if (signed == null) rethrow;
     return await send(signed);
   }
@@ -495,7 +496,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
           contentLength: contentLength,
         );
 
-    final initial = _initial(authorization);
+    final initial = _initial(authorization, serverUrl);
     try {
       // consumed rather than delegated with yield*, which would forward the
       // refusal straight to the caller instead of raising it here
@@ -505,7 +506,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
       return;
     } catch (e) {
       if (!_isAuthRefusal(e, sentAuth: initial != null)) rethrow;
-      final signed = await authorization.onRefusal();
+      final signed = await authorization.onRefusal(serverUrl);
       if (signed == null) rethrow;
       // the body is read from scratch, so progress starts over
       yield* send(signed);
@@ -527,6 +528,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
       // Mirror endpoint is PUT /mirror/
       final response = await _withAuthRetry(
         authorization,
+        serverUrl,
         (authEvent) => client.put(
           url: Uri.parse('$serverUrl/mirror'),
           body: myBody,
@@ -580,6 +582,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
       try {
         final response = await _withAuthRetry(
           authorization,
+          url,
           (authEvent) => client.get(
             url: Uri.parse('$url/$sha256'),
             headers: headersFor(authEvent),
@@ -620,6 +623,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
       try {
         final response = await _withAuthRetry(
           authorization,
+          url,
           (authEvent) => client.head(
             url: Uri.parse('$url/$sha256'),
             headers: <String, String>{
@@ -653,6 +657,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     try {
       final response = await _withAuthRetry(
         authorization,
+        serverUrl,
         (authEvent) => client.head(
           url: Uri.parse('$serverUrl/$sha256'),
           headers: <String, String>{
@@ -760,6 +765,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
         final response = await _withAuthRetry(
           authorization,
+          url,
           (authEvent) => client.get(
             url: Uri.parse('$url/list/$pubkey')
                 .replace(queryParameters: queryParams),
@@ -810,6 +816,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     try {
       final response = await _withAuthRetry(
         authorization,
+        serverUrl,
         (authEvent) => client.delete(
           url: Uri.parse('$serverUrl/$sha256'),
           headers: {

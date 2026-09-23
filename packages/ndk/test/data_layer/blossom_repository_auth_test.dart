@@ -139,6 +139,31 @@ void main() {
       expect(signatures, 0, reason: 'nothing refused, so nothing was signed');
       expect(server.countRequests(hasAuth: true), 0);
     });
+
+    test('never sees the identity another server asked for', () async {
+      final refusing = MockBlossomServer(
+        port: refusingPort,
+        authRefusalStatus: 401,
+        requireAuthForReads: true,
+      );
+      await refusing.start();
+      addTearDown(refusing.stop);
+
+      await repo.getBlob(
+        sha256: sha256,
+        serverUrls: [
+          'http://localhost:${refusing.port}',
+          'http://localhost:${server.port}',
+        ],
+        authorization: BlossomAuthorization.onRefusal(
+          () async => _authEvent('get'),
+        ),
+      );
+
+      expect(refusing.countRequests(hasAuth: true), 1,
+          reason: 'it asked, then did not have the blob');
+      expect(server.countRequests(hasAuth: true), 0);
+    });
   });
 
   group('several refusing servers', () {
