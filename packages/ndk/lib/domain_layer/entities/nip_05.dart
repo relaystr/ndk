@@ -20,6 +20,19 @@ class Nip05 {
     this.relays = const [],
   });
 
+  /// Lowercased `name@domain` form of [identifier], or null if malformed.
+  /// A bare `domain` is the display form of the root identifier `_@domain`.
+  static String? canonicalIdentifier(String identifier) {
+    final parts = identifier.trim().toLowerCase().split("@");
+    if (parts.length == 1) {
+      parts.insert(0, "_");
+    }
+    if (parts.length != 2 || parts.any((part) => part.isEmpty)) {
+      return null;
+    }
+    return parts.join("@");
+  }
+
   Nip05 copyWith({
     String? pubKey,
     String? nip05,
