@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:bech32/bech32.dart';
@@ -21,13 +20,6 @@ class Helpers {
         (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length)),
       ),
     );
-  }
-
-  /// return a secure random string of given length
-  static String getSecureRandomString(int length) {
-    final random = Random.secure();
-    final values = List<int>.generate(length, (i) => random.nextInt(256));
-    return base64UrlEncode(values);
   }
 
   /// return a secure random hex string of given length

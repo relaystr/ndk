@@ -9,7 +9,7 @@ class NostrConnect {
   String? appImageUrl;
 
   final keyPair = Bip340.generatePrivateKey();
-  final secret = Helpers.getSecureRandomString(16);
+  final secret = Helpers.getSecureRandomHex(16);
 
   String get nostrConnectURL {
     final pubkey = keyPair.publicKey;
