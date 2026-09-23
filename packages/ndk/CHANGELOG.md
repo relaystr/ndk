@@ -1,3 +1,8 @@
+## 0.10.0-dev.6
+
+ - **REFACTOR**: rename RelayAuth to AuthPolicy.
+ - **FEAT**: add retryDelivery opt-out to broadcast.
+
 ## 0.10.0-dev.5
 
  - **PERF**: cache master key for cashu quote.
