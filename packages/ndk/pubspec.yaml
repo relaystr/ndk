@@ -41,7 +41,7 @@ dependencies:
   xxh3: ^1.2.0
   cbor: ^6.3.7
   bip39_mnemonic: ^4.0.1
-  hooks: ^1.0.0
+  hooks: ">=1.0.0 <3.0.0"
   native_toolchain_rust: ^1.0.1
   ffi: ^2.1.4
   web: ^1.1.1
