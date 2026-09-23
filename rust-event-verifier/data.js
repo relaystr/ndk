@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790015300207,
+  "lastUpdate": 1790154632467,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -644,6 +644,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1624556,
             "range": "1614206-1699672",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "907b8f14fa71f8b081b3fe879fed38d4664a6be0",
+          "message": "Merge pull request #841 from relaystr/feat/broadcast-retry-delivery-opt-out\n\nfeat: add retryDelivery opt-out to broadcast",
+          "timestamp": "2026-09-23T11:08:58+02:00",
+          "tree_id": "66e47bf92ce5b28ab785bde2d0c291ee9ecf1c94",
+          "url": "https://github.com/relaystr/ndk/commit/907b8f14fa71f8b081b3fe879fed38d4664a6be0"
+        },
+        "date": 1790154630399,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 26484.6,
+            "range": "26349-28974",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 780456,
+            "range": "770872-840222",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
