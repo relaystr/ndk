@@ -1,3 +1,7 @@
+## 0.1.1-dev.18
+
+ - **REFACTOR**: rename RelayAuth to AuthPolicy.
+
 ## 0.1.1-dev.17
 
  - **FIX**: attach a broadcast auth policy to the relay target, not the event.
