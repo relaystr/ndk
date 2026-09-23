@@ -109,6 +109,28 @@ Current behavior includes:
 - relay responses classified as transient failure remain retryable
 - external signer flows can also be retried in the background before relay delivery continues
 
+### Sending once without retry
+
+`retryDelivery: false` keeps one broadcast out of pending delivery:
+
+```dart
+ndk.broadcast.broadcast(
+  nostrEvent: event,
+  specificRelays: ['wss://relay.example.com'],
+  retryDelivery: false,
+);
+```
+
+No delivery record is written for that event, so nothing retries it whatever the
+relays answer, and it never shows up in `loadPendingDeliveries()`. Only
+specific-relay broadcasts are ever enrolled, so a gossip broadcast is already
+never retried. `broadcastReaction()` and `broadcastDeletion()` take the same
+parameter.
+
+To turn background retries off for the whole client instead, use
+`NdkConfig(pendingDeliveryRetriesEnabled: false)`. That one keeps persisting
+delivery state, it only stops replaying it.
+
 ## External signer retry behavior
 
 When you broadcast through an external signer such as `Nip46EventSigner`,
@@ -144,6 +166,7 @@ That means:
 - you cannot choose a custom retry/backoff profile for one broadcast
 - you cannot inject your own delivery policy classifier
 - the practical way to influence policy today is through the event kind you publish
+- the one per-broadcast control is `retryDelivery: false`, which skips retry entirely
 
 Examples:
 
