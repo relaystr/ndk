@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790154632467,
+  "lastUpdate": 1790154902360,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -682,6 +682,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 780456,
             "range": "770872-840222",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8a218c6403957c6c0bd7266aca5dcfde450a1ae9",
+          "message": "Merge pull request #839 from relaystr/chore/hooks-version-range\n\nchore(ndk): allow hooks 2.x",
+          "timestamp": "2026-09-23T11:13:01+02:00",
+          "tree_id": "60c3373f94b5e2e2d628256b26a417fe60715cef",
+          "url": "https://github.com/relaystr/ndk/commit/8a218c6403957c6c0bd7266aca5dcfde450a1ae9"
+        },
+        "date": 1790154899632,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 45261,
+            "range": "45178-48238",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1603806,
+            "range": "1592292-1635992",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
