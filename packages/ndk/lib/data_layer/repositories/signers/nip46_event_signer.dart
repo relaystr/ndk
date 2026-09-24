@@ -106,7 +106,10 @@ class Nip46EventSigner with ConcurrencyLimiterMixin implements EventSigner {
           ),
         );
       } else {
-        entry.completer.complete(response["result"]);
+        final result = response["result"];
+        entry.completer.complete(
+          result is String ? result : jsonEncode(result),
+        );
       }
     }
   }
@@ -296,6 +299,26 @@ class Nip46EventSigner with ConcurrencyLimiterMixin implements EventSigner {
 
     final response = await remoteRequest(request: request);
     return response;
+  }
+
+  /// Returns the relays the remote signer moved to, or null if it keeps the
+  /// current ones.
+  Future<List<String>?> switchRelays() async {
+    final request = BunkerRequest(method: SignerMethod.switchRelays);
+
+    final response = await remoteRequest(request: request);
+
+    final relays = jsonDecode(response);
+    if (relays is! List || relays.isEmpty) return null;
+
+    final previousSubscription = subscription;
+    connection.relays = List<String>.from(relays);
+    await listenRelays();
+    if (previousSubscription != null) {
+      await requests.closeSubscription(previousSubscription.requestId);
+    }
+
+    return connection.relays;
   }
 
   @override

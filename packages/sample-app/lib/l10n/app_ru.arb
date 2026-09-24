@@ -103,6 +103,7 @@
   "pendingMethodNip44Decrypt": "Расшифровать NIP-44",
   "pendingMethodPing": "Ping",
   "pendingMethodConnect": "Подключить",
+  "pendingMethodSwitchRelays": "Сменить релеи",
   "pendingSecondsAgo": "{count}с назад",
   "pendingMinutesAgo": "{count}м назад",
   "pendingHoursAgo": "{count}ч назад",

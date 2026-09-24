@@ -380,6 +380,9 @@ class SampleAppLocalizationsRu extends SampleAppLocalizations {
   String get pendingMethodConnect => 'Подключить';
 
   @override
+  String get pendingMethodSwitchRelays => 'Сменить релеи';
+
+  @override
   String pendingSecondsAgo(int count) {
     return '$countс назад';
   }

@@ -195,6 +195,7 @@
   "pendingMethodNip44Decrypt": "NIP-44 Decrypt",
   "pendingMethodPing": "Ping",
   "pendingMethodConnect": "Connect",
+  "pendingMethodSwitchRelays": "Switch Relays",
   "pendingSecondsAgo": "{count}s ago",
   "@pendingSecondsAgo": {
     "placeholders": {
