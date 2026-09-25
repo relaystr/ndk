@@ -57,6 +57,9 @@ class Wallets {
 
   /// stream subscriptions for cleanup
   final Map<String, List<StreamSubscription>> _subscriptions = {};
+  final Map<String, StreamSubscription<List<WalletBalance>>>
+      _balanceSubscriptions = {};
+  bool _backgrounded = false;
   late final Future<void> _initializationFuture;
   bool _isDisposed = false;
 
@@ -233,7 +236,9 @@ class Wallets {
 
     // Initialize transaction streams so combined feeds stay updated.
     // Only subscribe if someone is already listening
-    if (_balancesActivated) _initBalanceStream(wallet.id);
+    if (_balancesActivated || _walletBalanceStreams.containsKey(wallet.id)) {
+      _initBalanceStream(wallet.id);
+    }
     if (_pendingActivated) _initPendingTransactionStream(wallet.id);
     if (_recentActivated) _initRecentTransactionStream(wallet.id);
   }
@@ -306,6 +311,8 @@ class Wallets {
     _walletsPendingTransactions.remove(walletId);
     _walletsRecentTransactions.remove(walletId);
 
+    await _balanceSubscriptions.remove(walletId)?.cancel();
+
     // clean up streams
     _walletBalanceStreams[walletId]?.close();
     _walletPendingTransactionStreams[walletId]?.close();
@@ -366,37 +373,48 @@ class Wallets {
     }
   }
 
-  void _initBalanceStream(String id) {
-    if (_walletBalanceStreams[id] == null) {
-      _walletBalanceStreams[id] = BehaviorSubject<List<WalletBalance>>();
-      final subscriptions = <StreamSubscription>[];
-
-      _getWalletAsync(id).then((wallet) {
-        if (wallet != null) {
-          final provider = _providers[wallet.type];
-          if (provider != null) {
-            subscriptions.add(
-              provider.getBalances(wallet).listen(
-                (balances) {
-                  _walletsBalances[id] = balances;
-                  _walletBalanceStreams[id]?.add(balances);
-                  _updateCombinedStreams();
-                },
-                onError: (error) {
-                  _walletBalanceStreams[id]?.add([]);
-                },
-              ),
-            );
-          }
-        }
-      });
-
-      if (_subscriptions[id] == null) {
-        _subscriptions[id] = subscriptions;
-      } else {
-        _subscriptions[id]?.addAll(subscriptions);
+  /// Suspends automatic LNbits balance polling while the app is backgrounded.
+  /// Existing balances remain available. NWC notifications, transaction
+  /// monitoring, payments and explicit [refreshBalance] calls are unaffected.
+  void setBackgrounded(bool backgrounded) {
+    if (_isDisposed || _backgrounded == backgrounded) return;
+    _backgrounded = backgrounded;
+    for (final wallet in _wallets) {
+      if (wallet.type != WalletType.LNBITS) continue;
+      if (backgrounded) {
+        unawaited(_balanceSubscriptions.remove(wallet.id)?.cancel());
+      } else if (_walletBalanceStreams.containsKey(wallet.id)) {
+        _initBalanceStream(wallet.id);
       }
     }
+  }
+
+  void _initBalanceStream(String id) {
+    if (_isDisposed) return;
+    final subject = _walletBalanceStreams.putIfAbsent(
+        id, () => BehaviorSubject<List<WalletBalance>>());
+    if (_balanceSubscriptions.containsKey(id)) return;
+    final wallet = _wallets.firstWhereOrNull((wallet) => wallet.id == id);
+    if (wallet == null || (_backgrounded && wallet.type == WalletType.LNBITS)) {
+      return;
+    }
+    final provider = _providers[wallet.type];
+    if (provider == null) return;
+    _balanceSubscriptions[id] = provider.getBalances(wallet).listen(
+      (balances) {
+        if (_isDisposed ||
+            !identical(_walletBalanceStreams[id], subject) ||
+            (_backgrounded && wallet.type == WalletType.LNBITS)) {
+          return;
+        }
+        _walletsBalances[id] = balances;
+        subject.add(balances);
+        _updateCombinedStreams();
+      },
+      onError: (Object error) {
+        if (!_isDisposed && !subject.isClosed) subject.add([]);
+      },
+    );
   }
 
   void _initRecentTransactionStream(String id) {
@@ -926,6 +944,13 @@ class Wallets {
         futures.add(provider.removeWallet(wallet));
       }
     }
+
+    // Balance subscriptions are separate so backgrounding never cancels
+    // transaction monitoring or NWC notifications.
+    for (final sub in _balanceSubscriptions.values) {
+      futures.add(sub.cancel());
+    }
+    _balanceSubscriptions.clear();
 
     // cancel all subscriptions
     for (final subs in _subscriptions.values) {

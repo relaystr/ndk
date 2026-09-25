@@ -1793,6 +1793,77 @@ class RelayManager<T> {
     await Future.wait(_connectionKeysForRelay(url).map(closeConnection));
   }
 
+  /// Closes connections that no longer carry any tracked network work.
+  ///
+  /// Call this after optional subscriptions stop, for example when an app goes
+  /// into the background. This is not an eviction timer: a live subscription
+  /// keeps its connection even after EOSE, and authentication/reconnect work
+  /// keeps the exact connection it is preparing to use.
+  ///
+  /// Request discovery does not yet identify every target connection. Defer
+  /// pruning while such work is in progress instead of guessing its targets.
+  /// Broadcasts track relay URLs rather than identities, so both anonymous and
+  /// authenticated connections at an in-flight broadcast's URL are retained.
+  Future<void> closeIdleConnections() async {
+    var changed = false;
+    try {
+      for (final key in globalState.relays.keys.toList()) {
+        // Re-evaluate after each asynchronous close. Another operation may
+        // have claimed the next connection while the previous one was closing.
+        if (_hasUnassignedConnectionWork()) break;
+        if (_connectionHasWork(key)) continue;
+        await closeConnection(key);
+        changed = true;
+      }
+    } finally {
+      if (changed) updateRelayConnectivity();
+    }
+  }
+
+  bool _hasUnassignedConnectionWork() {
+    for (final state in globalState.inFlightRequests.values) {
+      if (!state.networkController.isClosed &&
+          (state.pendingConnections > 0 || state.requests.isEmpty)) {
+        return true;
+      }
+    }
+    return globalState.inFlightBroadcasts.values.any(
+      (state) => !state.networkController.isClosed && state.broadcasts.isEmpty,
+    );
+  }
+
+  bool _connectionHasWork(RelayConnectionKey key) {
+    final connectivity = globalState.relays[key];
+    if (connectivity == null) return true;
+    if (_connectReadyCompleters.containsKey(key) ||
+        connectivity.relay.connecting ||
+        (connectivity.relayTransport?.isConnecting() ?? false) ||
+        _authenticating.containsKey(key) ||
+        _challengeWaiters.containsKey(key) ||
+        _pendingAuths.values.any((auth) => auth.key == key)) {
+      return true;
+    }
+    for (final state in globalState.inFlightRequests.values) {
+      if (state.networkController.isClosed) continue;
+      final request = state.requests[key];
+      if (request != null &&
+          (request.retryingAuth ||
+              (!request.receivedClosed &&
+                  (state.isSubscription || !request.receivedEOSE)))) {
+        return true;
+      }
+    }
+    for (final state in globalState.inFlightBroadcasts.values) {
+      if (state.networkController.isClosed) continue;
+      if (state.broadcasts.keys.any((url) => cleanRelayUrl(url) == key.url)) {
+        return true;
+      }
+    }
+    return globalState.inFlightNegotiations.values.any(
+      (state) => !state.isCompleted && state.connectionKey == key,
+    );
+  }
+
   /// Closes one connection and forgets it. An entry that lost its transport, to
   /// a reset or to a failed connection attempt, is forgotten just the same:
   /// leaving it behind keeps its auth state alive and makes it reconnect.
