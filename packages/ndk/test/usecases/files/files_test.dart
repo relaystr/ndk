@@ -15,6 +15,7 @@ void main() {
   late MockBlossomServer server;
   late MockBlossomServer server2;
   late Files client;
+  late Account loggedAccount;
 
   setUp(() async {
     server = MockBlossomServer(port: 3010);
@@ -36,6 +37,7 @@ void main() {
       privkey: key1.privateKey!,
     );
 
+    loggedAccount = ndk.accounts.getLoggedAccount()!;
     client = ndk.files;
   });
 
@@ -262,7 +264,7 @@ void main() {
         url: 'http://localhost:3010/$sha256',
         outputPath: downloadFile.path,
         serverUrls: ['http://localhost:3010'],
-        useAuth: true,
+        auth: AuthPolicy.require(loggedAccount),
       );
 
       expect(await downloadFile.exists(), true);

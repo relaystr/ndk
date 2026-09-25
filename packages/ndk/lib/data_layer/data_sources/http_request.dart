@@ -100,8 +100,10 @@ class HttpRequestDS {
     );
 
     if (!_isSuccessStatus(response.statusCode)) {
-      throw Exception(
-        "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url",
+      throw HttpRequestException(
+        statusCode: response.statusCode,
+        body: response.body,
+        url: url.toString(),
       );
     }
 
@@ -162,8 +164,10 @@ class HttpRequestDS {
         final response = await http.Response.fromStream(streamedResponse);
 
         if (!_isSuccessStatus(response.statusCode)) {
-          final error = Exception(
-            "error fetching STATUS: ${response.statusCode}, Link: $url",
+          final error = HttpRequestException(
+            statusCode: response.statusCode,
+            body: response.body,
+            url: url.toString(),
           );
           progressSubject.addError(error);
           await progressSubject.close();
@@ -203,8 +207,10 @@ class HttpRequestDS {
     );
 
     if (!_isSuccessStatus(response.statusCode)) {
-      throw Exception(
-        "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url,  ",
+      throw HttpRequestException(
+        statusCode: response.statusCode,
+        body: response.body,
+        url: url.toString(),
       );
     }
 
@@ -215,8 +221,10 @@ class HttpRequestDS {
     http.Response response = await _client.head(url, headers: headers);
 
     if (!_isSuccessStatus(response.statusCode)) {
-      throw Exception(
-        "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url",
+      throw HttpRequestException(
+        statusCode: response.statusCode,
+        body: response.body,
+        url: url.toString(),
       );
     }
 
@@ -227,8 +235,10 @@ class HttpRequestDS {
     http.Response response = await _client.get(url, headers: headers);
 
     if (!_isSuccessStatus(response.statusCode)) {
-      throw Exception(
-        "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url",
+      throw HttpRequestException(
+        statusCode: response.statusCode,
+        body: response.body,
+        url: url.toString(),
       );
     }
 
@@ -249,8 +259,10 @@ class HttpRequestDS {
     final streamedResponse = await _client.send(request);
 
     if (!_isSuccessStatus(streamedResponse.statusCode)) {
-      throw Exception(
-        "error fetching STATUS: ${streamedResponse.statusCode}, Link: $url",
+      throw HttpRequestException(
+        statusCode: streamedResponse.statusCode,
+        body: '',
+        url: url.toString(),
       );
     }
 
@@ -261,8 +273,10 @@ class HttpRequestDS {
     http.Response response = await _client.delete(url, headers: headers);
 
     if (!_isSuccessStatus(response.statusCode)) {
-      throw Exception(
-        "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url",
+      throw HttpRequestException(
+        statusCode: response.statusCode,
+        body: response.body,
+        url: url.toString(),
       );
     }
 
