@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790164705961,
+  "lastUpdate": 1790331164715,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -796,6 +796,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1709478,
             "range": "1704672-1743466",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "23c50c25ff5c3da09db10b22cb61ace63f1cff60",
+          "message": "Merge pull request #845 from relaystr/feat/auth-policy-blossom\n\nfeat: auth policy blossom",
+          "timestamp": "2026-09-25T12:11:04+02:00",
+          "tree_id": "3c880685fe94d6472c38c5d0921643dca7b65fa5",
+          "url": "https://github.com/relaystr/ndk/commit/23c50c25ff5c3da09db10b22cb61ace63f1cff60"
+        },
+        "date": 1790331162595,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46970.4,
+            "range": "46808-49745",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1591590,
+            "range": "1586820-1611198",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
