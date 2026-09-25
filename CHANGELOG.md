@@ -3,6 +3,46 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-25
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.10.0-dev.7`](#ndk---v0100-dev7)
+
+Packages with other changes:
+
+ - [`ndk_objectbox` - `v0.2.12-dev.16`](#ndk_objectbox---v0212-dev16)
+ - [`ndk_drift` - `v0.1.1-dev.19`](#ndk_drift---v011-dev19)
+ - [`ndk_flutter` - `v0.10.0-dev.8`](#ndk_flutter---v0100-dev8)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.16`
+ - `ndk_drift` - `v0.1.1-dev.19`
+ - `ndk_flutter` - `v0.10.0-dev.8`
+
+---
+
+#### `ndk` - `v0.10.0-dev.7`
+
+ - **REFACTOR**: let the blossom repository authorise on refusal.
+ - **REFACTOR**: surface the http status code on every request failure.
+ - **FIX**: stay anonymous with each blossom server until it refuses.
+ - **FIX**: use hex secret in nostrconnect URI.
+ - **FIX**: keep an anonymous blossom report anonymous.
+ - **FIX**: carry the blossom authorization through every request it makes.
+ - **FEAT**: pass an auth policy through the files facade.
+ - **FEAT**: let a blossom operation say which identity it may reveal.
+ - **FEAT**: add the blossom authorization, the repository half of a policy.
+ - **BREAKING** **FEAT**: drop blossom useAuth and customSigner in favour of auth.
+
+
 ## 2026-09-23
 
 ### Changes
