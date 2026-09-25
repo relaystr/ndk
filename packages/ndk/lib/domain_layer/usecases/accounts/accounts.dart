@@ -8,6 +8,7 @@ import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
 import '../bunkers/bunkers.dart';
 import '../bunkers/models/bunker_connection.dart';
+import '../bunkers/models/nip46_client_metadata.dart';
 import '../bunkers/models/nostr_connect.dart';
 
 /// A usecase that handles accounts
@@ -97,10 +98,12 @@ class Accounts {
     required String bunkerUrl,
     required Bunkers bunkers,
     Function(String)? authCallback,
+    Nip46ClientMetadata? clientMetadata,
   }) async {
     BunkerConnection? connection = await bunkers.connectWithBunkerUrl(
       bunkerUrl,
       authCallback: authCallback,
+      clientMetadata: clientMetadata,
     );
     if (connection != null) {
       await loginWithBunkerConnection(

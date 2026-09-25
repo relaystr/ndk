@@ -1,12 +1,10 @@
 import '../../../../shared/nips/nip01/bip340.dart';
 import '../../../../shared/nips/nip01/helpers.dart';
+import 'nip46_client_metadata.dart';
 
 class NostrConnect {
   List<String> relays;
-  List<String>? perms;
-  String? appName;
-  String? appUrl;
-  String? appImageUrl;
+  Nip46ClientMetadata? clientMetadata;
 
   final keyPair = Bip340.generatePrivateKey();
   final secret = Helpers.getSecureRandomString(16);
@@ -22,31 +20,21 @@ class NostrConnect {
 
     params.add('secret=$secret');
 
-    if (perms != null && perms!.isNotEmpty) {
-      params.add('perms=${perms!.join(',')}');
+    final perms = clientMetadata?.perms;
+    if (perms != null && perms.isNotEmpty) {
+      params.add('perms=${perms.join(',')}');
     }
 
-    if (appName != null) {
-      params.add('name=${Uri.encodeComponent(appName!)}');
-    }
-
-    if (appUrl != null) {
-      params.add('url=${Uri.encodeComponent(appUrl!)}');
-    }
-
-    if (appImageUrl != null) {
-      params.add('image=${Uri.encodeComponent(appImageUrl!)}');
-    }
+    clientMetadata?.displayInfo.forEach((key, value) {
+      params.add('$key=${Uri.encodeComponent(value)}');
+    });
 
     return 'nostrconnect://$pubkey?${params.join('&')}';
   }
 
   NostrConnect({
     required this.relays,
-    this.perms,
-    this.appName,
-    this.appUrl,
-    this.appImageUrl,
+    this.clientMetadata,
   }) {
     if (relays.isEmpty) {
       throw ArgumentError("At least one relay is required");

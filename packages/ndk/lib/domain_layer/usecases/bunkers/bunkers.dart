@@ -7,6 +7,7 @@ import '../../../data_layer/repositories/signers/nip46_event_signer.dart';
 import '../../../domain_layer/repositories/event_signer.dart';
 import 'models/bunker_request.dart';
 import 'models/bunker_connection.dart';
+import 'models/nip46_client_metadata.dart';
 import '../../entities/filter.dart';
 import '../../entities/nip_01_event.dart';
 import '../broadcast/broadcast.dart';
@@ -33,6 +34,7 @@ class Bunkers {
   Future<BunkerConnection?> connectWithBunkerUrl(
     String bunkerUrl, {
     Function(String)? authCallback,
+    Nip46ClientMetadata? clientMetadata,
   }) async {
     final uri = Uri.parse(bunkerUrl);
     if (uri.scheme != 'bunker') {
@@ -58,9 +60,18 @@ class Bunkers {
       publicKey: keyPair.$2,
     );
 
+    final requestedPerms = clientMetadata?.perms?.join(',') ?? '';
+    final metadata = clientMetadata?.displayInfo ?? {};
+
     final request = BunkerRequest(
       method: SignerMethod.connect,
-      params: [remotePubkey, secret],
+      params: [
+        remotePubkey,
+        secret,
+        // an empty perms string keeps the metadata in fourth position (NIP-46)
+        if (requestedPerms.isNotEmpty || metadata.isNotEmpty) requestedPerms,
+        if (metadata.isNotEmpty) jsonEncode(metadata),
+      ],
     );
 
     final encryptedRequest = await localEventSigner.encryptNip44(
