@@ -583,14 +583,21 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     }
 
     if (tags != null && tags.isNotEmpty) {
-      final matchingEventIds = _findEventIdsByTags(eventBox, tags);
-      if (matchingEventIds.isEmpty) {
-        return [];
+      for (final entry in tags.entries) {
+        final key = entry.key.trim().toLowerCase();
+        final values = entry.value
+            .map((v) => v.trim().toLowerCase())
+            .where((v) => v.isNotEmpty)
+            .toSet();
+        if (key.isEmpty || values.isEmpty) return [];
+        Condition<DbNip01Event>? tagCondition;
+        for (final value in values) {
+          final match = DbNip01Event_.tagsIndex.containsElement('$key:$value');
+          tagCondition = tagCondition == null ? match : tagCondition.or(match);
+        }
+        condition =
+            condition == null ? tagCondition : condition.and(tagCondition!);
       }
-
-      final tagCondition = DbNip01Event_.dbId.oneOf(matchingEventIds.toList());
-      condition =
-          (condition == null) ? tagCondition : condition.and(tagCondition);
     }
 
     // Create and build the query
@@ -606,9 +613,12 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
 
     // Build and execute the query
     final query = queryBuilder.build();
-    final results = query.find();
-
-    var events = results.map((dbEvent) => dbEvent.toNdk()).toList();
+    late List<Nip01Event> events;
+    try {
+      events = query.find().map((dbEvent) => dbEvent.toNdk()).toList();
+    } finally {
+      query.close();
+    }
 
     if (limit != null && limit > 0 && events.length > limit) {
       events = events.take(limit).toList();

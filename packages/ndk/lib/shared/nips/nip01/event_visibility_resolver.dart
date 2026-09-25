@@ -25,12 +25,13 @@ typedef RawEventLoader = Future<List<Nip01Event>> Function({
 /// conflict domain and the NIP-09 deletion that covers an event can both sit
 /// outside it. Grouping only what a filter returned makes an old version look
 /// current whenever the filter excluded its successor, for example a read by
-/// event id. So the resolver runs one extra raw read to fetch that context,
-/// then classifies the candidates against it.
+/// event id. The resolver fetches only the candidates' conflict domains and
+/// their authors' deletions, then classifies the candidates against that context.
 class EventVisibilityResolver {
   /// Maximum authors per context read, keeping each query scoped without
   /// creating an excessively large `inList`.
   static const _authorBatchSize = 100;
+  static const _tagBatchSize = 100;
 
   final RawEventLoader _loadRawEvents;
 
@@ -43,7 +44,7 @@ class EventVisibilityResolver {
   }) async {
     if (candidates.isEmpty) return <Nip01Event>[];
     final currentTime = now ?? Nip01Event.secondsSinceEpoch();
-    final state = await _resolveState(candidates);
+    final state = await _resolveState(candidates, currentTime);
 
     final visible = <Nip01Event>[];
     for (final event in candidates) {
@@ -96,7 +97,7 @@ class EventVisibilityResolver {
       queryKinds ??= coordinateKinds.toList();
     }
 
-    final candidates = await _loadRawEvents(
+    var candidates = await _loadRawEvents(
       ids: ids,
       pubKeys: queryPubKeys,
       kinds: queryKinds,
@@ -105,20 +106,19 @@ class EventVisibilityResolver {
       until: until,
       search: search,
     );
+    if (wantedConflictKeys != null) {
+      candidates = candidates
+          .where((event) => wantedConflictKeys!
+              .contains(EventCacheStateRecord.conflictKeyFor(event)))
+          .toList();
+    }
     if (candidates.isEmpty) return <HiddenEvent>[];
 
     final currentTime = now ?? Nip01Event.secondsSinceEpoch();
-    final state = await _resolveState(candidates);
+    final state = await _resolveState(candidates, currentTime);
 
     final hidden = <HiddenEvent>[];
     for (final event in candidates) {
-      if (wantedConflictKeys != null &&
-          !wantedConflictKeys.contains(
-            EventCacheStateRecord.conflictKeyFor(event),
-          )) {
-        continue;
-      }
-
       final record = state[event.id];
       if (record == null) continue;
 
@@ -168,39 +168,68 @@ class EventVisibilityResolver {
 
   Future<Map<String, EventCacheStateRecord>> _resolveState(
     List<Nip01Event> candidates,
+    int now,
   ) async {
     final authors = <String>{};
-    final contextKinds = <int>{Deletion.kKind};
+    final conflictKeys = <String>{};
+    final replacementGroups = <(String, int), Set<String>>{};
     for (final event in candidates) {
       authors.add(event.pubKey);
-      if (EventKindClassification.isReplaceableKind(event.kind)) {
-        contextKinds.add(event.kind);
+      final conflictKey = EventCacheStateRecord.conflictKeyFor(event);
+      if (conflictKey == null) continue;
+      conflictKeys.add(conflictKey);
+      replacementGroups.putIfAbsent((event.pubKey, event.kind),
+          () => <String>{}).add(event.getDtag() ?? '');
+    }
+
+    final byId = {for (final event in candidates) event.id: event};
+    final authorList = authors.toList();
+    for (var start = 0; start < authorList.length; start += _authorBatchSize) {
+      final end = (start + _authorBatchSize).clamp(0, authorList.length);
+      // Include all author deletions: they may delete a successor that was
+      // excluded by the original query, leaving a candidate current again.
+      final deletions = await _loadRawEvents(
+        pubKeys: authorList.sublist(start, end),
+        kinds: const [Deletion.kKind],
+      );
+      for (final event in deletions) {
+        byId[event.id] = event;
       }
     }
 
-    final authorList = authors.toList();
-    final context = <Nip01Event>[];
-    for (var start = 0; start < authorList.length; start += _authorBatchSize) {
-      final end = (start + _authorBatchSize).clamp(0, authorList.length);
-      context.addAll(
-        await _loadRawEvents(
-          pubKeys: authorList.sublist(start, end),
-          kinds: contextKinds.toList(),
-        ),
-      );
-    }
-
-    final byId = <String, Nip01Event>{};
-    for (final event in candidates) {
-      byId[event.id] = event;
-    }
-    for (final event in context) {
-      byId[event.id] = event;
+    for (final entry in replacementGroups.entries) {
+      final (author, kind) = entry.key;
+      final dTags = entry.value;
+      // Missing and empty d-tags share a conflict domain. A tag filter cannot
+      // find missing tags. ObjectBox also drops whitespace-only index values,
+      // so those uncommon coordinates require an author/kind read as well.
+      final useTagFilter =
+          EventKindClassification.isParameterizedReplaceableKind(kind) &&
+              dTags.every((value) => value.trim().isNotEmpty);
+      final values = dTags.toList();
+      final batchSize = useTagFilter ? _tagBatchSize : values.length;
+      for (var start = 0; start < values.length; start += batchSize) {
+        final end = (start + batchSize).clamp(0, values.length);
+        final context = await _loadRawEvents(
+          pubKeys: [author],
+          kinds: [kind],
+          tags: useTagFilter ? {'d': values.sublist(start, end)} : null,
+        );
+        for (final event in context) {
+          // The tag index can match a later d-tag or a case/space-normalized
+          // value. NIP-01 coordinates use the exact first d-tag instead.
+          if (conflictKeys
+              .contains(EventCacheStateRecord.conflictKeyFor(event))) {
+            byId[event.id] = event;
+          }
+        }
+      }
     }
 
     return {
-      for (final record
-          in EventCacheStateRecord.buildForEvents(byId.values.toList()))
+      for (final record in EventCacheStateRecord.buildForEvents(
+          byId.values.toList(),
+          now: now))
         record.eventId: record,
     };
   }
