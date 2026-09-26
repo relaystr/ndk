@@ -164,11 +164,12 @@ class Nip46EventSigner with ConcurrencyLimiterMixin implements EventSigner {
       );
 
       final signedEvent = await localEventSigner.sign(requestEvent);
-      final broadcastRes = broadcast.broadcast(
+      // not awaiting the broadcast: the slowest relay's OK would delay a
+      // response already received through a faster one
+      broadcast.broadcast(
         nostrEvent: signedEvent,
         specificRelays: connection.relays,
       );
-      await broadcastRes.broadcastDoneFuture;
 
       return completer.future;
     });
