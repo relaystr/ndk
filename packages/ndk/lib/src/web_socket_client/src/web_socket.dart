@@ -37,14 +37,14 @@ class WebSocket {
     Duration? timeout,
     String? binaryType,
     bool compressionEnabled = true,
-  })  : _uri = uri,
-        _protocols = protocols,
-        _pingInterval = pingInterval,
-        _headers = headers,
-        _backoff = backoff ?? _defaultBackoff,
-        _timeout = timeout ?? _defaultTimeout,
-        _binaryType = binaryType,
-        _compressionEnabled = compressionEnabled {
+  }) : _uri = uri,
+       _protocols = protocols,
+       _pingInterval = pingInterval,
+       _headers = headers,
+       _backoff = backoff ?? _defaultBackoff,
+       _timeout = timeout ?? _defaultTimeout,
+       _binaryType = binaryType,
+       _compressionEnabled = compressionEnabled {
     _connect();
   }
 
@@ -84,7 +84,7 @@ class WebSocket {
   bool _isClosedByClient = false;
 
   Future<void> _connect() async {
-    if (_isConnected) return;
+    if (_isClosedByClient || _isConnected) return;
 
     void attemptToReconnect([Object? error, StackTrace? stackTrace]) {
       if (_isClosedByClient || _isReconnecting || _isDisconnecting) return;
@@ -102,14 +102,43 @@ class WebSocket {
     }
 
     try {
-      final ws = await connect(
-        _uri.toString(),
-        protocols: _protocols,
-        headers: _headers,
-        pingInterval: _pingInterval,
-        binaryType: _binaryType,
-        compressionEnabled: _compressionEnabled,
-      ).timeout(_timeout);
+      // A timeout stops waiting; it does not cancel the native handshake.
+      // Keep ownership of its eventual result so an abandoned attempt cannot
+      // leave an untracked socket (and its heartbeat) alive.
+      var timedOut = false;
+      final channel =
+          await connect(
+                _uri.toString(),
+                protocols: _protocols,
+                headers: _headers,
+                pingInterval: _pingInterval,
+                binaryType: _binaryType,
+                compressionEnabled: _compressionEnabled,
+              )
+              .then<WebSocketChannel?>((ws) {
+                final channel = getWebSocketChannel(ws);
+                if (_isClosedByClient || timedOut) {
+                  channel.sink.close().ignore();
+                  return null;
+                }
+                return channel;
+              })
+              .timeout(
+                _timeout,
+                onTimeout: () {
+                  timedOut = true;
+                  throw TimeoutException(
+                    'WebSocket handshake timed out',
+                    _timeout,
+                  );
+                },
+              );
+      if (channel == null) return;
+      // close() can also run between completion and this continuation.
+      if (_isClosedByClient) {
+        channel.sink.close().ignore();
+        return;
+      }
 
       final connectionState = _connectionController.state;
       if (connectionState is Reconnecting) {
@@ -118,7 +147,7 @@ class WebSocket {
         _connectionController.add(const Connected());
       }
 
-      _channel = getWebSocketChannel(ws);
+      _channel = channel;
       _subscription?.cancel().ignore();
       _subscription = _channel!.stream.listen(
         (message) {

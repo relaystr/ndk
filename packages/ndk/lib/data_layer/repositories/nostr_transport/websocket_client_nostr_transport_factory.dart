@@ -6,7 +6,29 @@ import '../../../shared/helpers/relay_helper.dart';
 import '../../data_sources/websocket_client.dart';
 
 class WebSocketClientNostrTransportFactory implements NostrTransportFactory {
-  WebSocketClientNostrTransportFactory({this.compressionEnabled = true});
+  WebSocketClientNostrTransportFactory({
+    this.compressionEnabled = true,
+    this.pingInterval = const Duration(seconds: 10),
+    this.reconnectMaximumStep = 4,
+  }) {
+    if (pingInterval != null && pingInterval! <= Duration.zero) {
+      throw ArgumentError.value(
+        pingInterval,
+        'pingInterval',
+        'must be positive',
+      );
+    }
+    if (reconnectMaximumStep <= 0) {
+      throw ArgumentError.value(
+        reconnectMaximumStep,
+        'reconnectMaximumStep',
+        'must be positive',
+      );
+    }
+  }
+
+  final Duration? pingInterval;
+  final int reconnectMaximumStep;
 
   final bool compressionEnabled;
 
@@ -24,13 +46,13 @@ class WebSocketClientNostrTransportFactory implements NostrTransportFactory {
 
     final backoff = BinaryExponentialBackoff(
       initial: Duration(milliseconds: 500),
-      maximumStep: 4,
+      maximumStep: reconnectMaximumStep,
     );
     final client = WebSocket(
       Uri.parse(myUrl),
       backoff: backoff,
       timeout: Duration(seconds: 3600),
-      pingInterval: Duration(seconds: 10),
+      pingInterval: pingInterval,
       binaryType: 'arraybuffer',
       compressionEnabled: compressionEnabled,
     );

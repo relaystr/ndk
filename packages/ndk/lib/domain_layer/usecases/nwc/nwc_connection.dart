@@ -23,19 +23,19 @@ class NwcConnection {
   StreamController<NwcNotification> notificationStream =
       StreamController<NwcNotification>.broadcast();
 
-  Stream<NwcNotification> get paymentsReceivedStream =>
-      notificationStream.stream
-          .where((notification) => notification.isPaymentReceived)
-          .asBroadcastStream();
+  Stream<NwcNotification> get paymentsReceivedStream => notificationStream
+      .stream
+      .where((notification) => notification.isPaymentReceived)
+      .asBroadcastStream();
 
   Stream<NwcNotification> get paymentsSentStream => notificationStream.stream
       .where((notification) => notification.isPaymentSent)
       .asBroadcastStream();
 
-  Stream<NwcNotification> get holdInvoiceStateStream =>
-      notificationStream.stream
-          .where((notification) => notification.isHoldInvoiceAccepted)
-          .asBroadcastStream();
+  Stream<NwcNotification> get holdInvoiceStateStream => notificationStream
+      .stream
+      .where((notification) => notification.isHoldInvoiceAccepted)
+      .asBroadcastStream();
 
   /// listen
   void listen(void Function(Nip01Event event)? onData) {
@@ -48,11 +48,16 @@ class NwcConnection {
     }
   }
 
+  /// Cancels only the relay listener, retaining public notification streams.
+  Future<void> cancelSubscriptionListener() async {
+    final listener = _streamSubscription;
+    _streamSubscription = null;
+    await listener?.cancel();
+  }
+
   /// cancels subscription and closes stream controllers
   Future<void> close() async {
-    if (_streamSubscription != null) {
-      await _streamSubscription!.cancel();
-    }
+    await cancelSubscriptionListener();
     await responseStream.close();
     await notificationStream.close();
   }

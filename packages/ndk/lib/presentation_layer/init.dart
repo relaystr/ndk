@@ -79,7 +79,7 @@ class Initialization {
   /// repositories with no dependencies
 
   late final WebSocketClientNostrTransportFactory
-      _webSocketNostrTransportFactory;
+  _webSocketNostrTransportFactory;
 
   /// state obj
 
@@ -128,13 +128,15 @@ class Initialization {
   Initialization({
     required NdkConfig ndkConfig,
     required GlobalState globalState,
-  })  : _globalState = globalState,
-        _ndkConfig = ndkConfig {
+  }) : _globalState = globalState,
+       _ndkConfig = ndkConfig {
     // Configure global WebSocket User-Agent on dart:io platforms
     configureDefaultUserAgent(ndkConfig.userAgent);
 
     _webSocketNostrTransportFactory = WebSocketClientNostrTransportFactory(
       compressionEnabled: ndkConfig.webSocketCompression,
+      pingInterval: ndkConfig.webSocketPingInterval,
+      reconnectMaximumStep: ndkConfig.webSocketReconnectMaximumStep,
     );
 
     accounts = Accounts(_ndkConfig.eventSignerFactory);
@@ -245,6 +247,13 @@ class Initialization {
       requests: requests,
       broadcast: broadcast,
       eventSignerFactory: _ndkConfig.eventSignerFactory,
+      onIdle: relayManager.closeIdleConnections,
+      isSubscriptionReady: (requestId) =>
+          relayManager.globalState.relays.values.any(
+            (relay) =>
+                relay.isConnected &&
+                relay.stats.openRequestIds.contains(requestId),
+          ),
     );
 
     if (_ndkConfig.walletsRepo == null) {
