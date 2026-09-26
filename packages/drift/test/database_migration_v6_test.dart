@@ -205,6 +205,24 @@ void main() {
     await db.close();
   });
 
+  test('v5 -> latest creates the events query indexes', () async {
+    final db = openV5Database();
+    await db.customSelect('SELECT 1').get();
+
+    final indexes = await db
+        .customSelect(
+          "SELECT name FROM sqlite_master WHERE type = 'index' "
+          "AND tbl_name = 'events'",
+        )
+        .get();
+    expect(
+      indexes.map((row) => row.read<String>('name')),
+      containsAll(['events_pub_key_kind_created_at', 'events_kind_created_at']),
+    );
+
+    await db.close();
+  });
+
   test('newer signed event wins over a projected legacy row', () async {
     final db = openV5Database(
       metadataInserts: [
