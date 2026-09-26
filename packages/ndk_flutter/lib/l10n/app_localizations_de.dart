@@ -1727,4 +1727,130 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get balanceRefreshed => 'Guthaben aktualisiert';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Mint-Angebot wiederherstellen';
+
+  @override
+  String get recoverQuote => 'Angebot wiederherstellen';
+
+  @override
+  String get enterQuoteId =>
+      'Gib die Mint-Quoten-ID ein, die wiederhergestellt werden soll. Der Lock-Key wird aus deiner Seed-Phrase wiederhergestellt.';
+
+  @override
+  String get quoteId => 'Quoten-ID';
+
+  @override
+  String get quoteIdHint => 'Füge die Quoten-ID hier ein';
+
+  @override
+  String get pleaseEnterQuoteId => 'Bitte eine Quoten-ID eingeben';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'Angebot wird vom Mint abgerufen...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'Lock-Key wird aus deiner Seed wiederhergestellt...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint =>
+      'Mint wird abgeschlossen...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Lock-Key wiederhergestellt (Ableitungszähler $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Angebot wiederhergestellt und Guthaben deinem Konto hinzugefügt';
+
+  @override
+  String get quoteRecoveryFailed => 'Angebotswiederherstellung fehlgeschlagen';
+
+  @override
+  String get restoreFundsFromMint => 'Gelder vom Mint wiederherstellen';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Gelder vom Mint wiederherstellen';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Durchsucht den Mint nach Nachweisen, die aus deiner Seed abgeleitet wurden, und stellt sie in dieser Wallet wieder her.';
+
+  @override
+  String get startRestore => 'Wiederherstellung starten';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets =>
+      'Mint-Keysets werden abgerufen...';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'Mint wird nach deinen Geldern durchsucht...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return '$keysets Keyset(s) durchsucht · $proofs Nachweis(e) gefunden';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Wiederherstellung abgeschlossen';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Stellt auch ausstehende Mint-Angebote wieder her';
+
+  @override
+  String restoredFromMint(int count) {
+    return '$count Nachweise vom Mint wiederhergestellt';
+  }
+
+  @override
+  String get restoreFailed => 'Wiederherstellung fehlgeschlagen';
+
+  @override
+  String get restoreFromBackup => 'Aus Backup wiederherstellen';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Wiederherstellung und Sicherung';
+
+  @override
+  String get cashuSeedPhraseOption => 'Seed-Phrase festlegen';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Cashu-Seed-Phrase';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Diese Seed-Phrase wird von ALLEN Cashu-Wallets gemeinsam genutzt. Sie ist die einzige Möglichkeit, deine Gelder wiederherzustellen, wenn du dieses Gerät verlierst. Wenn du sie änderst, wird die Seed ersetzt, mit der für jede Cashu-Wallet Schlüssel abgeleitet werden; Gelder, die unter der vorherigen Seed empfangen wurden, können dann nicht mehr automatisch gefunden werden.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Gib die Wiederherstellungsphrase ein, die du verwenden möchtest (12, 15, 18, 21 oder 24 Wörter). Ändere die Seed nur, wenn du Wallets aus einer bereits gesicherten Phrase wiederherstellst.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Seed-Phrase';
+
+  @override
+  String get cashuSeedPhraseHint => 'Füge hier deine Seed-Phrase ein';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Ich verstehe, dass dies die Seed für alle Cashu-Wallets ändert';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'Das sieht nicht wie eine gültige Seed-Phrase aus. Überprüfe, dass alle Wörter richtig geschrieben und in der richtigen Reihenfolge sind.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Seed-Phrase aktualisiert. Sie gilt jetzt für alle Cashu-Wallets. Sichere die neue Phrase.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed =>
+      'Die Seed-Phrase konnte nicht aktualisiert werden';
 }

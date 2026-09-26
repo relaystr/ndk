@@ -131,22 +131,53 @@ class LnBitsWalletProvider implements WalletProvider {
   Future<void> removeWallet(Wallet wallet) async {}
 
   @override
-  Stream<List<WalletBalance>> getBalances(Wallet wallet) async* {
+  Stream<List<WalletBalance>> getBalances(Wallet wallet) {
     final lnbitsWallet = _asLnBitsWallet(wallet);
-    while (true) {
-      final info = await _getWalletInfo(
-        lnbitsUrl: lnbitsWallet.lnbitsUrl,
-        adminKey: lnbitsWallet.adminKey,
-      );
-      yield [
-        WalletBalance(
-          walletId: wallet.id,
-          unit: 'sat',
-          amount: info.balanceMsat ~/ 1000,
-        ),
-      ];
-      await Future<void>.delayed(balanceRefreshInterval);
+    Timer? refreshTimer;
+    var cancelled = false;
+    var fetching = false;
+    late StreamController<List<WalletBalance>> controller;
+    Future<void> refresh() async {
+      if (cancelled || fetching || controller.isPaused) return;
+      fetching = true;
+      try {
+        final info = await _getWalletInfo(
+          lnbitsUrl: lnbitsWallet.lnbitsUrl,
+          adminKey: lnbitsWallet.adminKey,
+        );
+        if (!cancelled) {
+          controller.add([
+            WalletBalance(
+              walletId: wallet.id,
+              unit: 'sat',
+              amount: info.balanceMsat ~/ 1000,
+            ),
+          ]);
+        }
+      } catch (error, stackTrace) {
+        if (!cancelled) {
+          controller.addError(error, stackTrace);
+          cancelled = true;
+          unawaited(controller.close());
+        }
+      } finally {
+        fetching = false;
+        if (!cancelled && !controller.isPaused) {
+          refreshTimer = Timer(balanceRefreshInterval, refresh);
+        }
+      }
     }
+
+    controller = StreamController<List<WalletBalance>>(
+      onListen: refresh,
+      onPause: () => refreshTimer?.cancel(),
+      onResume: refresh,
+      onCancel: () {
+        cancelled = true;
+        refreshTimer?.cancel();
+      },
+    );
+    return controller.stream;
   }
 
   @override

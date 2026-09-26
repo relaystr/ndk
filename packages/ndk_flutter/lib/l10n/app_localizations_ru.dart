@@ -1722,4 +1722,127 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get balanceRefreshed => 'Баланс обновлён';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Восстановление котировки минта';
+
+  @override
+  String get recoverQuote => 'Восстановить котировку';
+
+  @override
+  String get enterQuoteId =>
+      'Введите ID котировки минта для восстановления. Ключ блокировки восстанавливается из вашей seed-фразы.';
+
+  @override
+  String get quoteId => 'ID котировки';
+
+  @override
+  String get quoteIdHint => 'Вставьте сюда ID котировки';
+
+  @override
+  String get pleaseEnterQuoteId => 'Пожалуйста, введите ID котировки';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'Получение котировки с минта...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'Восстановление ключа блокировки из вашей seed-фразы...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint => 'Завершение чеканки...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Ключ блокировки восстановлен (счётчик деривации $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Котировка восстановлена, средства добавлены на ваш баланс';
+
+  @override
+  String get quoteRecoveryFailed => 'Не удалось восстановить котировку';
+
+  @override
+  String get restoreFundsFromMint => 'Восстановить средства с минта';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Восстановление средств с минта';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Сканирует минт на предмет доказательств, полученных из вашей seed-фразы, и восстанавливает их в этот кошелёк.';
+
+  @override
+  String get startRestore => 'Начать восстановление';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets => 'Получение keysets минта...';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'Сканирование минта в поисках ваших средств...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return 'Отсканировано keysets: $keysets · найдено proofs: $proofs';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Восстановление завершено';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Также восстанавливает ожидающие котировки минтов';
+
+  @override
+  String restoredFromMint(int count) {
+    return 'Восстановлено $count доказательств с минта';
+  }
+
+  @override
+  String get restoreFailed => 'Не удалось выполнить восстановление';
+
+  @override
+  String get restoreFromBackup => 'Восстановить из резервной копии';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Восстановление и резервная копия';
+
+  @override
+  String get cashuSeedPhraseOption => 'Задать seed-фразу';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Cashu seed-фраза';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Эта seed-фраза является общей для ВСЕХ кошельков Cashu. Это единственный способ восстановить средства после потери этого устройства. Её изменение заменяет seed, используемую для создания ключей каждого кошелька Cashu, поэтому средства, полученные под предыдущей seed, больше не будут находиться автоматически.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Введите фразу восстановления, которую хотите использовать (12, 15, 18, 21 или 24 слова). Меняйте seed только при восстановлении кошельков из уже сохранённой фразы.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Seed-фраза';
+
+  @override
+  String get cashuSeedPhraseHint => 'Вставьте сюда вашу seed-фразу';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Я понимаю, что это изменит seed для всех кошельков Cashu';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'Похоже, это не корректная seed-фраза. Проверьте, что все слова написаны правильно и в правильном порядке.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Seed-фраза обновлена. Теперь она применяется ко всем кошелькам Cashu. Создайте резервную копию новой фразы.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed => 'Не удалось обновить seed-фразу';
 }

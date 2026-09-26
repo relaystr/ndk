@@ -1730,6 +1730,131 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get balanceRefreshed => 'Saldo atualizado';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Recuperar Cotação da Mint';
+
+  @override
+  String get recoverQuote => 'Recuperar cotação';
+
+  @override
+  String get enterQuoteId =>
+      'Introduza o ID da cotação da mint a recuperar. A chave de bloqueio é recuperada a partir da sua frase semente.';
+
+  @override
+  String get quoteId => 'ID da cotação';
+
+  @override
+  String get quoteIdHint => 'Cole o ID da cotação aqui';
+
+  @override
+  String get pleaseEnterQuoteId => 'Por favor, introduza um ID de cotação';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'A obter cotação da mint...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'A recuperar chave de bloqueio da sua semente...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint => 'A completar mint...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Chave de bloqueio recuperada (contador de derivação $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Cotação recuperada e fundos adicionados ao seu saldo';
+
+  @override
+  String get quoteRecoveryFailed => 'Falha na recuperação da cotação';
+
+  @override
+  String get restoreFundsFromMint => 'Restaurar fundos da mint';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Restaurar Fundos da Mint';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Procura a mint por provas derivadas da sua semente e restaura-as para esta carteira.';
+
+  @override
+  String get startRestore => 'Iniciar restauração';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets =>
+      'A obter conjuntos de chaves da mint...';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'A procurar os seus fundos na mint...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return 'Verificados $keysets conjunto(s) de chaves · $proofs prova(s) encontrada(s)';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Restauração concluída';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Também recupera cotações pendentes da mint';
+
+  @override
+  String restoredFromMint(int count) {
+    return 'Restauradas $count provas da mint';
+  }
+
+  @override
+  String get restoreFailed => 'Falha na restauração';
+
+  @override
+  String get restoreFromBackup => 'Restaurar a partir de backup';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Restaurar e backup';
+
+  @override
+  String get cashuSeedPhraseOption => 'Definir frase semente';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Frase semente Cashu';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Esta frase semente é partilhada por TODAS as carteiras Cashu. É a única forma de recuperar os seus fundos depois de perder este dispositivo. Alterá-la substitui a semente utilizada para derivar as chaves de todas as carteiras Cashu, pelo que os fundos recebidos com a semente anterior deixarão de ser encontrados automaticamente.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Introduza a frase de recuperação que pretende utilizar (12, 15, 18, 21 ou 24 palavras). Altere a semente apenas quando restaurar carteiras a partir de uma frase que já guardou.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Frase semente';
+
+  @override
+  String get cashuSeedPhraseHint => 'Cole aqui a sua frase semente';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Entendo que isto altera a semente de todas as carteiras Cashu';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'Isso não parece uma frase semente válida. Verifique se todas as palavras estão escritas corretamente e na ordem certa.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Frase semente atualizada. Passa a aplicar-se a todas as carteiras Cashu. Faça uma cópia de segurança da nova frase.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed =>
+      'Não foi possível atualizar a frase semente';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -3456,4 +3581,128 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get balanceRefreshed => 'Saldo atualizado';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Recuperar Cotação da Mint';
+
+  @override
+  String get recoverQuote => 'Recuperar cotação';
+
+  @override
+  String get enterQuoteId =>
+      'Insira o ID da cotação da mint para recuperar. A chave de bloqueio é recuperada a partir da sua frase semente.';
+
+  @override
+  String get quoteId => 'ID da cotação';
+
+  @override
+  String get quoteIdHint => 'Cole o ID da cotação aqui';
+
+  @override
+  String get pleaseEnterQuoteId => 'Por favor, insira um ID de cotação';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'Buscando cotação da mint...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'Recuperando chave de bloqueio da sua semente...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint => 'Concluindo mint...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Chave de bloqueio recuperada (contador de derivação $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Cotação recuperada e fundos adicionados ao seu saldo';
+
+  @override
+  String get quoteRecoveryFailed => 'Falha ao recuperar cotação';
+
+  @override
+  String get restoreFundsFromMint => 'Restaurar fundos da mint';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Restaurar Fundos da Mint';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Verifica a mint em busca de provas derivadas da sua semente e as restaura nesta carteira.';
+
+  @override
+  String get startRestore => 'Iniciar restauração';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets => 'Buscando keysets da mint...';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'Verificando mint em busca dos seus fundos...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return 'Verificados $keysets keyset(s) · $proofs prova(s) encontrada(s)';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Restauração concluída';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Também recupera cotações de mint pendentes';
+
+  @override
+  String restoredFromMint(int count) {
+    return 'Restauradas $count provas da mint';
+  }
+
+  @override
+  String get restoreFailed => 'Falha na restauração';
+
+  @override
+  String get restoreFromBackup => 'Restaurar a partir de backup';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Restaurar e backup';
+
+  @override
+  String get cashuSeedPhraseOption => 'Definir frase semente';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Frase semente Cashu';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Esta frase semente é compartilhada por TODAS as carteiras Cashu. É a única forma de recuperar seus fundos depois de perder este dispositivo. Alterá-la substitui a semente usada para derivar as chaves de todas as carteiras Cashu, portanto os fundos recebidos sob a semente anterior não poderão mais ser encontrados automaticamente.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Insira a frase de recuperação que deseja usar (12, 15, 18, 21 ou 24 palavras). Altere a semente apenas ao restaurar carteiras a partir de uma frase que você já salvou.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Frase semente';
+
+  @override
+  String get cashuSeedPhraseHint => 'Cole sua frase semente aqui';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Entendo que isso altera a semente de todas as carteiras Cashu';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'Isso não parece uma frase semente válida. Verifique se todas as palavras estão escritas corretamente e na ordem certa.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Frase semente atualizada. Agora ela se aplica a todas as carteiras Cashu. Faça backup da nova frase.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed =>
+      'Não foi possível atualizar a frase semente';
 }

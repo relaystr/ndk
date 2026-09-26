@@ -150,7 +150,7 @@ void main() {
 
       final seedPhraseSentence = CashuSeed.generateSeedPhrase();
       final seedPhrase = CashuUserSeedphrase(seedPhrase: seedPhraseSentence);
-      ndk.cashu.setCashuSeedPhrase(seedPhrase);
+      await ndk.cashu.setCashuSeedPhrase(seedPhrase);
 
       final draftTransaction = await ndk.cashu.initiateFund(
         mintUrl: devMintUrl,
@@ -336,7 +336,7 @@ void main() {
     });
     test("fund - successfull", skip: true, () async {
       final ndk = _ndk();
-      ndk.cashu.setCashuSeedPhrase(
+      await ndk.cashu.setCashuSeedPhrase(
         CashuUserSeedphrase(seedPhrase: CashuSeed.generateSeedPhrase()),
       );
       const fundAmount = 100;
@@ -378,7 +378,7 @@ void main() {
 
     test("fund - successfull - e2e", skip: true, () async {
       final ndk = _ndk();
-      ndk.cashu.setCashuSeedPhrase(
+      await ndk.cashu.setCashuSeedPhrase(
         CashuUserSeedphrase(seedPhrase: CashuSeed.generateSeedPhrase()),
       );
       const fundAmount = 250;

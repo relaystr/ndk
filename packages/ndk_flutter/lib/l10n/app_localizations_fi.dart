@@ -1719,4 +1719,129 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get balanceRefreshed => 'Saldo päivitetty';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Palauta Mint-tarjous';
+
+  @override
+  String get recoverQuote => 'Palauta tarjous';
+
+  @override
+  String get enterQuoteId =>
+      'Anna palautettavan mint-tarjouksen tunnus. Lukkoavain palautetaan siemenlauseestasi.';
+
+  @override
+  String get quoteId => 'Tarjouksen tunnus';
+
+  @override
+  String get quoteIdHint => 'Liitä tarjouksen tunnus tähän';
+
+  @override
+  String get pleaseEnterQuoteId => 'Anna tarjouksen tunnus';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'Haetaan tarjousta mintistä...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'Palautetaan lukkoavainta siemenlauseestasi...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint =>
+      'Suoritetaan mintti valmiiksi...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Lukkoavain palautettu (johtamislaskuri $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Tarjous palautettu ja varat lisätty saldoosi';
+
+  @override
+  String get quoteRecoveryFailed => 'Tarjouksen palautus epäonnistui';
+
+  @override
+  String get restoreFundsFromMint => 'Palauta varat mintistä';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Palauta varat mintistä';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Skannaa minttiä siemenlauseestasi johdettujen todistusten suhteen ja palauttaa ne tähän lompakkoon.';
+
+  @override
+  String get startRestore => 'Aloita palautus';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets =>
+      'Haetaan mint-avainjoukkoja...';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'Skannataan minttiä varojesi suhteen...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return 'Skannattu $keysets avainjoukko(a) · Löydetty $proofs todistus(ta)';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Palautus valmis';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Palauttaa myös odottavat mint-tarjoukset';
+
+  @override
+  String restoredFromMint(int count) {
+    return 'Palautettiin $count todistusta mintistä';
+  }
+
+  @override
+  String get restoreFailed => 'Palautus epäonnistui';
+
+  @override
+  String get restoreFromBackup => 'Palauta varmuuskopiosta';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Palautus ja varmuuskopiointi';
+
+  @override
+  String get cashuSeedPhraseOption => 'Aseta siemenlause';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Cashu-siemenlause';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Tämä siemenlause on KAIKKIEN Cashu-lompakoiden yhteinen. Se on ainoa tapa palauttaa varasi, jos menetät tämän laitteen. Sen muuttaminen korvaa siemenen, josta johdetaan avaimet jokaiseen Cashu-lompakkoon, joten aiemman siemenen alla vastaanotettuja varoja ei voida enää löytää automaattisesti.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Anna käytettävä palautuslause (12, 15, 18, 21 tai 24 sanaa). Muuta siementä vain, kun palautat lompakoita jo tallentamastasi lauseesta.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Siemenlause';
+
+  @override
+  String get cashuSeedPhraseHint => 'Liitä siemenlauseesi tähän';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Ymmärrän, että tämä muuttaa siemenen kaikille Cashu-lompakoille';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'Tämä ei näytä kelvolliselta siemenlauseelta. Tarkista, että kaikki sanat on kirjoitettu oikein ja oikeassa järjestyksessä.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Siemenlause päivitetty. Se koskee nyt kaikkia Cashu-lompakoita. Varmuuskopioi uusi lause.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed => 'Siemenlausetta ei voitu päivittää';
 }

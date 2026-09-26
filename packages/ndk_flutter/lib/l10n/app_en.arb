@@ -1323,22 +1323,38 @@
   "walletConnectionFinishIn": "Finish connection in {walletName}",
   "@walletConnectionFinishIn": {
     "description": "Prompt shown while an external wallet is authorizing",
-    "placeholders": {"walletName": {"type": "String"}}
+    "placeholders": {
+      "walletName": {
+        "type": "String"
+      }
+    }
   },
   "walletConnectionConnecting": "Connecting {walletName}…",
   "@walletConnectionConnecting": {
     "description": "Progress shown while adding an externally authorized wallet",
-    "placeholders": {"walletName": {"type": "String"}}
+    "placeholders": {
+      "walletName": {
+        "type": "String"
+      }
+    }
   },
   "walletConnectionConnected": "{walletName} connected",
   "@walletConnectionConnected": {
     "description": "Animated success message after adding a wallet",
-    "placeholders": {"walletName": {"type": "String"}}
+    "placeholders": {
+      "walletName": {
+        "type": "String"
+      }
+    }
   },
   "walletConnectionFailed": "Could not connect {walletName}",
   "@walletConnectionFailed": {
     "description": "Heading shown when an external wallet connection fails",
-    "placeholders": {"walletName": {"type": "String"}}
+    "placeholders": {
+      "walletName": {
+        "type": "String"
+      }
+    }
   },
   "retry": "Retry",
   "walletUnreachable": "Wallet unreachable",
@@ -1406,8 +1422,12 @@
   "cashuMintRating": "★ {rating} · {count} reviews",
   "@cashuMintRating": {
     "placeholders": {
-      "rating": {"type": "String"},
-      "count": {"type": "int"}
+      "rating": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "enterMintUrlManually": "Enter mint URL manually",
@@ -1611,19 +1631,46 @@
     "description": "Shown while a cashu backup is being restored"
   },
   "appUpdateVersionAvailable": "Version {version} available",
-  "@appUpdateVersionAvailable": {"placeholders": {"version": {"type": "String"}}},
+  "@appUpdateVersionAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "appUpdateLater": "Later",
   "appUpdateView": "View update",
   "appUpdateChecking": "Checking for updates…",
   "appUpdateCheckFailed": "Update check failed",
   "appUpdateInstalled": "Installed {version}",
-  "@appUpdateInstalled": {"placeholders": {"version": {"type": "String"}}},
+  "@appUpdateInstalled": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "appUpdatesTitle": "App updates",
   "appUpdateNone": "No update available",
   "appUpdateTitle": "Update {currentVersion} → {availableVersion}",
-  "@appUpdateTitle": {"placeholders": {"currentVersion": {"type": "String"}, "availableVersion": {"type": "String"}}},
+  "@appUpdateTitle": {
+    "placeholders": {
+      "currentVersion": {
+        "type": "String"
+      },
+      "availableVersion": {
+        "type": "String"
+      }
+    }
+  },
   "appUpdateSizeMb": "{size} MB",
-  "@appUpdateSizeMb": {"placeholders": {"size": {"type": "String"}}},
+  "@appUpdateSizeMb": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
   "appUpdateAllowInstalls": "Allow installs from this app, then tap Update again.",
   "appUpdateCompleteInstallation": "Complete installation in Android system installer.",
   "appUpdateFailed": "Update failed",
@@ -1633,16 +1680,46 @@
   "appUpdateUpToDate": "You’re up to date",
   "appUpdateAheadOfPublished": "Newer than published",
   "appUpdateAheadOfPublishedMessage": "Installed version {installedVersion} is newer than latest published version {publishedVersion}. Release details will appear after this version is published.",
-  "@appUpdateAheadOfPublishedMessage": {"placeholders": {"installedVersion": {"type": "String"}, "publishedVersion": {"type": "String"}}},
+  "@appUpdateAheadOfPublishedMessage": {
+    "placeholders": {
+      "installedVersion": {
+        "type": "String"
+      },
+      "publishedVersion": {
+        "type": "String"
+      }
+    }
+  },
   "appUpdateCheckFailedMessage": "Could not check for updates.",
   "appUpdateLatest": "Version {version} is the latest available version.",
-  "@appUpdateLatest": {"placeholders": {"version": {"type": "String"}}},
+  "@appUpdateLatest": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "appUpdateClose": "Close",
   "appUpdateCheckAgain": "Check again",
   "appUpdateInstalledVersion": "Installed version {version}",
-  "@appUpdateInstalledVersion": {"placeholders": {"version": {"type": "String"}}},
+  "@appUpdateInstalledVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "appUpdateInstalledAndAvailable": "Installed version {installedVersion}. Update {availableVersion} available.",
-  "@appUpdateInstalledAndAvailable": {"placeholders": {"installedVersion": {"type": "String"}, "availableVersion": {"type": "String"}}},
+  "@appUpdateInstalledAndAvailable": {
+    "placeholders": {
+      "installedVersion": {
+        "type": "String"
+      },
+      "availableVersion": {
+        "type": "String"
+      }
+    }
+  },
   "appUpdateChangelog": "Changelog",
   "appUpdateReleaseHistory": "Release history",
   "appUpdateInstalledBadge": "Installed",
@@ -1653,29 +1730,86 @@
   "appUpdateReleaseDetails": "Release details",
   "appUpdateWhatsNew": "What’s new",
   "appUpdatePublishedOn": "Published {date}",
-  "@appUpdatePublishedOn": {"placeholders": {"date": {"type": "String"}}},
+  "@appUpdatePublishedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "appUpdateChannel": "Channel: {channel}",
-  "@appUpdateChannel": {"placeholders": {"channel": {"type": "String"}}},
+  "@appUpdateChannel": {
+    "placeholders": {
+      "channel": {
+        "type": "String"
+      }
+    }
+  },
   "appUpdateArchitecture": "Architecture: {architecture}",
-  "@appUpdateArchitecture": {"placeholders": {"architecture": {"type": "String"}}},
+  "@appUpdateArchitecture": {
+    "placeholders": {
+      "architecture": {
+        "type": "String"
+      }
+    }
+  },
   "appUpdateVersionCode": "Build {versionCode}",
-  "@appUpdateVersionCode": {"placeholders": {"versionCode": {"type": "int"}}},
+  "@appUpdateVersionCode": {
+    "placeholders": {
+      "versionCode": {
+        "type": "int"
+      }
+    }
+  },
   "appUpdateReleaseVersion": "Release {version}",
-  "@appUpdateReleaseVersion": {"placeholders": {"version": {"type": "String"}}},
+  "@appUpdateReleaseVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "appUpdateNoReleaseNotes": "No release notes were published.",
   "appUpdatePublisher": "Publisher",
   "appUpdatePublisherSignatureVerified": "Nostr event signature verified",
   "appUpdateCertificateDeclared": "Android signing certificate declared by publisher",
   "appUpdateSource": "Download source: {host}",
-  "@appUpdateSource": {"placeholders": {"host": {"type": "String"}}},
+  "@appUpdateSource": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
   "appUpdateCommunity": "Community",
   "appUpdateZapSummary": "{count} zaps · {sats} sats",
   "appUpdateSatsBy": "sats by",
-  "@appUpdateZapSummary": {"placeholders": {"count": {"type": "int"}, "sats": {"type": "int"}}},
+  "@appUpdateZapSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "sats": {
+        "type": "int"
+      }
+    }
+  },
   "appUpdateReactionCount": "{count} reactions",
-  "@appUpdateReactionCount": {"placeholders": {"count": {"type": "int"}}},
+  "@appUpdateReactionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "appUpdateCommentCount": "{count} comments",
-  "@appUpdateCommentCount": {"placeholders": {"count": {"type": "int"}}},
+  "@appUpdateCommentCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "appUpdateSocialLoadFailed": "Community activity could not be loaded.",
   "appUpdateComments": "Comments",
   "appUpdateNoComments": "No comments yet.",
@@ -1778,5 +1912,167 @@
   "walletDetailCommunityRating": "Community rating",
   "walletDetailCommunityReviews": "Recent community reviews",
   "refreshBalance": "Refresh balance",
-  "balanceRefreshed": "Balance refreshed"
+  "balanceRefreshed": "Balance refreshed",
+  "cashuQuoteRecoveryTitle": "Recover Mint Quote",
+  "@cashuQuoteRecoveryTitle": {
+    "description": "Title of the dialog to recover a mint quote"
+  },
+  "recoverQuote": "Recover quote",
+  "@recoverQuote": {
+    "description": "Menu item / button to start recovering a mint quote"
+  },
+  "enterQuoteId": "Enter the mint quote ID to recover. The lock key is recovered from your seed phrase.",
+  "@enterQuoteId": {
+    "description": "Prompt to enter a mint quote ID"
+  },
+  "quoteId": "Quote ID",
+  "@quoteId": {
+    "description": "Label for the quote ID input field"
+  },
+  "quoteIdHint": "Paste the quote ID here",
+  "@quoteIdHint": {
+    "description": "Hint text for the quote ID input field"
+  },
+  "pleaseEnterQuoteId": "Please enter a quote ID",
+  "@pleaseEnterQuoteId": {
+    "description": "Validation message when the quote ID field is empty"
+  },
+  "cashuQuoteRecoveryStageFetchingQuote": "Fetching quote from mint...",
+  "@cashuQuoteRecoveryStageFetchingQuote": {
+    "description": "Progress line while the quote is fetched from the mint"
+  },
+  "cashuQuoteRecoveryStageRecoveringKey": "Recovering lock key from your seed...",
+  "@cashuQuoteRecoveryStageRecoveringKey": {
+    "description": "Progress line while the lock key is recovered by scanning seed-derived counters"
+  },
+  "cashuQuoteRecoveryStageCompletingMint": "Completing mint...",
+  "@cashuQuoteRecoveryStageCompletingMint": {
+    "description": "Progress line while the mint is being completed"
+  },
+  "cashuQuoteRecoveryKeyRecovered": "Lock key recovered (derivation counter {counter})",
+  "@cashuQuoteRecoveryKeyRecovered": {
+    "description": "Confirmation shown once the lock key is recovered",
+    "placeholders": {
+      "counter": {
+        "type": "int",
+        "description": "Derivation counter of the recovered lock key"
+      }
+    }
+  },
+  "cashuQuoteRecoveryCompleted": "Quote recovered and funds added to your balance",
+  "@cashuQuoteRecoveryCompleted": {
+    "description": "Success message shown when the quote is recovered and minted"
+  },
+  "quoteRecoveryFailed": "Quote recovery failed",
+  "@quoteRecoveryFailed": {
+    "description": "Error prefix shown when the quote recovery fails"
+  },
+  "restoreFundsFromMint": "Restore funds from mint",
+  "@restoreFundsFromMint": {
+    "description": "Menu item to restore funds from a mint using the seed"
+  },
+  "cashuRestoreFundsTitle": "Restore Funds from Mint",
+  "@cashuRestoreFundsTitle": {
+    "description": "Title of the dialog to restore funds from a mint"
+  },
+  "cashuRestoreDescription": "Scans the mint for proofs derived from your seed and restores them to this wallet.",
+  "@cashuRestoreDescription": {
+    "description": "Explanation shown in the restore-from-mint dialog"
+  },
+  "startRestore": "Start restore",
+  "@startRestore": {
+    "description": "Button to start the restore-from-mint flow"
+  },
+  "cashuRestoreStageFetchingKeysets": "Fetching mint keysets...",
+  "@cashuRestoreStageFetchingKeysets": {
+    "description": "Progress line while the mint keysets are fetched"
+  },
+  "cashuRestoreStageScanning": "Scanning mint for your funds...",
+  "@cashuRestoreStageScanning": {
+    "description": "Progress line while the mint is scanned for seed-derived proofs"
+  },
+  "cashuRestoreScanProgress": "Scanned {keysets} keyset(s) · {proofs} proof(s) found",
+  "@cashuRestoreScanProgress": {
+    "description": "Scan progress in the restore-from-mint dialog",
+    "placeholders": {
+      "keysets": {
+        "type": "int",
+        "description": "Number of keysets scanned"
+      },
+      "proofs": {
+        "type": "int",
+        "description": "Number of proofs found so far"
+      }
+    }
+  },
+  "cashuRestoreStageCompleted": "Restore complete",
+  "@cashuRestoreStageCompleted": {
+    "description": "Progress line shown once the restore-from-mint scan completes"
+  },
+  "cashuRestoreAlsoRestoresQuotes": "Also recovers pending mint quotes",
+  "@cashuRestoreAlsoRestoresQuotes": {
+    "description": "Note shown while restoring that pending mint quotes are recovered too"
+  },
+  "restoredFromMint": "Restored {count} proofs from the mint",
+  "@restoredFromMint": {
+    "description": "Confirmation after a successful restore-from-mint",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "restoreFailed": "Restore failed",
+  "@restoreFailed": {
+    "description": "Error prefix shown when the restore-from-mint fails"
+  },
+  "restoreFromBackup": "Restore from backup",
+  "@restoreFromBackup": {
+    "description": "Label for restoring a Cashu wallet from a backup JSON"
+  },
+  "cashuRestoreMenuTitle": "Restore & backup",
+  "@cashuRestoreMenuTitle": {
+    "description": "Title of the sheet that reveals all cashu restore and backup options"
+  },
+  "cashuSeedPhraseOption": "Set seed phrase",
+  "@cashuSeedPhraseOption": {
+    "description": "Menu entry to set or override the global cashu seed phrase"
+  },
+  "cashuSeedPhraseTitle": "Cashu seed phrase",
+  "@cashuSeedPhraseTitle": {
+    "description": "Title of the dialog to set or override the global cashu seed phrase"
+  },
+  "cashuSeedPhraseWarning": "This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.",
+  "@cashuSeedPhraseWarning": {
+    "description": "Warning shown before overriding the global cashu seed phrase"
+  },
+  "cashuSeedPhraseInstructions": "Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.",
+  "@cashuSeedPhraseInstructions": {
+    "description": "Instructions for entering the seed phrase"
+  },
+  "cashuSeedPhraseLabel": "Seed phrase",
+  "@cashuSeedPhraseLabel": {
+    "description": "Label for the seed phrase input field"
+  },
+  "cashuSeedPhraseHint": "Paste your seed phrase here",
+  "@cashuSeedPhraseHint": {
+    "description": "Hint text for the seed phrase input field"
+  },
+  "cashuSeedPhraseConfirmChange": "I understand this changes the seed for all Cashu wallets",
+  "@cashuSeedPhraseConfirmChange": {
+    "description": "Checkbox confirmation before overriding the seed phrase"
+  },
+  "cashuSeedPhraseInvalid": "That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.",
+  "@cashuSeedPhraseInvalid": {
+    "description": "Validation message for an invalid seed phrase"
+  },
+  "cashuSeedPhraseUpdated": "Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.",
+  "@cashuSeedPhraseUpdated": {
+    "description": "Confirmation shown after the seed phrase is updated"
+  },
+  "cashuSeedPhraseUpdateFailed": "Could not update the seed phrase",
+  "@cashuSeedPhraseUpdateFailed": {
+    "description": "Error prefix shown when updating the seed phrase fails"
+  }
 }
