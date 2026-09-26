@@ -99,13 +99,16 @@ class _CashuSeedPhraseDialogState extends State<_CashuSeedPhraseDialog> {
       _error = null;
     });
     try {
-      // Apply on the running instance, then persist for future launches.
+      // Persist before applying. If the secure storage write fails, the running
+      // instance stays on the old seed, which is recoverable; applying first
+      // would leave the in-memory Cashu on a seed that is stored nowhere and
+      // therefore lost on restart.
+      await widget.seedStore.write(phrase);
       // Awaiting the actual seed derivation means a failure surfaces here
       // instead of as an unhandled async error.
       await widget.ndkFlutter.ndk.cashu.setCashuSeedPhrase(
         CashuUserSeedphrase(seedPhrase: phrase),
       );
-      await widget.seedStore.write(phrase);
       // The seed changed, so the previous backup confirmation no longer
       // applies: prompt the user to back up the new phrase again.
       await widget.seedStore.setBackedUp(false);
