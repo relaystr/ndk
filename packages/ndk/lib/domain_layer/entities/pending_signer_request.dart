@@ -9,7 +9,8 @@ enum SignerMethod {
   nip44Encrypt('nip44_encrypt'),
   nip44Decrypt('nip44_decrypt'),
   ping('ping'),
-  connect('connect');
+  connect('connect'),
+  switchRelays('switch_relays');
 
   /// The NIP-46 protocol string for this method
   final String protocolString;

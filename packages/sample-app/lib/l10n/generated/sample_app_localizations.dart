@@ -731,6 +731,12 @@ abstract class SampleAppLocalizations {
   /// **'Connect'**
   String get pendingMethodConnect;
 
+  /// No description provided for @pendingMethodSwitchRelays.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch Relays'**
+  String get pendingMethodSwitchRelays;
+
   /// No description provided for @pendingSecondsAgo.
   ///
   /// In en, this message translates to:
