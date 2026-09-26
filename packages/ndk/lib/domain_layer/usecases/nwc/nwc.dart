@@ -497,6 +497,10 @@ class Nwc {
             .map((r) => Uri.decodeFull(r))
             .toList(),
         customSigner: connection.signer,
+        // Requests expire with their caller; durable delivery must never keep
+        // wallet relays alive or resend an RPC after its response deadline.
+        retryDelivery: false,
+        saveToCache: false,
       );
       // A valid wallet reply proves delivery; slow ACK bookkeeping must not
       // keep a background connection alive or turn that reply into a timeout.

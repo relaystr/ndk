@@ -189,6 +189,10 @@ class PendingBroadcastDelivery {
         continue;
       }
 
+      if (await _discardNonRetryableEvent(event)) {
+        continue;
+      }
+
       final signer = _resolveSignerForEvent(event);
       if (signer == null ||
           !signer.requiresSignerNetwork ||
@@ -473,6 +477,10 @@ class PendingBroadcastDelivery {
         }
         var event = loadedEvent;
 
+        if (await _discardNonRetryableEvent(event)) {
+          continue;
+        }
+
         if (_isExpiredEvent(event)) {
           Logger.log.d(
             () => 'drop expired pending delivery ${event.id} for $relayUrl',
@@ -658,6 +666,19 @@ class PendingBroadcastDelivery {
     await _cacheManager.removeEventDeliveryRecord(eventId);
   }
 
+  /// Ephemeral events may be tracked for their original publication, but
+  /// their delivery policy forbids retries. Old pending records must not keep
+  /// reconnecting relay or signer transports after that attempt has finished.
+  Future<bool> _discardNonRetryableEvent(Nip01Event event) async {
+    if (DeliveryPolicy.forEvent(event).kind != DeliveryPolicyKind.doNotRetry) {
+      return false;
+    }
+    if (!_sender.isEventInFlight(event.id)) {
+      await _discardEventDelivery(event.id);
+    }
+    return true;
+  }
+
   /// A target waiting for an identity the app has to name again. Nothing about
   /// it changes on its own, so it must not make its relay due: it would
   /// reconnect and rewrite the same state on every retry interval, forever.
@@ -674,7 +695,31 @@ class PendingBroadcastDelivery {
     );
 
     final relayUrls = <String>{};
+    final nonRetryableEventIds = <String>{};
+    final checkedEventIds = <String>{};
     for (final target in targets) {
+      if (_sender.isEventInFlight(target.eventId)) {
+        continue;
+      }
+      // One event can have many relay targets. Resolve its policy once per
+      // pass, before selecting any transport to reconnect.
+      if (checkedEventIds.add(target.eventId)) {
+        final record = await _cacheManager.loadEventDeliveryRecord(
+          target.eventId,
+        );
+        if (record != null) {
+          final event = await _loadRecoverableEvent(
+            target.eventId,
+            record: record,
+          );
+          if (event != null && await _discardNonRetryableEvent(event)) {
+            nonRetryableEventIds.add(target.eventId);
+          }
+        }
+      }
+      if (nonRetryableEventIds.contains(target.eventId)) {
+        continue;
+      }
       if (target.state == RelayDeliveryState.permanentFailure) {
         continue;
       }
@@ -722,6 +767,10 @@ class PendingBroadcastDelivery {
       final event = await _loadRecoverableEvent(record.eventId, record: record);
       if (event == null) {
         await _discardEventDelivery(record.eventId);
+        continue;
+      }
+
+      if (await _discardNonRetryableEvent(event)) {
         continue;
       }
 

@@ -81,6 +81,8 @@ class _Broadcast implements Broadcast {
   dynamic noSuchMethod(Invocation call) {
     if (call.memberName == #broadcast) {
       final event = call.namedArguments[#nostrEvent] as Nip01Event;
+      expect(call.namedArguments[#retryDelivery], isFalse);
+      expect(call.namedArguments[#saveToCache], isFalse);
       expect(
         requests.active.values.any(
           (entry) => entry.$1.any((f) => f.kinds!.contains(23195)),
