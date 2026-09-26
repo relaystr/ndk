@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790338998705,
+  "lastUpdate": 1790432175360,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -872,6 +872,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1526416,
             "range": "1509950-1570604",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "frnandu",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c5b20b38edcfe7ca2f6394571f52cff272453b83",
+          "message": "Merge pull request #844 from relaystr/fix/nwc-settle-deadline-lookup\n\nfix(nwc): expose hold settle deadline",
+          "timestamp": "2026-09-26T14:14:13Z",
+          "tree_id": "8982635890a85687f3eba7e50866c563c4027d67",
+          "url": "https://github.com/relaystr/ndk/commit/c5b20b38edcfe7ca2f6394571f52cff272453b83"
+        },
+        "date": 1790432172851,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 39732,
+            "range": "39560-41662",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1314686,
+            "range": "1312168-1338120",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
