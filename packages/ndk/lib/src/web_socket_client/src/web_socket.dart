@@ -82,6 +82,7 @@ class WebSocket {
   }
 
   bool _isClosedByClient = false;
+  void Function()? _abortHandshake;
 
   Future<void> _connect() async {
     if (_isClosedByClient || _isConnected) return;
@@ -101,8 +102,16 @@ class WebSocket {
       _reconnect();
     }
 
+    final abort = Completer<void>();
+    void abortHandshake() {
+      if (!abort.isCompleted) abort.complete();
+    }
+
+    _abortHandshake = abortHandshake;
+
     try {
-      // A timeout stops waiting; it does not cancel the native handshake.
+      // A timeout stops waiting; the native connector must also abort HTTP.
+      // Other platforms may still finish their connection after cancellation.
       // Keep ownership of its eventual result so an abandoned attempt cannot
       // leave an untracked socket (and its heartbeat) alive.
       var timedOut = false;
@@ -114,6 +123,7 @@ class WebSocket {
                 pingInterval: _pingInterval,
                 binaryType: _binaryType,
                 compressionEnabled: _compressionEnabled,
+                abortTrigger: abort.future,
               )
               .then<WebSocketChannel?>((ws) {
                 final channel = getWebSocketChannel(ws);
@@ -127,6 +137,7 @@ class WebSocket {
                 _timeout,
                 onTimeout: () {
                   timedOut = true;
+                  abortHandshake();
                   throw TimeoutException(
                     'WebSocket handshake timed out',
                     _timeout,
@@ -159,6 +170,10 @@ class WebSocket {
       );
     } on Exception catch (error, stackTrace) {
       attemptToReconnect(error, stackTrace);
+    } finally {
+      if (identical(_abortHandshake, abortHandshake)) _abortHandshake = null;
+      // Release the connector's cancellation listener after successful setup.
+      abortHandshake();
     }
   }
 
@@ -206,6 +221,7 @@ class WebSocket {
   void close([int? code, String? reason]) {
     if (_isClosedByClient) return;
     _isClosedByClient = true;
+    _abortHandshake?.call();
     _backoffTimer?.cancel();
     _backoffDuration = Duration.zero;
     if (_isConnected) _connectionController.add(const Disconnecting());
