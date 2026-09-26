@@ -90,12 +90,12 @@ class Cashu {
     CashuMintRecommendations? mintRecommendations,
     CashuUserSeedphrase? cashuUserSeedphrase,
     bool autoVerifyMintCounters = false,
-  })  : _cashuRepo = cashuRepo,
-        _walletsRepo = walletsRepo,
-        _cacheManager = cacheManager,
-        _cashuKeyDerivation = cashuKeyDerivation,
-        _mintRecommendations = mintRecommendations,
-        _autoVerifyMintCounters = autoVerifyMintCounters {
+  }) : _cashuRepo = cashuRepo,
+       _walletsRepo = walletsRepo,
+       _cacheManager = cacheManager,
+       _cashuKeyDerivation = cashuKeyDerivation,
+       _mintRecommendations = mintRecommendations,
+       _autoVerifyMintCounters = autoVerifyMintCounters {
     _cashuKeysets = CashuKeysets(
       cashuRepo: _cashuRepo,
       cacheManager: _cacheManager,
@@ -131,9 +131,7 @@ class Cashu {
   /// Cashu mint discovery and community reviews.
   CashuMintRecommendations get mintRecommendations =>
       _mintRecommendations ??
-      (throw StateError(
-        'Cashu NIP-87 requires an NDK Requests instance',
-      ));
+      (throw StateError('Cashu NIP-87 requires an NDK Requests instance'));
 
   /// mints this usecase has interacted with \
   ///? does not mark trusted mints!
@@ -156,7 +154,11 @@ class Cashu {
   /// you can use CashuSeed.generateSeedPhrase() to generate a new seed phrase \
   /// throws if the seed phrase is invalid
   Future<void> setCashuSeedPhrase(CashuUserSeedphrase userSeedPhrase) async {
-    await _cashuSeed.setSeedPhrase(seedPhrase: userSeedPhrase.seedPhrase);
+    await _cashuSeed.setSeedPhrase(
+      seedPhrase: userSeedPhrase.seedPhrase,
+      language: userSeedPhrase.language,
+      passphrase: userSeedPhrase.passphrase,
+    );
     _scheduleStartupResume();
   }
 
@@ -357,10 +359,7 @@ class Cashu {
     } catch (e) {
       Logger.log.e(() => 'Error checking proof states during restore: $e');
       // If we can't check state, save the proofs anyway (better to have duplicates than lose proofs)
-      await _cacheManagerCashu.saveProofs(
-        proofs: newProofs,
-        mintUrl: mintUrl,
-      );
+      await _cacheManagerCashu.saveProofs(proofs: newProofs, mintUrl: mintUrl);
       Logger.log.w(
         () =>
             'Saved ${newProofs.length} proofs without state check due to error',
@@ -397,7 +396,8 @@ class Cashu {
     }
 
     Logger.log.i(
-      () => 'Auto-verifying derivation counter for $mintUrl keyset '
+      () =>
+          'Auto-verifying derivation counter for $mintUrl keyset '
           '${keyset.id} before minting',
     );
 
@@ -451,21 +451,24 @@ class Cashu {
     final distinctKeysetIds = allKeysets.map((keyset) => keyset.id).toSet();
 
     for (final keysetId in distinctKeysetIds) {
-      final mintUrl =
-          allKeysets.firstWhere((keyset) => keyset.id == keysetId).mintUrl;
+      final mintUrl = allKeysets
+          .firstWhere((keyset) => keyset.id == keysetId)
+          .mintUrl;
       if (!balances.containsKey(mintUrl)) {
         balances[mintUrl] = {};
       }
 
-      final keysetProofs =
-          allProofs.where((proof) => proof.keysetId == keysetId).toList();
+      final keysetProofs = allProofs
+          .where((proof) => proof.keysetId == keysetId)
+          .toList();
 
       if (!returnZeroValues && keysetProofs.isEmpty) {
         continue;
       }
 
-      final unit =
-          allKeysets.firstWhere((keyset) => keyset.id == keysetId).unit;
+      final unit = allKeysets
+          .firstWhere((keyset) => keyset.id == keysetId)
+          .unit;
       final totalBalanceForKeyset = CashuTools.sumOfProofs(
         proofs: keysetProofs,
       );
@@ -511,11 +514,13 @@ class Cashu {
     if (_balanceSubject == null) {
       _balanceSubject = BehaviorSubject<List<CashuMintBalance>>.seeded([]);
 
-      getBalances().then((balances) {
-        _balanceSubject?.add(balances);
-      }).catchError((error) {
-        _balanceSubject?.addError(error);
-      });
+      getBalances()
+          .then((balances) {
+            _balanceSubject?.add(balances);
+          })
+          .catchError((error) {
+            _balanceSubject?.addError(error);
+          });
     }
 
     return _balanceSubject!;
@@ -526,17 +531,19 @@ class Cashu {
     if (_latestTransactionsSubject == null) {
       _latestTransactionsSubject =
           BehaviorSubject<List<CashuWalletTransaction>>.seeded(
-        _latestTransactions,
-      );
-      _getLatestTransactionsDb().then((transactions) {
-        _latestTransactions.clear();
-        _latestTransactions.addAll(transactions);
-        _latestTransactionsSubject?.add(_latestTransactions);
-      }).catchError((error) {
-        _latestTransactionsSubject?.addError(
-          Exception('Failed to load latest transactions: $error'),
-        );
-      });
+            _latestTransactions,
+          );
+      _getLatestTransactionsDb()
+          .then((transactions) {
+            _latestTransactions.clear();
+            _latestTransactions.addAll(transactions);
+            _latestTransactionsSubject?.add(_latestTransactions);
+          })
+          .catchError((error) {
+            _latestTransactionsSubject?.addError(
+              Exception('Failed to load latest transactions: $error'),
+            );
+          });
     }
 
     return _latestTransactionsSubject!;
@@ -548,17 +555,19 @@ class Cashu {
     if (_pendingTransactionsSubject == null) {
       _pendingTransactionsSubject =
           BehaviorSubject<List<CashuWalletTransaction>>.seeded(
-        _pendingTransactions.toList(),
-      );
-      _getPendingTransactionsDb().then((transactions) {
-        _pendingTransactions.clear();
-        _pendingTransactions.addAll(transactions);
-        _pendingTransactionsSubject?.add(_pendingTransactions.toList());
-      }).catchError((error) {
-        _pendingTransactionsSubject?.addError(
-          Exception('Failed to load pending transactions: $error'),
-        );
-      });
+            _pendingTransactions.toList(),
+          );
+      _getPendingTransactionsDb()
+          .then((transactions) {
+            _pendingTransactions.clear();
+            _pendingTransactions.addAll(transactions);
+            _pendingTransactionsSubject?.add(_pendingTransactions.toList());
+          })
+          .catchError((error) {
+            _pendingTransactionsSubject?.addError(
+              Exception('Failed to load pending transactions: $error'),
+            );
+          });
     }
 
     return _pendingTransactionsSubject!;
@@ -571,15 +580,17 @@ class Cashu {
       _knownMintsSubject = BehaviorSubject<Set<CashuMintInfo>>.seeded(
         _knownMints,
       );
-      _getMintInfosDb().then((mintInfos) {
-        _knownMints.clear();
-        _knownMints.addAll(mintInfos);
-        _knownMintsSubject?.add(_knownMints);
-      }).catchError((error) {
-        _knownMintsSubject?.addError(
-          Exception('Failed to load known mints: $error'),
-        );
-      });
+      _getMintInfosDb()
+          .then((mintInfos) {
+            _knownMints.clear();
+            _knownMints.addAll(mintInfos);
+            _knownMintsSubject?.add(_knownMints);
+          })
+          .catchError((error) {
+            _knownMintsSubject?.addError(
+              Exception('Failed to load known mints: $error'),
+            );
+          });
     }
 
     return _knownMintsSubject!;
@@ -758,11 +769,11 @@ class Cashu {
       unit: unit,
     );
 
-    final quoteKeyCounter =
-        await _cacheManagerCashu.getAndIncrementDerivationCounter(
-      keysetId: kQuoteKeyDerivationCounterSlot,
-      mintUrl: kQuoteKeyDerivationCounterSlot,
-    );
+    final quoteKeyCounter = await _cacheManagerCashu
+        .getAndIncrementDerivationCounter(
+          keysetId: kQuoteKeyDerivationCounterSlot,
+          mintUrl: kQuoteKeyDerivationCounterSlot,
+        );
 
     final quoteKey = await _cashuKeyDerivation.deriveQuoteKey(
       seedBytes: Uint8List.fromList(_cashuSeed.getSeedBytes()),
@@ -978,27 +989,30 @@ class Cashu {
     }
     _startupResumeAttempted = true;
 
-    updatePendingQuotes().then((refreshedTransactions) async {
-      if (refreshedTransactions.isEmpty) {
-        return;
-      }
-      Logger.log.i(
-        () =>
-            'Successfully refreshed ${refreshedTransactions.length} pending quotes',
-      );
+    updatePendingQuotes()
+        .then((refreshedTransactions) async {
+          if (refreshedTransactions.isEmpty) {
+            return;
+          }
+          Logger.log.i(
+            () =>
+                'Successfully refreshed ${refreshedTransactions.length} pending quotes',
+          );
 
-      // recover and complete on every mint that still has pending funding,
-      // whether the quote was already marked paid locally or not
-      final mintUrls = refreshedTransactions.map((tx) => tx.mintUrl).toSet();
-      for (final mintUrl in mintUrls) {
-        await _recoverPendingQuoteKeys(mintUrl);
-        await _completePaidPendingQuotes(mintUrl);
-      }
-    }).catchError(
-      (Object e) => Logger.log.e(
-        () => 'Startup pending quote refresh failed: $e',
-      ),
-    );
+          // recover and complete on every mint that still has pending funding,
+          // whether the quote was already marked paid locally or not
+          final mintUrls = refreshedTransactions
+              .map((tx) => tx.mintUrl)
+              .toSet();
+          for (final mintUrl in mintUrls) {
+            await _recoverPendingQuoteKeys(mintUrl);
+            await _completePaidPendingQuotes(mintUrl);
+          }
+        })
+        .catchError(
+          (Object e) =>
+              Logger.log.e(() => 'Startup pending quote refresh failed: $e'),
+        );
   }
 
   /// Recover the seed-derived quote keys of the pending funding transactions
@@ -1029,7 +1043,8 @@ class Cashu {
       }
 
       Logger.log.i(
-        () => 'Recovering quote keys for ${pendingFunding.length} pending '
+        () =>
+            'Recovering quote keys for ${pendingFunding.length} pending '
             'funding transactions on $mintUrl',
       );
 
@@ -1047,7 +1062,8 @@ class Cashu {
             // The key was not derived from the seed (e.g. it was created before
             // deterministic quote keys landed); the persisted key still works.
             Logger.log.w(
-              () => 'Quote ${quote.quoteId} key is not recoverable from the '
+              () =>
+                  'Quote ${quote.quoteId} key is not recoverable from the '
                   'seed, keeping persisted key',
             );
             continue;
@@ -1068,7 +1084,8 @@ class Cashu {
             );
             await _addAndSavePendingTransaction(updatedTx);
             Logger.log.i(
-              () => 'Recovered quote key for quote ${quote.quoteId} at '
+              () =>
+                  'Recovered quote key for quote ${quote.quoteId} at '
                   'counter $counter',
             );
           }
@@ -1117,7 +1134,8 @@ class Cashu {
       }
 
       Logger.log.i(
-        () => 'Completing paid pending quotes for ${pendingFunding.length} '
+        () =>
+            'Completing paid pending quotes for ${pendingFunding.length} '
             'funding transactions on $mintUrl',
       );
 
@@ -1135,7 +1153,8 @@ class Cashu {
         final deadline = DateTime.now().add(CashuConfig.QUOTE_PAY_TIMEOUT);
         while (!paid && DateTime.now().isBefore(deadline)) {
           try {
-            paid = await _cashuRepo.checkMintQuoteState(
+            paid =
+                await _cashuRepo.checkMintQuoteState(
                   mintUrl: mintUrl,
                   quoteID: quote.quoteId,
                   method: method,
@@ -1652,13 +1671,13 @@ class Cashu {
     if (selectionResult.needsSplit) {
       final blindedMessagesOutputsOverpay =
           await CashuBdhke.createBlindedMsgForAmounts(
-        keysetId: activeKeyset.id,
-        amounts: CashuTools.splitAmount(selectionResult.splitAmount),
-        cacheManager: _cacheManagerCashu,
-        cashuSeed: _cashuSeed,
-        mintUrl: mintUrl,
-        cashuSeedSecretGenerator: _cashuKeyDerivation,
-      );
+            keysetId: activeKeyset.id,
+            amounts: CashuTools.splitAmount(selectionResult.splitAmount),
+            cacheManager: _cacheManagerCashu,
+            cashuSeed: _cashuSeed,
+            mintUrl: mintUrl,
+            cashuSeedSecretGenerator: _cashuKeyDerivation,
+          );
       myOutputs.addAll(blindedMessagesOutputsOverpay);
     }
 
