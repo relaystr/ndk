@@ -128,6 +128,7 @@ export 'domain_layer/entities/cashu/cashu_restore_result.dart';
 export 'domain_layer/usecases/wallets/wallets.dart';
 export 'domain_layer/usecases/bunkers/bunkers.dart';
 export 'domain_layer/usecases/bunkers/models/bunker_connection.dart';
+export 'domain_layer/usecases/bunkers/models/nip46_client_metadata.dart';
 export 'domain_layer/usecases/bunkers/models/nostr_connect.dart';
 export 'domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 export 'domain_layer/entities/filter_fetched_ranges.dart';

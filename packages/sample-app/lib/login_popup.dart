@@ -3,6 +3,8 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/l10n/app_localizations_context.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
+const _clientMetadata = Nip46ClientMetadata(name: 'NDK sample app');
+
 Future<void> showNLoginPopup({
   required BuildContext context,
   required NdkFlutter ndkFlutter,
@@ -30,8 +32,9 @@ Future<void> showNLoginPopup({
           child: SingleChildScrollView(
             child: NLogin(
               ndkFlutter: ndkFlutter,
+              clientMetadata: _clientMetadata,
               nostrConnect: NostrConnect(
-                appName: 'NDK sample app',
+                clientMetadata: _clientMetadata,
                 relays: [
                   "wss://relay.damus.io",
                   "wss://nos.lol",

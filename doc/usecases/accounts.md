@@ -14,16 +14,30 @@ icon: person
 
 ### External Signer (nip-46 bunker)
 
+Pass the same `Nip46ClientMetadata` to both flows. A `bunker://` URL does not identify your app, so this metadata is the only way for the remote signer to label the connection.
+
+```dart client metadata
+const clientMetadata = Nip46ClientMetadata(
+    name: "My app",
+    url: "https://myapp.example",
+    perms: ["sign_event:1", "nip44_encrypt"],
+);
+```
+
 ```dart login with bunker url
 final bunkerConnection = await ndk.accounts.loginWithBunkerUrl(
     bunkerUrl: "bunker://xxx",
     bunkers: ndk.bunkers,
+    clientMetadata: clientMetadata,
     authCallback: (challenge) {},
 );
 ```
 
 ```dart login with nostr connect
-final nostrConnect = NostrConnect(relays: ["wss://relay.example.com"]);
+final nostrConnect = NostrConnect(
+    relays: ["wss://relay.example.com"],
+    clientMetadata: clientMetadata,
+);
 final bunkerConnection = await ndk.accounts.loginWithNostrConnect(
     nostrConnect: nostrConnect,
     bunkers: ndk.bunkers,

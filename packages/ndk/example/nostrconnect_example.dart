@@ -7,8 +7,10 @@ Future<void> main() async {
 
   final nostrConnect = NostrConnect(
     relays: ["wss://relay.nsec.app"],
-    appName: "NDK nostr connect example",
-    appUrl: "https://dart-nostr.com/",
+    clientMetadata: const Nip46ClientMetadata(
+      name: "NDK nostr connect example",
+      url: "https://dart-nostr.com/",
+    ),
   );
 
   log('Logging in with ${nostrConnect.nostrConnectURL}');

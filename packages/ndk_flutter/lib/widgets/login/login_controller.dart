@@ -35,6 +35,7 @@ class LoginController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Nip46ClientMetadata? clientMetadata;
   NostrConnect? nostrConnect;
   bool isNostrConnectDialogOpen = false;
   List<ToastificationItem> challengeToasts = [];
@@ -71,6 +72,7 @@ class LoginController extends ChangeNotifier {
   LoginController({
     required this.ndkFlutter,
     this.onLoggedIn,
+    this.clientMetadata,
     this.nostrConnect,
   });
 
@@ -82,6 +84,7 @@ class LoginController extends ChangeNotifier {
         bunkerUrl: bunkerFieldController.text.trim(),
         bunkers: ndk.bunkers,
         authCallback: (challenge) => showBunkerAuthToast(challenge, context),
+        clientMetadata: clientMetadata,
       );
 
       isBunkerLoading = false;
