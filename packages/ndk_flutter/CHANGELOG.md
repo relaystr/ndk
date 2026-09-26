@@ -1,3 +1,10 @@
+## 0.10.0-dev.9
+
+ - **FIX**: seedStore.write() first.
+ - **FIX**: normalize and await cashu seed phrase save.
+ - **FEAT**: set cashu seed.
+ - **FEAT**: restore quote ui.
+
 ## 0.10.0-dev.8
 
  - Update a dependency to the latest release.
