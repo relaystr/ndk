@@ -487,6 +487,57 @@ void main() {
       expect(broadcast.broadcastedEvents.map((e) => e.id), [event.id]);
     });
 
+    for (final outcome in [
+      ('accepted', true, RelayDeliveryState.acked, EventDeliveryStatus.delivered),
+      ('invalid: bad event', false, RelayDeliveryState.permanentFailure,
+          EventDeliveryStatus.failed),
+      ('error: temporarily unavailable', false,
+          RelayDeliveryState.transientFailure, EventDeliveryStatus.inProgress),
+    ]) {
+      test('persists retry result ${outcome.$1}', () async {
+        const relay = 'wss://retry.example';
+        await pendingDelivery.enqueueSpecificRelayBroadcast(
+          event: event,
+          relayUrls: const [relay],
+          requiresInteractiveSigning: false,
+          auth: const AuthPolicy.never(),
+        );
+        broadcast.responses = [RelayBroadcastResponse(
+          relayUrl: relay,
+          okReceived: true,
+          broadcastSuccessful: outcome.$2,
+          msg: outcome.$1,
+        )];
+        await pendingDelivery.flushForRelay(relay, onlyDue: true);
+        final first = (await cacheManager.loadRelayDeliveryTargets(
+          eventId: event.id,
+        )).single;
+        expect(first.state, outcome.$3);
+        expect(first.attemptCount, 1);
+        expect(first.lastAttemptAt, isNotNull);
+        expect(first.authCanonical, 'never');
+        expect((await cacheManager.loadEventDeliveryRecord(event.id))!.status,
+            outcome.$4);
+        await pendingDelivery.flushForRelay(relay, onlyDue: true);
+        expect(broadcast.broadcastedEvents, hasLength(1),
+            reason: 'terminal states and future retries must not resend');
+        if (outcome.$3 == RelayDeliveryState.transientFailure) {
+          expect(first.nextRetryAt! - first.lastAttemptAt!, 5);
+          await cacheManager.saveRelayDeliveryTarget(first.copyWith(
+            nextRetryAt: Nip01Event.secondsSinceEpoch() - 1,
+          ));
+          await pendingDelivery.flushForRelay(relay, onlyDue: true);
+          final second = (await cacheManager.loadRelayDeliveryTargets(
+            eventId: event.id,
+          )).single;
+          expect(second.attemptCount, 2);
+          expect(second.nextRetryAt! - second.lastAttemptAt!, 15);
+        } else {
+          expect(first.nextRetryAt, isNull);
+        }
+      });
+    }
+
     test('preserves an ephemeral initial attempt until it finishes', () async {
       final rpc = event.copyWith(kind: 23194);
       await cacheManager.saveEvent(rpc);
@@ -1233,6 +1284,7 @@ class RecordingBroadcastSender extends BroadcastSender {
   final List<Nip01Event> broadcastedEvents = [];
   final List<AuthPolicy?> broadcastedAuth = [];
   final Set<String> inFlightEventIds = {};
+  List<RelayBroadcastResponse> responses = const [];
 
   @override
   bool isEventInFlight(String eventId) => inFlightEventIds.contains(eventId);
@@ -1262,7 +1314,7 @@ class RecordingBroadcastSender extends BroadcastSender {
     broadcastedAuth.add(auth);
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
-      broadcastDoneStream: Stream.value(const <RelayBroadcastResponse>[]),
+      broadcastDoneStream: Stream.value(responses),
     );
   }
 }

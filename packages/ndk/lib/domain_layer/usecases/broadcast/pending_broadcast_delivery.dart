@@ -529,13 +529,16 @@ class PendingBroadcastDelivery {
           continue;
         }
 
-        await _sender
+        final responses = await _sender
             .broadcast(
               nostrEvent: event,
               specificRelays: [relayUrl],
               auth: auth.policy,
             )
             .broadcastDoneFuture;
+        // Retries bypass Broadcast's initial-send persistence wrapper. Apply
+        // the same acknowledgement and backoff bookkeeping before retrying.
+        await persistSpecificRelayBroadcastResult(event, responses);
       }
     } finally {
       _flushInProgress.remove(relayUrl);
