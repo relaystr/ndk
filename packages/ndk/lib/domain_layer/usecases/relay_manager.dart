@@ -201,10 +201,12 @@ class RelayManager<T> {
   Future<bool> _waitForTransportOpen(
     NostrTransport transport, {
     required int timeoutSeconds,
+    bool Function()? stillOwned,
   }) async {
     final deadline = DateTime.now().add(Duration(seconds: timeoutSeconds));
 
     while (DateTime.now().isBefore(deadline)) {
+      if (stillOwned?.call() == false) return false;
       if (transport.isOpen()) {
         return true;
       }
@@ -215,6 +217,7 @@ class RelayManager<T> {
         // keep polling isOpen() until the overall timeout expires
       }
 
+      if (stillOwned?.call() == false) return false;
       if (transport.isOpen()) {
         return true;
       }
@@ -254,7 +257,8 @@ class RelayManager<T> {
       return Tuple(true, "");
     }
 
-    if (isConnectionConnecting(connectionKey)) {
+    if (isConnectionConnecting(connectionKey) ||
+        _connectReadyCompleters.containsKey(connectionKey)) {
       Logger.log.t(() => "relay is already connecting: $connectionKey");
       final inFlightConnect = _connectReadyCompleters[connectionKey];
       if (inFlightConnect != null) {
@@ -273,6 +277,10 @@ class RelayManager<T> {
     RelayConnectivity? relayConnectivity = globalState.relays[connectionKey];
     final connectCompleter = Completer<bool>();
     _connectReadyCompleters[connectionKey] = connectCompleter;
+    NostrTransport? transport;
+    bool ownsTransport() => transport != null &&
+        identical(globalState.relays[connectionKey], relayConnectivity) &&
+        identical(relayConnectivity?.relayTransport, transport);
 
     try {
       if (relayConnectivity == null) {
@@ -291,9 +299,16 @@ class RelayManager<T> {
       // a fresh socket for a key we may already know: nothing the previous one
       // authenticated carries over
       _forgetAuthState(connectionKey);
-      relayConnectivity.relayTransport = nostrTransportFactory(
+      // A disconnected transport may still own reconnect timers and listeners.
+      // Retire it before replacement or it can later open an untracked socket.
+      await relayConnectivity.close();
+      if (!identical(globalState.relays[connectionKey], relayConnectivity)) {
+        throw StateError('Connection was removed while replacing its transport');
+      }
+      transport = nostrTransportFactory(
         url,
         onReconnect: () {
+          if (!ownsTransport()) return;
           // the relay accepted our AUTH on the socket that just died, not on
           // this one; the binding survives, the authentication does not
           _forgetAuthState(connectionKey);
@@ -301,6 +316,7 @@ class RelayManager<T> {
           updateRelayConnectivity();
         },
         onDisconnect: (code, error, reason) {
+          if (!ownsTransport()) return;
           relayConnectivity!.stats.connectionErrors++;
           // the transport reconnects under us and keeps its message stream
           // open, so this is the only notice we get that the socket the relay
@@ -311,15 +327,17 @@ class RelayManager<T> {
           updateRelayConnectivity();
         },
       );
+      relayConnectivity.relayTransport = transport;
       // Start listening immediately so we don't miss early frames such as
       // relay AUTH challenges that may arrive before the transport reports
       // itself fully open.
       _startListeningToSocket(relayConnectivity);
       final opened = await _waitForTransportOpen(
-        relayConnectivity.relayTransport!,
+        transport,
         timeoutSeconds: connectTimeout,
+        stillOwned: ownsTransport,
       );
-      if (!opened) {
+      if (!opened || !ownsTransport()) {
         throw TimeoutException(
           "Future not completed",
           Duration(seconds: connectTimeout),
@@ -342,10 +360,22 @@ class RelayManager<T> {
       return Tuple(true, "");
     } catch (e) {
       Logger.log.e(() => "!! could not connect to $url -> $e");
-      await relayConnectivity!.close();
+      try {
+        if (transport == null ||
+            identical(relayConnectivity!.relayTransport, transport)) {
+          await relayConnectivity!.close();
+        } else {
+          await transport.close();
+        }
+      } catch (closeError) {
+        Logger.log.w(() => "Error retiring transport for $url: $closeError");
+      }
     }
-    relayConnectivity.relay.failedToConnect();
-    relayConnectivity.stats.connectionErrors++;
+    final failedConnectivity = relayConnectivity;
+    if (failedConnectivity != null) {
+      failedConnectivity.relay.failedToConnect();
+      failedConnectivity.stats.connectionErrors++;
+    }
     if (!connectCompleter.isCompleted) {
       connectCompleter.complete(false);
     }
@@ -687,9 +717,17 @@ class RelayManager<T> {
     final transport = relayConnectivity.relayTransport;
     relayConnectivity.listen(
       (message) {
+        if (!identical(globalState.relays[relayConnectivity.key], relayConnectivity) ||
+            !identical(relayConnectivity.relayTransport, transport)) {
+          return;
+        }
         _handleIncomingMessage(message, relayConnectivity);
       },
       onError: (error) {
+        if (!identical(globalState.relays[relayConnectivity.key], relayConnectivity) ||
+            !identical(relayConnectivity.relayTransport, transport)) {
+          return;
+        }
         Logger.log.e(() => "onError ${relayConnectivity.url} on listen $error");
         relayConnectivity.stats.connectionErrors++;
         _handleTransportGone(relayConnectivity, transport);
@@ -714,7 +752,8 @@ class RelayManager<T> {
     RelayConnectivity relayConnectivity,
     NostrTransport? transport,
   ) async {
-    if (!identical(relayConnectivity.relayTransport, transport)) {
+    if (!identical(globalState.relays[relayConnectivity.key], relayConnectivity) ||
+        !identical(relayConnectivity.relayTransport, transport)) {
       return;
     }
 
@@ -722,6 +761,12 @@ class RelayManager<T> {
       await relayConnectivity.close();
     } catch (e) {
       Logger.log.w(() => "Error closing relay ${relayConnectivity.url}: $e");
+    }
+    // Closing can yield while a new owner or transport takes over. Its AUTH
+    // and subscriptions belong to the replacement, not this retired socket.
+    if (!identical(globalState.relays[relayConnectivity.key], relayConnectivity) ||
+        relayConnectivity.relayTransport != null) {
+      return;
     }
     // the socket is gone, so is the AUTH the relay accepted on it
     _forgetAuthState(relayConnectivity.key);
