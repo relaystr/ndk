@@ -1,3 +1,11 @@
+## 0.10.0-dev.8
+
+ - **FIX**: reduce background polling and cache work.
+ - **FIX**(nwc): expose hold settle deadline.
+ - **FIX**: seedStore.write() first.
+ - **FIX**: carry seed language.
+ - **FIX**: normalize and await cashu seed phrase save.
+
 ## 0.10.0-dev.7
 
 > Note: This release has breaking changes.
