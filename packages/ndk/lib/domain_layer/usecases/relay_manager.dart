@@ -278,7 +278,8 @@ class RelayManager<T> {
     final connectCompleter = Completer<bool>();
     _connectReadyCompleters[connectionKey] = connectCompleter;
     NostrTransport? transport;
-    bool ownsTransport() => transport != null &&
+    bool ownsTransport() =>
+        transport != null &&
         identical(globalState.relays[connectionKey], relayConnectivity) &&
         identical(relayConnectivity?.relayTransport, transport);
 
@@ -303,7 +304,9 @@ class RelayManager<T> {
       // Retire it before replacement or it can later open an untracked socket.
       await relayConnectivity.close();
       if (!identical(globalState.relays[connectionKey], relayConnectivity)) {
-        throw StateError('Connection was removed while replacing its transport');
+        throw StateError(
+          'Connection was removed while replacing its transport',
+        );
       }
       transport = nostrTransportFactory(
         url,
@@ -717,14 +720,20 @@ class RelayManager<T> {
     final transport = relayConnectivity.relayTransport;
     relayConnectivity.listen(
       (message) {
-        if (!identical(globalState.relays[relayConnectivity.key], relayConnectivity) ||
+        if (!identical(
+              globalState.relays[relayConnectivity.key],
+              relayConnectivity,
+            ) ||
             !identical(relayConnectivity.relayTransport, transport)) {
           return;
         }
         _handleIncomingMessage(message, relayConnectivity);
       },
       onError: (error) {
-        if (!identical(globalState.relays[relayConnectivity.key], relayConnectivity) ||
+        if (!identical(
+              globalState.relays[relayConnectivity.key],
+              relayConnectivity,
+            ) ||
             !identical(relayConnectivity.relayTransport, transport)) {
           return;
         }
@@ -752,7 +761,10 @@ class RelayManager<T> {
     RelayConnectivity relayConnectivity,
     NostrTransport? transport,
   ) async {
-    if (!identical(globalState.relays[relayConnectivity.key], relayConnectivity) ||
+    if (!identical(
+          globalState.relays[relayConnectivity.key],
+          relayConnectivity,
+        ) ||
         !identical(relayConnectivity.relayTransport, transport)) {
       return;
     }
@@ -764,7 +776,10 @@ class RelayManager<T> {
     }
     // Closing can yield while a new owner or transport takes over. Its AUTH
     // and subscriptions belong to the replacement, not this retired socket.
-    if (!identical(globalState.relays[relayConnectivity.key], relayConnectivity) ||
+    if (!identical(
+          globalState.relays[relayConnectivity.key],
+          relayConnectivity,
+        ) ||
         relayConnectivity.relayTransport != null) {
       return;
     }
