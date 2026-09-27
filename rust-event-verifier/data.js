@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790532781685,
+  "lastUpdate": 1790549188028,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -986,6 +986,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1622256,
             "range": "1609774-1638842",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "frnandu",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2199ee133a7fcbdf5691ec1dd2f75621fe80b546",
+          "message": "Merge pull request #859 from relaystr/release-36339713793\n\nchore(prerelease): publish ndk_drift 0.1.1-dev.21",
+          "timestamp": "2026-09-28T00:44:27+02:00",
+          "tree_id": "e608678fa6d9bfaf6b4ae8a6f5b08b6a75cf3bef",
+          "url": "https://github.com/relaystr/ndk/commit/2199ee133a7fcbdf5691ec1dd2f75621fe80b546"
+        },
+        "date": 1790549184698,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 41232.8,
+            "range": "41099-44243",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1537494,
+            "range": "1526156-1612420",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
