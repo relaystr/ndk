@@ -6802,6 +6802,14 @@ abstract class _$NdkCacheDatabase extends GeneratedDatabase {
   late final $WalletsTable wallets = $WalletsTable(this);
   late final $WalletTransactionsTable walletTransactions =
       $WalletTransactionsTable(this);
+  late final Index eventsPubKeyKindCreatedAt = Index(
+    'events_pub_key_kind_created_at',
+    'CREATE INDEX events_pub_key_kind_created_at ON events (pub_key, kind, created_at)',
+  );
+  late final Index eventsKindCreatedAt = Index(
+    'events_kind_created_at',
+    'CREATE INDEX events_kind_created_at ON events (kind, created_at)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6822,6 +6830,8 @@ abstract class _$NdkCacheDatabase extends GeneratedDatabase {
     keyValues,
     wallets,
     walletTransactions,
+    eventsPubKeyKindCreatedAt,
+    eventsKindCreatedAt,
   ];
 }
 
