@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790456177135,
+  "lastUpdate": 1790532781685,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -948,6 +948,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1326934,
             "range": "1320256-1379290",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "13872977aacdca14d6c51ffebfbf92a62968f1db",
+          "message": "Merge pull request #857 from relaystr/perf/drift-events-indexes\n\nperf: index the drift events table by pub_key, kind and created_at",
+          "timestamp": "2026-09-27T20:11:16+02:00",
+          "tree_id": "9427d8065a4ca7625f8a466848ccd651fa2ebe79",
+          "url": "https://github.com/relaystr/ndk/commit/13872977aacdca14d6c51ffebfbf92a62968f1db"
+        },
+        "date": 1790532779161,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 42603,
+            "range": "42427-44917",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1622256,
+            "range": "1609774-1638842",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
