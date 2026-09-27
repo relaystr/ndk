@@ -1,3 +1,7 @@
+## 0.1.1-dev.21
+
+ - **PERF**: index the drift events table by pub_key, kind and created_at.
+
 ## 0.1.1-dev.20
 
  - Update a dependency to the latest release.
