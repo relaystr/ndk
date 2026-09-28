@@ -4,7 +4,7 @@ Title: Who a query, subscription, broadcast or Blossom operation authenticates a
 
 ## status
 
-proposed
+accepted
 
 Updated on 2026-09-25
 
