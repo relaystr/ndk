@@ -1,3 +1,7 @@
+## 0.10.0-dev.9
+
+ - **FIX**: don't hold NIP-46 responses until the slowest relay acks.
+
 ## 0.10.0-dev.8
 
  - **FIX**: reduce background polling and cache work.

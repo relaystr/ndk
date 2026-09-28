@@ -1,3 +1,7 @@
+## 0.2.12-dev.18
+
+ - Update a dependency to the latest release.
+
 ## 0.2.12-dev.17
 
  - **FIX**: reduce background polling and cache work.

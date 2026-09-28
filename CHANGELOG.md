@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-28
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0-dev.9`](#ndk---v0100-dev9)
+ - [`ndk_objectbox` - `v0.2.12-dev.18`](#ndk_objectbox---v0212-dev18)
+ - [`ndk_drift` - `v0.1.1-dev.22`](#ndk_drift---v011-dev22)
+ - [`ndk_flutter` - `v0.10.0-dev.10`](#ndk_flutter---v0100-dev10)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.18`
+ - `ndk_drift` - `v0.1.1-dev.22`
+ - `ndk_flutter` - `v0.10.0-dev.10`
+
+---
+
+#### `ndk` - `v0.10.0-dev.9`
+
+ - **FIX**: don't hold NIP-46 responses until the slowest relay acks.
+
+
 ## 2026-09-27
 
 ### Changes
