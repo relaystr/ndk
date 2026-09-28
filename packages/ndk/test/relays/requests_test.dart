@@ -453,6 +453,59 @@ void main() async {
     });
   });
 
+  group('request ids', () {
+    late Ndk ndk;
+    final filter = Filter(kinds: [1]);
+
+    setUp(() {
+      ndk = Ndk(
+        NdkConfig(
+          eventVerifier: MockEventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: [],
+        ),
+      );
+    });
+
+    tearDown(() => ndk.destroy());
+
+    test('debug ids keep the name and fit NIP-01', () {
+      final name = 'n' * 32;
+      final query = ndk.requests.query(filter: filter, name: name);
+      final sub = ndk.requests.subscription(filter: filter, name: name);
+
+      for (final id in [query.requestId, sub.requestId]) {
+        expect(id, matches(RegExp('^$name-[0-9a-f]{16}\$')));
+      }
+    });
+
+    test('a name longer than 32 characters asserts', () {
+      expect(
+        () => ndk.requests.query(filter: filter, name: 'n' * 33),
+        throwsA(isA<AssertionError>()),
+      );
+    });
+
+    test('an explicit id must be 1 to 64 characters', () {
+      final requests = <NdkResponse Function(String id)>[
+        (id) => ndk.requests.query(filter: filter, id: id),
+        (id) => ndk.requests.subscription(filter: filter, id: id),
+      ];
+      for (final request in requests) {
+        expect(() => request(''), throwsArgumentError);
+        expect(() => request('i' * 65), throwsArgumentError);
+        expect(request('i' * 64).requestId, 'i' * 64);
+      }
+    });
+
+    test('an explicit query id cannot be combined with paginate', () {
+      expect(
+        () => ndk.requests.query(filter: filter, id: 'q', paginate: true),
+        throwsArgumentError,
+      );
+    });
+  });
+
   test('Response with FormatException', () async {
     final mockRelay = MockRelay(
       name: 'test-relay-format-exception',
