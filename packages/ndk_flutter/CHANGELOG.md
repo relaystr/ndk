@@ -1,3 +1,7 @@
+## 0.10.0-dev.10
+
+ - Update a dependency to the latest release.
+
 ## 0.10.0-dev.9
 
  - **FIX**: seedStore.write() first.
