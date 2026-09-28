@@ -309,7 +309,12 @@ class Nwc {
       Map<String, dynamic> data;
       data = json.decode(decrypted);
       NwcResponse? response;
-      if (data.containsKey("result")) {
+      // Some wallets (e.g. rizful) reply to failures with a non-spec
+      // `result_type: "error"` and `result: null`; surface the error instead
+      // of dropping the reply and letting the request time out.
+      if (data['error'] != null || data['result'] == null) {
+        response = NwcResponse(resultType: data['result_type'] ?? 'error');
+      } else if (data.containsKey("result")) {
         if (data['result_type'] == NwcMethod.GET_INFO.name) {
           response = GetInfoResponse.deserialize(data);
         } else if (data['result_type'] == NwcMethod.GET_BALANCE.name) {

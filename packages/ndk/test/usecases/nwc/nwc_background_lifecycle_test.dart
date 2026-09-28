@@ -475,4 +475,46 @@ void main() {
     expect(notifications, isEmpty);
     await listener.cancel();
   });
+  test('non-spec error result_type fails fast with wallet error', () async {
+    final connection = await nwc.connect(_uri, ignoreCapabilitiesCheck: true);
+    broadcast.autoReply = false;
+    final future = nwc.makeHoldInvoice(
+      connection,
+      amountSats: 29,
+      paymentHash: '00' * 32,
+      timeout: const Duration(seconds: 5),
+    );
+    await _flush();
+    requests.deliver(
+      Nip01Event(
+        pubKey: _walletPubkey,
+        kind: 23195,
+        tags: [
+          ['e', broadcast.sent.last.id],
+        ],
+        content: Nip04.encrypt(
+          _walletSecret,
+          Bip340.getPublicKey(_clientSecret),
+          jsonEncode({
+            'result_type': 'error',
+            'error': {
+              'code': 'OTHER',
+              'message': 'amount must be at least 1000000 msat',
+            },
+            'result': null,
+          }),
+        ),
+      ),
+    );
+    await expectLater(
+      future,
+      throwsA(
+        isA<Exception>().having(
+          (e) => e.toString(),
+          'message',
+          contains('amount must be at least 1000000 msat'),
+        ),
+      ),
+    );
+  });
 }
