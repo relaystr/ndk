@@ -8,7 +8,7 @@ import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
 import '../bunkers/bunkers.dart';
 import '../bunkers/models/bunker_connection.dart';
-import '../bunkers/models/nip46_client_metadata.dart';
+import '../../entities/nip46_client_metadata.dart';
 import '../bunkers/models/nostr_connect.dart';
 
 /// A usecase that handles accounts

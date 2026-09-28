@@ -1,6 +1,6 @@
 import '../../../../shared/nips/nip01/bip340.dart';
 import '../../../../shared/nips/nip01/helpers.dart';
-import 'nip46_client_metadata.dart';
+import '../../../entities/nip46_client_metadata.dart';
 
 class NostrConnect {
   List<String> relays;

@@ -7,7 +7,7 @@ import '../../../data_layer/repositories/signers/nip46_event_signer.dart';
 import '../../../domain_layer/repositories/event_signer.dart';
 import 'models/bunker_request.dart';
 import 'models/bunker_connection.dart';
-import 'models/nip46_client_metadata.dart';
+import '../../entities/nip46_client_metadata.dart';
 import '../../entities/filter.dart';
 import '../../entities/nip_01_event.dart';
 import '../broadcast/broadcast.dart';
