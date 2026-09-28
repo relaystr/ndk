@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790549188028,
+  "lastUpdate": 1790581340863,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1024,6 +1024,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1537494,
             "range": "1526156-1612420",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4fac124f351e0e8d791e472526d44f22479ccef0",
+          "message": "Merge pull request #855 from relaystr/docs/adr-auth-handler\n\ndocs: reduce the auth handler to a consent check per pubkey and url",
+          "timestamp": "2026-09-28T09:39:39+02:00",
+          "tree_id": "aaf3112a447b5003fd7465c8c4749924ab345092",
+          "url": "https://github.com/relaystr/ndk/commit/4fac124f351e0e8d791e472526d44f22479ccef0"
+        },
+        "date": 1790581337310,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 40661.8,
+            "range": "40029-42870",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1559550,
+            "range": "1483738-1596630",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
