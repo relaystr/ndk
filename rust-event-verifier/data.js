@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790581340863,
+  "lastUpdate": 1790590280085,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1062,6 +1062,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1559550,
             "range": "1483738-1596630",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "030a2a11e6e18f5ca6cca8d836a7a8a2a6ac74e9",
+          "message": "Merge pull request #849 from relaystr/fix/nip46-slow-relay-delay\n\nfix: don't hold NIP-46 responses until the slowest relay acks",
+          "timestamp": "2026-09-28T12:09:41+02:00",
+          "tree_id": "a07d322977281542c6e8410ba8a94ece007bacc7",
+          "url": "https://github.com/relaystr/ndk/commit/030a2a11e6e18f5ca6cca8d836a7a8a2a6ac74e9"
+        },
+        "date": 1790590277970,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46387.8,
+            "range": "46247-50284",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1631956,
+            "range": "1613748-1651348",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
