@@ -76,6 +76,7 @@ class RelaySetsEngine implements NetworkEngine {
             ConnectionSource.explicit, // TODO improve this connection source
         force: false,
         as: state?.request.auth?.account,
+        pausing: state,
       );
     } finally {
       if (state != null) {
@@ -145,6 +146,7 @@ class RelaySetsEngine implements NetworkEngine {
         relayUrl,
         auth,
         connectTimeout: 1,
+        pausing: _globalState.inFlightBroadcasts[nostrEvent.id],
       );
     } catch (e) {
       Logger.log.w(

@@ -42,9 +42,9 @@ final response = ndk.nip77.reconcile(
 | `AuthPolicy.allow(a)` | anonymous, moves to one bound to `a` once the relay refuses | who you are, but only after that relay asked |
 | `AuthPolicy.require(a)` | bound to `a` from the start | who you are, as soon as it sends a challenge |
 
-Without `auth`, a refused negotiation authenticates as the currently logged-in
-account, so the relay decides when your identity is revealed. Pass `auth`
-explicitly whenever that matters.
+Without `auth`, a negotiation reveals no identity. With an [`AuthHandler`](/concepts/nip42-auth.md#authhandler), a
+refused negotiation authenticates as the logged-in account where the handler
+agrees.
 
 If `require` names an account that cannot sign, no connection can carry the
 reconciliation. Rather than fall back to the anonymous one, which is what

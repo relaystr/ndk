@@ -230,12 +230,13 @@ void relayOutcomesTests(NdkEngine engine) {
           privateKey: key.privateKey!,
         );
 
-    Ndk buildNdk() => Ndk(
+    Ndk buildNdk({AuthHandler? authHandler}) => Ndk(
           NdkConfig(
             eventVerifier: MockEventVerifier(),
             cache: MemCacheManager(),
             engine: engine,
             bootstrapRelays: [relay1.url],
+            authHandler: authHandler,
           ),
         );
 
@@ -497,7 +498,7 @@ void relayOutcomesTests(NdkEngine engine) {
         requireAuthForRequests: true,
       );
       await relay1.startServer(textNotes: {key1: textNote(key1)});
-      ndk = buildNdk();
+      ndk = buildNdk(authHandler: (_, _) async => true);
 
       ndk.accounts.loginPrivateKey(
         pubkey: key1.publicKey,

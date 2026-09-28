@@ -4,6 +4,9 @@ import 'signer_request_cancelled_exception.dart';
 /// Signs the kind 24242 event an operation authorises itself with.
 typedef BlossomAuthorizationSigner = Future<Nip01Event> Function();
 
+/// Whether [serverUrl] may be sent the signed event, see `AuthHandler`.
+typedef BlossomAuthorizationConsent = Future<bool> Function(String serverUrl);
+
 /// What a blossom operation does about the `Authorization` header, and when.
 ///
 /// One operation may talk to several servers. The three cases differ only in
@@ -26,9 +29,11 @@ sealed class BlossomAuthorization {
       BlossomAuthorizationUpfront;
 
   /// Sends nothing at first, and signs with [sign] only once a server refused
-  /// the request without an identity.
-  factory BlossomAuthorization.onRefusal(BlossomAuthorizationSigner sign) =
-      BlossomAuthorizationOnRefusal;
+  /// the request without an identity and [consent] agreed to that server.
+  factory BlossomAuthorization.onRefusal(
+    BlossomAuthorizationSigner sign, {
+    BlossomAuthorizationConsent? consent,
+  }) = BlossomAuthorizationOnRefusal;
 
   /// The event to send before anything has been refused, null when the first
   /// request goes out bare.
@@ -94,6 +99,10 @@ class BlossomAuthorizationUpfront extends BlossomAuthorization {
 /// Authorises once refused, see [BlossomAuthorization.onRefusal].
 class BlossomAuthorizationOnRefusal extends BlossomAuthorization {
   final BlossomAuthorizationSigner _sign;
+  final BlossomAuthorizationConsent? _consent;
+
+  /// asked once per server for the whole operation
+  final Map<String, Future<bool>> _consents = {};
 
   /// assigned synchronously on the first call, so concurrent refusals from
   /// several servers share the one signature
@@ -103,14 +112,23 @@ class BlossomAuthorizationOnRefusal extends BlossomAuthorization {
 
   final Set<String> _refusedBy = {};
 
-  /// signs with [sign] the first time a server refuses
-  BlossomAuthorizationOnRefusal(BlossomAuthorizationSigner sign) : _sign = sign;
+  /// signs with [sign] the first time a server [consent] agrees to refuses
+  BlossomAuthorizationOnRefusal(
+    BlossomAuthorizationSigner sign, {
+    BlossomAuthorizationConsent? consent,
+  })  : _sign = sign,
+        _consent = consent;
 
   @override
   Nip01Event? get upfront => null;
 
   @override
-  Future<Nip01Event?> onRefusal(String serverUrl) {
+  Future<Nip01Event?> onRefusal(String serverUrl) async {
+    final consent = _consent;
+    if (consent != null &&
+        !await (_consents[serverUrl] ??= consent(serverUrl))) {
+      return null;
+    }
     _refusedBy.add(serverUrl);
 
     final pending = _signed;

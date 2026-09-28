@@ -28,13 +28,14 @@ void broadcastAuthTests(NdkEngine engine) {
           ),
         );
 
-    Ndk ndkFor(MockRelay relay) => Ndk(
+    Ndk ndkFor(MockRelay relay, {AuthHandler? authHandler}) => Ndk(
           NdkConfig(
             eventVerifier: MockEventVerifier(),
             cache: MemCacheManager(),
             bootstrapRelays: [relay.url],
             defaultBroadcastTimeout: const Duration(seconds: 2),
             engine: engine,
+            authHandler: authHandler,
           ),
         );
 
@@ -307,7 +308,36 @@ void broadcastAuthTests(NdkEngine engine) {
       await relay.stopServer();
     });
 
-    test('without auth a refusal still authenticates as the author', () async {
+    test('without auth a refusal authenticates as the author once asked',
+        () async {
+      final relay = await authRelay();
+      final asked = <String>[];
+      final ndk = ndkFor(
+        relay,
+        authHandler: (url, pubkey) async {
+          asked.add(pubkey);
+          return true;
+        },
+      );
+      ndk.accounts.loginPrivateKey(
+        pubkey: key.publicKey,
+        privkey: key.privateKey!,
+      );
+
+      final result = await ndk.broadcast.broadcast(
+        nostrEvent: noteFrom(key, "default"),
+        specificRelays: [relay.url],
+      ).broadcastDoneFuture;
+
+      expect(result.any((r) => r.broadcastSuccessful), isTrue);
+      expect(asked, [key.publicKey]);
+      expect(relay.connectionsAuthenticatedAs(key.publicKey), greaterThan(0));
+
+      await ndk.destroy();
+      await relay.stopServer();
+    });
+
+    test('without auth or handler a refusal reveals nobody', () async {
       final relay = await authRelay();
       final ndk = ndkFor(relay);
       ndk.accounts.loginPrivateKey(
@@ -320,8 +350,9 @@ void broadcastAuthTests(NdkEngine engine) {
         specificRelays: [relay.url],
       ).broadcastDoneFuture;
 
-      expect(result.any((r) => r.broadcastSuccessful), isTrue);
-      expect(relay.connectionsAuthenticatedAs(key.publicKey), greaterThan(0));
+      expect(result.any((r) => r.broadcastSuccessful), isFalse);
+      expect(relay.acceptedAuths, 0);
+      expect(relay.connectionsAuthenticatedAs(key.publicKey), 0);
 
       await ndk.destroy();
       await relay.stopServer();
