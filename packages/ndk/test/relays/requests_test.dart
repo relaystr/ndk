@@ -457,33 +457,38 @@ void main() async {
     late Ndk ndk;
     final filter = Filter(kinds: [1]);
 
-    setUp(() {
-      ndk = Ndk(
-        NdkConfig(
-          eventVerifier: MockEventVerifier(),
-          cache: MemCacheManager(),
-          bootstrapRelays: [],
-        ),
-      );
-    });
+    Ndk createNdk({bool debugMode = false}) => Ndk(
+          NdkConfig(
+            eventVerifier: MockEventVerifier(),
+            cache: MemCacheManager(),
+            bootstrapRelays: [],
+            debugMode: debugMode,
+          ),
+        );
+
+    setUp(() => ndk = createNdk());
 
     tearDown(() => ndk.destroy());
 
-    test('debug ids keep the name and fit NIP-01', () {
+    test('ids are random hex and never carry the name', () {
+      final query = ndk.requests.query(filter: filter, name: 'secret');
+      final sub = ndk.requests.subscription(filter: filter, name: 'secret');
+
+      for (final id in [query.requestId, sub.requestId]) {
+        expect(id, matches(RegExp(r'^[0-9a-f]{32}$')));
+      }
+    });
+
+    test('debugMode ids keep the name, cut to 32 characters', () {
+      final debugNdk = createNdk(debugMode: true);
+      addTearDown(debugNdk.destroy);
       final name = 'n' * 32;
-      final query = ndk.requests.query(filter: filter, name: name);
-      final sub = ndk.requests.subscription(filter: filter, name: name);
+      final query = debugNdk.requests.query(filter: filter, name: '${name}x');
+      final sub = debugNdk.requests.subscription(filter: filter, name: name);
 
       for (final id in [query.requestId, sub.requestId]) {
         expect(id, matches(RegExp('^$name-[0-9a-f]{16}\$')));
       }
-    });
-
-    test('a name longer than 32 characters asserts', () {
-      expect(
-        () => ndk.requests.query(filter: filter, name: 'n' * 33),
-        throwsA(isA<AssertionError>()),
-      );
     });
 
     test('an explicit id must be 1 to 64 characters', () {

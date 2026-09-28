@@ -41,18 +41,12 @@ class _RelayPaginationState {
 class Requests {
   static const int _persistedEventIdsMaxSize = 20000;
 
-  static final bool _isDebug = () {
-    var debug = false;
-    assert(debug = true);
-    return debug;
-  }();
-
   /// NIP-01 caps subscription ids at 64 chars. [name] only reaches the relay
-  /// in debug, so production ids do not fingerprint NDK (#716).
-  static String _requestId(String name) {
-    if (!_isDebug) return Helpers.getSecureRandomHex(16);
-    assert(name.length <= 32, 'request name must be at most 32 characters');
-    return '$name-${Helpers.getSecureRandomHex(8)}';
+  /// in [_debugMode], so production ids do not fingerprint NDK (#716).
+  String _requestId(String name) {
+    if (!_debugMode) return Helpers.getSecureRandomHex(16);
+    final prefix = name.length > 32 ? name.substring(0, 32) : name;
+    return '$prefix-${Helpers.getSecureRandomHex(8)}';
   }
 
   static void _checkExplicitId(String? id) {
@@ -69,6 +63,7 @@ class Requests {
   final EventVerifier _eventVerifier;
   final List<EventFilter> _eventOutFilters;
   final Duration _defaultQueryTimeout;
+  final bool _debugMode;
   FetchedRanges? _fetchedRanges;
 
   /// ids of events whose signature was already checked by this [Ndk]
@@ -91,6 +86,7 @@ class Requests {
     required EventVerifier eventVerifier,
     required List<EventFilter> eventOutFilters,
     required Duration defaultQueryTimeout,
+    bool debugMode = false,
   })  : _engine = networkEngine,
         _relayManager = relayManager,
         _cacheManager = cacheManager,
@@ -98,7 +94,8 @@ class Requests {
         _globalState = globalState,
         _eventVerifier = eventVerifier,
         _eventOutFilters = eventOutFilters,
-        _defaultQueryTimeout = defaultQueryTimeout;
+        _defaultQueryTimeout = defaultQueryTimeout,
+        _debugMode = debugMode;
 
   /// Clears signature-verification reuse state owned by this NDK instance.
   void clearVerifiedEventCache() => _verifiedEventIds.clear();
@@ -190,7 +187,7 @@ class Requests {
   ///
   /// [filter] The filter to apply to the query \
   /// [filters] @deprecated A list of filters to apply to the query. Use [filter] instead \
-  /// [name] An optional name for logging, also prefixed to the ID in debug builds (at most 32 characters) \
+  /// [name] An optional name for logging, also prefixed to the ID (first 32 characters) when [NdkConfig.debugMode] is on \
   /// [id] An optional ID sent as the NIP-01 subscription id (1 to 64 characters), overriding name; not allowed with [paginate] \
   /// [relaySet] An optional set of relays to query \
   /// [cacheRead] Whether to read from cache \
@@ -280,7 +277,7 @@ class Requests {
   ///
   /// [filter] The filter to apply to the subscription \
   /// [filters] @deprecated A list of filters to apply to the subscription. Use [filter] instead \
-  /// [name] An optional name for logging, also prefixed to the ID in debug builds (at most 32 characters) \
+  /// [name] An optional name for logging, also prefixed to the ID (first 32 characters) when [NdkConfig.debugMode] is on \
   /// [id] An optional ID sent as the NIP-01 subscription id (1 to 64 characters), overriding name \
   /// [relaySet] An optional set of relays to subscribe to \
   /// [cacheRead] Whether to read from cache \
