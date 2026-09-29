@@ -1,3 +1,7 @@
+## 0.10.0-dev.11
+
+ - **FIX**: allow file_picker 13.x in ndk_flutter.
+
 ## 0.10.0-dev.10
 
  - Update a dependency to the latest release.

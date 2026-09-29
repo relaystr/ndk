@@ -3,6 +3,42 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-29
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0-dev.10`](#ndk---v0100-dev10)
+ - [`ndk_flutter` - `v0.10.0-dev.11`](#ndk_flutter---v0100-dev11)
+ - [`ndk_objectbox` - `v0.2.12-dev.19`](#ndk_objectbox---v0212-dev19)
+ - [`ndk_drift` - `v0.1.1-dev.23`](#ndk_drift---v011-dev23)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.19`
+ - `ndk_drift` - `v0.1.1-dev.23`
+
+---
+
+#### `ndk` - `v0.10.0-dev.10`
+
+ - **FIX**: send private NIP-01 compliant request ids.
+ - **FEAT**: add NdkConfig.debugMode to prefix request ids with their name.
+
+#### `ndk_flutter` - `v0.10.0-dev.11`
+
+ - **FIX**: allow file_picker 13.x in ndk_flutter.
+
+
 ## 2026-09-28
 
 ### Changes

@@ -1,3 +1,8 @@
+## 0.10.0-dev.10
+
+ - **FIX**: send private NIP-01 compliant request ids.
+ - **FEAT**: add NdkConfig.debugMode to prefix request ids with their name.
+
 ## 0.10.0-dev.9
 
  - **FIX**: don't hold NIP-46 responses until the slowest relay acks.
