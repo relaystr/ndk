@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790606324976,
+  "lastUpdate": 1790701418116,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1138,6 +1138,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1509188,
             "range": "1505584-1519742",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7139dde0478591e8f030dde67bb69ca6438a0018",
+          "message": "Merge pull request #863 from relaystr/fix/allow-file-picker-13\n\nfix: allow file_picker 13.x in ndk_flutter",
+          "timestamp": "2026-09-29T19:01:17+02:00",
+          "tree_id": "b400feb98876fb382e0e5efe0a8c65c971567060",
+          "url": "https://github.com/relaystr/ndk/commit/7139dde0478591e8f030dde67bb69ca6438a0018"
+        },
+        "date": 1790701414897,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46676,
+            "range": "46465-50485",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1539836,
+            "range": "1533060-1608828",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
