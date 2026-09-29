@@ -203,6 +203,7 @@ class Initialization {
       relayManager: relayManager,
       eventVerifier: _ndkConfig.eventVerifier,
       eventOutFilters: _ndkConfig.eventOutFilters,
+      debugMode: _ndkConfig.debugMode,
     );
 
     final broadcastSender = BroadcastSender(

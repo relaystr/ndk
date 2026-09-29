@@ -130,6 +130,13 @@ class NdkConfig {
   /// Whether to run cache eviction once on startup before periodic runs.
   bool runCacheEvictionOnStartup;
 
+  /// Development aid, off by default. Flutter apps can pass `kDebugMode`.
+  ///
+  /// When enabled:
+  /// - request ids sent to relays start with the request name, so relays
+  ///   see which usecase opened each subscription. Keep it off in production.
+  bool debugMode;
+
   /// Creates a new instance of [NdkConfig].
   ///
   /// [eventVerifier] The verifier used to validate Nostr events. \
@@ -174,6 +181,7 @@ class NdkConfig {
     this.cacheEvictionStartupDelay = const Duration(minutes: 1),
     this.cacheEvictionInterval = const Duration(hours: 1),
     this.runCacheEvictionOnStartup = true,
+    this.debugMode = false,
   });
 }
 

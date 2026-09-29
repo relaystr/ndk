@@ -6,10 +6,10 @@ import 'relay_set.dart';
 // coverage:ignore-start
 /// Ndk request
 class NdkRequest {
-  /// nostr id
+  /// subscription id sent to relays in REQ/CLOSE (NIP-01, at most 64 characters)
   String id;
 
-  /// request name (for better debugging / logging
+  /// request name for logging, sent to relays only in [NdkConfig.debugMode]
   String? name;
 
   /// should it close on receiving EOSE?

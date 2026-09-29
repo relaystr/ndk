@@ -22,10 +22,10 @@ class Helpers {
     );
   }
 
-  /// return a secure random hex string of given length
-  static String getSecureRandomHex(int length) {
+  /// returns [bytes] secure random bytes as a hex string (2 chars per byte)
+  static String getSecureRandomHex(int bytes) {
     final random = Random.secure();
-    final values = List<int>.generate(length, (i) => random.nextInt(256));
+    final values = List<int>.generate(bytes, (i) => random.nextInt(256));
     return convert.hex.encode(values);
   }
 

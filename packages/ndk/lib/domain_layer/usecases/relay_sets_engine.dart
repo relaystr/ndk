@@ -316,7 +316,7 @@ class RelaySetsEngine implements NetworkEngine {
     Duration timeout = kDefaultStreamIdleTimeout,
     bool closeOnEOSE = true,
   }) async {
-    String id = Helpers.getRandomString(10);
+    String id = Helpers.getSecureRandomHex(16);
     RequestState state = RequestState(
       closeOnEOSE
           ? NdkRequest.query(
