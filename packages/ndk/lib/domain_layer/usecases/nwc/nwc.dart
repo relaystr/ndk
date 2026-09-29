@@ -46,23 +46,21 @@ class Nwc {
   final Requests _requests;
   final Broadcast _broadcast;
   final LocalEventSignerFactory _eventSignerFactory;
-  final Future<void> Function()? _onIdle;
-  final bool Function(String requestId)? _isSubscriptionReady;
+  final Future<void> Function(String requestId, Duration timeout)?
+  _waitForRequestSent;
 
-  /// Creates the NWC client. [onIdle] may release unused relay transports;
-  /// [isSubscriptionReady] reports whether this exact response REQ has been sent
-  /// on a connected transport. NDK supplies both hooks automatically.
+  /// Creates the NWC client. [waitForRequestSent] waits for the response REQ
+  /// to be sent on a connected transport. NDK supplies this hook automatically.
   Nwc({
     required Requests requests,
     required Broadcast broadcast,
     required LocalEventSignerFactory eventSignerFactory,
-    Future<void> Function()? onIdle,
-    bool Function(String requestId)? isSubscriptionReady,
+    Future<void> Function(String requestId, Duration timeout)?
+    waitForRequestSent,
   }) : _requests = requests,
        _broadcast = broadcast,
        _eventSignerFactory = eventSignerFactory,
-       _onIdle = onIdle,
-       _isSubscriptionReady = isSubscriptionReady;
+       _waitForRequestSent = waitForRequestSent;
 
   final Map<String, Completer<NwcResponse>> _inflighRequests = {};
   final Map<String, Timer> _inflighRequestTimers = {};
@@ -106,30 +104,10 @@ class Nwc {
       if (_backgrounded && (_activeRequests[connection] ?? 0) == 0) {
         _notificationSince[connection] ??=
             DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        try {
-          await _onIdle?.call();
-        } catch (_) {
-          // Optional socket cleanup must not change a successful payment result.
-        }
       }
     });
     _subscriptionUpdates = operation.catchError((Object _) {});
     return operation;
-  }
-
-  Future<void> _awaitSubscriptionReady(String id, Duration timeout) async {
-    final isReady = _isSubscriptionReady;
-    if (isReady == null) return;
-    final clock = Stopwatch()..start();
-    while (!isReady(id)) {
-      if (clock.elapsed >= timeout) {
-        throw TimeoutException(
-          'NWC response subscription was not sent',
-          timeout,
-        );
-      }
-      await Future<void>.delayed(const Duration(milliseconds: 20));
-    }
   }
 
   /// Connects to a given nostr+walletconnect:// uri,
@@ -243,6 +221,10 @@ class Nwc {
     final notificationSince = previousSince == null
         ? null
         : DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    // Allow modest wallet clock skew while bounding response history on resume.
+    final relaySince = notificationSince == null
+        ? null
+        : notificationSince - 300;
     connection.subscription = _requests.subscription(
       name: "nwc-sub-${connection.useETagForEachRequest ? "notifs-only" : ""}",
       explicitRelays: connection.uri.relays
@@ -254,22 +236,21 @@ class Nwc {
             connection.isLegacyNotifications()
                 ? NwcKind.LEGACY_NOTIFICATION.value
                 : NwcKind.NOTIFICATION.value,
+            if (!connection.useETagForEachRequest) NwcKind.RESPONSE.value,
           ],
           authors: [connection.uri.walletPubkey],
           pTags: [connection.signer.getPublicKey()],
-          since: notificationSince,
+          since: relaySince,
         ),
-        if (!connection.useETagForEachRequest)
-          Filter(
-            kinds: [NwcKind.RESPONSE.value],
-            authors: [connection.uri.walletPubkey],
-            pTags: [connection.signer.getPublicKey()],
-          ),
       ],
       cacheRead: false,
       cacheWrite: false,
     );
     connection.listen((event) async {
+      if (event.kind == NwcKind.RESPONSE.value &&
+          !_inflighRequests.containsKey(event.getEId())) {
+        return;
+      }
       if (event.kind != NwcKind.RESPONSE.value &&
           (_backgrounded ||
               (notificationSince != null &&
@@ -483,7 +464,7 @@ class Nwc {
         );
       }
       final budget = timeout ?? const Duration(seconds: 5);
-      await _awaitSubscriptionReady(
+      await _waitForRequestSent?.call(
         (dedicatedResponse ?? connection.subscription!).requestId,
         budget,
       );

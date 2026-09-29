@@ -34,6 +34,7 @@ import 'nip42/auth_event.dart';
 ///  and help with tracking of requests
 class RelayManager<T> {
   final Completer<void> _seedRelaysCompleter = Completer<void>();
+  final Map<String, Set<Completer<void>>> _requestSentWaiters = {};
 
   /// completes when all seed relays are connected
   Future<void> get seedRelaysConnected => _seedRelaysCompleter.future;
@@ -632,8 +633,36 @@ class RelayManager<T> {
     }
     if (msg.type == ClientMsgType.kReq) {
       relayConnectivity.stats.openRequestIds.add(id);
+      for (final waiter
+          in _requestSentWaiters.remove(id) ?? <Completer<void>>{}) {
+        waiter.complete();
+      }
     } else if (msg.type == ClientMsgType.kClose) {
       relayConnectivity.stats.openRequestIds.remove(id);
+    }
+  }
+
+  /// Waits until a REQ with [id] is sent on a connected relay.
+  Future<void> waitForRequestSent(String id, Duration timeout) async {
+    if (globalState.relays.values.any(
+      (relay) => relay.isConnected && relay.stats.openRequestIds.contains(id),
+    )) {
+      return;
+    }
+    final waiter = Completer<void>();
+    _requestSentWaiters.putIfAbsent(id, () => {}).add(waiter);
+    try {
+      await waiter.future.timeout(
+        timeout,
+        onTimeout: () => throw TimeoutException(
+          'NWC response subscription was not sent',
+          timeout,
+        ),
+      );
+    } finally {
+      final waiters = _requestSentWaiters[id];
+      waiters?.remove(waiter);
+      if (waiters != null && waiters.isEmpty) _requestSentWaiters.remove(id);
     }
   }
 

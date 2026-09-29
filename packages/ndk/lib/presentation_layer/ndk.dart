@@ -168,6 +168,15 @@ class Ndk {
   @experimental // needs more docs & tests
   Nwc get nwc => _initialization.nwc;
 
+  /// Suspends wallet notifications and balance polling, and closes idle relay
+  /// connections when the application enters background. Active requests keep
+  /// their connections.
+  Future<void> setBackgrounded(bool backgrounded) async {
+    wallets.setBackgrounded(backgrounded);
+    await nwc.setBackgrounded(backgrounded);
+    if (backgrounded) await relays.closeIdleConnections();
+  }
+
   /// Zaps
   @experimental // needs more docs & tests
   Zaps get zaps => _initialization.zaps;

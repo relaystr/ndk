@@ -373,6 +373,9 @@ class Wallets {
     }
   }
 
+  /// Whether [setBackgrounded] last suspended background work.
+  bool get isBackgrounded => _backgrounded;
+
   /// Suspends automatic LNbits balance polling while the app is backgrounded.
   /// Existing balances remain available. NWC notifications, transaction
   /// monitoring, payments and explicit [refreshBalance] calls are unaffected.

@@ -247,13 +247,7 @@ class Initialization {
       requests: requests,
       broadcast: broadcast,
       eventSignerFactory: _ndkConfig.eventSignerFactory,
-      onIdle: relayManager.closeIdleConnections,
-      isSubscriptionReady: (requestId) =>
-          relayManager.globalState.relays.values.any(
-            (relay) =>
-                relay.isConnected &&
-                relay.stats.openRequestIds.contains(requestId),
-          ),
+      waitForRequestSent: relayManager.waitForRequestSent,
     );
 
     if (_ndkConfig.walletsRepo == null) {

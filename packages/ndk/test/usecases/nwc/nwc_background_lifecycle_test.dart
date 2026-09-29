@@ -153,18 +153,13 @@ void main() {
   late _Requests requests;
   late _Broadcast broadcast;
   late Nwc nwc;
-  late int idleCalls;
   setUp(() {
     requests = _Requests();
     broadcast = _Broadcast(requests);
-    idleCalls = 0;
     nwc = Nwc(
       requests: requests,
       broadcast: broadcast,
       eventSignerFactory: Bip340EventSignerFactory(),
-      onIdle: () async {
-        idleCalls++;
-      },
     );
   });
   tearDown(() async => nwc.disconnectAll());
@@ -181,17 +176,13 @@ void main() {
       await nwc.setBackgrounded(true);
       expect(requests.active, isEmpty);
       expect(streamClosed, isFalse);
-      expect(idleCalls, 1);
       await nwc.setBackgrounded(false);
       await nwc.setBackgrounded(false);
       expect(requests.active.length, 1);
       final filters = requests.active.values.single.$1;
-      expect(filters.first.since, isNotNull);
-      expect(
-        filters.last.since,
-        isNull,
-        reason: 'wallet clock skew must not filter RPC replies',
-      );
+      expect(filters, hasLength(1));
+      expect(filters.single.kinds, containsAll([23195, 23196]));
+      expect(filters.single.since, isNotNull);
       await listener.cancel();
     },
   );
@@ -336,17 +327,12 @@ void main() {
     },
   );
 
-  test(
-    'tagged background RPC releases socket after dedicated listener closes',
-    () async {
-      final connection = await nwc.connect(_uri, useETagForEachRequest: true);
-      await nwc.setBackgrounded(true);
-      final before = idleCalls;
-      await nwc.getBalance(connection);
-      expect(requests.active, isEmpty);
-      expect(idleCalls, greaterThan(before));
-    },
-  );
+  test('tagged background RPC closes dedicated listener', () async {
+    final connection = await nwc.connect(_uri, useETagForEachRequest: true);
+    await nwc.setBackgrounded(true);
+    await nwc.getBalance(connection);
+    expect(requests.active, isEmpty);
+  });
 
   test('cleanup failure does not replace successful payment', () async {
     final connection = await nwc.connect(_uri, useETagForEachRequest: true);
@@ -360,15 +346,15 @@ void main() {
   });
 
   test('cold request waits until its exact subscription is sent', () async {
-    var ready = false;
+    final sent = Completer<void>();
     final checkedIds = <String>[];
     nwc = Nwc(
       requests: requests,
       broadcast: broadcast,
       eventSignerFactory: Bip340EventSignerFactory(),
-      isSubscriptionReady: (id) {
+      waitForRequestSent: (id, timeout) {
         checkedIds.add(id);
-        return ready;
+        return sent.future.timeout(timeout);
       },
     );
     final connection = await nwc.connect(_uri);
@@ -378,7 +364,7 @@ void main() {
     expect(broadcast.sent, isEmpty);
     expect(checkedIds, isNotEmpty);
     expect(checkedIds.toSet(), {requests.active.keys.single});
-    ready = true;
+    sent.complete();
     expect((await payment).preimage, 'preimage');
     expect(requests.active, isEmpty);
   });
@@ -388,7 +374,8 @@ void main() {
       requests: requests,
       broadcast: broadcast,
       eventSignerFactory: Bip340EventSignerFactory(),
-      isSubscriptionReady: (_) => false,
+      waitForRequestSent: (_, timeout) =>
+          Completer<void>().future.timeout(timeout),
     );
     final connection = await nwc.connect(_uri);
     await nwc.setBackgrounded(true);
@@ -473,6 +460,29 @@ void main() {
     );
     await _flush();
     expect(notifications, isEmpty);
+    await listener.cancel();
+  });
+
+  test('historical responses are ignored before decryption after resume',
+      () async {
+    final connection = await nwc.connect(_uri);
+    final responses = <Object>[];
+    final listener = connection.responseStream.stream.listen(responses.add);
+    await nwc.setBackgrounded(true);
+    await nwc.setBackgrounded(false);
+    requests.deliver(
+      Nip01Event(
+        pubKey: _walletPubkey,
+        kind: 23195,
+        createdAt: 1,
+        tags: [
+          ['e', 'historical-request'],
+        ],
+        content: 'must not decrypt old history',
+      ),
+    );
+    await _flush();
+    expect(responses, isEmpty);
     await listener.cancel();
   });
   test('non-spec error result_type fails fast with wallet error', () async {
