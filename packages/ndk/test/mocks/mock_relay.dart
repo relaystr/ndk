@@ -116,6 +116,7 @@ class MockRelay {
   int? maxEventsPerRequest;
   int signEventCreatedAtOffsetSeconds;
   String? signEventContentOverride;
+  List<dynamic>? lastConnectParams;
   int rejectFirstEventPublishes;
   String rejectEventMessage;
 
@@ -1169,6 +1170,7 @@ class MockRelay {
     try {
       switch (method) {
         case 'connect':
+          lastConnectParams = params;
           // Handle connection request with optional secret
           if (params != null && params.isNotEmpty) {
             // In a real implementation, you'd validate the secret here

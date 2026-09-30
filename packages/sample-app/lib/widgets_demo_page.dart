@@ -5,6 +5,8 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 
 import 'main.dart';
 
+const _clientMetadata = Nip46ClientMetadata(name: 'NDK sample app');
+
 class WidgetsDemoPage extends StatefulWidget {
   const WidgetsDemoPage({super.key});
 
@@ -248,8 +250,9 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
                           },
                           enableNip07Login: false,
                           enableSignerAppLogin: false,
+                          clientMetadata: _clientMetadata,
                           nostrConnect: NostrConnect(
-                            appName: 'NDK sample app',
+                            clientMetadata: _clientMetadata,
                             relays: [
                               "wss://relay.damus.io",
                               "wss://nos.lol",
