@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.842609353569">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.844095678271">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 4.6.0">
@@ -37,12 +37,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.6.0.842609353569" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.844095678271" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.842609353569" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.844095678271" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.842609353569" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.842609353569" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.844095678271" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.844095678271" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -59,7 +59,7 @@
                 <div class="flex items-center px-2 md:px-6">
                     <a id="retype-branding-logo" href="https://dart-nostr.com/" class="flex items-center leading-snug text-2xl">
                         <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
-                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.10.0-dev.3</span>
+                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.10.0</span>
                 </div>
     
                 <span class="hidden h-8 border-r md:inline-block border-base-border"></span>
@@ -194,36 +194,129 @@ print(
 <div id="when-to-use-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">const Duration BLOSSOM_AUTH_EXPIRATION = Duration(minutes: 5);</code></pre>
 </doc-codeblock></div>
+<h2 id="server-authentication-bud-01">Server authentication (BUD-01)</h2>
+<p>Some servers only serve a private blob, or only accept an upload, from a client
+that signed a kind <code translate="no" v-pre>24242</code> event. The <code translate="no" v-pre>auth</code> parameter says which identity a
+server may learn, as on
+<a href="../requests/#relay-authentication-nip-42">requests</a> and
+<a href="../broadcast/#relay-authentication-nip-42">broadcasts</a>:</p>
+<div id="server-authentication-bud-01-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">final response = await ndk.blossom.getBlob(
+  sha256: hash,
+  serverUrls: ['https://cdn.example.com'],
+  auth: AuthPolicy.allow(account),
+);</code></pre>
+</doc-codeblock></div>
+<retype-table copy-text="| policy | what goes out | what a server learns |
+| --- | --- | --- |
+| `AuthPolicy.never()` | no authorization, ever | nothing. A server that refuses without one simply does not serve the request |
+| `AuthPolicy.allow(a)` | nothing at first, then the signed event once a server answered 401 | who you are, but only after that server asked |
+| `AuthPolicy.require(a)` | the signed event on the first request | who you are, as soon as you ask it for anything |">
+<div class="table-wrapper scrollbar overflow-hidden">
+<table class="comfortable">
+<thead>
+<tr>
+<th>policy</th>
+<th>what goes out</th>
+<th>what a server learns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code translate="no" v-pre>AuthPolicy.never()</code></td>
+<td>no authorization, ever</td>
+<td>nothing. A server that refuses without one simply does not serve the request</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>AuthPolicy.allow(a)</code></td>
+<td>nothing at first, then the signed event once a server answered 401</td>
+<td>who you are, but only after that server asked</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>AuthPolicy.require(a)</code></td>
+<td>the signed event on the first request</td>
+<td>who you are, as soon as you ask it for anything</td>
+</tr>
+</tbody>
+</table>
+</div>
+</retype-table>
+<p>The account does not have to be one NDK knows. <code translate="no" v-pre>allow</code> costs a refused HTTP
+round trip, and for an upload a body sent twice, so prefer <code translate="no" v-pre>require</code> when the
+server is known to ask. If <code translate="no" v-pre>require</code> names an account that cannot sign, nothing
+is sent and the call throws <code translate="no" v-pre>BlossomAuthUnavailableException</code>.</p>
+<p>Without <code translate="no" v-pre>auth</code>, reads stay anonymous and everything else authorises as the
+logged-in account, or as a throwaway key when none is. This default is expected
+to change.</p>
+<p><code translate="no" v-pre>useAuth</code> and <code translate="no" v-pre>customSigner</code> were removed in favour of <code translate="no" v-pre>auth</code>:</p>
+<retype-table copy-text="| removed | replace with |
+| --- | --- |
+| `useAuth: true` | `auth: AuthPolicy.require(account)`, with the logged-in account, or the one holding the `customSigner` passed alongside |
+| `customSigner: s` alone | the same with the account holding `s`, except on a download or a check, where it never signed: drop it |
+| `useAuth: false` | `auth: const AuthPolicy.never()` on `listBlobs`, nothing elsewhere |">
+<div class="table-wrapper scrollbar overflow-hidden">
+<table class="comfortable">
+<thead>
+<tr>
+<th>removed</th>
+<th>replace with</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code translate="no" v-pre>useAuth: true</code></td>
+<td><code translate="no" v-pre>auth: AuthPolicy.require(account)</code>, with the logged-in account, or the one holding the <code translate="no" v-pre>customSigner</code> passed alongside</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>customSigner: s</code> alone</td>
+<td>the same with the account holding <code translate="no" v-pre>s</code>, except on a download or a check, where it never signed: drop it</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>useAuth: false</code></td>
+<td><code translate="no" v-pre>auth: const AuthPolicy.never()</code> on <code translate="no" v-pre>listBlobs</code>, nothing elsewhere</td>
+</tr>
+</tbody>
+</table>
+</div>
+</retype-table>
 <h3 id="methods---blossom">methods - Blossom</h3>
 <h4 id="uploadblob">uploadBlob</h4>
 <p>upload a blob, if serverMediaOptimisation is set to <code translate="no" v-pre>true</code> the <code translate="no" v-pre>/media</code> endpoint is used.</p>
 <div id="uploadblob-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">
-/// Gets the signer to use for blossom operations
-/// Priority: customSigner &gt; logged in account signer &gt; temporary signer
-EventSigner _getSigner(EventSigner? customSigner) {
-  if (customSigner != null) return customSigner;
-
-  if (_accounts.canSign) {
-    return _accounts.getLoggedAccount()!.signer;
-  }
-
-  // Create a temporary signer if no account is logged in
-  final keyPair = Bip340.generatePrivateKey();
-  return _eventSignerFactory.create(</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">Future&lt;List&lt;BlobUploadResult&gt;&gt; uploadBlob({
+  required Uint8List data,
+  List&lt;String&gt;? serverUrls,
+  String? contentType,
+  UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
+  bool serverMediaOptimisation = false,
+  AuthPolicy? auth,
+  String? pubkeyToFetchUserServerList,
+  String? precomputedSha256,
+})</code></pre>
+</doc-codeblock></div>
+<h4 id="uploadblobfromfile">uploadBlobFromFile</h4>
+<p>Reads the file in chunks, so a large file is never held whole in memory.</p>
+<div id="uploadblobfromfile-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">Stream&lt;BlobUploadProgress&gt; uploadBlobFromFile({
+  required String filePath,
+  List&lt;String&gt;? serverUrls,
+  String? contentType,
+  UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
+  bool serverMediaOptimisation = false,
+  AuthPolicy? auth,
+  String? pubkeyToFetchUserServerList,
+  String? precomputedSha256,
+})</code></pre>
 </doc-codeblock></div>
 <h4 id="getblob">getBlob</h4>
 <p>Download the blob and use fallback if the blob is not found or the server is offline.</p>
 <div id="getblob-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">    [&quot;x&quot;, dataSha256],
-    [&quot;expiration&quot;, &quot;${now + BLOSSOM_AUTH_EXPIRATION.inMilliseconds}&quot;],
-  ],
-);
-
-final signedAuthorization = await signer.sign(myAuthorization);
-
-serverUrls ??= await _userServerList.getUserServerList(
-  pubkeys: [signer.getPublicKey()],</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">Future&lt;BlobResponse&gt; getBlob({
+  required String sha256,
+  AuthPolicy? auth,
+  List&lt;String&gt;? serverUrls,
+  String? pubkeyToFetchUserServerList,
+})</code></pre>
 </doc-codeblock></div>
 <h4 id="checkblob">checkBlob</h4>
 <div class="flex mb-6">
@@ -244,82 +337,69 @@ serverUrls ??= await _userServerList.getUserServerList(
     </div>
 </div>
 <div id="checkblob-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-final signer = _getSigner(customSigner);
-
-String? fileHash = precomputedSha256;
-
-if (fileHash == null) {
-  // Compute file hash without loading entire file into memory
-  await for (final hashProgress in _blossomImpl.computeFileHash(filePath)) {
-    yield BlobUploadProgress(
-      currentServer: '',
-      sentBytes: hashProgress.processedBytes,</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">Future&lt;String&gt; checkBlob({
+  required String sha256,
+  AuthPolicy? auth,
+  List&lt;String&gt;? serverUrls,
+  String? pubkeyToFetchUserServerList,
+})</code></pre>
 </doc-codeblock></div>
 <h4 id="getblobstream">getBlobStream</h4>
 <p>Similar to <code translate="no" v-pre>getBlob</code>, it streams the data, which is helpful for video files.</p>
 <div id="getblobstream-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">    serverUrls: serverUrls,
-    authorization: signedAuthorization,
-    contentType: contentType,
-    strategy: strategy,
-    mediaOptimisation: serverMediaOptimisation,
-  );
-}
-
-/// Mirror a blob from a blossom URL to specified servers using the blossom /mirror endpoint
-///</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">Future&lt;Stream&lt;BlobResponse&gt;&gt; getBlobStream({
+  required String sha256,
+  AuthPolicy? auth,
+  List&lt;String&gt;? serverUrls,
+  String? pubkeyToFetchUserServerList,
+  int chunkSize = 1024 * 1024,
+})</code></pre>
 </doc-codeblock></div>
 <h4 id="listblobs">listBlobs</h4>
 <div id="listblobs-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">  targetServerUrls.map(
-    (serverUrl) =&gt; _blossomImpl.mirrorToServer(
-      fileUrl: blossomUrl.toString(),
-      serverUrl: serverUrl,
-      sha256: sha256,
-      authorization: signedAuthorization,
-    ),
-  ),
-);
-
-return results;</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">Future&lt;List&lt;BlobDescriptor&gt;&gt; listBlobs({
+  required String pubkey,
+  List&lt;String&gt;? serverUrls,
+  AuthPolicy? auth,
+  DateTime? since,
+  DateTime? until,
+})</code></pre>
 </doc-codeblock></div>
 <h4 id="deleteblob">deleteBlob</h4>
 <div id="deleteblob-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">  throw Exception(
-    &quot;pubkeyToFetchUserServerList is null and serverUrls is null&quot;,
-  );
-}
-
-serverUrls ??= await _userServerList.getUserServerList(
-  pubkeys: [pubkeyToFetchUserServerList],
-);</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">Future&lt;List&lt;BlobDeleteResult&gt;&gt; deleteBlob({
+  required String sha256,
+  List&lt;String&gt;? serverUrls,
+  AuthPolicy? auth,
+  String? pubkeyToFetchUserServerList,
+})</code></pre>
+</doc-codeblock></div>
+<h4 id="mirrortoservers">mirrorToServers</h4>
+<p>Copies a blob that already lives somewhere else onto other servers, without
+downloading it first.</p>
+<div id="mirrortoservers-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">Future&lt;List&lt;BlobUploadResult&gt;&gt; mirrorToServers({
+  required Uri blossomUrl,
+  required List&lt;String&gt; targetServerUrls,
+  AuthPolicy? auth,
+})</code></pre>
 </doc-codeblock></div>
 <h4 id="directdownload">directDownload</h4>
 <div id="directdownload-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">
-final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-myAuthorization = Nip01Utils.createEventCalculateId(
-  content: &quot;get&quot;,</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">Future&lt;BlobResponse&gt; directDownload({required Uri url})</code></pre>
 </doc-codeblock></div>
 <h4 id="report">report</h4>
+<p>The report is a signed event in the request body, so <code translate="no" v-pre>never()</code> signs it with a
+throwaway key rather than sending nothing.</p>
 <div id="report-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">    tags: [
-      [&quot;t&quot;, &quot;get&quot;],
-      [&quot;x&quot;, sha256],
-      [&quot;expiration&quot;, &quot;${now + BLOSSOM_AUTH_EXPIRATION.inMilliseconds}&quot;],
-    ],
-  );
-
-  signedAuthorization = await signer.sign(myAuthorization);
-}
-
-if (serverUrls == null) {
-  if (pubkeyToFetchUserServerList == null) {
-    throw Exception(
-      &quot;pubkeyToFetchUserServerList is null and serverUrls is null&quot;,
-    );</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">Future&lt;int&gt; report({
+  required String sha256,
+  required String eventId,
+  required String reportType,
+  required String reportMsg,
+  required String serverUrl,
+  AuthPolicy? auth,
+})</code></pre>
 </doc-codeblock></div>
 <h3 id="methods---blossomuserserverlist">methods - BlossomUserServerList</h3>
 <p>To get and set the user server list e.g. on settings page, you can use <code translate="no" v-pre>BlossomUserServerList</code></p>
@@ -334,11 +414,11 @@ Future&lt;List&lt;String&gt;?&gt; getUserServerList({
 </doc-codeblock></div>
 <h4 id="publishuserserverlist">publishUserServerList</h4>
 <div id="publishuserserverlist-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">  required List&lt;String&gt; serverUrlsOrdered,
-}) async {
-  if (serverUrlsOrdered.isEmpty) {
-    throw Exception(&quot;serverUrlsOrdered is empty&quot;);
-  }</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// Publish user server list \
+/// order of [serverUrlsOrdered] is important, the first server is the most trusted server
+Future&lt;List&lt;RelayBroadcastResponse&gt;&gt; publishUserServerList({
+  required List&lt;String&gt; serverUrlsOrdered,
+}) async {</code></pre>
 </doc-codeblock></div>
 
                 

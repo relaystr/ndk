@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.842609353569">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.844095678271">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 4.6.0">
@@ -12,7 +12,7 @@
     <!-- Primary Meta Tags -->
     <title>Accounts</title>
     <meta name="title" content="Accounts">
-    <meta name="description" content="Store the BunkerConnection details locally to re-establish the connection in future sessions. Use bunkerConnection.toJson() to serialize and BunkerConnection.fromJson() to restore.">
+    <meta name="description" content="Pass the same Nip46ClientMetadata to both flows. A bunker:// URL does not identify your app, so this metadata is the only way for the remote signer to label the connection.">
 
     <!-- Canonical -->
     <link rel="canonical" href="https://dart-nostr.com/usecases/accounts/">
@@ -22,7 +22,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dart-nostr.com/usecases/accounts/">
     <meta property="og:title" content="Accounts">
-    <meta property="og:description" content="Store the BunkerConnection details locally to re-establish the connection in future sessions. Use bunkerConnection.toJson() to serialize and BunkerConnection.fromJson() to restore.">
+    <meta property="og:description" content="Pass the same Nip46ClientMetadata to both flows. A bunker:// URL does not identify your app, so this metadata is the only way for the remote signer to label the connection.">
     <meta property="og:site_name" content="NDK">
     <meta property="og:locale" content="en_US">
 
@@ -30,19 +30,19 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://dart-nostr.com/usecases/accounts/">
     <meta name="twitter:title" content="Accounts">
-    <meta name="twitter:description" content="Store the BunkerConnection details locally to re-establish the connection in future sessions. Use bunkerConnection.toJson() to serialize and BunkerConnection.fromJson() to restore.">
+    <meta name="twitter:description" content="Pass the same Nip46ClientMetadata to both flows. A bunker:// URL does not identify your app, so this metadata is the only way for the remote signer to label the connection.">
 
     <!-- Alternate Markdown -->
     <link rel="alternate" type="text/markdown" href="https://dart-nostr.com/usecases/accounts.md">
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.6.0.842609353569" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.844095678271" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.842609353569" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.844095678271" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.842609353569" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.842609353569" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.844095678271" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.844095678271" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -59,7 +59,7 @@
                 <div class="flex items-center px-2 md:px-6">
                     <a id="retype-branding-logo" href="https://dart-nostr.com/" class="flex items-center leading-snug text-2xl">
                         <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
-                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.10.0-dev.3</span>
+                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.10.0</span>
                 </div>
     
                 <span class="hidden h-8 border-r md:inline-block border-base-border"></span>
@@ -197,17 +197,30 @@ void main() async {
 }</code></pre>
 </doc-codeblock></div>
 <h3 id="external-signer-nip-46-bunker">External Signer (nip-46 bunker)</h3>
+<p>Pass the same <code translate="no" v-pre>Nip46ClientMetadata</code> to both flows. A <code translate="no" v-pre>bunker://</code> URL does not identify your app, so this metadata is the only way for the remote signer to label the connection.</p>
+<div id="external-signer-nip-46-bunker-client-metadata" class="codeblock-wrapper"><doc-codeblock>
+<div class="codeblock-title">client metadata</div>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">const clientMetadata = Nip46ClientMetadata(
+    name: &quot;My app&quot;,
+    url: &quot;https://myapp.example&quot;,
+    perms: [&quot;sign_event:1&quot;, &quot;nip44_encrypt&quot;],
+);</code></pre>
+</doc-codeblock></div>
 <div id="external-signer-nip-46-bunker-login-with-bunker-url" class="codeblock-wrapper"><doc-codeblock>
 <div class="codeblock-title">login with bunker url</div>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">final bunkerConnection = await ndk.accounts.loginWithBunkerUrl(
     bunkerUrl: &quot;bunker://xxx&quot;,
     bunkers: ndk.bunkers,
+    clientMetadata: clientMetadata,
     authCallback: (challenge) {},
 );</code></pre>
 </doc-codeblock></div>
 <div id="external-signer-nip-46-bunker-login-with-nostr-connect" class="codeblock-wrapper"><doc-codeblock>
 <div class="codeblock-title">login with nostr connect</div>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">final nostrConnect = NostrConnect(relays: [&quot;wss://relay.example.com&quot;]);
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">final nostrConnect = NostrConnect(
+    relays: [&quot;wss://relay.example.com&quot;],
+    clientMetadata: clientMetadata,
+);
 final bunkerConnection = await ndk.accounts.loginWithNostrConnect(
     nostrConnect: nostrConnect,
     bunkers: ndk.bunkers,

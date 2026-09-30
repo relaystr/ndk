@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.842609353569">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.844095678271">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 4.6.0">
@@ -37,12 +37,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.6.0.842609353569" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.844095678271" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.842609353569" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.844095678271" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.842609353569" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.842609353569" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.844095678271" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.844095678271" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -59,7 +59,7 @@
                 <div class="flex items-center px-2 md:px-6">
                     <a id="retype-branding-logo" href="https://dart-nostr.com/" class="flex items-center leading-snug text-2xl">
                         <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
-                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.10.0-dev.3</span>
+                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.10.0</span>
                 </div>
     
                 <span class="hidden h-8 border-r md:inline-block border-base-border"></span>
@@ -194,6 +194,80 @@ If you want to use the outbox model, check out the <a href="../../guides/enablin
         </div>
     </div>
 </div>
+<h2 id="relay-authentication-nip-42">Relay authentication (NIP-42)</h2>
+<p>Some relays only accept an event from a client that authenticated. The <code translate="no" v-pre>auth</code>
+parameter says which identity the broadcast may be attributed to, exactly like
+on <a href="../requests/#relay-authentication-nip-42">requests</a>:</p>
+<div id="relay-authentication-nip-42-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">final myBroadcast = ndk.broadcast.broadcast(
+  nostrEvent: report,
+  auth: const AuthPolicy.never(),
+);</code></pre>
+</doc-codeblock></div>
+<retype-table copy-text="| policy | connection | what a relay learns |
+| --- | --- | --- |
+| `AuthPolicy.never()` | anonymous, always | nothing. A relay that refuses the event without an identity simply does not accept it |
+| `AuthPolicy.allow(a)` | anonymous, moves to one bound to `a` once the relay refuses | who you are, but only after that relay asked |
+| `AuthPolicy.require(a)` | bound to `a` from the start | who you are, as soon as it sends a challenge |">
+<div class="table-wrapper scrollbar overflow-hidden">
+<table class="comfortable">
+<thead>
+<tr>
+<th>policy</th>
+<th>connection</th>
+<th>what a relay learns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code translate="no" v-pre>AuthPolicy.never()</code></td>
+<td>anonymous, always</td>
+<td>nothing. A relay that refuses the event without an identity simply does not accept it</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>AuthPolicy.allow(a)</code></td>
+<td>anonymous, moves to one bound to <code translate="no" v-pre>a</code> once the relay refuses</td>
+<td>who you are, but only after that relay asked</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>AuthPolicy.require(a)</code></td>
+<td>bound to <code translate="no" v-pre>a</code> from the start</td>
+<td>who you are, as soon as it sends a challenge</td>
+</tr>
+</tbody>
+</table>
+</div>
+</retype-table>
+<p>Without <code translate="no" v-pre>auth</code>, a refused event authenticates as its author when a registered
+account matches, and as the currently logged-in account otherwise. The relay
+therefore decides when your identity is revealed. Pass <code translate="no" v-pre>auth</code> explicitly
+whenever that matters.</p>
+<p>The account does not have to be one NDK knows: <code translate="no" v-pre>allow</code> and <code translate="no" v-pre>require</code> take the
+<code translate="no" v-pre>Account</code> itself, so an identity you built on the spot works.</p>
+<p>If <code translate="no" v-pre>require</code> names an account that cannot sign, no connection can carry the
+event. Rather than fall back to the anonymous one, which is what <code translate="no" v-pre>require</code>
+rules out, nothing is sent and <code translate="no" v-pre>broadcast</code> itself throws
+<code translate="no" v-pre>BroadcastAuthUnavailableException</code>.</p>
+<h3 id="across-a-restart">Across a restart</h3>
+<p>A signer is never written to disk, only the policy is, as <code translate="no" v-pre>never</code>,
+<code translate="no" v-pre>allow:&lt;pubkey&gt;</code> or <code translate="no" v-pre>require:&lt;pubkey&gt;</code>. That matters for the background retries
+described below, not for the broadcast you are awaiting.</p>
+<ul>
+<li>
+<p><code translate="no" v-pre>never()</code> survives a restart whole, because it names nobody. A relay that
+refuses such an event is a final answer, so it is not retried at all.</p>
+</li>
+<li>
+<p><code translate="no" v-pre>allow</code> and <code translate="no" v-pre>require</code> resolve their pubkey through the accounts NDK holds. A
+retry therefore needs that account to be registered again after a restart.</p>
+</li>
+<li>
+<p>An identity no account can sign for parks the delivery in
+<code translate="no" v-pre>EventDeliveryStatus.needsAction</code> instead of going out as somebody else. You
+see it through <code translate="no" v-pre>loadPendingDeliveries()</code>, and you resume it by broadcasting
+the same event again with the account in hand.</p>
+</li>
+</ul>
 <h2 id="when-to-use">When to use</h2>
 <p>Broadcast should be used when your use case has no broadcasting method. <br />
 Signing is done automatically, and you can specify a custom signer just for one broadcast. <br />
@@ -220,6 +294,23 @@ By default, the inbox/outbox model is used for broadcasting looking at the event
 <li>relay responses classified as transient failure remain retryable</li>
 <li>external signer flows can also be retried in the background before relay delivery continues</li>
 </ul>
+<h3 id="sending-once-without-retry">Sending once without retry</h3>
+<p><code translate="no" v-pre>retryDelivery: false</code> keeps one broadcast out of pending delivery:</p>
+<div id="sending-once-without-retry-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">ndk.broadcast.broadcast(
+  nostrEvent: event,
+  specificRelays: ['wss://relay.example.com'],
+  retryDelivery: false,
+);</code></pre>
+</doc-codeblock></div>
+<p>No delivery record is written for that event, so nothing retries it whatever the
+relays answer, and it never shows up in <code translate="no" v-pre>loadPendingDeliveries()</code>. Only
+specific-relay broadcasts are ever enrolled, so a gossip broadcast is already
+never retried. <code translate="no" v-pre>broadcastReaction()</code> and <code translate="no" v-pre>broadcastDeletion()</code> take the same
+parameter.</p>
+<p>To turn background retries off for the whole client instead, use
+<code translate="no" v-pre>NdkConfig(pendingDeliveryRetriesEnabled: false)</code>. That one keeps persisting
+delivery state, it only stops replaying it.</p>
 <h2 id="external-signer-retry-behavior">External signer retry behavior</h2>
 <p>When you broadcast through an external signer such as <code translate="no" v-pre>Nip46EventSigner</code>,
 <code translate="no" v-pre>Nip07EventSigner</code>, or <code translate="no" v-pre>Nip55EventSigner</code>, signing and relay delivery are treated
@@ -249,6 +340,7 @@ local-first publish flow instead of having to rebuild the publish manually.</p>
 <li>you cannot choose a custom retry/backoff profile for one broadcast</li>
 <li>you cannot inject your own delivery policy classifier</li>
 <li>the practical way to influence policy today is through the event kind you publish</li>
+<li>the one per-broadcast control is <code translate="no" v-pre>retryDelivery: false</code>, which skips retry entirely</li>
 </ul>
 <p>Examples:</p>
 <ul>

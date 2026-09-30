@@ -34,7 +34,7 @@
 ## Use Cases
 
 - [Trusted Assertions (NIP-85)](https://dart-nostr.com/usecases/trusted-assertions.md): Trusted assertions are data events computed by a provider. It's useful when certain operations might be too expensive (bandwidth, compute) on the edge device.
-- [Accounts](https://dart-nostr.com/usecases/accounts.md): Store the BunkerConnection details locally to re-establish the connection in future sessions. Use bunkerConnection.toJson() to serialize and BunkerConnection.fromJson() to restore.
+- [Accounts](https://dart-nostr.com/usecases/accounts.md): Pass the same Nip46ClientMetadata to both flows. A bunker:// URL does not identify your app, so this metadata is the only way for the remote signer to label the connection.
 - [Blossom](https://dart-nostr.com/usecases/blossom.md): — ndk blossom upload|download|delete|list|mirror|check|servers
 - [Broadcast](https://dart-nostr.com/usecases/broadcast.md): You might encounter a warning about missing nip65 data. You can ignore this warning to use NDK with your specified/default relays. If you want to use the outbox model, check out the enabling gossip guide (recommended).
 - [cashu - eCash](https://dart-nostr.com/usecases/cashu.md): DO NOT USE IN PRODUCTION!
@@ -50,6 +50,7 @@
 - [Nwc](https://dart-nostr.com/usecases/nwc.md): You need a nostr+walletconnect://... uri from your NWC wallet service provider.
 - [Relay sets](https://dart-nostr.com/usecases/relay-sets.md): Calculates the best relays for a given set of pubkeys. It's used by inbox/outbox. This allows for granular control in the relaySets engine. E.g. calculating the best relays for a thread view.
 - [Requests](https://dart-nostr.com/usecases/requests.md): Relays can misbehave and return events that do not match your query filters.
+- [Software discovery and Android updates](https://dart-nostr.com/usecases/software.md): NDK's software use case discovers NIP-82 application, release, and asset events from trusted publishers. ndk_flutter adds a controller, reusable widgets, and a verified Android APK installer.
 - [User relay lists](https://dart-nostr.com/usecases/user-relay-lists.md): User relay lists provides you with the relays for a given user. It orients itself on nip65 but also uses data from nip02 in case nip65 is not available. It's used by inbox/outbox; only use this if you are doing something custom that is not directly handled by inbox/outbox.
 - [Wallets](https://dart-nostr.com/usecases/wallets.md): DO NOT USE IN PRODUCTION!
 - [Zaps](https://dart-nostr.com/usecases/zaps.md): — ndk zaps invoice|zap|receipts
@@ -80,5 +81,5 @@
 - [Architecture Decision Record: Layered Architecture](https://dart-nostr.com/library-development/adrs/layerd-architecture.md): Title: Layered Architecture - folder structure
 - [Architecture Decision Record: Offline Broadcast](https://dart-nostr.com/library-development/adrs/broadcast-offline.md): Title: Record: Offline Broadcast
 - [Architecture Decision Record: Package Structure dart, flutter](https://dart-nostr.com/library-development/adrs/reduce-packages.md): Title: Package Structure dart, flutter
-- [Architecture Decision Record: Relay authentication](https://dart-nostr.com/library-development/adrs/relay-auth.md): Title: Relay authentication - who a query, subscription or broadcast authenticates as
+- [Architecture Decision Record: Relay authentication](https://dart-nostr.com/library-development/adrs/relay-auth.md): Title: Who a query, subscription, broadcast or Blossom operation authenticates as
 - [Architecture Decision Record: Wallet Cashu API](https://dart-nostr.com/library-development/adrs/wallet-cashu.md): Title: Wallet Cashu - api design
