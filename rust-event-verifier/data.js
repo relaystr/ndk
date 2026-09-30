@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790701418116,
+  "lastUpdate": 1790774264179,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1176,6 +1176,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1539836,
             "range": "1533060-1608828",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0f1f7a7909b49c1ef5ebbb1c9b62d65797929ade",
+          "message": "Merge pull request #852 from relaystr/feat/nip46-client-metadata\n\nfeat: send NIP-46 client metadata and requested perms on bunker connect",
+          "timestamp": "2026-09-30T15:15:58+02:00",
+          "tree_id": "ae9e1fd9764c00088719eb8cb1b8c5cf89441f2f",
+          "url": "https://github.com/relaystr/ndk/commit/0f1f7a7909b49c1ef5ebbb1c9b62d65797929ade"
+        },
+        "date": 1790774262034,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46143.4,
+            "range": "45943-52461",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1525388,
+            "range": "1520578-1536802",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
