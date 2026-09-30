@@ -181,6 +181,7 @@ void main() {
         cache: MemCacheManager(),
         engine: NdkEngine.JIT,
         bootstrapRelays: [relay3.url, relay4.url],
+        indexerRelays: [],
       );
 
       final ndk = Ndk(config);
@@ -217,6 +218,7 @@ void main() {
         cache: MemCacheManager(),
         engine: NdkEngine.JIT,
         bootstrapRelays: [relay3.url, relay4.url],
+        indexerRelays: [],
       );
 
       final ndk = Ndk(config);
@@ -248,6 +250,7 @@ void main() {
         cache: MemCacheManager(),
         engine: NdkEngine.JIT,
         bootstrapRelays: [relay3.url, relay4.url],
+        indexerRelays: [],
       );
 
       final ndk = Ndk(config);
@@ -277,6 +280,7 @@ void main() {
         cache: MemCacheManager(),
         engine: NdkEngine.JIT,
         bootstrapRelays: [relay6.url],
+        indexerRelays: [],
         logLevel: Logger.logLevels.all,
       );
 

@@ -183,6 +183,7 @@ void main() async {
           cache: MemCacheManager(),
           engine: NdkEngine.RELAY_SETS,
           bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
+          indexerRelays: [],
         ),
       );
       ndk.accounts.loginPrivateKey(
@@ -253,6 +254,7 @@ void main() async {
             cache: MemCacheManager(),
             engine: NdkEngine.RELAY_SETS,
             bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
+            indexerRelays: [],
           ),
         );
 
@@ -370,6 +372,7 @@ void main() async {
           cache: MemCacheManager(),
           engine: NdkEngine.RELAY_SETS,
           bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
+          indexerRelays: [],
         ),
       );
 
@@ -418,6 +421,7 @@ void main() async {
           cache: MemCacheManager(),
           engine: NdkEngine.RELAY_SETS,
           bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
+          indexerRelays: [],
         ),
       );
 
