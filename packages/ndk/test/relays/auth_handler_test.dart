@@ -331,6 +331,39 @@ void authHandlerTests(NdkEngine engine) {
       }
     });
 
+    test('a request closed while the handler decides does not time out',
+        () async {
+      final relay = await authRelay();
+      final answer = Completer<bool>();
+      final handler = _Handler((_) => answer.future);
+      final ndk = ndkFor([relay], handler);
+
+      var timeouts = 0;
+      final response = ndk.requests.requestNostrEvent(
+        NdkRequest.subscription(
+          'closed-while-asking',
+          filters: [_notesOf(key)],
+          explicitRelays: [relay.url],
+          auth: AuthPolicy.require(_signable(key)),
+        )
+          ..timeoutDuration = const Duration(milliseconds: 300)
+          ..timeoutCallbackUserFacing = () => timeouts++,
+      );
+
+      await _waitUntil(
+        () => handler.asked.isNotEmpty,
+        reason: 'the handler was never asked',
+      );
+      await ndk.requests.closeSubscription(response.requestId);
+      answer.complete(true);
+      await Future.delayed(const Duration(milliseconds: 600));
+
+      expect(timeouts, 0);
+
+      await ndk.destroy();
+      await relay.stopServer();
+    });
+
     test('waiting on the handler does not spend the broadcast timeout',
         () async {
       final relay = await authRelay(requireAuthForEvents: true);

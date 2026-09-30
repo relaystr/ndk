@@ -192,6 +192,7 @@ class RequestState implements TimeoutPausable {
   void cancelTimeout() {
     _timeout?.cancel();
     _timeout = null;
+    _remainingTimeout = null;
   }
 
   /// Creates a new [RequestState] instance
@@ -433,9 +434,7 @@ class RequestState implements TimeoutPausable {
 
   /// closes all streams
   Future<void> close() async {
-    if (_timeout != null) {
-      _timeout!.cancel();
-    }
+    cancelTimeout();
     await networkController.close();
     await cacheController.close();
     await controller.close();
