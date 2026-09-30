@@ -127,8 +127,8 @@ class Nwc {
     if (requireGetInfoResponse && !doGetInfoMethod) {
       throw ArgumentError('requireGetInfoResponse requires doGetInfoMethod');
     }
-    var parsedUri = NostrWalletConnectUri.parseConnectionUri(uri);
-    var relays = parsedUri.relays.map((r) => Uri.decodeFull(r)).toList();
+    final parsedUri = NostrWalletConnectUri.parseConnectionUri(uri);
+    final relays = parsedUri.relays.map((r) => Uri.decodeFull(r)).toList();
     var filter = Filter(
       kinds: [NwcKind.INFO.value],
       authors: [parsedUri.walletPubkey],

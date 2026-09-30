@@ -11,6 +11,7 @@ import '../data_layer/repositories/blossom/blossom_impl.dart';
 import '../data_layer/repositories/cashu/cashu_repo_impl.dart';
 import '../data_layer/repositories/lnurl_http_impl.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
+import '../data_layer/repositories/relay_info_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/connection_source.dart';
@@ -149,6 +150,7 @@ class Initialization {
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           authCallbackTimeout: _ndkConfig.authCallbackTimeout,
+          relayInfoRepo: RelayInfoHttpRepoImpl(httpDS: _httpRequestDS),
         );
 
         engine = RelaySetsEngine(
@@ -166,6 +168,7 @@ class Initialization {
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
           authCallbackTimeout: _ndkConfig.authCallbackTimeout,
+          relayInfoRepo: RelayInfoHttpRepoImpl(httpDS: _httpRequestDS),
         );
 
         engine = JitEngine(

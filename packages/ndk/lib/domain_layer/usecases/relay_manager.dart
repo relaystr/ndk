@@ -26,6 +26,7 @@ import '../entities/relay_info.dart';
 import '../entities/request_state.dart';
 import '../entities/tuple.dart';
 import '../repositories/nostr_transport.dart';
+import '../repositories/relay_info_repo.dart';
 import 'accounts/accounts.dart';
 import 'engines/network_engine.dart';
 import 'nip42/auth_event.dart';
@@ -44,6 +45,7 @@ class RelayManager<T> {
 
   /// signer for nip-42 AUTH challenges from relays
   final Accounts? _accounts;
+  final RelayInfoRepo? _relayInfoRepo;
 
   /// stores the last AUTH challenge per connection for late authentication;
   /// each socket gets its own challenge, so this cannot be keyed by relay
@@ -123,7 +125,9 @@ class RelayManager<T> {
     allowReconnect = true,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
     this.authChallengeTimeout = RequestDefaults.DEFAULT_AUTH_CHALLENGE_TIMEOUT,
-  }) : _accounts = accounts {
+    RelayInfoRepo? relayInfoRepo,
+  }) : _accounts = accounts,
+       _relayInfoRepo = relayInfoRepo {
     allowReconnectRelays = allowReconnect;
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
   }
@@ -1978,11 +1982,12 @@ class RelayManager<T> {
     }
   }
 
-  /// fetches relay info
-  /// todo: refactor to use http injector and decouple data from fetching
+  /// fetches relay info; returns null when no [RelayInfoRepo] is configured
   Future<RelayInfo?> getRelayInfo(String url) async {
-    if (globalState.relays[RelayConnectionKey.anonymous(url)] != null) {
-      return await RelayInfo.get(url);
+    final repo = _relayInfoRepo;
+    if (repo != null &&
+        globalState.relays[RelayConnectionKey.anonymous(url)] != null) {
+      return await repo.getRelayInfo(url);
     }
     return null;
   }

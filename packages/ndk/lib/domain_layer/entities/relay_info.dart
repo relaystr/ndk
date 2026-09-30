@@ -1,9 +1,7 @@
-import 'dart:async';
-import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
-import '../../shared/logger/logger.dart';
+import '../../data_layer/data_sources/http_request.dart';
+import '../../data_layer/repositories/relay_info_http_impl.dart';
 
 class RelayInfo {
   final String name;
@@ -74,44 +72,20 @@ class RelayInfo {
     );
   }
 
-  /// Fetches optional relay metadata with a deadline covering connection setup
-  /// and the entire response body. A stalled relay must not retain an HTTP
-  /// socket after its Nostr connection has been released.
+  /// Fetches relay metadata with a private HTTP client that is closed
+  /// afterwards.
+  @Deprecated('Use Ndk.relays.getRelayInfo or RelayInfoHttpRepoImpl instead')
   static Future<RelayInfo?> get(
     String url, {
     Duration timeout = const Duration(seconds: 5),
   }) async {
-    Uri uri = Uri.parse(url).replace(scheme: 'https');
     final client = http.Client();
-    final abort = Completer<void>();
     try {
-      final request = http.AbortableRequest(
-        'GET',
-        uri,
-        abortTrigger: abort.future,
-      )..headers['Accept'] = 'application/nostr+json';
-      final response =
-          await (() async {
-            return http.Response.fromStream(await client.send(request));
-          })().timeout(
-            timeout,
-            onTimeout: () {
-              abort.complete();
-              throw TimeoutException(
-                'Relay metadata request timed out',
-                timeout,
-              );
-            },
-          );
-      final decodedResponse =
-          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      return RelayInfo.fromJson(decodedResponse, uri.toString());
-    } catch (e) {
-      Logger.log.d(() => e);
-      return null;
+      return await RelayInfoHttpRepoImpl(
+        httpDS: HttpRequestDS(client),
+        timeout: timeout,
+      ).getRelayInfo(url);
     } finally {
-      // Abort covers streamed bodies; closing our private client releases its
-      // established sockets and requests cancellation of pending connections.
       client.close();
     }
   }

@@ -4,11 +4,13 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
+import 'package:ndk/data_layer/data_sources/http_request.dart';
+import 'package:ndk/data_layer/repositories/relay_info_http_impl.dart';
 import 'package:ndk/domain_layer/entities/relay_info.dart';
 import 'package:test/test.dart';
 
 /// Keep production HTTPS mapping while routing test requests to local HTTP.
-/// Both request abortion and socket disposal use the real IOClient.
+/// Request abortion uses the real IOClient.
 class _LoopbackClient extends http.BaseClient {
   final IOClient inner = IOClient();
   bool closed = false;
@@ -73,29 +75,25 @@ void main() {
           peer?.destroy();
           await server.close();
         });
-        final result = http.runWithClient(
-          () => RelayInfo.get(
-            'wss://127.0.0.1:${server.port}',
-            timeout: const Duration(milliseconds: 300),
-          ),
-          () => client,
-        );
+        final result = RelayInfoHttpRepoImpl(
+          httpDS: HttpRequestDS(client),
+          timeout: const Duration(milliseconds: 300),
+        ).getRelayInfo('wss://127.0.0.1:${server.port}');
         await connected.future.timeout(const Duration(seconds: 2));
         expect(await result, isNull);
-        expect(client.closed, isTrue);
         await _waitUntil(() => client.aborted);
         await peerClosed.future.timeout(const Duration(seconds: 2));
       },
     );
   }
 
-  test('valid response keeps API behavior and closes private client', () async {
+  test('valid response is decoded as UTF-8 nostr+json', () async {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     server.listen((request) async {
       expect(request.headers.value('Accept'), 'application/nostr+json');
       request.response.write(
         jsonEncode({
-          'name': 'Test relay',
+          'name': 'Test relay ⚡',
           'supported_nips': [1, 11],
         }),
       );
@@ -106,17 +104,15 @@ void main() {
       client.close();
       await server.close(force: true);
     });
-    final info = await http.runWithClient(
-      () => RelayInfo.get('wss://127.0.0.1:${server.port}'),
-      () => client,
-    );
-    expect(info?.name, 'Test relay');
+    final info = await RelayInfoHttpRepoImpl(
+      httpDS: HttpRequestDS(client),
+    ).getRelayInfo('wss://127.0.0.1:${server.port}');
+    expect(info?.name, 'Test relay ⚡');
     expect(info?.supportsNip(11), isTrue);
-    expect(client.closed, isTrue);
     expect(client.aborted, isFalse);
   });
 
-  test('malformed response returns null and closes private client', () async {
+  test('malformed response returns null', () async {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     server.listen((request) async {
       request.response.write('invalid json');
@@ -127,11 +123,26 @@ void main() {
       client.close();
       await server.close(force: true);
     });
+    final info = await RelayInfoHttpRepoImpl(
+      httpDS: HttpRequestDS(client),
+    ).getRelayInfo('wss://127.0.0.1:${server.port}');
+    expect(info, isNull);
+  });
+
+  test('deprecated RelayInfo.get delegates and closes its client', () async {
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    server.listen((request) async {
+      request.response.write(jsonEncode({'name': 'Legacy relay'}));
+      await request.response.close();
+    });
+    final client = _LoopbackClient();
+    addTearDown(() async => server.close(force: true));
     final info = await http.runWithClient(
+      // ignore: deprecated_member_use_from_same_package
       () => RelayInfo.get('wss://127.0.0.1:${server.port}'),
       () => client,
     );
-    expect(info, isNull);
+    expect(info?.name, 'Legacy relay');
     expect(client.closed, isTrue);
   });
 }
