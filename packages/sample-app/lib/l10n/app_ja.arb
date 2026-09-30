@@ -103,6 +103,7 @@
   "pendingMethodNip44Decrypt": "NIP-44 を復号",
   "pendingMethodPing": "Ping",
   "pendingMethodConnect": "接続",
+  "pendingMethodSwitchRelays": "リレーを切り替え",
   "pendingSecondsAgo": "{count}秒前",
   "pendingMinutesAgo": "{count}分前",
   "pendingHoursAgo": "{count}時間前",

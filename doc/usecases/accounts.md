@@ -48,6 +48,16 @@ await ndk.accounts.loginWithBunkerConnection(
 Store the `BunkerConnection` details locally to re-establish the connection in future sessions. Use `bunkerConnection.toJson()` to serialize and `BunkerConnection.fromJson()` to restore. Without storing these, users will need to re-authenticate each time.
 !!!
 
+NIP-46 lets the remote signer pick the relays. Call `switchRelays()` right after connecting, before other requests, and store the connection again when it returns relays.
+
+```dart switch relays
+final signer = ndk.accounts.getLoggedAccount()!.signer as Nip46EventSigner;
+final relays = await signer.switchRelays();
+if (relays != null) {
+  // store signer.connection again
+}
+```
+
 ### Reacting to changes
 
 ```dart watch the logged in account

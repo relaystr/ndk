@@ -507,6 +507,8 @@ class _PendingRequestCard extends StatelessWidget {
         return Icons.network_ping;
       case SignerMethod.connect:
         return Icons.link;
+      case SignerMethod.switchRelays:
+        return Icons.swap_horiz;
     }
   }
 
@@ -526,6 +528,8 @@ class _PendingRequestCard extends StatelessWidget {
         return Colors.grey;
       case SignerMethod.connect:
         return Colors.teal;
+      case SignerMethod.switchRelays:
+        return Colors.blueGrey;
     }
   }
 
@@ -548,6 +552,8 @@ class _PendingRequestCard extends StatelessWidget {
         return l10n.pendingMethodPing;
       case SignerMethod.connect:
         return l10n.pendingMethodConnect;
+      case SignerMethod.switchRelays:
+        return l10n.pendingMethodSwitchRelays;
     }
   }
 
