@@ -1,3 +1,10 @@
+## 0.10.0-dev.11
+
+> Note: This release has breaking changes.
+
+ - **FIX**: allow file_picker 13.x in ndk_flutter.
+ - **BREAKING** **FEAT**: send NIP-46 client metadata and requested perms on bunker connect.
+
 ## 0.10.0-dev.10
 
  - Update a dependency to the latest release.

@@ -1,3 +1,12 @@
+## 0.10.0-dev.10
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: move Nip46ClientMetadata to entities.
+ - **FIX**: send private NIP-01 compliant request ids.
+ - **FEAT**: add NdkConfig.debugMode to prefix request ids with their name.
+ - **BREAKING** **FEAT**: send NIP-46 client metadata and requested perms on bunker connect.
+
 ## 0.10.0-dev.9
 
  - **FIX**: don't hold NIP-46 responses until the slowest relay acks.
