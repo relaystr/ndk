@@ -98,12 +98,10 @@ class Nwc {
         await _requests.closeSubscription(subscription.requestId);
         // A later resume starts with fresh notifications rather than replaying
         // the wallet's entire relay history and triggering refresh RPC storms.
-        _notificationSince[connection] =
-            DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        _notificationSince[connection] = Nip01Event.secondsSinceEpoch();
       }
       if (_backgrounded && (_activeRequests[connection] ?? 0) == 0) {
-        _notificationSince[connection] ??=
-            DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        _notificationSince[connection] ??= Nip01Event.secondsSinceEpoch();
       }
     });
     _subscriptionUpdates = operation.catchError((Object _) {});
@@ -220,7 +218,7 @@ class Nwc {
     final previousSince = _notificationSince[connection];
     final notificationSince = previousSince == null
         ? null
-        : DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        : Nip01Event.secondsSinceEpoch();
     // Allow modest wallet clock skew while bounding response history on resume.
     final relaySince = notificationSince == null
         ? null
