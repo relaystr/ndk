@@ -1,3 +1,7 @@
+## 0.10.0
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
 ## 0.10.0-dev.9
 
  - **FIX**: don't hold NIP-46 responses until the slowest relay acks.
