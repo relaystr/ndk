@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790774264179,
+  "lastUpdate": 1790780442883,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1214,6 +1214,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1525388,
             "range": "1520578-1536802",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "frnandu",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c7cbf2ba077d2ef5d6721a5f65044ad385d5aa35",
+          "message": "Merge pull request #866 from relaystr/release-36731952147\n\nchore(release): publish ndk_drift 0.1.1, ndk 0.10.0, ndk_flutter 0.10.0, ndk_objectbox 0.2.12",
+          "timestamp": "2026-09-30T16:58:45+02:00",
+          "tree_id": "8322333f0f4fd0ab234ecd5e7dc16b176dbc6c86",
+          "url": "https://github.com/relaystr/ndk/commit/c7cbf2ba077d2ef5d6721a5f65044ad385d5aa35"
+        },
+        "date": 1790780440038,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 28809,
+            "range": "28545-32117",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 908814,
+            "range": "904350-981962",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
