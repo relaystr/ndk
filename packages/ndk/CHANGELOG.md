@@ -1,3 +1,7 @@
+## 0.10.0-dev.1
+
+ - **FIX**: parse the BUD-08 nip94 field as a tag array.
+
 ## 0.10.0-dev.0+1
 
  - **REFACTOR**: inject RelayInfo HTTP fetch via RelayInfoRepo and HttpRequestDS.

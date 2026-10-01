@@ -11,6 +11,38 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0-dev.1`](#ndk---v0100-dev1)
+ - [`ndk_objectbox` - `v0.3.0-dev.1`](#ndk_objectbox---v030-dev1)
+ - [`ndk_drift` - `v0.2.0-dev.1`](#ndk_drift---v020-dev1)
+ - [`ndk_flutter` - `v0.10.0-dev.1`](#ndk_flutter---v0100-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.3.0-dev.1`
+ - `ndk_drift` - `v0.2.0-dev.1`
+ - `ndk_flutter` - `v0.10.0-dev.1`
+
+---
+
+#### `ndk` - `v0.10.0-dev.1`
+
+ - **FIX**: parse the BUD-08 nip94 field as a tag array.
+
+
+## 2026-10-01
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - [`ndk_drift` - `v0.2.0-dev.0`](#ndk_drift---v020-dev0)
  - [`ndk_objectbox` - `v0.3.0-dev.0`](#ndk_objectbox---v030-dev0)
 
