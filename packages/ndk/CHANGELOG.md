@@ -1,3 +1,7 @@
+## 0.10.1-dev.1
+
+ - **FIX**: parse the BUD-08 nip94 field as a tag array.
+
 ## 0.10.1-dev.0
 
  - **FIX**: release idle wallet and abandoned sockets.
