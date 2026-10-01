@@ -1,3 +1,12 @@
+## 0.10.0-dev.0+1
+
+ - **REFACTOR**: inject RelayInfo HTTP fetch via RelayInfoRepo and HttpRequestDS.
+ - **FIX**: persist background delivery retry results.
+ - **FIX**: stop reconnecting for stale RPC delivery.
+ - **FIX**: abort stalled relay HTTP requests.
+ - **FIX**: close transports before replacement.
+ - **FIX**: release idle wallet and abandoned sockets.
+
 ## 0.10.0
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
