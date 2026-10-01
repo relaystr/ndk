@@ -38,6 +38,7 @@ dependencies:
   media_kit_libs_video: ^1.0.5
   file_picker: ">=12.3.0 <14.0.0"
   path_provider: ^2.1.5
+  flutter_secure_storage: ^10.0.0
 
   ndk: 0.7.0
   ndk_flutter: ^0.0.2-dev.2
@@ -83,6 +84,9 @@ dependency_overrides:
 
 # The following section is specific to Flutter packages.
 flutter:
+  config:
+    # flutter_webrtc_zxing 0.2.1 ships empty SwiftPM Sources (gitignored upstream)
+    enable-swift-package-manager: false
   generate: true
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
