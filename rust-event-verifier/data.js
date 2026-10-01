@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790857983699,
+  "lastUpdate": 1790867021838,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1480,6 +1480,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1876774,
             "range": "1840450-1918936",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3921397d8c7d2e229d04576c9c3b55090c82385a",
+          "message": "Merge pull request #873 from relaystr/chore/ndk-0.10.1\n\n0.10.1-dev.0 & dart formating",
+          "timestamp": "2026-10-01T17:01:26+02:00",
+          "tree_id": "5ece07d7b4f980153b90de0964be204521dd4dbe",
+          "url": "https://github.com/relaystr/ndk/commit/3921397d8c7d2e229d04576c9c3b55090c82385a"
+        },
+        "date": 1790867018539,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 39389.2,
+            "range": "38509-42697",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1675242,
+            "range": "1634886-1731186",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
