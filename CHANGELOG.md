@@ -15,6 +15,27 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk_flutter` - `v0.10.1-dev.2`](#ndk_flutter---v0101-dev2)
+
+---
+
+#### `ndk_flutter` - `v0.10.1-dev.2`
+
+ - **FIX**: run the sample app on macOS.
+
+
+## 2026-10-01
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.10.1-dev.1`](#ndk---v0101-dev1)
  - [`ndk_objectbox` - `v0.3.0-dev.1`](#ndk_objectbox---v030-dev1)
  - [`ndk_drift` - `v0.2.0-dev.1`](#ndk_drift---v020-dev1)

@@ -1,3 +1,7 @@
+## 0.10.1-dev.2
+
+ - **FIX**: run the sample app on macOS.
+
 ## 0.10.1-dev.1
 
  - Update a dependency to the latest release.
