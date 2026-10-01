@@ -334,6 +334,24 @@ void main() {
     expect(requests.active, isEmpty);
   });
 
+  test(
+    'request during disconnect is refused and leaks no subscription',
+    () async {
+      final connection = await nwc.connect(_uri);
+      await nwc.setBackgrounded(true);
+      expect(requests.active, isEmpty);
+      final disconnecting = nwc.disconnect(connection);
+      await expectLater(
+        nwc.getBalance(connection, timeout: const Duration(milliseconds: 200)),
+        throwsA(isA<StateError>()),
+      );
+      await disconnecting;
+      await _flush();
+      expect(requests.active, isEmpty);
+      expect(broadcast.sent, isEmpty);
+    },
+  );
+
   test('cleanup failure does not replace successful payment', () async {
     final connection = await nwc.connect(_uri, useETagForEachRequest: true);
     await nwc.setBackgrounded(true);

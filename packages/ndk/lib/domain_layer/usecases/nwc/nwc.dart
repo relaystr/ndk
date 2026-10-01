@@ -423,7 +423,7 @@ class Nwc {
       content: encrypted,
     );
 
-    if (connection.responseStream.isClosed) {
+    if (connection.isClosed) {
       throw StateError('NWC connection is closed');
     }
     _connections.add(connection);
@@ -711,6 +711,9 @@ class Nwc {
   /// Disconnects everything related to this connection,
   /// i.e.: closes response & notification subscription and streams
   Future<void> disconnect(NwcConnection connection) async {
+    // Refuse new requests before the first await, so none can re-add the
+    // connection and resubscribe while it is being torn down.
+    connection.markClosed();
     _connections.remove(connection);
     await _subscriptionUpdates;
     _notificationSince.remove(connection);
@@ -721,7 +724,6 @@ class Nwc {
     }
     Logger.log.d(() => "closing nwc streams $connection....");
     await connection.close();
-    _connections.remove(connection);
   }
 
   /// Disconnects all NWC connections
