@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import 'package:ndk/domain_layer/entities/connection_source.dart';
 import 'package:ndk/domain_layer/entities/global_state.dart';
 import 'package:ndk/domain_layer/entities/jit_engine_relay_connectivity_data.dart';
@@ -79,7 +78,17 @@ void main() async {
       key4: nip65ForKey4,
     };
 
+    stopServers() async {
+      await Future.wait([
+        relay21.stopServer(),
+        relay22.stopServer(),
+        relay23.stopServer(),
+        relay24.stopServer(),
+      ]);
+    }
+
     startServers() async {
+      addTearDown(stopServers);
       // r1 -> k1, k2, k3
       // r2 -> k1, k2
       // r3 -> k1
@@ -106,62 +115,27 @@ void main() async {
       ]);
     }
 
-    stopServers() async {
-      await Future.wait([
-        relay21.stopServer(),
-        relay22.stopServer(),
-        relay23.stopServer(),
-        relay24.stopServer(),
-      ]);
-    }
-
     test('query events from one seed relay', () async {
       await startServers();
-
-      CacheManager cacheManager = MemCacheManager();
-
-      GlobalState globalState = GlobalState();
-      NostrTransportFactory nostrTransportFactory =
-          WebSocketNostrTransportFactory();
-
-      RelayManager relayManagerLight = RelayManager(
-        bootstrapRelays: [relay21.url, relay22.url, relay23.url, relay24.url],
-        globalState: globalState,
-        nostrTransportFactory: nostrTransportFactory,
-      );
-
-      JitEngine manager = JitEngine(
-        relayManagerLight: relayManagerLight,
-        cache: cacheManager,
-        ignoreRelays: [],
-        globalState: globalState,
-        bootstrapRelays: [relay21.url],
-      );
-
-      RequestState myRequest = RequestState(
-        NdkRequest.query(
-          "debug-get-events",
-          filters: [
-            Filter(
-              kinds: [Nip01Event.kTextNodeKind],
-              authors: [key4.publicKey],
-            ),
-          ],
-          timeoutDuration: Duration(seconds: 5),
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: MockEventVerifier(),
+          cache: MemCacheManager(),
+          engine: NdkEngine.JIT,
+          bootstrapRelays: [relay21.url],
         ),
       );
+      addTearDown(ndk.destroy);
 
-      myRequest.stream.listen((event) {
-        expectAsync1((event) {
-          expect(event, key4TextNotes[key4]);
-        })(event);
-      });
-
-      manager.handleRequest(myRequest);
-
-      await Future.delayed(const Duration(seconds: 1));
-
-      await stopServers();
+      // Use the complete request pipeline so events reach the result stream,
+      // and wait for completion before shutting down its relay connections.
+      final response = ndk.requests.query(
+        name: 'debug-get-events',
+        filters: [
+          Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key3.publicKey]),
+        ],
+      );
+      expect(await response.stream.toList(), contains(key3TextNotes[key3]));
     });
 
     test(
@@ -189,6 +163,8 @@ void main() async {
             bootstrapRelays: [], // dont connect to anything
           ),
         );
+
+        addTearDown(ndk.destroy);
 
         final response = ndk.requests.query(
           name: "qInOut",
@@ -218,8 +194,6 @@ void main() async {
         expect(responses.contains(key2TextNotes[key2]), true);
         expect(responses.contains(key3TextNotes[key3]), true);
         expect(responses.contains(key4TextNotes[key4]), true);
-
-        await stopServers();
       },
     );
 
@@ -238,12 +212,8 @@ void main() async {
       });
 
       final relayLists = [
-        Nip65.fromMap(key1.publicKey, {
-          delayedUrl: ReadWriteMarker.readWrite,
-        }),
-        Nip65.fromMap(key2.publicKey, {
-          delayedUrl: ReadWriteMarker.readWrite,
-        }),
+        Nip65.fromMap(key1.publicKey, {delayedUrl: ReadWriteMarker.readWrite}),
+        Nip65.fromMap(key2.publicKey, {delayedUrl: ReadWriteMarker.readWrite}),
         Nip65.fromMap(key3.publicKey, {
           immediateUrl: ReadWriteMarker.readWrite,
         }),
@@ -264,11 +234,7 @@ void main() async {
           'concurrent-candidates',
           timeoutDuration: const Duration(seconds: 2),
           filters: [
-            Filter(authors: [
-              key1.publicKey,
-              key2.publicKey,
-              key3.publicKey,
-            ]),
+            Filter(authors: [key1.publicKey, key2.publicKey, key3.publicKey]),
           ],
         ),
       );
@@ -320,7 +286,7 @@ void main() async {
           'cache-error-fallback',
           timeoutDuration: const Duration(seconds: 2),
           filters: [
-            Filter(authors: [key1.publicKey])
+            Filter(authors: [key1.publicKey]),
           ],
         ),
       );
@@ -424,8 +390,7 @@ class _ControlledTransport implements NostrTransport {
     void Function(dynamic) onData, {
     Function? onError,
     void Function()? onDone,
-  }) =>
-      _messages.stream.listen(onData, onError: onError, onDone: onDone);
+  }) => _messages.stream.listen(onData, onError: onError, onDone: onDone);
 
   @override
   void send(dynamic data) => sentData.add(data);

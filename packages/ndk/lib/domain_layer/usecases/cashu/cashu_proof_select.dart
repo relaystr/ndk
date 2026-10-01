@@ -46,8 +46,8 @@ class CashuProofSelect {
   CashuProofSelect({
     required CashuRepo cashuRepo,
     required CashuKeyDerivation cashuSeedSecretGenerator,
-  })  : _cashuRepo = cashuRepo,
-        _cashuSeedSecretGenerator = cashuSeedSecretGenerator;
+  }) : _cashuRepo = cashuRepo,
+       _cashuSeedSecretGenerator = cashuSeedSecretGenerator;
 
   /// Find keyset by ID from list
   static CahsuKeyset? _findKeysetById(
@@ -144,29 +144,28 @@ class CashuProofSelect {
     List<CashuProof> proofs,
     List<CahsuKeyset> keysets,
   ) {
-    return List<CashuProof>.from(proofs)
-      ..sort((a, b) {
-        // Primary: prefer larger amounts
-        final amountComparison = b.amount.compareTo(a.amount);
-        if (amountComparison != 0) return amountComparison;
+    return List<CashuProof>.from(proofs)..sort((a, b) {
+      // Primary: prefer larger amounts
+      final amountComparison = b.amount.compareTo(a.amount);
+      if (amountComparison != 0) return amountComparison;
 
-        // Secondary: prefer lower fee keysets
-        final keysetA = _findKeysetById(keysets, a.keysetId);
-        final keysetB = _findKeysetById(keysets, b.keysetId);
-        final feeA = keysetA?.inputFeePPK ?? 0;
-        final feeB = keysetB?.inputFeePPK ?? 0;
+      // Secondary: prefer lower fee keysets
+      final keysetA = _findKeysetById(keysets, a.keysetId);
+      final keysetB = _findKeysetById(keysets, b.keysetId);
+      final feeA = keysetA?.inputFeePPK ?? 0;
+      final feeB = keysetB?.inputFeePPK ?? 0;
 
-        // Lower fees first
-        final feeComparison = feeA.compareTo(feeB);
-        if (feeComparison != 0) return feeComparison;
+      // Lower fees first
+      final feeComparison = feeA.compareTo(feeB);
+      if (feeComparison != 0) return feeComparison;
 
-        // Tertiary: prefer active keysets
-        final activeA = keysetA?.active ?? false;
-        final activeB = keysetB?.active ?? false;
-        return activeB.toString().compareTo(
-              activeA.toString(),
-            ); // true comes before false
-      });
+      // Tertiary: prefer active keysets
+      final activeA = keysetA?.active ?? false;
+      final activeB = keysetB?.active ?? false;
+      return activeB.toString().compareTo(
+        activeA.toString(),
+      ); // true comes before false
+    });
   }
 
   /// Swaps proofs in target amount and change

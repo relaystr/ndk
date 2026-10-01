@@ -49,7 +49,11 @@ class BlobDescriptor {
       uploaded: json['uploaded'] != null
           ? DateTime.fromMillisecondsSinceEpoch(json['uploaded'] * 1000)
           : DateTime.now(),
-      nip94: json['nip94'] != null ? BlobNip94.fromJson(json['nip94']) : null,
+      nip94: switch (json['nip94']) {
+        List tags => BlobNip94.fromTags(tags),
+        Map<String, dynamic> map => BlobNip94.fromJson(map),
+        _ => null,
+      },
     );
   }
 }
@@ -186,6 +190,36 @@ class BlobNip94 {
       alt: json['alt'],
       fallback: json['fallback'] != null ? [json['fallback'] as String] : null,
       service: json['service'],
+    );
+  }
+
+  /// parses the BUD-08 `nip94` field, an array of NIP-94 tags
+  factory BlobNip94.fromTags(List<dynamic> tags) {
+    final valid = tags.whereType<List>().where((t) => t.length > 1);
+    List<List<String>> all(String name) => valid
+        .where((t) => t[0] == name)
+        .map((t) => t.skip(1).map((v) => v.toString()).toList())
+        .toList();
+    List<String>? first(String name) => all(name).firstOrNull;
+    String? value(String name) => first(name)?.first;
+    final fallbacks = all('fallback').map((v) => v.first).toList();
+
+    return BlobNip94(
+      content: '',
+      url: value('url') ?? '',
+      mimeType: value('m') ?? '',
+      sha256: value('x') ?? '',
+      size: _parseSize(value('size')),
+      dimenssions: value('dim'),
+      magnet: value('magnet'),
+      torrentInfoHash: value('i'),
+      blurhash: value('blurhash'),
+      thumbnail: first('thumb'),
+      image: first('image'),
+      summary: value('summary'),
+      alt: value('alt'),
+      fallback: fallbacks.isEmpty ? null : fallbacks,
+      service: value('service'),
     );
   }
 }

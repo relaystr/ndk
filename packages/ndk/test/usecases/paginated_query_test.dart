@@ -336,14 +336,14 @@ void main() async {
       final relay2Timestamps = [now, now - 9000];
 
       Future<Nip01Event> signedEventAt(int createdAt) async => signer.sign(
-            Nip01Event(
-              kind: Nip01Event.kTextNodeKind,
-              pubKey: key1.publicKey,
-              content: "Event at $createdAt",
-              tags: [],
-              createdAt: createdAt,
-            ),
-          );
+        Nip01Event(
+          kind: Nip01Event.kTextNodeKind,
+          pubKey: key1.publicKey,
+          content: "Event at $createdAt",
+          tags: [],
+          createdAt: createdAt,
+        ),
+      );
 
       final relay2 = MockRelay(
         name: "relay 2",
@@ -391,10 +391,7 @@ void main() async {
         final events = await query.future;
 
         final createdAt = events.map((e) => e.createdAt).toSet();
-        expect(
-          createdAt,
-          equals({...relay1Timestamps, ...relay2Timestamps}),
-        );
+        expect(createdAt, equals({...relay1Timestamps, ...relay2Timestamps}));
       } finally {
         await relay2.stopServer();
       }

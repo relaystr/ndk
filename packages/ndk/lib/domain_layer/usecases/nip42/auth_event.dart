@@ -10,7 +10,7 @@ class AuthEvent extends Nip01Event {
 
   /// Zap Request
   AuthEvent._({required super.pubKey, required super.tags, required super.id})
-      : super(kind: KIND, content: '', sig: null, validSig: null);
+    : super(kind: KIND, content: '', sig: null, validSig: null);
 
   factory AuthEvent({
     required String pubKey,

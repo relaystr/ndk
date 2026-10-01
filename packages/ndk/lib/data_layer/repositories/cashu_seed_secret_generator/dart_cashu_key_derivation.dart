@@ -75,10 +75,7 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
     required Uint8List seedBytes,
     required int counter,
   }) async {
-    final handle = _deriveQuoteKeyWithSeed(
-      seed: seedBytes,
-      counter: counter,
-    );
+    final handle = _deriveQuoteKeyWithSeed(seed: seedBytes, counter: counter);
     return CashuKeypair.fromPrivateKeyHex(handle);
   }
 

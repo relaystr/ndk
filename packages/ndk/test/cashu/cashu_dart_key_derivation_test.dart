@@ -24,8 +24,7 @@ void main() {
       seedBytes = Uint8List.fromList(cashuSeed.getSeedBytes());
     });
 
-    group('Version 1: Deprecated BIP32 Derivation (keyset ID 009a1f293253e41e)',
-        () {
+    group('Version 1: Deprecated BIP32 Derivation (keyset ID 009a1f293253e41e)', () {
       const keysetId = "009a1f293253e41e";
       const keysetIdInt = 864559728;
 
@@ -155,8 +154,7 @@ void main() {
       });
     });
 
-    group('Version 2: Modern HMAC-SHA256 Derivation (keyset ID 015ba18a...)',
-        () {
+    group('Version 2: Modern HMAC-SHA256 Derivation (keyset ID 015ba18a...)', () {
       const keysetId =
           "015ba18a8adcd02e715a58358eb618da4a4b3791151a4bee5e968bb88406ccf76a";
 
@@ -338,9 +336,10 @@ void main() {
         // public key is a compressed SEC1 point: 66 hex chars starting 02/03
         expect(keypair.publicKey.length, equals(66));
         expect(
-            keypair.publicKey.startsWith('02') ||
-                keypair.publicKey.startsWith('03'),
-            isTrue);
+          keypair.publicKey.startsWith('02') ||
+              keypair.publicKey.startsWith('03'),
+          isTrue,
+        );
         // matches a keypair rebuilt from the private key alone
         final rebuilt = CashuKeypair.fromPrivateKeyHex(keypair.privateKey);
         expect(rebuilt.publicKey, equals(keypair.publicKey));

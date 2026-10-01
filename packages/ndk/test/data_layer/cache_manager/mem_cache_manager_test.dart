@@ -232,8 +232,9 @@ void main() {
       final mockRelaySet = MockRelaySet();
       when(mockRelaySet.name).thenReturn('testName');
       when(mockRelaySet.pubKey).thenReturn('testPubKey');
-      when(mockRelaySet.id)
-          .thenReturn(RelaySet.buildId('testName', 'testPubKey'));
+      when(
+        mockRelaySet.id,
+      ).thenReturn(RelaySet.buildId('testName', 'testPubKey'));
 
       await cacheManager.saveRelaySet(mockRelaySet);
       final result = await cacheManager.loadRelaySet('testName', 'testPubKey');
@@ -245,8 +246,9 @@ void main() {
       final mockRelaySet = MockRelaySet();
       when(mockRelaySet.name).thenReturn('testName');
       when(mockRelaySet.pubKey).thenReturn('testPubKey');
-      when(mockRelaySet.id)
-          .thenReturn(RelaySet.buildId('testName', 'testPubKey'));
+      when(
+        mockRelaySet.id,
+      ).thenReturn(RelaySet.buildId('testName', 'testPubKey'));
 
       await cacheManager.saveRelaySet(mockRelaySet);
       await cacheManager.removeRelaySet('testName', 'testPubKey');
@@ -260,12 +262,14 @@ void main() {
       final mockRelaySet2 = MockRelaySet();
       when(mockRelaySet1.name).thenReturn('testName1');
       when(mockRelaySet1.pubKey).thenReturn('testPubKey1');
-      when(mockRelaySet1.id)
-          .thenReturn(RelaySet.buildId('testName1', 'testPubKey1'));
+      when(
+        mockRelaySet1.id,
+      ).thenReturn(RelaySet.buildId('testName1', 'testPubKey1'));
       when(mockRelaySet2.name).thenReturn('testName2');
       when(mockRelaySet2.pubKey).thenReturn('testPubKey2');
-      when(mockRelaySet2.id)
-          .thenReturn(RelaySet.buildId('testName2', 'testPubKey2'));
+      when(
+        mockRelaySet2.id,
+      ).thenReturn(RelaySet.buildId('testName2', 'testPubKey2'));
 
       await cacheManager.saveRelaySet(mockRelaySet1);
       await cacheManager.saveRelaySet(mockRelaySet2);

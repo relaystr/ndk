@@ -102,10 +102,7 @@ class CashuMintRecommendations {
           .stream
           .toList(),
     ]);
-    return fromEvents(
-      announcements: responses.first,
-      reviews: responses.last,
-    );
+    return fromEvents(announcements: responses.first, reviews: responses.last);
   }
 
   /// Parses fetched events. Public for custom transports and deterministic tests.
@@ -142,13 +139,16 @@ class CashuMintRecommendations {
     }
 
     final ranked = urls.map((url) {
-      final mintReviews = latestByReviewerAndUrl.entries
-          .where((entry) => entry.key.startsWith('$url|'))
-          .map((entry) => entry.value)
-          .toList()
-        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      final ratings =
-          mintReviews.map((review) => review.rating).whereType<int>().toList();
+      final mintReviews =
+          latestByReviewerAndUrl.entries
+              .where((entry) => entry.key.startsWith('$url|'))
+              .map((entry) => entry.value)
+              .toList()
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      final ratings = mintReviews
+          .map((review) => review.rating)
+          .whereType<int>()
+          .toList();
       return CashuMintRecommendation(
         url: url,
         averageRating: ratings.isEmpty

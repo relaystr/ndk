@@ -38,27 +38,27 @@ class Wallets {
       BehaviorSubject<List<WalletBalance>>();
 
   final BehaviorSubject<List<WalletTransaction>>
-      _combinedPendingTransactionsSubject =
+  _combinedPendingTransactionsSubject =
       BehaviorSubject<List<WalletTransaction>>();
 
   final BehaviorSubject<List<WalletTransaction>>
-      _combinedRecentTransactionsSubject =
+  _combinedRecentTransactionsSubject =
       BehaviorSubject<List<WalletTransaction>>();
 
   /// individual wallet streams - created on demand
   final Map<String, BehaviorSubject<List<WalletBalance>>>
-      _walletBalanceStreams = {};
+  _walletBalanceStreams = {};
 
   final Map<String, BehaviorSubject<List<WalletTransaction>>>
-      _walletPendingTransactionStreams = {};
+  _walletPendingTransactionStreams = {};
 
   final Map<String, BehaviorSubject<List<WalletTransaction>>>
-      _walletRecentTransactionStreams = {};
+  _walletRecentTransactionStreams = {};
 
   /// stream subscriptions for cleanup
   final Map<String, List<StreamSubscription>> _subscriptions = {};
   final Map<String, StreamSubscription<List<WalletBalance>>>
-      _balanceSubscriptions = {};
+  _balanceSubscriptions = {};
   bool _backgrounded = false;
   late final Future<void> _initializationFuture;
   bool _isDisposed = false;
@@ -67,8 +67,8 @@ class Wallets {
     required List<WalletProvider> providers,
     required WalletsRepo repository,
     this.latestTransactionCount = 10,
-  })  : _providers = {for (final p in providers) p.type: p},
-        _repository = repository {
+  }) : _providers = {for (final p in providers) p.type: p},
+       _repository = repository {
     _initializationFuture = _initialize();
   }
 
@@ -175,14 +175,15 @@ class Wallets {
 
     // Listen to discovered wallets from all providers
     _walletsUsecaseSubscription =
-        Rx.merge(_providers.values.map((p) => p.discoveredWallets))
-            .listen((wallets) {
-      for (final wallet in wallets) {
-        if (!_wallets.any((w) => w.id == wallet.id)) {
-          addWallet(wallet);
-        }
-      }
-    });
+        Rx.merge(_providers.values.map((p) => p.discoveredWallets)).listen((
+          wallets,
+        ) {
+          for (final wallet in wallets) {
+            if (!_wallets.any((w) => w.id == wallet.id)) {
+              addWallet(wallet);
+            }
+          }
+        });
 
     if (_isDisposed) {
       return;
@@ -193,8 +194,9 @@ class Wallets {
 
   void _updateCombinedStreams() {
     // combine all wallet balances
-    final allBalances =
-        _walletsBalances.values.expand((balances) => balances).toList();
+    final allBalances = _walletsBalances.values
+        .expand((balances) => balances)
+        .toList();
     if (!_combinedBalancesSubject.isClosed) {
       _combinedBalancesSubject.add(allBalances);
     }
@@ -373,6 +375,9 @@ class Wallets {
     }
   }
 
+  /// Whether [setBackgrounded] last suspended background work.
+  bool get isBackgrounded => _backgrounded;
+
   /// Suspends automatic LNbits balance polling while the app is backgrounded.
   /// Existing balances remain available. NWC notifications, transaction
   /// monitoring, payments and explicit [refreshBalance] calls are unaffected.
@@ -392,7 +397,9 @@ class Wallets {
   void _initBalanceStream(String id) {
     if (_isDisposed) return;
     final subject = _walletBalanceStreams.putIfAbsent(
-        id, () => BehaviorSubject<List<WalletBalance>>());
+      id,
+      () => BehaviorSubject<List<WalletBalance>>(),
+    );
     if (_balanceSubscriptions.containsKey(id)) return;
     final wallet = _wallets.firstWhereOrNull((wallet) => wallet.id == id);
     if (wallet == null || (_backgrounded && wallet.type == WalletType.LNBITS)) {
@@ -400,21 +407,23 @@ class Wallets {
     }
     final provider = _providers[wallet.type];
     if (provider == null) return;
-    _balanceSubscriptions[id] = provider.getBalances(wallet).listen(
-      (balances) {
-        if (_isDisposed ||
-            !identical(_walletBalanceStreams[id], subject) ||
-            (_backgrounded && wallet.type == WalletType.LNBITS)) {
-          return;
-        }
-        _walletsBalances[id] = balances;
-        subject.add(balances);
-        _updateCombinedStreams();
-      },
-      onError: (Object error) {
-        if (!_isDisposed && !subject.isClosed) subject.add([]);
-      },
-    );
+    _balanceSubscriptions[id] = provider
+        .getBalances(wallet)
+        .listen(
+          (balances) {
+            if (_isDisposed ||
+                !identical(_walletBalanceStreams[id], subject) ||
+                (_backgrounded && wallet.type == WalletType.LNBITS)) {
+              return;
+            }
+            _walletsBalances[id] = balances;
+            subject.add(balances);
+            _updateCombinedStreams();
+          },
+          onError: (Object error) {
+            if (!_isDisposed && !subject.isClosed) subject.add([]);
+          },
+        );
   }
 
   void _initRecentTransactionStream(String id) {
@@ -428,18 +437,21 @@ class Wallets {
           final provider = _providers[wallet.type];
           if (provider != null) {
             subscriptions.add(
-              provider.getRecentTransactions(wallet).listen(
-                (transactions) {
-                  transactions =
-                      transactions.where((tx) => tx.state.isDone).toList();
-                  _walletsRecentTransactions[id] = transactions;
-                  _walletRecentTransactionStreams[id]?.add(transactions);
-                  _updateCombinedStreams();
-                },
-                onError: (error) {
-                  _walletRecentTransactionStreams[id]?.add([]);
-                },
-              ),
+              provider
+                  .getRecentTransactions(wallet)
+                  .listen(
+                    (transactions) {
+                      transactions = transactions
+                          .where((tx) => tx.state.isDone)
+                          .toList();
+                      _walletsRecentTransactions[id] = transactions;
+                      _walletRecentTransactionStreams[id]?.add(transactions);
+                      _updateCombinedStreams();
+                    },
+                    onError: (error) {
+                      _walletRecentTransactionStreams[id]?.add([]);
+                    },
+                  ),
             );
           }
         }
@@ -464,18 +476,21 @@ class Wallets {
           final provider = _providers[wallet.type];
           if (provider != null) {
             subscriptions.add(
-              provider.getPendingTransactions(wallet).listen(
-                (transactions) {
-                  transactions =
-                      transactions.where((tx) => tx.state.isPending).toList();
-                  _walletsPendingTransactions[id] = transactions;
-                  _walletPendingTransactionStreams[id]?.add(transactions);
-                  _updateCombinedStreams();
-                },
-                onError: (error) {
-                  _walletPendingTransactionStreams[id]?.add([]);
-                },
-              ),
+              provider
+                  .getPendingTransactions(wallet)
+                  .listen(
+                    (transactions) {
+                      transactions = transactions
+                          .where((tx) => tx.state.isPending)
+                          .toList();
+                      _walletsPendingTransactions[id] = transactions;
+                      _walletPendingTransactionStreams[id]?.add(transactions);
+                      _updateCombinedStreams();
+                    },
+                    onError: (error) {
+                      _walletPendingTransactionStreams[id]?.add([]);
+                    },
+                  ),
             );
           }
         }
@@ -721,10 +736,12 @@ class Wallets {
     }
 
     if (common.contains(WalletPaymentProtocol.bolt11)) {
-      final genericPath = source.supportsBip321Pay &&
+      final genericPath =
+          source.supportsBip321Pay &&
           (destination.supportsBip321Receive ||
               destination.supportsBolt11InvoiceReceive);
-      final invoicePath = source.supportsBolt11InvoicePay &&
+      final invoicePath =
+          source.supportsBolt11InvoicePay &&
           destination.supportsBolt11InvoiceReceive;
       if (genericPath || invoicePath) return WalletPaymentProtocol.bolt11;
     }

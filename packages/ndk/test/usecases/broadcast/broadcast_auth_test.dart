@@ -20,42 +20,53 @@ void broadcastAuthTests(NdkEngine engine) {
     final other = Bip340.generatePrivateKey();
 
     Account signableAccount(KeyPair k) => Account(
-          pubkey: k.publicKey,
-          type: AccountType.privateKey,
-          signer: Bip340EventSigner(
-            privateKey: k.privateKey!,
-            publicKey: k.publicKey,
-          ),
-        );
+      pubkey: k.publicKey,
+      type: AccountType.privateKey,
+      signer: Bip340EventSigner(
+        privateKey: k.privateKey!,
+        publicKey: k.publicKey,
+      ),
+    );
 
-    Ndk ndkFor(MockRelay relay) => Ndk(
-          NdkConfig(
-            eventVerifier: MockEventVerifier(),
-            cache: MemCacheManager(),
-            bootstrapRelays: [relay.url],
-            defaultBroadcastTimeout: const Duration(seconds: 2),
-            engine: engine,
-          ),
-        );
+    Ndk ndkFor(MockRelay relay) {
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: MockEventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: [relay.url],
+          // This suite tests identity policy, not network latency. Allow the
+          // anonymous refusal, bound connection, AUTH, and EVENT retry to
+          // complete even when the full suite competes for CPU.
+          defaultBroadcastTimeout: const Duration(seconds: 10),
+          engine: engine,
+        ),
+      );
+      addTearDown(ndk.destroy);
+      return ndk;
+    }
 
-    Future<MockRelay> authRelay({bool requireAuth = true}) async {
+    Future<MockRelay> authRelay({
+      bool requireAuth = true,
+      Duration? delayResponse,
+    }) async {
       final relay = MockRelay(
         name: "broadcast auth relay",
         requireAuthForEvents: requireAuth,
       );
-      // the relay only challenges once it refuses an event, which is what
-      // `allow` waits for, so every connection has to be offered a challenge
+      // Offer a challenge on every connection; `allow` must still wait for
+      // an EVENT refusal before disclosing an identity.
       relay.sendAuthChallenge = true;
-      await relay.startServer();
+      addTearDown(relay.stopServer);
+      await relay.startServer(delayResponse: delayResponse);
       return relay;
     }
 
     Nip01Event noteFrom(KeyPair k, String content) => Nip01Event(
-          pubKey: k.publicKey,
-          kind: Nip01Event.kTextNodeKind,
-          tags: [],
-          content: content,
-        );
+      pubKey: k.publicKey,
+      kind: Nip01Event.kTextNodeKind,
+      tags: [],
+      content: content,
+    );
 
     test('never stays unattributable and does not deliver', () async {
       final relay = await authRelay();
@@ -80,9 +91,6 @@ void broadcastAuthTests(NdkEngine engine) {
         reason: 'a broadcast that may reveal nobody never answers a challenge',
       );
       expect(relay.connectionsAuthenticatedAs(key.publicKey), 0);
-
-      await ndk.destroy();
-      await relay.stopServer();
     });
 
     test('allow authenticates only once the relay refuses', () async {
@@ -111,9 +119,6 @@ void broadcastAuthTests(NdkEngine engine) {
         contains(event.id),
         reason: 'and moves to a bound one once refused',
       );
-
-      await ndk.destroy();
-      await relay.stopServer();
     });
 
     test('allow does not authenticate to a relay that never refuses', () async {
@@ -138,9 +143,6 @@ void broadcastAuthTests(NdkEngine engine) {
         reason: 'nothing asked for an identity, so none was revealed',
       );
       expect(relay.eventsAuthenticatedAs(key.publicKey), isEmpty);
-
-      await ndk.destroy();
-      await relay.stopServer();
     });
 
     test('require sends the event only on the bound connection', () async {
@@ -174,8 +176,6 @@ void broadcastAuthTests(NdkEngine engine) {
         contains(event.id),
         reason: 'and it went out as the identity that was required',
       );
-
-      await relay.stopServer();
     });
 
     test('require never opens the anonymous connection', () async {
@@ -210,10 +210,6 @@ void broadcastAuthTests(NdkEngine engine) {
         isNotEmpty,
         reason: 'the bound connection is the one that was opened',
       );
-
-      await ndk.destroy();
-      await bootstrap.stopServer();
-      await target.stopServer();
     });
 
     test('require binds even when the relay never refuses', () async {
@@ -238,9 +234,6 @@ void broadcastAuthTests(NdkEngine engine) {
         isNotEmpty,
         reason: 'require opens its bound connection whether or not it is asked',
       );
-
-      await ndk.destroy();
-      await relay.stopServer();
     });
 
     test('authenticates as an account NDK never registered', () async {
@@ -271,9 +264,6 @@ void broadcastAuthTests(NdkEngine engine) {
         0,
         reason: 'the logged account is not the one that was named',
       );
-
-      await ndk.destroy();
-      await relay.stopServer();
     });
 
     test('require with an account that cannot sign reaches no relay', () async {
@@ -302,29 +292,38 @@ void broadcastAuthTests(NdkEngine engine) {
         isEmpty,
         reason: 'an impossible broadcast is sent to no relay at all',
       );
-
-      await ndk.destroy();
-      await relay.stopServer();
     });
 
-    test('without auth a refusal still authenticates as the author', () async {
-      final relay = await authRelay();
-      final ndk = ndkFor(relay);
-      ndk.accounts.loginPrivateKey(
-        pubkey: key.publicKey,
-        privkey: key.privateKey!,
-      );
+    test(
+      'without auth a delayed refusal still authenticates as the author',
+      () async {
+        final relay = await authRelay(
+          delayResponse: const Duration(milliseconds: 600),
+        );
+        final ndk = ndkFor(relay);
+        ndk.accounts.loginPrivateKey(
+          pubkey: key.publicKey,
+          privkey: key.privateKey!,
+        );
 
-      final result = await ndk.broadcast.broadcast(
-        nostrEvent: noteFrom(key, "default"),
-        specificRelays: [relay.url],
-      ).broadcastDoneFuture;
+        final elapsed = Stopwatch()..start();
+        final result = await ndk.broadcast
+            .broadcast(
+              nostrEvent: noteFrom(key, "default"),
+              specificRelays: [relay.url],
+            )
+            .broadcastDoneFuture;
 
-      expect(result.any((r) => r.broadcastSuccessful), isTrue);
-      expect(relay.connectionsAuthenticatedAs(key.publicKey), greaterThan(0));
-
-      await ndk.destroy();
-      await relay.stopServer();
-    });
+        expect(
+          result.any((r) => r.broadcastSuccessful),
+          isTrue,
+          reason:
+              'elapsed=${elapsed.elapsed}; AUTH received=${relay.receivedAuths}; '
+              'accepted=${relay.acceptedAuths}; responses='
+              '${result.map((r) => '${r.okReceived}/${r.broadcastSuccessful}/${r.msg}').toList()}',
+        );
+        expect(relay.connectionsAuthenticatedAs(key.publicKey), greaterThan(0));
+      },
+    );
   });
 }

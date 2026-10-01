@@ -93,10 +93,10 @@ class RelayJitBroadcastSpecificRelaysStrategy {
       kinds: [event.kind],
       tags:
           EventKindClassification.isAddressableKind(event.kind) && dTag != null
-              ? {
-                  'd': [dTag],
-                }
-              : null,
+          ? {
+              'd': [dTag],
+            }
+          : null,
       limit: 1,
     );
 

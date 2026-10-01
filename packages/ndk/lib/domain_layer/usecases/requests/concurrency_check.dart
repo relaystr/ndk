@@ -85,7 +85,7 @@ class ConcurrencyCheck {
       for (final key in keys)
         key: map[key] is List
             ? (List<dynamic>.from(map[key] as List)
-              ..sort((a, b) => (a as Comparable).compareTo(b)))
+                ..sort((a, b) => (a as Comparable).compareTo(b)))
             : map[key],
     };
   }

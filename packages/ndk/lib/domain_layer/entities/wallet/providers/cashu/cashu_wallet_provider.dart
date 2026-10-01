@@ -172,7 +172,8 @@ class CashuWalletProvider implements WalletProvider {
           legacyResponse: legacyResponse,
           transactionId: draftTransaction.id,
           amountMsat: amountMsat,
-          createdAt: draftTransaction.initiatedDate ??
+          createdAt:
+              draftTransaction.initiatedDate ??
               DateTime.now().millisecondsSinceEpoch ~/ 1000,
           settledAt: transaction.transactionDate,
         );

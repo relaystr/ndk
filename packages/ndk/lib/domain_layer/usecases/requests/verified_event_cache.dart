@@ -38,10 +38,7 @@ class VerifiedEventMemCache {
   }
 
   /// Runs at most one verification for the same validated id and signature.
-  Future<bool> verifyOnce(
-    Nip01Event event,
-    EventVerifier verifier,
-  ) {
+  Future<bool> verifyOnce(Nip01Event event, EventVerifier verifier) {
     final key = (id: event.id, signature: event.sig);
     final existing = _verificationInFlight[key];
     if (existing != null) {
@@ -50,16 +47,18 @@ class VerifiedEventMemCache {
 
     final generation = _generation;
     late final Future<bool> future;
-    future = Future<bool>.sync(() => verifier.verify(event)).then((valid) {
-      if (valid && generation == _generation) {
-        markVerified(event.id, event.sig);
-      }
-      return valid;
-    }).whenComplete(() {
-      if (identical(_verificationInFlight[key], future)) {
-        _verificationInFlight.remove(key);
-      }
-    });
+    future = Future<bool>.sync(() => verifier.verify(event))
+        .then((valid) {
+          if (valid && generation == _generation) {
+            markVerified(event.id, event.sig);
+          }
+          return valid;
+        })
+        .whenComplete(() {
+          if (identical(_verificationInFlight[key], future)) {
+            _verificationInFlight.remove(key);
+          }
+        });
     _verificationInFlight[key] = future;
     return future;
   }

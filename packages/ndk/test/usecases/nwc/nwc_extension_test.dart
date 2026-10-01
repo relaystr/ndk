@@ -11,26 +11,17 @@ void main() {
         NwcExtension.fromIdentifier('05'),
         NwcExtension.transactionHistory,
       );
-      expect(
-        NwcExtension.fromIdentifier('06'),
-        NwcExtension.metadata,
-      );
+      expect(NwcExtension.fromIdentifier('06'), NwcExtension.metadata);
       expect(NwcExtension.fromIdentifier('07'), NwcExtension.deepLinks);
-      expect(
-        NwcExtension.fromIdentifier('321'),
-        NwcExtension.bip321,
-      );
+      expect(NwcExtension.fromIdentifier('321'), NwcExtension.bip321);
     });
 
     test('parses space-separated values and ignores unknown extensions', () {
-      expect(
-        NwcExtension.fromIdentifiers(['02  03\t321', '999']),
-        {
-          NwcExtension.notifications,
-          NwcExtension.holdInvoices,
-          NwcExtension.bip321,
-        },
-      );
+      expect(NwcExtension.fromIdentifiers(['02  03\t321', '999']), {
+        NwcExtension.notifications,
+        NwcExtension.holdInvoices,
+        NwcExtension.bip321,
+      });
       expect(NwcExtension.fromIdentifier('999'), isNull);
     });
   });
@@ -47,10 +38,10 @@ void main() {
         },
       });
 
-      expect(
-        response.extensions,
-        {NwcExtension.notifications, NwcExtension.transactionHistory},
-      );
+      expect(response.extensions, {
+        NwcExtension.notifications,
+        NwcExtension.transactionHistory,
+      });
       expect(response.supportsExtension(NwcExtension.notifications), isTrue);
       expect(response.supportsExtension(NwcExtension.holdInvoices), isFalse);
     });

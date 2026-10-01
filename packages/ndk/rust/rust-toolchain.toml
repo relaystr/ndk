@@ -1,5 +1,6 @@
 [toolchain]
-channel = "1.90.0"
+# >= 1.98.1: older rustc strips Mach-O dylibs misaligned, rejected by macOS 27 dyld (rust-lang/rust#157750)
+channel = "1.98.1"
 profile = "default"
 components = ["rust-analyzer"]
 

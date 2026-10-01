@@ -41,15 +41,15 @@ class NwcWallet extends Wallet {
     this.providerId,
     Set<String> cachedPermissions = const {},
     Map<String, dynamic>? metadata,
-  })  : cachedPermissions = Set.unmodifiable(cachedPermissions),
-        super(
-          metadata: Map.unmodifiable({
-            ...(metadata ?? const {}),
-            'nwcUrl': nwcUrl,
-            if (providerId != null) kProviderIdMetadataKey: providerId,
-            kPermissionsMetadataKey: cachedPermissions.toList(),
-          }),
-        );
+  }) : cachedPermissions = Set.unmodifiable(cachedPermissions),
+       super(
+         metadata: Map.unmodifiable({
+           ...(metadata ?? const {}),
+           'nwcUrl': nwcUrl,
+           kProviderIdMetadataKey: ?providerId,
+           kPermissionsMetadataKey: cachedPermissions.toList(),
+         }),
+       );
 
   @override
   Map<String, dynamic> toMetadata() => metadata;
@@ -109,8 +109,8 @@ class NwcWallet extends Wallet {
   /// persisted capability snapshot while the connection initializes.
   Set<String> get effectivePermissions =>
       connection?.permissions.isNotEmpty == true
-          ? connection!.permissions
-          : cachedPermissions;
+      ? connection!.permissions
+      : cachedPermissions;
 
   bool supportsMethod(NwcMethod method) =>
       effectivePermissions.contains(method.name);
@@ -126,19 +126,18 @@ class NwcWallet extends Wallet {
 
   @override
   Set<WalletPaymentProtocol> get sendPaymentProtocols => {
-        if (supportsMethod(NwcMethod.PAY_INVOICE) ||
-            supportsMethod(NwcMethod.PAY))
-          WalletPaymentProtocol.bolt11,
-        if (supportsMethod(NwcMethod.PAY)) WalletPaymentProtocol.bolt12,
-      };
+    if (supportsMethod(NwcMethod.PAY_INVOICE) || supportsMethod(NwcMethod.PAY))
+      WalletPaymentProtocol.bolt11,
+    if (supportsMethod(NwcMethod.PAY)) WalletPaymentProtocol.bolt12,
+  };
 
   @override
   Set<WalletPaymentProtocol> get receivePaymentProtocols => {
-        if (supportsMethod(NwcMethod.MAKE_INVOICE) ||
-            supportsMethod(NwcMethod.RECEIVE))
-          WalletPaymentProtocol.bolt11,
-        if (supportsMethod(NwcMethod.RECEIVE)) WalletPaymentProtocol.bolt12,
-      };
+    if (supportsMethod(NwcMethod.MAKE_INVOICE) ||
+        supportsMethod(NwcMethod.RECEIVE))
+      WalletPaymentProtocol.bolt11,
+    if (supportsMethod(NwcMethod.RECEIVE)) WalletPaymentProtocol.bolt12,
+  };
 
   @override
   bool get supportsBip321Pay => supportsMethod(NwcMethod.PAY);

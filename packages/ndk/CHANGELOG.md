@@ -1,3 +1,18 @@
+## 0.10.1-dev.1
+
+ - **FIX**: parse the BUD-08 nip94 field as a tag array.
+
+## 0.10.1-dev.0
+
+ - **FIX**: release idle wallet and abandoned sockets.
+ - **FIX**: close transports before replacement.
+ - **FIX**: abort stalled relay HTTP requests.
+ - **FIX**: stop reconnecting for stale RPC delivery.
+ - **FIX**: persist background delivery retry results.
+ - **FIX**: reduce background battery usage by removing closed connections only once.
+ - **FIX**: NWC error handling for Rizful.
+ - **REFACTOR**: inject RelayInfo HTTP fetch via RelayInfoRepo and HttpRequestDS.
+
 ## 0.10.0
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.

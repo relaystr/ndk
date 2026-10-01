@@ -54,9 +54,9 @@ class HttpRequestDS {
     String url, {
     bool followRedirects = true,
     Duration? timeout,
+    Map<String, String> headers = const {"Accept": "application/json"},
   }) async {
     final uri = Uri.parse(url).replace(scheme: 'https');
-    const headers = {"Accept": "application/json"};
 
     final http.Response response;
     if (followRedirects && timeout == null) {
@@ -64,13 +64,10 @@ class HttpRequestDS {
     } else {
       final abort = Completer<void>();
       final timer = timeout == null ? null : Timer(timeout, abort.complete);
-      final request = http.AbortableRequest(
-        'GET',
-        uri,
-        abortTrigger: abort.future,
-      )
-        ..headers.addAll(headers)
-        ..followRedirects = followRedirects;
+      final request =
+          http.AbortableRequest('GET', uri, abortTrigger: abort.future)
+            ..headers.addAll(headers)
+            ..followRedirects = followRedirects;
       try {
         response = await http.Response.fromStream(await _client.send(request));
       } finally {
@@ -85,7 +82,9 @@ class HttpRequestDS {
         url: url,
       );
     }
-    return jsonDecode(response.body);
+    // JSON is UTF-8 (RFC 8259); `body` would fall back to latin1 for media
+    // types such as application/nostr+json that carry no charset.
+    return jsonDecode(utf8.decode(response.bodyBytes));
   }
 
   Future<http.Response> put({

@@ -22,11 +22,8 @@ import 'package:ndk/src/web_socket_client/web_socket_client.dart';
 /// {@endtemplate}
 class LinearBackoff implements Backoff {
   /// {@macro linear_backoff}
-  LinearBackoff({
-    required this.initial,
-    required this.increment,
-    this.maximum,
-  }) : _current = initial;
+  LinearBackoff({required this.initial, required this.increment, this.maximum})
+    : _current = initial;
 
   /// The initial backoff duration.
   final Duration initial;

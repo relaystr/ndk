@@ -106,13 +106,13 @@ class DbNip01Event {
   List<String> get pTags => getTagValues(tags, "p");
 
   List<String> get replyETags => [
-        for (final tag in tags)
-          if (tag.isNotEmpty &&
-              tag[0] == "e" &&
-              tag.length >= 4 &&
-              tag[3] == "reply")
-            tag[1].trim().toLowerCase(),
-      ];
+    for (final tag in tags)
+      if (tag.isNotEmpty &&
+          tag[0] == "e" &&
+          tag.length >= 4 &&
+          tag[3] == "reply")
+        tag[1].trim().toLowerCase(),
+  ];
 
   String? getDtag() {
     for (var tag in tags) {
