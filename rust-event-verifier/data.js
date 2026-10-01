@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790856653800,
+  "lastUpdate": 1790857983699,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1442,6 +1442,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1634278,
             "range": "1630448-1642066",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e1dc5b2d257001b641ca0711a666c90be2834fbf",
+          "message": "Merge pull request #869 from relaystr/fix/blossom-nip94-tags\n\nfix: parse the BUD-08 nip94 field as a tag array",
+          "timestamp": "2026-10-01T14:30:58+02:00",
+          "tree_id": "c28db574a5023a04415b4231d188a81a9ca9a3b2",
+          "url": "https://github.com/relaystr/ndk/commit/e1dc5b2d257001b641ca0711a666c90be2834fbf"
+        },
+        "date": 1790857980519,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 40365.2,
+            "range": "39533-42910",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1876774,
+            "range": "1840450-1918936",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
