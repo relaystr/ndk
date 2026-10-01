@@ -22,7 +22,8 @@ void main() {
           eventVerifier: MockEventVerifier(),
           cache: cache,
           bootstrapRelays: [relay.url],
-          defaultBroadcastTimeout: const Duration(seconds: 2),
+          // Assert delivery policy after a response, not a load-dependent timeout.
+          defaultBroadcastTimeout: const Duration(seconds: 10),
           // the background timer would retry behind the assertions
           pendingDeliveryRetriesEnabled: false,
         ),

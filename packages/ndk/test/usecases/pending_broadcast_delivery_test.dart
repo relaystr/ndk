@@ -487,6 +487,214 @@ void main() {
       expect(broadcast.broadcastedEvents.map((e) => e.id), [event.id]);
     });
 
+    for (final outcome in [
+      (
+        'accepted',
+        true,
+        RelayDeliveryState.acked,
+        EventDeliveryStatus.delivered,
+      ),
+      (
+        'invalid: bad event',
+        false,
+        RelayDeliveryState.permanentFailure,
+        EventDeliveryStatus.failed,
+      ),
+      (
+        'error: temporarily unavailable',
+        false,
+        RelayDeliveryState.transientFailure,
+        EventDeliveryStatus.inProgress,
+      ),
+    ]) {
+      test('persists retry result ${outcome.$1}', () async {
+        const relay = 'wss://retry.example';
+        await pendingDelivery.enqueueSpecificRelayBroadcast(
+          event: event,
+          relayUrls: const [relay],
+          requiresInteractiveSigning: false,
+          auth: const AuthPolicy.never(),
+        );
+        broadcast.responses = [
+          RelayBroadcastResponse(
+            relayUrl: relay,
+            okReceived: true,
+            broadcastSuccessful: outcome.$2,
+            msg: outcome.$1,
+          ),
+        ];
+        await pendingDelivery.flushForRelay(relay, onlyDue: true);
+        final first = (await cacheManager.loadRelayDeliveryTargets(
+          eventId: event.id,
+        )).single;
+        expect(first.state, outcome.$3);
+        expect(first.attemptCount, 1);
+        expect(first.lastAttemptAt, isNotNull);
+        expect(first.authCanonical, 'never');
+        expect(
+          (await cacheManager.loadEventDeliveryRecord(event.id))!.status,
+          outcome.$4,
+        );
+        await pendingDelivery.flushForRelay(relay, onlyDue: true);
+        expect(
+          broadcast.broadcastedEvents,
+          hasLength(1),
+          reason: 'terminal states and future retries must not resend',
+        );
+        if (outcome.$3 == RelayDeliveryState.transientFailure) {
+          expect(first.nextRetryAt! - first.lastAttemptAt!, 5);
+          await cacheManager.saveRelayDeliveryTarget(
+            first.copyWith(nextRetryAt: Nip01Event.secondsSinceEpoch() - 1),
+          );
+          await pendingDelivery.flushForRelay(relay, onlyDue: true);
+          final second = (await cacheManager.loadRelayDeliveryTargets(
+            eventId: event.id,
+          )).single;
+          expect(second.attemptCount, 2);
+          expect(second.nextRetryAt! - second.lastAttemptAt!, 15);
+        } else {
+          expect(first.nextRetryAt, isNull);
+        }
+      });
+    }
+
+    test('preserves an ephemeral initial attempt until it finishes', () async {
+      final rpc = event.copyWith(kind: 23194);
+      await cacheManager.saveEvent(rpc);
+      await pendingDelivery.enqueueSpecificRelayBroadcast(
+        event: rpc,
+        relayUrls: const ['wss://rpc.example'],
+        requiresInteractiveSigning: false,
+      );
+      broadcast.inFlightEventIds.add(rpc.id);
+      await pendingDelivery.retryDueDeliveries(
+        connectedRelayUrls: () => const [],
+        reconnectRelay: (url) async {
+          reconnectAttempts.add(url);
+          return true;
+        },
+      );
+      expect(reconnectAttempts, isEmpty);
+      expect(await cacheManager.loadEventDeliveryRecord(rpc.id), isNotNull);
+      expect(
+        await cacheManager.loadRelayDeliveryTargets(eventId: rpc.id),
+        hasLength(1),
+      );
+      broadcast.inFlightEventIds.clear();
+      await pendingDelivery.retryDueDeliveries(
+        connectedRelayUrls: () => const [],
+        reconnectRelay: (url) async {
+          reconnectAttempts.add(url);
+          return true;
+        },
+      );
+      expect(reconnectAttempts, isEmpty);
+      expect(await cacheManager.loadEventDeliveryRecord(rpc.id), isNull);
+      expect(await cacheManager.loadEvent(rpc.id), isNotNull);
+    });
+
+    for (final entryPoint in ['periodic', 'relay flush', 'signer reconnect']) {
+      test('drops unsigned ephemeral before signing via $entryPoint', () async {
+        final rpc = Nip01Event(
+          id: 'unsigned-rpc',
+          pubKey: 'remote-signer',
+          kind: 23194,
+          tags: const [],
+          content: 'request',
+        );
+        final signer = _RemoteTestSigner(
+          pubKey: rpc.pubKey,
+          requiresSignerNetwork: true,
+          transportRelayUrls: const ['wss://signer.example'],
+          onSign: (event) async => event.copyWith(sig: 'unexpected'),
+        );
+        accounts.loginExternalSigner(signer: signer);
+        await cacheManager.saveEvent(rpc);
+        await pendingDelivery.enqueueSpecificRelayBroadcast(
+          event: rpc,
+          relayUrls: const ['wss://rpc.example'],
+          requiresInteractiveSigning: true,
+        );
+        if (entryPoint == 'periodic') {
+          await pendingDelivery.retryDueDeliveries(
+            connectedRelayUrls: () => const [],
+            reconnectRelay: (url) async {
+              reconnectAttempts.add(url);
+              return true;
+            },
+          );
+        } else if (entryPoint == 'relay flush') {
+          await pendingDelivery.flushForRelay('wss://rpc.example');
+        } else {
+          await pendingDelivery.retryInteractiveSigningForTransportRelay(
+            'wss://signer.example',
+          );
+        }
+        expect(reconnectAttempts, isEmpty);
+        expect(signer.signCallCount, 0);
+        expect(broadcast.broadcastedEvents, isEmpty);
+        expect(await cacheManager.loadEventDeliveryRecord(rpc.id), isNull);
+        expect(await cacheManager.loadEvent(rpc.id), isNotNull);
+      });
+    }
+
+    for (final kind in [23194, 25195]) {
+      for (final state in [
+        RelayDeliveryState.pending,
+        RelayDeliveryState.attempting,
+        RelayDeliveryState.authRequired,
+      ]) {
+        test('drops stale RPC $kind $state before reconnecting', () async {
+          final rpc = Nip01Event(
+            id: 'rpc-$kind-${state.name}',
+            pubKey: 'pubkey',
+            kind: kind,
+            tags: const [],
+            content: 'request',
+            sig: 'sig',
+          );
+          // Old saveToCache:false broadcasts still have serialized recovery
+          // records; cleanup must work without a raw cached event too.
+          await pendingDelivery.enqueueSpecificRelayBroadcast(
+            event: rpc,
+            relayUrls: const ['wss://rpc-1.example', 'wss://rpc-2.example'],
+            requiresInteractiveSigning: false,
+          );
+          for (final relay in ['wss://rpc-1.example', 'wss://rpc-2.example']) {
+            await cacheManager.saveRelayDeliveryTarget(
+              RelayDeliveryTarget(
+                eventId: rpc.id,
+                relayUrl: relay,
+                reason: RelayDeliveryReason.explicit,
+                state: state,
+              ),
+            );
+          }
+          for (var cycle = 0; cycle < 3; cycle++) {
+            await pendingDelivery.retryDueDeliveries(
+              connectedRelayUrls: () => const [],
+              reconnectRelay: (url) async {
+                reconnectAttempts.add(url);
+                return true;
+              },
+            );
+          }
+          expect(reconnectAttempts, isEmpty);
+          expect(broadcast.broadcastedEvents, isEmpty);
+          expect(await cacheManager.loadEventDeliveryRecord(rpc.id), isNull);
+          expect(
+            await cacheManager.loadRelayDeliveryTargets(eventId: rpc.id),
+            isEmpty,
+          );
+          expect(
+            await cacheManager.loadEvent(rpc.id),
+            isNotNull,
+            reason: 'discard retry metadata without deleting cached events',
+          );
+        });
+      }
+    }
+
     test(
       'purges ephemeral event and sidecars once delivery is complete',
       () async {
@@ -1095,6 +1303,11 @@ void main() {
 class RecordingBroadcastSender extends BroadcastSender {
   final List<Nip01Event> broadcastedEvents = [];
   final List<AuthPolicy?> broadcastedAuth = [];
+  final Set<String> inFlightEventIds = {};
+  List<RelayBroadcastResponse> responses = const [];
+
+  @override
+  bool isEventInFlight(String eventId) => inFlightEventIds.contains(eventId);
 
   RecordingBroadcastSender({required MemCacheManager cacheManager})
       : super(
@@ -1121,7 +1334,7 @@ class RecordingBroadcastSender extends BroadcastSender {
     broadcastedAuth.add(auth);
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
-      broadcastDoneStream: Stream.value(const <RelayBroadcastResponse>[]),
+      broadcastDoneStream: Stream.value(responses),
     );
   }
 }

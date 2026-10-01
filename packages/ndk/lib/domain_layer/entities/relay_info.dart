@@ -1,8 +1,7 @@
-import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
-import '../../shared/logger/logger.dart';
+import '../../data_layer/data_sources/http_request.dart';
+import '../../data_layer/repositories/relay_info_http_impl.dart';
 
 class RelayInfo {
   final String name;
@@ -73,19 +72,21 @@ class RelayInfo {
     );
   }
 
-  static Future<RelayInfo?> get(String url) async {
-    Uri uri = Uri.parse(url).replace(scheme: 'https');
+  /// Fetches relay metadata with a private HTTP client that is closed
+  /// afterwards.
+  @Deprecated('Use Ndk.relays.getRelayInfo or RelayInfoHttpRepoImpl instead')
+  static Future<RelayInfo?> get(
+    String url, {
+    Duration timeout = const Duration(seconds: 5),
+  }) async {
+    final client = http.Client();
     try {
-      final response = await http.get(
-        uri,
-        headers: {'Accept': 'application/nostr+json'},
-      );
-      final decodedResponse =
-          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      return RelayInfo.fromJson(decodedResponse, uri.toString());
-    } catch (e) {
-      Logger.log.d(() => e);
-      return null;
+      return await RelayInfoHttpRepoImpl(
+        httpDS: HttpRequestDS(client),
+        timeout: timeout,
+      ).getRelayInfo(url);
+    } finally {
+      client.close();
     }
   }
 

@@ -87,6 +87,20 @@ class NdkConfig {
   /// controls, so this option has no effect on web builds.
   bool webSocketCompression;
 
+  /// Native WebSocket heartbeat interval. Null disables client pings.
+  ///
+  /// Longer intervals reduce idle network traffic, but also delay detection of
+  /// silent connection failures (the pong timeout equals this interval).
+  /// Browser WebSocket APIs do not expose heartbeat controls.
+  Duration? webSocketPingInterval;
+
+  /// Maximum exponential reconnect step, starting at 500 milliseconds.
+  ///
+  /// The default of 4 caps retries at 4 seconds. For example, 7 caps retries
+  /// at 32 seconds. This only affects failed connections, not event delivery
+  /// on healthy connections.
+  int webSocketReconnectMaximumStep;
+
   /// Enable fetched ranges tracking.
   /// When enabled, NDK tracks which time ranges have been fetched from which relays.
   /// Disabled by default for performance.
@@ -167,6 +181,8 @@ class NdkConfig {
     this.logLevel = defaultLogLevel,
     this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
     this.webSocketCompression = true,
+    this.webSocketPingInterval = const Duration(seconds: 10),
+    this.webSocketReconnectMaximumStep = 4,
     this.cashuUserSeedphrase,
     this.autoVerifyMintCounters = false,
     this.fetchedRangesEnabled = false,

@@ -20,7 +20,7 @@ void main() async {
   final nwcUri = Platform.environment['NWC_URI']!;
   final connection = await ndk.nwc.connect(nwcUri);
 
-  final amount = 29;
+  final amount = 1000;
   final description = "hello hold";
 
   // Generate a random 32-byte preimage

@@ -46,20 +46,67 @@ class Nwc {
   final Requests _requests;
   final Broadcast _broadcast;
   final LocalEventSignerFactory _eventSignerFactory;
+  final Future<void> Function(String requestId, Duration timeout)?
+  _waitForRequestSent;
 
-  /// main constructor
+  /// Creates the NWC client. [waitForRequestSent] waits for the response REQ
+  /// to be sent on a connected transport. NDK supplies this hook automatically.
   Nwc({
     required Requests requests,
     required Broadcast broadcast,
     required LocalEventSignerFactory eventSignerFactory,
-  })  : _requests = requests,
-        _broadcast = broadcast,
-        _eventSignerFactory = eventSignerFactory;
+    Future<void> Function(String requestId, Duration timeout)?
+    waitForRequestSent,
+  }) : _requests = requests,
+       _broadcast = broadcast,
+       _eventSignerFactory = eventSignerFactory,
+       _waitForRequestSent = waitForRequestSent;
 
   final Map<String, Completer<NwcResponse>> _inflighRequests = {};
   final Map<String, Timer> _inflighRequestTimers = {};
 
-  final Set<NwcConnection> _connections = {};
+  final Set<NwcConnection> _connections = Set.identity();
+  final Map<NwcConnection, int> _activeRequests = Map.identity();
+  final Map<NwcConnection, int> _notificationSince = Map.identity();
+  final Map<NwcConnection, Set<String>> _seenNotifications = Map.identity();
+  Future<void> _subscriptionUpdates = Future.value();
+  bool _backgrounded = false;
+
+  /// Suspends idle wallet notifications without interrupting explicit RPCs.
+  /// Public streams and connections remain usable. Callers should refresh
+  /// balances after resuming: notifications received while suspended are skipped.
+  Future<void> setBackgrounded(bool backgrounded) async {
+    _backgrounded = backgrounded;
+    await Future.wait(_connections.toList().map(_syncSubscription));
+  }
+
+  Future<void> _syncSubscription(NwcConnection connection) {
+    final operation = _subscriptionUpdates.then((_) async {
+      if (!_connections.contains(connection)) return;
+      final needed =
+          !_backgrounded ||
+          (!connection.useETagForEachRequest &&
+              (_activeRequests[connection] ?? 0) > 0);
+      if (needed) {
+        if (connection.subscription == null) {
+          await _subscribeToNotificationsAndResponses(connection);
+        }
+      } else if (connection.subscription != null) {
+        final subscription = connection.subscription!;
+        connection.subscription = null;
+        await connection.cancelSubscriptionListener();
+        await _requests.closeSubscription(subscription.requestId);
+        // A later resume starts with fresh notifications rather than replaying
+        // the wallet's entire relay history and triggering refresh RPC storms.
+        _notificationSince[connection] = Nip01Event.secondsSinceEpoch();
+      }
+      if (_backgrounded && (_activeRequests[connection] ?? 0) == 0) {
+        _notificationSince[connection] ??= Nip01Event.secondsSinceEpoch();
+      }
+    });
+    _subscriptionUpdates = operation.catchError((Object _) {});
+    return operation;
+  }
 
   /// Connects to a given nostr+walletconnect:// uri,
   /// checking for 13194 event info,
@@ -76,12 +123,10 @@ class Nwc {
     Duration? timeout,
   }) async {
     if (requireGetInfoResponse && !doGetInfoMethod) {
-      throw ArgumentError(
-        'requireGetInfoResponse requires doGetInfoMethod',
-      );
+      throw ArgumentError('requireGetInfoResponse requires doGetInfoMethod');
     }
-    var parsedUri = NostrWalletConnectUri.parseConnectionUri(uri);
-    var relays = parsedUri.relays.map((r) => Uri.decodeFull(r)).toList();
+    final parsedUri = NostrWalletConnectUri.parseConnectionUri(uri);
+    final relays = parsedUri.relays.map((r) => Uri.decodeFull(r)).toList();
     var filter = Filter(
       kinds: [NwcKind.INFO.value],
       authors: [parsedUri.walletPubkey],
@@ -114,8 +159,9 @@ class Nwc {
       connection.permissions = event.content.split(" ").toSet();
 
       if (connection.permissions.length == 1) {
-        connection.permissions =
-            connection.permissions.first.split(",").toSet();
+        connection.permissions = connection.permissions.first
+            .split(",")
+            .toSet();
       }
 
       List<String> versionTags = event.getTags('v');
@@ -128,7 +174,13 @@ class Nwc {
       }
       connection.addSupportedExtensions(event.getTags('extensions'));
 
-      await _subscribeToNotificationsAndResponses(connection);
+      _connections.add(connection);
+      try {
+        await _syncSubscription(connection);
+      } catch (_) {
+        await disconnect(connection);
+        rethrow;
+      }
 
       if (doGetInfoMethod) {
         try {
@@ -147,7 +199,6 @@ class Nwc {
         }
       }
       Logger.log.i(() => "NWC ${connection.uri} connected");
-      _connections.add(connection);
       completer.complete(connection);
     } else {
       onError?.call("not found");
@@ -164,31 +215,51 @@ class Nwc {
   Future<void> _subscribeToNotificationsAndResponses(
     NwcConnection connection,
   ) async {
-    List<int> kindsToSubscribe = [
-      connection.isLegacyNotifications()
-          ? NwcKind.LEGACY_NOTIFICATION.value
-          : NwcKind.NOTIFICATION.value,
-    ];
-    // Only subscribe to NwcKind.RESPONSE if not using tagged subscriptions per request
-    if (!connection.useETagForEachRequest) {
-      kindsToSubscribe.add(NwcKind.RESPONSE.value);
-    }
-
+    final previousSince = _notificationSince[connection];
+    final notificationSince = previousSince == null
+        ? null
+        : Nip01Event.secondsSinceEpoch();
+    // Allow modest wallet clock skew while bounding response history on resume.
+    final relaySince = notificationSince == null
+        ? null
+        : notificationSince - 300;
     connection.subscription = _requests.subscription(
       name: "nwc-sub-${connection.useETagForEachRequest ? "notifs-only" : ""}",
-      explicitRelays:
-          connection.uri.relays.map((r) => Uri.decodeFull(r)).toList(),
+      explicitRelays: connection.uri.relays
+          .map((r) => Uri.decodeFull(r))
+          .toList(),
       filters: [
         Filter(
-          kinds: kindsToSubscribe,
+          kinds: [
+            connection.isLegacyNotifications()
+                ? NwcKind.LEGACY_NOTIFICATION.value
+                : NwcKind.NOTIFICATION.value,
+            if (!connection.useETagForEachRequest) NwcKind.RESPONSE.value,
+          ],
           authors: [connection.uri.walletPubkey],
           pTags: [connection.signer.getPublicKey()],
+          since: relaySince,
         ),
       ],
       cacheRead: false,
       cacheWrite: false,
     );
     connection.listen((event) async {
+      if (event.kind == NwcKind.RESPONSE.value &&
+          !_inflighRequests.containsKey(event.getEId())) {
+        return;
+      }
+      if (event.kind != NwcKind.RESPONSE.value &&
+          (_backgrounded ||
+              (notificationSince != null &&
+                  event.createdAt < notificationSince))) {
+        return;
+      }
+      if (event.kind != NwcKind.RESPONSE.value) {
+        final seen = _seenNotifications.putIfAbsent(connection, () => {});
+        if (!seen.add(event.id)) return;
+        if (seen.length > 256) seen.remove(seen.first);
+      }
       if (event.kind == NwcKind.LEGACY_NOTIFICATION.value) {
         await _onLegacyNotification(event, connection);
       } else if (event.kind == NwcKind.RESPONSE.value) {
@@ -217,7 +288,12 @@ class Nwc {
       Map<String, dynamic> data;
       data = json.decode(decrypted);
       NwcResponse? response;
-      if (data.containsKey("result")) {
+      // Some wallets (e.g. rizful) reply to failures with a non-spec
+      // `result_type: "error"` and `result: null`; surface the error instead
+      // of dropping the reply and letting the request time out.
+      if (data['error'] != null || data['result'] == null) {
+        response = NwcResponse(resultType: data['result_type'] ?? 'error');
+      } else if (data.containsKey("result")) {
         if (data['result_type'] == NwcMethod.GET_INFO.name) {
           response = GetInfoResponse.deserialize(data);
         } else if (data['result_type'] == NwcMethod.GET_BALANCE.name) {
@@ -249,6 +325,7 @@ class Nwc {
       if (response != null) {
         Logger.log.i(() => "nwc response $data");
         response.deserializeError(data);
+        if (connection.responseStream.isClosed) return;
         connection.responseStream.add(response);
         var eId = event.getEId();
         if (eId != null) {
@@ -284,7 +361,9 @@ class Nwc {
           data["notification_type"],
           data['notification'],
         );
-        connection.notificationStream.add(notification);
+        if (!_backgrounded && !connection.notificationStream.isClosed) {
+          connection.notificationStream.add(notification);
+        }
       } else if (data.containsKey("error")) {
         // TODO: Define what to do when data has an error
       }
@@ -309,7 +388,9 @@ class Nwc {
           data["notification_type"],
           data['notification'],
         );
-        connection.notificationStream.add(notification);
+        if (!_backgrounded && !connection.notificationStream.isClosed) {
+          connection.notificationStream.add(notification);
+        }
       } else if (data.containsKey("error")) {
         // TODO: Define what to do when data has an error
       }
@@ -342,94 +423,101 @@ class Nwc {
       content: encrypted,
     );
 
-    Completer<NwcResponse> completer = Completer();
-    _inflighRequests[event.id] = completer;
-
-    NdkResponse? dedicatedResponse;
-
-    if (connection.useETagForEachRequest) {
-      final responseFilter = Filter(
-        kinds: [NwcKind.RESPONSE.value],
-        authors: [connection.uri.walletPubkey],
-        pTags: [connection.signer.getPublicKey()],
-        eTags: [event.id], // Tagged with the request event's ID
-      );
-      dedicatedResponse = _requests.subscription(
-        name: "nwc-response-",
-        explicitRelays:
-            connection.uri.relays.map((r) => Uri.decodeFull(r)).toList(),
-        filters: [responseFilter],
-        cacheRead: false,
-        cacheWrite: false,
-      );
-
-      dedicatedResponse.stream.listen(
-        (responseEvent) async {
-          await _onResponse(responseEvent, connection);
-        },
-        onError: (error) async {
-          if (!completer.isCompleted) {
-            completer.completeError(
-              "Error on temporary response subscription: $error",
-            );
-            _inflighRequests.remove(event.id);
-            if (_inflighRequestTimers[event.id]?.isActive ?? false) {
-              _inflighRequestTimers[event.id]!.cancel();
-            }
-            _inflighRequestTimers.remove(event.id);
-          }
-          if (dedicatedResponse != null) {
-            await _requests.closeSubscription(dedicatedResponse.requestId);
-          }
-        },
-      );
+    if (connection.isClosed) {
+      throw StateError('NWC connection is closed');
     }
-
-    final bResponse = _broadcast.broadcast(
-      nostrEvent: event,
-      specificRelays:
-          connection.uri.relays.map((r) => Uri.decodeFull(r)).toList(),
-      customSigner: connection.signer,
-    );
-    await bResponse.broadcastDoneFuture;
-
-    _inflighRequestTimers[event.id] =
-        Timer(timeout ?? Duration(seconds: 5), () async {
-      if (!completer.isCompleted) {
-        final error =
-            "Timed out while executing NWC request ${request.method.name} with relay ${connection.uri.relays.map((r) => Uri.decodeFull(r)).toList()} and eventId ${event.id}"; // Added event.id to log
-        completer.completeError(error);
-        _inflighRequests.remove(event.id);
-        _inflighRequestTimers.remove(event.id);
-        if (connection.useETagForEachRequest && dedicatedResponse != null) {
-          await _requests.closeSubscription(dedicatedResponse.requestId);
-        }
-        Logger.log.w(() => error);
-      }
-    });
-
+    _connections.add(connection);
+    _activeRequests[connection] = (_activeRequests[connection] ?? 0) + 1;
+    final completer = Completer<NwcResponse>();
+    _inflighRequests[event.id] = completer;
+    // A relay can report an error before broadcast bookkeeping completes.
+    // Attach a handler immediately; the awaited future still reports it below.
+    unawaited(completer.future.then<void>((_) {}, onError: (Object _) {}));
+    NdkResponse? dedicatedResponse;
+    StreamSubscription<Nip01Event>? dedicatedListener;
     try {
-      NwcResponse response = await completer.future;
-      if (connection.useETagForEachRequest && dedicatedResponse != null) {
-        await _requests.closeSubscription(dedicatedResponse.requestId);
+      await _syncSubscription(connection);
+      if (connection.useETagForEachRequest) {
+        dedicatedResponse = _requests.subscription(
+          name: "nwc-response-",
+          explicitRelays: connection.uri.relays
+              .map((r) => Uri.decodeFull(r))
+              .toList(),
+          filters: [
+            Filter(
+              kinds: [NwcKind.RESPONSE.value],
+              authors: [connection.uri.walletPubkey],
+              pTags: [connection.signer.getPublicKey()],
+              eTags: [event.id],
+            ),
+          ],
+          cacheRead: false,
+          cacheWrite: false,
+        );
+        dedicatedListener = dedicatedResponse.stream.listen(
+          (responseEvent) async => _onResponse(responseEvent, connection),
+          onError: (Object error) {
+            if (!completer.isCompleted) completer.completeError(error);
+          },
+        );
       }
-      if (response is T) {
-        return response;
-      }
+      final budget = timeout ?? const Duration(seconds: 5);
+      await _waitForRequestSent?.call(
+        (dedicatedResponse ?? connection.subscription!).requestId,
+        budget,
+      );
+      // Connection setup has its own bounded wait. Preserve the full reply
+      // budget once publication starts, especially on cold mobile connections.
+      _inflighRequestTimers[event.id] = Timer(budget, () {
+        if (!completer.isCompleted) {
+          completer.completeError(
+            "Timed out while executing NWC request ${request.method.name}",
+          );
+        }
+      });
+      final bResponse = _broadcast.broadcast(
+        nostrEvent: event,
+        specificRelays: connection.uri.relays
+            .map((r) => Uri.decodeFull(r))
+            .toList(),
+        customSigner: connection.signer,
+        // Requests expire with their caller; durable delivery must never keep
+        // wallet relays alive or resend an RPC after its response deadline.
+        retryDelivery: false,
+        saveToCache: false,
+      );
+      // A valid wallet reply proves delivery; slow ACK bookkeeping must not
+      // keep a background connection alive or turn that reply into a timeout.
+      // Future.any also consumes errors arriving after a reply has won.
+      final response = await Future.any([
+        completer.future,
+        bResponse.broadcastDoneFuture.then((_) => completer.future),
+      ]);
+      if (response is T) return response;
       throw Exception(
         "error ${response.resultType} code: ${response.errorCode} ${response.errorMessage}",
       );
-    } catch (e) {
-      if (_inflighRequestTimers[event.id]?.isActive ?? false) {
-        _inflighRequestTimers[event.id]!.cancel();
-      }
+    } finally {
       _inflighRequests.remove(event.id);
-      _inflighRequestTimers.remove(event.id); // Ensure removal
-
-      if (connection.useETagForEachRequest && dedicatedResponse != null) {
-        await _requests.closeSubscription(dedicatedResponse.requestId);
+      _inflighRequestTimers.remove(event.id)?.cancel();
+      final remaining = (_activeRequests[connection] ?? 1) - 1;
+      if (remaining == 0) {
+        _activeRequests.remove(connection);
+      } else {
+        _activeRequests[connection] = remaining;
       }
-      rethrow;
+      try {
+        await dedicatedListener?.cancel();
+        if (dedicatedResponse != null) {
+          await _requests.closeSubscription(dedicatedResponse.requestId);
+        }
+      } catch (_) {
+        // Optional listener cleanup must not replace the RPC result or error.
+      } finally {
+        try {
+          await _syncSubscription(connection);
+        } catch (_) {}
+      }
     }
   }
 
@@ -623,17 +711,23 @@ class Nwc {
   /// Disconnects everything related to this connection,
   /// i.e.: closes response & notification subscription and streams
   Future<void> disconnect(NwcConnection connection) async {
+    // Refuse new requests before the first await, so none can re-add the
+    // connection and resubscribe while it is being torn down.
+    connection.markClosed();
+    _connections.remove(connection);
+    await _subscriptionUpdates;
+    _notificationSince.remove(connection);
+    _seenNotifications.remove(connection);
     if (connection.subscription != null) {
       Logger.log.d(() => "closing nwc subscription $connection....");
       await _requests.closeSubscription(connection.subscription!.requestId);
     }
     Logger.log.d(() => "closing nwc streams $connection....");
     await connection.close();
-    _connections.remove(connection);
   }
 
   /// Disconnects all NWC connections
   Future<void> disconnectAll() async {
-    await Future.wait(_connections.map(disconnect));
+    await Future.wait(_connections.toList().map(disconnect));
   }
 }
