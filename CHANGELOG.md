@@ -3,6 +3,51 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-10-01
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk_drift` - `v0.2.0-dev.0`](#ndk_drift---v020-dev0)
+ - [`ndk_objectbox` - `v0.3.0-dev.0`](#ndk_objectbox---v030-dev0)
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.10.0-dev.0+1`](#ndk_flutter---v0100-dev01)
+
+---
+
+#### `ndk_drift` - `v0.2.0-dev.0`
+
+ - **REFACTOR**: rename RelayAuth to AuthPolicy.
+ - **PERF**: index the drift events table by pub_key, kind and created_at.
+ - **FIX**(release): use unpublished Drift version.
+ - **FIX**: attach a broadcast auth policy to the relay target, not the event.
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FEAT**: let a broadcast say which identity it may be attributed to.
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
+#### `ndk_objectbox` - `v0.3.0-dev.0`
+
+ - **FIX**: reduce background polling and cache work.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
+#### `ndk_flutter` - `v0.10.0-dev.0+1`
+
+ - **FIX**: allow flutter_secure_storage 11.
+
+
 ## 2026-09-30
 
 ### Changes
