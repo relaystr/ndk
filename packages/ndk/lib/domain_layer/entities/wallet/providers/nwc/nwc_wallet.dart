@@ -46,7 +46,7 @@ class NwcWallet extends Wallet {
          metadata: Map.unmodifiable({
            ...(metadata ?? const {}),
            'nwcUrl': nwcUrl,
-           if (providerId != null) kProviderIdMetadataKey: providerId,
+           kProviderIdMetadataKey: ?providerId,
            kPermissionsMetadataKey: cachedPermissions.toList(),
          }),
        );

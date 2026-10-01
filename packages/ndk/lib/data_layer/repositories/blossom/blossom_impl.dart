@@ -486,7 +486,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
         : '$serverUrl/upload';
 
     Map<String, String> headersFor(Nip01Event? authEvent) => {
-      if (contentType != null) 'Content-Type': contentType,
+      'Content-Type': ?contentType,
       if (authEvent != null) 'Authorization': _authHeader(authEvent),
       'Content-Length': '$contentLength',
     };

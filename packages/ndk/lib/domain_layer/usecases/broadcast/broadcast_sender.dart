@@ -89,7 +89,7 @@ class BroadcastSender {
 
     broadcastState.publishDoneFuture.then(
       (_) => cleanupInFlightBroadcastState(),
-      onError: (_, __) => cleanupInFlightBroadcastState(),
+      onError: (_, _) => cleanupInFlightBroadcastState(),
     );
 
     if (mySaveToCache) {

@@ -29,8 +29,7 @@ class LnBitsWallet extends Wallet {
            urlMetadataKey: lnbitsUrl,
            adminKeyMetadataKey: adminKey,
            readOnlyMetadataKey: readOnly,
-           if (remoteWalletId != null)
-             remoteWalletIdMetadataKey: remoteWalletId,
+           remoteWalletIdMetadataKey: ?remoteWalletId,
          }),
        );
 
