@@ -202,15 +202,17 @@ class SoftwareAsset {
       final parsed = int.tryParse(value);
       if (parsed == null || parsed < 0) {
         throw SoftwareParseException(
-            'asset $name must be a non-negative integer');
+          'asset $name must be a non-negative integer',
+        );
       }
       return parsed;
     }
 
     final versionCode = parseIntTag('version_code');
-    final certificates = _tags(event, 'apk_certificate_hash')
-        .map(_normalizedHash)
-        .toList(growable: false);
+    final certificates = _tags(
+      event,
+      'apk_certificate_hash',
+    ).map(_normalizedHash).toList(growable: false);
     if (mimeType == androidPackageMimeType &&
         (versionCode == null ||
             certificates.isEmpty ||

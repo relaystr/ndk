@@ -67,44 +67,43 @@ void main() {
     expect(destinationProvider.pendingTransactionRequests, 2);
   });
 
-  test('transfers between legacy wallets with a fresh BOLT11 invoice',
-      () async {
-    final source = _TestWallet(
-      id: 'cashu-source',
-      type: WalletType.CASHU,
-      canSendValue: true,
-    );
-    final destination = _TestWallet(
-      id: 'lnurl-destination',
-      type: WalletType.LNURL,
-      canReceiveValue: true,
-    );
-    final sourceProvider = _TestWalletProvider(source.type);
-    final destinationProvider = _TestWalletProvider(destination.type)
-      ..failBalanceRefresh = true
-      ..invoiceToReceive = 'lnbc1internaltransfer';
-    final wallets = await _wallets(
-      [source, destination],
-      [sourceProvider, destinationProvider],
-    );
-    addTearDown(wallets.dispose);
+  test(
+    'transfers between legacy wallets with a fresh BOLT11 invoice',
+    () async {
+      final source = _TestWallet(
+        id: 'cashu-source',
+        type: WalletType.CASHU,
+        canSendValue: true,
+      );
+      final destination = _TestWallet(
+        id: 'lnurl-destination',
+        type: WalletType.LNURL,
+        canReceiveValue: true,
+      );
+      final sourceProvider = _TestWalletProvider(source.type);
+      final destinationProvider = _TestWalletProvider(destination.type)
+        ..failBalanceRefresh = true
+        ..invoiceToReceive = 'lnbc1internaltransfer';
+      final wallets = await _wallets(
+        [source, destination],
+        [sourceProvider, destinationProvider],
+      );
+      addTearDown(wallets.dispose);
 
-    final result = await wallets.transfer(
-      sourceWalletId: source.id,
-      destinationWalletId: destination.id,
-      amountMsat: 42000,
-    );
+      final result = await wallets.transfer(
+        sourceWalletId: source.id,
+        destinationWalletId: destination.id,
+        amountMsat: 42000,
+      );
 
-    expect(result.protocol, WalletPaymentProtocol.bolt11);
-    expect(destinationProvider.receivedAmountSats, 42);
-    expect(sourceProvider.paidInvoice, 'lnbc1internaltransfer');
-    expect(sourceProvider.balanceRequests, 1);
-    expect(destinationProvider.balanceRequests, 1);
-    expect(
-      result.payment,
-      'bitcoin:?lightning=lnbc1internaltransfer',
-    );
-  });
+      expect(result.protocol, WalletPaymentProtocol.bolt11);
+      expect(destinationProvider.receivedAmountSats, 42);
+      expect(sourceProvider.paidInvoice, 'lnbc1internaltransfer');
+      expect(sourceProvider.balanceRequests, 1);
+      expect(destinationProvider.balanceRequests, 1);
+      expect(result.payment, 'bitcoin:?lightning=lnbc1internaltransfer');
+    },
+  );
 
   test('does not offer a BOLT12 destination to a legacy-only sender', () {
     final source = _TestWallet(
@@ -120,10 +119,7 @@ void main() {
       supportsBip321ReceiveValue: true,
       supportsBolt11InvoiceReceiveValue: false,
     );
-    final wallets = Wallets(
-      providers: const [],
-      repository: MemWalletsRepo(),
-    );
+    final wallets = Wallets(providers: const [], repository: MemWalletsRepo());
     addTearDown(wallets.dispose);
 
     expect(
@@ -168,11 +164,7 @@ class _TestWallet extends Wallet {
     this.supportsBip321PayValue = false,
     this.supportsBip321ReceiveValue = false,
     this.supportsBolt11InvoiceReceiveValue,
-  }) : super(
-          name: id,
-          supportedUnits: const {'sat'},
-          metadata: const {},
-        );
+  }) : super(name: id, supportedUnits: const {'sat'}, metadata: const {});
 
   @override
   bool get canReceive => canReceiveValue;
@@ -228,8 +220,7 @@ class _TestWalletProvider implements WalletProvider {
     required String name,
     required Set<String> supportedUnits,
     required Map<String, dynamic> metadata,
-  }) =>
-      throw UnimplementedError();
+  }) => throw UnimplementedError();
 
   @override
   Stream<List<Wallet>> get discoveredWallets => Stream.value(const []);

@@ -44,8 +44,7 @@ class _Transport implements NostrTransport {
     void Function(dynamic) onData, {
     Function? onError,
     void Function()? onDone,
-  }) =>
-      controller.stream.listen(onData, onError: onError, onDone: onDone);
+  }) => controller.stream.listen(onData, onError: onError, onDone: onDone);
   @override
   int? closeCode() => null;
   @override
@@ -58,8 +57,7 @@ class _NoConnections implements NostrTransportFactory {
     String url, {
     Function? onReconnect,
     Function(int?, Object?, String?)? onDisconnect,
-  }) =>
-      throw StateError('Tests must not open network connections');
+  }) => throw StateError('Tests must not open network connections');
 }
 
 class _Signer implements EventSigner {
@@ -198,29 +196,43 @@ void main() {
     await ndk.destroy();
   });
 
-  test('request-sent waiter completes on exact REQ and supports late waiters',
-      () async {
-    connect(anonymous);
-    final relay = state.relays[anonymous]!;
-    final pending = manager.waitForRequestSent(
-      'wanted',
-      const Duration(seconds: 1),
-    );
-    await manager.sendOrThrow(
-      relay,
-      ClientMsg(ClientMsgType.kReq, id: 'other', filters: [Filter(kinds: [1])]),
-    );
-    await manager.sendOrThrow(
-      relay,
-      ClientMsg(ClientMsgType.kReq, id: 'wanted', filters: [Filter(kinds: [1])]),
-    );
-    await pending;
-    await manager.waitForRequestSent('wanted', const Duration(seconds: 1));
-    await expectLater(
-      manager.waitForRequestSent('missing', const Duration(milliseconds: 1)),
-      throwsA(isA<TimeoutException>()),
-    );
-  });
+  test(
+    'request-sent waiter completes on exact REQ and supports late waiters',
+    () async {
+      connect(anonymous);
+      final relay = state.relays[anonymous]!;
+      final pending = manager.waitForRequestSent(
+        'wanted',
+        const Duration(seconds: 1),
+      );
+      await manager.sendOrThrow(
+        relay,
+        ClientMsg(
+          ClientMsgType.kReq,
+          id: 'other',
+          filters: [
+            Filter(kinds: [1]),
+          ],
+        ),
+      );
+      await manager.sendOrThrow(
+        relay,
+        ClientMsg(
+          ClientMsgType.kReq,
+          id: 'wanted',
+          filters: [
+            Filter(kinds: [1]),
+          ],
+        ),
+      );
+      await pending;
+      await manager.waitForRequestSent('wanted', const Duration(seconds: 1));
+      await expectLater(
+        manager.waitForRequestSent('missing', const Duration(milliseconds: 1)),
+        throwsA(isA<TimeoutException>()),
+      );
+    },
+  );
 
   test('live subscription retains exact key after EOSE', () async {
     final anonTransport = connect(anonymous);

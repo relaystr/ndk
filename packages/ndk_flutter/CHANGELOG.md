@@ -1,4 +1,4 @@
-## 0.10.0-dev.0+1
+## 0.10.1-dev.0
 
  - **FIX**: allow flutter_secure_storage 11.
 

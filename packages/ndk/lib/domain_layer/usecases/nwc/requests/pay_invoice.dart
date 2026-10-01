@@ -8,8 +8,8 @@ class PayInvoiceRequest extends NwcRequest {
   final int? maxFeeSat;
 
   const PayInvoiceRequest({required this.invoice, int? maxFeeMsat})
-      : maxFeeSat = maxFeeMsat == null ? null : maxFeeMsat ~/ 1000,
-        super(method: NwcMethod.PAY_INVOICE);
+    : maxFeeSat = maxFeeMsat == null ? null : maxFeeMsat ~/ 1000,
+      super(method: NwcMethod.PAY_INVOICE);
 
   @override
   Map<String, dynamic> toMap() {

@@ -32,10 +32,7 @@ class NostrConnect {
     return 'nostrconnect://$pubkey?${params.join('&')}';
   }
 
-  NostrConnect({
-    required this.relays,
-    this.clientMetadata,
-  }) {
+  NostrConnect({required this.relays, this.clientMetadata}) {
     if (relays.isEmpty) {
       throw ArgumentError("At least one relay is required");
     }

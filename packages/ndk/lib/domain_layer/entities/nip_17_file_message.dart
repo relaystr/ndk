@@ -136,26 +136,28 @@ class Nip17FileMetadata {
   }
 
   List<List<String>> toTags() => [
-        ['file-type', mimeType],
-        ['encryption-algorithm', encryptionAlgorithm],
-        ['decryption-key', decryptionKey],
-        ['decryption-nonce', decryptionNonce],
-        ['x', encryptedSha256],
-        ['ox', originalSha256],
-        if (size != null) ['size', size.toString()],
-        if (dimensions != null) ['dim', dimensions!],
-      ];
+    ['file-type', mimeType],
+    ['encryption-algorithm', encryptionAlgorithm],
+    ['decryption-key', decryptionKey],
+    ['decryption-nonce', decryptionNonce],
+    ['x', encryptedSha256],
+    ['ox', originalSha256],
+    if (size != null) ['size', size.toString()],
+    if (dimensions != null) ['dim', dimensions!],
+  ];
 
   static String? _singleTag(Nip01Event rumor, String name) {
-    final matches =
-        rumor.tags.where((tag) => tag.isNotEmpty && tag[0] == name).toList();
+    final matches = rumor.tags
+        .where((tag) => tag.isNotEmpty && tag[0] == name)
+        .toList();
     if (matches.length != 1 || matches.single.length != 2) return null;
     return matches.single[1];
   }
 
   static String? _optionalSingleTag(Nip01Event rumor, String name) {
-    final matches =
-        rumor.tags.where((tag) => tag.isNotEmpty && tag[0] == name).toList();
+    final matches = rumor.tags
+        .where((tag) => tag.isNotEmpty && tag[0] == name)
+        .toList();
     if (matches.isEmpty) return null;
     if (matches.length != 1 || matches.single.length != 2) return '';
     return matches.single[1];
@@ -261,8 +263,9 @@ class Nip17FileCrypto {
           return decoded;
         }
       }
-      final decoded =
-          Uint8List.fromList(base64Url.decode(base64Url.normalize(value)));
+      final decoded = Uint8List.fromList(
+        base64Url.decode(base64Url.normalize(value)),
+      );
       if (allowedLengths != null && !allowedLengths.contains(decoded.length)) {
         return null;
       }

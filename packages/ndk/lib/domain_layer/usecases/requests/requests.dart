@@ -87,15 +87,15 @@ class Requests {
     required List<EventFilter> eventOutFilters,
     required Duration defaultQueryTimeout,
     bool debugMode = false,
-  })  : _engine = networkEngine,
-        _relayManager = relayManager,
-        _cacheManager = cacheManager,
-        _cacheRead = cacheRead,
-        _globalState = globalState,
-        _eventVerifier = eventVerifier,
-        _eventOutFilters = eventOutFilters,
-        _defaultQueryTimeout = defaultQueryTimeout,
-        _debugMode = debugMode;
+  }) : _engine = networkEngine,
+       _relayManager = relayManager,
+       _cacheManager = cacheManager,
+       _cacheRead = cacheRead,
+       _globalState = globalState,
+       _eventVerifier = eventVerifier,
+       _eventOutFilters = eventOutFilters,
+       _defaultQueryTimeout = defaultQueryTimeout,
+       _debugMode = debugMode;
 
   /// Clears signature-verification reuse state owned by this NDK instance.
   void clearVerifiedEventCache() => _verifiedEventIds.clear();
@@ -146,11 +146,9 @@ class Requests {
     if (existingPersistence != null) {
       await existingPersistence;
     } else if (persistedEventIds.add(event.id)) {
-      final persistence = Future<void>.sync(
-        () async {
-          await _cacheManager.saveEventIfAbsent(event);
-        },
-      );
+      final persistence = Future<void>.sync(() async {
+        await _cacheManager.saveEventIfAbsent(event);
+      });
       persistenceInFlight[event.id] = persistence;
       try {
         await persistence;
@@ -350,7 +348,8 @@ class Requests {
       final request = state.requests[relay.key]!;
       // a request the relay ended itself, with a CLOSED or with the EOSE of a
       // query, is already closed on its side
-      final endedOnRelay = request.receivedClosed ||
+      final endedOnRelay =
+          request.receivedClosed ||
           (state.request.closeOnEOSE && request.receivedEOSE);
       if (endedOnRelay) {
         continue;

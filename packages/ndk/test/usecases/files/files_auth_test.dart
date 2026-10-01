@@ -13,13 +13,13 @@ import '../../mocks/mock_event_verifier.dart';
 const int filesAuthPort = 30050;
 
 Account _signable(KeyPair keyPair) => Account(
-      type: AccountType.privateKey,
-      pubkey: keyPair.publicKey,
-      signer: Bip340EventSigner(
-        privateKey: keyPair.privateKey,
-        publicKey: keyPair.publicKey,
-      ),
-    );
+  type: AccountType.privateKey,
+  pubkey: keyPair.publicKey,
+  signer: Bip340EventSigner(
+    privateKey: keyPair.privateKey,
+    publicKey: keyPair.publicKey,
+  ),
+);
 
 /// The facade owns no policy of its own, it only has to hand one down.
 void main() {

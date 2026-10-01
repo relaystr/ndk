@@ -15,8 +15,8 @@ abstract class Connection extends Stream<ConnectionState> {
 class ConnectionController extends Connection {
   /// {@macro connection_controller}
   ConnectionController()
-      : _state = const Connecting(),
-        _controller = StreamController<ConnectionState>.broadcast();
+    : _state = const Connecting(),
+      _controller = StreamController<ConnectionState>.broadcast();
 
   ConnectionState _state;
   final StreamController<ConnectionState> _controller;
@@ -32,11 +32,11 @@ class ConnectionController extends Connection {
     bool? cancelOnError,
   }) {
     return _stream.distinct().listen(
-          onData,
-          onError: onError,
-          onDone: onDone,
-          cancelOnError: cancelOnError,
-        );
+      onData,
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
   }
 
   Stream<ConnectionState> get _stream async* {

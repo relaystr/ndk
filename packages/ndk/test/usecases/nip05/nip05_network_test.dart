@@ -216,7 +216,8 @@ void main() {
           httpDS: HttpRequestDS(client),
         );
         // Create a Nip05 object with an old updatedAt timestamp
-        final oldTimestamp = (DateTime.now()
+        final oldTimestamp =
+            (DateTime.now()
                 .subtract(
                   Duration(seconds: NIP_05_VALID_DURATION.inSeconds - 1),
                 )
@@ -264,7 +265,8 @@ void main() {
         );
 
         // Create a Nip05 object with a recent updatedAt timestamp
-        final recentTimestamp = (DateTime.now()
+        final recentTimestamp =
+            (DateTime.now()
                 .subtract(
                   Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 200),
                 )
@@ -302,7 +304,8 @@ void main() {
       );
 
       // Create a Nip05 object with an updatedAt timestamp exactly equal to the duration
-      final exactTimestamp = (DateTime.now()
+      final exactTimestamp =
+          (DateTime.now()
               .subtract(Duration(seconds: NIP_05_VALID_DURATION.inSeconds))
               .millisecondsSinceEpoch ~/
           1000);
@@ -568,51 +571,59 @@ void main() {
       expect(result, isA<Nip05NotFound>());
     });
 
-    test('check() does not reuse a cached result for another identifier',
-        () async {
-      final client = MockClient(requestHandler);
+    test(
+      'check() does not reuse a cached result for another identifier',
+      () async {
+        final client = MockClient(requestHandler);
 
-      final cache = MemCacheManager();
-      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
-      Nip05Usecase nip05Usecase = Nip05Usecase(
-        database: cache,
-        nip05Repository: nip05Repos,
-      );
+        final cache = MemCacheManager();
+        final nip05Repos = Nip05HttpRepositoryImpl(
+          httpDS: HttpRequestDS(client),
+        );
+        Nip05Usecase nip05Usecase = Nip05Usecase(
+          database: cache,
+          nip05Repository: nip05Repos,
+        );
 
-      final previous = await nip05Usecase.check(
-        nip05: 'username@example.com',
-        pubkey: 'pubkey',
-      );
-      final switched = await nip05Usecase.check(
-        nip05: 'jack@example.com',
-        pubkey: 'pubkey',
-      );
+        final previous = await nip05Usecase.check(
+          nip05: 'username@example.com',
+          pubkey: 'pubkey',
+        );
+        final switched = await nip05Usecase.check(
+          nip05: 'jack@example.com',
+          pubkey: 'pubkey',
+        );
 
-      expect(previous.valid, true);
-      expect(switched.valid, false);
-      expect(switched.nip05, 'jack@example.com');
-    });
+        expect(previous.valid, true);
+        expect(switched.valid, false);
+        expect(switched.nip05, 'jack@example.com');
+      },
+    );
 
-    test('concurrent check() calls for different pubkeys are not merged',
-        () async {
-      final client = MockClient(requestHandler);
+    test(
+      'concurrent check() calls for different pubkeys are not merged',
+      () async {
+        final client = MockClient(requestHandler);
 
-      final cache = MemCacheManager();
-      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
-      Nip05Usecase nip05Usecase = Nip05Usecase(
-        database: cache,
-        nip05Repository: nip05Repos,
-      );
+        final cache = MemCacheManager();
+        final nip05Repos = Nip05HttpRepositoryImpl(
+          httpDS: HttpRequestDS(client),
+        );
+        Nip05Usecase nip05Usecase = Nip05Usecase(
+          database: cache,
+          nip05Repository: nip05Repos,
+        );
 
-      final results = await Future.wait([
-        nip05Usecase.check(nip05: 'username@example.com', pubkey: 'pubkey'),
-        nip05Usecase.check(nip05: 'username@example.com', pubkey: 'other'),
-      ]);
+        final results = await Future.wait([
+          nip05Usecase.check(nip05: 'username@example.com', pubkey: 'pubkey'),
+          nip05Usecase.check(nip05: 'username@example.com', pubkey: 'other'),
+        ]);
 
-      expect(results[0].valid, true);
-      expect(results[1].pubKey, 'other');
-      expect(results[1].valid, false);
-    });
+        expect(results[0].valid, true);
+        expect(results[1].pubKey, 'other');
+        expect(results[1].valid, false);
+      },
+    );
 
     test('identifiers differing in case share one cache entry', () async {
       var requests = 0;
@@ -735,7 +746,8 @@ void main() {
       );
 
       // Save an expired nip05 in cache
-      final expiredTimestamp = (DateTime.now()
+      final expiredTimestamp =
+          (DateTime.now()
               .subtract(
                 Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 100),
               )

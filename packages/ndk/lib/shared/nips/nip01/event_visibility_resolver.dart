@@ -8,16 +8,17 @@ import 'event_kind_classification.dart';
 ///
 /// Implementations must apply the given filters and nothing else: no visibility
 /// rules, no implicit limit.
-typedef RawEventLoader = Future<List<Nip01Event>> Function({
-  List<String>? ids,
-  List<String>? pubKeys,
-  List<int>? kinds,
-  Map<String, List<String>>? tags,
-  int? since,
-  int? until,
-  String? search,
-  int? limit,
-});
+typedef RawEventLoader =
+    Future<List<Nip01Event>> Function({
+      List<String>? ids,
+      List<String>? pubKeys,
+      List<int>? kinds,
+      Map<String, List<String>>? tags,
+      int? since,
+      int? until,
+      String? search,
+      int? limit,
+    });
 
 /// Decides which cached events are visible, and why the others are not.
 ///
@@ -108,8 +109,11 @@ class EventVisibilityResolver {
     );
     if (wantedConflictKeys != null) {
       candidates = candidates
-          .where((event) => wantedConflictKeys!
-              .contains(EventCacheStateRecord.conflictKeyFor(event)))
+          .where(
+            (event) => wantedConflictKeys!.contains(
+              EventCacheStateRecord.conflictKeyFor(event),
+            ),
+          )
           .toList();
     }
     if (candidates.isEmpty) return <HiddenEvent>[];
@@ -178,8 +182,9 @@ class EventVisibilityResolver {
       final conflictKey = EventCacheStateRecord.conflictKeyFor(event);
       if (conflictKey == null) continue;
       conflictKeys.add(conflictKey);
-      replacementGroups.putIfAbsent((event.pubKey, event.kind),
-          () => <String>{}).add(event.getDtag() ?? '');
+      replacementGroups
+          .putIfAbsent((event.pubKey, event.kind), () => <String>{})
+          .add(event.getDtag() ?? '');
     }
 
     final byId = {for (final event in candidates) event.id: event};
@@ -205,7 +210,7 @@ class EventVisibilityResolver {
       // so those uncommon coordinates require an author/kind read as well.
       final useTagFilter =
           EventKindClassification.isParameterizedReplaceableKind(kind) &&
-              dTags.every((value) => value.trim().isNotEmpty);
+          dTags.every((value) => value.trim().isNotEmpty);
       final values = dTags.toList();
       final batchSize = useTagFilter ? _tagBatchSize : values.length;
       for (var start = 0; start < values.length; start += batchSize) {
@@ -218,8 +223,9 @@ class EventVisibilityResolver {
         for (final event in context) {
           // The tag index can match a later d-tag or a case/space-normalized
           // value. NIP-01 coordinates use the exact first d-tag instead.
-          if (conflictKeys
-              .contains(EventCacheStateRecord.conflictKeyFor(event))) {
+          if (conflictKeys.contains(
+            EventCacheStateRecord.conflictKeyFor(event),
+          )) {
             byId[event.id] = event;
           }
         }
@@ -228,8 +234,9 @@ class EventVisibilityResolver {
 
     return {
       for (final record in EventCacheStateRecord.buildForEvents(
-          byId.values.toList(),
-          now: now))
+        byId.values.toList(),
+        now: now,
+      ))
         record.eventId: record,
     };
   }
