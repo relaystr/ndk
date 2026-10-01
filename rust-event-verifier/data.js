@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790867600774,
+  "lastUpdate": 1790875360167,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1556,6 +1556,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1737368,
             "range": "1712942-1799554",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "daa7719fab81a2e179940f069727b8a608537718",
+          "message": "Merge pull request #868 from relaystr/fix/macos-sample-app\n\nfix: run the sample app on macOS",
+          "timestamp": "2026-10-01T19:20:41+02:00",
+          "tree_id": "10427fb006e1a6490e56dee275ca036e263c4758",
+          "url": "https://github.com/relaystr/ndk/commit/daa7719fab81a2e179940f069727b8a608537718"
+        },
+        "date": 1790875358097,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 45242.8,
+            "range": "45107-48419",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1732208,
+            "range": "1725268-1784770",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
