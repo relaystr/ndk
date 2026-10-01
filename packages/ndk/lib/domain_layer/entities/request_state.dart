@@ -7,6 +7,7 @@ import '../../shared/logger/logger.dart';
 import 'filter.dart';
 import 'ndk_request.dart';
 import 'nip_01_event.dart';
+import 'auth_handler.dart';
 import 'auth_policy.dart';
 import 'relay_connection_key.dart';
 import 'relay_request_outcome.dart';
@@ -113,7 +114,7 @@ class RelayRequestState {
 }
 
 /// State per request for multiple relays
-class RequestState {
+class RequestState implements TimeoutPausable {
   ReplaySubject<Nip01Event> controller = ReplaySubject<Nip01Event>(
     maxSize: RX_REPLAYSUBJECT_MAX_EVENTS,
   );
@@ -130,7 +131,9 @@ class RequestState {
 
   Timer? _timeout;
   DateTime? _timeoutStartedAt;
+  Duration? _timeoutLeftAtStart;
   Duration? _remainingTimeout;
+  int _timeoutPauses = 0;
 
   Stream<Nip01Event> get stream => controller.stream;
 
@@ -189,6 +192,7 @@ class RequestState {
   void cancelTimeout() {
     _timeout?.cancel();
     _timeout = null;
+    _remainingTimeout = null;
   }
 
   /// Creates a new [RequestState] instance
@@ -204,6 +208,7 @@ class RequestState {
         if (_timeout != null) {
           _timeout!.cancel();
         }
+        _remainingTimeout = null;
         // a query ends here rather than on close(), its controller is closed
         // by the response cleaner once every relay is done
         _relayOutcomesDone = true;
@@ -215,6 +220,7 @@ class RequestState {
 
   void _startTimeout(Duration duration) {
     _timeoutStartedAt = DateTime.now();
+    _timeoutLeftAtStart = duration;
     _timeout = Timer(duration, () {
       timedOut = true;
       onTimeout?.call(this);
@@ -223,23 +229,27 @@ class RequestState {
   }
 
   /// Pauses the timeout timer. Call this before signing starts.
+  @override
   void pauseTimeout() {
-    if (_timeout == null || timeoutDuration == null) return;
+    _timeoutPauses++;
+    if (_timeoutPauses > 1 || _timeout == null || !_timeout!.isActive) return;
 
     final elapsed = DateTime.now().difference(_timeoutStartedAt!);
-    _remainingTimeout = timeoutDuration! - elapsed;
-    if (_remainingTimeout!.isNegative) {
-      _remainingTimeout = Duration.zero;
-    }
+    final remaining = _timeoutLeftAtStart! - elapsed;
+    _remainingTimeout = remaining.isNegative ? Duration.zero : remaining;
     _timeout!.cancel();
     _timeout = null;
   }
 
   /// Resumes the timeout timer. Call this after signing completes.
+  @override
   void resumeTimeout() {
-    if (_remainingTimeout == null) return;
-    _startTimeout(_remainingTimeout!);
+    if (_timeoutPauses == 0) return;
+    _timeoutPauses--;
+    final remaining = _remainingTimeout;
+    if (_timeoutPauses > 0 || remaining == null) return;
     _remainingTimeout = null;
+    _startTimeout(remaining);
   }
 
   /// checks if all requests finished (received EOSE or CLOSED)
@@ -424,9 +434,7 @@ class RequestState {
 
   /// closes all streams
   Future<void> close() async {
-    if (_timeout != null) {
-      _timeout!.cancel();
-    }
+    cancelTimeout();
     await networkController.close();
     await cacheController.close();
     await controller.close();

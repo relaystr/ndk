@@ -53,6 +53,7 @@ void nip42Tests(NdkEngine engine) {
 
       final ndk = Ndk(
         NdkConfig(
+          authHandler: (_, _) async => true,
           eventVerifier: Bip340EventVerifier(),
           cache: MemCacheManager(),
           // logLevel: Logger.logLevels.trace,
@@ -489,7 +490,7 @@ void nip42Tests(NdkEngine engine) {
     );
 
     test(
-      'fallback to logged account when no auth is specified',
+      'without auth, the logged account authenticates where the handler agrees',
       () async {
         MockRelay relay1 = MockRelay(
           name: "relay 1",
@@ -503,6 +504,7 @@ void nip42Tests(NdkEngine engine) {
 
         final ndk = Ndk(
           NdkConfig(
+            authHandler: (_, _) async => true,
             eventVerifier: Bip340EventVerifier(),
             cache: MemCacheManager(),
             bootstrapRelays: [relay1.url],
@@ -518,7 +520,7 @@ void nip42Tests(NdkEngine engine) {
 
         await Future.delayed(Duration(seconds: 1));
 
-        // Query without auth, should fallback to the logged account
+        // Query without auth, the handler agrees to the logged account
         final response = ndk.requests.query(
           filter: Filter(
             kinds: [Nip01Event.kTextNodeKind],
@@ -550,6 +552,7 @@ void nip42Tests(NdkEngine engine) {
 
         final ndk = Ndk(
           NdkConfig(
+            authHandler: (_, _) async => true,
             eventVerifier: Bip340EventVerifier(),
             cache: MemCacheManager(),
             bootstrapRelays: [relay1.url],
@@ -606,6 +609,7 @@ void nip42Tests(NdkEngine engine) {
 
       final ndk = Ndk(
         NdkConfig(
+          authHandler: (_, _) async => true,
           eventVerifier: Bip340EventVerifier(),
           cache: MemCacheManager(),
           bootstrapRelays: [relay1.url],

@@ -4,6 +4,7 @@ import '../config/broadcast_defaults.dart';
 import '../config/logger_defaults.dart';
 import '../config/request_defaults.dart';
 import '../data_layer/repositories/signers/bip340_event_signer.dart';
+import '../domain_layer/entities/auth_handler.dart';
 import '../domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import '../domain_layer/entities/cache_eviction.dart';
 import '../domain_layer/entities/event_filter.dart';
@@ -102,6 +103,11 @@ class NdkConfig {
   /// Defaults to 30 seconds.
   Duration authCallbackTimeout;
 
+  /// Asked before an identity authenticates on a relay or a Blossom server.
+  /// Without it, a request that does not pass `auth` reveals no identity.
+  /// `(_, _) async => true` authenticates as the logged account wherever asked.
+  AuthHandler? authHandler;
+
   /// Interval for retrying pending broadcast deliveries while relays remain connected.
   Duration pendingDeliveryRetryInterval;
 
@@ -173,6 +179,7 @@ class NdkConfig {
     // ignore: deprecated_member_use_from_same_package
     this.eagerAuth = false,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
+    this.authHandler,
     this.pendingDeliveryRetryInterval = const Duration(seconds: 15),
     this.pendingDeliveryRetriesEnabled = true,
     this.defaultTrustedProviders = DEFAULT_NIP85_PROVIDERS,
