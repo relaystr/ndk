@@ -111,4 +111,56 @@ void main() async {
       );
     });
   });
+
+  group('BUD-08 - nip94 as an array of tags', () {
+    test('should parse tags, keeping repeated fallbacks', () {
+      final result = BlobDescriptor.fromJson({
+        "url": "https://cdn.example.com/aaaa.mp4",
+        "sha256": "aaaa",
+        "size": 6762754,
+        "type": "video/mp4",
+        "uploaded": 1725909682,
+        "nip94": [
+          ["url", "https://cdn.example.com/aaaa.mp4"],
+          ["m", "video/mp4"],
+          ["x", "aaaa"],
+          ["size", "6762754"],
+          ["dim", "590x1280"],
+          ["thumb", "https://cdn.example.com/thumb/aaaa.webp", "bbbb"],
+          ["fallback", "https://a.example.com/aaaa.mp4"],
+          ["fallback", "https://b.example.com/aaaa.mp4"],
+        ],
+      });
+
+      final nip94 = result.nip94!;
+      expect(nip94.url, equals("https://cdn.example.com/aaaa.mp4"));
+      expect(nip94.mimeType, equals("video/mp4"));
+      expect(nip94.sha256, equals("aaaa"));
+      expect(nip94.size, equals(6762754));
+      expect(nip94.dimenssions, equals("590x1280"));
+      expect(
+        nip94.thumbnail,
+        equals(["https://cdn.example.com/thumb/aaaa.webp", "bbbb"]),
+      );
+      expect(
+        nip94.fallback,
+        equals([
+          "https://a.example.com/aaaa.mp4",
+          "https://b.example.com/aaaa.mp4",
+        ]),
+      );
+    });
+
+    test('should ignore malformed tags', () {
+      final result = BlobDescriptor.fromJson({
+        "url": "",
+        "sha256": "",
+        "size": 0,
+        "nip94": ["evil", 42, [], ["m"], ["x", "aaaa"]],
+      });
+
+      expect(result.nip94!.sha256, equals("aaaa"));
+      expect(result.nip94!.mimeType, isEmpty);
+    });
+  });
 }
