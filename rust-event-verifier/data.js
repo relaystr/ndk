@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790854150630,
+  "lastUpdate": 1790854998401,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1366,6 +1366,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1546008,
             "range": "1535744-1573286",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b1331f45e3b59f460d5519e4adfe580def6f2423",
+          "message": "Merge pull request #870 from relaystr/fix/rust-toolchain-macos-27\n\nfix: bump the rust toolchain to 1.98.1 for macOS 27",
+          "timestamp": "2026-10-01T13:41:27+02:00",
+          "tree_id": "beed346076bc23b994c22110c24a88120b9b1eef",
+          "url": "https://github.com/relaystr/ndk/commit/b1331f45e3b59f460d5519e4adfe580def6f2423"
+        },
+        "date": 1790854995831,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46272.8,
+            "range": "46183-52631",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1675018,
+            "range": "1670900-1710166",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
