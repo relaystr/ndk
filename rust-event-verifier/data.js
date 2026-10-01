@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790782133311,
+  "lastUpdate": 1790846424496,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1290,6 +1290,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1323502,
             "range": "1321336-1335846",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a2bda1c4a4b3d1788dc848f5b0afe8dea52beb87",
+          "message": "Merge pull request #867 from relaystr/fix/allow-flutter-secure-storage-11\n\nfix: allow flutter_secure_storage 11",
+          "timestamp": "2026-10-01T11:18:24+02:00",
+          "tree_id": "21d7642498005281641c1ea5fc2c984332b67c5b",
+          "url": "https://github.com/relaystr/ndk/commit/a2bda1c4a4b3d1788dc848f5b0afe8dea52beb87"
+        },
+        "date": 1790846422088,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46520.6,
+            "range": "46408-49497",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1637216,
+            "range": "1621722-1668542",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
