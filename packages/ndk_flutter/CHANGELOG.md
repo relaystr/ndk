@@ -1,3 +1,7 @@
+## 0.10.1-dev.0
+
+ - **FIX**: allow flutter_secure_storage 11.
+
 ## 0.10.0
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
