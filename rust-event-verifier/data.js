@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790846424496,
+  "lastUpdate": 1790854150630,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1328,6 +1328,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1637216,
             "range": "1621722-1668542",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "frnandu",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2d997f565d766fefd002f08a4b6166ef163cabaf",
+          "message": "Merge pull request #858 from relaystr/fix/background-battery-usage\n\nfix: reduce background battery usage",
+          "timestamp": "2026-10-01T13:26:51+02:00",
+          "tree_id": "d06b957c63011cd3339f7338ae88593f0b531b67",
+          "url": "https://github.com/relaystr/ndk/commit/2d997f565d766fefd002f08a4b6166ef163cabaf"
+        },
+        "date": 1790854147514,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 38414.2,
+            "range": "38133-44598",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1546008,
+            "range": "1535744-1573286",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
