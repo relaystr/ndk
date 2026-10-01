@@ -161,7 +161,13 @@ void main() async {
         "url": "",
         "sha256": "",
         "size": 0,
-        "nip94": ["evil", 42, [], ["m"], ["x", "aaaa"]],
+        "nip94": [
+          "evil",
+          42,
+          [],
+          ["m"],
+          ["x", "aaaa"],
+        ],
       });
 
       expect(result.nip94!.sha256, equals("aaaa"));
