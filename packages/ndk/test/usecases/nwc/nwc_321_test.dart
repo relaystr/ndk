@@ -41,9 +41,7 @@ void main() {
     });
 
     test('omits optional parameters', () {
-      const request = PayRequest(
-        payment: 'bitcoin:?lightning=lnbc1invoice',
-      );
+      const request = PayRequest(payment: 'bitcoin:?lightning=lnbc1invoice');
 
       expect(request.toMap(), {
         'method': 'pay',

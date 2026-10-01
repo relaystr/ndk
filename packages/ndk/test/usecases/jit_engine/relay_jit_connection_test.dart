@@ -132,10 +132,7 @@ void main() async {
       final response = ndk.requests.query(
         name: 'debug-get-events',
         filters: [
-          Filter(
-            kinds: [Nip01Event.kTextNodeKind],
-            authors: [key3.publicKey],
-          ),
+          Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key3.publicKey]),
         ],
       );
       expect(await response.stream.toList(), contains(key3TextNotes[key3]));
@@ -215,12 +212,8 @@ void main() async {
       });
 
       final relayLists = [
-        Nip65.fromMap(key1.publicKey, {
-          delayedUrl: ReadWriteMarker.readWrite,
-        }),
-        Nip65.fromMap(key2.publicKey, {
-          delayedUrl: ReadWriteMarker.readWrite,
-        }),
+        Nip65.fromMap(key1.publicKey, {delayedUrl: ReadWriteMarker.readWrite}),
+        Nip65.fromMap(key2.publicKey, {delayedUrl: ReadWriteMarker.readWrite}),
         Nip65.fromMap(key3.publicKey, {
           immediateUrl: ReadWriteMarker.readWrite,
         }),
@@ -241,11 +234,7 @@ void main() async {
           'concurrent-candidates',
           timeoutDuration: const Duration(seconds: 2),
           filters: [
-            Filter(authors: [
-              key1.publicKey,
-              key2.publicKey,
-              key3.publicKey,
-            ]),
+            Filter(authors: [key1.publicKey, key2.publicKey, key3.publicKey]),
           ],
         ),
       );
@@ -297,7 +286,7 @@ void main() async {
           'cache-error-fallback',
           timeoutDuration: const Duration(seconds: 2),
           filters: [
-            Filter(authors: [key1.publicKey])
+            Filter(authors: [key1.publicKey]),
           ],
         ),
       );
@@ -401,8 +390,7 @@ class _ControlledTransport implements NostrTransport {
     void Function(dynamic) onData, {
     Function? onError,
     void Function()? onDone,
-  }) =>
-      _messages.stream.listen(onData, onError: onError, onDone: onDone);
+  }) => _messages.stream.listen(onData, onError: onError, onDone: onDone);
 
   @override
   void send(dynamic data) => sentData.add(data);

@@ -40,13 +40,13 @@ class RelayConnectionKey {
   /// out. A null [auth] keeps the historical default.
   static RelayConnectionKey? forAuth(String url, AuthPolicy? auth) =>
       switch (auth) {
-        AuthPolicyRequire(:final account) => account.signer.canSign()
-            ? RelayConnectionKey.authenticated(url, account.pubkey)
-            : null,
+        AuthPolicyRequire(:final account) =>
+          account.signer.canSign()
+              ? RelayConnectionKey.authenticated(url, account.pubkey)
+              : null,
         null ||
         AuthPolicyNever() ||
-        AuthPolicyAllow() =>
-          RelayConnectionKey.anonymous(url),
+        AuthPolicyAllow() => RelayConnectionKey.anonymous(url),
       };
 
   /// whether any identity is bound to this connection

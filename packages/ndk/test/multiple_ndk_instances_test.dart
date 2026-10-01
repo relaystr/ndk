@@ -20,12 +20,12 @@ Future<void> _waitUntil(
 }
 
 Ndk _createNdk({List<String> bootstrapRelays = const []}) => Ndk(
-      NdkConfig(
-        cache: MemCacheManager(),
-        eventVerifier: Bip340EventVerifier(),
-        bootstrapRelays: bootstrapRelays,
-      ),
-    );
+  NdkConfig(
+    cache: MemCacheManager(),
+    eventVerifier: Bip340EventVerifier(),
+    bootstrapRelays: bootstrapRelays,
+  ),
+);
 
 void main() {
   group('multiple NDK instances', () {
@@ -101,11 +101,12 @@ void main() {
           );
 
           first
-              .relays
-              .globalState
-              .relays[RelayConnectionKey.anonymous(relay.url)]!
-              .relay
-              .lastConnectTry = 0;
+                  .relays
+                  .globalState
+                  .relays[RelayConnectionKey.anonymous(relay.url)]!
+                  .relay
+                  .lastConnectTry =
+              0;
           await relay.closeClientSockets();
           await _waitUntil(
             () => relay.connectedClientCount == 0,
@@ -127,13 +128,14 @@ void main() {
             ),
             privateKey: key.privateKey!,
           );
-          await first.broadcast.broadcast(
-              nostrEvent: event,
-              specificRelays: [relay.url]).broadcastDoneFuture;
+          await first.broadcast
+              .broadcast(nostrEvent: event, specificRelays: [relay.url])
+              .broadcastDoneFuture;
 
           expect(
-            (await receivedByFirst.future.timeout(const Duration(seconds: 2)))
-                .id,
+            (await receivedByFirst.future.timeout(
+              const Duration(seconds: 2),
+            )).id,
             event.id,
           );
         } finally {
@@ -246,16 +248,20 @@ void main() {
         ]);
 
         final results = await Future.wait([
-          first.requests.query(
-            filter: Filter(ids: [note.id]),
-            explicitRelays: [relay.url],
-            authenticateAs: [first.accounts.getLoggedAccount()!],
-          ).future,
-          second.requests.query(
-            filter: Filter(ids: [note.id]),
-            explicitRelays: [relay.url],
-            authenticateAs: [second.accounts.getLoggedAccount()!],
-          ).future,
+          first.requests
+              .query(
+                filter: Filter(ids: [note.id]),
+                explicitRelays: [relay.url],
+                authenticateAs: [first.accounts.getLoggedAccount()!],
+              )
+              .future,
+          second.requests
+              .query(
+                filter: Filter(ids: [note.id]),
+                explicitRelays: [relay.url],
+                authenticateAs: [second.accounts.getLoggedAccount()!],
+              )
+              .future,
         ]);
 
         expect(results[0].map((event) => event.id), contains(note.id));
@@ -267,31 +273,31 @@ void main() {
         final secondConnectionKeys = second.relays.globalState.relays.keys;
         expect(
           firstConnectionKeys,
-          contains(RelayConnectionKey.authenticated(
-            relay.url,
-            firstKey.publicKey,
-          )),
+          contains(
+            RelayConnectionKey.authenticated(relay.url, firstKey.publicKey),
+          ),
         );
         expect(
           firstConnectionKeys,
-          isNot(contains(RelayConnectionKey.authenticated(
-            relay.url,
-            secondKey.publicKey,
-          ))),
+          isNot(
+            contains(
+              RelayConnectionKey.authenticated(relay.url, secondKey.publicKey),
+            ),
+          ),
         );
         expect(
           secondConnectionKeys,
-          contains(RelayConnectionKey.authenticated(
-            relay.url,
-            secondKey.publicKey,
-          )),
+          contains(
+            RelayConnectionKey.authenticated(relay.url, secondKey.publicKey),
+          ),
         );
         expect(
           secondConnectionKeys,
-          isNot(contains(RelayConnectionKey.authenticated(
-            relay.url,
-            firstKey.publicKey,
-          ))),
+          isNot(
+            contains(
+              RelayConnectionKey.authenticated(relay.url, firstKey.publicKey),
+            ),
+          ),
         );
       } finally {
         await first.destroy();

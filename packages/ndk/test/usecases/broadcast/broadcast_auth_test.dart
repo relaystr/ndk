@@ -20,13 +20,13 @@ void broadcastAuthTests(NdkEngine engine) {
     final other = Bip340.generatePrivateKey();
 
     Account signableAccount(KeyPair k) => Account(
-          pubkey: k.publicKey,
-          type: AccountType.privateKey,
-          signer: Bip340EventSigner(
-            privateKey: k.privateKey!,
-            publicKey: k.publicKey,
-          ),
-        );
+      pubkey: k.publicKey,
+      type: AccountType.privateKey,
+      signer: Bip340EventSigner(
+        privateKey: k.privateKey!,
+        publicKey: k.publicKey,
+      ),
+    );
 
     Ndk ndkFor(MockRelay relay) {
       final ndk = Ndk(
@@ -62,11 +62,11 @@ void broadcastAuthTests(NdkEngine engine) {
     }
 
     Nip01Event noteFrom(KeyPair k, String content) => Nip01Event(
-          pubKey: k.publicKey,
-          kind: Nip01Event.kTextNodeKind,
-          tags: [],
-          content: content,
-        );
+      pubKey: k.publicKey,
+      kind: Nip01Event.kTextNodeKind,
+      tags: [],
+      content: content,
+    );
 
     test('never stays unattributable and does not deliver', () async {
       final relay = await authRelay();
@@ -307,10 +307,12 @@ void broadcastAuthTests(NdkEngine engine) {
         );
 
         final elapsed = Stopwatch()..start();
-        final result = await ndk.broadcast.broadcast(
-          nostrEvent: noteFrom(key, "default"),
-          specificRelays: [relay.url],
-        ).broadcastDoneFuture;
+        final result = await ndk.broadcast
+            .broadcast(
+              nostrEvent: noteFrom(key, "default"),
+              specificRelays: [relay.url],
+            )
+            .broadcastDoneFuture;
 
         expect(
           result.any((r) => r.broadcastSuccessful),

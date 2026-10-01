@@ -8,8 +8,8 @@ class Nip46ClientMetadata {
 
   /// NIP-46 `optional_client_metadata`, keys shared with `nostrconnect://`
   Map<String, String> get displayInfo => {
-        'name': ?name,
-        'url': ?url,
-        'image': ?image,
-      };
+    'name': ?name,
+    'url': ?url,
+    'image': ?image,
+  };
 }

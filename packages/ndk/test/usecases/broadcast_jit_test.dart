@@ -68,14 +68,16 @@ void main() async {
           .broadcast(nostrEvent: signedEvent)
           .broadcastDoneFuture;
 
-      List<Nip01Event> result = await ndk.requests.query(
-        filters: [
-          Filter(
-            authors: [key0.publicKey],
-            kinds: [Nip01Event.kTextNodeKind],
-          ),
-        ],
-      ).future;
+      List<Nip01Event> result = await ndk.requests
+          .query(
+            filters: [
+              Filter(
+                authors: [key0.publicKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(result.length, 1);
 
       final event2 = Nip01Event(
@@ -93,14 +95,16 @@ void main() async {
           .broadcast(nostrEvent: signedEvent2)
           .broadcastDoneFuture;
 
-      result = await ndk.requests.query(
-        filters: [
-          Filter(
-            authors: [key0.publicKey],
-            kinds: [Nip01Event.kTextNodeKind],
-          ),
-        ],
-      ).future;
+      result = await ndk.requests
+          .query(
+            filters: [
+              Filter(
+                authors: [key0.publicKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(result.length, 2);
     });
 
@@ -125,27 +129,31 @@ void main() async {
       );
       await response.broadcastDoneFuture;
 
-      List<Nip01Event> list = await ndk.requests.query(
-        filters: [
-          Filter(
-            authors: [signedEvent.pubKey],
-            kinds: [Nip01Event.kTextNodeKind],
-          ),
-        ],
-      ).future;
+      List<Nip01Event> list = await ndk.requests
+          .query(
+            filters: [
+              Filter(
+                authors: [signedEvent.pubKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(list.first, signedEvent);
 
       response = ndk.broadcast.broadcastDeletion(eventId: signedEvent.id);
       await response.broadcastDoneFuture;
 
-      list = await ndk.requests.query(
-        filters: [
-          Filter(
-            authors: [signedEvent.pubKey],
-            kinds: [Nip01Event.kTextNodeKind],
-          ),
-        ],
-      ).future;
+      list = await ndk.requests
+          .query(
+            filters: [
+              Filter(
+                authors: [signedEvent.pubKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(list, isEmpty);
     });
 
@@ -175,28 +183,32 @@ void main() async {
       );
       await response2.broadcastDoneFuture;
 
-      List<Nip01Event> list = await ndk.requests.query(
-        filters: [
-          Filter(
-            authors: [event1.pubKey],
-            kinds: [Nip01Event.kTextNodeKind],
-          ),
-        ],
-      ).future;
+      List<Nip01Event> list = await ndk.requests
+          .query(
+            filters: [
+              Filter(
+                authors: [event1.pubKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
 
       response1 = ndk.broadcast.broadcastDeletion(
         eventIds: [event1.id, event2.id],
       );
       await response1.broadcastDoneFuture;
 
-      list = await ndk.requests.query(
-        filters: [
-          Filter(
-            authors: [event1.pubKey],
-            kinds: [Nip01Event.kTextNodeKind],
-          ),
-        ],
-      ).future;
+      list = await ndk.requests
+          .query(
+            filters: [
+              Filter(
+                authors: [event1.pubKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(list, isEmpty);
     });
 
@@ -230,14 +242,16 @@ void main() async {
       );
       await response.broadcastDoneFuture;
 
-      List<Nip01Event> list = await ndk.requests.query(
-        filters: [
-          Filter(
-            authors: [event.pubKey],
-            kinds: [Nip01Event.kTextNodeKind],
-          ),
-        ],
-      ).future;
+      List<Nip01Event> list = await ndk.requests
+          .query(
+            filters: [
+              Filter(
+                authors: [event.pubKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(list.first, event);
 
       final reaction = "♡";
@@ -247,11 +261,13 @@ void main() async {
       );
       await response.broadcastDoneFuture;
 
-      list = await ndk.requests.query(
-        filters: [
-          Filter(authors: [event.pubKey], kinds: [Reaction.kKind]),
-        ],
-      ).future;
+      list = await ndk.requests
+          .query(
+            filters: [
+              Filter(authors: [event.pubKey], kinds: [Reaction.kKind]),
+            ],
+          )
+          .future;
       expect(list.first.content, reaction);
     });
   });
@@ -350,20 +366,24 @@ void main() async {
         tags: [],
         content: "hi there",
       );
-      await ndk.broadcast.broadcast(
-        nostrEvent: event,
-        specificRelays: [relay1.url, relay2.url],
-      ).broadcastDoneFuture;
+      await ndk.broadcast
+          .broadcast(
+            nostrEvent: event,
+            specificRelays: [relay1.url, relay2.url],
+          )
+          .broadcastDoneFuture;
 
-      List<Nip01Event> result = await ndk.requests.query(
-        explicitRelays: [relay2.url],
-        filters: [
-          Filter(
-            authors: [key1.publicKey],
-            kinds: [Nip01Event.kTextNodeKind],
-          ),
-        ],
-      ).future;
+      List<Nip01Event> result = await ndk.requests
+          .query(
+            explicitRelays: [relay2.url],
+            filters: [
+              Filter(
+                authors: [key1.publicKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(result.length, 1);
     });
 
@@ -384,16 +404,18 @@ void main() async {
 
       await ndk.broadcast.broadcast(nostrEvent: event).broadcastDoneFuture;
 
-      List<Nip01Event> result = await ndk.requests.query(
-        name: "other read",
-        explicitRelays: [relay2.url],
-        filters: [
-          Filter(
-            authors: [key1.publicKey],
-            kinds: [Nip01Event.kTextNodeKind],
-          ),
-        ],
-      ).future;
+      List<Nip01Event> result = await ndk.requests
+          .query(
+            name: "other read",
+            explicitRelays: [relay2.url],
+            filters: [
+              Filter(
+                authors: [key1.publicKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(result.length, 1);
     });
 
@@ -417,26 +439,30 @@ void main() async {
       await ndk.broadcast.broadcast(nostrEvent: event).broadcastDoneFuture;
 
       // verify the event was broadcast to both relays
-      List<Nip01Event> resultRelay1 = await ndk.requests.query(
-        explicitRelays: [relay1.url],
-        filters: [
-          Filter(
-            authors: [key1.publicKey],
-            kinds: [Nip01Event.kTextNodeKind],
-          ),
-        ],
-      ).future;
+      List<Nip01Event> resultRelay1 = await ndk.requests
+          .query(
+            explicitRelays: [relay1.url],
+            filters: [
+              Filter(
+                authors: [key1.publicKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(resultRelay1.length, 1);
 
-      List<Nip01Event> resultRelay3 = await ndk.requests.query(
-        explicitRelays: [relay3.url],
-        filters: [
-          Filter(
-            authors: [key1.publicKey],
-            kinds: [Nip01Event.kTextNodeKind],
-          ),
-        ],
-      ).future;
+      List<Nip01Event> resultRelay3 = await ndk.requests
+          .query(
+            explicitRelays: [relay3.url],
+            filters: [
+              Filter(
+                authors: [key1.publicKey],
+                kinds: [Nip01Event.kTextNodeKind],
+              ),
+            ],
+          )
+          .future;
       expect(resultRelay3.length, 1);
     });
   });

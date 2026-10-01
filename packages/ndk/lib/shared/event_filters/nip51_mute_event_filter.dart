@@ -16,8 +16,9 @@ class Nip51MuteEventFilter extends EventFilter {
     _mutedTags = muteList.hashtags
         .map((element) => element.value.trim().toLowerCase())
         .toList();
-    List<String> words =
-        muteList.words.map((e) => e.value.toLowerCase()).toList();
+    List<String> words = muteList.words
+        .map((e) => e.value.toLowerCase())
+        .toList();
     List<List<int>> treeWords = List.generate(words.length, (index) {
       var word = words[index];
       return word.codeUnits;

@@ -94,7 +94,8 @@ void main() {
             'Answer': [
               {
                 'type': 16,
-                'data': '"bitcoin:?lno=${_offer.substring(0, 60)}" '
+                'data':
+                    '"bitcoin:?lno=${_offer.substring(0, 60)}" '
                     '"${_offer.substring(60)}"',
               },
             ],
@@ -152,12 +153,14 @@ void main() {
   test('wallet is receive-only and round-trips through storage', () async {
     final resolved = await Bolt12WalletProvider.resolveInput(_offer);
     const provider = Bolt12WalletProvider();
-    final wallet = provider.createWallet(
-      id: 'bolt12-1',
-      name: 'Donations',
-      supportedUnits: {'sat'},
-      metadata: resolved.toMetadata(),
-    ) as Bolt12Wallet;
+    final wallet =
+        provider.createWallet(
+              id: 'bolt12-1',
+              name: 'Donations',
+              supportedUnits: {'sat'},
+              metadata: resolved.toMetadata(),
+            )
+            as Bolt12Wallet;
 
     expect(wallet.type, WalletType.BOLT12);
     expect(wallet.canReceive, isTrue);
@@ -181,13 +184,15 @@ void main() {
       throwsA(isA<UnsupportedError>()),
     );
 
-    final restored = WalletFactory.fromStorage(
-      id: wallet.id,
-      name: wallet.name,
-      type: wallet.type,
-      supportedUnits: wallet.supportedUnits,
-      metadata: wallet.toMetadata(),
-    ) as Bolt12Wallet;
+    final restored =
+        WalletFactory.fromStorage(
+              id: wallet.id,
+              name: wallet.name,
+              type: wallet.type,
+              supportedUnits: wallet.supportedUnits,
+              metadata: wallet.toMetadata(),
+            )
+            as Bolt12Wallet;
     expect(restored.offer, wallet.offer);
     expect(restored.description, wallet.description);
     expect(restored.issuer, wallet.issuer);

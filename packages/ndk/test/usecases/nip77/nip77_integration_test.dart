@@ -34,10 +34,12 @@ void main() {
       tags: [],
       content: "content 2",
     );
-    await ndk.broadcast.broadcast(
-        nostrEvent: event1, specificRelays: [relayUrl]).broadcastDoneFuture;
-    await ndk.broadcast.broadcast(
-        nostrEvent: event2, specificRelays: [relayUrl]).broadcastDoneFuture;
+    await ndk.broadcast
+        .broadcast(nostrEvent: event1, specificRelays: [relayUrl])
+        .broadcastDoneFuture;
+    await ndk.broadcast
+        .broadcast(nostrEvent: event2, specificRelays: [relayUrl])
+        .broadcastDoneFuture;
 
     final filter = Filter(authors: [keypair.publicKey]);
 

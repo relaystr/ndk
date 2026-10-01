@@ -81,77 +81,83 @@ void main() {
       expect(config.webSocketCompression, isTrue);
     });
 
-    test('defaults on, supports opt-out, and keeps opt-out after reconnect',
-        () async {
-      final defaultTransport = WebSocketClientNostrTransportFactory()(
-        relay.url('/default'),
-      );
-      final uncompressedTransport = WebSocketClientNostrTransportFactory(
-        compressionEnabled: false,
-      )(relay.url('/uncompressed'));
-
-      try {
-        await Future.wait([
-          defaultTransport.ready,
-          uncompressedTransport.ready,
-        ]);
-
-        expect(
-          relay.extensionOffers['/default']!.single,
-          contains('permessage-deflate'),
+    test(
+      'defaults on, supports opt-out, and keeps opt-out after reconnect',
+      () async {
+        final defaultTransport = WebSocketClientNostrTransportFactory()(
+          relay.url('/default'),
         );
-        expect(relay.extensionOffers['/uncompressed']!.single, isNull);
-
-        final firstEcho = Completer<dynamic>();
-        final subscription = uncompressedTransport.listen((message) {
-          if (!firstEcho.isCompleted) firstEcho.complete(message);
-        });
-        uncompressedTransport.send('before reconnect');
-        expect(await firstEcho.future, 'before reconnect');
-
-        await relay.sockets['/uncompressed']!.last.close();
-        await _waitUntil(
-          () => relay.extensionOffers['/uncompressed']!.length == 2,
-          reason: 'transport did not reconnect',
-        );
-        await _waitUntil(
-          uncompressedTransport.isOpen,
-          reason: 'reconnected transport did not become ready',
-        );
-        expect(relay.extensionOffers['/uncompressed'], everyElement(isNull));
-
-        final secondEcho = Completer<dynamic>();
-        final reconnectedSubscription = uncompressedTransport.listen((message) {
-          if (!secondEcho.isCompleted) secondEcho.complete(message);
-        });
-        uncompressedTransport.send('after reconnect');
-        expect(await secondEcho.future, 'after reconnect');
-
-        await subscription.cancel();
-        await reconnectedSubscription.cancel();
-      } finally {
-        await defaultTransport.close();
-        await uncompressedTransport.close();
-      }
-    });
-
-    for (final engine in NdkEngine.values) {
-      test('NdkConfig opt-out reaches ${engine.name} relay connections',
-          () async {
-        final path = '/${engine.name.toLowerCase()}';
-        final ndk = _createNdk(
-          relay.url(path),
-          engine: engine,
+        final uncompressedTransport = WebSocketClientNostrTransportFactory(
           compressionEnabled: false,
-        );
+        )(relay.url('/uncompressed'));
 
         try {
-          await ndk.relays.seedRelaysConnected;
-          expect(relay.extensionOffers[path], everyElement(isNull));
+          await Future.wait([
+            defaultTransport.ready,
+            uncompressedTransport.ready,
+          ]);
+
+          expect(
+            relay.extensionOffers['/default']!.single,
+            contains('permessage-deflate'),
+          );
+          expect(relay.extensionOffers['/uncompressed']!.single, isNull);
+
+          final firstEcho = Completer<dynamic>();
+          final subscription = uncompressedTransport.listen((message) {
+            if (!firstEcho.isCompleted) firstEcho.complete(message);
+          });
+          uncompressedTransport.send('before reconnect');
+          expect(await firstEcho.future, 'before reconnect');
+
+          await relay.sockets['/uncompressed']!.last.close();
+          await _waitUntil(
+            () => relay.extensionOffers['/uncompressed']!.length == 2,
+            reason: 'transport did not reconnect',
+          );
+          await _waitUntil(
+            uncompressedTransport.isOpen,
+            reason: 'reconnected transport did not become ready',
+          );
+          expect(relay.extensionOffers['/uncompressed'], everyElement(isNull));
+
+          final secondEcho = Completer<dynamic>();
+          final reconnectedSubscription = uncompressedTransport.listen((
+            message,
+          ) {
+            if (!secondEcho.isCompleted) secondEcho.complete(message);
+          });
+          uncompressedTransport.send('after reconnect');
+          expect(await secondEcho.future, 'after reconnect');
+
+          await subscription.cancel();
+          await reconnectedSubscription.cancel();
         } finally {
-          await ndk.destroy();
+          await defaultTransport.close();
+          await uncompressedTransport.close();
         }
-      });
+      },
+    );
+
+    for (final engine in NdkEngine.values) {
+      test(
+        'NdkConfig opt-out reaches ${engine.name} relay connections',
+        () async {
+          final path = '/${engine.name.toLowerCase()}';
+          final ndk = _createNdk(
+            relay.url(path),
+            engine: engine,
+            compressionEnabled: false,
+          );
+
+          try {
+            await ndk.relays.seedRelaysConnected;
+            expect(relay.extensionOffers[path], everyElement(isNull));
+          } finally {
+            await ndk.destroy();
+          }
+        },
+      );
     }
 
     test('compression setting remains instance-local', () async {
@@ -175,10 +181,7 @@ void main() {
           relay.extensionOffers['/compressed-instance']!.single,
           contains('permessage-deflate'),
         );
-        expect(
-          relay.extensionOffers['/uncompressed-instance']!.single,
-          isNull,
-        );
+        expect(relay.extensionOffers['/uncompressed-instance']!.single, isNull);
       } finally {
         await compressed.destroy();
         await uncompressed.destroy();

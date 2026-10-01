@@ -481,28 +481,30 @@ void main() {
     await listener.cancel();
   });
 
-  test('historical responses are ignored before decryption after resume',
-      () async {
-    final connection = await nwc.connect(_uri);
-    final responses = <Object>[];
-    final listener = connection.responseStream.stream.listen(responses.add);
-    await nwc.setBackgrounded(true);
-    await nwc.setBackgrounded(false);
-    requests.deliver(
-      Nip01Event(
-        pubKey: _walletPubkey,
-        kind: 23195,
-        createdAt: 1,
-        tags: [
-          ['e', 'historical-request'],
-        ],
-        content: 'must not decrypt old history',
-      ),
-    );
-    await _flush();
-    expect(responses, isEmpty);
-    await listener.cancel();
-  });
+  test(
+    'historical responses are ignored before decryption after resume',
+    () async {
+      final connection = await nwc.connect(_uri);
+      final responses = <Object>[];
+      final listener = connection.responseStream.stream.listen(responses.add);
+      await nwc.setBackgrounded(true);
+      await nwc.setBackgrounded(false);
+      requests.deliver(
+        Nip01Event(
+          pubKey: _walletPubkey,
+          kind: 23195,
+          createdAt: 1,
+          tags: [
+            ['e', 'historical-request'],
+          ],
+          content: 'must not decrypt old history',
+        ),
+      );
+      await _flush();
+      expect(responses, isEmpty);
+      await listener.cancel();
+    },
+  );
   test('non-spec error result_type fails fast with wallet error', () async {
     final connection = await nwc.connect(_uri, ignoreCapabilitiesCheck: true);
     broadcast.autoReply = false;

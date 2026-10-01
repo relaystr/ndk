@@ -24,15 +24,15 @@ class LnBitsWallet extends Wallet {
     this.readOnly = false,
     Map<String, dynamic>? metadata,
   }) : super(
-          metadata: Map.unmodifiable({
-            ...(metadata ?? const {}),
-            urlMetadataKey: lnbitsUrl,
-            adminKeyMetadataKey: adminKey,
-            readOnlyMetadataKey: readOnly,
-            if (remoteWalletId != null)
-              remoteWalletIdMetadataKey: remoteWalletId,
-          }),
-        );
+         metadata: Map.unmodifiable({
+           ...(metadata ?? const {}),
+           urlMetadataKey: lnbitsUrl,
+           adminKeyMetadataKey: adminKey,
+           readOnlyMetadataKey: readOnly,
+           if (remoteWalletId != null)
+             remoteWalletIdMetadataKey: remoteWalletId,
+         }),
+       );
 
   @override
   bool get canReceive => true;
@@ -53,7 +53,8 @@ class LnBitsWallet extends Wallet {
     final adminKey = metadata[adminKeyMetadataKey] as String?;
     if (url == null || url.isEmpty) {
       throw ArgumentError(
-          'LNbits storage requires metadata["$urlMetadataKey"]');
+        'LNbits storage requires metadata["$urlMetadataKey"]',
+      );
     }
     if (adminKey == null || adminKey.isEmpty) {
       throw ArgumentError(

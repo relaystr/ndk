@@ -31,7 +31,10 @@ Future<void> main() async {
     final walletId = Platform.environment['WALLET_ID'] ?? wallets.first.id;
 
     final result = await ndk.wallets.payBip321(
-        walletId: walletId, payment: payment, amountMsat: amountSats * 1000);
+      walletId: walletId,
+      payment: payment,
+      amountMsat: amountSats * 1000,
+    );
 
     print('Payment result:');
     print('- preimage: ${result.preimage}');

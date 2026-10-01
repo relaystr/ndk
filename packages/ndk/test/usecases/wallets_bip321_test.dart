@@ -11,48 +11,50 @@ import 'package:ndk/domain_layer/usecases/wallets/wallets.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('Wallets delegates BIP-321 pay and receive to the wallet provider',
-      () async {
-    final wallet = _TestWallet();
-    final repository = MemWalletsRepo();
-    await repository.storeWallet(wallet);
-    repository.setDefaultWalletForSending(wallet.id);
-    repository.setDefaultWalletForReceiving(wallet.id);
+  test(
+    'Wallets delegates BIP-321 pay and receive to the wallet provider',
+    () async {
+      final wallet = _TestWallet();
+      final repository = MemWalletsRepo();
+      await repository.storeWallet(wallet);
+      repository.setDefaultWalletForSending(wallet.id);
+      repository.setDefaultWalletForReceiving(wallet.id);
 
-    final provider = _TestWalletProvider(wallet);
-    final wallets = Wallets(providers: [provider], repository: repository);
-    addTearDown(wallets.dispose);
+      final provider = _TestWalletProvider(wallet);
+      final wallets = Wallets(providers: [provider], repository: repository);
+      addTearDown(wallets.dispose);
 
-    final payResponse = await wallets.payBip321(
-      payment: 'bitcoin:?lightning=lnbc1invoice',
-      amountMsat: 21000,
-      payerNote: 'Thanks',
-      metadata: {'order_id': '123'},
-      timeout: const Duration(seconds: 10),
-    );
+      final payResponse = await wallets.payBip321(
+        payment: 'bitcoin:?lightning=lnbc1invoice',
+        amountMsat: 21000,
+        payerNote: 'Thanks',
+        metadata: {'order_id': '123'},
+        timeout: const Duration(seconds: 10),
+      );
 
-    expect(payResponse, same(provider.payResponse));
-    expect(provider.paidWithWallet, same(wallet));
-    expect(provider.payment, 'bitcoin:?lightning=lnbc1invoice');
-    expect(provider.payAmountMsat, 21000);
-    expect(provider.payerNote, 'Thanks');
-    expect(provider.payMetadata, {'order_id': '123'});
-    expect(provider.payTimeout, const Duration(seconds: 10));
+      expect(payResponse, same(provider.payResponse));
+      expect(provider.paidWithWallet, same(wallet));
+      expect(provider.payment, 'bitcoin:?lightning=lnbc1invoice');
+      expect(provider.payAmountMsat, 21000);
+      expect(provider.payerNote, 'Thanks');
+      expect(provider.payMetadata, {'order_id': '123'});
+      expect(provider.payTimeout, const Duration(seconds: 10));
 
-    final receiveResponse = await wallets.receiveBip321(
-      amountMsat: 42000,
-      description: 'Coffee',
-      metadata: {'order_id': '456'},
-      timeout: const Duration(seconds: 15),
-    );
+      final receiveResponse = await wallets.receiveBip321(
+        amountMsat: 42000,
+        description: 'Coffee',
+        metadata: {'order_id': '456'},
+        timeout: const Duration(seconds: 15),
+      );
 
-    expect(receiveResponse, same(provider.receiveResponse));
-    expect(provider.receivedWithWallet, same(wallet));
-    expect(provider.receiveAmountMsat, 42000);
-    expect(provider.description, 'Coffee');
-    expect(provider.receiveMetadata, {'order_id': '456'});
-    expect(provider.receiveTimeout, const Duration(seconds: 15));
-  });
+      expect(receiveResponse, same(provider.receiveResponse));
+      expect(provider.receivedWithWallet, same(wallet));
+      expect(provider.receiveAmountMsat, 42000);
+      expect(provider.description, 'Coffee');
+      expect(provider.receiveMetadata, {'order_id': '456'});
+      expect(provider.receiveTimeout, const Duration(seconds: 15));
+    },
+  );
 
   test('Wallets refreshes balance from provider on demand', () async {
     final wallet = _TestWallet();
@@ -71,13 +73,13 @@ void main() {
 
 class _TestWallet extends Wallet {
   _TestWallet()
-      : super(
-          id: 'wallet-1',
-          name: 'Test wallet',
-          type: WalletType.NWC,
-          supportedUnits: const {'sat'},
-          metadata: const {},
-        );
+    : super(
+        id: 'wallet-1',
+        name: 'Test wallet',
+        type: WalletType.NWC,
+        supportedUnits: const {'sat'},
+        metadata: const {},
+      );
 
   @override
   bool get canReceive => true;
@@ -134,8 +136,7 @@ class _TestWalletProvider extends WalletProvider {
     required String name,
     required Set<String> supportedUnits,
     required Map<String, dynamic> metadata,
-  }) =>
-      wallet;
+  }) => wallet;
 
   @override
   Stream<List<Wallet>> get discoveredWallets => Stream.value(const []);
@@ -167,8 +168,7 @@ class _TestWalletProvider extends WalletProvider {
     Wallet wallet,
     String invoice, {
     Duration? timeout,
-  }) async =>
-      PayInvoiceResponse(resultType: 'pay_invoice', feesPaid: 0);
+  }) async => PayInvoiceResponse(resultType: 'pay_invoice', feesPaid: 0);
 
   @override
   Future<String> receive(Wallet wallet, int amountSats) async => 'invoice';

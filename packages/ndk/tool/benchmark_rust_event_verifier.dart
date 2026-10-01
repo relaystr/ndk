@@ -55,14 +55,16 @@ Future<void> main() async {
     content: largeContent,
     sig: Bip340.sign(largeId, keyPair.privateKey!),
   );
-  results.add(await _benchmark(
-    verifier,
-    largeEvent,
-    name: 'RustEventVerifier.verify.large_event',
-    warmupIterations: 100,
-    sampleIterations: 500,
-    details: '; 200 tags with 1 KiB values, 64 KiB content',
-  ));
+  results.add(
+    await _benchmark(
+      verifier,
+      largeEvent,
+      name: 'RustEventVerifier.verify.large_event',
+      warmupIterations: 100,
+      sampleIterations: 500,
+      details: '; 200 tags with 1 KiB values, 64 KiB content',
+    ),
+  );
 
   // ignore: avoid_print
   print(jsonEncode(results));
@@ -102,7 +104,8 @@ Future<Map<String, Object>> _benchmark(
     'value': medianNanosecondsPerOperation,
     'range':
         '${samples.first.toStringAsFixed(0)}-${samples.last.toStringAsFixed(0)}',
-    'extra': '$_sampleCount samples x $sampleIterations operations after '
+    'extra':
+        '$_sampleCount samples x $sampleIterations operations after '
         '$warmupIterations warmup operations$details',
   };
 }

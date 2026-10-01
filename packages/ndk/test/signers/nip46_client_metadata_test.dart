@@ -10,7 +10,8 @@ void main() {
     late MockRelay relay;
     late Ndk ndk;
 
-    String bunkerUrl() => 'bunker://${MockRelay.remoteSignerPublicKey}'
+    String bunkerUrl() =>
+        'bunker://${MockRelay.remoteSignerPublicKey}'
         '?relay=${relay.url}&secret=s3cret';
 
     setUp(() async {

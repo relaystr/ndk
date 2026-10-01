@@ -43,7 +43,7 @@ class LnBitsWalletProvider implements WalletProvider {
   final http.Client _client;
 
   LnBitsWalletProvider([http.Client? client])
-      : _client = client ?? http.Client();
+    : _client = client ?? http.Client();
 
   @override
   WalletType get type => WalletType.LNBITS;
@@ -100,8 +100,8 @@ class LnBitsWalletProvider implements WalletProvider {
       adminKey: _validateAdminKey(
         metadata[LnBitsWallet.adminKeyMetadataKey]?.toString() ?? '',
       ),
-      remoteWalletId:
-          metadata[LnBitsWallet.remoteWalletIdMetadataKey]?.toString(),
+      remoteWalletId: metadata[LnBitsWallet.remoteWalletIdMetadataKey]
+          ?.toString(),
       readOnly: metadata[LnBitsWallet.readOnlyMetadataKey] as bool? ?? false,
       metadata: metadata,
     );
@@ -184,9 +184,9 @@ class LnBitsWalletProvider implements WalletProvider {
   Stream<List<WalletTransaction>> getPendingTransactions(Wallet wallet) {
     final lnbitsWallet = _asLnBitsWallet(wallet);
     return Stream.fromFuture(
-      _getPayments(lnbitsWallet).then(
-        (items) => items.where((item) => item.state.isPending).toList(),
-      ),
+      _getPayments(
+        lnbitsWallet,
+      ).then((items) => items.where((item) => item.state.isPending).toList()),
     );
   }
 
@@ -194,9 +194,9 @@ class LnBitsWalletProvider implements WalletProvider {
   Stream<List<WalletTransaction>> getRecentTransactions(Wallet wallet) {
     final lnbitsWallet = _asLnBitsWallet(wallet);
     return Stream.fromFuture(
-      _getPayments(lnbitsWallet).then(
-        (items) => items.where((item) => item.state.isDone).toList(),
-      ),
+      _getPayments(
+        lnbitsWallet,
+      ).then((items) => items.where((item) => item.state.isDone).toList()),
     );
   }
 
@@ -253,7 +253,8 @@ class LnBitsWalletProvider implements WalletProvider {
     }
     if (payerNote?.isNotEmpty == true) {
       throw UnsupportedError(
-          'LNbits BOLT11 payments do not support payer notes');
+        'LNbits BOLT11 payments do not support payer notes',
+      );
     }
     final invoice = Bip321.getBolt11(payment);
     final invoiceAmount = Bip321.getBolt11AmountMsat(invoice);
@@ -377,11 +378,7 @@ class LnBitsWalletProvider implements WalletProvider {
   }
 
   Future<List<WalletTransaction>> _getPayments(LnBitsWallet wallet) async {
-    final response = await _request(
-      wallet,
-      'GET',
-      '/api/v1/payments',
-    );
+    final response = await _request(wallet, 'GET', '/api/v1/payments');
     final decoded = jsonDecode(response.body);
     if (decoded is! List) {
       throw const FormatException('Invalid LNbits payments');

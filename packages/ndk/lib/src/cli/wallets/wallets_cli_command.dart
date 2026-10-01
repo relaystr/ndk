@@ -158,8 +158,9 @@ class WalletsCliCommand extends CliCommand {
 
     final wallets = await walletsRepo.getWallets();
     final defaultName = 'NWC ${wallets.length + 1}';
-    final walletName =
-        args.length > 2 ? args.sublist(2).join(' ') : defaultName;
+    final walletName = args.length > 2
+        ? args.sublist(2).join(' ')
+        : defaultName;
 
     final wallet = walletsUsecase.createWallet(
       id: _buildWalletId(),
@@ -192,8 +193,9 @@ class WalletsCliCommand extends CliCommand {
     final mintInfo = await ndk.cashu.getMintInfoNetwork(mintUrl: mintUrl);
     final wallets = await walletsRepo.getWallets();
     final defaultName = 'Cashu ${wallets.length + 1}';
-    final walletName =
-        args.length > 2 ? args.sublist(2).join(' ') : defaultName;
+    final walletName = args.length > 2
+        ? args.sublist(2).join(' ')
+        : defaultName;
     final supportedUnits = mintInfo.supportedUnits.isEmpty
         ? <String>{'sat'}
         : mintInfo.supportedUnits;
@@ -480,7 +482,8 @@ class WalletsCliCommand extends CliCommand {
   ) async {
     final parsed = _parseCashuOpArgs(
       args,
-      usageLine: 'ndk wallets mint <amount_sats> [wallet_id] '
+      usageLine:
+          'ndk wallets mint <amount_sats> [wallet_id] '
           '[--seed <mnemonic>] [--wait]',
       requireValue: true,
       valueName: 'amountSats',
@@ -559,7 +562,8 @@ class WalletsCliCommand extends CliCommand {
   ) async {
     final parsed = _parseCashuOpArgs(
       args,
-      usageLine: 'ndk wallets swap-spend <amount_sats> [wallet_id] '
+      usageLine:
+          'ndk wallets swap-spend <amount_sats> [wallet_id] '
           '[--seed <mnemonic>]',
       requireValue: true,
       valueName: 'amountSats',
@@ -617,7 +621,8 @@ class WalletsCliCommand extends CliCommand {
     if (wallets.isEmpty) {
       throw StateError('No wallets available');
     }
-    final target = walletId ??
+    final target =
+        walletId ??
         walletsUsecase.defaultWalletForReceiving?.id ??
         wallets.first.id;
     final wallet = wallets.firstWhere(
@@ -836,9 +841,7 @@ class WalletsCliCommand extends CliCommand {
       '  mint <amount_sats> [wallet_id] [--seed <mnemonic>] [--wait]',
     );
     out.writeln('  swap-receive <cashu_token> [--seed <mnemonic>]');
-    out.writeln(
-      '  swap-spend <amount_sats> [wallet_id] [--seed <mnemonic>]',
-    );
+    out.writeln('  swap-spend <amount_sats> [wallet_id] [--seed <mnemonic>]');
     out.writeln('  pay-stats [wallet_id] [--limit <count>]');
     out.writeln('');
     out.writeln('<...> required; [...] optional.');

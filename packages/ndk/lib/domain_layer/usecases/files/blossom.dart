@@ -53,10 +53,10 @@ class Blossom {
     required BlossomRepository blossomRepository,
     required Accounts accounts,
     required LocalEventSignerFactory eventSignerFactory,
-  })  : _accounts = accounts,
-        _userServerList = blossomUserServerList,
-        _blossomImpl = blossomRepository,
-        _eventSignerFactory = eventSignerFactory;
+  }) : _accounts = accounts,
+       _userServerList = blossomUserServerList,
+       _blossomImpl = blossomRepository,
+       _eventSignerFactory = eventSignerFactory;
 
   /// The kind 24242 event an operation authorises itself with. Built when it
   /// is needed rather than when the call is made, so an event signed after a
@@ -109,7 +109,8 @@ class Blossom {
     required String operation,
     required Nip01Event Function(String pubkey) buildEvent,
   }) async {
-    final policy = auth ??
+    final policy =
+        auth ??
         (authorisesByDefault
             ? AuthPolicy.require(_defaultAccount())
             : const AuthPolicy.never());
@@ -151,18 +152,17 @@ class Blossom {
   Future<_BlossomAuthPlan> _readAuthPlan({
     required AuthPolicy? auth,
     required String sha256,
-  }) =>
-      _planAuth(
-        auth: auth,
-        authorisesByDefault: false,
-        operation: "get",
-        buildEvent: (pubkey) => _blossomAuthEvent(
-          content: "get",
-          pubkey: pubkey,
-          type: "get",
-          blobSha256: sha256,
-        ),
-      );
+  }) => _planAuth(
+    auth: auth,
+    authorisesByDefault: false,
+    operation: "get",
+    buildEvent: (pubkey) => _blossomAuthEvent(
+      content: "get",
+      pubkey: pubkey,
+      type: "get",
+      blobSha256: sha256,
+    ),
+  );
 
   /// The servers a write talks to: an explicit list, else an explicit pubkey's
   /// kind 10063 list, else the identity the policy names, else the logged-in
@@ -544,11 +544,8 @@ class Blossom {
       auth: auth,
       authorisesByDefault: true,
       operation: "list",
-      buildEvent: (owner) => _blossomAuthEvent(
-        content: "List Blobs",
-        pubkey: owner,
-        type: "list",
-      ),
+      buildEvent: (owner) =>
+          _blossomAuthEvent(content: "List Blobs", pubkey: owner, type: "list"),
     );
 
     /// fetch user server list from nostr

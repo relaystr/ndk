@@ -246,8 +246,9 @@ class BlossomRepositoryImpl implements BlossomRepository {
             totalBytes: contentLength,
             completedUploads: List.from(results),
             phase: UploadPhase.mirroring,
-            progressPhase:
-                mirrorsTotal > 0 ? mirrorsCompleted / mirrorsTotal : 1,
+            progressPhase: mirrorsTotal > 0
+                ? mirrorsCompleted / mirrorsTotal
+                : 1,
             mirrorsTotal: mirrorsTotal,
             mirrorsCompleted: mirrorsCompleted,
           );
@@ -480,21 +481,22 @@ class BlossomRepositoryImpl implements BlossomRepository {
     String? contentType,
     bool mediaOptimisation = false,
   }) async* {
-    final endpointUrl =
-        mediaOptimisation ? '$serverUrl/media' : '$serverUrl/upload';
+    final endpointUrl = mediaOptimisation
+        ? '$serverUrl/media'
+        : '$serverUrl/upload';
 
     Map<String, String> headersFor(Nip01Event? authEvent) => {
-          if (contentType != null) 'Content-Type': contentType,
-          if (authEvent != null) 'Authorization': _authHeader(authEvent),
-          'Content-Length': '$contentLength',
-        };
+      if (contentType != null) 'Content-Type': contentType,
+      if (authEvent != null) 'Authorization': _authHeader(authEvent),
+      'Content-Length': '$contentLength',
+    };
 
     Stream<UploadProgress> send(Nip01Event? authEvent) => client.putStream(
-          url: Uri.parse(endpointUrl),
-          body: dataStreamFactory(),
-          headers: headersFor(authEvent),
-          contentLength: contentLength,
-        );
+      url: Uri.parse(endpointUrl),
+      body: dataStreamFactory(),
+      headers: headersFor(authEvent),
+      contentLength: contentLength,
+    );
 
     final initial = _initial(authorization, serverUrl);
     try {
@@ -572,11 +574,11 @@ class BlossomRepositoryImpl implements BlossomRepository {
     Exception? lastError;
 
     Map<String, String> headersFor(Nip01Event? authEvent) => {
-          // Create range header in format "bytes=start-end"
-          // If end is null, it means "until the end of the file"
-          if (start != null) 'range': 'bytes=$start-${end ?? ''}',
-          if (authEvent != null) 'Authorization': _authHeader(authEvent),
-        };
+      // Create range header in format "bytes=start-end"
+      // If end is null, it means "until the end of the file"
+      if (start != null) 'range': 'bytes=$start-${end ?? ''}',
+      if (authEvent != null) 'Authorization': _authHeader(authEvent),
+    };
 
     for (final url in serverUrls) {
       try {
@@ -767,8 +769,9 @@ class BlossomRepositoryImpl implements BlossomRepository {
           authorization,
           url,
           (authEvent) => client.get(
-            url: Uri.parse('$url/list/$pubkey')
-                .replace(queryParameters: queryParams),
+            url: Uri.parse(
+              '$url/list/$pubkey',
+            ).replace(queryParameters: queryParams),
             headers: <String, String>{
               if (authEvent != null) 'Authorization': _authHeader(authEvent),
             },

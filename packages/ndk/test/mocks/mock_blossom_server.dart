@@ -120,7 +120,8 @@ class MockBlossomServer {
     return null;
   }
 
-  Middleware _recordRequests() => (innerHandler) => (request) async {
+  Middleware _recordRequests() =>
+      (innerHandler) => (request) async {
         final header = request.headers['authorization'];
         final event = _decodeAuthEvent(header);
         requests.add(
@@ -455,7 +456,8 @@ class MockBlossomServer {
         // Store the blob
         _blobs[computedSha256] = _BlobEntry(
           data: data,
-          contentType: response.headers.contentType?.toString() ??
+          contentType:
+              response.headers.contentType?.toString() ??
               'application/octet-stream',
           uploader: 'test_pubkey',
           uploadedAt: DateTime.now(),

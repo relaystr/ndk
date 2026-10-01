@@ -16,8 +16,8 @@ class TrustedAssertions {
   TrustedAssertions({
     required Requests requests,
     required List<Nip85TrustedProvider> defaultProviders,
-  })  : _requests = requests,
-        _defaultProviders = defaultProviders;
+  }) : _requests = requests,
+       _defaultProviders = defaultProviders;
 
   /// Filter providers by kind and optionally by metrics
   List<Nip85TrustedProvider> _filterProviders(
@@ -78,19 +78,20 @@ class TrustedAssertions {
       final providerPubkeys = relayProviders.map((p) => p.pubkey).toList();
 
       try {
-        await for (final event in _requests
-            .query(
-              filter: Filter(
-                kinds: [Nip85Kind.user],
-                authors: providerPubkeys,
-                dTags: [pubkey],
-                limit: providerPubkeys.length,
-              ),
-              explicitRelays: [relay],
-              cacheRead: true,
-              cacheWrite: true,
-            )
-            .stream) {
+        await for (final event
+            in _requests
+                .query(
+                  filter: Filter(
+                    kinds: [Nip85Kind.user],
+                    authors: providerPubkeys,
+                    dTags: [pubkey],
+                    limit: providerPubkeys.length,
+                  ),
+                  explicitRelays: [relay],
+                  cacheRead: true,
+                  cacheWrite: true,
+                )
+                .stream) {
           final parsed = _parseUserMetricsEvent(event, metrics);
           if (parsed == null) continue;
 
@@ -331,19 +332,20 @@ class TrustedAssertions {
       final providerPubkeys = relayProviders.map((p) => p.pubkey).toList();
 
       try {
-        await for (final event in _requests
-            .query(
-              filter: Filter(
-                kinds: [Nip85Kind.event],
-                authors: providerPubkeys,
-                dTags: [eventId],
-                limit: providerPubkeys.length,
-              ),
-              explicitRelays: [relay],
-              cacheRead: true,
-              cacheWrite: true,
-            )
-            .stream) {
+        await for (final event
+            in _requests
+                .query(
+                  filter: Filter(
+                    kinds: [Nip85Kind.event],
+                    authors: providerPubkeys,
+                    dTags: [eventId],
+                    limit: providerPubkeys.length,
+                  ),
+                  explicitRelays: [relay],
+                  cacheRead: true,
+                  cacheWrite: true,
+                )
+                .stream) {
           final parsed = _parseEventMetricsEvent(event, metrics);
           if (parsed == null) continue;
 
@@ -561,19 +563,20 @@ class TrustedAssertions {
       final providerPubkeys = relayProviders.map((p) => p.pubkey).toList();
 
       try {
-        await for (final event in _requests
-            .query(
-              filter: Filter(
-                kinds: [Nip85Kind.addressable],
-                authors: providerPubkeys,
-                dTags: [eventAddress],
-                limit: providerPubkeys.length,
-              ),
-              explicitRelays: [relay],
-              cacheRead: true,
-              cacheWrite: true,
-            )
-            .stream) {
+        await for (final event
+            in _requests
+                .query(
+                  filter: Filter(
+                    kinds: [Nip85Kind.addressable],
+                    authors: providerPubkeys,
+                    dTags: [eventAddress],
+                    limit: providerPubkeys.length,
+                  ),
+                  explicitRelays: [relay],
+                  cacheRead: true,
+                  cacheWrite: true,
+                )
+                .stream) {
           final parsed = _parseAddressableMetricsEvent(event, metrics);
           if (parsed != null && parsed.createdAt > latestCreatedAt) {
             result = parsed;
@@ -719,19 +722,20 @@ class TrustedAssertions {
       final providerPubkeys = relayProviders.map((p) => p.pubkey).toList();
 
       try {
-        await for (final event in _requests
-            .query(
-              filter: Filter(
-                kinds: [Nip85Kind.externalId],
-                authors: providerPubkeys,
-                dTags: [identifier],
-                limit: providerPubkeys.length,
-              ),
-              explicitRelays: [relay],
-              cacheRead: true,
-              cacheWrite: true,
-            )
-            .stream) {
+        await for (final event
+            in _requests
+                .query(
+                  filter: Filter(
+                    kinds: [Nip85Kind.externalId],
+                    authors: providerPubkeys,
+                    dTags: [identifier],
+                    limit: providerPubkeys.length,
+                  ),
+                  explicitRelays: [relay],
+                  cacheRead: true,
+                  cacheWrite: true,
+                )
+                .stream) {
           final parsed = _parseExternalIdMetricsEvent(event, metrics);
           if (parsed != null && parsed.createdAt > latestCreatedAt) {
             result = parsed;
