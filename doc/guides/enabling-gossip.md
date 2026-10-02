@@ -3,11 +3,10 @@ icon: broadcast
 order: 99
 ---
 
-The simplest way to enable inbox/outbox (gossip) is to use the `JIT` engine, as it does everything automatically.
+The default `COMBINED` engine does everything automatically: a request that names a `RelaySet` is served by the relay sets engine, and everything else by the `JIT` engine, which resolves relays on the fly from nip65 data. All of it runs over one shared connection pool.
 
 ```dart
   final ndkConfig = NdkConfig(
-    engine: NdkEngine.JIT,
     cache: cache,
     eventSigner: eventSigner,
     eventVerifier: eventVerifier,
@@ -16,9 +15,13 @@ The simplest way to enable inbox/outbox (gossip) is to use the `JIT` engine, as 
   final ndk = Ndk(ndkConfig);
 ```
 
-For more granular control you can use the `RELAY_SETS` engine.
+If you want only one of the two behaviours for every request, you can pick the engine outright.
 
 ```dart
+// every request, relay set or not, resolved on the fly from nip65
+NdkEngine.JIT,
+
+// every request resolved from the relay set you pass
 NdkEngine.RELAY_SETS,
 ```
 

@@ -15,7 +15,6 @@ import '../data_layer/repositories/relay_info_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/connection_source.dart';
-import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/entities/relay_connectivity.dart';
 import '../domain_layer/entities/wallet/providers/cashu/cashu_wallet_provider.dart';
 import '../domain_layer/entities/wallet/providers/nwc/nwc_wallet_provider.dart';
@@ -38,6 +37,7 @@ import '../domain_layer/usecases/cashu/cashu.dart';
 import '../domain_layer/usecases/cashu/cashu_mint_recommendations.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/decrypted_event_payloads/decrypted_event_payloads.dart';
+import '../domain_layer/usecases/engines/combined_engine.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
 import '../domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 import '../domain_layer/usecases/files/blossom.dart';
@@ -142,42 +142,47 @@ class Initialization {
 
     accounts = Accounts(_ndkConfig.eventSignerFactory);
 
-    switch (_ndkConfig.engine) {
-      case NdkEngine.RELAY_SETS:
-        relayManager = RelayManager(
-          globalState: _globalState,
-          accounts: accounts,
-          nostrTransportFactory: _webSocketNostrTransportFactory,
-          bootstrapRelays: _ndkConfig.bootstrapRelays,
-          authCallbackTimeout: _ndkConfig.authCallbackTimeout,
-          relayInfoRepo: RelayInfoHttpRepoImpl(httpDS: _httpRequestDS),
-        );
+    // One relay manager for the whole instance, whichever engine ends up being
+    // used: the connection pool lives on [GlobalState.relays] and is keyed by
+    // relay url and identity, never by engine. A second manager over the same
+    // global state would not add a second pool, it would race this one into
+    // opening duplicate sockets and would leave half of them untracked.
+    relayManager = RelayManager(
+      globalState: _globalState,
+      accounts: accounts,
+      nostrTransportFactory: _webSocketNostrTransportFactory,
+      bootstrapRelays: _ndkConfig.bootstrapRelays,
+      authCallbackTimeout: _ndkConfig.authCallbackTimeout,
+      relayInfoRepo: RelayInfoHttpRepoImpl(httpDS: _httpRequestDS),
+    );
 
-        engine = RelaySetsEngine(
-          cacheManager: _ndkConfig.cache,
-          globalState: _globalState,
-          relayManager: relayManager,
-          bootstrapRelays: _ndkConfig.bootstrapRelays,
+    final JitEngine jitEngine = JitEngine(
+      cache: _ndkConfig.cache,
+      ignoreRelays: _ndkConfig.ignoreRelays,
+      relayManagerLight: relayManager,
+      globalState: _globalState,
+      bootstrapRelays: _ndkConfig.bootstrapRelays,
+    );
+
+    final RelaySetsEngine relaySetsEngine = RelaySetsEngine(
+      cacheManager: _ndkConfig.cache,
+      globalState: _globalState,
+      relayManager: relayManager,
+      bootstrapRelays: _ndkConfig.bootstrapRelays,
+    );
+
+    switch (_ndkConfig.engine) {
+      case NdkEngine.COMBINED:
+        engine = CombinedEngine(
+          jitEngine: jitEngine,
+          relaySetEngine: relaySetsEngine,
         );
         break;
+      case NdkEngine.RELAY_SETS:
+        engine = relaySetsEngine;
+        break;
       case NdkEngine.JIT:
-        relayManager = RelayManager<JitEngineRelayConnectivityData>(
-          globalState: _globalState,
-          accounts: accounts,
-          nostrTransportFactory: _webSocketNostrTransportFactory,
-          bootstrapRelays: _ndkConfig.bootstrapRelays,
-          engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
-          authCallbackTimeout: _ndkConfig.authCallbackTimeout,
-          relayInfoRepo: RelayInfoHttpRepoImpl(httpDS: _httpRequestDS),
-        );
-
-        engine = JitEngine(
-          cache: _ndkConfig.cache,
-          ignoreRelays: _ndkConfig.ignoreRelays,
-          relayManagerLight: relayManager,
-          globalState: _globalState,
-          bootstrapRelays: _ndkConfig.bootstrapRelays,
-        );
+        engine = jitEngine;
         break;
     }
 

@@ -21,12 +21,16 @@ class RelayJitRequestSpecificStrategy {
     required RelayManager relayManager,
     required Iterable<String> specificRelays,
   }) async {
-    // filter relays we need to connect to first
+    // Ask for every named relay. [RelayManager.connectRelay] is idempotent and
+    // already awaits a connect someone else started, which is what makes this
+    // safe on a shared pool: the relay sets engine may be opening this very
+    // relay right now.
+    //
+    // Skipping a relay that is merely connecting would be wrong: the send below
+    // picks its targets from the connected relays only, so a relay skipped here
+    // would silently never receive the request.
     final List<Future<Tuple<bool, String>>> connectFutures = [];
     for (final sRelay in specificRelays) {
-      final isConnected = relayManager.isRelayConnected(sRelay);
-      final tryingToConnect = relayManager.isRelayConnecting(sRelay);
-      if (isConnected || tryingToConnect) continue;
       connectFutures.add(
         relayManager.connectRelay(
           dirtyUrl: sRelay,

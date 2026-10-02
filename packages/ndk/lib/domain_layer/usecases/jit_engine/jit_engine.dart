@@ -88,9 +88,7 @@ class JitEngine with Logger implements NetworkEngine {
           requestState: requestState,
           cacheManager: cache,
           filter: filter,
-          connectedRelays: relayManagerLight.connectedAnonymousRelays
-              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-              .toList(),
+          connectedRelays: relayManagerLight.connectedAnonymousRelays,
           bootstrapRelays: bootstrapRelays,
           desiredCoverage: ndkRequest.desiredCoverage,
           closeOnEOSE: ndkRequest.closeOnEOSE,
@@ -108,9 +106,7 @@ class JitEngine with Logger implements NetworkEngine {
           requestState: requestState,
           cacheManager: cache,
           filter: filter,
-          connectedRelays: relayManagerLight.connectedAnonymousRelays
-              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-              .toList(),
+          connectedRelays: relayManagerLight.connectedAnonymousRelays,
           bootstrapRelays: bootstrapRelays,
           desiredCoverage: ndkRequest.desiredCoverage,
           closeOnEOSE: ndkRequest.closeOnEOSE,
@@ -136,9 +132,7 @@ class JitEngine with Logger implements NetworkEngine {
         relayManager: relayManagerLight,
         requestState: requestState,
         filter: filter,
-        connectedRelays: relayManagerLight.connectedAnonymousRelays
-            .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-            .toList(),
+        connectedRelays: relayManagerLight.connectedAnonymousRelays,
         bootstrapRelays: bootstrapRelays,
         closeOnEOSE: ndkRequest.closeOnEOSE,
       );
@@ -159,7 +153,13 @@ class JitEngine with Logger implements NetworkEngine {
     Iterable<String>? specificRelays,
   }) {
     Future<void> asyncStuff() async {
-      await relayManagerLight.seedRelaysConnected;
+      // deliberately no wait for seedRelaysConnected here, unlike the request
+      // path. The broadcast strategies below all go through
+      // RelayManager.connectionForBroadcast, which opens whatever they need and
+      // already awaits a connect someone else started. Waiting here first would
+      // consume the seed connect's outcome and then make the broadcast pay the
+      // connect timeout a second time for the very same relay: a relay that is
+      // down would cost two timeouts instead of one.
 
       final Nip01Event workingNostrEvent;
       try {
@@ -224,12 +224,12 @@ class JitEngine with Logger implements NetworkEngine {
 
   /// checks if relay covers given pubkey in given direction
   static bool doesRelayCoverPubkey(
-    RelayConnectivity<JitEngineRelayConnectivityData> relay,
+    RelayConnectivity relay,
     String pubkey,
     ReadWriteMarker direction,
   ) {
     for (RelayJitAssignedPubkey assignedPubkey
-        in relay.specificEngineData!.assignedPubkeys) {
+        in relay.specificEngineData.jit.assignedPubkeys) {
       if (assignedPubkey.pubkey == pubkey) {
         switch (direction) {
           case ReadWriteMarker.readOnly:

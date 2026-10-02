@@ -2,7 +2,6 @@ import 'dart:async';
 
 import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../entities/filter.dart';
-import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../../entities/request_state.dart';
 import '../../relay_manager.dart';
@@ -16,8 +15,7 @@ class RelayJitBlastAllStrategy {
   static void handleRequest({
     required RequestState requestState,
     required Filter filter,
-    required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-    connectedRelays,
+    required List<RelayConnectivity> connectedRelays,
     required bool closeOnEOSE,
     required RelayManager relayManager,
     required List<String> bootstrapRelays,
@@ -30,7 +28,7 @@ class RelayJitBlastAllStrategy {
   }
 
   static Future<void> _blastTo(
-    RelayConnectivity<JitEngineRelayConnectivityData> connectedRelay,
+    RelayConnectivity connectedRelay,
     RequestState requestState,
     Filter filter,
     RelayManager relayManager,

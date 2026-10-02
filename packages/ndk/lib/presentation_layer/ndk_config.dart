@@ -33,7 +33,9 @@ class NdkConfig {
 
   /// The engine mode to use for Nostr network operations (inbox/outbox mode).
   ///
-  /// Defaults to [NdkEngine.RELAY_SETS].
+  /// Defaults to [NdkEngine.COMBINED], which serves every request that names a
+  /// relay set with the relay sets engine and everything else with the JIT
+  /// engine, over a single shared connection pool.
   NdkEngine engine;
 
   /// A list of relay URLs to ignore for inbox/outbox operations.
@@ -156,7 +158,7 @@ class NdkConfig {
   /// [eventVerifier] The verifier used to validate Nostr events. \
   /// [cache] The cache manager for storing and retrieving Nostr data. \
   /// [eventSignerFactory] Factory for creating EventSigner instances (defaults to Bip340EventSigner). \
-  /// [engine] The engine mode to use (defaults to RELAY_SETS). \
+  /// [engine] The engine mode to use (defaults to COMBINED). \
   /// [ignoreRelays] A list of relay URLs to ignore (defaults to an empty list). \
   /// [bootstrapRelays] A list of initial relay URLs (defaults to DEFAULT_BOOTSTRAP_RELAYS). \
   /// [eventOutFilters] A list of filters to apply to the output stream (defaults to an empty list). \
@@ -169,7 +171,7 @@ class NdkConfig {
     required this.cache,
     this.eventSignerFactory = const Bip340EventSignerFactory(),
     this.walletsRepo,
-    this.engine = NdkEngine.RELAY_SETS,
+    this.engine = NdkEngine.COMBINED,
     this.ignoreRelays = const [],
     this.bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS,
     this.eventOutFilters = const [],
@@ -203,11 +205,19 @@ class NdkConfig {
 
 /// Enum representing different engine modes for Nostr network operations.
 enum NdkEngine {
+  /// Serves requests that name a relay set with the relay sets engine, and
+  /// every other request with the JIT engine, over one shared pool.
+  // ignore: constant_identifier_names
+  COMBINED,
+
   /// Uses relay sets for network operations.
   // ignore: constant_identifier_names
   RELAY_SETS,
 
   /// Uses Just-In-Time (JIT) mode for network operations.
+  ///
+  /// A relay set passed to a request is ignored: this engine picks its relays
+  /// itself. Use [COMBINED] to honour it.
   // ignore: constant_identifier_names
   JIT,
 }
