@@ -811,7 +811,7 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.10.1"
+    version: "0.10.2"
   ndk_drift:
     dependency: "direct main"
     description:
@@ -825,7 +825,7 @@ packages:
       path: "../ndk_flutter"
       relative: true
     source: path
-    version: "0.10.1"
+    version: "0.10.2"
   nested:
     dependency: transitive
     description:
