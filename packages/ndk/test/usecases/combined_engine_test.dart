@@ -89,22 +89,25 @@ void main() {
   group('routing', () {
     registerFixtures();
 
-    test('a request naming a relay set goes only to the relays in the set', () async {
-      final ndk = combinedNdk();
-      addTearDown(ndk.destroy);
+    test(
+      'a request naming a relay set goes only to the relays in the set',
+      () async {
+        final ndk = combinedNdk();
+        addTearDown(ndk.destroy);
 
-      final response = ndk.requests.query(
-        filter: notesOf(author),
-        relaySet: setNaming([setRelay.url]),
-      );
+        final response = ndk.requests.query(
+          filter: notesOf(author),
+          relaySet: setNaming([setRelay.url]),
+        );
 
-      expect(await response.future, [note]);
-      expect(
-        ndk.relays.globalState.relays.keys.map((key) => key.url),
-        [setRelay.url],
-        reason: 'the relay sets engine must not open anything else for this',
-      );
-    });
+        expect(await response.future, [note]);
+        expect(
+          ndk.relays.globalState.relays.keys.map((key) => key.url),
+          [setRelay.url],
+          reason: 'the relay sets engine must not open anything else for this',
+        );
+      },
+    );
 
     test('a request naming no relay set is served by the jit engine', () async {
       final ndk = combinedNdk();
@@ -112,11 +115,9 @@ void main() {
 
       final response = ndk.requests.query(filter: notesOf(author));
 
-      expect(
-        await response.future,
-        [note],
-        reason: 'the jit engine ranks by usefulness and picks setRelay',
-      );
+      expect(await response.future, [
+        note,
+      ], reason: 'the jit engine ranks by usefulness and picks setRelay');
       expect(
         ndk.relays.globalState.relays.keys.map((key) => key.url),
         isNotEmpty,
@@ -134,11 +135,9 @@ void main() {
         explicitRelays: [otherRelay.url],
       );
 
-      expect(
-        await response.future,
-        [note],
-        reason: 'the set is the statement of where to go',
-      );
+      expect(await response.future, [
+        note,
+      ], reason: 'the set is the statement of where to go');
       expect(
         ndk.relays.globalState.relays.keys.map((key) => key.url),
         isNot(contains(otherRelay.url)),
@@ -170,14 +169,16 @@ void main() {
       expect(
         await fromExplicit.future,
         [note],
-        reason: 'a request must not be dropped because another engine holds '
+        reason:
+            'a request must not be dropped because another engine holds '
             'the relay it named as still connecting',
       );
 
       expect(
         setRelay.connectedClientCount,
         1,
-        reason: 'the pool is keyed by relay and identity, so both share a socket',
+        reason:
+            'the pool is keyed by relay and identity, so both share a socket',
       );
       expect(
         ndk.relays.globalState.relays.keys
@@ -211,7 +212,9 @@ void main() {
       );
       expect(await fromJit.future, [note]);
 
-      final entry = ndk.relays.globalState.relays.values.firstWhere((v) => v.url == setRelay.url);
+      final entry = ndk.relays.globalState.relays.values.firstWhere(
+        (v) => v.url == setRelay.url,
+      );
       expect(
         entry.specificEngineData.jit.assignedPubkeys.map((a) => a.pubkey),
         contains(author.publicKey),
@@ -219,47 +222,50 @@ void main() {
       expect(setRelay.connectedClientCount, 1);
     });
 
-    test('an authenticated request does not disturb the shared anonymous one', () async {
-      final ndk = combinedNdk();
-      addTearDown(ndk.destroy);
+    test(
+      'an authenticated request does not disturb the shared anonymous one',
+      () async {
+        final ndk = combinedNdk();
+        addTearDown(ndk.destroy);
 
-      final account = Account(
-        pubkey: author.publicKey,
-        type: AccountType.privateKey,
-        signer: Bip340EventSigner(
-          privateKey: author.privateKey!,
-          publicKey: author.publicKey,
-        ),
-      );
-      ndk.accounts.addAccount(
-        pubkey: account.pubkey,
-        type: account.type,
-        signer: account.signer,
-      );
+        final account = Account(
+          pubkey: author.publicKey,
+          type: AccountType.privateKey,
+          signer: Bip340EventSigner(
+            privateKey: author.privateKey!,
+            publicKey: author.publicKey,
+          ),
+        );
+        ndk.accounts.addAccount(
+          pubkey: account.pubkey,
+          type: account.type,
+          signer: account.signer,
+        );
 
-      final fromSet = ndk.requests.query(
-        filter: notesOf(author),
-        relaySet: setNaming([setRelay.url]),
-      );
-      expect(await fromSet.future, [note]);
+        final fromSet = ndk.requests.query(
+          filter: notesOf(author),
+          relaySet: setNaming([setRelay.url]),
+        );
+        expect(await fromSet.future, [note]);
 
-      final authenticated = ndk.requests.query(
-        filter: notesOf(author),
-        relaySet: setNaming([setRelay.url]),
-        auth: AuthPolicy.require(account),
-      );
-      expect(await authenticated.future, [note]);
+        final authenticated = ndk.requests.query(
+          filter: notesOf(author),
+          relaySet: setNaming([setRelay.url]),
+          auth: AuthPolicy.require(account),
+        );
+        expect(await authenticated.future, [note]);
 
-      // two sockets towards one relay is not a duplicate: the authenticated
-      // request is bound to an identity and may only ever assume it, so it
-      // cannot travel on the anonymous socket.
-      expect(setRelay.connectedClientCount, 2);
-      expect(
-        ndk.relays.globalState.relays.keys
-            .where((key) => key.url == setRelay.url)
-            .map((key) => key.pubkey),
-        [null, author.publicKey],
-      );
-    });
+        // two sockets towards one relay is not a duplicate: the authenticated
+        // request is bound to an identity and may only ever assume it, so it
+        // cannot travel on the anonymous socket.
+        expect(setRelay.connectedClientCount, 2);
+        expect(
+          ndk.relays.globalState.relays.keys
+              .where((key) => key.url == setRelay.url)
+              .map((key) => key.pubkey),
+          [null, author.publicKey],
+        );
+      },
+    );
   });
 }
