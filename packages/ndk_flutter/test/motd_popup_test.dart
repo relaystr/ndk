@@ -19,6 +19,7 @@ class _StubRequests implements Requests {
     Filter? filter,
     List<Filter>? filters,
     String name = '',
+    String? id,
     RelaySet? relaySet,
     bool cacheRead = true,
     bool cacheWrite = true,
@@ -27,7 +28,7 @@ class _StubRequests implements Requests {
     Function()? timeoutCallback,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
-    RelayAuth? auth,
+    AuthPolicy? auth,
     List<Account>? authenticateAs,
     bool paginate = false,
   }) {

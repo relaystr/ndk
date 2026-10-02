@@ -61,6 +61,7 @@ class _StubRequests implements Requests {
     Filter? filter,
     List<Filter>? filters,
     String name = '',
+    String? id,
     RelaySet? relaySet,
     bool cacheRead = true,
     bool cacheWrite = true,
@@ -69,7 +70,7 @@ class _StubRequests implements Requests {
     Function()? timeoutCallback,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
-    RelayAuth? auth,
+    AuthPolicy? auth,
     List<Account>? authenticateAs,
     bool paginate = false,
   }) {
@@ -96,6 +97,8 @@ class _FakeBroadcast implements Broadcast {
     double? considerDonePercent,
     Duration? timeout,
     bool? saveToCache,
+    AuthPolicy? auth,
+    bool retryDelivery = true,
   }) {
     eventsBroadcast.add(nostrEvent);
     return _ok(nostrEvent);
@@ -112,6 +115,8 @@ class _FakeBroadcast implements Broadcast {
     Iterable<String>? customRelays,
     EventSigner? customSigner,
     String reason = "delete",
+    AuthPolicy? auth,
+    bool retryDelivery = true,
   }) {
     if (eventAndAllVersions != null) eventsDeleted.add(eventAndAllVersions);
     return _ok(eventAndAllVersions ?? events?.first ?? event!);

@@ -1964,6 +1964,7 @@
   "motdAdminMustBeAuthor": "You must be logged in as the message author to manage it.",
   "@motdAdminMustBeAuthor": {
     "description": "Error shown when the logged-in account is not the message author"
+  },
   "cashuQuoteRecoveryTitle": "Recover Mint Quote",
   "@cashuQuoteRecoveryTitle": {
     "description": "Title of the dialog to recover a mint quote"
