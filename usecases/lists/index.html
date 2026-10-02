@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.844095678271">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.844248096157">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 4.6.0">
@@ -37,12 +37,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.6.0.844095678271" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.844248096157" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.844095678271" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.844248096157" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.844095678271" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.844095678271" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.844248096157" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.844248096157" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -59,7 +59,7 @@
                 <div class="flex items-center px-2 md:px-6">
                     <a id="retype-branding-logo" href="https://dart-nostr.com/" class="flex items-center leading-snug text-2xl">
                         <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
-                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.10.0</span>
+                    </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.10.1</span>
                 </div>
     
                 <span class="hidden h-8 border-r md:inline-block border-base-border"></span>
@@ -198,8 +198,9 @@ print(&quot;received a set with ${myset.elements.length} elements&quot;);</code>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">  return _decryptedEventPayloads.loadOrDecrypt(
     event: event,
     viewerPubKey: signer.getPublicKey(),
-    scheme:
-        isNip04 ? DecryptedPayloadScheme.nip04 : DecryptedPayloadScheme.nip44,
+    scheme: isNip04
+        ? DecryptedPayloadScheme.nip04
+        : DecryptedPayloadScheme.nip44,
     decrypt: () =&gt; isNip04
         // ignore: deprecated_member_use_from_same_package
         ? signer.decrypt(event.content, signer.getPublicKey())
@@ -210,13 +211,13 @@ print(&quot;received a set with ${myset.elements.length} elements&quot;);</code>
   );
 }
 
-Future&lt;void&gt; _applyPrivateTags({
-  required Nip01Event event,</code></pre>
+Future&lt;void&gt; _applyPrivateTags({</code></pre>
 </doc-codeblock></div>
 <h4 id="addelementtolist">addElementToList</h4>
 <p>Adds an element to a list. Creates the list if it doesn&#x27;t exist.</p>
 <div id="addelementtolist-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">}
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">  return list;
+}
 
 Future&lt;Nip51Set?&gt; _parseSetEvent(
   Nip01Event event,
@@ -234,36 +235,43 @@ Future&lt;Nip51Set?&gt; _parseSetEvent(
 Future&lt;Nip51List?&gt; _getCachedNip51List(int kind, EventSigner signer) async {
   List&lt;Nip01Event&gt;? events = await _cacheManager.loadEvents(
     pubKeys: [signer.getPublicKey()],
-    kinds: [kind],
-  );</code></pre>
+    kinds: [kind],</code></pre>
 </doc-codeblock></div>
 <h4 id="removeelementfromlist">removeElementFromList</h4>
 <p>Removes an element from a list.</p>
 <div id="removeelementfromlist-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">    ).stream) {
-      if (refreshedList == null ||
-          refreshedList.createdAt &lt;= event.createdAt) {
-        refreshedList = await _parseListEvent(event, signer);
-        // if (Helpers.isNotBlank(event.content)) {
-        //   Nip51List? decryptedList = await Nip51List.fromEvent(event, signer);
-        //   refreshedList = decryptedList;
-        // }
-        await _cacheManager.saveEvent(event);
-      }
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">            filters: [
+              Filter(authors: [signer.getPublicKey()], kinds: [kind]),
+            ],
+            timeout: timeout,
+          )
+          .stream) {
+    if (refreshedList == null ||
+        refreshedList.createdAt &lt;= event.createdAt) {
+      refreshedList = await _parseListEvent(event, signer);
+      // if (Helpers.isNotBlank(event.content)) {
+      //   Nip51List? decryptedList = await Nip51List.fromEvent(event, signer);
+      //   refreshedList = decryptedList;
+      // }
+      await _cacheManager.saveEvent(event);
     }
-    return refreshedList;
   }
-  return list;
-}
-
-/// Returns a NIP-51 list by kind for a given public key.
-///</code></pre>
+  return refreshedList;
+}</code></pre>
 </doc-codeblock></div>
 <h3 id="sets-methods">Sets Methods</h3>
 <h4 id="getsetbyname">getSetByName</h4>
 <p>Gets a specific set by name (d-tag) and kind.</p>
 <div id="getsetbyname-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// [tag] the tag type of the element to remove \
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">}
+
+/// Removes an element from a NIP-51 list.
+///
+/// Updates the list by removing the specified element, then broadcasts
+/// the updated list to relays and updates the cache.
+///
+/// [kind] the kind of NIP-51 list \
+/// [tag] the tag type of the element to remove \
 /// [value] the value to remove from the list \
 /// [broadcastRelays] optional specific relays to broadcast to
 ///
@@ -272,39 +280,39 @@ Future&lt;Nip51List?&gt; _getCachedNip51List(int kind, EventSigner signer) async
 Future&lt;Nip51List?&gt; removeElementFromList({
   required int kind,
   required String tag,
-  required String value,
-  Iterable&lt;String&gt;? broadcastRelays,
-}) async {
-  if (_eventSigner == null) {
-    throw Exception(
-      &quot;cannot broadcast private nip51 list without a signer that can sign&quot;,
-    );
-  }
-  Nip51List? list = await getSingleNip51List(kind, forceRefresh: true);</code></pre>
+  required String value,</code></pre>
 </doc-codeblock></div>
 <h4 id="getpublicsets">getPublicSets</h4>
 <p>Returns a stream of all public sets for a given public key and kind.</p>
 <div id="getpublicsets-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">    kinds: [kind],
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// gets set by name with the specified signer
+Future&lt;Nip51Set?&gt; _getCachedSetByName(
+  String name,
+  EventSigner signer,
+  int kind,
+) async {
+  List&lt;Nip01Event&gt;? events = await _cacheManager.loadEvents(
+    pubKeys: [signer.getPublicKey()],
+    kinds: [kind],
   );
   events = events.where((event) {
     if (event.getDtag() != null &amp;&amp; event.getDtag() == name) {
       return true;
     }
-    return false;
-  }).toList();
-  events.sort((a, b) =&gt; b.createdAt.compareTo(a.createdAt));
-  return events.isNotEmpty
-      ? await _parseSetEvent(events.first, signer)
-      : null;
-}
-
-/// get a nip51 set</code></pre>
+    return false;</code></pre>
 </doc-codeblock></div>
 <h4 id="addelementtoset">addElementToSet</h4>
 <p>Adds an element to a named set. Creates the set if it doesn&#x27;t exist.</p>
 <div id="addelementtoset-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">}) {
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">      : null;
+}
+
+/// get a nip51 set
+Stream&lt;Iterable&lt;Nip51Set&gt;?&gt; _getSets(
+  int kind,
+  EventSigner signer, {
+  bool forceRefresh = false,
+}) {
   final relaySets = &lt;String, Nip51Set&gt;{};
 
   return _requests
@@ -316,79 +324,71 @@ Future&lt;Nip51List?&gt; removeElementFromList({
       )
       .stream
       .where((event) =&gt; event.getDtag() != null)
-      .asyncMap((event) async {
-        final dtag = event.getDtag()!;
-        final existingSet = relaySets[dtag];
-
-        if (existingSet == null || existingSet.createdAt &lt; event.createdAt) {
-          final newSet = await _parseSetEvent(event, signer);
-          if (newSet != null) {
-            await _cacheManager.saveEvent(event);
-            relaySets[newSet.name] = newSet;</code></pre>
+      .asyncMap((event) async {</code></pre>
 </doc-codeblock></div>
 <h4 id="removeelementfromset">removeElementFromSet</h4>
 <p>Removes an element from a named set.</p>
 <div id="removeelementfromset-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">if (relaySet == null || forceRefresh) {
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">final EventSigner signer;
+
+if (_eventSigner == null) {
+  throw Exception(&quot;getSetByName() no account&quot;);
+}
+signer = _eventSigner!;
+
+Nip51Set? relaySet = await _getCachedSetByName(name, signer, kind);
+if (relaySet == null || forceRefresh) {
   Nip51Set? newRelaySet;
-  await for (final event in _requests.query(
-    filters: [
-      Filter(
-        authors: [signer.getPublicKey()],
-        kinds: [kind],
-        tags: {
-          &quot;#d&quot;: [name],
-        },
-      ),
-    ],
-    cacheRead: !forceRefresh,
-  ).stream) {
-    if (newRelaySet == null || newRelaySet.createdAt &lt; event.createdAt) {
-      if (event.getDtag() != null &amp;&amp; event.getDtag() == name) {
-        newRelaySet = await _parseSetEvent(event, signer);
-        await _cacheManager.saveEvent(event);
-      } else if (Helpers.isNotBlank(event.content)) {
-        Nip51Set? decryptedRelaySet = await _parseSetEvent(event, signer);
-        if (decryptedRelaySet != null &amp;&amp; decryptedRelaySet.name == name) {
-          newRelaySet = decryptedRelaySet;</code></pre>
+  await for (final event
+      in _requests
+          .query(
+            filters: [
+              Filter(
+                authors: [signer.getPublicKey()],
+                kinds: [kind],
+                tags: {
+                  &quot;#d&quot;: [name],
+                },
+              ),
+            ],</code></pre>
 </doc-codeblock></div>
 <h4 id="setcompleteset">setCompleteSet</h4>
 <p>Overwrites or creates a complete set. <strong>Warning:</strong> This replaces the entire set.</p>
 <div id="setcompleteset-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// [name] name of the set (d tag identifier) \
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">    );
+  }
+
+  return _getSets(kind, mySigner, forceRefresh: forceRefresh);
+}
+
+/// Adds an element to a NIP-51 set.
+///
+/// If the set doesn't exist, it will be created. The updated set is
+/// then broadcast to relays and cached locally.
+///
+/// [name] name of the set (d tag identifier) \
 /// [tag] the tag type for the element (e.g., 'relay', 'p', 'e') \
 /// [value] the value to add to the set \
-/// [kind] kind of the set \
-/// [private] if true, encrypt the element in the set content \
-/// [specificRelays] optional specific relays to broadcast to
-///
-/// Returns the updated set.
-Future&lt;Nip51Set?&gt; addElementToSet({
-  required String name,
-  required String tag,
-  required String value,
-  required int kind,
-  bool private = false,
-  Iterable&lt;String&gt;? specificRelays,</code></pre>
+/// [kind] kind of the set \</code></pre>
 </doc-codeblock></div>
 <h4 id="deleteset">deleteSet</h4>
 <p>Deletes a set by name and broadcasts a deletion event.</p>
 <div id="deleteset-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">  events = events.where((event) {
-    if (event.getDtag() != null &amp;&amp; event.getDtag() == name) {
-      return true;
-    }
-    return false;
-  }).toList();
-  for (final event in events) {
-    _cacheManager.removeEvent(event.id);
-  }
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">final broadcastResponse = _broadcast.broadcast(
+  nostrEvent: event,
+  specificRelays: specificRelays,
+  customSigner: _eventSigner,
+);
+await broadcastResponse.broadcastDoneFuture;
 
-  await _cacheManager.saveEvent(event);
-  return set;
-}
-
-/// Removes an element from a NIP-51 set.</code></pre>
+List&lt;Nip01Event&gt;? events = await _cacheManager.loadEvents(
+  pubKeys: [_eventSigner!.getPublicKey()],
+  kinds: [kind],
+);
+events = events.where((event) {
+  if (event.getDtag() != null &amp;&amp; event.getDtag() == name) {
+    return true;
+  }</code></pre>
 </doc-codeblock></div>
 <h2 id="common-use-cases">Common Use Cases</h2>
 <h3 id="relay-sets">Relay Sets</h3>
