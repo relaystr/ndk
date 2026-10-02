@@ -487,9 +487,37 @@
   "appUpdateCheckAgain": "Проверить снова",
   "appUpdateInstalledVersion": "Установлена версия {version}",
   "appUpdateInstalledAndAvailable": "Установлена версия {installedVersion}. Доступно обновление {availableVersion}.",
-  "appUpdateChangelog": "Журнал изменений", "appUpdateReleaseHistory": "История версий", "appUpdateInstalledBadge": "Установлена", "appUpdateAvailableBadge": "Доступно обновление", "appUpdateLatestBadge": "Последняя", "appUpdateNoReleases": "Пока не опубликовано ни одной версии.", "appUpdateAcrossAllReleases": "Для всех версий",
+  "appUpdateChangelog": "Журнал изменений",
+  "appUpdateReleaseHistory": "История версий",
+  "appUpdateInstalledBadge": "Установлена",
+  "appUpdateAvailableBadge": "Доступно обновление",
+  "appUpdateLatestBadge": "Последняя",
+  "appUpdateNoReleases": "Пока не опубликовано ни одной версии.",
+  "appUpdateAcrossAllReleases": "Для всех версий",
   "appUpdateSatsBy": "сат от",
-  "appUpdateReleaseDetails": "Сведения о выпуске", "appUpdateWhatsNew": "Что нового", "appUpdatePublishedOn": "Опубликовано {date}", "appUpdateChannel": "Канал: {channel}", "appUpdateArchitecture": "Архитектура: {architecture}", "appUpdateVersionCode": "Сборка {versionCode}", "appUpdateReleaseVersion": "Версия {version}", "appUpdateNoReleaseNotes": "Примечания к выпуску не опубликованы.", "appUpdatePublisher": "Издатель", "appUpdatePublisherSignatureVerified": "Подпись события Nostr проверена", "appUpdateCertificateDeclared": "Издатель указал сертификат подписи Android", "appUpdateSource": "Источник загрузки: {host}", "appUpdateCommunity": "Сообщество", "appUpdateZapSummary": "Запов: {count} · {sats} сат", "appUpdateReactionCount": "Реакций: {count}", "appUpdateCommentCount": "Комментариев: {count}", "appUpdateSocialLoadFailed": "Не удалось загрузить активность сообщества.", "appUpdateComments": "Комментарии", "appUpdateNoComments": "Комментариев пока нет.", "appUpdateCommentHint": "Оставьте отзыв об этой версии", "appUpdatePostComment": "Опубликовать комментарий", "appUpdateSignInToComment": "Войдите в аккаунт Nostr, чтобы комментировать.", "appUpdateTechnicalDetails": "Технические сведения",
+  "appUpdateReleaseDetails": "Сведения о выпуске",
+  "appUpdateWhatsNew": "Что нового",
+  "appUpdatePublishedOn": "Опубликовано {date}",
+  "appUpdateChannel": "Канал: {channel}",
+  "appUpdateArchitecture": "Архитектура: {architecture}",
+  "appUpdateVersionCode": "Сборка {versionCode}",
+  "appUpdateReleaseVersion": "Версия {version}",
+  "appUpdateNoReleaseNotes": "Примечания к выпуску не опубликованы.",
+  "appUpdatePublisher": "Издатель",
+  "appUpdatePublisherSignatureVerified": "Подпись события Nostr проверена",
+  "appUpdateCertificateDeclared": "Издатель указал сертификат подписи Android",
+  "appUpdateSource": "Источник загрузки: {host}",
+  "appUpdateCommunity": "Сообщество",
+  "appUpdateZapSummary": "Запов: {count} · {sats} сат",
+  "appUpdateReactionCount": "Реакций: {count}",
+  "appUpdateCommentCount": "Комментариев: {count}",
+  "appUpdateSocialLoadFailed": "Не удалось загрузить активность сообщества.",
+  "appUpdateComments": "Комментарии",
+  "appUpdateNoComments": "Комментариев пока нет.",
+  "appUpdateCommentHint": "Оставьте отзыв об этой версии",
+  "appUpdatePostComment": "Опубликовать комментарий",
+  "appUpdateSignInToComment": "Войдите в аккаунт Nostr, чтобы комментировать.",
+  "appUpdateTechnicalDetails": "Технические сведения",
   "appUpdateViewStatus": "Показать статус обновления",
   "refreshBalance": "Обновить баланс",
   "balanceRefreshed": "Баланс обновлён",
@@ -523,5 +551,83 @@
   "bolt12WalletTypeSubtitle": "Кошелёк только для получения с многоразовым предложением",
   "invalidBolt12QrCode": "QR-код не содержит адресата платежа BOLT12, BIP321 или BIP353.",
   "bolt12OfferTitle": "Получить через BOLT12",
-  "bolt12OfferInstructions": "Поделитесь этим многоразовым предложением, чтобы получить платёж Lightning."
+  "bolt12OfferInstructions": "Поделитесь этим многоразовым предложением, чтобы получить платёж Lightning.",
+  "restoreFromBackup": "Восстановить из резервной копии",
+  "@restoreFromBackup": {
+    "description": "Label for restoring a Cashu wallet from a backup JSON"
+  },
+  "@restoreSuccess": {
+    "description": "Confirmation after a successful restore",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "cashuQuoteRecoveryTitle": "Восстановление котировки минта",
+  "recoverQuote": "Восстановить котировку",
+  "enterQuoteId": "Введите ID котировки минта для восстановления. Ключ блокировки восстанавливается из вашей seed-фразы.",
+  "quoteId": "ID котировки",
+  "quoteIdHint": "Вставьте сюда ID котировки",
+  "pleaseEnterQuoteId": "Пожалуйста, введите ID котировки",
+  "cashuQuoteRecoveryStageFetchingQuote": "Получение котировки с минта...",
+  "cashuQuoteRecoveryStageRecoveringKey": "Восстановление ключа блокировки из вашей seed-фразы...",
+  "cashuQuoteRecoveryStageCompletingMint": "Завершение чеканки...",
+  "cashuQuoteRecoveryKeyRecovered": "Ключ блокировки восстановлен (счётчик деривации {counter})",
+  "@cashuQuoteRecoveryKeyRecovered": {
+    "description": "Confirmation shown once the lock key is recovered",
+    "placeholders": {
+      "counter": {
+        "type": "int",
+        "description": "Derivation counter of the recovered lock key"
+      }
+    }
+  },
+  "cashuQuoteRecoveryCompleted": "Котировка восстановлена, средства добавлены на ваш баланс",
+  "quoteRecoveryFailed": "Не удалось восстановить котировку",
+  "restoreFundsFromMint": "Восстановить средства с минта",
+  "cashuRestoreFundsTitle": "Восстановление средств с минта",
+  "cashuRestoreDescription": "Сканирует минт на предмет доказательств, полученных из вашей seed-фразы, и восстанавливает их в этот кошелёк.",
+  "startRestore": "Начать восстановление",
+  "cashuRestoreStageFetchingKeysets": "Получение keysets минта...",
+  "cashuRestoreStageScanning": "Сканирование минта в поисках ваших средств...",
+  "cashuRestoreScanProgress": "Отсканировано keysets: {keysets} · найдено proofs: {proofs}",
+  "@cashuRestoreScanProgress": {
+    "description": "Scan progress in the restore-from-mint dialog",
+    "placeholders": {
+      "keysets": {
+        "type": "int",
+        "description": "Number of keysets scanned"
+      },
+      "proofs": {
+        "type": "int",
+        "description": "Number of proofs found so far"
+      }
+    }
+  },
+  "cashuRestoreStageCompleted": "Восстановление завершено",
+  "cashuRestoreAlsoRestoresQuotes": "Также восстанавливает ожидающие котировки минтов",
+  "restoredFromMint": "Восстановлено {count} доказательств с минта",
+  "@restoredFromMint": {
+    "description": "Confirmation after a successful restore-from-mint",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "restoreFailed": "Не удалось выполнить восстановление",
+  "cashuRestoreMenuTitle": "Восстановление и резервная копия",
+  "cashuSeedPhraseOption": "Задать seed-фразу",
+  "cashuSeedPhraseTitle": "Cashu seed-фраза",
+  "cashuSeedPhraseWarning": "Эта seed-фраза является общей для ВСЕХ кошельков Cashu. Это единственный способ восстановить средства после потери этого устройства. Её изменение заменяет seed, используемую для создания ключей каждого кошелька Cashu, поэтому средства, полученные под предыдущей seed, больше не будут находиться автоматически.",
+  "cashuSeedPhraseInstructions": "Введите фразу восстановления, которую хотите использовать (12, 15, 18, 21 или 24 слова). Меняйте seed только при восстановлении кошельков из уже сохранённой фразы.",
+  "cashuSeedPhraseLabel": "Seed-фраза",
+  "cashuSeedPhraseHint": "Вставьте сюда вашу seed-фразу",
+  "cashuSeedPhraseConfirmChange": "Я понимаю, что это изменит seed для всех кошельков Cashu",
+  "cashuSeedPhraseInvalid": "Похоже, это не корректная seed-фраза. Проверьте, что все слова написаны правильно и в правильном порядке.",
+  "cashuSeedPhraseUpdated": "Seed-фраза обновлена. Теперь она применяется ко всем кошелькам Cashu. Создайте резервную копию новой фразы.",
+  "cashuSeedPhraseUpdateFailed": "Не удалось обновить seed-фразу"
 }

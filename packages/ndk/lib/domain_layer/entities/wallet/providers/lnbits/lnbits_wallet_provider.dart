@@ -43,7 +43,7 @@ class LnBitsWalletProvider implements WalletProvider {
   final http.Client _client;
 
   LnBitsWalletProvider([http.Client? client])
-      : _client = client ?? http.Client();
+    : _client = client ?? http.Client();
 
   @override
   WalletType get type => WalletType.LNBITS;
@@ -100,8 +100,8 @@ class LnBitsWalletProvider implements WalletProvider {
       adminKey: _validateAdminKey(
         metadata[LnBitsWallet.adminKeyMetadataKey]?.toString() ?? '',
       ),
-      remoteWalletId:
-          metadata[LnBitsWallet.remoteWalletIdMetadataKey]?.toString(),
+      remoteWalletId: metadata[LnBitsWallet.remoteWalletIdMetadataKey]
+          ?.toString(),
       readOnly: metadata[LnBitsWallet.readOnlyMetadataKey] as bool? ?? false,
       metadata: metadata,
     );
@@ -131,31 +131,62 @@ class LnBitsWalletProvider implements WalletProvider {
   Future<void> removeWallet(Wallet wallet) async {}
 
   @override
-  Stream<List<WalletBalance>> getBalances(Wallet wallet) async* {
+  Stream<List<WalletBalance>> getBalances(Wallet wallet) {
     final lnbitsWallet = _asLnBitsWallet(wallet);
-    while (true) {
-      final info = await _getWalletInfo(
-        lnbitsUrl: lnbitsWallet.lnbitsUrl,
-        adminKey: lnbitsWallet.adminKey,
-      );
-      yield [
-        WalletBalance(
-          walletId: wallet.id,
-          unit: 'sat',
-          amount: info.balanceMsat ~/ 1000,
-        ),
-      ];
-      await Future<void>.delayed(balanceRefreshInterval);
+    Timer? refreshTimer;
+    var cancelled = false;
+    var fetching = false;
+    late StreamController<List<WalletBalance>> controller;
+    Future<void> refresh() async {
+      if (cancelled || fetching || controller.isPaused) return;
+      fetching = true;
+      try {
+        final info = await _getWalletInfo(
+          lnbitsUrl: lnbitsWallet.lnbitsUrl,
+          adminKey: lnbitsWallet.adminKey,
+        );
+        if (!cancelled) {
+          controller.add([
+            WalletBalance(
+              walletId: wallet.id,
+              unit: 'sat',
+              amount: info.balanceMsat ~/ 1000,
+            ),
+          ]);
+        }
+      } catch (error, stackTrace) {
+        if (!cancelled) {
+          controller.addError(error, stackTrace);
+          cancelled = true;
+          unawaited(controller.close());
+        }
+      } finally {
+        fetching = false;
+        if (!cancelled && !controller.isPaused) {
+          refreshTimer = Timer(balanceRefreshInterval, refresh);
+        }
+      }
     }
+
+    controller = StreamController<List<WalletBalance>>(
+      onListen: refresh,
+      onPause: () => refreshTimer?.cancel(),
+      onResume: refresh,
+      onCancel: () {
+        cancelled = true;
+        refreshTimer?.cancel();
+      },
+    );
+    return controller.stream;
   }
 
   @override
   Stream<List<WalletTransaction>> getPendingTransactions(Wallet wallet) {
     final lnbitsWallet = _asLnBitsWallet(wallet);
     return Stream.fromFuture(
-      _getPayments(lnbitsWallet).then(
-        (items) => items.where((item) => item.state.isPending).toList(),
-      ),
+      _getPayments(
+        lnbitsWallet,
+      ).then((items) => items.where((item) => item.state.isPending).toList()),
     );
   }
 
@@ -163,9 +194,9 @@ class LnBitsWalletProvider implements WalletProvider {
   Stream<List<WalletTransaction>> getRecentTransactions(Wallet wallet) {
     final lnbitsWallet = _asLnBitsWallet(wallet);
     return Stream.fromFuture(
-      _getPayments(lnbitsWallet).then(
-        (items) => items.where((item) => item.state.isDone).toList(),
-      ),
+      _getPayments(
+        lnbitsWallet,
+      ).then((items) => items.where((item) => item.state.isDone).toList()),
     );
   }
 
@@ -222,7 +253,8 @@ class LnBitsWalletProvider implements WalletProvider {
     }
     if (payerNote?.isNotEmpty == true) {
       throw UnsupportedError(
-          'LNbits BOLT11 payments do not support payer notes');
+        'LNbits BOLT11 payments do not support payer notes',
+      );
     }
     final invoice = Bip321.getBolt11(payment);
     final invoiceAmount = Bip321.getBolt11AmountMsat(invoice);
@@ -346,11 +378,7 @@ class LnBitsWalletProvider implements WalletProvider {
   }
 
   Future<List<WalletTransaction>> _getPayments(LnBitsWallet wallet) async {
-    final response = await _request(
-      wallet,
-      'GET',
-      '/api/v1/payments',
-    );
+    final response = await _request(wallet, 'GET', '/api/v1/payments');
     final decoded = jsonDecode(response.body);
     if (decoded is! List) {
       throw const FormatException('Invalid LNbits payments');

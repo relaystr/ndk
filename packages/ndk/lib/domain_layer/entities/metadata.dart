@@ -114,8 +114,8 @@ class Metadata {
     this.refreshedTimestamp,
     List<List<String>>? tags,
     Map<String, dynamic>? content,
-  })  : tags = tags ?? [],
-        content = content ?? {} {
+  }) : tags = tags ?? [],
+       content = content ?? {} {
     // Initialize content with provided known fields
     if (name != null) this.name = name;
     if (displayName != null) this.displayName = displayName;

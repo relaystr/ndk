@@ -40,6 +40,9 @@ class LookupInvoiceResponse extends NwcResponse {
   /// The timestamp when the invoice was settled (optional).
   final int? settledAt;
 
+  /// Deadline for settling an accepted hold invoice (optional).
+  final int? settleDeadline;
+
   LookupInvoiceResponse({
     required this.type,
     required this.invoice,
@@ -53,6 +56,7 @@ class LookupInvoiceResponse extends NwcResponse {
     required this.expiresAt,
     this.state,
     this.settledAt,
+    this.settleDeadline,
     required super.resultType,
   });
 
@@ -75,12 +79,13 @@ class LookupInvoiceResponse extends NwcResponse {
       createdAt: result['created_at'] as int,
       expiresAt: result['expires_at'] as int,
       settledAt: result['settled_at'] as int?, // optional
+      settleDeadline: result['settle_deadline'] as int?, // optional
       state: result['state'] as String?, // optional
       resultType: input['result_type'] as String,
     );
   }
   @override
   String toString() {
-    return 'LookupInvoiceResponse(type: $type, state: $state invoice: $invoice, description: $description, descriptionHash: $descriptionHash, preimage: $preimage, paymentHash: $paymentHash, amount: $amount, feesPaid: $feesPaid, createdAt: $createdAt, expiresAt: $expiresAt, settledAt: $settledAt, resultType: $resultType)';
+    return 'LookupInvoiceResponse(type: $type, state: $state invoice: $invoice, description: $description, descriptionHash: $descriptionHash, preimage: $preimage, paymentHash: $paymentHash, amount: $amount, feesPaid: $feesPaid, createdAt: $createdAt, expiresAt: $expiresAt, settledAt: $settledAt, settleDeadline: $settleDeadline, resultType: $resultType)';
   }
 }

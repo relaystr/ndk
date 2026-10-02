@@ -26,13 +26,13 @@ class BroadcastSender {
     required double considerDonePercent,
     required Duration timeout,
     required bool saveToCache,
-  })  : _accounts = accounts,
-        _cacheManager = cacheManager,
-        _engine = networkEngine,
-        _globalState = globalState,
-        _considerDonePercent = considerDonePercent,
-        _timeout = timeout,
-        _saveToCache = saveToCache;
+  }) : _accounts = accounts,
+       _cacheManager = cacheManager,
+       _engine = networkEngine,
+       _globalState = globalState,
+       _considerDonePercent = considerDonePercent,
+       _timeout = timeout,
+       _saveToCache = saveToCache;
 
   bool isEventInFlight(String eventId) {
     return _globalState.inFlightBroadcasts.containsKey(eventId);
@@ -53,6 +53,7 @@ class BroadcastSender {
   /// [considerDonePercent] the percentage (0.0, 1.0) of relays that need to respond with "OK" for the broadcast to be considered done (overrides the default value) \
   /// [timeout] the timeout for the broadcast (overrides the default timeout) \
   /// [saveToCache] whether to save the event to cache (overrides the default value from config) \
+  /// [auth] which identity this broadcast may be attributed to on relays (NIP-42), see [AuthPolicy] \
   /// [returns] a [NdkBroadcastResponse] object containing the result => success per relay
   NdkBroadcastResponse broadcast({
     required Nip01Event nostrEvent,
@@ -61,14 +62,20 @@ class BroadcastSender {
     double? considerDonePercent,
     Duration? timeout,
     bool? saveToCache,
+    AuthPolicy? auth,
   }) {
     final myConsiderDonePercent = considerDonePercent ?? _considerDonePercent;
     final myTimeout = timeout ?? _timeout;
     final mySaveToCache = saveToCache ?? _saveToCache;
 
+    if (auth is AuthPolicyRequire && !auth.account.signer.canSign()) {
+      throw BroadcastAuthUnavailableException(auth.account.pubkey);
+    }
+
     final broadcastState = BroadcastState(
       considerDonePercent: myConsiderDonePercent,
       timeout: myTimeout,
+      auth: auth,
     );
     _globalState.inFlightBroadcasts[nostrEvent.id] = broadcastState;
     void cleanupInFlightBroadcastState() {
@@ -82,7 +89,7 @@ class BroadcastSender {
 
     broadcastState.publishDoneFuture.then(
       (_) => cleanupInFlightBroadcastState(),
-      onError: (_, __) => cleanupInFlightBroadcastState(),
+      onError: (_, _) => cleanupInFlightBroadcastState(),
     );
 
     if (mySaveToCache) {
@@ -93,8 +100,9 @@ class BroadcastSender {
         ? _checkSinger(customSigner: customSigner)
         : null;
 
-    final cleanedSpecificRelays =
-        specificRelays != null ? cleanRelayUrls(specificRelays.toList()) : null;
+    final cleanedSpecificRelays = specificRelays != null
+        ? cleanRelayUrls(specificRelays.toList())
+        : null;
 
     return _engine.handleEventBroadcast(
       nostrEvent: nostrEvent,

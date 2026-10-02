@@ -164,8 +164,9 @@ class CashuTools {
     required List<CahsuKeyset> keysets,
     required String unit,
   }) {
-    final keysetsFiltered =
-        keysets.where((keyset) => keyset.unit == unit).toList();
+    final keysetsFiltered = keysets
+        .where((keyset) => keyset.unit == unit)
+        .toList();
 
     if (keysetsFiltered.isEmpty) {
       throw Exception('No keysets found with unit: $unit');

@@ -19,13 +19,14 @@ import '../entities/global_state.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/nostr_message_raw.dart';
 import '../entities/relay.dart';
-import '../entities/relay_auth.dart';
+import '../entities/auth_policy.dart';
 import '../entities/relay_connection_key.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_info.dart';
 import '../entities/request_state.dart';
 import '../entities/tuple.dart';
 import '../repositories/nostr_transport.dart';
+import '../repositories/relay_info_repo.dart';
 import 'accounts/accounts.dart';
 import 'engines/network_engine.dart';
 import 'nip42/auth_event.dart';
@@ -34,6 +35,7 @@ import 'nip42/auth_event.dart';
 ///  and help with tracking of requests
 class RelayManager<T> {
   final Completer<void> _seedRelaysCompleter = Completer<void>();
+  final Map<String, Set<Completer<void>>> _requestSentWaiters = {};
 
   /// completes when all seed relays are connected
   Future<void> get seedRelaysConnected => _seedRelaysCompleter.future;
@@ -43,6 +45,7 @@ class RelayManager<T> {
 
   /// signer for nip-42 AUTH challenges from relays
   final Accounts? _accounts;
+  final RelayInfoRepo? _relayInfoRepo;
 
   /// stores the last AUTH challenge per connection for late authentication;
   /// each socket gets its own challenge, so this cannot be keyed by relay
@@ -83,15 +86,15 @@ class RelayManager<T> {
 
   /// Handler for NIP-77 NEG-MSG messages
   void Function(String subscriptionId, RelayConnectionKey key, String payload)?
-      onNegMsg;
+  onNegMsg;
 
   /// Handler for NIP-77 NEG-ERR messages
   void Function(String subscriptionId, RelayConnectionKey key, String errorMsg)?
-      onNegErr;
+  onNegErr;
 
   /// Handler for CLOSED messages that end a NIP-77 negotiation
   void Function(String subscriptionId, RelayConnectionKey key, String? message)?
-      onNegClosed;
+  onNegClosed;
 
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
@@ -122,7 +125,9 @@ class RelayManager<T> {
     allowReconnect = true,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
     this.authChallengeTimeout = RequestDefaults.DEFAULT_AUTH_CHALLENGE_TIMEOUT,
-  }) : _accounts = accounts {
+    RelayInfoRepo? relayInfoRepo,
+  }) : _accounts = accounts,
+       _relayInfoRepo = relayInfoRepo {
     allowReconnectRelays = allowReconnect;
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
   }
@@ -174,11 +179,12 @@ class RelayManager<T> {
   /// relay would duplicate the request, and sending on a bound one would make
   /// it attributable. An identity is added later, by the re-route, and only on
   /// the relays that ask for one.
-  List<RelayConnectivity> get connectedAnonymousRelays =>
-      globalState.relays.values
-          .where((connectivity) => connectivity.key.isAnonymous)
-          .where((connectivity) => connectivity.isConnected)
-          .toList();
+  List<RelayConnectivity> get connectedAnonymousRelays => globalState
+      .relays
+      .values
+      .where((connectivity) => connectivity.key.isAnonymous)
+      .where((connectivity) => connectivity.isConnected)
+      .toList();
 
   /// checks if a relay is connected, avoid using this
   bool isRelayConnected(String url) =>
@@ -201,10 +207,12 @@ class RelayManager<T> {
   Future<bool> _waitForTransportOpen(
     NostrTransport transport, {
     required int timeoutSeconds,
+    bool Function()? stillOwned,
   }) async {
     final deadline = DateTime.now().add(Duration(seconds: timeoutSeconds));
 
     while (DateTime.now().isBefore(deadline)) {
+      if (stillOwned?.call() == false) return false;
       if (transport.isOpen()) {
         return true;
       }
@@ -215,6 +223,7 @@ class RelayManager<T> {
         // keep polling isOpen() until the overall timeout expires
       }
 
+      if (stillOwned?.call() == false) return false;
       if (transport.isOpen()) {
         return true;
       }
@@ -254,7 +263,8 @@ class RelayManager<T> {
       return Tuple(true, "");
     }
 
-    if (isConnectionConnecting(connectionKey)) {
+    if (isConnectionConnecting(connectionKey) ||
+        _connectReadyCompleters.containsKey(connectionKey)) {
       Logger.log.t(() => "relay is already connecting: $connectionKey");
       final inFlightConnect = _connectReadyCompleters[connectionKey];
       if (inFlightConnect != null) {
@@ -273,6 +283,11 @@ class RelayManager<T> {
     RelayConnectivity? relayConnectivity = globalState.relays[connectionKey];
     final connectCompleter = Completer<bool>();
     _connectReadyCompleters[connectionKey] = connectCompleter;
+    NostrTransport? transport;
+    bool ownsTransport() =>
+        transport != null &&
+        identical(globalState.relays[connectionKey], relayConnectivity) &&
+        identical(relayConnectivity?.relayTransport, transport);
 
     try {
       if (relayConnectivity == null) {
@@ -291,9 +306,18 @@ class RelayManager<T> {
       // a fresh socket for a key we may already know: nothing the previous one
       // authenticated carries over
       _forgetAuthState(connectionKey);
-      relayConnectivity.relayTransport = nostrTransportFactory(
+      // A disconnected transport may still own reconnect timers and listeners.
+      // Retire it before replacement or it can later open an untracked socket.
+      await relayConnectivity.close();
+      if (!identical(globalState.relays[connectionKey], relayConnectivity)) {
+        throw StateError(
+          'Connection was removed while replacing its transport',
+        );
+      }
+      transport = nostrTransportFactory(
         url,
         onReconnect: () {
+          if (!ownsTransport()) return;
           // the relay accepted our AUTH on the socket that just died, not on
           // this one; the binding survives, the authentication does not
           _forgetAuthState(connectionKey);
@@ -301,6 +325,7 @@ class RelayManager<T> {
           updateRelayConnectivity();
         },
         onDisconnect: (code, error, reason) {
+          if (!ownsTransport()) return;
           relayConnectivity!.stats.connectionErrors++;
           // the transport reconnects under us and keeps its message stream
           // open, so this is the only notice we get that the socket the relay
@@ -311,15 +336,17 @@ class RelayManager<T> {
           updateRelayConnectivity();
         },
       );
+      relayConnectivity.relayTransport = transport;
       // Start listening immediately so we don't miss early frames such as
       // relay AUTH challenges that may arrive before the transport reports
       // itself fully open.
       _startListeningToSocket(relayConnectivity);
       final opened = await _waitForTransportOpen(
-        relayConnectivity.relayTransport!,
+        transport,
         timeoutSeconds: connectTimeout,
+        stillOwned: ownsTransport,
       );
-      if (!opened) {
+      if (!opened || !ownsTransport()) {
         throw TimeoutException(
           "Future not completed",
           Duration(seconds: connectTimeout),
@@ -342,10 +369,22 @@ class RelayManager<T> {
       return Tuple(true, "");
     } catch (e) {
       Logger.log.e(() => "!! could not connect to $url -> $e");
-      await relayConnectivity!.close();
+      try {
+        if (transport == null ||
+            identical(relayConnectivity!.relayTransport, transport)) {
+          await relayConnectivity!.close();
+        } else {
+          await transport.close();
+        }
+      } catch (closeError) {
+        Logger.log.w(() => "Error retiring transport for $url: $closeError");
+      }
     }
-    relayConnectivity.relay.failedToConnect();
-    relayConnectivity.stats.connectionErrors++;
+    final failedConnectivity = relayConnectivity;
+    if (failedConnectivity != null) {
+      failedConnectivity.relay.failedToConnect();
+      failedConnectivity.stats.connectionErrors++;
+    }
     if (!connectCompleter.isCompleted) {
       connectCompleter.complete(false);
     }
@@ -361,12 +400,11 @@ class RelayManager<T> {
     String url, {
     required ConnectionSource connectionSource,
     bool force = false,
-  }) =>
-      reconnectConnection(
-        RelayConnectionKey.anonymous(url),
-        connectionSource: connectionSource,
-        force: force,
-      );
+  }) => reconnectConnection(
+    RelayConnectionKey.anonymous(url),
+    connectionSource: connectionSource,
+    force: force,
+  );
 
   /// Reconnects the connection identified by [key], if it is closed. An
   /// authenticated connection comes back authenticated or not at all.
@@ -432,8 +470,7 @@ class RelayManager<T> {
       if (!(await connectRelay(
         dirtyUrl: key.url,
         connectionSource: connectionSource,
-      ))
-          .first) {
+      )).first) {
         // could not connect
         return false;
       }
@@ -599,8 +636,36 @@ class RelayManager<T> {
     }
     if (msg.type == ClientMsgType.kReq) {
       relayConnectivity.stats.openRequestIds.add(id);
+      for (final waiter
+          in _requestSentWaiters.remove(id) ?? <Completer<void>>{}) {
+        waiter.complete();
+      }
     } else if (msg.type == ClientMsgType.kClose) {
       relayConnectivity.stats.openRequestIds.remove(id);
+    }
+  }
+
+  /// Waits until a REQ with [id] is sent on a connected relay.
+  Future<void> waitForRequestSent(String id, Duration timeout) async {
+    if (globalState.relays.values.any(
+      (relay) => relay.isConnected && relay.stats.openRequestIds.contains(id),
+    )) {
+      return;
+    }
+    final waiter = Completer<void>();
+    _requestSentWaiters.putIfAbsent(id, () => {}).add(waiter);
+    try {
+      await waiter.future.timeout(
+        timeout,
+        onTimeout: () => throw TimeoutException(
+          'NWC response subscription was not sent',
+          timeout,
+        ),
+      );
+    } finally {
+      final waiters = _requestSentWaiters[id];
+      waiters?.remove(waiter);
+      if (waiters != null && waiters.isEmpty) _requestSentWaiters.remove(id);
     }
   }
 
@@ -687,9 +752,23 @@ class RelayManager<T> {
     final transport = relayConnectivity.relayTransport;
     relayConnectivity.listen(
       (message) {
+        if (!identical(
+              globalState.relays[relayConnectivity.key],
+              relayConnectivity,
+            ) ||
+            !identical(relayConnectivity.relayTransport, transport)) {
+          return;
+        }
         _handleIncomingMessage(message, relayConnectivity);
       },
       onError: (error) {
+        if (!identical(
+              globalState.relays[relayConnectivity.key],
+              relayConnectivity,
+            ) ||
+            !identical(relayConnectivity.relayTransport, transport)) {
+          return;
+        }
         Logger.log.e(() => "onError ${relayConnectivity.url} on listen $error");
         relayConnectivity.stats.connectionErrors++;
         _handleTransportGone(relayConnectivity, transport);
@@ -714,7 +793,11 @@ class RelayManager<T> {
     RelayConnectivity relayConnectivity,
     NostrTransport? transport,
   ) async {
-    if (!identical(relayConnectivity.relayTransport, transport)) {
+    if (!identical(
+          globalState.relays[relayConnectivity.key],
+          relayConnectivity,
+        ) ||
+        !identical(relayConnectivity.relayTransport, transport)) {
       return;
     }
 
@@ -722,6 +805,15 @@ class RelayManager<T> {
       await relayConnectivity.close();
     } catch (e) {
       Logger.log.w(() => "Error closing relay ${relayConnectivity.url}: $e");
+    }
+    // Closing can yield while a new owner or transport takes over. Its AUTH
+    // and subscriptions belong to the replacement, not this retired socket.
+    if (!identical(
+          globalState.relays[relayConnectivity.key],
+          relayConnectivity,
+        ) ||
+        relayConnectivity.relayTransport != null) {
+      return;
     }
     // the socket is gone, so is the AUTH the relay accepted on it
     _forgetAuthState(relayConnectivity.key);
@@ -800,9 +892,9 @@ class RelayManager<T> {
     try {
       nostrMsg = await IsolateManager.instance
           .runInEncodingIsolate<String, NostrMessageRaw>(
-        decodeNostrMsg,
-        message,
-      );
+            decodeNostrMsg,
+            message,
+          );
     } catch (e) {
       // Isolates not available on web
       nostrMsg = decodeNostrMsg(message);
@@ -860,13 +952,14 @@ class RelayManager<T> {
         // Check if this is auth-required for a broadcast - don't mark as done, will retry
         if (msg != null && msg.startsWith("auth-required")) {
           _handleBroadcastAuthRequired(eventId, relayConnectivity);
-          return Future
-              .value(); // Don't add to network controller yet, wait for retry result
+          return Future.value(); // Don't add to network controller yet, wait for retry result
         }
       }
       if (globalState.inFlightBroadcasts[eventId] != null &&
           !globalState
-              .inFlightBroadcasts[eventId]!.networkController.isClosed) {
+              .inFlightBroadcasts[eventId]!
+              .networkController
+              .isClosed) {
         globalState.inFlightBroadcasts[eventId]?.networkController.add(
           RelayBroadcastResponse(
             relayUrl: relayConnectivity.url,
@@ -892,7 +985,8 @@ class RelayManager<T> {
       // Check if this is a negentropy-related error
       // Look for various patterns relays might use to reject NEG commands
       final noticeLower = noticeMsg.toLowerCase();
-      final isNegentropyError = noticeLower.contains('negentropy') ||
+      final isNegentropyError =
+          noticeLower.contains('negentropy') ||
           noticeLower.contains('neg-') ||
           noticeLower.contains('unsupported') ||
           noticeLower.contains('unknown command') ||
@@ -992,6 +1086,7 @@ class RelayManager<T> {
     String url,
     Account account, {
     ConnectionSource connectionSource = ConnectionSource.explicit,
+    int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT,
   }) async {
     if (!account.signer.canSign()) {
       Logger.log.w(() => "Cannot bind a connection to ${account.pubkey}");
@@ -1008,6 +1103,7 @@ class RelayManager<T> {
       dirtyUrl: url,
       connectionSource: connectionSource,
       authPubkey: account.pubkey,
+      connectTimeout: connectTimeout,
     );
     final connectivity = globalState.relays[key];
     if (!connected.first || connectivity == null) {
@@ -1030,7 +1126,7 @@ class RelayManager<T> {
     ConnectionSource connectionSource = ConnectionSource.explicit,
   }) async {
     final auth = state.request.auth;
-    if (auth is! RelayAuthRequire) {
+    if (auth is! AuthPolicyRequire) {
       return picked;
     }
     if (!auth.account.signer.canSign()) {
@@ -1046,9 +1142,51 @@ class RelayManager<T> {
     );
   }
 
+  /// The connection a broadcast under [auth] must go out on towards [url],
+  /// opening it when it is not there yet. Null means nothing may be sent.
+  ///
+  /// Mirrors [connectionForRequest] for the write path, and owns the connecting
+  /// too: a broadcast that requires an identity must not even open the
+  /// anonymous connection, because a socket we opened is one the relay saw,
+  /// whether or not anything was sent on it.
+  Future<RelayConnectivity?> connectionForBroadcast(
+    String url,
+    AuthPolicy? auth, {
+    ConnectionSource connectionSource = ConnectionSource.broadcastSpecific,
+    int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT,
+  }) async {
+    if (auth is AuthPolicyRequire) {
+      if (!auth.account.signer.canSign()) {
+        Logger.log.w(
+          () => "Broadcast requires ${auth.account.pubkey}, which cannot sign",
+        );
+        return null;
+      }
+      return openConnectionAs(
+        url,
+        auth.account,
+        connectionSource: connectionSource,
+        connectTimeout: connectTimeout,
+      );
+    }
+
+    if (!isRelayConnected(url)) {
+      final connected = await connectRelay(
+        dirtyUrl: url,
+        connectionSource: connectionSource,
+        connectTimeout: connectTimeout,
+      );
+      if (!connected.first) {
+        Logger.log.w(() => "Could not connect to $url: ${connected.second}");
+        return null;
+      }
+    }
+    return getRelayConnectivity(url);
+  }
+
   /// The account [key] authenticates as. A registered account wins, because
   /// [Accounts] owns its signer's lifetime; otherwise it is the one the caller
-  /// handed to [RelayAuth], which never had to be registered. Both carry
+  /// handed to [AuthPolicy], which never had to be registered. Both carry
   /// [RelayConnectionKey.pubkey], so this only picks a signer, never an
   /// identity.
   Account? _accountFor(RelayConnectionKey key) =>
@@ -1499,12 +1637,12 @@ class RelayManager<T> {
       accountForAuth(state.request.auth);
 
   /// Account [auth] authenticates as, null when it must stay unattributable.
-  Account? accountForAuth(RelayAuth? auth) {
+  Account? accountForAuth(AuthPolicy? auth) {
     switch (auth) {
-      case RelayAuthNever():
+      case AuthPolicyNever():
         return null;
-      case RelayAuthAllow(:final account):
-      case RelayAuthRequire(:final account):
+      case AuthPolicyAllow(:final account):
+      case AuthPolicyRequire(:final account):
         return account.signer.canSign() ? account : null;
       case null:
         // a request that says nothing still authenticates as the logged
@@ -1512,6 +1650,26 @@ class RelayManager<T> {
         final logged = _accounts?.getLoggedAccount();
         return logged != null && logged.signer.canSign() ? logged : null;
     }
+  }
+
+  /// Account a broadcast authenticates as, null when it must stay
+  /// unattributable.
+  ///
+  /// A caller that named an identity gets that one, with no heuristic. Only a
+  /// broadcast that said nothing prefers the event author, because gift wraps
+  /// and other ephemeral-author events have no matching account and the logged
+  /// one is the historical fallback.
+  Account? _accountForBroadcast(BroadcastState state, Nip01Event event) {
+    if (state.auth != null) {
+      return accountForAuth(state.auth);
+    }
+
+    final author = _accounts?.accounts[event.pubKey];
+    if (author != null && author.signer.canSign()) {
+      return author;
+    }
+    final logged = _accounts?.getLoggedAccount();
+    return logged != null && logged.signer.canSign() ? logged : null;
   }
 
   /// Handles OK auth-required for broadcasts by moving the retry onto an
@@ -1539,24 +1697,25 @@ class RelayManager<T> {
       return;
     }
 
-    // Prefer authenticating as the event author. Gift wraps and other
-    // ephemeral-author events may not have a matching account, so fall back to
-    // the currently logged-in account when needed.
-    Account? account = _accounts?.accounts[eventToResend.pubKey];
-    final loggedAccount = _accounts?.getLoggedAccount();
-    if ((account == null || !account.signer.canSign()) &&
-        loggedAccount != null &&
-        loggedAccount.pubkey != account?.pubkey) {
-      account = loggedAccount;
-    }
+    final resolved = _accountForBroadcast(broadcastState, eventToResend);
 
-    if (account == null || !account.signer.canSign()) {
+    if (resolved == null) {
       Logger.log.w(
         () =>
-            "Received OK auth-required but no account can sign for ${relayConnectivity.url}",
+            "Cannot satisfy auth-required for broadcast $eventId on ${relayConnectivity.url}",
       );
+      // a broadcast that named a policy gets an answer rather than a timeout;
+      // one that said nothing keeps waiting, as it always has
+      if (broadcastState.auth != null) {
+        failBroadcast(
+          eventId,
+          relayConnectivity.url,
+          'auth-required: this broadcast may not reveal an identity',
+        );
+      }
       return;
     }
+    final account = resolved;
 
     final boundKey = RelayConnectionKey.authenticated(
       relayConnectivity.url,
@@ -1567,7 +1726,7 @@ class RelayManager<T> {
       try {
         final bound = await openConnectionAs(
           relayConnectivity.url,
-          account!,
+          account,
           connectionSource: relayConnectivity.relay.connectionSource,
         );
         if (!identical(
@@ -1655,8 +1814,9 @@ class RelayManager<T> {
     /// request left on it would wait for a socket nobody will reopen. One that
     /// is retrying its authentication is the exception: its replacement is on
     /// its way and owes it a replay.
-    final myNotConnectedRelays =
-        state.requests.keys.where((key) => !isConnectionOpen(key)).toList();
+    final myNotConnectedRelays = state.requests.keys
+        .where((key) => !isConnectionOpen(key))
+        .toList();
 
     final bool didAllRelaysFinish = state.requests.values.every(
       (element) =>
@@ -1728,6 +1888,77 @@ class RelayManager<T> {
     await Future.wait(_connectionKeysForRelay(url).map(closeConnection));
   }
 
+  /// Closes connections that no longer carry any tracked network work.
+  ///
+  /// Call this after optional subscriptions stop, for example when an app goes
+  /// into the background. This is not an eviction timer: a live subscription
+  /// keeps its connection even after EOSE, and authentication/reconnect work
+  /// keeps the exact connection it is preparing to use.
+  ///
+  /// Request discovery does not yet identify every target connection. Defer
+  /// pruning while such work is in progress instead of guessing its targets.
+  /// Broadcasts track relay URLs rather than identities, so both anonymous and
+  /// authenticated connections at an in-flight broadcast's URL are retained.
+  Future<void> closeIdleConnections() async {
+    var changed = false;
+    try {
+      for (final key in globalState.relays.keys.toList()) {
+        // Re-evaluate after each asynchronous close. Another operation may
+        // have claimed the next connection while the previous one was closing.
+        if (_hasUnassignedConnectionWork()) break;
+        if (_connectionHasWork(key)) continue;
+        await closeConnection(key);
+        changed = true;
+      }
+    } finally {
+      if (changed) updateRelayConnectivity();
+    }
+  }
+
+  bool _hasUnassignedConnectionWork() {
+    for (final state in globalState.inFlightRequests.values) {
+      if (!state.networkController.isClosed &&
+          (state.pendingConnections > 0 || state.requests.isEmpty)) {
+        return true;
+      }
+    }
+    return globalState.inFlightBroadcasts.values.any(
+      (state) => !state.networkController.isClosed && state.broadcasts.isEmpty,
+    );
+  }
+
+  bool _connectionHasWork(RelayConnectionKey key) {
+    final connectivity = globalState.relays[key];
+    if (connectivity == null) return true;
+    if (_connectReadyCompleters.containsKey(key) ||
+        connectivity.relay.connecting ||
+        (connectivity.relayTransport?.isConnecting() ?? false) ||
+        _authenticating.containsKey(key) ||
+        _challengeWaiters.containsKey(key) ||
+        _pendingAuths.values.any((auth) => auth.key == key)) {
+      return true;
+    }
+    for (final state in globalState.inFlightRequests.values) {
+      if (state.networkController.isClosed) continue;
+      final request = state.requests[key];
+      if (request != null &&
+          (request.retryingAuth ||
+              (!request.receivedClosed &&
+                  (state.isSubscription || !request.receivedEOSE)))) {
+        return true;
+      }
+    }
+    for (final state in globalState.inFlightBroadcasts.values) {
+      if (state.networkController.isClosed) continue;
+      if (state.broadcasts.keys.any((url) => cleanRelayUrl(url) == key.url)) {
+        return true;
+      }
+    }
+    return globalState.inFlightNegotiations.values.any(
+      (state) => !state.isCompleted && state.connectionKey == key,
+    );
+  }
+
   /// Closes one connection and forgets it. An entry that lost its transport, to
   /// a reset or to a failed connection attempt, is forgotten just the same:
   /// leaving it behind keeps its auth state alive and makes it reconnect.
@@ -1753,11 +1984,12 @@ class RelayManager<T> {
     }
   }
 
-  /// fetches relay info
-  /// todo: refactor to use http injector and decouple data from fetching
+  /// fetches relay info; returns null when no [RelayInfoRepo] is configured
   Future<RelayInfo?> getRelayInfo(String url) async {
-    if (globalState.relays[RelayConnectionKey.anonymous(url)] != null) {
-      return await RelayInfo.get(url);
+    final repo = _relayInfoRepo;
+    if (repo != null &&
+        globalState.relays[RelayConnectionKey.anonymous(url)] != null) {
+      return await repo.getRelayInfo(url);
     }
     return null;
   }

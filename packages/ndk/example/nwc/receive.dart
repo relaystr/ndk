@@ -9,9 +9,7 @@ void main() async {
 
   // Provide an NWC connection URI. Omit AMOUNT_MSAT for a variable amount.
   final nwcUri = Platform.environment['NWC_URI']!;
-  final amountMsat = int.tryParse(
-    Platform.environment['AMOUNT_MSAT'] ?? '',
-  );
+  final amountMsat = int.tryParse(Platform.environment['AMOUNT_MSAT'] ?? '');
 
   final connection = await ndk.nwc.connect(nwcUri);
   final response = await ndk.nwc.receive(

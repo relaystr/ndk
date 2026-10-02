@@ -38,22 +38,22 @@ class Bolt12Wallet extends Wallet {
     this.hasBlindedPaths = false,
     Map<String, dynamic>? metadata,
   }) : super(
-          type: WalletType.BOLT12,
-          metadata: Map.unmodifiable({
-            ...(metadata ?? const {}),
-            'offer': offer,
-            'source': source,
-            'bip353Address': bip353Address,
-            'description': description,
-            'nodeId': nodeId,
-            'amount': amount,
-            'issuer': issuer,
-            'currency': currency,
-            'expiresAt': expiresAt,
-            'quantityMax': quantityMax,
-            'hasBlindedPaths': hasBlindedPaths,
-          }),
-        );
+         type: WalletType.BOLT12,
+         metadata: Map.unmodifiable({
+           ...(metadata ?? const {}),
+           'offer': offer,
+           'source': source,
+           'bip353Address': bip353Address,
+           'description': description,
+           'nodeId': nodeId,
+           'amount': amount,
+           'issuer': issuer,
+           'currency': currency,
+           'expiresAt': expiresAt,
+           'quantityMax': quantityMax,
+           'hasBlindedPaths': hasBlindedPaths,
+         }),
+       );
 
   @override
   Map<String, dynamic> toMetadata() => metadata;
@@ -96,8 +96,8 @@ class Bolt12Wallet extends Wallet {
 
   @override
   Set<WalletPaymentProtocol> get receivePaymentProtocols => const {
-        WalletPaymentProtocol.bolt12,
-      };
+    WalletPaymentProtocol.bolt12,
+  };
 
   @override
   bool get supportsBip321Receive => true;

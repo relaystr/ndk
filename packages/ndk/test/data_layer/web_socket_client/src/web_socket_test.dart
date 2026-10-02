@@ -35,10 +35,7 @@ void main() {
 
         await expectLater(
           socket.connection,
-          emitsInOrder([
-            const Connecting(),
-            const Connected(),
-          ]),
+          emitsInOrder([const Connecting(), const Connected()]),
         );
         expect(socket.connection.state, equals(const Connected()));
         expect(socket.protocol, isEmpty);
@@ -57,10 +54,7 @@ void main() {
 
         await expectLater(
           socket.connection,
-          emitsInOrder([
-            const Connecting(),
-            const Connected(),
-          ]),
+          emitsInOrder([const Connecting(), const Connected()]),
         );
         expect(socket.connection.state, equals(const Connected()));
         expect(socket.protocol, equals(protocol));
@@ -70,8 +64,7 @@ void main() {
     });
 
     group('connection', () {
-      test(
-          'emits [connecting, disconnected, reconnecting] '
+      test('emits [connecting, disconnected, reconnecting] '
           'when not able to establish a connection.', () async {
         final socket = WebSocket(uri);
 
@@ -91,8 +84,7 @@ void main() {
         socket.close();
       });
 
-      test(
-          'emits [connecting, disconnected, reconnecting] '
+      test('emits [connecting, disconnected, reconnecting] '
           'when not able to establish a connection with retry.', () async {
         final backoff = _MockBackoff();
         final socket = WebSocket(uri, backoff: backoff);
@@ -117,8 +109,7 @@ void main() {
         socket.close();
       });
 
-      test(
-          'emits [connecting, disconnected] '
+      test('emits [connecting, disconnected] '
           'when not able to establish a connection due to timeout.', () async {
         final backoff = _MockBackoff();
         final socket = WebSocket(uri, backoff: backoff, timeout: Duration.zero);
@@ -133,45 +124,42 @@ void main() {
             emitsDone,
           ]),
         );
-        expect(
-          socket.connection.state,
-          isDisconnectedByTimeout(),
-        );
-        socket.close();
-      });
-
-      test(
-          'emits [connecting, disconnected, reconnecting, disconnected] '
-          'when not able to establish a connection due to timeout with retry.',
-          () async {
-        final backoff = _MockBackoff();
-        final socket = WebSocket(
-          uri,
-          backoff: backoff,
-          timeout: const Duration(milliseconds: 50),
-        );
-
-        when(backoff.next).thenReturn(const Duration(milliseconds: 50));
-
-        await expectLater(
-          socket.connection,
-          emitsInOrder([
-            const Connecting(),
-            isDisconnected(
-              whereError: isA<io.SocketException>(),
-              whereStackTrace: isNotNull,
-            ),
-            const Reconnecting(),
-            isDisconnectedByTimeout(),
-            emitsDone,
-          ]),
-        );
         expect(socket.connection.state, isDisconnectedByTimeout());
         socket.close();
       });
 
       test(
-          'emits [connecting, connected] '
+        'emits [connecting, disconnected, reconnecting, disconnected] '
+        'when not able to establish a connection due to timeout with retry.',
+        () async {
+          final backoff = _MockBackoff();
+          final socket = WebSocket(
+            uri,
+            backoff: backoff,
+            timeout: const Duration(milliseconds: 50),
+          );
+
+          when(backoff.next).thenReturn(const Duration(milliseconds: 50));
+
+          await expectLater(
+            socket.connection,
+            emitsInOrder([
+              const Connecting(),
+              isDisconnected(
+                whereError: isA<io.SocketException>(),
+                whereStackTrace: isNotNull,
+              ),
+              const Reconnecting(),
+              isDisconnectedByTimeout(),
+              emitsDone,
+            ]),
+          );
+          expect(socket.connection.state, isDisconnectedByTimeout());
+          socket.close();
+        },
+      );
+
+      test('emits [connecting, connected] '
           'when able to establish a connection.', () async {
         server = await createWebSocketServer();
         final socket = WebSocket(
@@ -181,18 +169,14 @@ void main() {
 
         await expectLater(
           socket.connection,
-          emitsInOrder([
-            const Connecting(),
-            const Connected(),
-          ]),
+          emitsInOrder([const Connecting(), const Connected()]),
         );
         expect(socket.connection.state, equals(const Connected()));
 
         socket.close();
       });
 
-      test(
-          'emits [connecting, disconnected, reconnecting, reconnected] '
+      test('emits [connecting, disconnected, reconnecting, reconnected] '
           'when able to establish a connection after retries.', () async {
         final socket = WebSocket(
           Uri.parse('ws://localhost:$port'),
@@ -220,8 +204,7 @@ void main() {
         socket.close();
       });
 
-      test(
-          'emits [connecting, connected, reconnecting, reconnected] '
+      test('emits [connecting, connected, reconnecting, reconnected] '
           'when able to re-establish a connection.', () async {
         WebSocketChannel? channel;
         server = await createWebSocketServer(
@@ -238,10 +221,7 @@ void main() {
 
         await expectLater(
           socket.connection,
-          emitsInOrder([
-            const Connecting(),
-            const Connected(),
-          ]),
+          emitsInOrder([const Connecting(), const Connected()]),
         );
 
         expect(socket.connection.state, equals(const Connected()));
@@ -267,10 +247,7 @@ void main() {
 
         await expectLater(
           socket.connection,
-          emitsInOrder([
-            const Reconnecting(),
-            const Reconnected(),
-          ]),
+          emitsInOrder([const Reconnecting(), const Reconnected()]),
         );
 
         expect(socket.connection.state, equals(const Reconnected()));
@@ -280,8 +257,7 @@ void main() {
         socket.close();
       });
 
-      test(
-          'emits [connecting, connected, disconnecting, disconnected] '
+      test('emits [connecting, connected, disconnecting, disconnected] '
           'when close is called after establishing a connection.', () async {
         server = await createWebSocketServer();
 
@@ -293,10 +269,7 @@ void main() {
 
         await expectLater(
           socket.connection,
-          emitsInOrder([
-            const Connecting(),
-            const Connected(),
-          ]),
+          emitsInOrder([const Connecting(), const Connected()]),
         );
 
         socket.close(closeCode, closeReason);
@@ -314,9 +287,7 @@ void main() {
         );
         expect(
           socket.connection.state,
-          equals(
-            const Disconnected(code: closeCode, reason: closeReason),
-          ),
+          equals(const Disconnected(code: closeCode, reason: closeReason)),
         );
       });
     });
@@ -355,10 +326,7 @@ void main() {
 
         await expectLater(
           socket.connection,
-          emitsInOrder([
-            const Connecting(),
-            const Connected(),
-          ]),
+          emitsInOrder([const Connecting(), const Connected()]),
         );
 
         await _sleep();
@@ -421,10 +389,7 @@ void main() {
 
         await expectLater(
           socket.connection,
-          emitsInOrder([
-            const Connecting(),
-            const Connected(),
-          ]),
+          emitsInOrder([const Connecting(), const Connected()]),
         );
 
         socket
@@ -500,13 +465,13 @@ Future<io.HttpServer> createWebSocketServer({
   final server = await io.HttpServer.bind('localhost', port);
   server
       .transform(
-    io.WebSocketTransformer(
-      protocolSelector: (protocols) => protocols.firstOrNull,
-    ),
-  )
+        io.WebSocketTransformer(
+          protocolSelector: (protocols) => protocols.firstOrNull,
+        ),
+      )
       .listen((webSocket) {
-    if (onConnection != null) onConnection(IOWebSocketChannel(webSocket));
-  });
+        if (onConnection != null) onConnection(IOWebSocketChannel(webSocket));
+      });
   return server;
 }
 

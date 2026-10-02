@@ -64,6 +64,12 @@ class NdkConfig {
   /// Store this securely! Seed phrase allow full access to cashu funds!
   final CashuUserSeedphrase? cashuUserSeedphrase;
 
+  /// when false (default), automatic cashu quote completion on startup
+  /// requires an explicit `Cashu.restore()` call for the mint/unit first;
+  /// when true, it instead runs a bounded NUT-09 scan itself to verify the
+  /// mint derivation counter before minting. See [Cashu.retrieveFunds].
+  bool autoVerifyMintCounters;
+
   /// whether to save broadcasted events to cache by default
   bool defaultBroadcastSaveToCache;
 
@@ -80,6 +86,20 @@ class NdkConfig {
   /// compressible traffic. Browser WebSocket APIs do not expose compression
   /// controls, so this option has no effect on web builds.
   bool webSocketCompression;
+
+  /// Native WebSocket heartbeat interval. Null disables client pings.
+  ///
+  /// Longer intervals reduce idle network traffic, but also delay detection of
+  /// silent connection failures (the pong timeout equals this interval).
+  /// Browser WebSocket APIs do not expose heartbeat controls.
+  Duration? webSocketPingInterval;
+
+  /// Maximum exponential reconnect step, starting at 500 milliseconds.
+  ///
+  /// The default of 4 caps retries at 4 seconds. For example, 7 caps retries
+  /// at 32 seconds. This only affects failed connections, not event delivery
+  /// on healthy connections.
+  int webSocketReconnectMaximumStep;
 
   /// Enable fetched ranges tracking.
   /// When enabled, NDK tracks which time ranges have been fetched from which relays.
@@ -124,6 +144,13 @@ class NdkConfig {
   /// Whether to run cache eviction once on startup before periodic runs.
   bool runCacheEvictionOnStartup;
 
+  /// Development aid, off by default. Flutter apps can pass `kDebugMode`.
+  ///
+  /// When enabled:
+  /// - request ids sent to relays start with the request name, so relays
+  ///   see which usecase opened each subscription. Keep it off in production.
+  bool debugMode;
+
   /// Creates a new instance of [NdkConfig].
   ///
   /// [eventVerifier] The verifier used to validate Nostr events. \
@@ -154,7 +181,10 @@ class NdkConfig {
     this.logLevel = defaultLogLevel,
     this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
     this.webSocketCompression = true,
+    this.webSocketPingInterval = const Duration(seconds: 10),
+    this.webSocketReconnectMaximumStep = 4,
     this.cashuUserSeedphrase,
+    this.autoVerifyMintCounters = false,
     this.fetchedRangesEnabled = false,
     // ignore: deprecated_member_use_from_same_package
     this.eagerAuth = false,
@@ -167,6 +197,7 @@ class NdkConfig {
     this.cacheEvictionStartupDelay = const Duration(minutes: 1),
     this.cacheEvictionInterval = const Duration(hours: 1),
     this.runCacheEvictionOnStartup = true,
+    this.debugMode = false,
   });
 }
 

@@ -4,6 +4,7 @@ import 'dart:convert';
 
 class MockCashuHttpClient extends http.BaseClient {
   final Map<String, dynamic> _responses = {};
+  final Map<String, List<http.Response>> _sequencedResponses = {};
   final List<http.Request> capturedRequests = [];
 
   MockCashuHttpClient() {
@@ -273,21 +274,20 @@ class MockCashuHttpClient extends http.BaseClient {
       headers: {'content-type': 'application/json'},
     );
 
-    _responses[
-            'GET:/v1/mint/quote/bolt11/d00e6cbc-04c9-4661-8909-e47c19612bf0'] =
+    _responses['GET:/v1/mint/quote/bolt11/d00e6cbc-04c9-4661-8909-e47c19612bf0'] =
         http.Response(
-      jsonEncode({
-        "quote": "d00e6cbc-04c9-4661-8909-e47c19612bf0",
-        "request":
-            "lnbc50p1p5tctmqdqqpp5y7jyyyq3ezyu3p4c9dh6qpnjj6znuzrz35ernjjpkmw6lz7y2mxqsp59g4z52329g4z52329g4z52329g4z52329g4z52329g4z52329g4q9qrsgqcqzysl62hzvm9s5nf53gk22v5nqwf9nuy2uh32wn9rfx6grkjh6vr5jmy09mra5cna504azyhkd2ehdel9sm7fm72ns6ws2fk4m8cwc99hdgptq8hv4",
-        "amount": 5,
-        "unit": "sat",
-        "state": "PAID",
-        "expiry": now + 60,
-      }),
-      200,
-      headers: {'content-type': 'application/json'},
-    );
+          jsonEncode({
+            "quote": "d00e6cbc-04c9-4661-8909-e47c19612bf0",
+            "request":
+                "lnbc50p1p5tctmqdqqpp5y7jyyyq3ezyu3p4c9dh6qpnjj6znuzrz35ernjjpkmw6lz7y2mxqsp59g4z52329g4z52329g4z52329g4z52329g4z52329g4z52329g4q9qrsgqcqzysl62hzvm9s5nf53gk22v5nqwf9nuy2uh32wn9rfx6grkjh6vr5jmy09mra5cna504azyhkd2ehdel9sm7fm72ns6ws2fk4m8cwc99hdgptq8hv4",
+            "amount": 5,
+            "unit": "sat",
+            "state": "PAID",
+            "expiry": now + 60,
+          }),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
     _responses['POST:/v1/mint/bolt11'] = http.Response(
       jsonEncode({"signatures": []}),
       200,
@@ -323,6 +323,16 @@ class MockCashuHttpClient extends http.BaseClient {
     _responses['$method:$path'] = response;
   }
 
+  /// Serves [responses] one per request (in order); when exhausted, requests
+  /// fall back to [_responses] / the default 404.
+  void setSequencedCustomResponses(
+    String method,
+    String path,
+    List<http.Response> responses,
+  ) {
+    _sequencedResponses['$method:$path'] = List.of(responses);
+  }
+
   void setNetworkError(String method, String path) {
     _responses['$method:$path'] = 'NETWORK_ERROR';
   }
@@ -332,6 +342,16 @@ class MockCashuHttpClient extends http.BaseClient {
     capturedRequests.add(request as http.Request);
 
     final key = '${request.method}:${request.url.path}';
+
+    final sequenced = _sequencedResponses[key];
+    if (sequenced != null && sequenced.isNotEmpty) {
+      final response = sequenced.removeAt(0);
+      return http.StreamedResponse(
+        Stream.value(utf8.encode(response.body)),
+        response.statusCode,
+        headers: response.headers,
+      );
+    }
 
     if (_responses.containsKey(key)) {
       final response = _responses[key];

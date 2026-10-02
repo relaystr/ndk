@@ -23,11 +23,9 @@ import 'package:ndk/src/web_socket_client/web_socket_client.dart';
 /// {@endtemplate}
 class BinaryExponentialBackoff implements Backoff {
   /// {@macro binary_exponential_backoff}
-  BinaryExponentialBackoff({
-    required this.initial,
-    required this.maximumStep,
-  })  : _currentStep = 1,
-        _current = initial;
+  BinaryExponentialBackoff({required this.initial, required this.maximumStep})
+    : _currentStep = 1,
+      _current = initial;
 
   /// The initial backoff duration.
   final Duration initial;

@@ -313,9 +313,9 @@ void main() {
     tester,
   ) async {
     const config = AlbyGoConnectConfig(
-      appName: 'BitBlik',
+      appName: 'Test Wallet',
       appIconUrl: 'https://example.com/icon.png',
-      callback: 'bitblik://nwc-callback',
+      callback: 'test-wallet://nwc-callback',
       discoveryRelay: 'wss://example.com',
     );
     final coordinator = RecordingAuthCoordinator();

@@ -65,6 +65,13 @@ class RelayDeliveryTarget {
   final String? lastError;
   final String? lastOkMessage;
 
+  /// canonical form of the [AuthPolicy] this event goes to this relay under, see
+  /// `AuthPolicy.canonical`. It lives here rather than on the event, because the
+  /// same event may be published to two relays under two identities. A signer
+  /// cannot be persisted, so only the intent is: the account behind a pubkey is
+  /// resolved again on retry.
+  final String? authCanonical;
+
   const RelayDeliveryTarget({
     required this.eventId,
     required this.relayUrl,
@@ -75,10 +82,15 @@ class RelayDeliveryTarget {
     this.nextRetryAt,
     this.lastError,
     this.lastOkMessage,
+    this.authCanonical,
   });
 
   /// Stable primary key used by cache backends.
-  String get key => '$eventId|$relayUrl';
+  String get key => '${keyPrefixFor(eventId)}$relayUrl';
+
+  /// What [key] of every target of [eventId] starts with, so a caller keyed by
+  /// [key] can find them all without spelling the format out again.
+  static String keyPrefixFor(String eventId) => '$eventId|';
 
   RelayDeliveryTarget copyWith({
     String? eventId,
@@ -90,6 +102,7 @@ class RelayDeliveryTarget {
     Object? nextRetryAt = _noChange,
     Object? lastError = _noChange,
     Object? lastOkMessage = _noChange,
+    Object? authCanonical = _noChange,
   }) {
     return RelayDeliveryTarget(
       eventId: eventId ?? this.eventId,
@@ -109,6 +122,9 @@ class RelayDeliveryTarget {
       lastOkMessage: identical(lastOkMessage, _noChange)
           ? this.lastOkMessage
           : lastOkMessage as String?,
+      authCanonical: identical(authCanonical, _noChange)
+          ? this.authCanonical
+          : authCanonical as String?,
     );
   }
 
@@ -123,6 +139,7 @@ class RelayDeliveryTarget {
       'nextRetryAt': nextRetryAt,
       'lastError': lastError,
       'lastOkMessage': lastOkMessage,
+      'authCanonical': authCanonical,
     };
   }
 
@@ -137,6 +154,7 @@ class RelayDeliveryTarget {
       nextRetryAt: json['nextRetryAt'] as int?,
       lastError: json['lastError'] as String?,
       lastOkMessage: json['lastOkMessage'] as String?,
+      authCanonical: json['authCanonical'] as String?,
     );
   }
 }
@@ -210,8 +228,9 @@ class EventDeliveryRecord {
       serializedEventJson: identical(serializedEventJson, _noChange)
           ? this.serializedEventJson
           : serializedEventJson as String?,
-      signedAt:
-          identical(signedAt, _noChange) ? this.signedAt : signedAt as int?,
+      signedAt: identical(signedAt, _noChange)
+          ? this.signedAt
+          : signedAt as int?,
       completedAt: identical(completedAt, _noChange)
           ? this.completedAt
           : completedAt as int?,
@@ -251,16 +270,16 @@ class EventDeliveryRecord {
   factory EventDeliveryRecord.fromJson(Map<String, dynamic> json) {
     final requiresInteractiveSigning =
         json['requiresInteractiveSigning'] as bool? ??
-            json['requiresNetworkSigner'] as bool? ??
-            false;
+        json['requiresNetworkSigner'] as bool? ??
+        false;
     return EventDeliveryRecord(
       eventId: json['eventId'] as String,
       status: EventDeliveryStatus.values.byName(json['status'] as String),
       signingState: json['signingState'] != null
           ? EventSigningState.values.byName(json['signingState'] as String)
           : (requiresInteractiveSigning
-              ? EventSigningState.pending
-              : EventSigningState.notNeeded),
+                ? EventSigningState.pending
+                : EventSigningState.notNeeded),
       createdAt: json['createdAt'] as int,
       updatedAt: json['updatedAt'] as int,
       serializedEventJson: json['serializedEventJson'] as String?,
@@ -544,8 +563,9 @@ class EventCacheStateRecord {
     int? now,
   }) {
     final currentTime = now ?? Nip01Event.secondsSinceEpoch();
-    final deletionEvents =
-        rawEvents.where((event) => event.kind == 5).toList(growable: false);
+    final deletionEvents = rawEvents
+        .where((event) => event.kind == 5)
+        .toList(growable: false);
     final visibleWinners = <String, Nip01Event>{};
 
     for (final event in rawEvents) {

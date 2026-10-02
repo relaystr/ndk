@@ -36,7 +36,7 @@ Options:
   --pubkey <hex|npub>                                    Server-list owner
   --content-type <mime>                                  Override mime type (upload)
   --media                                                Server-side media optimisation (upload)
-  --auth                                                 Use signed GET (download/check/list)
+  --auth                                                 Sign as the logged-in account (download/check/list)
   --since <iso|unix>                                     list: only blobs after this date
   --until <iso|unix>                                     list: only blobs before this date
   -h, --help                                             Show this help''';
@@ -142,7 +142,7 @@ Options:
     await ndk.blossom.downloadBlobToFile(
       sha256: sha,
       outputPath: outPath,
-      useAuth: parsed.auth,
+      auth: _authPolicy(parsed, ndk),
       serverUrls: parsed.servers.isEmpty ? null : parsed.servers,
       pubkeyToFetchUserServerList: parsed.pubkey,
     );
@@ -185,7 +185,8 @@ Options:
       stderr.writeln(parsed.error);
       return 2;
     }
-    final pubkey = parsed.pubkey ??
+    final pubkey =
+        parsed.pubkey ??
         (parsed.positional.isNotEmpty
             ? _resolvePubkey(parsed.positional[0])
             : null) ??
@@ -199,7 +200,7 @@ Options:
     final blobs = await ndk.blossom.listBlobs(
       pubkey: pubkey,
       serverUrls: parsed.servers.isEmpty ? null : parsed.servers,
-      useAuth: parsed.auth,
+      auth: _authPolicy(parsed, ndk),
       since: parsed.since,
       until: parsed.until,
     );
@@ -258,7 +259,7 @@ Options:
     stdout.writeln('Checking $sha ...');
     final url = await ndk.blossom.checkBlob(
       sha256: sha,
-      useAuth: parsed.auth,
+      auth: _authPolicy(parsed, ndk),
       serverUrls: parsed.servers.isEmpty ? null : parsed.servers,
       pubkeyToFetchUserServerList: parsed.pubkey,
     );
@@ -376,6 +377,17 @@ Options:
       return null;
     }
     return t;
+  }
+
+  /// `--auth` signs as the logged-in account. Without it every request stays
+  /// anonymous, `list` included, whatever the API would default to.
+  AuthPolicy _authPolicy(_BlossomArgs parsed, Ndk ndk) {
+    if (!parsed.auth) return const AuthPolicy.never();
+    final account = ndk.accounts.getLoggedAccount();
+    if (account == null) {
+      throw StateError('--auth needs a logged-in account');
+    }
+    return AuthPolicy.require(account);
   }
 
   String _humanSize(int bytes) {
@@ -508,7 +520,8 @@ Options:
 
     if (result.positional.length < requirePositional) {
       return _BlossomArgs(
-        error: 'Expected $requirePositional positional argument(s), '
+        error:
+            'Expected $requirePositional positional argument(s), '
             'got ${result.positional.length}.',
       );
     }

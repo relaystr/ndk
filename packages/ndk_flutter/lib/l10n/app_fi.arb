@@ -545,9 +545,37 @@
   "appUpdateCheckAgain": "Tarkista uudelleen",
   "appUpdateInstalledVersion": "Asennettu versio {version}",
   "appUpdateInstalledAndAvailable": "Asennettu versio {installedVersion}. Päivitys {availableVersion} saatavilla.",
-  "appUpdateChangelog": "Muutosloki", "appUpdateReleaseHistory": "Versiohistoria", "appUpdateInstalledBadge": "Asennettu", "appUpdateAvailableBadge": "Päivitys saatavilla", "appUpdateLatestBadge": "Uusin", "appUpdateNoReleases": "Yhtään versiota ei ole vielä julkaistu.", "appUpdateAcrossAllReleases": "Kaikissa versioissa",
+  "appUpdateChangelog": "Muutosloki",
+  "appUpdateReleaseHistory": "Versiohistoria",
+  "appUpdateInstalledBadge": "Asennettu",
+  "appUpdateAvailableBadge": "Päivitys saatavilla",
+  "appUpdateLatestBadge": "Uusin",
+  "appUpdateNoReleases": "Yhtään versiota ei ole vielä julkaistu.",
+  "appUpdateAcrossAllReleases": "Kaikissa versioissa",
   "appUpdateSatsBy": "sats käyttäjiltä",
-  "appUpdateReleaseDetails": "Julkaisun tiedot", "appUpdateWhatsNew": "Uutta", "appUpdatePublishedOn": "Julkaistu {date}", "appUpdateChannel": "Kanava: {channel}", "appUpdateArchitecture": "Arkkitehtuuri: {architecture}", "appUpdateVersionCode": "Koontiversio {versionCode}", "appUpdateReleaseVersion": "Julkaisu {version}", "appUpdateNoReleaseNotes": "Julkaisutietoja ei ole julkaistu.", "appUpdatePublisher": "Julkaisija", "appUpdatePublisherSignatureVerified": "Nostr-tapahtuman allekirjoitus vahvistettu", "appUpdateCertificateDeclared": "Julkaisijan ilmoittama Android-allekirjoitusvarmenne", "appUpdateSource": "Latauslähde: {host}", "appUpdateCommunity": "Yhteisö", "appUpdateZapSummary": "{count} zappia · {sats} satsia", "appUpdateReactionCount": "{count} reaktiota", "appUpdateCommentCount": "{count} kommenttia", "appUpdateSocialLoadFailed": "Yhteisön toimintaa ei voitu ladata.", "appUpdateComments": "Kommentit", "appUpdateNoComments": "Ei vielä kommentteja.", "appUpdateCommentHint": "Jaa palautetta tästä julkaisusta", "appUpdatePostComment": "Lähetä kommentti", "appUpdateSignInToComment": "Kirjaudu Nostr-tilillä kommentoidaksesi.", "appUpdateTechnicalDetails": "Tekniset tiedot",
+  "appUpdateReleaseDetails": "Julkaisun tiedot",
+  "appUpdateWhatsNew": "Uutta",
+  "appUpdatePublishedOn": "Julkaistu {date}",
+  "appUpdateChannel": "Kanava: {channel}",
+  "appUpdateArchitecture": "Arkkitehtuuri: {architecture}",
+  "appUpdateVersionCode": "Koontiversio {versionCode}",
+  "appUpdateReleaseVersion": "Julkaisu {version}",
+  "appUpdateNoReleaseNotes": "Julkaisutietoja ei ole julkaistu.",
+  "appUpdatePublisher": "Julkaisija",
+  "appUpdatePublisherSignatureVerified": "Nostr-tapahtuman allekirjoitus vahvistettu",
+  "appUpdateCertificateDeclared": "Julkaisijan ilmoittama Android-allekirjoitusvarmenne",
+  "appUpdateSource": "Latauslähde: {host}",
+  "appUpdateCommunity": "Yhteisö",
+  "appUpdateZapSummary": "{count} zappia · {sats} satsia",
+  "appUpdateReactionCount": "{count} reaktiota",
+  "appUpdateCommentCount": "{count} kommenttia",
+  "appUpdateSocialLoadFailed": "Yhteisön toimintaa ei voitu ladata.",
+  "appUpdateComments": "Kommentit",
+  "appUpdateNoComments": "Ei vielä kommentteja.",
+  "appUpdateCommentHint": "Jaa palautetta tästä julkaisusta",
+  "appUpdatePostComment": "Lähetä kommentti",
+  "appUpdateSignInToComment": "Kirjaudu Nostr-tilillä kommentoidaksesi.",
+  "appUpdateTechnicalDetails": "Tekniset tiedot",
   "appUpdateViewStatus": "Näytä päivityksen tila",
   "refreshBalance": "Päivitä saldo",
   "balanceRefreshed": "Saldo päivitetty",
@@ -581,5 +609,83 @@
   "bolt12WalletTypeSubtitle": "Vain vastaanottoon tarkoitettu lompakko uudelleenkäytettävällä tarjouksella",
   "invalidBolt12QrCode": "QR-koodi ei sisällä BOLT12-, BIP321- tai BIP353-maksukohdetta.",
   "bolt12OfferTitle": "Vastaanota BOLT12:lla",
-  "bolt12OfferInstructions": "Jaa tämä uudelleenkäytettävä tarjous vastaanottaaksesi Lightning-maksun."
+  "bolt12OfferInstructions": "Jaa tämä uudelleenkäytettävä tarjous vastaanottaaksesi Lightning-maksun.",
+  "restoreFromBackup": "Palauta varmuuskopiosta",
+  "@restoreFromBackup": {
+    "description": "Label for restoring a Cashu wallet from a backup JSON"
+  },
+  "@restoreSuccess": {
+    "description": "Confirmation after a successful restore",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "cashuQuoteRecoveryTitle": "Palauta Mint-tarjous",
+  "recoverQuote": "Palauta tarjous",
+  "enterQuoteId": "Anna palautettavan mint-tarjouksen tunnus. Lukkoavain palautetaan siemenlauseestasi.",
+  "quoteId": "Tarjouksen tunnus",
+  "quoteIdHint": "Liitä tarjouksen tunnus tähän",
+  "pleaseEnterQuoteId": "Anna tarjouksen tunnus",
+  "cashuQuoteRecoveryStageFetchingQuote": "Haetaan tarjousta mintistä...",
+  "cashuQuoteRecoveryStageRecoveringKey": "Palautetaan lukkoavainta siemenlauseestasi...",
+  "cashuQuoteRecoveryStageCompletingMint": "Suoritetaan mintti valmiiksi...",
+  "cashuQuoteRecoveryKeyRecovered": "Lukkoavain palautettu (johtamislaskuri {counter})",
+  "@cashuQuoteRecoveryKeyRecovered": {
+    "description": "Confirmation shown once the lock key is recovered",
+    "placeholders": {
+      "counter": {
+        "type": "int",
+        "description": "Derivation counter of the recovered lock key"
+      }
+    }
+  },
+  "cashuQuoteRecoveryCompleted": "Tarjous palautettu ja varat lisätty saldoosi",
+  "quoteRecoveryFailed": "Tarjouksen palautus epäonnistui",
+  "restoreFundsFromMint": "Palauta varat mintistä",
+  "cashuRestoreFundsTitle": "Palauta varat mintistä",
+  "cashuRestoreDescription": "Skannaa minttiä siemenlauseestasi johdettujen todistusten suhteen ja palauttaa ne tähän lompakkoon.",
+  "startRestore": "Aloita palautus",
+  "cashuRestoreStageFetchingKeysets": "Haetaan mint-avainjoukkoja...",
+  "cashuRestoreStageScanning": "Skannataan minttiä varojesi suhteen...",
+  "cashuRestoreScanProgress": "Skannattu {keysets} avainjoukko(a) · Löydetty {proofs} todistus(ta)",
+  "@cashuRestoreScanProgress": {
+    "description": "Scan progress in the restore-from-mint dialog",
+    "placeholders": {
+      "keysets": {
+        "type": "int",
+        "description": "Number of keysets scanned"
+      },
+      "proofs": {
+        "type": "int",
+        "description": "Number of proofs found so far"
+      }
+    }
+  },
+  "cashuRestoreStageCompleted": "Palautus valmis",
+  "cashuRestoreAlsoRestoresQuotes": "Palauttaa myös odottavat mint-tarjoukset",
+  "restoredFromMint": "Palautettiin {count} todistusta mintistä",
+  "@restoredFromMint": {
+    "description": "Confirmation after a successful restore-from-mint",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "restoreFailed": "Palautus epäonnistui",
+  "cashuRestoreMenuTitle": "Palautus ja varmuuskopiointi",
+  "cashuSeedPhraseOption": "Aseta siemenlause",
+  "cashuSeedPhraseTitle": "Cashu-siemenlause",
+  "cashuSeedPhraseWarning": "Tämä siemenlause on KAIKKIEN Cashu-lompakoiden yhteinen. Se on ainoa tapa palauttaa varasi, jos menetät tämän laitteen. Sen muuttaminen korvaa siemenen, josta johdetaan avaimet jokaiseen Cashu-lompakkoon, joten aiemman siemenen alla vastaanotettuja varoja ei voida enää löytää automaattisesti.",
+  "cashuSeedPhraseInstructions": "Anna käytettävä palautuslause (12, 15, 18, 21 tai 24 sanaa). Muuta siementä vain, kun palautat lompakoita jo tallentamastasi lauseesta.",
+  "cashuSeedPhraseLabel": "Siemenlause",
+  "cashuSeedPhraseHint": "Liitä siemenlauseesi tähän",
+  "cashuSeedPhraseConfirmChange": "Ymmärrän, että tämä muuttaa siemenen kaikille Cashu-lompakoille",
+  "cashuSeedPhraseInvalid": "Tämä ei näytä kelvolliselta siemenlauseelta. Tarkista, että kaikki sanat on kirjoitettu oikein ja oikeassa järjestyksessä.",
+  "cashuSeedPhraseUpdated": "Siemenlause päivitetty. Se koskee nyt kaikkia Cashu-lompakoita. Varmuuskopioi uusi lause.",
+  "cashuSeedPhraseUpdateFailed": "Siemenlausetta ei voitu päivittää"
 }

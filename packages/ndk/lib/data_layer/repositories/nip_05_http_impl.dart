@@ -1,3 +1,4 @@
+import '../../config/nip_05_defaults.dart';
 import '../../domain_layer/entities/nip_05.dart';
 import '../../domain_layer/repositories/nip_05_repo.dart';
 import '../data_sources/http_request.dart';
@@ -7,17 +8,28 @@ import '../models/nip_05_model.dart';
 class Nip05HttpRepositoryImpl implements Nip05Repository {
   final HttpRequestDS httpDS;
 
+  /// how long to wait for a nostr.json response
+  final Duration timeout;
+
   /// creates a new [Nip05HttpRepositoryImpl] instance
-  Nip05HttpRepositoryImpl({required this.httpDS});
+  Nip05HttpRepositoryImpl({
+    required this.httpDS,
+    this.timeout = NIP_05_REQUEST_TIMEOUT,
+  });
 
   @override
   Future<Nip05?> requestNip05(String nip05, String pubkey) async {
-    String username = nip05.split("@")[0];
-    String url = nip05.split("@")[1];
+    final identifier = _parseIdentifier(nip05);
+    if (identifier == null) {
+      return null;
+    }
 
-    String myUrl = "https://$url/.well-known/nostr.json?name=$username";
-
-    final json = await httpDS.jsonRequest(myUrl);
+    // NIP-05: fetchers MUST ignore HTTP redirects
+    final json = await httpDS.jsonRequest(
+      identifier.url,
+      followRedirects: false,
+      timeout: timeout,
+    );
 
     Map names = json["names"];
 
@@ -28,12 +40,7 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
       pRelays = List<String>.from(relays[pubkey]);
     }
 
-    bool valid = names[username] == pubkey;
-
-    /// additional check for the case where "_"
-    if (!valid) {
-      valid = names["_"] == pubkey;
-    }
+    bool valid = names[identifier.name] == pubkey;
 
     final result = Nip05Model(
       pubKey: pubkey,
@@ -48,14 +55,18 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
 
   @override
   Future<Nip05?> fetchNip05(String nip05) async {
-    String username = nip05.split("@")[0];
-    String url = nip05.split("@")[1];
-
-    String myUrl = "https://$url/.well-known/nostr.json?name=$username";
+    final identifier = _parseIdentifier(nip05);
+    if (identifier == null) {
+      return null;
+    }
 
     final Map<String, dynamic> json;
     try {
-      json = await httpDS.jsonRequest(myUrl);
+      json = await httpDS.jsonRequest(
+        identifier.url,
+        followRedirects: false,
+        timeout: timeout,
+      );
     } on HttpRequestException catch (e) {
       if (e.statusCode == 404) {
         return null;
@@ -66,8 +77,7 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
     Map names = json["names"];
     Map relays = json["relays"] ?? {};
 
-    // Get pubkey from username or fallback to "_"
-    String? pubkey = names[username] ?? names["_"];
+    String? pubkey = names[identifier.name];
 
     if (pubkey == null) {
       return null;
@@ -86,4 +96,15 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
       relays: pRelays,
     );
   }
+}
+
+({String name, String url})? _parseIdentifier(String nip05) {
+  final canonical = Nip05.canonicalIdentifier(nip05);
+  if (canonical == null) {
+    return null;
+  }
+  final [name, domain] = canonical.split("@");
+
+  final url = Uri.https(domain, "/.well-known/nostr.json", {"name": name});
+  return (name: name, url: url.toString());
 }

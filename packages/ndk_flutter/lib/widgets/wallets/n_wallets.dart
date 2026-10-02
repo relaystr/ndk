@@ -93,6 +93,9 @@ class NWallets extends StatefulWidget {
   /// Custom icon configuration for BOLT12 wallets
   final WalletIconConfig? bolt12Icon;
 
+  /// Optional builder replacing the default add-wallet template card.
+  final AddWalletCardBuilder? addWalletCardBuilder;
+
   const NWallets({
     super.key,
     required this.ndkFlutter,
@@ -123,6 +126,7 @@ class NWallets extends StatefulWidget {
     this.nwcIcon,
     this.lnurlIcon,
     this.bolt12Icon,
+    this.addWalletCardBuilder,
   });
 
   @override
@@ -238,6 +242,7 @@ class NWalletsState extends State<NWallets> {
                 nwcIcon: widget.nwcIcon,
                 lnurlIcon: widget.lnurlIcon,
                 bolt12Icon: widget.bolt12Icon,
+                addWalletCardBuilder: widget.addWalletCardBuilder,
               ),
             ),
           ],
@@ -274,6 +279,7 @@ class NWalletsState extends State<NWallets> {
                 nwcIcon: widget.nwcIcon,
                 lnurlIcon: widget.lnurlIcon,
                 bolt12Icon: widget.bolt12Icon,
+                addWalletCardBuilder: widget.addWalletCardBuilder,
               ),
             ),
             if (showActionsSection) ...[

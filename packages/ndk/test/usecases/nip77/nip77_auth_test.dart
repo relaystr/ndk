@@ -14,21 +14,21 @@ void main() async {
     final key1 = Bip340.generatePrivateKey();
 
     Account signableAccount(KeyPair key) => Account(
-          pubkey: key.publicKey,
-          type: AccountType.privateKey,
-          signer: Bip340EventSigner(
-            privateKey: key.privateKey!,
-            publicKey: key.publicKey,
-          ),
-        );
+      pubkey: key.publicKey,
+      type: AccountType.privateKey,
+      signer: Bip340EventSigner(
+        privateKey: key.privateKey!,
+        publicKey: key.publicKey,
+      ),
+    );
 
     Ndk ndkFor(MockRelay relay) => Ndk(
-          NdkConfig(
-            eventVerifier: Bip340EventVerifier(),
-            cache: MemCacheManager(),
-            bootstrapRelays: [relay.url],
-          ),
-        );
+      NdkConfig(
+        eventVerifier: Bip340EventVerifier(),
+        cache: MemCacheManager(),
+        bootstrapRelays: [relay.url],
+      ),
+    );
 
     /// a relay holding one event the client does not have, so a successful
     /// reconciliation is told apart from one that simply never ran
@@ -37,13 +37,10 @@ void main() async {
       bool requireAuth = true,
       bool refuseWithClosed = false,
     }) async {
-      final relay = MockRelay(
-        name: "neg relay",
-        explicitPort: port,
-        signEvents: false,
-      )
-        ..requireAuthForNegentropy = requireAuth
-        ..refuseNegentropyWithClosed = refuseWithClosed;
+      final relay =
+          MockRelay(name: "neg relay", explicitPort: port, signEvents: false)
+            ..requireAuthForNegentropy = requireAuth
+            ..refuseNegentropyWithClosed = refuseWithClosed;
       relay.negentropyItems['a' * 64] = 1000;
       // the relay only challenges once it refuses, which is what `allow` waits
       // for, so the challenge has to be offered on every connection
@@ -64,7 +61,7 @@ void main() async {
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
-        auth: RelayAuth.require(signableAccount(key1)),
+        auth: AuthPolicy.require(signableAccount(key1)),
         timeout: Duration(seconds: 10),
       );
 
@@ -94,7 +91,7 @@ void main() async {
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
-        auth: RelayAuth.allow(signableAccount(key1)),
+        auth: AuthPolicy.allow(signableAccount(key1)),
         timeout: Duration(seconds: 10),
       );
 
@@ -122,7 +119,7 @@ void main() async {
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
-        auth: RelayAuth.allow(signableAccount(key1)),
+        auth: AuthPolicy.allow(signableAccount(key1)),
         timeout: Duration(seconds: 10),
       );
 
@@ -147,7 +144,7 @@ void main() async {
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
-        auth: const RelayAuth.never(),
+        auth: const AuthPolicy.never(),
         timeout: Duration(seconds: 10),
       );
 
@@ -202,7 +199,7 @@ void main() async {
         () => ndk.nip77.reconcile(
           relayUrl: relay.url,
           filter: notesOf(key1),
-          auth: RelayAuth.require(watchOnly),
+          auth: AuthPolicy.require(watchOnly),
           timeout: Duration(seconds: 10),
         ),
         throwsA(isA<Nip77AuthUnavailableException>()),
@@ -217,31 +214,33 @@ void main() async {
       await relay.stopServer();
     });
 
-    test('reconciles anonymously when the relay does not require auth',
-        () async {
-      final relay = await negentropyRelay(
-        port: portBase + 6,
-        requireAuth: false,
-      );
-      relay.requireAuthForRequests = false;
-      relay.sendAuthChallenge = false;
-      final ndk = ndkFor(relay);
-      await Future.delayed(Duration(seconds: 1));
+    test(
+      'reconciles anonymously when the relay does not require auth',
+      () async {
+        final relay = await negentropyRelay(
+          port: portBase + 6,
+          requireAuth: false,
+        );
+        relay.requireAuthForRequests = false;
+        relay.sendAuthChallenge = false;
+        final ndk = ndkFor(relay);
+        await Future.delayed(Duration(seconds: 1));
 
-      final response = ndk.nip77.reconcile(
-        relayUrl: relay.url,
-        filter: notesOf(key1),
-        auth: const RelayAuth.never(),
-        timeout: Duration(seconds: 10),
-      );
+        final response = ndk.nip77.reconcile(
+          relayUrl: relay.url,
+          filter: notesOf(key1),
+          auth: const AuthPolicy.never(),
+          timeout: Duration(seconds: 10),
+        );
 
-      final result = await response.future;
-      expect(result.needIds, contains('a' * 64));
-      expect(relay.connectionsAuthenticatedAs(key1.publicKey), 0);
+        final result = await response.future;
+        expect(result.needIds, contains('a' * 64));
+        expect(relay.connectionsAuthenticatedAs(key1.publicKey), 0);
 
-      await ndk.destroy();
-      await relay.stopServer();
-    });
+        await ndk.destroy();
+        await relay.stopServer();
+      },
+    );
 
     test('a slow signer does not spend the reconciliation budget', () async {
       final relay = await negentropyRelay(port: portBase + 7);
@@ -265,7 +264,7 @@ void main() async {
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
-        auth: RelayAuth.require(slow),
+        auth: AuthPolicy.require(slow),
         timeout: Duration(seconds: 2),
       );
 
@@ -294,7 +293,7 @@ void main() async {
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
-        auth: RelayAuth.require(
+        auth: AuthPolicy.require(
           Account(
             pubkey: key1.publicKey,
             type: AccountType.privateKey,
@@ -314,45 +313,47 @@ void main() async {
       await relay.stopServer();
     });
 
-    test('a refused signature ends a reconciliation that started anonymously',
-        () async {
-      final relay = await negentropyRelay(port: portBase + 9);
-      final ndk = ndkFor(relay);
-      await Future.delayed(Duration(seconds: 1));
+    test(
+      'a refused signature ends a reconciliation that started anonymously',
+      () async {
+        final relay = await negentropyRelay(port: portBase + 9);
+        final ndk = ndkFor(relay);
+        await Future.delayed(Duration(seconds: 1));
 
-      final refusing = MockRefusingSigner(
-        innerSigner: Bip340EventSigner(
-          privateKey: key1.privateKey!,
-          publicKey: key1.publicKey,
-        ),
-      );
-
-      final response = ndk.nip77.reconcile(
-        relayUrl: relay.url,
-        filter: notesOf(key1),
-        auth: RelayAuth.allow(
-          Account(
-            pubkey: key1.publicKey,
-            type: AccountType.privateKey,
-            signer: refusing,
+        final refusing = MockRefusingSigner(
+          innerSigner: Bip340EventSigner(
+            privateKey: key1.privateKey!,
+            publicKey: key1.publicKey,
           ),
-        ),
-        timeout: Duration(seconds: 10),
-      );
+        );
 
-      await expectLater(
-        response.future,
-        throwsA(isA<Nip77AuthRequiredException>()),
-      );
-      expect(relay.connectionsAuthenticatedAs(key1.publicKey), 0);
-      expect(
-        refusing.signAttempts,
-        greaterThan(0),
-        reason: 'the refusal has to come from a signature that was asked for',
-      );
+        final response = ndk.nip77.reconcile(
+          relayUrl: relay.url,
+          filter: notesOf(key1),
+          auth: AuthPolicy.allow(
+            Account(
+              pubkey: key1.publicKey,
+              type: AccountType.privateKey,
+              signer: refusing,
+            ),
+          ),
+          timeout: Duration(seconds: 10),
+        );
 
-      await ndk.destroy();
-      await relay.stopServer();
-    });
+        await expectLater(
+          response.future,
+          throwsA(isA<Nip77AuthRequiredException>()),
+        );
+        expect(relay.connectionsAuthenticatedAs(key1.publicKey), 0);
+        expect(
+          refusing.signAttempts,
+          greaterThan(0),
+          reason: 'the refusal has to come from a signature that was asked for',
+        );
+
+        await ndk.destroy();
+        await relay.stopServer();
+      },
+    );
   });
 }

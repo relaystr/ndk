@@ -39,13 +39,17 @@ class _UnusedNdk implements Ndk {
 }
 
 class _DialogController extends ChangeNotifier implements NAppUpdateController {
-  _DialogController(this.state) : ndkFlutter = NdkFlutter(ndk: _UnusedNdk());
+  _DialogController(this.state, {this.notifyOnCheck = false})
+    : ndkFlutter = NdkFlutter(ndk: _UnusedNdk());
 
   @override
   final NAppUpdateState state;
 
   @override
   final NdkFlutter ndkFlutter;
+
+  final bool notifyOnCheck;
+  int checkCount = 0;
 
   @override
   bool get hasExternalUpdate => false;
@@ -72,7 +76,10 @@ class _DialogController extends ChangeNotifier implements NAppUpdateController {
   SoftwareAsset? assetForRelease(SoftwareRelease release) => null;
 
   @override
-  Future<void> checkNow({bool allowDuringInstaller = false}) async {}
+  Future<void> checkNow({bool allowDuringInstaller = false}) async {
+    checkCount++;
+    if (notifyOnCheck) notifyListeners();
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) =>
@@ -95,7 +102,7 @@ SoftwareRelease _release() => SoftwareRelease(
   ),
 );
 
-_DialogController _controller() {
+_DialogController _controller({bool notifyOnCheck = false}) {
   final release = _release();
   return _DialogController(
     NAppUpdateState(
@@ -104,6 +111,7 @@ _DialogController _controller() {
       latestRelease: release,
       releases: [release],
     ),
+    notifyOnCheck: notifyOnCheck,
   );
 }
 
@@ -115,6 +123,21 @@ Widget _app(_DialogController controller) => MaterialApp(
 );
 
 void main() {
+  testWidgets('initial refresh may notify listeners synchronously', (
+    tester,
+  ) async {
+    final controller = _controller(notifyOnCheck: true);
+
+    await tester.pumpWidget(_app(controller));
+    await tester.pumpAndSettle();
+
+    expect(controller.checkCount, 1);
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    controller.dispose();
+  });
+
   testWidgets('release summary navigation tile fits narrow dialog', (
     tester,
   ) async {

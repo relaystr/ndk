@@ -67,7 +67,6 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
           "https://nostr.download",
           "https://cdn.hzrd149.com",
         ],
-        useAuth: false,
       );
 
       setState(() {
@@ -99,7 +98,6 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
           "https://nostr.download",
           "https://cdn.hzrd149.com",
         ],
-        useAuth: false,
       );
 
       setState(() {
@@ -168,6 +166,12 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
               _uploadedSha256 = descriptor.sha256;
               _uploadedUrl = descriptor.url;
             });
+          } else {
+            setState(() {
+              _uploadError = progress.completedUploads
+                  .map((r) => '${r.serverUrl}: ${r.error}')
+                  .join('\n');
+            });
           }
         }
       }
@@ -213,7 +217,6 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
       await widget.ndk.files.downloadToFile(
         url: _uploadedUrl!,
         outputPath: outputPath,
-        useAuth: false,
         serverUrls: ["https://nostr.download", "https://cdn.hzrd149.com"],
       );
 

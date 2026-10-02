@@ -7,7 +7,7 @@ permissions:
   contents: write
 
 env:
-  FLUTTER_VERSION: "3.47.0"
+  FLUTTER_VERSION: "3.47.5"
   JAVA_VERSION: "17"
   FLUTTER_RUST_BRIDGE_VERSION: "1.80.1"
   RUST_VERSION: "1.93"
@@ -152,7 +152,7 @@ jobs:
           architecture: x64
 
       - name: Retrieve base64 keystore and decode it to a file
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > "${{ github.workspace }}/android-keystore.jks"
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > "${{ github.workspace }}/packages/sample-app/android-keystore.jks"
 
       - name: Create key.properties file
         env:

@@ -1,15 +1,15 @@
 import 'account.dart';
 import 'filter.dart';
-import 'relay_auth.dart';
+import 'auth_policy.dart';
 import 'relay_set.dart';
 
 // coverage:ignore-start
 /// Ndk request
 class NdkRequest {
-  /// nostr id
+  /// subscription id sent to relays in REQ/CLOSE (NIP-01, at most 64 characters)
   String id;
 
-  /// request name (for better debugging / logging
+  /// request name for logging, sent to relays only in [NdkConfig.debugMode]
   String? name;
 
   /// should it close on receiving EOSE?
@@ -45,7 +45,7 @@ class NdkRequest {
   bool cacheWrite;
 
   /// which identity this request may be attributed to on the relays (NIP-42)
-  final RelayAuth? auth;
+  final AuthPolicy? auth;
 
   /// query
   NdkRequest.query(
@@ -61,12 +61,12 @@ class NdkRequest {
     this.explicitRelays,
     this.cacheRead = true,
     this.cacheWrite = true,
-    RelayAuth? auth,
+    AuthPolicy? auth,
     @Deprecated(
-      'Use auth: RelayAuth.allow(account) instead. authenticateAs will be removed in a future version.',
+      'Use auth: AuthPolicy.allow(account) instead. authenticateAs will be removed in a future version.',
     )
     List<Account>? authenticateAs,
-  }) : auth = auth ?? RelayAuth.fromDeprecatedAccounts(authenticateAs);
+  }) : auth = auth ?? AuthPolicy.fromDeprecatedAccounts(authenticateAs);
 
   /// subscription
   NdkRequest.subscription(
@@ -79,12 +79,12 @@ class NdkRequest {
     this.explicitRelays,
     this.cacheRead = true,
     this.cacheWrite = true,
-    RelayAuth? auth,
+    AuthPolicy? auth,
     @Deprecated(
-      'Use auth: RelayAuth.allow(account) instead. authenticateAs will be removed in a future version.',
+      'Use auth: AuthPolicy.allow(account) instead. authenticateAs will be removed in a future version.',
     )
     List<Account>? authenticateAs,
-  }) : auth = auth ?? RelayAuth.fromDeprecatedAccounts(authenticateAs);
+  }) : auth = auth ?? AuthPolicy.fromDeprecatedAccounts(authenticateAs);
 }
 
 // coverage:ignore-end

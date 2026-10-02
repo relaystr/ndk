@@ -18,7 +18,8 @@ class Nip44 {
     Uint8List? customConversationKey,
   }) async {
     // Step 1: Compute Shared Secret
-    final sharedSecret = customConversationKey ??
+    final sharedSecret =
+        customConversationKey ??
         computeSharedSecret(senderPrivateKey, recipientPublicKey);
 
     // Step 2: Derive Conversation Key
@@ -58,7 +59,8 @@ class Nip44 {
     Uint8List? customConversationKey,
   }) async {
     // Step 1: Compute Shared Secret
-    final sharedSecret = customConversationKey ??
+    final sharedSecret =
+        customConversationKey ??
         computeSharedSecret(recipientPrivateKey, senderPublicKey);
 
     // Step 2: Derive Conversation Key

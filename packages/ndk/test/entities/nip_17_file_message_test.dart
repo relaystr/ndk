@@ -7,36 +7,39 @@ import 'package:test/test.dart';
 
 void main() {
   group('Nip17FileCrypto', () {
-    test('encrypts and decrypts AES-256-GCM with fresh key/nonce pairs',
-        () async {
-      final plaintext = Uint8List.fromList(utf8.encode('private evidence'));
-      final first = await Nip17FileCrypto.encrypt(plaintext);
-      final second = await Nip17FileCrypto.encrypt(plaintext);
+    test(
+      'encrypts and decrypts AES-256-GCM with fresh key/nonce pairs',
+      () async {
+        final plaintext = Uint8List.fromList(utf8.encode('private evidence'));
+        final first = await Nip17FileCrypto.encrypt(plaintext);
+        final second = await Nip17FileCrypto.encrypt(plaintext);
 
-      expect(first.key, matches(RegExp(r'^[0-9a-f]{64}$')));
-      expect(first.nonce, matches(RegExp(r'^[0-9a-f]{32}$')));
-      expect(first.ciphertext.length, plaintext.length + 16);
-      expect(first.key, isNot(second.key));
-      expect(first.nonce, isNot(second.nonce));
+        expect(first.key, matches(RegExp(r'^[0-9a-f]{64}$')));
+        expect(first.nonce, matches(RegExp(r'^[0-9a-f]{32}$')));
+        expect(first.ciphertext.length, plaintext.length + 16);
+        expect(first.key, isNot(second.key));
+        expect(first.nonce, isNot(second.nonce));
 
-      final metadata = Nip17FileMetadata.fromEncryptedFile(
-        url: Uri.parse('https://blossom.example/${first.encryptedSha256}.bin'),
-        mimeType: 'image/jpeg',
-        encryptedFile: first,
-      );
-      expect(
-        await Nip17FileCrypto.decrypt(
-          ciphertext: first.ciphertext,
-          metadata: metadata,
-        ),
-        plaintext,
-      );
-    });
+        final metadata = Nip17FileMetadata.fromEncryptedFile(
+          url: Uri.parse(
+            'https://blossom.example/${first.encryptedSha256}.bin',
+          ),
+          mimeType: 'image/jpeg',
+          encryptedFile: first,
+        );
+        expect(
+          await Nip17FileCrypto.decrypt(
+            ciphertext: first.ciphertext,
+            metadata: metadata,
+          ),
+          plaintext,
+        );
+      },
+    );
 
-    test('decrypts the Amethyst-compatible ciphertext plus tag framing',
-        () async {
+    test('decrypts the Amethyst-compatible ciphertext plus tag framing', () async {
       final ciphertext = _hex(
-        'c8334e228b18508f2542ce4486973164c6ec05bd5e6f60a72916fcf61cf327dcae751877e35ee4',
+        'c41e7140a9386b825a3cbe0cc1c97564dee60420a11ff8421c2a1d983bc1a6e1943f8d',
       );
       final metadata = Nip17FileMetadata(
         url: Uri.parse('https://blossom.example/vector.bin'),
@@ -46,9 +49,9 @@ void main() {
             '000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f',
         decryptionNonce: '101112131415161718191a1b1c1d1e1f',
         encryptedSha256:
-            '83af07e6b24e6a15833ef85e34b598ee66535917f2ba1ed190420f9853b62f5f',
+            '45e51ed111d6ec21bdbd2055bca2c56181fa3459411e245b579e2bfa31e1bedc',
         originalSha256:
-            '09bc44e4cd50386d8f2028b2c8eeefeaefdd98efa0c716cdefcdfb0f512ea468',
+            'e8e08d9908a96172d6a32060714c3a75865acc0078c9087db55cb6cd3b9ed457',
         size: ciphertext.length,
       );
 
@@ -56,7 +59,7 @@ void main() {
         ciphertext: ciphertext,
         metadata: metadata,
       );
-      expect(utf8.decode(plaintext), 'BitBlik NIP-17 evidence');
+      expect(utf8.decode(plaintext), 'NDK NIP-17 evidence');
     });
 
     test('rejects an encrypted hash mismatch before decryption', () async {
@@ -76,28 +79,30 @@ void main() {
       );
     });
 
-    test('rejects tampering even when the encrypted hash is replaced',
-        () async {
-      final encrypted = await Nip17FileCrypto.encrypt(
-        Uint8List.fromList(utf8.encode('evidence')),
-      );
-      final tampered = Uint8List.fromList(encrypted.ciphertext)..[0] ^= 1;
-      final metadata = Nip17FileMetadata(
-        url: Uri.parse('https://blossom.example/file.bin'),
-        mimeType: 'image/png',
-        encryptionAlgorithm: Nip17FileMetadata.aesGcm,
-        decryptionKey: encrypted.key,
-        decryptionNonce: encrypted.nonce,
-        encryptedSha256: sha256.convert(tampered).toString(),
-        originalSha256: encrypted.originalSha256,
-        size: tampered.length,
-      );
+    test(
+      'rejects tampering even when the encrypted hash is replaced',
+      () async {
+        final encrypted = await Nip17FileCrypto.encrypt(
+          Uint8List.fromList(utf8.encode('evidence')),
+        );
+        final tampered = Uint8List.fromList(encrypted.ciphertext)..[0] ^= 1;
+        final metadata = Nip17FileMetadata(
+          url: Uri.parse('https://blossom.example/file.bin'),
+          mimeType: 'image/png',
+          encryptionAlgorithm: Nip17FileMetadata.aesGcm,
+          decryptionKey: encrypted.key,
+          decryptionNonce: encrypted.nonce,
+          encryptedSha256: sha256.convert(tampered).toString(),
+          originalSha256: encrypted.originalSha256,
+          size: tampered.length,
+        );
 
-      await expectLater(
-        Nip17FileCrypto.decrypt(ciphertext: tampered, metadata: metadata),
-        throwsA(anything),
-      );
-    });
+        await expectLater(
+          Nip17FileCrypto.decrypt(ciphertext: tampered, metadata: metadata),
+          throwsA(anything),
+        );
+      },
+    );
   });
 
   group('Nip17FileMetadata', () {
@@ -172,6 +177,6 @@ void main() {
 }
 
 Uint8List _hex(String value) => Uint8List.fromList([
-      for (var i = 0; i < value.length; i += 2)
-        int.parse(value.substring(i, i + 2), radix: 16),
-    ]);
+  for (var i = 0; i < value.length; i += 2)
+    int.parse(value.substring(i, i + 2), radix: 16),
+]);

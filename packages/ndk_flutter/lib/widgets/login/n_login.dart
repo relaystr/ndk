@@ -18,6 +18,7 @@ class NLogin extends StatefulWidget {
   final bool enableBunkerLogin;
   final bool enableSignerAppLogin;
   final bool enablePubkeyLogin;
+  final Nip46ClientMetadata? clientMetadata;
   final NostrConnect? nostrConnect;
   final String? nsecLabelText;
   final String getStartedUrl;
@@ -37,6 +38,7 @@ class NLogin extends StatefulWidget {
     this.enableBunkerLogin = true,
     this.enableSignerAppLogin = true,
     this.enablePubkeyLogin = true,
+    this.clientMetadata,
     this.nostrConnect,
     this.nsecLabelText,
     this.getStartedUrl = 'https://nstart.me/',
@@ -57,6 +59,7 @@ class _NLoginState extends State<NLogin> {
     controller = LoginController(
       ndkFlutter: widget.ndkFlutter,
       onLoggedIn: widget.onLoggedIn,
+      clientMetadata: widget.clientMetadata,
       nostrConnect: widget.nostrConnect,
     );
     controller.addListener(_updateUI);

@@ -1394,6 +1394,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
             nextRetryAt: Value(target.nextRetryAt),
             lastError: Value(target.lastError),
             lastOkMessage: Value(target.lastOkMessage),
+            authCanonical: Value(target.authCanonical),
           ),
         );
   }
@@ -1417,6 +1418,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
                 nextRetryAt: Value(target.nextRetryAt),
                 lastError: Value(target.lastError),
                 lastOkMessage: Value(target.lastOkMessage),
+                authCanonical: Value(target.authCanonical),
               ),
             )
             .toList(),
@@ -1514,6 +1516,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       nextRetryAt: row.nextRetryAt,
       lastError: row.lastError,
       lastOkMessage: row.lastOkMessage,
+      authCanonical: row.authCanonical,
     );
   }
 

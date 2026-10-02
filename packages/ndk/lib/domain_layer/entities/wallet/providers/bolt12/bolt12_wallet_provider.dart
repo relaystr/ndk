@@ -29,19 +29,20 @@ class Bolt12ResolvedOffer {
   });
 
   Map<String, dynamic> toMetadata() => {
-        'offer': offer,
-        'source': source,
-        'bip353Address': bip353Address,
-        'description': _nonEmptyString(decoded['offer_description']),
-        'nodeId': _nonEmptyString(decoded['offer_node_id']),
-        'amount': _nonEmptyString(decoded['offer_amount']),
-        'issuer': _nonEmptyString(decoded['offer_issuer']),
-        'currency': _nonEmptyString(decoded['offer_currency']),
-        'expiresAt': _intValue(decoded['offer_absolute_expiry']),
-        'quantityMax': _intValue(decoded['offer_quantity_max']),
-        'hasBlindedPaths': decoded['has_blinded_paths'] == true ||
-            _hasValues(decoded['offer_paths']),
-      };
+    'offer': offer,
+    'source': source,
+    'bip353Address': bip353Address,
+    'description': _nonEmptyString(decoded['offer_description']),
+    'nodeId': _nonEmptyString(decoded['offer_node_id']),
+    'amount': _nonEmptyString(decoded['offer_amount']),
+    'issuer': _nonEmptyString(decoded['offer_issuer']),
+    'currency': _nonEmptyString(decoded['offer_currency']),
+    'expiresAt': _intValue(decoded['offer_absolute_expiry']),
+    'quantityMax': _intValue(decoded['offer_quantity_max']),
+    'hasBlindedPaths':
+        decoded['has_blinded_paths'] == true ||
+        _hasValues(decoded['offer_paths']),
+  };
 
   static String? _nonEmptyString(Object? value) {
     final normalized = value?.toString().trim();
@@ -264,10 +265,7 @@ class Bolt12WalletProvider implements WalletProvider {
       source: metadata['source'] as String? ?? offer,
       bip353Address: metadata['bip353Address'] as String?,
     );
-    final resolvedMetadata = {
-      ...metadata,
-      ...validated.toMetadata(),
-    };
+    final resolvedMetadata = {...metadata, ...validated.toMetadata()};
 
     return Bolt12Wallet(
       id: id,
@@ -281,9 +279,7 @@ class Bolt12WalletProvider implements WalletProvider {
       amount: resolvedMetadata['amount']?.toString(),
       issuer: resolvedMetadata['issuer'] as String?,
       currency: resolvedMetadata['currency'] as String?,
-      expiresAt: Bolt12ResolvedOffer._intValue(
-        resolvedMetadata['expiresAt'],
-      ),
+      expiresAt: Bolt12ResolvedOffer._intValue(resolvedMetadata['expiresAt']),
       quantityMax: Bolt12ResolvedOffer._intValue(
         resolvedMetadata['quantityMax'],
       ),
@@ -408,10 +404,7 @@ class _Bolt12OfferEnvelope {
   });
 
   static _Bolt12OfferEnvelope parse(String input) {
-    final withoutContinuations = input.trim().replaceAll(
-          RegExp(r'\+\s*'),
-          '',
-        );
+    final withoutContinuations = input.trim().replaceAll(RegExp(r'\+\s*'), '');
     final letters = withoutContinuations.replaceAll(RegExp('[^A-Za-z]'), '');
     if (letters != letters.toLowerCase() && letters != letters.toUpperCase()) {
       throw const FormatException(
@@ -565,8 +558,9 @@ class _Bolt12OfferEnvelope {
     }
     final issuerId = fields[22];
     if (issuerId != null) {
-      details['offer_node_id'] =
-          issuerId.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
+      details['offer_node_id'] = issuerId
+          .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
+          .join();
     }
     return details;
   }
@@ -600,8 +594,8 @@ class _Bolt12OfferEnvelope {
     final byteCount = first == 0xfd
         ? 2
         : first == 0xfe
-            ? 4
-            : 8;
+        ? 4
+        : 8;
     if (offset + byteCount > bytes.length) {
       throw const FormatException('Truncated BOLT12 bigsize');
     }
@@ -615,8 +609,8 @@ class _Bolt12OfferEnvelope {
     final minimum = byteCount == 2
         ? 0xfd
         : byteCount == 4
-            ? 0x10000
-            : 0x100000000;
+        ? 0x10000
+        : 0x100000000;
     if (value < minimum) {
       throw const FormatException('Non-canonical BOLT12 bigsize');
     }

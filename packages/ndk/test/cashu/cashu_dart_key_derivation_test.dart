@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
+import 'package:ndk/domain_layer/usecases/cashu/cashu_keypair.dart';
 import 'package:test/test.dart';
 
 import 'package:ndk/domain_layer/usecases/cashu/cashu_seed.dart';
@@ -23,8 +24,7 @@ void main() {
       seedBytes = Uint8List.fromList(cashuSeed.getSeedBytes());
     });
 
-    group('Version 1: Deprecated BIP32 Derivation (keyset ID 009a1f293253e41e)',
-        () {
+    group('Version 1: Deprecated BIP32 Derivation (keyset ID 009a1f293253e41e)', () {
       const keysetId = "009a1f293253e41e";
       const keysetIdInt = 864559728;
 
@@ -154,8 +154,7 @@ void main() {
       });
     });
 
-    group('Version 2: Modern HMAC-SHA256 Derivation (keyset ID 015ba18a...)',
-        () {
+    group('Version 2: Modern HMAC-SHA256 Derivation (keyset ID 015ba18a...)', () {
       const keysetId =
           "015ba18a8adcd02e715a58358eb618da4a4b3791151a4bee5e968bb88406ccf76a";
 
@@ -299,6 +298,92 @@ void main() {
           ),
           throwsException,
         );
+      });
+    });
+
+    group('NUT-20 quote key derivation', () {
+      test('is deterministic for the same seed and counter', () async {
+        final derivation = DartCashuKeyDerivation();
+
+        final first = await derivation.deriveQuoteKey(
+          seedBytes: seedBytes,
+          counter: 3,
+        );
+        final second = await derivation.deriveQuoteKey(
+          seedBytes: seedBytes,
+          counter: 3,
+        );
+
+        expect(first.privateKey, equals(second.privateKey));
+        expect(first.publicKey, equals(second.publicKey));
+        expect(first.publicKey, equals(second.publicKey));
+      });
+
+      test('produces a valid keypair from the private key', () async {
+        final derivation = DartCashuKeyDerivation();
+
+        final keypair = await derivation.deriveQuoteKey(
+          seedBytes: seedBytes,
+          counter: 0,
+        );
+
+        // 64 hex chars (32 bytes) private key
+        expect(keypair.privateKey.length, equals(64));
+        expect(
+          RegExp(r'^[a-fA-F0-9]{64}$').hasMatch(keypair.privateKey),
+          isTrue,
+        );
+        // public key is a compressed SEC1 point: 66 hex chars starting 02/03
+        expect(keypair.publicKey.length, equals(66));
+        expect(
+          keypair.publicKey.startsWith('02') ||
+              keypair.publicKey.startsWith('03'),
+          isTrue,
+        );
+        // matches a keypair rebuilt from the private key alone
+        final rebuilt = CashuKeypair.fromPrivateKeyHex(keypair.privateKey);
+        expect(rebuilt.publicKey, equals(keypair.publicKey));
+      });
+
+      test('changes for every counter', () async {
+        final derivation = DartCashuKeyDerivation();
+
+        final keys = <String>{};
+        for (var counter = 0; counter < 10; counter++) {
+          final keypair = await derivation.deriveQuoteKey(
+            seedBytes: seedBytes,
+            counter: counter,
+          );
+          keys.add(keypair.publicKey);
+        }
+
+        expect(keys.length, equals(10));
+      });
+
+      test('is recoverable by scanning counters', () async {
+        final derivation = DartCashuKeyDerivation();
+        const scanCounter = 7;
+
+        final target = await derivation.deriveQuoteKey(
+          seedBytes: seedBytes,
+          counter: scanCounter,
+        );
+
+        // Simulate a wiped local record: only the public key the mint locked
+        // the quote to is known.
+        for (var counter = 0; counter <= scanCounter; counter++) {
+          final candidate = await derivation.deriveQuoteKey(
+            seedBytes: seedBytes,
+            counter: counter,
+          );
+          if (candidate.publicKey == target.publicKey) {
+            expect(candidate.privateKey, equals(target.privateKey));
+            expect(counter, equals(scanCounter));
+            return;
+          }
+        }
+
+        fail('did not recover the quote key by scanning counters');
       });
     });
 

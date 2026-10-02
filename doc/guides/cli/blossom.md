@@ -35,7 +35,7 @@ ndk blossom <sub-command> [args]
 | `--pubkey <hex\|npub>` | Server-list owner |
 | `--content-type <mime>` | Override mime type (`upload`) |
 | `--media` | Server-side media optimisation (`upload`) |
-| `--auth` | Use signed GET (`download`, `check`, `list`) |
+| `--auth` | Sign as the logged-in account (`download`, `check`, `list`) |
 | `--since <iso\|unix>` | `list`: only blobs after this date |
 | `--until <iso\|unix>` | `list`: only blobs before this date |
 

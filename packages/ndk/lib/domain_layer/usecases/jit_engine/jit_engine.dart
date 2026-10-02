@@ -181,9 +181,7 @@ class JitEngine with Logger implements NetworkEngine {
           relayManager: relayManagerLight,
           cacheManager: cache,
           eventToPublish: workingNostrEvent,
-          connectedRelays: relayManagerLight.connectedAnonymousRelays
-              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-              .toList(),
+          auth: broadcastState.auth,
         );
         broadcastState.closeIfNoRelays();
         return;
@@ -192,12 +190,10 @@ class JitEngine with Logger implements NetworkEngine {
       // default publish to own outbox
       await RelayJitBroadcastOutboxStrategy.broadcast(
         eventToPublish: workingNostrEvent,
-        connectedRelays: relayManagerLight.connectedAnonymousRelays
-            .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-            .toList(),
         cacheManager: cache,
         relayManager: relayManagerLight,
         bootstrapRelays: bootstrapRelays,
+        auth: broadcastState.auth,
       );
 
       // check if we need to publish to others inboxes
@@ -205,12 +201,10 @@ class JitEngine with Logger implements NetworkEngine {
           workingNostrEvent.kind != ContactList.kKind) {
         await RelayJitBroadcastOtherReadStrategy.broadcast(
           eventToPublish: workingNostrEvent,
-          connectedRelays: relayManagerLight.connectedAnonymousRelays
-              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-              .toList(),
           cacheManager: cache,
           relayManager: relayManagerLight,
           pubkeysOfInbox: workingNostrEvent.pTags,
+          auth: broadcastState.auth,
         );
       }
       broadcastState.closeIfNoRelays();

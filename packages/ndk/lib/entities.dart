@@ -24,7 +24,7 @@ export 'domain_layer/entities/pubkey_mapping.dart';
 export 'domain_layer/entities/read_write.dart';
 export 'domain_layer/entities/read_write_marker.dart';
 export 'domain_layer/entities/relay.dart';
-export 'domain_layer/entities/relay_auth.dart';
+export 'domain_layer/entities/auth_policy.dart';
 export 'domain_layer/entities/relay_connection_key.dart';
 export 'domain_layer/entities/relay_connectivity.dart';
 export 'domain_layer/entities/relay_info.dart';
@@ -37,6 +37,7 @@ export 'domain_layer/entities/tuple.dart';
 export 'domain_layer/entities/user_relay_list.dart';
 export 'domain_layer/entities/blossom_blobs.dart';
 export 'domain_layer/entities/blossom_strategies.dart';
+export 'domain_layer/entities/blossom_authorization.dart';
 export 'domain_layer/entities/blob_upload_progress.dart';
 export 'domain_layer/entities/file_hash_progress.dart';
 export 'domain_layer/entities/account.dart';
@@ -56,6 +57,7 @@ export 'domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 export 'domain_layer/entities/cashu/cashu_blinded_message.dart';
 export 'domain_layer/entities/cashu/cashu_blinded_signature.dart';
 export 'domain_layer/entities/cashu/cashu_restore_result.dart';
+export 'domain_layer/entities/cashu/cashu_quote_recovery_progress.dart';
 
 /// Wallet entities
 export 'domain_layer/entities/wallet/wallet.dart';

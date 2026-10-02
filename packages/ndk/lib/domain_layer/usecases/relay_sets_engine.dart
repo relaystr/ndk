@@ -17,6 +17,7 @@ import '../entities/filter.dart';
 import '../entities/global_state.dart';
 import '../entities/ndk_request.dart';
 import '../entities/nip_01_event.dart';
+import '../entities/auth_policy.dart';
 import '../entities/relay_connection_key.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_set.dart';
@@ -45,9 +46,9 @@ class RelaySetsEngine implements NetworkEngine {
     required CacheManager cacheManager,
     required List<String>? bootstrapRelays,
     GlobalState? globalState,
-  })  : _cacheManager = cacheManager,
-        _relayManager = relayManager,
-        _bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS {
+  }) : _cacheManager = cacheManager,
+       _relayManager = relayManager,
+       _bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS {
     _globalState = globalState ?? GlobalState();
   }
 
@@ -92,7 +93,8 @@ class RelaySetsEngine implements NetworkEngine {
       if (relay == null) {
         // the connection was closed between opening it and looking it up
         Logger.log.w(
-          () => "COULD NOT SEND REQUEST TO ${request.url}, ${request.key} "
+          () =>
+              "COULD NOT SEND REQUEST TO ${request.url}, ${request.key} "
               "is gone",
         );
         return false;
@@ -127,32 +129,35 @@ class RelaySetsEngine implements NetworkEngine {
   /// 3) if connected was successfull send the event
   /// 4) otherwise call failBroadcast in order to publish a RelayBroadcastResponse
   ///   for that specific relay with an error message
-  Future<void> doRelayBroadcast(String relayUrl, Nip01Event nostrEvent) async {
+  Future<void> doRelayBroadcast(
+    String relayUrl,
+    Nip01Event nostrEvent, {
+    AuthPolicy? auth,
+  }) async {
     _relayManager.registerRelayBroadcast(
       eventToPublish: nostrEvent,
       relayUrl: relayUrl,
     );
 
-    var connected = _relayManager.isRelayConnected(relayUrl);
+    RelayConnectivity? relayConnectivity;
     Object? error;
-    if (!connected) {
-      try {
-        final result = await _relayManager.connectRelay(
-          dirtyUrl: relayUrl,
-          connectionSource: ConnectionSource.broadcastSpecific,
-          connectTimeout: 1,
-        );
-        connected = result.first;
-      } catch (e) {
-        Logger.log.w(
-          () => "Error during quick connect for $relayUrl in doRelayBroadcast",
-          error: e,
-        );
-        error = e;
-      }
+    try {
+      relayConnectivity = await _relayManager.connectionForBroadcast(
+        relayUrl,
+        auth,
+        connectTimeout: 1,
+      );
+    } catch (e) {
+      Logger.log.w(
+        () => "Error during quick connect for $relayUrl in doRelayBroadcast",
+        error: e,
+      );
+      error = e;
     }
 
-    if (connected) {
+    if (relayConnectivity != null) {
+      // checked once the connection is there: a newer version may have been
+      // persisted while it was opening, and that one supersedes this send
       if (await _shouldSkipObsoleteReplaceableBroadcast(nostrEvent)) {
         Logger.log.d(
           () =>
@@ -166,14 +171,19 @@ class RelaySetsEngine implements NetworkEngine {
         return;
       }
 
-      final relayConnectivity = _relayManager.getRelayConnectivity(relayUrl);
-      if (relayConnectivity != null) {
-        await _relayManager.sendOrThrow(
-          relayConnectivity,
-          ClientMsg(ClientMsgType.kEvent, event: nostrEvent),
-        );
-        return;
-      }
+      await _relayManager.sendOrThrow(
+        relayConnectivity,
+        ClientMsg(ClientMsgType.kEvent, event: nostrEvent),
+      );
+      return;
+    }
+    if (auth is AuthPolicyRequire) {
+      _relayManager.failBroadcast(
+        nostrEvent.id,
+        relayUrl,
+        "no connection bound to ${auth.account.pubkey} could be opened",
+      );
+      return;
     }
     _relayManager.failBroadcast(
       nostrEvent.id,
@@ -193,10 +203,10 @@ class RelaySetsEngine implements NetworkEngine {
       kinds: [event.kind],
       tags:
           EventKindClassification.isAddressableKind(event.kind) && dTag != null
-              ? {
-                  'd': [dTag],
-                }
-              : null,
+          ? {
+              'd': [dTag],
+            }
+          : null,
       limit: 1,
     );
 
@@ -307,7 +317,7 @@ class RelaySetsEngine implements NetworkEngine {
     Duration timeout = kDefaultStreamIdleTimeout,
     bool closeOnEOSE = true,
   }) async {
-    String id = Helpers.getRandomString(10);
+    String id = Helpers.getSecureRandomHex(16);
     RequestState state = RequestState(
       closeOnEOSE
           ? NdkRequest.query(
@@ -378,7 +388,11 @@ class RelaySetsEngine implements NetworkEngine {
             specificRelays.map(
               (relayUrl) =>
                   // broadcast async
-                  doRelayBroadcast(relayUrl, workingEvent),
+                  doRelayBroadcast(
+                    relayUrl,
+                    workingEvent,
+                    auth: broadcastState.auth,
+                  ),
             ),
           );
         }
@@ -412,7 +426,11 @@ class RelaySetsEngine implements NetworkEngine {
 
         await Future.wait(
           writeRelaysUrls.map(
-            (relayUrl) => doRelayBroadcast(relayUrl, workingEvent),
+            (relayUrl) => doRelayBroadcast(
+              relayUrl,
+              workingEvent,
+              auth: broadcastState.auth,
+            ),
           ),
         );
 
@@ -447,7 +465,11 @@ class RelaySetsEngine implements NetworkEngine {
 
           await Future.wait(
             myWriteRelayUrlsOthers.map(
-              (relayUrl) => doRelayBroadcast(relayUrl, workingEvent),
+              (relayUrl) => doRelayBroadcast(
+                relayUrl,
+                workingEvent,
+                auth: broadcastState.auth,
+              ),
             ),
           );
         }

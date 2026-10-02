@@ -184,14 +184,15 @@ class Software {
           name: 'software-assets-hints',
         ),
     ];
-    final events =
-        (await Future.wait(responses.map((response) => response.future)))
-            .expand((events) => events);
+    final events = (await Future.wait(
+      responses.map((response) => response.future),
+    )).expand((events) => events);
     final assetsById = <String, SoftwareAsset>{
-      for (final asset in events
-          .where((event) => ids.contains(event.id))
-          .map(_parseAsset)
-          .whereType<SoftwareAsset>())
+      for (final asset
+          in events
+              .where((event) => ids.contains(event.id))
+              .map(_parseAsset)
+              .whereType<SoftwareAsset>())
         asset.event.id: asset,
     };
     return {

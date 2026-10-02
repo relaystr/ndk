@@ -5,6 +5,7 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ndk/entities.dart';
@@ -53,21 +54,28 @@ Future<void> main() async {
           databasePath: (await getApplicationDocumentsDirectory()).path,
         );
 
+  // The default data protection keychain needs an entitlement ad-hoc signing can't grant.
+  const secureStorage = FlutterSecureStorage(
+    mOptions: MacOsOptions(usesDataProtectionKeychain: false),
+  );
+
   // Load the cashu seed phrase from secure storage, generating a fresh one on
   // first run. Never hardcode this — it controls cashu funds.
-  final cashuSeedPhrase = await const CashuSeedStore().loadOrCreate();
+  final cashuSeedPhrase = await const CashuSeedStore(
+    storage: secureStorage,
+  ).loadOrCreate();
 
   final eventVerifier = kIsWeb ? WebEventVerifier() : RustEventVerifier();
   ndk = Ndk(
     NdkConfig(
       eventVerifier: eventVerifier,
       cache: cacheManager,
-      walletsRepo: FlutterSecureStorageWalletsRepo(),
+      walletsRepo: FlutterSecureStorageWalletsRepo(storage: secureStorage),
       logLevel: Logger.logLevels.info,
       cashuUserSeedphrase: CashuUserSeedphrase(seedPhrase: cashuSeedPhrase),
     ),
   );
-  ndkFlutter = NdkFlutter(ndk: ndk);
+  ndkFlutter = NdkFlutter(ndk: ndk, storage: secureStorage);
   appUpdater = NAppUpdateController.self(
     ndkFlutter: ndkFlutter,
     app: const SoftwareAppRef(

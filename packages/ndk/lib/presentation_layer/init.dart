@@ -11,6 +11,7 @@ import '../data_layer/repositories/blossom/blossom_impl.dart';
 import '../data_layer/repositories/cashu/cashu_repo_impl.dart';
 import '../data_layer/repositories/lnurl_http_impl.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
+import '../data_layer/repositories/relay_info_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/connection_source.dart';
@@ -79,7 +80,7 @@ class Initialization {
   /// repositories with no dependencies
 
   late final WebSocketClientNostrTransportFactory
-      _webSocketNostrTransportFactory;
+  _webSocketNostrTransportFactory;
 
   /// state obj
 
@@ -128,13 +129,15 @@ class Initialization {
   Initialization({
     required NdkConfig ndkConfig,
     required GlobalState globalState,
-  })  : _globalState = globalState,
-        _ndkConfig = ndkConfig {
+  }) : _globalState = globalState,
+       _ndkConfig = ndkConfig {
     // Configure global WebSocket User-Agent on dart:io platforms
     configureDefaultUserAgent(ndkConfig.userAgent);
 
     _webSocketNostrTransportFactory = WebSocketClientNostrTransportFactory(
       compressionEnabled: ndkConfig.webSocketCompression,
+      pingInterval: ndkConfig.webSocketPingInterval,
+      reconnectMaximumStep: ndkConfig.webSocketReconnectMaximumStep,
     );
 
     accounts = Accounts(_ndkConfig.eventSignerFactory);
@@ -147,6 +150,7 @@ class Initialization {
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           authCallbackTimeout: _ndkConfig.authCallbackTimeout,
+          relayInfoRepo: RelayInfoHttpRepoImpl(httpDS: _httpRequestDS),
         );
 
         engine = RelaySetsEngine(
@@ -164,6 +168,7 @@ class Initialization {
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
           authCallbackTimeout: _ndkConfig.authCallbackTimeout,
+          relayInfoRepo: RelayInfoHttpRepoImpl(httpDS: _httpRequestDS),
         );
 
         engine = JitEngine(
@@ -203,6 +208,7 @@ class Initialization {
       relayManager: relayManager,
       eventVerifier: _ndkConfig.eventVerifier,
       eventOutFilters: _ndkConfig.eventOutFilters,
+      debugMode: _ndkConfig.debugMode,
     );
 
     final broadcastSender = BroadcastSender(
@@ -245,6 +251,7 @@ class Initialization {
       requests: requests,
       broadcast: broadcast,
       eventSignerFactory: _ndkConfig.eventSignerFactory,
+      waitForRequestSent: relayManager.waitForRequestSent,
     );
 
     if (_ndkConfig.walletsRepo == null) {
@@ -263,6 +270,7 @@ class Initialization {
       cashuUserSeedphrase: _ndkConfig.cashuUserSeedphrase,
       cashuKeyDerivation: DartCashuKeyDerivation(),
       mintRecommendations: CashuMintRecommendations(requests: requests),
+      autoVerifyMintCounters: _ndkConfig.autoVerifyMintCounters,
     );
 
     // Create wallet providers

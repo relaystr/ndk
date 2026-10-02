@@ -1,3 +1,52 @@
+## 0.10.1
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.10.1-dev.1
+
+ - Update a dependency to the latest release.
+
+## 0.10.1-dev.0
+
+ - **FIX**: allow flutter_secure_storage 11.
+
+## 0.10.0
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.10.0-dev.10
+
+ - Update a dependency to the latest release.
+
+## 0.10.0-dev.9
+
+ - **FIX**: seedStore.write() first.
+ - **FIX**: normalize and await cashu seed phrase save.
+ - **FEAT**: set cashu seed.
+ - **FEAT**: restore quote ui.
+
+## 0.10.0-dev.8
+
+ - Update a dependency to the latest release.
+
+## 0.10.0-dev.7
+
+ - Update a dependency to the latest release.
+
+## 0.10.0-dev.6
+
+ - Update a dependency to the latest release.
+
+## 0.10.0-dev.5
+
+ - **FIX**(l10n): translate wallet flows.
+ - **FIX**(ndk_flutter): adapt release details modal.
+ - **FIX**(ndk_flutter): unify release summary row.
+ - **FIX**: address app update review feedback.
+ - **FIX**(flutter): keep wallet delete dialog safe.
+ - **FEAT**(flutter): add download update badge.
+ - **FEAT**(updates): add NIP-82 release support.
+
 ## 0.10.0-dev.4
 
  - **FIX**(flutter): support file_picker 12.

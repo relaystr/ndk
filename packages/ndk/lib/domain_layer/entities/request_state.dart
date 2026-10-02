@@ -7,7 +7,7 @@ import '../../shared/logger/logger.dart';
 import 'filter.dart';
 import 'ndk_request.dart';
 import 'nip_01_event.dart';
-import 'relay_auth.dart';
+import 'auth_policy.dart';
 import 'relay_connection_key.dart';
 import 'relay_request_outcome.dart';
 
@@ -281,8 +281,9 @@ class RequestState {
     if (served != null) {
       return served.relayOutcomesStream;
     }
-    final subject =
-        _relayOutcomesSubject ??= BehaviorSubject.seeded(_ownRelayOutcomes);
+    final subject = _relayOutcomesSubject ??= BehaviorSubject.seeded(
+      _ownRelayOutcomes,
+    );
     // asked for once the request is over: nothing is left to close a subject
     // created this late, and a closed one still replays what it ended on
     if (_relayOutcomesDone) {
@@ -397,11 +398,11 @@ class RequestState {
     _onRelayRequestChanged(request.url);
   }
 
-  /// Adds a request towards [url] on the connection this request's [RelayAuth]
+  /// Adds a request towards [url] on the connection this request's [AuthPolicy]
   /// allows. A relay no connection can satisfy is skipped: falling back to the
   /// anonymous one is what the caller ruled out.
   void addRequestForRelay(String url, List<Filter> filters) {
-    final key = RelayAuth.keyFor(url, request.auth);
+    final key = RelayConnectionKey.forAuth(url, request.auth);
     if (key == null) {
       Logger.log.w(() => "No connection can carry ${request.id} to $url");
       return;

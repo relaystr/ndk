@@ -1,6 +1,7 @@
 import '../../entities/broadcast_state.dart';
 import '../../entities/event_cache_records.dart';
 import '../../entities/nip_01_event.dart';
+import '../../entities/auth_policy.dart';
 import '../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../shared/nips/nip09/deletion.dart';
 
@@ -81,7 +82,12 @@ class DeliveryPolicy {
 
   bool get retainsOnlyLatest => kind == DeliveryPolicyKind.latestStateOnly;
 
-  RelayDeliveryState resolveNextState(RelayBroadcastResponse response) {
+  /// [auth] is the policy the broadcast went out under, so a refusal can be
+  /// judged against what this event is allowed to reveal.
+  RelayDeliveryState resolveNextState(
+    RelayBroadcastResponse response, {
+    AuthPolicy? auth,
+  }) {
     if (response.okReceived && response.broadcastSuccessful) {
       return RelayDeliveryState.acked;
     }
@@ -98,7 +104,11 @@ class DeliveryPolicy {
 
     if (prefix == 'auth-required' ||
         normalizedMsg.startsWith('auth-required')) {
-      return RelayDeliveryState.authRequired;
+      // no identity may ever be revealed here, so no retry can turn this
+      // refusal into an accepted event
+      return auth is AuthPolicyNever
+          ? RelayDeliveryState.permanentFailure
+          : RelayDeliveryState.authRequired;
     }
 
     if (_looksPermanent(response.msg)) {
@@ -141,26 +151,26 @@ class DeliveryPolicy {
 
     final retrySeconds = switch (kind) {
       DeliveryPolicyKind.highPriorityControl => switch (attemptCount) {
-          <= 1 => 2,
-          2 => 5,
-          3 => 15,
-          4 => 60,
-          _ => 300,
-        },
+        <= 1 => 2,
+        2 => 5,
+        3 => 15,
+        4 => 60,
+        _ => 300,
+      },
       DeliveryPolicyKind.persistentEventual => switch (attemptCount) {
-          <= 1 => 5,
-          2 => 15,
-          3 => 60,
-          4 => 300,
-          _ => 900,
-        },
+        <= 1 => 5,
+        2 => 15,
+        3 => 60,
+        4 => 300,
+        _ => 900,
+      },
       DeliveryPolicyKind.latestStateOnly => switch (attemptCount) {
-          <= 1 => 5,
-          2 => 15,
-          3 => 60,
-          4 => 300,
-          _ => 900,
-        },
+        <= 1 => 5,
+        2 => 15,
+        3 => 60,
+        4 => 300,
+        _ => 900,
+      },
       DeliveryPolicyKind.doNotRetry => 0,
     };
     return Duration(seconds: retrySeconds);

@@ -29,6 +29,53 @@ You might encounter a warning about missing `nip65` data. You can ignore this wa
 If you want to use the outbox model, check out the [enabling gossip](/guides/enabling-gossip.md#broadcast-using-outbox) guide (recommended).
 !!!
 
+## Relay authentication (NIP-42)
+
+Some relays only accept an event from a client that authenticated. The `auth`
+parameter says which identity the broadcast may be attributed to, exactly like
+on [requests](/usecases/requests.md#relay-authentication-nip-42):
+
+```dart
+final myBroadcast = ndk.broadcast.broadcast(
+  nostrEvent: report,
+  auth: const AuthPolicy.never(),
+);
+```
+
+| policy | connection | what a relay learns |
+| --- | --- | --- |
+| `AuthPolicy.never()` | anonymous, always | nothing. A relay that refuses the event without an identity simply does not accept it |
+| `AuthPolicy.allow(a)` | anonymous, moves to one bound to `a` once the relay refuses | who you are, but only after that relay asked |
+| `AuthPolicy.require(a)` | bound to `a` from the start | who you are, as soon as it sends a challenge |
+
+Without `auth`, a refused event authenticates as its author when a registered
+account matches, and as the currently logged-in account otherwise. The relay
+therefore decides when your identity is revealed. Pass `auth` explicitly
+whenever that matters.
+
+The account does not have to be one NDK knows: `allow` and `require` take the
+`Account` itself, so an identity you built on the spot works.
+
+If `require` names an account that cannot sign, no connection can carry the
+event. Rather than fall back to the anonymous one, which is what `require`
+rules out, nothing is sent and `broadcast` itself throws
+`BroadcastAuthUnavailableException`.
+
+### Across a restart
+
+A signer is never written to disk, only the policy is, as `never`,
+`allow:<pubkey>` or `require:<pubkey>`. That matters for the background retries
+described below, not for the broadcast you are awaiting.
+
+- `never()` survives a restart whole, because it names nobody. A relay that
+  refuses such an event is a final answer, so it is not retried at all.
+- `allow` and `require` resolve their pubkey through the accounts NDK holds. A
+  retry therefore needs that account to be registered again after a restart.
+- An identity no account can sign for parks the delivery in
+  `EventDeliveryStatus.needsAction` instead of going out as somebody else. You
+  see it through `loadPendingDeliveries()`, and you resume it by broadcasting
+  the same event again with the account in hand.
+
 ## When to use
 
 Broadcast should be used when your use case has no broadcasting method. \
@@ -61,6 +108,28 @@ Current behavior includes:
 - relay responses classified as permanent failure stop retry for that relay target
 - relay responses classified as transient failure remain retryable
 - external signer flows can also be retried in the background before relay delivery continues
+
+### Sending once without retry
+
+`retryDelivery: false` keeps one broadcast out of pending delivery:
+
+```dart
+ndk.broadcast.broadcast(
+  nostrEvent: event,
+  specificRelays: ['wss://relay.example.com'],
+  retryDelivery: false,
+);
+```
+
+No delivery record is written for that event, so nothing retries it whatever the
+relays answer, and it never shows up in `loadPendingDeliveries()`. Only
+specific-relay broadcasts are ever enrolled, so a gossip broadcast is already
+never retried. `broadcastReaction()` and `broadcastDeletion()` take the same
+parameter.
+
+To turn background retries off for the whole client instead, use
+`NdkConfig(pendingDeliveryRetriesEnabled: false)`. That one keeps persisting
+delivery state, it only stops replaying it.
 
 ## External signer retry behavior
 
@@ -97,6 +166,7 @@ That means:
 - you cannot choose a custom retry/backoff profile for one broadcast
 - you cannot inject your own delivery policy classifier
 - the practical way to influence policy today is through the event kind you publish
+- the one per-broadcast control is `retryDelivery: false`, which skips retry entirely
 
 Examples:
 

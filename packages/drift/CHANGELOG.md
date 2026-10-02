@@ -1,3 +1,56 @@
+## 0.2.0
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.2.0-dev.1
+
+ - Update a dependency to the latest release.
+
+## 0.2.0-dev.0
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: rename RelayAuth to AuthPolicy.
+ - **PERF**: index the drift events table by pub_key, kind and created_at.
+ - **FIX**(release): use unpublished Drift version.
+ - **FIX**: attach a broadcast auth policy to the relay target, not the event.
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FEAT**: let a broadcast say which identity it may be attributed to.
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
+## 0.1.1-dev.22
+
+ - Update a dependency to the latest release.
+
+## 0.1.1-dev.21
+
+ - **PERF**: index the drift events table by pub_key, kind and created_at.
+
+## 0.1.1-dev.20
+
+ - Update a dependency to the latest release.
+
+## 0.1.1-dev.19
+
+ - Update a dependency to the latest release.
+
+## 0.1.1-dev.18
+
+ - **REFACTOR**: rename RelayAuth to AuthPolicy.
+
+## 0.1.1-dev.17
+
+ - **FIX**: attach a broadcast auth policy to the relay target, not the event.
+ - **FEAT**: let a broadcast say which identity it may be attributed to.
+
+## 0.1.1-dev.16
+
+ - Update a dependency to the latest release.
+
 ## 0.1.1-dev.15
 
 > Note: This release has breaking changes.
