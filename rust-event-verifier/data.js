@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790934945908,
+  "lastUpdate": 1790936403365,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1708,6 +1708,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1603470,
             "range": "1593626-1744818",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4497e418e1c4d3a235a977215046053106ed1987",
+          "message": "Merge pull request #877 from relaystr/fix/benchmark-pr-permissions\n\nfix(ci): allow benchmark workflow to comment on PRs",
+          "timestamp": "2026-10-02T12:18:04+02:00",
+          "tree_id": "e5af173db11466413d4c161cf6667c899fd37fb5",
+          "url": "https://github.com/relaystr/ndk/commit/4497e418e1c4d3a235a977215046053106ed1987"
+        },
+        "date": 1790936401281,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 42042.6,
+            "range": "41174-44038",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1502758,
+            "range": "1476480-1533450",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
