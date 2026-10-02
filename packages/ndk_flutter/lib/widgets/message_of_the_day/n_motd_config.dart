@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'motd_data.dart';
+
 /// Visual configuration for the Message of the Day popup.
 ///
 /// Every property is optional; null values fall back to the current Theme or
@@ -49,6 +51,15 @@ class NMotdConfig {
   /// Falls back to localized "Learn more".
   final String? linkButtonText;
 
+  /// URI schemes accepted for the event-provided `url` tag.
+  ///
+  /// Defaults to [MotdData.kDefaultLinkSchemes] (`https` only): a url tag is
+  /// untrusted input and any other scheme can address a native handler. Apps
+  /// that deliberately support another scheme have to opt in here. When the url
+  /// is missing, malformed, or uses a scheme outside this set, the link button
+  /// is not rendered.
+  final Set<String> allowedLinkSchemes;
+
   /// Style of the link button label.
   final TextStyle? linkButtonStyle;
 
@@ -72,5 +83,6 @@ class NMotdConfig {
     this.linkButtonText,
     this.linkButtonStyle,
     this.linkButtonColor,
+    this.allowedLinkSchemes = MotdData.kDefaultLinkSchemes,
   });
 }

@@ -73,29 +73,35 @@ class _NMotdPopupState extends State<NMotdPopup> {
     if (motd == null) return;
 
     _dialogOpen = true;
+    final link = MotdData.resolveLinkUrl(
+      motd.url,
+      allowedSchemes: widget.config.allowedLinkSchemes,
+    );
     await showDialog<void>(
       context: context,
       barrierDismissible: widget.config.barrierDismissible,
       builder: (dialogContext) => _NMotdDialog(
         motd: motd,
+        link: link,
         config: widget.config,
         onClose: () => Navigator.of(dialogContext).pop(),
-        onOpenLink: () async {
-          final url = motd.url;
-          if (url == null) return;
-          final launched = await launchUrl(
-            Uri.parse(url),
-            mode: LaunchMode.externalApplication,
-          );
-          if (launched && dialogContext.mounted) {
-            Navigator.of(dialogContext).pop();
-          }
-        },
+        onOpenLink: link == null ? null : () => _openLink(dialogContext, link),
       ),
     );
     // Mark as seen no matter how the popup was closed.
     await widget.controller.dismiss();
     _dialogOpen = false;
+  }
+
+  /// Launches the already-validated [link]; never throws out of the callback.
+  Future<void> _openLink(BuildContext context, Uri link) async {
+    var launched = false;
+    try {
+      launched = await launchUrl(link, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      // No handler registered or platform failure: keep the popup open.
+    }
+    if (launched && context.mounted) Navigator.of(context).pop();
   }
 
   @override
@@ -104,12 +110,16 @@ class _NMotdPopupState extends State<NMotdPopup> {
 
 class _NMotdDialog extends StatelessWidget {
   final MotdData motd;
+
+  /// Pre-validated link target; null means no link button is shown.
+  final Uri? link;
   final NMotdConfig config;
   final VoidCallback onClose;
-  final VoidCallback onOpenLink;
+  final VoidCallback? onOpenLink;
 
   const _NMotdDialog({
     required this.motd,
+    required this.link,
     required this.config,
     required this.onClose,
     required this.onOpenLink,
@@ -133,7 +143,7 @@ class _NMotdDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        if (motd.url != null)
+        if (link != null && onOpenLink != null)
           TextButton(
             style: TextButton.styleFrom(
               foregroundColor: config.linkButtonColor,
@@ -145,9 +155,7 @@ class _NMotdDialog extends StatelessWidget {
             ),
           ),
         TextButton(
-          style: TextButton.styleFrom(
-            foregroundColor: config.closeButtonColor,
-          ),
+          style: TextButton.styleFrom(foregroundColor: config.closeButtonColor),
           onPressed: onClose,
           child: Text(
             config.closeButtonText ?? l10n?.close ?? 'Close',

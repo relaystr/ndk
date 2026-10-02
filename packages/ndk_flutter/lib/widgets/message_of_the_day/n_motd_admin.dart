@@ -78,7 +78,11 @@ class _NMotdAdminState extends State<NMotdAdmin> {
 
       Nip01Event? latest;
       for (final event in events) {
-        if (event.kind == MotdData.kKind && event.getDtag() == widget.dTagValue) {
+        // Never adopt another author's event: a relay may ignore the requested
+        // author filter and serve a valid but foreign event.
+        if (event.pubKey != widget.authorPubkey) continue;
+        if (event.kind == MotdData.kKind &&
+            event.getDtag() == widget.dTagValue) {
           if (latest == null || event.createdAt > latest.createdAt) {
             latest = event;
           }
@@ -114,7 +118,8 @@ class _NMotdAdminState extends State<NMotdAdmin> {
     if (signer == null) {
       setState(
         () => _error =
-            l10n?.motdAdminLoggedInRequired ?? 'Log in to manage the message of the day.',
+            l10n?.motdAdminLoggedInRequired ??
+            'Log in to manage the message of the day.',
       );
       return;
     }
@@ -191,7 +196,8 @@ class _NMotdAdminState extends State<NMotdAdmin> {
     if (signer == null) {
       setState(
         () => _error =
-            l10n?.motdAdminLoggedInRequired ?? 'Log in to manage the message of the day.',
+            l10n?.motdAdminLoggedInRequired ??
+            'Log in to manage the message of the day.',
       );
       return;
     }
@@ -251,8 +257,8 @@ class _NMotdAdminState extends State<NMotdAdmin> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final busy = _status == _AdminStatus.saving ||
-        _status == _AdminStatus.deleting;
+    final busy =
+        _status == _AdminStatus.saving || _status == _AdminStatus.deleting;
 
     return Card(
       child: Padding(
@@ -275,9 +281,9 @@ class _NMotdAdminState extends State<NMotdAdmin> {
               TextField(
                 controller: _titleController,
                 decoration: InputDecoration(
-                  labelText:
-                      l10n?.motdAdminTitleLabel ?? 'Title (optional)',
-                  hintText: l10n?.motdAdminTitleHint ??
+                  labelText: l10n?.motdAdminTitleLabel ?? 'Title (optional)',
+                  hintText:
+                      l10n?.motdAdminTitleHint ??
                       'Leave empty to use the default title',
                 ),
                 enabled: !busy,
@@ -289,7 +295,8 @@ class _NMotdAdminState extends State<NMotdAdmin> {
                 maxLines: 6,
                 decoration: InputDecoration(
                   labelText: l10n?.motdAdminMessageLabel ?? 'Message',
-                  hintText: l10n?.motdAdminMessageHint ??
+                  hintText:
+                      l10n?.motdAdminMessageHint ??
                       'Enter the message to display',
                 ),
                 enabled: !busy,
@@ -310,7 +317,8 @@ class _NMotdAdminState extends State<NMotdAdmin> {
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(
                   labelText:
-                      l10n?.motdAdminVersionLabel ?? 'Minimum version (optional)',
+                      l10n?.motdAdminVersionLabel ??
+                      'Minimum version (optional)',
                   hintText: '1.2.0',
                 ),
                 enabled: !busy,
@@ -319,9 +327,7 @@ class _NMotdAdminState extends State<NMotdAdmin> {
                 const SizedBox(height: 12),
                 Text(
                   _error!,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ],
               const SizedBox(height: 16),

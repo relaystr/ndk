@@ -8,6 +8,13 @@ class MotdData {
   /// Default `d` tag value identifying a Message of the Day event.
   static const String kDefaultDTag = 'motd';
 
+  /// URI schemes accepted for the event-provided `url` tag by default.
+  ///
+  /// Only `https` is safe to open blindly: any other scheme can address a
+  /// native handler (deep links, `intent://` on Android, ...) and would let a
+  /// hostile publisher hijack the popup's link button.
+  static const Set<String> kDefaultLinkSchemes = {'https'};
+
   /// The resolved event id (nips-01 id of the underlying event).
   final String eventId;
 
@@ -44,6 +51,27 @@ class MotdData {
     this.version,
     required this.createdAt,
   });
+
+  /// Parses the `url` tag value into a [Uri] that is safe to hand to an
+  /// external launcher, or null when it must not be opened.
+  static Uri? resolveLinkUrl(
+    String? url, {
+    Set<String> allowedSchemes = kDefaultLinkSchemes,
+  }) {
+    final raw = url?.trim();
+    if (raw == null || raw.isEmpty) return null;
+
+    final parsed = Uri.tryParse(raw);
+    if (parsed == null) return null;
+
+    final scheme = parsed.scheme.toLowerCase();
+    if (scheme.isEmpty) return null;
+    final allowed = allowedSchemes.map((s) => s.toLowerCase()).toSet();
+    if (!allowed.contains(scheme)) return null;
+    if (parsed.hasAuthority && parsed.host.isEmpty) return null;
+
+    return parsed;
+  }
 
   /// Parses a [MotdData] from a raw [Nip01Event].
   ///

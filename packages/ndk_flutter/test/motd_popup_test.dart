@@ -146,6 +146,73 @@ void main() {
     expect(find.text('Close'), findsOneWidget);
   });
 
+  testWidgets('hides the link button for non-https urls', (tester) async {
+    for (final url in const [
+      'javascript:alert(1)',
+      'intent://scan#Intent;scheme=zxing;end',
+      'file:///etc/passwd',
+      'http://example.com',
+      'example.com',
+      'http://[::1',
+    ]) {
+      final controller = NMotdController(
+        ndkFlutter: NdkFlutter(
+          ndk: _StubNdk([
+            _motdEvent(
+              id: 'event-$url',
+              content: 'Visit us',
+              tags: [
+                ['d', 'motd'],
+                ['url', url],
+              ],
+            ),
+          ]),
+        ),
+        authorPubkey: 'author',
+      );
+      await controller.start();
+
+      await _pump(tester, controller);
+
+      expect(find.text('Visit us'), findsOneWidget);
+      expect(find.text('Learn more'), findsNothing, reason: 'url: $url');
+      expect(find.text('Close'), findsOneWidget);
+
+      await tester.tap(find.text('Close'));
+      await tester.pumpAndSettle();
+    }
+  });
+
+  testWidgets('shows the link button for an opted-in scheme', (tester) async {
+    final controller = NMotdController(
+      ndkFlutter: NdkFlutter(
+        ndk: _StubNdk([
+          _motdEvent(
+            id: 'event-1',
+            content: 'Open the app',
+            tags: const [
+              ['d', 'motd'],
+              ['url', 'myapp://settings'],
+            ],
+          ),
+        ]),
+      ),
+      authorPubkey: 'author',
+    );
+    await controller.start();
+
+    await _pump(
+      tester,
+      controller,
+      config: const NMotdConfig(
+        allowedLinkSchemes: {'https', 'myapp'},
+      ),
+    );
+
+    expect(find.text('Open the app'), findsOneWidget);
+    expect(find.text('Learn more'), findsOneWidget);
+  });
+
   testWidgets('dismisses on close and does not reopen', (tester) async {
     final controller = NMotdController(
       ndkFlutter: NdkFlutter(

@@ -95,9 +95,10 @@ Nip01Event _motdEvent({
     ['d', 'motd'],
   ],
   int createdAt = 100,
+  String pubKey = 'author',
 }) => Nip01Event(
   id: id,
-  pubKey: 'author',
+  pubKey: pubKey,
   kind: MotdData.kKind,
   tags: tags,
   content: content,
@@ -137,6 +138,47 @@ void main() {
 
     test('returns zero for equal versions', () {
       expect(NMotdController.compareVersions('3.2.1', '3.2.1'), 0);
+    });
+  });
+
+  group('resolveLinkUrl', () {
+    test('accepts https urls', () {
+      expect(
+        MotdData.resolveLinkUrl('https://example.com/motd')?.toString(),
+        'https://example.com/motd',
+      );
+      // Scheme comparison is case insensitive.
+      expect(
+        MotdData.resolveLinkUrl('HTTPS://example.com')?.scheme,
+        'https',
+      );
+    });
+
+    test('rejects schemes outside the allow list', () {
+      expect(MotdData.resolveLinkUrl('http://example.com'), isNull);
+      expect(MotdData.resolveLinkUrl('javascript:alert(1)'), isNull);
+      expect(MotdData.resolveLinkUrl('intent://scan#Intent;end'), isNull);
+      expect(MotdData.resolveLinkUrl('file:///etc/passwd'), isNull);
+      expect(MotdData.resolveLinkUrl('myapp://settings'), isNull);
+    });
+
+    test('accepts extra schemes when explicitly allowed', () {
+      final uri = MotdData.resolveLinkUrl(
+        'myapp://settings',
+        allowedSchemes: {'https', 'myapp'},
+      );
+      expect(uri?.toString(), 'myapp://settings');
+    });
+
+    test('rejects malformed and host-less urls without throwing', () {
+      expect(MotdData.resolveLinkUrl(null), isNull);
+      expect(MotdData.resolveLinkUrl(''), isNull);
+      expect(MotdData.resolveLinkUrl('   '), isNull);
+      expect(MotdData.resolveLinkUrl('example.com'), isNull);
+      expect(MotdData.resolveLinkUrl('https://'), isNull);
+      expect(MotdData.resolveLinkUrl('https:///path'), isNull);
+      expect(MotdData.resolveLinkUrl('http://[::1'), isNull);
+      expect(MotdData.resolveLinkUrl('ht\ttp://example.com'), isNull);
     });
   });
 
@@ -270,6 +312,57 @@ void main() {
         ),
         authorPubkey: 'author',
         dTagValue: 'motd',
+      );
+      await controller.start();
+
+      expect(controller.current, isNull);
+      expect(controller.shouldShow(), isFalse);
+    });
+
+    test('ignores events signed by another author', () async {
+      // A relay may ignore the requested author filter and return a valid
+      // event signed by an attacker.
+      final controller = NMotdController(
+        ndkFlutter: NdkFlutter(
+          ndk: _StubNdk([
+            _motdEvent(
+              id: 'attacker-event',
+              content: 'Malicious message',
+              createdAt: 999,
+              pubKey: 'attacker',
+              tags: const [
+                ['d', 'motd'],
+                ['url', 'https://evil.example.com'],
+              ],
+            ),
+            _motdEvent(
+              id: 'legit-event',
+              content: 'Legit message',
+              createdAt: 100,
+            ),
+          ]),
+        ),
+        authorPubkey: 'author',
+      );
+      await controller.start();
+
+      expect(controller.status, NMotdStatus.loaded);
+      expect(controller.current?.eventId, 'legit-event');
+      expect(controller.current?.message, 'Legit message');
+    });
+
+    test('shows nothing when only a foreign author matches', () async {
+      final controller = NMotdController(
+        ndkFlutter: NdkFlutter(
+          ndk: _StubNdk([
+            _motdEvent(
+              id: 'attacker-event',
+              content: 'Malicious message',
+              pubKey: 'attacker',
+            ),
+          ]),
+        ),
+        authorPubkey: 'author',
       );
       await controller.start();
 

@@ -112,6 +112,7 @@ class NMotdController extends ChangeNotifier {
 
       Nip01Event? latest;
       for (final event in events) {
+        if (event.pubKey != authorPubkey) continue;
         if (event.kind == MotdData.kKind &&
             event.getDtag() == dTagValue &&
             (latest == null || event.createdAt > latest.createdAt)) {
@@ -167,11 +168,8 @@ class NMotdController extends ChangeNotifier {
     return 0;
   }
 
-  static String _stripBuild(String version) =>
-      version.split('+').first.trim();
+  static String _stripBuild(String version) => version.split('+').first.trim();
 
-  static List<int> _versionNumbers(String base) => base
-      .split('.')
-      .map((part) => int.tryParse(part.trim()) ?? 0)
-      .toList();
+  static List<int> _versionNumbers(String base) =>
+      base.split('.').map((part) => int.tryParse(part.trim()) ?? 0).toList();
 }

@@ -265,6 +265,34 @@ void main() {
     expect(find.text('Delete'), findsNothing);
   });
 
+  testWidgets('ignores a loaded event published by another author',
+      (tester) async {
+    final signer = _FakeSigner(_author);
+    final foreign = Nip01Event(
+      id: 'foreign',
+      pubKey: 'someoneElse',
+      kind: MotdData.kKind,
+      tags: const [
+        ['d', 'motd'],
+        ['title', 'Not mine'],
+      ],
+      content: 'Foreign message',
+      createdAt: 100,
+    );
+    final ndk = _StubNdk(
+      _FakeAccounts(signer),
+      _StubRequests([foreign]),
+      _FakeBroadcast(),
+    );
+    await _pump(tester, ndk);
+
+    expect(find.text('Foreign message'), findsNothing);
+    expect(find.text('Not mine'), findsNothing);
+    expect(find.text('Update'), findsNothing);
+    expect(find.text('Delete'), findsNothing);
+    expect(find.text('Publish'), findsOneWidget);
+  });
+
   testWidgets('blocks publishing when not logged in as the author',
       (tester) async {
     final signer = _FakeSigner('someoneElse');
