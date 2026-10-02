@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790875360167,
+  "lastUpdate": 1790931871778,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1594,6 +1594,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1732208,
             "range": "1725268-1784770",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "frnandu",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "42ec216b870bb5f7b3a4dd2238b08c67c0a4c12d",
+          "message": "Merge pull request #879 from relaystr/release-36987021243\n\nchore(release): publish ndk_drift 0.2.0, ndk 0.10.1, ndk_flutter 0.10.1, ndk_objectbox 0.3.0",
+          "timestamp": "2026-10-02T11:02:43+02:00",
+          "tree_id": "6047b40a328e25949c356ef18224069fd8535cd4",
+          "url": "https://github.com/relaystr/ndk/commit/42ec216b870bb5f7b3a4dd2238b08c67c0a4c12d"
+        },
+        "date": 1790931869850,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46121,
+            "range": "45795-49146",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1723162,
+            "range": "1715968-1785890",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
