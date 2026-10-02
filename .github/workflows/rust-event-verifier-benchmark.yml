@@ -17,6 +17,7 @@ env:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: rust-event-verifier-benchmark-${{ github.ref }}
