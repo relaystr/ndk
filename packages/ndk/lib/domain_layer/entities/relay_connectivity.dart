@@ -2,13 +2,14 @@ import 'dart:async';
 
 import '../../shared/logger/logger.dart';
 import '../repositories/nostr_transport.dart';
+import 'engine_relay_connectivity_data.dart';
 import 'relay.dart';
 import 'relay_connection_key.dart';
 import 'relay_info.dart';
 import 'relay_stats.dart';
 
 /// Represents the connectivity of a relay.
-class RelayConnectivity<T> {
+class RelayConnectivity {
   /// identifies this connection: the relay and the identity bound to it
   final RelayConnectionKey key;
 
@@ -63,8 +64,12 @@ class RelayConnectivity<T> {
     }
   }
 
-  /// specific data that a engine might require for algorithms to work
-  final T? specificEngineData;
+  /// bookkeeping the engines need to reason about this connection.
+  ///
+  /// Always present and shared: the pool is keyed by url and identity, so this
+  /// connection may be handed to whichever engine needs the relay next. See
+  /// [EngineRelayConnectivityData].
+  final EngineRelayConnectivityData specificEngineData;
 
   /// relay url/identifier
   String get url => key.url;
@@ -79,6 +84,6 @@ class RelayConnectivity<T> {
     required this.relay,
     this.relayInfo,
     this.relayTransport,
-    this.specificEngineData,
-  });
+    EngineRelayConnectivityData? specificEngineData,
+  }) : specificEngineData = specificEngineData ?? EngineRelayConnectivityData();
 }
