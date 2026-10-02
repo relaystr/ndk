@@ -1,3 +1,7 @@
+## 0.10.1
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
 ## 0.10.1-dev.1
 
  - **FIX**: parse the BUD-08 nip94 field as a tag array.

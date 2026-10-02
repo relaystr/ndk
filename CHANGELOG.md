@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-10-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.10.1`](#ndk---v0101)
+ - [`ndk_flutter` - `v0.10.1`](#ndk_flutter---v0101)
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.2.0`](#ndk_drift---v020)
+ - [`ndk_objectbox` - `v0.3.0`](#ndk_objectbox---v030)
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `ndk` - `v0.10.1`
+ - `ndk_drift` - `v0.2.0`
+ - `ndk_flutter` - `v0.10.1`
+ - `ndk_objectbox` - `v0.3.0`
+
+---
+
+#### `ndk` - `v0.10.1`
+
+#### `ndk_flutter` - `v0.10.1`
+
+#### `ndk_drift` - `v0.2.0`
+
+#### `ndk_objectbox` - `v0.3.0`
+
+
 ## 2026-10-01
 
 ### Changes
