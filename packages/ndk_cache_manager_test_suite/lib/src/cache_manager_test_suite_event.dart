@@ -206,6 +206,41 @@ void _runEventTests(
     expect(loadedEvents.first.pTags.contains('target_pubkey_ptag'), isTrue);
   });
 
+  test('loadEvents with the #-prefixed tag keys of a Filter', () async {
+    final cacheManager = getCacheManager();
+    await cacheManager.removeAllEvents();
+
+    final target = Nip01Event(
+      pubKey: 'pubkey_filter_ptag_1',
+      kind: 1059,
+      tags: [
+        ['p', 'recipient_pubkey'],
+      ],
+      content: 'wrap',
+      createdAt: 1234567890,
+    );
+    await cacheManager.saveEvents([
+      target,
+      Nip01Event(
+        pubKey: 'pubkey_filter_ptag_2',
+        kind: 1059,
+        tags: [
+          ['p', 'other_pubkey'],
+        ],
+        content: 'wrap',
+        createdAt: 1234567891,
+      ),
+    ]);
+
+    final filter = Filter(kinds: [1059], pTags: ['recipient_pubkey']);
+    final loadedEvents = await cacheManager.loadEvents(
+      kinds: filter.kinds,
+      tags: filter.tags,
+    );
+
+    expect(loadedEvents.map((e) => e.id), [target.id]);
+  });
+
   test('loadEvents with time range filters', () async {
     final cacheManager = getCacheManager();
     await cacheManager.removeAllEvents();
