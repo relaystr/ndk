@@ -356,9 +356,6 @@ class RelayManager<T> {
       Logger.log.i(() => "connected to relay: $url");
       relayConnectivity.relay.succeededToConnect();
       relayConnectivity.stats.connections++;
-      getRelayInfo(url).then((info) {
-        relayConnectivity!.relayInfo = info;
-      });
       if (!connectCompleter.isCompleted) {
         connectCompleter.complete(true);
       }
@@ -1986,21 +1983,7 @@ class RelayManager<T> {
 
   /// fetches relay info; returns null when no [RelayInfoRepo] is configured
   Future<RelayInfo?> getRelayInfo(String url) async {
-    final repo = _relayInfoRepo;
-    if (repo != null &&
-        globalState.relays[RelayConnectionKey.anonymous(url)] != null) {
-      return await repo.getRelayInfo(url);
-    }
-    return null;
-  }
-
-  /// does relay support given nip
-  bool doesRelaySupportNip(String url, int nip) {
-    RelayConnectivity? connectivity =
-        globalState.relays[RelayConnectionKey.anonymous(url)];
-    return connectivity != null &&
-        connectivity.relayInfo != null &&
-        connectivity.relayInfo!.supportsNip(nip);
+    return await _relayInfoRepo?.getRelayInfo(url);
   }
 
   /// return [RelayConnectivity] by url

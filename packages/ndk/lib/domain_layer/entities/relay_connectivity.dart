@@ -4,7 +4,6 @@ import '../../shared/logger/logger.dart';
 import '../repositories/nostr_transport.dart';
 import 'relay.dart';
 import 'relay_connection_key.dart';
-import 'relay_info.dart';
 import 'relay_stats.dart';
 
 /// Represents the connectivity of a relay.
@@ -14,9 +13,6 @@ class RelayConnectivity<T> {
 
   /// relay data including connection state
   final Relay relay;
-
-  /// user facing relay info
-  RelayInfo? relayInfo;
 
   /// relay stats
   RelayStats stats = RelayStats();
@@ -77,7 +73,6 @@ class RelayConnectivity<T> {
   RelayConnectivity({
     required this.key,
     required this.relay,
-    this.relayInfo,
     this.relayTransport,
     this.specificEngineData,
   });
