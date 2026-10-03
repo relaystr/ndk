@@ -211,7 +211,8 @@ class EventVisibilityResolver {
       final useTagFilter =
           EventKindClassification.isParameterizedReplaceableKind(kind) &&
           dTags.every((value) => value.trim().isNotEmpty);
-      final values = dTags.toList();
+      // backends store tag values trimmed, an untrimmed filter matches nothing
+      final values = dTags.map((value) => value.trim()).toSet().toList();
       final batchSize = useTagFilter ? _tagBatchSize : values.length;
       for (var start = 0; start < values.length; start += batchSize) {
         final end = (start + batchSize).clamp(0, values.length);
