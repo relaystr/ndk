@@ -3,7 +3,6 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:ndk_flutter/widgets/login/nostr_connect_dialog_view.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart';
-import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginController extends ChangeNotifier {
@@ -38,7 +37,7 @@ class LoginController extends ChangeNotifier {
   Nip46ClientMetadata? clientMetadata;
   NostrConnect? nostrConnect;
   bool isNostrConnectDialogOpen = false;
-  List<ToastificationItem> challengeToasts = [];
+  List<OverlayEntry> challengeToasts = [];
 
   bool _isWaitingForExternalSigner = false;
   bool get isWaitingForExternalSigner => _isWaitingForExternalSigner;
@@ -78,6 +77,8 @@ class LoginController extends ChangeNotifier {
 
   Future<void> loginWithBunkerUrl(BuildContext context) async {
     isBunkerLoading = true;
+
+    showBunkerAuthToast("challenge", context);
 
     try {
       final bunkerConnection = await ndk.accounts.loginWithBunkerUrl(
@@ -136,7 +137,8 @@ class LoginController extends ChangeNotifier {
     await ndkFlutter.saveAccountsState();
 
     for (var toast in challengeToasts) {
-      toastification.dismiss(toast);
+      if (toast.mounted) toast.remove();
+      toast.dispose();
     }
     challengeToasts.clear();
 
@@ -195,20 +197,56 @@ class LoginController extends ChangeNotifier {
   }
 
   void showBunkerAuthToast(String challenge, BuildContext context) {
-    final newToast = toastification.show(
-      context: context,
-      title: Text(AppLocalizations.of(context)!.bunkerAuthentication),
-      description: Text(AppLocalizations.of(context)!.tapToOpen(challenge)),
-      alignment: Alignment.bottomRight,
-      type: ToastificationType.info,
-      style: ToastificationStyle.flat,
-      showProgressBar: true,
-      closeOnClick: false,
-      callbacks: ToastificationCallbacks(
-        onTap: (toastItem) => launchUrl(Uri.parse(challenge)),
+    final l10n = AppLocalizations.of(context)!;
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (ctx) => Positioned(
+        right: 16,
+        bottom: 16,
+        child: SafeArea(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Material(
+              elevation: 6,
+              borderRadius: BorderRadius.circular(8),
+              color: Theme.of(ctx).colorScheme.surface,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () => launchUrl(Uri.parse(challenge)),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.info_outline, color: Colors.blue),
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.bunkerAuthentication,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(l10n.tapToOpen(challenge)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
 
-    challengeToasts.add(newToast);
+    Overlay.of(context, rootOverlay: true).insert(entry);
+    challengeToasts.add(entry);
   }
 }

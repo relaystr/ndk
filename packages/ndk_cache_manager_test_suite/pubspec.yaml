@@ -11,4 +11,4 @@ resolution: workspace
 
 dependencies:
   ndk: ^0.10.1
-  test: ^1.30.0
+  test: any
