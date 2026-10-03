@@ -131,14 +131,24 @@ class LoginController extends ChangeNotifier {
     }
   }
 
-  Future<void> loggedIn() async {
-    await ndkFlutter.saveAccountsState();
-
+  void _clearChallengeToasts() {
     for (var toast in challengeToasts) {
-      if (toast.mounted) toast.remove();
+      toast.remove();
       toast.dispose();
     }
     challengeToasts.clear();
+  }
+
+  @override
+  void dispose() {
+    _clearChallengeToasts();
+    super.dispose();
+  }
+
+  Future<void> loggedIn() async {
+    await ndkFlutter.saveAccountsState();
+
+    _clearChallengeToasts();
 
     if (onLoggedIn != null) onLoggedIn!();
   }
