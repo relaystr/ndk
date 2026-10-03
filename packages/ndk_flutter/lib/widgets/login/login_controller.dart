@@ -78,8 +78,6 @@ class LoginController extends ChangeNotifier {
   Future<void> loginWithBunkerUrl(BuildContext context) async {
     isBunkerLoading = true;
 
-    showBunkerAuthToast("challenge", context);
-
     try {
       final bunkerConnection = await ndk.accounts.loginWithBunkerUrl(
         bunkerUrl: bunkerFieldController.text.trim(),
