@@ -751,7 +751,7 @@ class MockRelay {
         );
       }
       // Match against metadatas
-      else if (filter.kinds != null &&
+      if (filter.kinds != null &&
           filter.kinds!.contains(Metadata.kKind) &&
           filter.authors != null &&
           filter.authors!.isNotEmpty) {
@@ -766,7 +766,7 @@ class MockRelay {
         );
       }
       // Match against NIP-85 assertions (kinds 30382-30385)
-      else if (filter.kinds != null &&
+      if (filter.kinds != null &&
           filter.kinds!.any((k) => k >= 30382 && k <= 30385) &&
           filter.authors != null &&
           filter.authors!.isNotEmpty) {
@@ -783,9 +783,22 @@ class MockRelay {
         );
       }
       // General event matching (storedEvents and textNotes)
-      else {
+      eventsForThisFilter.addAll(
+        _storedEvents.where((event) {
+          bool kindMatches =
+              filter.kinds == null || filter.kinds!.contains(event.kind);
+          bool authorMatches =
+              filter.authors == null || filter.authors!.contains(event.pubKey);
+          bool idsMatches =
+              filter.ids == null || filter.ids!.contains(event.id);
+          bool timeMatches = _matchesTimeFilter(event, filter);
+          return kindMatches && authorMatches && idsMatches && timeMatches;
+        }).toList(),
+      );
+
+      if (textNotes != null) {
         eventsForThisFilter.addAll(
-          _storedEvents.where((event) {
+          textNotes!.values.where((event) {
             bool kindMatches =
                 filter.kinds == null || filter.kinds!.contains(event.kind);
             bool authorMatches =
@@ -797,22 +810,6 @@ class MockRelay {
             return kindMatches && authorMatches && idsMatches && timeMatches;
           }).toList(),
         );
-
-        if (textNotes != null) {
-          eventsForThisFilter.addAll(
-            textNotes!.values.where((event) {
-              bool kindMatches =
-                  filter.kinds == null || filter.kinds!.contains(event.kind);
-              bool authorMatches =
-                  filter.authors == null ||
-                  filter.authors!.contains(event.pubKey);
-              bool idsMatches =
-                  filter.ids == null || filter.ids!.contains(event.id);
-              bool timeMatches = _matchesTimeFilter(event, filter);
-              return kindMatches && authorMatches && idsMatches && timeMatches;
-            }).toList(),
-          );
-        }
       }
 
       // Match against NIP-65s
