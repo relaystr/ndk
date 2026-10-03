@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        package: [objectbox, drift]
+        package: [objectbox, drift, sqlite3]
     defaults:
       run:
         working-directory: ./packages/${{ matrix.package }}
@@ -23,3 +23,6 @@ jobs:
         if: matrix.package == 'objectbox'
         run: bash <(curl -s https://raw.githubusercontent.com/objectbox/objectbox-dart/main/install.sh)
       - run: flutter test
+        if: matrix.package != 'sqlite3'
+      - run: dart test
+        if: matrix.package == 'sqlite3'
