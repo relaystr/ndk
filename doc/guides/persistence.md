@@ -15,6 +15,7 @@ Available databases:
 - [`DbObjectBox`](https://pub.dev/packages/ndk_objectbox)
 - [`SembastCacheManager`](https://pub.dev/packages/sembast_cache_manager)
 - [`DriftCacheManager`](https://pub.dev/packages/ndk_drift)
+- [`SqliteCacheManager`](https://pub.dev/packages/ndk_sqlite3)
 
 ## Which cache backend to use
 
@@ -55,6 +56,27 @@ Good fit:
 
 - small to medium apps
 - apps where simplicity matters more than squeezing maximum database performance
+
+Limitations:
+
+- loads the whole database in memory, which rules it out for large caches
+
+### `SqliteCacheManager`
+
+Best when:
+
+- you run Dart without Flutter: command line tools, servers, bots
+- the cache can grow large
+
+Why:
+
+- pure Dart, SQLite comes bundled with `package:sqlite3`
+- filters, visibility rules and eviction run in SQL, so memory use does not grow with the cache
+
+Limitations:
+
+- no web support
+- calls are synchronous and block the calling isolate while SQLite works
 
 ### `DriftCacheManager`
 
@@ -108,6 +130,10 @@ If your app already uses SQLite/Drift heavily:
 If web performance is your main concern:
 
 - use `DriftCacheManager`
+
+If you run Dart without Flutter and the cache can grow large:
+
+- use `SqliteCacheManager`
 
 If you need maximum simplicity and do not care about restart persistence:
 
@@ -182,6 +208,23 @@ import 'package:ndk_drift/ndk_drift.dart';
 
   // Or with a custom database name
   // final db = await DriftCacheManager.create(dbName: 'my_app_cache');
+
+  final ndkConfig = NdkConfig(
+    cache: db,
+    eventSigner: eventSigner,
+    eventVerifier: eventVerifier,
+  );
+
+  final ndk = Ndk(ndkConfig);
+```
+
+```dart sqlite example
+import 'package:ndk/ndk.dart';
+import 'package:ndk_sqlite3/ndk_sqlite3.dart';
+
+...
+
+  final db = SqliteCacheManager.open('ndk_cache.db');
 
   final ndkConfig = NdkConfig(
     cache: db,
