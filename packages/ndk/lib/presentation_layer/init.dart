@@ -131,8 +131,8 @@ class Initialization {
     required GlobalState globalState,
   }) : _globalState = globalState,
        _ndkConfig = ndkConfig {
-    // Configure global WebSocket User-Agent on dart:io platforms
-    configureDefaultUserAgent(ndkConfig.userAgent);
+    final userAgent = ndkConfig.userAgent;
+    if (userAgent != null) configureDefaultUserAgent(userAgent);
 
     _webSocketNostrTransportFactory = WebSocketClientNostrTransportFactory(
       compressionEnabled: ndkConfig.webSocketCompression,
