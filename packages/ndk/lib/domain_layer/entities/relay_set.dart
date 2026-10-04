@@ -45,8 +45,10 @@ class RelaySet {
   void splitIntoRequests(Filter filter, RequestState groupRequest) {
     for (final entry in relaysMap.entries) {
       final String url = entry.key;
-      final connectionKey =
-          RelayConnectionKey.forAuth(url, groupRequest.request.auth);
+      final connectionKey = RelayConnectionKey.forAuth(
+        url,
+        groupRequest.request.auth,
+      );
       if (connectionKey == null) {
         continue;
       }

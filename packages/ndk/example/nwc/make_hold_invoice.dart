@@ -20,7 +20,7 @@ void main() async {
   final nwcUri = Platform.environment['NWC_URI']!;
   final connection = await ndk.nwc.connect(nwcUri);
 
-  final amount = 29;
+  final amount = 1000;
   final description = "hello hold";
 
   // Generate a random 32-byte preimage
@@ -56,17 +56,19 @@ void main() async {
         "Hold invoice created successfully. Invoice: $invoice Payment Hash: ${makeResponse.paymentHash}",
       );
 
-      final duration = makeResponse.expiresAt! -
+      final duration =
+          makeResponse.expiresAt! -
           DateTime.now().millisecondsSinceEpoch ~/ 1000;
       print(
         "Waiting for hold invoice acceptance notification (max $duration seconds)...",
       );
       try {
-        final acceptedNotification =
-            await connection.holdInvoiceStateStream.firstWhere((notification) {
-          return notification.notificationType ==
-              NwcNotification.kHoldInvoiceAccepted;
-        }).timeout(Duration(seconds: duration.toInt()));
+        final acceptedNotification = await connection.holdInvoiceStateStream
+            .firstWhere((notification) {
+              return notification.notificationType ==
+                  NwcNotification.kHoldInvoiceAccepted;
+            })
+            .timeout(Duration(seconds: duration.toInt()));
 
         print(
           "Hold invoice accepted by wallet! (Notification: ${acceptedNotification.notificationType}, Settle deadline: ${acceptedNotification.settleDeadline})",

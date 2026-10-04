@@ -284,7 +284,9 @@ void main() async {
 
       ndk.accounts.loginPublicKey(pubkey: key0.publicKey);
       expect(
-          ndk.accounts.accounts, same(await ndk.accounts.accountsStream.first));
+        ndk.accounts.accounts,
+        same(await ndk.accounts.accountsStream.first),
+      );
 
       final before = ndk.accounts.accounts;
       ndk.accounts.removeAccount(pubkey: key1.publicKey);

@@ -59,22 +59,22 @@ class Ndk {
 
   /// Creates a new instance of [Ndk] with default configuration
   Ndk.defaultConfig()
-      : this(
-          NdkConfig(
-            cache: MemCacheManager(),
-            eventVerifier: Bip340EventVerifier(),
-          ),
-        );
+    : this(
+        NdkConfig(
+          cache: MemCacheManager(),
+          eventVerifier: Bip340EventVerifier(),
+        ),
+      );
 
   /// Creates a new instance of [Ndk] with default configuration and empty bootstrap relays
   Ndk.emptyBootstrapRelaysConfig()
-      : this(
-          NdkConfig(
-            cache: MemCacheManager(),
-            eventVerifier: Bip340EventVerifier(),
-            bootstrapRelays: [],
-          ),
-        );
+    : this(
+        NdkConfig(
+          cache: MemCacheManager(),
+          eventVerifier: Bip340EventVerifier(),
+          bootstrapRelays: [],
+        ),
+      );
 
   /// Provides access to low-level Nostr requests.
   ///
@@ -167,6 +167,15 @@ class Ndk {
   /// Nostr Wallet connect
   @experimental // needs more docs & tests
   Nwc get nwc => _initialization.nwc;
+
+  /// Suspends wallet notifications and balance polling, and closes idle relay
+  /// connections when the application enters background. Active requests keep
+  /// their connections.
+  Future<void> setBackgrounded(bool backgrounded) async {
+    wallets.setBackgrounded(backgrounded);
+    await nwc.setBackgrounded(backgrounded);
+    if (backgrounded) await relays.closeIdleConnections();
+  }
 
   /// Zaps
   @experimental // needs more docs & tests

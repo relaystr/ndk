@@ -188,34 +188,36 @@ void main() {
     // cover its serialization directly along with all other control characters.
     for (var code = 1; code < 0x20; code++) {
       for (final inTag in [false, true]) {
-        test('verifies control character $code in ${inTag ? 'tag' : 'content'}',
-            () async {
-          final value = 'before${String.fromCharCode(code)}after';
-          final tags = inTag
-              ? [
-                  ['t', value],
-                ]
-              : <List<String>>[];
-          final content = inTag ? '' : value;
-          final id = Nip01Utils.calculateEventIdSync(
-            pubKey: keyPair.publicKey,
-            createdAt: 1726215220,
-            kind: 1,
-            tags: tags,
-            content: content,
-          );
-          final event = Nip01Event(
-            id: id,
-            pubKey: keyPair.publicKey,
-            createdAt: 1726215220,
-            kind: 1,
-            tags: tags,
-            content: content,
-            sig: Bip340.sign(id, keyPair.privateKey!),
-          );
+        test(
+          'verifies control character $code in ${inTag ? 'tag' : 'content'}',
+          () async {
+            final value = 'before${String.fromCharCode(code)}after';
+            final tags = inTag
+                ? [
+                    ['t', value],
+                  ]
+                : <List<String>>[];
+            final content = inTag ? '' : value;
+            final id = Nip01Utils.calculateEventIdSync(
+              pubKey: keyPair.publicKey,
+              createdAt: 1726215220,
+              kind: 1,
+              tags: tags,
+              content: content,
+            );
+            final event = Nip01Event(
+              id: id,
+              pubKey: keyPair.publicKey,
+              createdAt: 1726215220,
+              kind: 1,
+              tags: tags,
+              content: content,
+              sig: Bip340.sign(id, keyPair.privateKey!),
+            );
 
-          expect(await verifier.verify(event), isTrue);
-        });
+            expect(await verifier.verify(event), isTrue);
+          },
+        );
       }
     }
 
@@ -232,8 +234,7 @@ void main() {
       expect(await verifier.verify(event), isFalse);
     });
 
-    test(
-        'rejects malformed packed FFI inputs for the combined id/PoW/'
+    test('rejects malformed packed FFI inputs for the combined id/PoW/'
         'signature check', () {
       const packedLength = 64 + 64 + 128;
       const oversizedLength = packedLength + 10;
@@ -304,38 +305,37 @@ void main() {
       }
     });
 
-    test('rejects event whose declared proof-of-work target is not met',
-        () async {
-      final createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      final tags = [
-        ['nonce', '1', '255'],
-      ];
-      final id = Nip01Utils.calculateEventIdSync(
-        pubKey: keyPair.publicKey,
-        createdAt: createdAt,
-        kind: 1,
-        tags: tags,
-        content: 'pow test',
-      );
-      final event = Nip01Event(
-        id: id,
-        pubKey: keyPair.publicKey,
-        createdAt: createdAt,
-        kind: 1,
-        tags: tags,
-        content: 'pow test',
-        sig: Bip340.sign(id, keyPair.privateKey!),
-      );
+    test(
+      'rejects event whose declared proof-of-work target is not met',
+      () async {
+        final createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        final tags = [
+          ['nonce', '1', '255'],
+        ];
+        final id = Nip01Utils.calculateEventIdSync(
+          pubKey: keyPair.publicKey,
+          createdAt: createdAt,
+          kind: 1,
+          tags: tags,
+          content: 'pow test',
+        );
+        final event = Nip01Event(
+          id: id,
+          pubKey: keyPair.publicKey,
+          createdAt: createdAt,
+          kind: 1,
+          tags: tags,
+          content: 'pow test',
+          sig: Bip340.sign(id, keyPair.privateKey!),
+        );
 
-      expect(await verifier.verify(event), isFalse);
-    });
+        expect(await verifier.verify(event), isFalse);
+      },
+    );
 
     test('repeatedly verifies an event with many large tags', () async {
       final createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      final tags = List.generate(
-        200,
-        (index) => ['x', '$index-${'a' * 1024}'],
-      );
+      final tags = List.generate(200, (index) => ['x', '$index-${'a' * 1024}']);
       final id = Nip01Utils.calculateEventIdSync(
         pubKey: keyPair.publicKey,
         createdAt: createdAt,

@@ -44,7 +44,7 @@ class RelayJitPubkeyStrategy with Logger {
     // specific filter (only one for this request)
     required Filter filter,
     required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-        connectedRelays,
+    connectedRelays,
     required List<String> bootstrapRelays,
 
     /// used to get the nip65 data if its necessary to look for not covered pubkeys
@@ -94,12 +94,9 @@ class RelayJitPubkeyStrategy with Logger {
       Filter splitFilter = _splitFilter(filter, coveredPubkeysForRelay);
 
       unawaited(
-        _sendRequestToSocket(
-          connectedRelay,
-          requestState,
-          [splitFilter],
-          relayManager,
-        ),
+        _sendRequestToSocket(connectedRelay, requestState, [
+          splitFilter,
+        ], relayManager),
       );
 
       // clear out fully covered pubkeys
@@ -160,7 +157,7 @@ class RelayJitPubkeyStrategy with Logger {
     required Filter filter,
     required List<CoveragePubkey> coveragePubkeys,
     required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-        connectedRelays,
+    connectedRelays,
     required CacheManager cacheManager,
     required int desiredCoverage,
     required ReadWriteMarker direction,
@@ -259,17 +256,12 @@ class RelayJitPubkeyStrategy with Logger {
         );
 
         unawaited(
-          _sendRequestToSocket(
-            myRelayConnectivity,
-            requestState,
-            [
-              _splitFilter(
-                filter,
-                relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
-              ),
-            ],
-            relayManger,
-          ),
+          _sendRequestToSocket(myRelayConnectivity, requestState, [
+            _splitFilter(
+              filter,
+              relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
+            ),
+          ], relayManger),
         );
       }());
     }

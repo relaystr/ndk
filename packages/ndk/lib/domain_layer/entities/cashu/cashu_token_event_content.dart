@@ -21,7 +21,8 @@ class CashuTokenEventContent {
                 CashuProof.fromJson(proofJson as Map<String, dynamic>),
           )
           .toList(),
-      deletedIds: (jsonList['del'] as List<dynamic>?)
+      deletedIds:
+          (jsonList['del'] as List<dynamic>?)
               ?.map((id) => id as String)
               .toList() ??
           [],

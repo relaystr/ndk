@@ -31,15 +31,15 @@ class LnurlWallet extends Wallet {
     this.metadataFetchedAt,
     Map<String, dynamic>? metadata,
   }) : super(
-          metadata: Map.unmodifiable({
-            ...(metadata ?? const {}),
-            'identifier': identifier,
-            'lnurlPayUrl': lnurlPayUrl,
-            'minSendable': minSendable,
-            'maxSendable': maxSendable,
-            'metadataFetchedAt': metadataFetchedAt,
-          }),
-        );
+         metadata: Map.unmodifiable({
+           ...(metadata ?? const {}),
+           'identifier': identifier,
+           'lnurlPayUrl': lnurlPayUrl,
+           'minSendable': minSendable,
+           'maxSendable': maxSendable,
+           'metadataFetchedAt': metadataFetchedAt,
+         }),
+       );
 
   @override
   Map<String, dynamic> toMetadata() => metadata;

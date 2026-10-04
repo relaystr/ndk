@@ -4,19 +4,19 @@ import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
 
 Account _signable(KeyPair keyPair) => Account(
-      type: AccountType.privateKey,
-      pubkey: keyPair.publicKey,
-      signer: Bip340EventSigner(
-        privateKey: keyPair.privateKey,
-        publicKey: keyPair.publicKey,
-      ),
-    );
+  type: AccountType.privateKey,
+  pubkey: keyPair.publicKey,
+  signer: Bip340EventSigner(
+    privateKey: keyPair.privateKey,
+    publicKey: keyPair.publicKey,
+  ),
+);
 
 Account _watchOnly(KeyPair keyPair) => Account(
-      type: AccountType.publicKey,
-      pubkey: keyPair.publicKey,
-      signer: Bip340EventSigner(privateKey: null, publicKey: keyPair.publicKey),
-    );
+  type: AccountType.publicKey,
+  pubkey: keyPair.publicKey,
+  signer: Bip340EventSigner(privateKey: null, publicKey: keyPair.publicKey),
+);
 
 void main() {
   final keyA = Bip340.generatePrivateKey();
@@ -32,7 +32,9 @@ void main() {
 
     test('two policies for the same pubkey are equal', () {
       expect(
-          AuthPolicy.allow(_signable(keyA)), AuthPolicy.allow(_signable(keyA)));
+        AuthPolicy.allow(_signable(keyA)),
+        AuthPolicy.allow(_signable(keyA)),
+      );
       expect(
         AuthPolicy.allow(_signable(keyA)).hashCode,
         AuthPolicy.allow(_signable(keyA)).hashCode,
@@ -59,7 +61,9 @@ void main() {
       expect(const AuthPolicy.never().canonical, 'never');
       expect(AuthPolicy.allow(account).canonical, 'allow:${keyA.publicKey}');
       expect(
-          AuthPolicy.require(account).canonical, 'require:${keyA.publicKey}');
+        AuthPolicy.require(account).canonical,
+        'require:${keyA.publicKey}',
+      );
       expect(
         AuthPolicy.require(account).toString(),
         AuthPolicy.require(account).canonical,
@@ -69,8 +73,10 @@ void main() {
 
   group('AuthPolicy.keyFor', () {
     test('an absent policy stays anonymous', () {
-      expect(RelayConnectionKey.forAuth(url, null),
-          RelayConnectionKey.anonymous(url));
+      expect(
+        RelayConnectionKey.forAuth(url, null),
+        RelayConnectionKey.anonymous(url),
+      );
     });
 
     test('never and allow start anonymous', () {
@@ -93,8 +99,9 @@ void main() {
 
     test('require without a signer has no connection to use', () {
       expect(
-          RelayConnectionKey.forAuth(url, AuthPolicy.require(_watchOnly(keyA))),
-          isNull);
+        RelayConnectionKey.forAuth(url, AuthPolicy.require(_watchOnly(keyA))),
+        isNull,
+      );
     });
   });
 

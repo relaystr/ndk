@@ -58,11 +58,11 @@ class Blossom {
     required Accounts accounts,
     required LocalEventSignerFactory eventSignerFactory,
     AuthHandler? authHandler,
-  })  : _accounts = accounts,
-        _userServerList = blossomUserServerList,
-        _blossomImpl = blossomRepository,
-        _eventSignerFactory = eventSignerFactory,
-        _authHandler = authHandler;
+  }) : _accounts = accounts,
+       _userServerList = blossomUserServerList,
+       _blossomImpl = blossomRepository,
+       _eventSignerFactory = eventSignerFactory,
+       _authHandler = authHandler;
 
   /// The kind 24242 event an operation authorises itself with. Built when it
   /// is needed rather than when the call is made, so an event signed after a
@@ -138,7 +138,8 @@ class Blossom {
   }) async {
     final fallback = authorisesByDefault ? _defaultAccount() : null;
     final throwaway = auth == null && authorisesByDefault && fallback == null;
-    final policy = auth ??
+    final policy =
+        auth ??
         (authorisesByDefault
             ? AuthPolicy.require(fallback ?? _throwawayAccount())
             : const AuthPolicy.never());
@@ -204,22 +205,21 @@ class Blossom {
     required String sha256,
     required List<String>? serverUrls,
     required String? pubkeyToFetchUserServerList,
-  }) =>
-      _planAuth(
-        auth: auth,
-        authorisesByDefault: false,
-        operation: "get",
-        buildEvent: (pubkey) => _blossomAuthEvent(
-          content: "get",
-          pubkey: pubkey,
-          type: "get",
-          blobSha256: sha256,
-        ),
-        resolveServers: () => _resolveReadServers(
-          serverUrls: serverUrls,
-          pubkeyToFetchUserServerList: pubkeyToFetchUserServerList,
-        ),
-      );
+  }) => _planAuth(
+    auth: auth,
+    authorisesByDefault: false,
+    operation: "get",
+    buildEvent: (pubkey) => _blossomAuthEvent(
+      content: "get",
+      pubkey: pubkey,
+      type: "get",
+      blobSha256: sha256,
+    ),
+    resolveServers: () => _resolveReadServers(
+      serverUrls: serverUrls,
+      pubkeyToFetchUserServerList: pubkeyToFetchUserServerList,
+    ),
+  );
 
   /// The servers a write talks to: an explicit list, else an explicit pubkey's
   /// kind 10063 list, else the identity the policy names, else the logged-in
@@ -605,13 +605,11 @@ class Blossom {
       auth: auth,
       authorisesByDefault: true,
       operation: "list",
-      buildEvent: (owner) => _blossomAuthEvent(
-        content: "List Blobs",
-        pubkey: owner,
-        type: "list",
-      ),
+      buildEvent: (owner) =>
+          _blossomAuthEvent(content: "List Blobs", pubkey: owner, type: "list"),
       resolveServers: () async {
-        final servers = serverUrls ??
+        final servers =
+            serverUrls ??
             await _userServerList.getUserServerList(pubkeys: [pubkey]);
         if (servers == null) {
           throw Exception("User has no server list: $pubkey");

@@ -16,14 +16,13 @@ const int secondRefusingPort = 30021;
 const int publicPort = 30022;
 
 Nip01Event _authEvent(String type) => Nip01Event(
-      pubKey:
-          'd0a1ffb8761b974cec4a3be8cbcb2e96a7090dcf465ffeac839aa4ca20c9a59e',
-      kind: 24242,
-      tags: [
-        ['t', type],
-      ],
-      content: type,
-    );
+  pubKey: 'd0a1ffb8761b974cec4a3be8cbcb2e96a7090dcf465ffeac839aa4ca20c9a59e',
+  kind: 24242,
+  tags: [
+    ['t', type],
+  ],
+  content: type,
+);
 
 /// A server that refuses without an identity is asking for one. These drive
 /// the repository directly, because the usecase cannot express a policy yet.
@@ -39,12 +38,14 @@ void main() {
 
   /// puts a blob on [server] while it still accepts anonymous writes
   Future<String> seed(MockBlossomServer server, Uint8List data) async {
-    final uploaded = await repo.uploadBlob(
-      dataStreamFactory: () => Stream.value(data),
-      contentLength: data.length,
-      authorization: BlossomAuthorization.upfront(_authEvent('upload')),
-      serverUrls: ['http://localhost:${server.port}'],
-    ).last;
+    final uploaded = await repo
+        .uploadBlob(
+          dataStreamFactory: () => Stream.value(data),
+          contentLength: data.length,
+          authorization: BlossomAuthorization.upfront(_authEvent('upload')),
+          serverUrls: ['http://localhost:${server.port}'],
+        )
+        .last;
     expect(uploaded.completedUploads.first.success, true);
     server.clearRequests();
     return uploaded.completedUploads.first.descriptor!.sha256;
@@ -123,22 +124,24 @@ void main() {
 
     tearDown(() async => server.stop());
 
-    test('never sees the identity of an operation that would allow it',
-        () async {
-      var signatures = 0;
+    test(
+      'never sees the identity of an operation that would allow it',
+      () async {
+        var signatures = 0;
 
-      await repo.getBlob(
-        sha256: sha256,
-        serverUrls: ['http://localhost:${server.port}'],
-        authorization: BlossomAuthorization.onRefusal(() async {
-          signatures++;
-          return _authEvent('get');
-        }),
-      );
+        await repo.getBlob(
+          sha256: sha256,
+          serverUrls: ['http://localhost:${server.port}'],
+          authorization: BlossomAuthorization.onRefusal(() async {
+            signatures++;
+            return _authEvent('get');
+          }),
+        );
 
-      expect(signatures, 0, reason: 'nothing refused, so nothing was signed');
-      expect(server.countRequests(hasAuth: true), 0);
-    });
+        expect(signatures, 0, reason: 'nothing refused, so nothing was signed');
+        expect(server.countRequests(hasAuth: true), 0);
+      },
+    );
 
     test('never sees the identity another server asked for', () async {
       final refusing = MockBlossomServer(
@@ -160,8 +163,11 @@ void main() {
         ),
       );
 
-      expect(refusing.countRequests(hasAuth: true), 1,
-          reason: 'it asked, then did not have the blob');
+      expect(
+        refusing.countRequests(hasAuth: true),
+        1,
+        reason: 'it asked, then did not have the blob',
+      );
       expect(server.countRequests(hasAuth: true), 0);
     });
   });
@@ -210,8 +216,11 @@ void main() {
       );
 
       expect(results.every((r) => r.success), true);
-      expect(signatures, 1,
-          reason: 'a remote signer would otherwise prompt once per server');
+      expect(
+        signatures,
+        1,
+        reason: 'a remote signer would otherwise prompt once per server',
+      );
       expect({...first.signedEventIds, ...second.signedEventIds}, hasLength(1));
     });
   });

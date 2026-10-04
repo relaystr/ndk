@@ -14,7 +14,7 @@ class ReceiveRequest extends NwcRequest {
   final Map<String, dynamic>? metadata;
 
   const ReceiveRequest({this.amountMsat, this.description, this.metadata})
-      : super(method: NwcMethod.RECEIVE);
+    : super(method: NwcMethod.RECEIVE);
 
   @override
   Map<String, dynamic> toMap() {

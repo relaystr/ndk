@@ -75,8 +75,11 @@ void main() {
 
       final heads = server.requests.where((r) => r.method == 'HEAD').toList();
       expect(heads, hasLength(1));
-      expect(heads.single.hasAuth, true,
-          reason: 'the header was built but never handed to client.head');
+      expect(
+        heads.single.hasAuth,
+        true,
+        reason: 'the header was built but never handed to client.head',
+      );
       expect(heads.single.authType, 'get');
     });
 
@@ -112,33 +115,44 @@ void main() {
       expect(gets.single.authType, 'get');
     });
 
-    test('sends the authorization on the HEAD probe and on every chunk',
-        () async {
-      client = await startWith(
-        MockBlossomServer(port: rangeServerPort, supportRangeRequests: true),
-      );
-      // four chunks at the 16 byte chunk size below
-      final data = Uint8List.fromList(utf8.encode('a' * 64));
-      final sha256 = await seedBlob(data);
+    test(
+      'sends the authorization on the HEAD probe and on every chunk',
+      () async {
+        client = await startWith(
+          MockBlossomServer(port: rangeServerPort, supportRangeRequests: true),
+        );
+        // four chunks at the 16 byte chunk size below
+        final data = Uint8List.fromList(utf8.encode('a' * 64));
+        final sha256 = await seedBlob(data);
 
-      final stream = await client.getBlobStream(
-        sha256: sha256,
-        auth: AuthPolicy.require(loggedAccount),
-        serverUrls: [serverUrl],
-        chunkSize: 16,
-      );
-      final chunks = await stream.toList();
+        final stream = await client.getBlobStream(
+          sha256: sha256,
+          auth: AuthPolicy.require(loggedAccount),
+          serverUrls: [serverUrl],
+          chunkSize: 16,
+        );
+        final chunks = await stream.toList();
 
-      expect(chunks.length, greaterThan(1),
-          reason: 'the ranged path should have been taken, not the fallback');
-      expect(
-        chunks.map((c) => utf8.decode(c.data)).join(),
-        utf8.decode(data),
-      );
-      expect(server.countRequests(hasAuth: false), 0,
-          reason: 'the probe and every chunk must carry the authorization');
-      expect(server.countRequests(method: 'HEAD', hasAuth: true), 1);
-      expect(server.countRequests(method: 'GET', hasAuth: true), chunks.length);
-    });
+        expect(
+          chunks.length,
+          greaterThan(1),
+          reason: 'the ranged path should have been taken, not the fallback',
+        );
+        expect(
+          chunks.map((c) => utf8.decode(c.data)).join(),
+          utf8.decode(data),
+        );
+        expect(
+          server.countRequests(hasAuth: false),
+          0,
+          reason: 'the probe and every chunk must carry the authorization',
+        );
+        expect(server.countRequests(method: 'HEAD', hasAuth: true), 1);
+        expect(
+          server.countRequests(method: 'GET', hasAuth: true),
+          chunks.length,
+        );
+      },
+    );
   });
 }

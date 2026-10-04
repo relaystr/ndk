@@ -157,8 +157,9 @@ void main() async {
           authors: [key1.publicKey],
         );
 
-        final events = await ndk.requests.query(
-            filter: filter, explicitRelays: [relay1.url, relay2.url]).future;
+        final events = await ndk.requests
+            .query(filter: filter, explicitRelays: [relay1.url, relay2.url])
+            .future;
 
         expect(events, isNotEmpty);
         final eventId = events.first.id;
@@ -287,56 +288,58 @@ void main() async {
       }
     });
 
-    test('Subscription processes events immediately without stream closing',
-        () async {
-      // This test would FAIL with the previous VerifyEventStream implementation
-      // because events would remain stuck in buffer until stream closes
-      MockRelay relay1 = MockRelay(name: "relay 1");
-      await relay1.startServer(textNotes: textNotes);
+    test(
+      'Subscription processes events immediately without stream closing',
+      () async {
+        // This test would FAIL with the previous VerifyEventStream implementation
+        // because events would remain stuck in buffer until stream closes
+        MockRelay relay1 = MockRelay(name: "relay 1");
+        await relay1.startServer(textNotes: textNotes);
 
-      final ndk = Ndk(
-        NdkConfig(
-          eventVerifier: MockEventVerifier(),
-          cache: MemCacheManager(),
-          engine: NdkEngine.RELAY_SETS,
-          bootstrapRelays: [relay1.url],
-        ),
-      );
-      ndk.accounts.loginPrivateKey(
-        pubkey: key1.publicKey,
-        privkey: key1.privateKey!,
-      );
-
-      final filter = Filter(
-        kinds: [Nip01Event.kTextNodeKind],
-        authors: [key1.publicKey],
-      );
-
-      // Use subscription instead of query - this creates a long-lived stream
-      final subscription = ndk.requests.subscription(filters: [filter]);
-
-      final receivedEvents = <Nip01Event>[];
-      final streamSubscription = subscription.stream.listen((event) {
-        receivedEvents.add(event);
-      });
-      try {
-        await waitForEventCount(receivedEvents, 1);
-
-        expect(
-          receivedEvents.length,
-          equals(1),
-          reason:
-              'Subscription should process events immediately without waiting for stream to close',
+        final ndk = Ndk(
+          NdkConfig(
+            eventVerifier: MockEventVerifier(),
+            cache: MemCacheManager(),
+            engine: NdkEngine.RELAY_SETS,
+            bootstrapRelays: [relay1.url],
+          ),
         );
-        expect(receivedEvents[0].content, contains('key1'));
-      } finally {
-        await streamSubscription.cancel();
-        await ndk.requests.closeSubscription(subscription.requestId);
-        await ndk.destroy();
-        expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
-        await relay1.stopServer();
-      }
-    });
+        ndk.accounts.loginPrivateKey(
+          pubkey: key1.publicKey,
+          privkey: key1.privateKey!,
+        );
+
+        final filter = Filter(
+          kinds: [Nip01Event.kTextNodeKind],
+          authors: [key1.publicKey],
+        );
+
+        // Use subscription instead of query - this creates a long-lived stream
+        final subscription = ndk.requests.subscription(filters: [filter]);
+
+        final receivedEvents = <Nip01Event>[];
+        final streamSubscription = subscription.stream.listen((event) {
+          receivedEvents.add(event);
+        });
+        try {
+          await waitForEventCount(receivedEvents, 1);
+
+          expect(
+            receivedEvents.length,
+            equals(1),
+            reason:
+                'Subscription should process events immediately without waiting for stream to close',
+          );
+          expect(receivedEvents[0].content, contains('key1'));
+        } finally {
+          await streamSubscription.cancel();
+          await ndk.requests.closeSubscription(subscription.requestId);
+          await ndk.destroy();
+          expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
+          await relay1.stopServer();
+        }
+      },
+    );
 
     test(
       'Subscription handles continuous events from non-closing stream',
@@ -450,6 +453,64 @@ void main() async {
       //   subscription
       requests.subscription(filters: [originalFilterSub], cacheRead: true);
       expect(originalFilterSub.authors!.length, equals(1));
+    });
+  });
+
+  group('request ids', () {
+    late Ndk ndk;
+    final filter = Filter(kinds: [1]);
+
+    Ndk createNdk({bool debugMode = false}) => Ndk(
+      NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        bootstrapRelays: [],
+        debugMode: debugMode,
+      ),
+    );
+
+    setUp(() => ndk = createNdk());
+
+    tearDown(() => ndk.destroy());
+
+    test('ids are random hex and never carry the name', () {
+      final query = ndk.requests.query(filter: filter, name: 'secret');
+      final sub = ndk.requests.subscription(filter: filter, name: 'secret');
+
+      for (final id in [query.requestId, sub.requestId]) {
+        expect(id, matches(RegExp(r'^[0-9a-f]{32}$')));
+      }
+    });
+
+    test('debugMode ids keep the name, cut to 32 characters', () {
+      final debugNdk = createNdk(debugMode: true);
+      addTearDown(debugNdk.destroy);
+      final name = 'n' * 32;
+      final query = debugNdk.requests.query(filter: filter, name: '${name}x');
+      final sub = debugNdk.requests.subscription(filter: filter, name: name);
+
+      for (final id in [query.requestId, sub.requestId]) {
+        expect(id, matches(RegExp('^$name-[0-9a-f]{16}\$')));
+      }
+    });
+
+    test('an explicit id must be 1 to 64 characters', () {
+      final requests = <NdkResponse Function(String id)>[
+        (id) => ndk.requests.query(filter: filter, id: id),
+        (id) => ndk.requests.subscription(filter: filter, id: id),
+      ];
+      for (final request in requests) {
+        expect(() => request(''), throwsArgumentError);
+        expect(() => request('i' * 65), throwsArgumentError);
+        expect(request('i' * 64).requestId, 'i' * 64);
+      }
+    });
+
+    test('an explicit query id cannot be combined with paginate', () {
+      expect(
+        () => ndk.requests.query(filter: filter, id: 'q', paginate: true),
+        throwsArgumentError,
+      );
     });
   });
 

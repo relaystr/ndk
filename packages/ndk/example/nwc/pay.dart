@@ -11,9 +11,7 @@ void main() async {
   final nwcUri = Platform.environment['NWC_URI']!;
   final bip321 = Platform.environment['BIP321'];
   final invoice = Platform.environment['INVOICE'];
-  final amountMsat = int.tryParse(
-    Platform.environment['AMOUNT_MSAT'] ?? '',
-  );
+  final amountMsat = int.tryParse(Platform.environment['AMOUNT_MSAT'] ?? '');
 
   final connection = await ndk.nwc.connect(nwcUri);
 

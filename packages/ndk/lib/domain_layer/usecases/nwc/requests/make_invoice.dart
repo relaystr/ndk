@@ -15,10 +15,10 @@ class MakeInvoiceRequest extends NwcRequest {
     this.descriptionHash,
     this.expiry,
     NwcMethod? method, // Add optional method parameter
-  })  : amountSat = amountMsat ~/ 1000,
-        super(
-          method: method ?? NwcMethod.MAKE_INVOICE,
-        ); // Use provided method or default
+  }) : amountSat = amountMsat ~/ 1000,
+       super(
+         method: method ?? NwcMethod.MAKE_INVOICE,
+       ); // Use provided method or default
 
   @override
   Map<String, dynamic> toMap() {

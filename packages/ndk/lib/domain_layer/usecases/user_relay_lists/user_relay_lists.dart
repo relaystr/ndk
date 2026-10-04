@@ -31,10 +31,10 @@ class UserRelayLists {
     required CacheManager cacheManager,
     required Broadcast broadcast,
     required Accounts accounts,
-  })  : _cacheManager = cacheManager,
-        _requests = requests,
-        _broadcast = broadcast,
-        _accounts = accounts;
+  }) : _cacheManager = cacheManager,
+       _requests = requests,
+       _broadcast = broadcast,
+       _accounts = accounts;
 
   EventSigner get _signer {
     if (_accounts.isNotLoggedIn) {
@@ -233,14 +233,16 @@ class UserRelayLists {
 
     /// if cached user relay list is older that now minus this duration that we should go refresh it,
     /// otherwise we risk adding/removing relays to a list that is out of date and thus loosing relays other client has added/removed since.
-    int sometimeAgo = DateTime.now()
+    int sometimeAgo =
+        DateTime.now()
             .subtract(REFRESH_USER_RELAY_DURATION)
             .millisecondsSinceEpoch ~/
         1000;
     final latestSourceEvent = await _loadCachedUserRelaySourceEvent(
       _signer.getPublicKey(),
     );
-    bool refresh = userRelayList == null ||
+    bool refresh =
+        userRelayList == null ||
         latestSourceEvent == null ||
         latestSourceEvent.createdAt < sometimeAgo;
 

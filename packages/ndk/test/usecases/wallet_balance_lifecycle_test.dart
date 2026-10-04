@@ -138,8 +138,9 @@ void main() {
     final received = <List<WalletBalance>>[];
     late StreamSubscription<List<WalletBalance>> subscription;
     clock.run((_) {
-      subscription =
-          provider.getBalances(_wallet('lnbits')).listen(received.add);
+      subscription = provider
+          .getBalances(_wallet('lnbits'))
+          .listen(received.add);
     });
     await _advance(clock, Duration.zero);
     clock.run((_) => unawaited(subscription.cancel()));
@@ -221,8 +222,7 @@ class _Provider implements WalletProvider {
     Wallet wallet,
     String invoice, {
     Duration? timeout,
-  }) =>
-      payment.future;
+  }) => payment.future;
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

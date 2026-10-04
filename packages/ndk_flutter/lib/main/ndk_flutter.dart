@@ -20,13 +20,15 @@ class NdkFlutter {
   final String npubSeparator;
   final int npubPrefixLength;
   final int npubSuffixLength;
+  final FlutterSecureStorage _storage;
 
   NdkFlutter({
     required this.ndk,
     this.npubSeparator = '…',
     this.npubPrefixLength = 10,
     this.npubSuffixLength = 4,
-  });
+    FlutterSecureStorage? storage,
+  }) : _storage = storage ?? const FlutterSecureStorage();
 
   String formatNpub(String pubkey) {
     final npub = Nip19.encodePubKey(pubkey);
@@ -157,14 +159,11 @@ class NdkFlutter {
 
     accounts.loggedAccount = ndk.accounts.getPublicKey();
 
-    final storage = FlutterSecureStorage();
-    await storage.write(key: accountsKey, value: jsonEncode(accounts));
+    await _storage.write(key: accountsKey, value: jsonEncode(accounts));
   }
 
   Future<void> restoreAccountsState() async {
-    final storage = FlutterSecureStorage();
-
-    final storedAccounts = await storage.read(key: accountsKey);
+    final storedAccounts = await _storage.read(key: accountsKey);
 
     if (storedAccounts == null) return;
 

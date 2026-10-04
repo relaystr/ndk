@@ -31,10 +31,9 @@ void fallbackTests() {
       expect(response.relayOutcomes, isEmpty);
       expect(await response.relayOutcomesDone, isEmpty);
       // the initial snapshot the stream promises, and then its end
-      expect(
-        await response.relayOutcomesStream.toList(),
-        [<String, RelayRequestOutcome>{}],
-      );
+      expect(await response.relayOutcomesStream.toList(), [
+        <String, RelayRequestOutcome>{},
+      ]);
     });
   });
 }
@@ -121,8 +120,8 @@ void collapseTests() {
     final filter = Filter(kinds: [Nip01Event.kTextNodeKind]);
 
     ndk_entities.RequestState buildState() => ndk_entities.RequestState(
-          NdkRequest.subscription("outcome-test", filters: [filter]),
-        );
+      NdkRequest.subscription("outcome-test", filters: [filter]),
+    );
 
     test('a connection that went away reports disconnected', () {
       final state = buildState();
@@ -220,34 +219,34 @@ void relayOutcomesTests(NdkEngine engine) {
     late Ndk ndk;
 
     Nip01Event textNote(KeyPair key) => Nip01Utils.signWithPrivateKey(
-          event: Nip01Event(
-            kind: Nip01Event.kTextNodeKind,
-            pubKey: key.publicKey,
-            content: "some note from key1",
-            tags: [],
-            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-          ),
-          privateKey: key.privateKey!,
-        );
+      event: Nip01Event(
+        kind: Nip01Event.kTextNodeKind,
+        pubKey: key.publicKey,
+        content: "some note from key1",
+        tags: [],
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      ),
+      privateKey: key.privateKey!,
+    );
 
     Ndk buildNdk({AuthHandler? authHandler}) => Ndk(
-          NdkConfig(
-            eventVerifier: MockEventVerifier(),
-            cache: MemCacheManager(),
-            engine: engine,
-            bootstrapRelays: [relay1.url],
-            authHandler: authHandler,
-          ),
-        );
+      NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        engine: engine,
+        bootstrapRelays: [relay1.url],
+        authHandler: authHandler,
+      ),
+    );
 
     NdkResponse queryKey1({Duration? timeout}) => ndk.requests.query(
-          filter: Filter(
-            kinds: [Nip01Event.kTextNodeKind],
-            authors: [key1.publicKey],
-          ),
-          cacheRead: false,
-          timeout: timeout,
-        );
+      filter: Filter(
+        kinds: [Nip01Event.kTextNodeKind],
+        authors: [key1.publicKey],
+      ),
+      cacheRead: false,
+      timeout: timeout,
+    );
 
     tearDown(() async {
       await ndk.destroy();
@@ -269,26 +268,28 @@ void relayOutcomesTests(NdkEngine engine) {
       expect(await response.relayOutcomesDone, response.relayOutcomes);
     });
 
-    test('a request merged into an identical one reports its outcomes',
-        () async {
-      relay1 = MockRelay(name: "relay 1", signEvents: false);
-      await relay1.startServer(textNotes: {key1: textNote(key1)});
-      ndk = buildNdk();
+    test(
+      'a request merged into an identical one reports its outcomes',
+      () async {
+        relay1 = MockRelay(name: "relay 1", signEvents: false);
+        await relay1.startServer(textNotes: {key1: textNote(key1)});
+        ndk = buildNdk();
 
-      final filter = Filter(
-        kinds: [Nip01Event.kTextNodeKind],
-        authors: [key1.publicKey],
-      );
-      final first = ndk.requests.query(filter: filter);
-      final duplicate = ndk.requests.query(filter: filter);
+        final filter = Filter(
+          kinds: [Nip01Event.kTextNodeKind],
+          authors: [key1.publicKey],
+        );
+        final first = ndk.requests.query(filter: filter);
+        final duplicate = ndk.requests.query(filter: filter);
 
-      await first.future;
-      await duplicate.future;
+        await first.future;
+        await duplicate.future;
 
-      expect(duplicate.relayOutcomes, {
-        relay1.url: RelayRequestOutcome(RelayRequestStatus.eose),
-      });
-    });
+        expect(duplicate.relayOutcomes, {
+          relay1.url: RelayRequestOutcome(RelayRequestStatus.eose),
+        });
+      },
+    );
 
     test('the stream ends on the request, on its final outcomes', () async {
       relay1 = MockRelay(name: "relay 1", signEvents: false);
@@ -317,34 +318,34 @@ void relayOutcomesTests(NdkEngine engine) {
       // nothing is left to close a subject created this late, and it stays a
       // broadcast stream, so a second listener is served just like the first
       final stream = response.relayOutcomesStream;
-      final ended = {
-        relay1.url: RelayRequestOutcome(RelayRequestStatus.eose),
-      };
+      final ended = {relay1.url: RelayRequestOutcome(RelayRequestStatus.eose)};
       expect((await stream.toList()).last, ended);
       expect((await stream.toList()).last, ended);
     });
 
-    test('a merged request streams the outcomes of the one serving it',
-        () async {
-      relay1 = MockRelay(name: "relay 1", signEvents: false);
-      await relay1.startServer(textNotes: {key1: textNote(key1)});
-      ndk = buildNdk();
+    test(
+      'a merged request streams the outcomes of the one serving it',
+      () async {
+        relay1 = MockRelay(name: "relay 1", signEvents: false);
+        await relay1.startServer(textNotes: {key1: textNote(key1)});
+        ndk = buildNdk();
 
-      final filter = Filter(
-        kinds: [Nip01Event.kTextNodeKind],
-        authors: [key1.publicKey],
-      );
-      final first = ndk.requests.query(filter: filter);
-      final duplicate = ndk.requests.query(filter: filter);
-      final streamed = duplicate.relayOutcomesStream.toList();
+        final filter = Filter(
+          kinds: [Nip01Event.kTextNodeKind],
+          authors: [key1.publicKey],
+        );
+        final first = ndk.requests.query(filter: filter);
+        final duplicate = ndk.requests.query(filter: filter);
+        final streamed = duplicate.relayOutcomesStream.toList();
 
-      await first.future;
-      await duplicate.future;
+        await first.future;
+        await duplicate.future;
 
-      expect((await streamed).last, {
-        relay1.url: RelayRequestOutcome(RelayRequestStatus.eose),
-      });
-    });
+        expect((await streamed).last, {
+          relay1.url: RelayRequestOutcome(RelayRequestStatus.eose),
+        });
+      },
+    );
 
     test('a relay that closes the request reports closed and why', () async {
       relay1 = MockRelay(
@@ -383,38 +384,42 @@ void relayOutcomesTests(NdkEngine engine) {
       });
     });
 
-    test('a paginated query streams a relay while its page is running',
-        () async {
-      relay1 = MockRelay(name: "relay 1", signEvents: false);
-      await relay1.startServer(
-        textNotes: {key1: textNote(key1)},
-        delayResponse: Duration(seconds: 1),
-      );
-      ndk = buildNdk();
+    test(
+      'a paginated query streams a relay while its page is running',
+      () async {
+        relay1 = MockRelay(name: "relay 1", signEvents: false);
+        await relay1.startServer(
+          textNotes: {key1: textNote(key1)},
+          delayResponse: Duration(seconds: 1),
+        );
+        ndk = buildNdk();
 
-      final response = ndk.requests.query(
-        filter: Filter(
-          kinds: [Nip01Event.kTextNodeKind],
-          authors: [key1.publicKey],
-        ),
-        cacheRead: false,
-        paginate: true,
-      );
-      final streamed = response.relayOutcomesStream.toList();
-      await response.future;
+        final response = ndk.requests.query(
+          filter: Filter(
+            kinds: [Nip01Event.kTextNodeKind],
+            authors: [key1.publicKey],
+          ),
+          cacheRead: false,
+          paginate: true,
+        );
+        final streamed = response.relayOutcomesStream.toList();
+        await response.future;
 
-      final outcomes = await streamed;
-      expect(
-        outcomes,
-        anyElement(equals({
-          relay1.url: RelayRequestOutcome(RelayRequestStatus.pending),
-        })),
-        reason: 'a page still running must show its relay as pending',
-      );
-      expect(outcomes.last, {
-        relay1.url: RelayRequestOutcome(RelayRequestStatus.eose),
-      });
-    });
+        final outcomes = await streamed;
+        expect(
+          outcomes,
+          anyElement(
+            equals({
+              relay1.url: RelayRequestOutcome(RelayRequestStatus.pending),
+            }),
+          ),
+          reason: 'a page still running must show its relay as pending',
+        );
+        expect(outcomes.last, {
+          relay1.url: RelayRequestOutcome(RelayRequestStatus.eose),
+        });
+      },
+    );
 
     test('a subscription still waiting on a relay reports pending', () async {
       relay1 = MockRelay(

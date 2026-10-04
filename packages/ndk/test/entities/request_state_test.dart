@@ -3,14 +3,14 @@ import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 
 RequestState _query() => RequestState(
-      NdkRequest.query(
-        'a-query',
-        filters: [
-          Filter(kinds: [Nip01Event.kTextNodeKind])
-        ],
-        timeoutDuration: const Duration(seconds: 5),
-      ),
-    );
+  NdkRequest.query(
+    'a-query',
+    filters: [
+      Filter(kinds: [Nip01Event.kTextNodeKind]),
+    ],
+    timeoutDuration: const Duration(seconds: 5),
+  ),
+);
 
 void main() {
   group('RequestState.didAllRequestsFinish', () {

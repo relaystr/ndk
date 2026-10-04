@@ -12,9 +12,9 @@ class _Nip77Internal {
     required GlobalState globalState,
     required RelayManager relayManager,
     required CacheManager cacheManager,
-  })  : _globalState = globalState,
-        _relayManager = relayManager,
-        _cacheManager = cacheManager;
+  }) : _globalState = globalState,
+       _relayManager = relayManager,
+       _cacheManager = cacheManager;
 
   Nip77Response reconcile({
     required String relayUrl,
@@ -155,9 +155,10 @@ class _Nip77Internal {
   }
 
   void _send(RelayConnectionKey key, List<dynamic> message) {
-    _relayManager.getConnectivity(key)?.relayTransport?.send(
-          jsonEncode(message),
-        );
+    _relayManager
+        .getConnectivity(key)
+        ?.relayTransport
+        ?.send(jsonEncode(message));
   }
 
   Future<List<neg.NegentropyItem>> _buildItemsFromIds(List<String> ids) async {
@@ -215,7 +216,8 @@ class _Nip77Internal {
     }
     if (state.connectionKey != key) {
       Logger.log.w(
-        () => 'Received $messageType from mismatched connection: expected '
+        () =>
+            'Received $messageType from mismatched connection: expected '
             '${state.connectionKey}, got $key',
       );
       return null;
@@ -275,9 +277,7 @@ class _Nip77Internal {
     }
 
     if (errorMsg.contains('CLOSED')) {
-      state.completeWithError(
-        Nip77NotSupportedException(key.url, errorMsg),
-      );
+      state.completeWithError(Nip77NotSupportedException(key.url, errorMsg));
     } else {
       state.completeWithError(Exception(errorMsg));
     }
@@ -297,8 +297,9 @@ class _Nip77Internal {
     if (state == null) return;
 
     final reason = message ?? '';
-    Logger.log
-        .d(() => 'CLOSED for negotiation $subscriptionId on $key: $reason');
+    Logger.log.d(
+      () => 'CLOSED for negotiation $subscriptionId on $key: $reason',
+    );
 
     if (_isAuthRefusal(reason)) {
       _handleNegAuthRequired(state, reason);
@@ -369,8 +370,9 @@ class _Nip77Internal {
     state.pauseTimeout();
     final bool authenticated;
     try {
-      authenticated =
-          await _relayManager.authenticateConnection(state.connectionKey);
+      authenticated = await _relayManager.authenticateConnection(
+        state.connectionKey,
+      );
     } catch (e) {
       // nothing resumes a paused timeout once this future is gone, so a session
       // that cannot authenticate has to end here rather than wait forever
@@ -402,7 +404,8 @@ class _Nip77Internal {
     state.movedToBoundConnection = true;
 
     Logger.log.d(
-      () => 'AUTH required for negotiation ${state.subscriptionId} on $url, '
+      () =>
+          'AUTH required for negotiation ${state.subscriptionId} on $url, '
           'retrying as ${account.pubkey}',
     );
 

@@ -166,6 +166,12 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
               _uploadedSha256 = descriptor.sha256;
               _uploadedUrl = descriptor.url;
             });
+          } else {
+            setState(() {
+              _uploadError = progress.completedUploads
+                  .map((r) => '${r.serverUrl}: ${r.error}')
+                  .join('\n');
+            });
           }
         }
       }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:meta/meta.dart';
 import 'package:ndk/ndk.dart';
 
 import 'nwc_notification.dart';
@@ -23,19 +24,19 @@ class NwcConnection {
   StreamController<NwcNotification> notificationStream =
       StreamController<NwcNotification>.broadcast();
 
-  Stream<NwcNotification> get paymentsReceivedStream =>
-      notificationStream.stream
-          .where((notification) => notification.isPaymentReceived)
-          .asBroadcastStream();
+  Stream<NwcNotification> get paymentsReceivedStream => notificationStream
+      .stream
+      .where((notification) => notification.isPaymentReceived)
+      .asBroadcastStream();
 
   Stream<NwcNotification> get paymentsSentStream => notificationStream.stream
       .where((notification) => notification.isPaymentSent)
       .asBroadcastStream();
 
-  Stream<NwcNotification> get holdInvoiceStateStream =>
-      notificationStream.stream
-          .where((notification) => notification.isHoldInvoiceAccepted)
-          .asBroadcastStream();
+  Stream<NwcNotification> get holdInvoiceStateStream => notificationStream
+      .stream
+      .where((notification) => notification.isHoldInvoiceAccepted)
+      .asBroadcastStream();
 
   /// listen
   void listen(void Function(Nip01Event event)? onData) {
@@ -48,11 +49,27 @@ class NwcConnection {
     }
   }
 
+  /// Cancels only the relay listener, retaining public notification streams.
+  Future<void> cancelSubscriptionListener() async {
+    final listener = _streamSubscription;
+    _streamSubscription = null;
+    await listener?.cancel();
+  }
+
+  bool _closed = false;
+
+  /// True once closing has started; a closed connection cannot be reused.
+  bool get isClosed => _closed;
+
+  /// Marks the connection closed before its asynchronous teardown starts.
+  // ignore: invalid_internal_annotation
+  @internal
+  void markClosed() => _closed = true;
+
   /// cancels subscription and closes stream controllers
   Future<void> close() async {
-    if (_streamSubscription != null) {
-      await _streamSubscription!.cancel();
-    }
+    _closed = true;
+    await cancelSubscriptionListener();
     await responseStream.close();
     await notificationStream.close();
   }

@@ -84,8 +84,8 @@ class Bip321 {
       'n' => amount * 100,
       'p' when amount % 10 == 0 => amount ~/ 10,
       'p' => throw const FormatException(
-          'BOLT11 pico-bitcoin amount is not a whole millisatoshi',
-        ),
+        'BOLT11 pico-bitcoin amount is not a whole millisatoshi',
+      ),
       _ => throw const FormatException('Invalid BOLT11 amount multiplier'),
     };
   }

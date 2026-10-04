@@ -22,7 +22,8 @@ void main() {
           eventVerifier: MockEventVerifier(),
           cache: cache,
           bootstrapRelays: [relay.url],
-          defaultBroadcastTimeout: const Duration(seconds: 2),
+          // Assert delivery policy after a response, not a load-dependent timeout.
+          defaultBroadcastTimeout: const Duration(seconds: 10),
           // the background timer would retry behind the assertions
           pendingDeliveryRetriesEnabled: false,
         ),
@@ -49,8 +50,9 @@ void main() {
     });
 
     test('a refused broadcast is enrolled for retry by default', () async {
-      await ndk.broadcast.broadcast(
-          nostrEvent: event, specificRelays: [relay.url]).broadcastDoneFuture;
+      await ndk.broadcast
+          .broadcast(nostrEvent: event, specificRelays: [relay.url])
+          .broadcastDoneFuture;
 
       expect(await cache.loadEventDeliveryRecord(event.id), isNotNull);
       final targets = await cache.loadRelayDeliveryTargets(eventId: event.id);
@@ -67,10 +69,7 @@ void main() {
           .broadcastDoneFuture;
 
       expect(await cache.loadEventDeliveryRecord(event.id), isNull);
-      expect(
-        await cache.loadRelayDeliveryTargets(eventId: event.id),
-        isEmpty,
-      );
+      expect(await cache.loadRelayDeliveryTargets(eventId: event.id), isEmpty);
       expect(await cache.loadEvent(event.id), isNotNull);
     });
   });

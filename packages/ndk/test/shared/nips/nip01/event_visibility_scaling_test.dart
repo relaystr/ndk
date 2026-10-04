@@ -13,18 +13,17 @@ Nip01Event _event(
   String? d = 'offer',
   List<List<String>> tags = const [],
   String content = '',
-}) =>
-    Nip01Event(
-      id: id,
-      pubKey: author,
-      kind: kind,
-      createdAt: time,
-      tags: [
-        if (d != null) ['d', d],
-        ...tags,
-      ],
-      content: content,
-    );
+}) => Nip01Event(
+  id: id,
+  pubKey: author,
+  kind: kind,
+  createdAt: time,
+  tags: [
+    if (d != null) ['d', d],
+    ...tags,
+  ],
+  content: content,
+);
 
 // Match ObjectBox's normalized, any-tag lookup. The resolver must use the
 // exact first d-tag when deciding which events share a conflict domain.
@@ -34,11 +33,14 @@ class _RawCache {
   final List<Nip01Event> events;
   int loaded = 0;
   final limits = <int?>[];
-  final queries = <({
-    List<String>? authors,
-    List<int>? kinds,
-    Map<String, List<String>>? tags,
-  })>[];
+  final queries =
+      <
+        ({
+          List<String>? authors,
+          List<int>? kinds,
+          Map<String, List<String>>? tags,
+        })
+      >[];
 
   Future<List<Nip01Event>> load({
     List<String>? ids,
@@ -74,8 +76,7 @@ class _RawCache {
         }
       }
       return true;
-    }).toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    }).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     if (limit != null && limit > 0) result = result.take(limit).toList();
     loaded += result.length;
     return result;
@@ -97,8 +98,9 @@ void main() {
         candidates,
       );
       expect(cache.loaded, 250);
-      final contextQueries =
-          cache.queries.where((q) => q.tags != null).toList();
+      final contextQueries = cache.queries
+          .where((q) => q.tags != null)
+          .toList();
       expect(contextQueries, hasLength(3));
       expect(contextQueries.every((q) => q.tags!['d']!.length <= 100), isTrue);
     },

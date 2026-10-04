@@ -16,6 +16,8 @@ import 'package:ndk/domain_layer/entities/request_state.dart';
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/domain_layer/repositories/nostr_transport.dart';
 import 'package:ndk/domain_layer/usecases/relay_manager.dart';
+import 'package:ndk/ndk.dart' show Ndk;
+import 'package:ndk/shared/nips/nip01/client_msg.dart';
 
 class _Transport implements NostrTransport {
   bool closed = false;
@@ -42,8 +44,7 @@ class _Transport implements NostrTransport {
     void Function(dynamic) onData, {
     Function? onError,
     void Function()? onDone,
-  }) =>
-      controller.stream.listen(onData, onError: onError, onDone: onDone);
+  }) => controller.stream.listen(onData, onError: onError, onDone: onDone);
   @override
   int? closeCode() => null;
   @override
@@ -56,8 +57,7 @@ class _NoConnections implements NostrTransportFactory {
     String url, {
     Function? onReconnect,
     Function(int?, Object?, String?)? onDisconnect,
-  }) =>
-      throw StateError('Tests must not open network connections');
+  }) => throw StateError('Tests must not open network connections');
 }
 
 class _Signer implements EventSigner {
@@ -175,6 +175,64 @@ void main() {
     expect(anonTransport.closed, isTrue);
     expect(authTransport.closed, isTrue);
   });
+
+  test('NDK background hook closes idle relay without NWC wallet', () async {
+    final ndk = Ndk.emptyBootstrapRelaysConfig();
+    final transport = _Transport();
+    ndk.relays.globalState.relays[anonymous] = RelayConnectivity(
+      key: anonymous,
+      relay: Relay(
+        url: anonymous.url,
+        connectionSource: ConnectionSource.explicit,
+      ),
+      relayTransport: transport,
+    );
+    await ndk.setBackgrounded(true);
+    expect(transport.closed, isTrue);
+    expect(ndk.relays.globalState.relays, isEmpty);
+    expect(ndk.wallets.isBackgrounded, isTrue);
+    await ndk.setBackgrounded(false);
+    expect(ndk.wallets.isBackgrounded, isFalse);
+    await ndk.destroy();
+  });
+
+  test(
+    'request-sent waiter completes on exact REQ and supports late waiters',
+    () async {
+      connect(anonymous);
+      final relay = state.relays[anonymous]!;
+      final pending = manager.waitForRequestSent(
+        'wanted',
+        const Duration(seconds: 1),
+      );
+      await manager.sendOrThrow(
+        relay,
+        ClientMsg(
+          ClientMsgType.kReq,
+          id: 'other',
+          filters: [
+            Filter(kinds: [1]),
+          ],
+        ),
+      );
+      await manager.sendOrThrow(
+        relay,
+        ClientMsg(
+          ClientMsgType.kReq,
+          id: 'wanted',
+          filters: [
+            Filter(kinds: [1]),
+          ],
+        ),
+      );
+      await pending;
+      await manager.waitForRequestSent('wanted', const Duration(seconds: 1));
+      await expectLater(
+        manager.waitForRequestSent('missing', const Duration(milliseconds: 1)),
+        throwsA(isA<TimeoutException>()),
+      );
+    },
+  );
 
   test('live subscription retains exact key after EOSE', () async {
     final anonTransport = connect(anonymous);

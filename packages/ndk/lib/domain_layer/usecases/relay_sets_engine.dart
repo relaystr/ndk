@@ -46,9 +46,9 @@ class RelaySetsEngine implements NetworkEngine {
     required CacheManager cacheManager,
     required List<String>? bootstrapRelays,
     GlobalState? globalState,
-  })  : _cacheManager = cacheManager,
-        _relayManager = relayManager,
-        _bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS {
+  }) : _cacheManager = cacheManager,
+       _relayManager = relayManager,
+       _bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS {
     _globalState = globalState ?? GlobalState();
   }
 
@@ -94,7 +94,8 @@ class RelaySetsEngine implements NetworkEngine {
       if (relay == null) {
         // the connection was closed between opening it and looking it up
         Logger.log.w(
-          () => "COULD NOT SEND REQUEST TO ${request.url}, ${request.key} "
+          () =>
+              "COULD NOT SEND REQUEST TO ${request.url}, ${request.key} "
               "is gone",
         );
         return false;
@@ -204,10 +205,10 @@ class RelaySetsEngine implements NetworkEngine {
       kinds: [event.kind],
       tags:
           EventKindClassification.isAddressableKind(event.kind) && dTag != null
-              ? {
-                  'd': [dTag],
-                }
-              : null,
+          ? {
+              'd': [dTag],
+            }
+          : null,
       limit: 1,
     );
 
@@ -318,7 +319,7 @@ class RelaySetsEngine implements NetworkEngine {
     Duration timeout = kDefaultStreamIdleTimeout,
     bool closeOnEOSE = true,
   }) async {
-    String id = Helpers.getRandomString(10);
+    String id = Helpers.getSecureRandomHex(16);
     RequestState state = RequestState(
       closeOnEOSE
           ? NdkRequest.query(
@@ -389,8 +390,11 @@ class RelaySetsEngine implements NetworkEngine {
             specificRelays.map(
               (relayUrl) =>
                   // broadcast async
-                  doRelayBroadcast(relayUrl, workingEvent,
-                      auth: broadcastState.auth),
+                  doRelayBroadcast(
+                    relayUrl,
+                    workingEvent,
+                    auth: broadcastState.auth,
+                  ),
             ),
           );
         }
@@ -424,8 +428,11 @@ class RelaySetsEngine implements NetworkEngine {
 
         await Future.wait(
           writeRelaysUrls.map(
-            (relayUrl) => doRelayBroadcast(relayUrl, workingEvent,
-                auth: broadcastState.auth),
+            (relayUrl) => doRelayBroadcast(
+              relayUrl,
+              workingEvent,
+              auth: broadcastState.auth,
+            ),
           ),
         );
 
@@ -460,8 +467,11 @@ class RelaySetsEngine implements NetworkEngine {
 
           await Future.wait(
             myWriteRelayUrlsOthers.map(
-              (relayUrl) => doRelayBroadcast(relayUrl, workingEvent,
-                  auth: broadcastState.auth),
+              (relayUrl) => doRelayBroadcast(
+                relayUrl,
+                workingEvent,
+                auth: broadcastState.auth,
+              ),
             ),
           );
         }

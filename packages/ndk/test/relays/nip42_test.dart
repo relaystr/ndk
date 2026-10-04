@@ -670,22 +670,22 @@ void nip42Tests(NdkEngine engine) {
     }
 
     Account signableAccount(KeyPair key) => Account(
-          pubkey: key.publicKey,
-          type: AccountType.privateKey,
-          signer: Bip340EventSigner(
-            privateKey: key.privateKey!,
-            publicKey: key.publicKey,
-          ),
-        );
+      pubkey: key.publicKey,
+      type: AccountType.privateKey,
+      signer: Bip340EventSigner(
+        privateKey: key.privateKey!,
+        publicKey: key.publicKey,
+      ),
+    );
 
     Ndk ndkFor(MockRelay relay) => Ndk(
-          NdkConfig(
-            eventVerifier: Bip340EventVerifier(),
-            cache: MemCacheManager(),
-            bootstrapRelays: [relay.url],
-            engine: engine,
-          ),
-        );
+      NdkConfig(
+        eventVerifier: Bip340EventVerifier(),
+        cache: MemCacheManager(),
+        bootstrapRelays: [relay.url],
+        engine: engine,
+      ),
+    );
 
     Filter notesOf(KeyPair key) =>
         Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key.publicKey]);
@@ -892,8 +892,7 @@ void nip42Tests(NdkEngine engine) {
       await relay1.stopServer();
     });
 
-    test('require serves a relay that never challenges, unattributed',
-        () async {
+    test('require serves a relay that never challenges, unattributed', () async {
       // NIP-42 has no way to authenticate unprompted, so a relay that never
       // challenges never learns who asked. The connection is still bound: it is
       // the only identity that socket may ever assume.
@@ -1009,95 +1008,100 @@ void nip42Tests(NdkEngine engine) {
       await relay1.stopServer();
     });
 
-    test('a relay set whose relays all fail does not wait for the timeout',
-        () async {
-      final ndk = Ndk(
-        NdkConfig(
-          eventVerifier: Bip340EventVerifier(),
-          cache: MemCacheManager(),
-          bootstrapRelays: [],
-          engine: engine,
-        ),
-      );
+    test(
+      'a relay set whose relays all fail does not wait for the timeout',
+      () async {
+        final ndk = Ndk(
+          NdkConfig(
+            eventVerifier: Bip340EventVerifier(),
+            cache: MemCacheManager(),
+            bootstrapRelays: [],
+            engine: engine,
+          ),
+        );
 
-      var timedOut = false;
-      final stopwatch = Stopwatch()..start();
-      final response = ndk.requests.query(
-        filter: notesOf(key1),
-        relaySet: RelaySet(
-          name: 'unreachable',
-          pubKey: key1.publicKey,
-          relaysMap: {'ws://localhost:${portBase + 18}': []},
-          direction: RelayDirection.outbox,
-          fallbackToBootstrapRelays: false,
-        ),
-        timeout: Duration(seconds: 10),
-        timeoutCallback: () => timedOut = true,
-      );
+        var timedOut = false;
+        final stopwatch = Stopwatch()..start();
+        final response = ndk.requests.query(
+          filter: notesOf(key1),
+          relaySet: RelaySet(
+            name: 'unreachable',
+            pubKey: key1.publicKey,
+            relaysMap: {'ws://localhost:${portBase + 18}': []},
+            direction: RelayDirection.outbox,
+            fallbackToBootstrapRelays: false,
+          ),
+          timeout: Duration(seconds: 10),
+          timeoutCallback: () => timedOut = true,
+        );
 
-      expect(await response.future, isEmpty);
-      stopwatch.stop();
+        expect(await response.future, isEmpty);
+        stopwatch.stop();
 
-      expect(timedOut, isFalse);
-      expect(
-        stopwatch.elapsedMilliseconds,
-        lessThan(5000),
-        reason: 'a request no relay could carry must end when they all failed',
-      );
+        expect(timedOut, isFalse);
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(5000),
+          reason:
+              'a request no relay could carry must end when they all failed',
+        );
 
-      await ndk.destroy();
-    },
-        skip: engine == NdkEngine.JIT
-            ? 'the jit engine ignores relaySet and picks its relays itself'
-            : null);
+        await ndk.destroy();
+      },
+      skip: engine == NdkEngine.JIT
+          ? 'the jit engine ignores relaySet and picks its relays itself'
+          : null,
+    );
 
-    test('closing a subscription while its connection opens is not an error',
-        () async {
-      final relay1 = MockRelay(
-        name: "relay 1",
-        explicitPort: portBase + 19,
-        requireAuthForRequests: true,
-        signEvents: false,
-      );
-      await relay1.startServer(
-        textNotes: {key1: textNote(key1, "note from key1")},
-        // the close has to land while the bound connection is still opening,
-        // and a machine under load is not a reliable way to get there
-        delayConnection: Duration(milliseconds: 500),
-      );
+    test(
+      'closing a subscription while its connection opens is not an error',
+      () async {
+        final relay1 = MockRelay(
+          name: "relay 1",
+          explicitPort: portBase + 19,
+          requireAuthForRequests: true,
+          signEvents: false,
+        );
+        await relay1.startServer(
+          textNotes: {key1: textNote(key1, "note from key1")},
+          // the close has to land while the bound connection is still opening,
+          // and a machine under load is not a reliable way to get there
+          delayConnection: Duration(milliseconds: 500),
+        );
 
-      final ndk = ndkFor(relay1);
+        final ndk = ndkFor(relay1);
 
-      await Future.delayed(Duration(seconds: 1));
+        await Future.delayed(Duration(seconds: 1));
 
-      const subId = 'closed-while-connecting';
-      ndk.requests.subscription(
-        id: subId,
-        filter: notesOf(key1),
-        explicitRelays: [relay1.url],
-        auth: AuthPolicy.require(signableAccount(key1)),
-      );
+        const subId = 'closed-while-connecting';
+        ndk.requests.subscription(
+          id: subId,
+          filter: notesOf(key1),
+          explicitRelays: [relay1.url],
+          auth: AuthPolicy.require(signableAccount(key1)),
+        );
 
-      // the strategy is still opening the bound connection, and what it
-      // resolves must not be registered against a request nobody tracks
-      await Future.delayed(Duration(milliseconds: 100));
-      await ndk.requests.closeSubscription(subId);
-      await Future.delayed(Duration(seconds: 1));
+        // the strategy is still opening the bound connection, and what it
+        // resolves must not be registered against a request nobody tracks
+        await Future.delayed(Duration(milliseconds: 100));
+        await ndk.requests.closeSubscription(subId);
+        await Future.delayed(Duration(seconds: 1));
 
-      expect(
-        ndk.relays.globalState.inFlightRequests.keys,
-        isNot(contains(subId)),
-        reason: 'a closed subscription must not come back in flight',
-      );
-      expect(
-        relay1.connectionsThatRequested(subId),
-        0,
-        reason: 'a REQ sent after the close is one nobody would ever CLOSE',
-      );
+        expect(
+          ndk.relays.globalState.inFlightRequests.keys,
+          isNot(contains(subId)),
+          reason: 'a closed subscription must not come back in flight',
+        );
+        expect(
+          relay1.connectionsThatRequested(subId),
+          0,
+          reason: 'a REQ sent after the close is one nobody would ever CLOSE',
+        );
 
-      await ndk.destroy();
-      await relay1.stopServer();
-    });
+        await ndk.destroy();
+        await relay1.stopServer();
+      },
+    );
 
     test('a relay still connecting does not lose its events', () async {
       final relayA = MockRelay(
@@ -1165,59 +1169,61 @@ void nip42Tests(NdkEngine engine) {
       await relayB.stopServer();
     });
 
-    test('an auth retry keeps the request open while its connection opens',
-        () async {
-      final relayAuth = MockRelay(
-        name: "relay auth",
-        explicitPort: portBase + 22,
-        requireAuthForRequests: true,
-        signEvents: false,
-      );
-      final relayPlain = MockRelay(
-        name: "relay plain",
-        explicitPort: portBase + 23,
-        signEvents: false,
-      );
-      await relayAuth.startServer(
-        textNotes: {key1: textNote(key1, "note on auth")},
-        // the retry opens a second connection, and this is the window the plain
-        // relay's EOSE has to land in
-        delayConnection: Duration(milliseconds: 200),
-      );
-      await relayPlain.startServer(
-        textNotes: {key1: textNote(key1, "note on plain")},
-        delayResponse: Duration(milliseconds: 300),
-      );
+    test(
+      'an auth retry keeps the request open while its connection opens',
+      () async {
+        final relayAuth = MockRelay(
+          name: "relay auth",
+          explicitPort: portBase + 22,
+          requireAuthForRequests: true,
+          signEvents: false,
+        );
+        final relayPlain = MockRelay(
+          name: "relay plain",
+          explicitPort: portBase + 23,
+          signEvents: false,
+        );
+        await relayAuth.startServer(
+          textNotes: {key1: textNote(key1, "note on auth")},
+          // the retry opens a second connection, and this is the window the plain
+          // relay's EOSE has to land in
+          delayConnection: Duration(milliseconds: 200),
+        );
+        await relayPlain.startServer(
+          textNotes: {key1: textNote(key1, "note on plain")},
+          delayResponse: Duration(milliseconds: 300),
+        );
 
-      final ndk = Ndk(
-        NdkConfig(
-          eventVerifier: Bip340EventVerifier(),
-          cache: MemCacheManager(),
-          bootstrapRelays: [],
-          engine: engine,
-        ),
-      );
+        final ndk = Ndk(
+          NdkConfig(
+            eventVerifier: Bip340EventVerifier(),
+            cache: MemCacheManager(),
+            bootstrapRelays: [],
+            engine: engine,
+          ),
+        );
 
-      final events = await ndk.requests
-          .query(
-            filter: notesOf(key1),
-            explicitRelays: [relayAuth.url, relayPlain.url],
-            auth: AuthPolicy.allow(signableAccount(key1)),
-            cacheRead: false,
-            cacheWrite: false,
-          )
-          .future;
+        final events = await ndk.requests
+            .query(
+              filter: notesOf(key1),
+              explicitRelays: [relayAuth.url, relayPlain.url],
+              auth: AuthPolicy.allow(signableAccount(key1)),
+              cacheRead: false,
+              cacheWrite: false,
+            )
+            .future;
 
-      expect(
-        events.map((event) => event.content),
-        containsAll(['note on auth', 'note on plain']),
-        reason: 'the stream must not close on the connection the retry opens',
-      );
+        expect(
+          events.map((event) => event.content),
+          containsAll(['note on auth', 'note on plain']),
+          reason: 'the stream must not close on the connection the retry opens',
+        );
 
-      await ndk.destroy();
-      await relayAuth.stopServer();
-      await relayPlain.stopServer();
-    });
+        await ndk.destroy();
+        await relayAuth.stopServer();
+        await relayPlain.stopServer();
+      },
+    );
 
     test('require with an account that cannot sign sends nothing', () async {
       final relay1 = MockRelay(

@@ -24,18 +24,17 @@ Nip01Event _event(
   String? d = 'offer',
   List<List<String>> tags = const [],
   String content = '',
-}) =>
-    Nip01Event(
-      id: id,
-      pubKey: author,
-      kind: kind,
-      createdAt: time,
-      tags: [
-        if (d != null) ['d', d],
-        ...tags,
-      ],
-      content: content,
-    );
+}) => Nip01Event(
+  id: id,
+  pubKey: author,
+  kind: kind,
+  createdAt: time,
+  tags: [
+    if (d != null) ['d', d],
+    ...tags,
+  ],
+  content: content,
+);
 
 List<String> _ids(Iterable<Nip01Event> events) =>
     events.map((e) => e.id).toList();

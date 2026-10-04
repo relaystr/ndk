@@ -13,19 +13,19 @@ import '../../mocks/mock_event_verifier.dart';
 const int policyPort = 30040;
 
 Account _signable(KeyPair keyPair) => Account(
-      type: AccountType.privateKey,
-      pubkey: keyPair.publicKey,
-      signer: Bip340EventSigner(
-        privateKey: keyPair.privateKey,
-        publicKey: keyPair.publicKey,
-      ),
-    );
+  type: AccountType.privateKey,
+  pubkey: keyPair.publicKey,
+  signer: Bip340EventSigner(
+    privateKey: keyPair.privateKey,
+    publicKey: keyPair.publicKey,
+  ),
+);
 
 Account _watchOnly(KeyPair keyPair) => Account(
-      type: AccountType.publicKey,
-      pubkey: keyPair.publicKey,
-      signer: Bip340EventSigner(privateKey: null, publicKey: keyPair.publicKey),
-    );
+  type: AccountType.publicKey,
+  pubkey: keyPair.publicKey,
+  signer: Bip340EventSigner(privateKey: null, publicKey: keyPair.publicKey),
+);
 
 void main() {
   late MockBlossomServer server;
@@ -50,8 +50,10 @@ void main() {
         engine: NdkEngine.JIT,
       ),
     );
-    ndk.accounts
-        .loginPrivateKey(pubkey: key.publicKey, privkey: key.privateKey!);
+    ndk.accounts.loginPrivateKey(
+      pubkey: key.publicKey,
+      privkey: key.privateKey!,
+    );
     client = ndk.blossom;
   });
 
@@ -141,25 +143,30 @@ void main() {
         throwsA(isA<BlossomAuthUnavailableException>()),
       );
 
-      expect(server.requests, isEmpty,
-          reason: 'going out bare is what require() rules out');
-    });
-
-    test('allow() with an account that cannot sign behaves as never()',
-        () async {
-      final watcher = _watchOnly(Bip340.generatePrivateKey());
-
-      await expectLater(
-        client.getBlob(
-          sha256: sha256,
-          serverUrls: [serverUrl],
-          auth: AuthPolicy.allow(watcher),
-        ),
-        throwsA(isA<Exception>()),
+      expect(
+        server.requests,
+        isEmpty,
+        reason: 'going out bare is what require() rules out',
       );
-
-      expect(server.countRequests(hasAuth: true), 0);
     });
+
+    test(
+      'allow() with an account that cannot sign behaves as never()',
+      () async {
+        final watcher = _watchOnly(Bip340.generatePrivateKey());
+
+        await expectLater(
+          client.getBlob(
+            sha256: sha256,
+            serverUrls: [serverUrl],
+            auth: AuthPolicy.allow(watcher),
+          ),
+          throwsA(isA<Exception>()),
+        );
+
+        expect(server.countRequests(hasAuth: true), 0);
+      },
+    );
   });
 
   group('on a server that never asks', () {
@@ -178,20 +185,22 @@ void main() {
   });
 
   group('an upload', () {
-    test('authorises as the account auth names, not the logged-in one',
-        () async {
-      final data = Uint8List.fromList(utf8.encode('mine to attribute'));
+    test(
+      'authorises as the account auth names, not the logged-in one',
+      () async {
+        final data = Uint8List.fromList(utf8.encode('mine to attribute'));
 
-      await client.uploadBlob(
-        data: data,
-        serverUrls: [serverUrl],
-        auth: AuthPolicy.require(other),
-      );
+        await client.uploadBlob(
+          data: data,
+          serverUrls: [serverUrl],
+          auth: AuthPolicy.require(other),
+        );
 
-      final puts = server.requests.where((r) => r.method == 'PUT').toList();
-      expect(puts.single.authPubkey, other.pubkey);
-      expect(puts.single.authPubkey, isNot(loggedIn.pubkey));
-    });
+        final puts = server.requests.where((r) => r.method == 'PUT').toList();
+        expect(puts.single.authPubkey, other.pubkey);
+        expect(puts.single.authPubkey, isNot(loggedIn.pubkey));
+      },
+    );
 
     test('under never() sends no authorization at all', () async {
       final data = Uint8List.fromList(utf8.encode('anonymous upload'));
@@ -228,8 +237,10 @@ void main() {
           engine: NdkEngine.JIT,
         ),
       );
-      ndk.accounts
-          .loginPrivateKey(pubkey: key.publicKey, privkey: key.privateKey!);
+      ndk.accounts.loginPrivateKey(
+        pubkey: key.publicKey,
+        privkey: key.privateKey!,
+      );
       rangedClient = ndk.blossom;
     });
 
@@ -239,8 +250,10 @@ void main() {
       final url = 'http://localhost:${ranged.port}';
       final data = Uint8List.fromList(utf8.encode('a' * 64));
 
-      final uploaded =
-          await rangedClient.uploadBlob(data: data, serverUrls: [url]);
+      final uploaded = await rangedClient.uploadBlob(
+        data: data,
+        serverUrls: [url],
+      );
       final sha256 = uploaded.first.descriptor!.sha256;
       ranged.clearRequests();
       ranged.requireAuthForReads = true;
@@ -253,12 +266,12 @@ void main() {
       );
       final chunks = await stream.toList();
 
+      expect(chunks.map((c) => utf8.decode(c.data)).join(), utf8.decode(data));
       expect(
-        chunks.map((c) => utf8.decode(c.data)).join(),
-        utf8.decode(data),
+        ranged.countRequests(hasAuth: false),
+        1,
+        reason: 'only the very first request should go out bare',
       );
-      expect(ranged.countRequests(hasAuth: false), 1,
-          reason: 'only the very first request should go out bare');
       expect(ranged.signedEventIds, hasLength(1));
     });
   });
@@ -269,13 +282,13 @@ void main() {
     setUp(() async => sha256 = await seed('reported blob'));
 
     Future<int> report({AuthPolicy? auth}) => client.report(
-          sha256: sha256,
-          eventId: 'e' * 64,
-          reportType: 'malware',
-          reportMsg: 'this blob is malware',
-          serverUrl: serverUrl,
-          auth: auth,
-        );
+      sha256: sha256,
+      eventId: 'e' * 64,
+      reportType: 'malware',
+      reportMsg: 'this blob is malware',
+      serverUrl: serverUrl,
+      auth: auth,
+    );
 
     test('names the account auth points at', () async {
       await report(auth: AuthPolicy.require(other));
@@ -290,27 +303,31 @@ void main() {
       expect(server.reports.single['pubkey'], isNot(other.pubkey));
     });
 
-    test('under require() with an account that cannot sign sends nothing',
-        () async {
-      final watcher = _watchOnly(Bip340.generatePrivateKey());
+    test(
+      'under require() with an account that cannot sign sends nothing',
+      () async {
+        final watcher = _watchOnly(Bip340.generatePrivateKey());
 
-      await expectLater(
-        report(auth: AuthPolicy.require(watcher)),
-        throwsA(isA<BlossomAuthUnavailableException>()),
-      );
+        await expectLater(
+          report(auth: AuthPolicy.require(watcher)),
+          throwsA(isA<BlossomAuthUnavailableException>()),
+        );
 
-      expect(server.reports, isEmpty);
-    });
+        expect(server.reports, isEmpty);
+      },
+    );
 
-    test('under allow() with an account that cannot sign stays anonymous',
-        () async {
-      final watcher = _watchOnly(Bip340.generatePrivateKey());
+    test(
+      'under allow() with an account that cannot sign stays anonymous',
+      () async {
+        final watcher = _watchOnly(Bip340.generatePrivateKey());
 
-      await report(auth: AuthPolicy.allow(watcher));
+        await report(auth: AuthPolicy.allow(watcher));
 
-      expect(server.reports.single['pubkey'], isNot(loggedIn.pubkey));
-      expect(server.reports.single['pubkey'], isNot(watcher.pubkey));
-    });
+        expect(server.reports.single['pubkey'], isNot(loggedIn.pubkey));
+        expect(server.reports.single['pubkey'], isNot(watcher.pubkey));
+      },
+    );
 
     test('without auth or handler signs with a throwaway key', () async {
       await report();

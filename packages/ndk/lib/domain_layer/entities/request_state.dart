@@ -291,8 +291,9 @@ class RequestState implements TimeoutPausable {
     if (served != null) {
       return served.relayOutcomesStream;
     }
-    final subject =
-        _relayOutcomesSubject ??= BehaviorSubject.seeded(_ownRelayOutcomes);
+    final subject = _relayOutcomesSubject ??= BehaviorSubject.seeded(
+      _ownRelayOutcomes,
+    );
     // asked for once the request is over: nothing is left to close a subject
     // created this late, and a closed one still replays what it ended on
     if (_relayOutcomesDone) {
