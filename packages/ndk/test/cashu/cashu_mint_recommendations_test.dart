@@ -9,12 +9,20 @@ void main() {
       const mintB = 'https://mint-b.example';
       final recommendations = CashuMintRecommendations.fromEvents(
         announcements: [
-          _event(kind: 38172, pubkey: 'a', tags: const [
-            ['u', mintA]
-          ]),
-          _event(kind: 38172, pubkey: 'b', tags: const [
-            ['u', mintB]
-          ]),
+          _event(
+            kind: 38172,
+            pubkey: 'a',
+            tags: const [
+              ['u', mintA],
+            ],
+          ),
+          _event(
+            kind: 38172,
+            pubkey: 'b',
+            tags: const [
+              ['u', mintB],
+            ],
+          ),
         ],
         reviews: [
           _review(mintA, pubkey: 'one', createdAt: 10, content: '[2/5] old'),
@@ -52,44 +60,60 @@ void main() {
       expect(recommendations, hasLength(1));
       expect(recommendations.single.url, 'https://mint.example');
       expect(recommendations.single.averageRating, isNull);
-      expect(recommendations.single.reviews.single.comment,
-          'Useful comment without rating');
-    });
-
-    test('ignores unrelated events and ranks equal review counts by rating',
-        () {
-      const mintA = 'https://mint-a.example';
-      const mintB = 'https://mint-b.example';
-      final recommendations = CashuMintRecommendations.fromEvents(
-        announcements: [
-          _event(kind: 1, pubkey: 'ignored', tags: const [
-            ['u', 'https://ignored.example']
-          ]),
-          _event(kind: 38172, pubkey: 'a', tags: const [
-            ['u'],
-            ['u', mintA]
-          ]),
-          _event(kind: 38172, pubkey: 'b', tags: const [
-            ['u', mintB]
-          ]),
-        ],
-        reviews: [
-          _event(
-            kind: 38000,
-            pubkey: 'ignored',
-            tags: const [
-              ['u', mintA]
-            ],
-          ),
-          _review(mintA, pubkey: 'one', createdAt: 10, content: '[6/5] bad'),
-          _review(mintB, pubkey: 'two', createdAt: 20, content: '[4/5] good'),
-        ],
+      expect(
+        recommendations.single.reviews.single.comment,
+        'Useful comment without rating',
       );
-
-      expect(recommendations.map((item) => item.url), [mintB, mintA]);
-      expect(recommendations.last.averageRating, isNull);
-      expect(recommendations.last.reviews.single.comment, 'bad');
     });
+
+    test(
+      'ignores unrelated events and ranks equal review counts by rating',
+      () {
+        const mintA = 'https://mint-a.example';
+        const mintB = 'https://mint-b.example';
+        final recommendations = CashuMintRecommendations.fromEvents(
+          announcements: [
+            _event(
+              kind: 1,
+              pubkey: 'ignored',
+              tags: const [
+                ['u', 'https://ignored.example'],
+              ],
+            ),
+            _event(
+              kind: 38172,
+              pubkey: 'a',
+              tags: const [
+                ['u'],
+                ['u', mintA],
+              ],
+            ),
+            _event(
+              kind: 38172,
+              pubkey: 'b',
+              tags: const [
+                ['u', mintB],
+              ],
+            ),
+          ],
+          reviews: [
+            _event(
+              kind: 38000,
+              pubkey: 'ignored',
+              tags: const [
+                ['u', mintA],
+              ],
+            ),
+            _review(mintA, pubkey: 'one', createdAt: 10, content: '[6/5] bad'),
+            _review(mintB, pubkey: 'two', createdAt: 20, content: '[4/5] good'),
+          ],
+        );
+
+        expect(recommendations.map((item) => item.url), [mintB, mintA]);
+        expect(recommendations.last.averageRating, isNull);
+        expect(recommendations.last.reviews.single.comment, 'bad');
+      },
+    );
 
     test('copyWith preserves review data while attaching mint info', () {
       const review = CashuMintReview(

@@ -1,3 +1,53 @@
+## 0.10.1
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.10.1-dev.1
+
+ - **FIX**: parse the BUD-08 nip94 field as a tag array.
+
+## 0.10.1-dev.0
+
+ - **FIX**: release idle wallet and abandoned sockets.
+ - **FIX**: close transports before replacement.
+ - **FIX**: abort stalled relay HTTP requests.
+ - **FIX**: stop reconnecting for stale RPC delivery.
+ - **FIX**: persist background delivery retry results.
+ - **FIX**: reduce background battery usage by removing closed connections only once.
+ - **FIX**: NWC error handling for Rizful.
+ - **REFACTOR**: inject RelayInfo HTTP fetch via RelayInfoRepo and HttpRequestDS.
+
+## 0.10.0
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.10.0-dev.9
+
+ - **FIX**: don't hold NIP-46 responses until the slowest relay acks.
+
+## 0.10.0-dev.8
+
+ - **FIX**: reduce background polling and cache work.
+ - **FIX**(nwc): expose hold settle deadline.
+ - **FIX**: seedStore.write() first.
+ - **FIX**: carry seed language.
+ - **FIX**: normalize and await cashu seed phrase save.
+
+## 0.10.0-dev.7
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: let the blossom repository authorise on refusal.
+ - **REFACTOR**: surface the http status code on every request failure.
+ - **FIX**: stay anonymous with each blossom server until it refuses.
+ - **FIX**: use hex secret in nostrconnect URI.
+ - **FIX**: keep an anonymous blossom report anonymous.
+ - **FIX**: carry the blossom authorization through every request it makes.
+ - **FEAT**: pass an auth policy through the files facade.
+ - **FEAT**: let a blossom operation say which identity it may reveal.
+ - **FEAT**: add the blossom authorization, the repository half of a policy.
+ - **BREAKING** **FEAT**: drop blossom useAuth and customSigner in favour of auth.
+
 ## 0.10.0-dev.6
 
  - **REFACTOR**: rename RelayAuth to AuthPolicy.

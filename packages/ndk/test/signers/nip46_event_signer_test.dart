@@ -128,7 +128,8 @@ void main() {
 
     test('login with bunker URL should connect successfully', () async {
       // Create bunker URL with mock relay's remote signer
-      final bunkerUrl = 'bunker://${MockRelay.remoteSignerPublicKey}'
+      final bunkerUrl =
+          'bunker://${MockRelay.remoteSignerPublicKey}'
           '?relay=${mockRelay.url}'
           '&secret=test-secret-123';
 
@@ -179,7 +180,8 @@ void main() {
 
     test('loginWithBunkerUrl should set up account correctly', () async {
       // Create bunker URL with mock relay's remote signer
-      final bunkerUrl = 'bunker://${MockRelay.remoteSignerPublicKey}'
+      final bunkerUrl =
+          'bunker://${MockRelay.remoteSignerPublicKey}'
           '?relay=${mockRelay.url}'
           '&secret=bunker-url-test-secret';
 
@@ -403,5 +405,45 @@ void main() {
       final response = await signer.ping();
       expect(response, equals('pong'));
     });
+  });
+
+  test('response is not held back by a slow transport relay', () async {
+    final fastRelay = MockRelay(name: 'nip46-fast-relay', signEvents: true);
+    final slowRelay = MockRelay(name: 'nip46-slow-relay');
+    await fastRelay.startServer();
+    await slowRelay.startServer(delayResponse: const Duration(seconds: 2));
+
+    final ndk = Ndk(
+      NdkConfig(
+        cache: MemCacheManager(),
+        eventVerifier: Bip340EventVerifier(),
+        bootstrapRelays: [fastRelay.url, slowRelay.url],
+      ),
+    );
+    await ndk.relays.seedRelaysConnected;
+
+    final signer = Nip46EventSigner(
+      connection: BunkerConnection(
+        privateKey:
+            "7a8317f947fff0526749e9fe53f79def8eb0afd378c01058f37140cc8732fecc",
+        remotePubkey: MockRelay.remoteSignerPublicKey,
+        relays: [fastRelay.url, slowRelay.url],
+      ),
+      requests: ndk.requests,
+      broadcast: ndk.broadcast,
+      eventSignerFactory: eventSignerFactory,
+    );
+
+    final stopwatch = Stopwatch()..start();
+    final response = await signer.ping();
+    stopwatch.stop();
+
+    expect(response, equals('pong'));
+    expect(stopwatch.elapsed, lessThan(const Duration(seconds: 1)));
+
+    signer.dispose();
+    await ndk.destroy();
+    await fastRelay.stopServer();
+    await slowRelay.stopServer();
   });
 }

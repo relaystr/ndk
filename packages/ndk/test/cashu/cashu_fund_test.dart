@@ -100,41 +100,41 @@ void main() {
         qoute: null,
       );
 
-      final Stream<CashuWalletTransaction> responseNoQuote =
-          ndk.cashu.retrieveFunds(draftTransaction: baseDraftTransaction);
+      final Stream<CashuWalletTransaction> responseNoQuote = ndk.cashu
+          .retrieveFunds(draftTransaction: baseDraftTransaction);
 
-      final Stream<CashuWalletTransaction> responseNoMethod =
-          ndk.cashu.retrieveFunds(
-        draftTransaction: baseDraftTransaction.copyWith(
-          qoute: CashuQuote(
-            quoteId: "quoteId",
-            request: "request",
-            amount: 5,
-            unit: 'sat',
-            state: CashuQuoteState.paid,
-            expiry: 0,
-            mintUrl: devMintUrl,
-            quoteKey: CashuKeypair.generateCashuKeyPair(),
-          ),
-        ),
-      );
+      final Stream<CashuWalletTransaction> responseNoMethod = ndk.cashu
+          .retrieveFunds(
+            draftTransaction: baseDraftTransaction.copyWith(
+              qoute: CashuQuote(
+                quoteId: "quoteId",
+                request: "request",
+                amount: 5,
+                unit: 'sat',
+                state: CashuQuoteState.paid,
+                expiry: 0,
+                mintUrl: devMintUrl,
+                quoteKey: CashuKeypair.generateCashuKeyPair(),
+              ),
+            ),
+          );
 
-      final Stream<CashuWalletTransaction> responseNoKeysets =
-          ndk.cashu.retrieveFunds(
-        draftTransaction: baseDraftTransaction.copyWith(
-          method: "sat",
-          qoute: CashuQuote(
-            quoteId: "quoteId",
-            request: "request",
-            amount: 5,
-            unit: 'sat',
-            state: CashuQuoteState.paid,
-            expiry: 0,
-            mintUrl: devMintUrl,
-            quoteKey: CashuKeypair.generateCashuKeyPair(),
-          ),
-        ),
-      );
+      final Stream<CashuWalletTransaction> responseNoKeysets = ndk.cashu
+          .retrieveFunds(
+            draftTransaction: baseDraftTransaction.copyWith(
+              method: "sat",
+              qoute: CashuQuote(
+                quoteId: "quoteId",
+                request: "request",
+                amount: 5,
+                unit: 'sat',
+                state: CashuQuoteState.paid,
+                expiry: 0,
+                mintUrl: devMintUrl,
+                quoteKey: CashuKeypair.generateCashuKeyPair(),
+              ),
+            ),
+          );
 
       expect(responseNoQuote, emitsError(isA<Exception>()));
       expect(responseNoMethod, emitsError(isA<Exception>()));
@@ -150,7 +150,7 @@ void main() {
 
       final seedPhraseSentence = CashuSeed.generateSeedPhrase();
       final seedPhrase = CashuUserSeedphrase(seedPhrase: seedPhraseSentence);
-      ndk.cashu.setCashuSeedPhrase(seedPhrase);
+      await ndk.cashu.setCashuSeedPhrase(seedPhrase);
 
       final draftTransaction = await ndk.cashu.initiateFund(
         mintUrl: devMintUrl,
@@ -336,7 +336,7 @@ void main() {
     });
     test("fund - successfull", skip: true, () async {
       final ndk = _ndk();
-      ndk.cashu.setCashuSeedPhrase(
+      await ndk.cashu.setCashuSeedPhrase(
         CashuUserSeedphrase(seedPhrase: CashuSeed.generateSeedPhrase()),
       );
       const fundAmount = 100;
@@ -378,7 +378,7 @@ void main() {
 
     test("fund - successfull - e2e", skip: true, () async {
       final ndk = _ndk();
-      ndk.cashu.setCashuSeedPhrase(
+      await ndk.cashu.setCashuSeedPhrase(
         CashuUserSeedphrase(seedPhrase: CashuSeed.generateSeedPhrase()),
       );
       const fundAmount = 250;

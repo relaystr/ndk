@@ -11,14 +11,13 @@ Future<WebSocket> connect(
   Duration? pingInterval,
   String? binaryType,
   bool compressionEnabled = true,
+  Future<void>? abortTrigger,
 }) async {
-  final socket = WebSocket(
-    url,
-    protocols?.map((e) => e.toJS).toList().toJS ?? JSArray(),
-  )
-    // Either "blob" (default) or "arraybuffer".
-    // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/binaryType
-    ..binaryType = binaryType ?? 'blob';
+  final socket =
+      WebSocket(url, protocols?.map((e) => e.toJS).toList().toJS ?? JSArray())
+        // Either "blob" (default) or "arraybuffer".
+        // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/binaryType
+        ..binaryType = binaryType ?? 'blob';
 
   if (socket.readyState == 1) return socket;
 
@@ -32,8 +31,9 @@ Future<WebSocket> connect(
 
   unawaited(
     socket.onError.first.then((event) {
-      final error =
-          event.isA<ErrorEvent>() ? (event as ErrorEvent).error : null;
+      final error = event.isA<ErrorEvent>()
+          ? (event as ErrorEvent).error
+          : null;
       completer.completeError(error ?? Exception('unknown error'));
     }),
   );

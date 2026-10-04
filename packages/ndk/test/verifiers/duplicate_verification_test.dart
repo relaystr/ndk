@@ -15,7 +15,7 @@ class CountingEventVerifier implements EventVerifier {
   final EventVerifier delegate;
 
   CountingEventVerifier({EventVerifier? delegate})
-      : delegate = delegate ?? Bip340EventVerifier(useIsolate: false);
+    : delegate = delegate ?? Bip340EventVerifier(useIsolate: false);
 
   int countFor(String id) => counts[id] ?? 0;
 
@@ -69,14 +69,14 @@ void main() async {
   late Ndk ndk;
 
   Future<Nip01Event> signedEvent(String content, int createdAt) => signer.sign(
-        Nip01Event(
-          kind: Nip01Event.kTextNodeKind,
-          pubKey: key1.publicKey,
-          content: content,
-          tags: [],
-          createdAt: createdAt,
-        ),
-      );
+    Nip01Event(
+      kind: Nip01Event.kTextNodeKind,
+      pubKey: key1.publicKey,
+      content: content,
+      tags: [],
+      createdAt: createdAt,
+    ),
+  );
 
   Future<void> receiveAndCacheFromRelay1(Nip01Event event) async {
     final broadcast = ndk.broadcast.broadcast(
@@ -160,36 +160,38 @@ void main() async {
       );
     });
 
-    test('clear prevents pending verification from repopulating the cache',
-        () async {
-      final verificationCache = VerifiedEventMemCache();
-      verificationCache.markVerified('existing-id', 'existing-signature');
+    test(
+      'clear prevents pending verification from repopulating the cache',
+      () async {
+        final verificationCache = VerifiedEventMemCache();
+        verificationCache.markVerified('existing-id', 'existing-signature');
 
-      final event = await signedEvent('pending during clear', 1000);
-      final controlledVerifier = ControlledEventVerifier();
-      final verification = verificationCache.verifyOnce(
-        event,
-        controlledVerifier,
-      );
-      await controlledVerifier.started.future;
+        final event = await signedEvent('pending during clear', 1000);
+        final controlledVerifier = ControlledEventVerifier();
+        final verification = verificationCache.verifyOnce(
+          event,
+          controlledVerifier,
+        );
+        await controlledVerifier.started.future;
 
-      verificationCache.clear();
+        verificationCache.clear();
 
-      expect(
-        verificationCache.hasVerifiedSignature(
-          'existing-id',
-          'existing-signature',
-        ),
-        isFalse,
-      );
+        expect(
+          verificationCache.hasVerifiedSignature(
+            'existing-id',
+            'existing-signature',
+          ),
+          isFalse,
+        );
 
-      controlledVerifier.result.complete(true);
-      expect(await verification, isTrue);
-      expect(
-        verificationCache.hasVerifiedSignature(event.id, event.sig),
-        isFalse,
-      );
-    });
+        controlledVerifier.result.complete(true);
+        expect(await verification, isTrue);
+        expect(
+          verificationCache.hasVerifiedSignature(event.id, event.sig),
+          isFalse,
+        );
+      },
+    );
 
     test('does not re-verify an event delivered more than once', () async {
       final event = await signedEvent("duplicate", 1000);
@@ -197,8 +199,7 @@ void main() async {
       final results = await VerifyEventStream(
         unverifiedStreamInput: Stream.fromIterable([event, event, event]),
         eventVerifier: verifier,
-      )()
-          .toList();
+      )().toList();
 
       expect(results.length, equals(3));
       expect(
@@ -208,31 +209,34 @@ void main() async {
       );
     });
 
-    test('does not verify an event that already carries validSig true',
-        () async {
-      final event = (await signedEvent("cached", 1000)).copyWith(
-        validSig: true,
-      );
+    test(
+      'does not verify an event that already carries validSig true',
+      () async {
+        final event = (await signedEvent(
+          "cached",
+          1000,
+        )).copyWith(validSig: true);
 
-      await VerifyEventStream(
-        unverifiedStreamInput: Stream.fromIterable([event]),
-        eventVerifier: verifier,
-      )()
-          .toList();
+        await VerifyEventStream(
+          unverifiedStreamInput: Stream.fromIterable([event]),
+          eventVerifier: verifier,
+        )().toList();
 
-      expect(
-        verifier.countFor(event.id),
-        equals(0),
-        reason: 'validSig true means the signature was already checked',
-      );
-    });
+        expect(
+          verifier.countFor(event.id),
+          equals(0),
+          reason: 'validSig true means the signature was already checked',
+        );
+      },
+    );
 
     test(
       'does not trust a concurrent duplicate before verification rejects it',
       () async {
-        final event = (await signedEvent('invalid duplicate', 1000)).copyWith(
-          sig: List.filled(128, '0').join(),
-        );
+        final event = (await signedEvent(
+          'invalid duplicate',
+          1000,
+        )).copyWith(sig: List.filled(128, '0').join());
         final controlledVerifier = ControlledEventVerifier();
         final localVerifier = CountingEventVerifier(
           delegate: controlledVerifier,
@@ -244,8 +248,7 @@ void main() async {
         VerifyEventStream(
           unverifiedStreamInput: Stream.fromIterable([event, event]),
           eventVerifier: localVerifier,
-        )()
-            .listen(
+        )().listen(
           emitted.add,
           onError: (Object error) => errors.add(error),
           onDone: done.complete,
@@ -273,9 +276,10 @@ void main() async {
     test(
       'does not trust a concurrent duplicate when verification throws',
       () async {
-        final event = (await signedEvent('throwing duplicate', 1000)).copyWith(
-          sig: List.filled(128, '0').join(),
-        );
+        final event = (await signedEvent(
+          'throwing duplicate',
+          1000,
+        )).copyWith(sig: List.filled(128, '0').join());
         final controlledVerifier = ControlledEventVerifier();
         final localVerifier = CountingEventVerifier(
           delegate: controlledVerifier,
@@ -287,8 +291,7 @@ void main() async {
         VerifyEventStream(
           unverifiedStreamInput: Stream.fromIterable([event, event]),
           eventVerifier: localVerifier,
-        )()
-            .listen(
+        )().listen(
           emitted.add,
           onError: (Object error) => errors.add(error),
           onDone: done.complete,
@@ -331,13 +334,15 @@ void main() async {
       verifier.reset();
       cache.resetSaveIfAbsentCounts();
 
-      final events = await ndk.requests.query(
-        filter: Filter(
-          kinds: [Nip01Event.kTextNodeKind],
-          authors: [key1.publicKey],
-        ),
-        explicitRelays: [relay1.url, relay2.url],
-      ).future;
+      final events = await ndk.requests
+          .query(
+            filter: Filter(
+              kinds: [Nip01Event.kTextNodeKind],
+              authors: [key1.publicKey],
+            ),
+            explicitRelays: [relay1.url, relay2.url],
+          )
+          .future;
 
       expect(events.length, equals(1));
       expect(
@@ -375,18 +380,10 @@ void main() async {
       );
 
       await ndk.requests
-          .query(
-            filter: filter,
-            explicitRelays: [relay1.url],
-            cacheRead: false,
-          )
+          .query(filter: filter, explicitRelays: [relay1.url], cacheRead: false)
           .future;
       await ndk.requests
-          .query(
-            filter: filter,
-            explicitRelays: [relay1.url],
-            cacheRead: false,
-          )
+          .query(filter: filter, explicitRelays: [relay1.url], cacheRead: false)
           .future;
 
       expect(
@@ -442,9 +439,7 @@ void main() async {
         final event = await signedEvent('canonical signature', 1000);
         await receiveAndCacheFromRelay1(event);
 
-        final forgedEvent = event.copyWith(
-          sig: List.filled(128, '0').join(),
-        );
+        final forgedEvent = event.copyWith(sig: List.filled(128, '0').join());
         relay2.textNotes = {key1: forgedEvent};
 
         final received = await ndk.requests
@@ -511,27 +506,29 @@ void main() async {
       },
     );
 
-    test('stores a verified duplicate again after the cache is cleared',
-        () async {
-      final event = await signedEvent('valid duplicate after clear', 1000);
-      await receiveAndCacheFromRelay1(event);
+    test(
+      'stores a verified duplicate again after the cache is cleared',
+      () async {
+        final event = await signedEvent('valid duplicate after clear', 1000);
+        await receiveAndCacheFromRelay1(event);
 
-      await cache.clearAll();
-      cache.resetSaveIfAbsentCounts();
-      relay2.textNotes = {key1: event};
+        await cache.clearAll();
+        cache.resetSaveIfAbsentCounts();
+        relay2.textNotes = {key1: event};
 
-      final received = await ndk.requests
-          .query(
-            filter: Filter(ids: [event.id]),
-            explicitRelays: [relay2.url],
-            cacheRead: false,
-          )
-          .future;
+        final received = await ndk.requests
+            .query(
+              filter: Filter(ids: [event.id]),
+              explicitRelays: [relay2.url],
+              cacheRead: false,
+            )
+            .future;
 
-      expect(received, hasLength(1));
-      expect(verifier.countFor(event.id), 1);
-      expect(cache.saveIfAbsentCountFor(event.id), 1);
-      expect(await cache.loadEvent(event.id), isNotNull);
-    });
+        expect(received, hasLength(1));
+        expect(verifier.countFor(event.id), 1);
+        expect(cache.saveIfAbsentCountFor(event.id), 1);
+        expect(await cache.loadEvent(event.id), isNotNull);
+      },
+    );
   });
 }

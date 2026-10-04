@@ -1724,4 +1724,151 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get balanceRefreshed => 'Saldo actualizado';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Recuperar cotización de acuñación';
+
+  @override
+  String get recoverQuote => 'Recuperar cotización';
+
+  @override
+  String get enterQuoteId =>
+      'Ingresa el ID de la cotización de acuñación a recuperar. La clave de bloqueo se recupera desde tu frase semilla.';
+
+  @override
+  String get quoteId => 'ID de cotización';
+
+  @override
+  String get quoteIdHint => 'Pega el ID de la cotización aquí';
+
+  @override
+  String get pleaseEnterQuoteId => 'Por favor, ingresa un ID de cotización';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'Obteniendo cotización de la acuñadora...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'Recuperando clave de bloqueo desde tu semilla...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint =>
+      'Completando acuñación...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Clave de bloqueo recuperada (contador de derivación $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Cotización recuperada y fondos agregados a tu saldo';
+
+  @override
+  String get quoteRecoveryFailed => 'Error al recuperar la cotización';
+
+  @override
+  String get restoreFundsFromMint => 'Restaurar fondos desde la acuñadora';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Restaurar fondos desde la acuñadora';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Busca comprobantes derivados de tu semilla en la acuñadora y los restaura en esta cartera.';
+
+  @override
+  String get startRestore => 'Iniciar restauración';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets =>
+      'Obteniendo conjuntos de claves de la acuñadora...';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'Escaneando la acuñadora en busca de tus fondos...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    String _temp0 = intl.Intl.pluralLogic(
+      keysets,
+      locale: localeName,
+      other: 'Se escanearon $keysets conjuntos de claves',
+      one: 'Se escaneó 1 conjunto de claves',
+      zero: 'No se escanearon conjuntos de claves',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      proofs,
+      locale: localeName,
+      other: 'Se encontraron $proofs comprobantes',
+      one: 'Se encontró 1 comprobante',
+      zero: 'No se encontraron comprobantes',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Restauración completa';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'También recupera cotizaciones de acuñación pendientes';
+
+  @override
+  String restoredFromMint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se restauraron $count comprobantes',
+      one: 'Se restauró 1 comprobante',
+      zero: 'No se restauraron comprobantes',
+    );
+    return '$_temp0 desde la acuñadora';
+  }
+
+  @override
+  String get restoreFailed => 'Error en la restauración';
+
+  @override
+  String get restoreFromBackup => 'Restaurar desde copia de seguridad';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Restaurar y copia de seguridad';
+
+  @override
+  String get cashuSeedPhraseOption => 'Establecer frase semilla';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Frase semilla de Cashu';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Esta frase semilla es compartida por TODAS las carteras Cashu. Es la única forma de recuperar tus fondos si pierdes este dispositivo. Cambiarla reemplaza la semilla utilizada para derivar las claves de cada cartera Cashu, por lo que los fondos recibidos con la semilla anterior ya no se podrán encontrar automáticamente.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Ingresa la frase de recuperación que quieras usar (12, 15, 18, 21 o 24 palabras). Cambia la semilla solo al restaurar carteras desde una frase que ya hayas guardado.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Frase semilla';
+
+  @override
+  String get cashuSeedPhraseHint => 'Pega aquí tu frase semilla';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Entiendo que esto cambia la semilla de todas las carteras Cashu';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'Eso no parece una frase semilla válida. Comprueba que todas las palabras estén escritas correctamente y en el orden correcto.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Frase semilla actualizada. Ahora se aplica a todas las carteras Cashu. Haz una copia de seguridad de la nueva frase.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed =>
+      'No se pudo actualizar la frase semilla';
 }

@@ -1723,4 +1723,130 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get balanceRefreshed => 'Saldo odświeżone';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Odzyskaj wycenę mennicy';
+
+  @override
+  String get recoverQuote => 'Odzyskaj wycenę';
+
+  @override
+  String get enterQuoteId =>
+      'Wprowadź identyfikator wyceny mennicy do odzyskania. Klucz blokowany jest odtwarzany z Twojej frazy odzyskiwania.';
+
+  @override
+  String get quoteId => 'Identyfikator wyceny';
+
+  @override
+  String get quoteIdHint => 'Wklej tutaj identyfikator wyceny';
+
+  @override
+  String get pleaseEnterQuoteId => 'Proszę wprowadzić identyfikator wyceny';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'Pobieranie wyceny z mennicy...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'Odtwarzanie klucza blokowanego z frazy odzyskiwania...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint =>
+      'Finalizowanie mennicy...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Klucz blokowany odzyskany (licznik wywodzenia $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Wycena odzyskana i środki dodane do salda';
+
+  @override
+  String get quoteRecoveryFailed => 'Nie udało się odzyskać wyceny';
+
+  @override
+  String get restoreFundsFromMint => 'Przywróć środki z mennicy';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Przywróć środki z mennicy';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Przeszukuje mennicę w poszukiwaniu dowodów wywodzących się z Twojej frazy odzyskiwania i przywraca je do tego portfela.';
+
+  @override
+  String get startRestore => 'Rozpocznij przywracanie';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets =>
+      'Pobieranie zestawów kluczy mennicy...';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'Przeszukiwanie mennicy w poszukiwaniu Twoich środków...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return 'Przeszukano $keysets zestaw(ów) kluczy · znaleziono $proofs dowod(ów)';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Przywracanie zakończone';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Przywraca również oczekujące wyceny mennicy';
+
+  @override
+  String restoredFromMint(int count) {
+    return 'Przywrócono $count dowodów z mennicy';
+  }
+
+  @override
+  String get restoreFailed => 'Przywracanie nieudane';
+
+  @override
+  String get restoreFromBackup => 'Odzyskaj z kopii zapasowej';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Przywracanie i kopia zapasowa';
+
+  @override
+  String get cashuSeedPhraseOption => 'Ustaw frazę odzyskiwania';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Fraza odzyskiwania Cashu';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Ta fraza odzyskiwania jest wspólna dla WSZYSTKICH portfeli Cashu. To jedyny sposób na odzyskanie środków po utracie tego urządzenia. Zmiana jej zastępuje frazę używaną do wyprowadzania kluczy dla każdego portfela Cashu, więc środki otrzymane pod poprzednią frazą nie będą już mogły zostać znalezione automatycznie.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Wprowadź frazę odzyskiwania, której chcesz użyć (12, 15, 18, 21 lub 24 słowa). Zmieniaj frazę tylko podczas przywracania portfeli z już zapisanej frazy.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Fraza odzyskiwania';
+
+  @override
+  String get cashuSeedPhraseHint => 'Wklej tutaj swoją frazę odzyskiwania';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Rozumiem, że to zmienia frazę dla wszystkich portfeli Cashu';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'To nie wygląda na prawidłową frazę odzyskiwania. Sprawdź, czy wszystkie słowa są poprawnie napisane i we właściwej kolejności.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Fraza odzyskiwania zaktualizowana. Obowiązuje teraz dla wszystkich portfeli Cashu. Zrób kopię zapasową nowej frazy.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed =>
+      'Nie udało się zaktualizować frazy odzyskiwania';
 }

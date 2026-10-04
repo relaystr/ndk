@@ -1691,4 +1691,121 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get balanceRefreshed => '残高を更新しました';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'ミント見積を復元';
+
+  @override
+  String get recoverQuote => '見積を復元';
+
+  @override
+  String get enterQuoteId => '復元するミント見積IDを入力してください。ロックキーはシードフレーズから復元されます。';
+
+  @override
+  String get quoteId => '見積ID';
+
+  @override
+  String get quoteIdHint => '見積IDをここに貼り付けてください';
+
+  @override
+  String get pleaseEnterQuoteId => '見積IDを入力してください';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote => 'ミントから見積を取得中...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey => 'シードからロックキーを復元中...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint => 'ミントを完了中...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'ロックキーが復元されました（導出カウンター $counter）';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted => '見積が復元され、資金が残高に追加されました';
+
+  @override
+  String get quoteRecoveryFailed => '見積の復元に失敗しました';
+
+  @override
+  String get restoreFundsFromMint => 'ミントから資金を復元';
+
+  @override
+  String get cashuRestoreFundsTitle => 'ミントから資金を復元';
+
+  @override
+  String get cashuRestoreDescription =>
+      'シードから導出された証明をミントからスキャンし、このウォレットに復元します。';
+
+  @override
+  String get startRestore => '復元を開始';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets => 'ミントのキーセットを取得中...';
+
+  @override
+  String get cashuRestoreStageScanning => 'ミントで資金をスキャン中...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return '$keysets個のキーセットをスキャン完了 · $proofs件の証明を発見';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => '復元完了';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes => '保留中のミント見積も復元します';
+
+  @override
+  String restoredFromMint(int count) {
+    return 'ミントから$count件の証明を復元しました';
+  }
+
+  @override
+  String get restoreFailed => '復元に失敗しました';
+
+  @override
+  String get restoreFromBackup => 'バックアップから復元';
+
+  @override
+  String get cashuRestoreMenuTitle => '復元とバックアップ';
+
+  @override
+  String get cashuSeedPhraseOption => 'シードフレーズを設定';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Cashuシードフレーズ';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'このシードフレーズは、すべてのCashuウォレットで共有されます。この端末を紛失した場合、資金を回復する唯一の方法です。変更すると、すべてのCashuウォレットの鍵を導出するために使用されるシードが置き換えられるため、以前のシードで受け取った資金は自動的に見つからなくなります。';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      '使用するリカバリーフレーズを入力してください（12、15、18、21、または24語）。すでに保存したフレーズからウォレットを復元する場合にのみシードを変更してください。';
+
+  @override
+  String get cashuSeedPhraseLabel => 'シードフレーズ';
+
+  @override
+  String get cashuSeedPhraseHint => 'ここにシードフレーズを貼り付けてください';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'すべてのCashuウォレットのシードが変更されることを理解しています';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      '有効なシードフレーズのようには見えません。すべての単語が正しく、正しい順序で綴られているか確認してください。';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'シードフレーズが更新されました。現在はすべてのCashuウォレットに適用されます。新しいフレーズをバックアップしてください。';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed => 'シードフレーズを更新できませんでした';
 }

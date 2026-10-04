@@ -1725,4 +1725,129 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get balanceRefreshed => 'Solde actualisé';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Récupérer un devis de mint';
+
+  @override
+  String get recoverQuote => 'Récupérer le devis';
+
+  @override
+  String get enterQuoteId =>
+      'Saisissez l\'identifiant du devis de mint à récupérer. La clé de verrouillage est dérivée de votre phrase de récupération.';
+
+  @override
+  String get quoteId => 'Identifiant du devis';
+
+  @override
+  String get quoteIdHint => 'Collez l\'identifiant du devis ici';
+
+  @override
+  String get pleaseEnterQuoteId => 'Veuillez saisir un identifiant de devis';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'Récupération du devis auprès du mint…';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'Récupération de la clé de verrouillage depuis votre graine…';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint => 'Finalisation du mint…';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Clé de verrouillage récupérée (compteur de dérivation $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Devis récupéré et fonds ajoutés à votre solde';
+
+  @override
+  String get quoteRecoveryFailed => 'Échec de la récupération du devis';
+
+  @override
+  String get restoreFundsFromMint => 'Restaurer les fonds depuis le mint';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Restaurer les fonds depuis le mint';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Recherche les preuves dérivées de votre graine auprès du mint et les restaure dans ce portefeuille.';
+
+  @override
+  String get startRestore => 'Lancer la restauration';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets =>
+      'Récupération des jeux de clés du mint…';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'Scan du mint à la recherche de vos fonds…';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return '$keysets jeu(x) de clés scanné(s) · $proofs preuve(s) trouvée(s)';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Restauration terminée';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Récupère également les devis de mint en attente';
+
+  @override
+  String restoredFromMint(int count) {
+    return '$count preuve(s) restaurée(s) depuis le mint';
+  }
+
+  @override
+  String get restoreFailed => 'Échec de la restauration';
+
+  @override
+  String get restoreFromBackup => 'Restaurer depuis une sauvegarde';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Restaurer et sauvegarder';
+
+  @override
+  String get cashuSeedPhraseOption => 'Définir la phrase de récupération';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Phrase de récupération Cashu';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Cette phrase de récupération est partagée par TOUS les portefeuilles Cashu. C\'est le seul moyen de récupérer vos fonds après la perte de cet appareil. La modifier remplace la graine utilisée pour dériver les clés de chaque portefeuille Cashu ; les fonds reçus avec la graine précédente ne pourront donc plus être retrouvés automatiquement.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Saisissez la phrase de récupération que vous souhaitez utiliser (12, 15, 18, 21 ou 24 mots). Ne modifiez la graine que lorsque vous restaurez des portefeuilles à partir d\'une phrase déjà sauvegardée.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Phrase de récupération';
+
+  @override
+  String get cashuSeedPhraseHint => 'Collez votre phrase de récupération ici';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Je comprends que cela change la graine pour tous les portefeuilles Cashu';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'Cela ne ressemble pas à une phrase de récupération valide. Vérifiez que tous les mots sont correctement orthographiés et dans le bon ordre.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Phrase de récupération mise à jour. Elle s\'applique désormais à tous les portefeuilles Cashu. Sauvegardez la nouvelle phrase.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed =>
+      'Impossible de mettre à jour la phrase de récupération';
 }

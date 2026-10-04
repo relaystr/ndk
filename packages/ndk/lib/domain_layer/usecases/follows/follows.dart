@@ -20,10 +20,10 @@ class Follows {
     required Broadcast broadcast,
     required CacheManager cacheManager,
     required Accounts accounts,
-  })  : _cacheManager = cacheManager,
-        _requests = requests,
-        _accounts = accounts,
-        _broadcast = broadcast;
+  }) : _cacheManager = cacheManager,
+       _requests = requests,
+       _accounts = accounts,
+       _broadcast = broadcast;
 
   void _checkSigner() {
     if (_accounts.cannotSign) {
@@ -34,6 +34,7 @@ class Follows {
   /// contact list of a given pubkey, not intended to get followers
   Future<ContactList?> getContactList(
     String pubKey, {
+
     /// skips the cache
     bool forceRefresh = false,
     Duration idleTimeout = RequestDefaults.DEFAULT_QUERY_TIMEOUT,
@@ -49,16 +50,19 @@ class Follows {
 
     ContactList? loadedContactList;
     try {
-      await for (final event in _requests.query(
-        timeout: idleTimeout,
-        filters: [
-          Filter(
-            kinds: [ContactList.kKind],
-            authors: [pubKey],
-            limit: 1,
-          ),
-        ],
-      ).stream) {
+      await for (final event
+          in _requests
+              .query(
+                timeout: idleTimeout,
+                filters: [
+                  Filter(
+                    kinds: [ContactList.kKind],
+                    authors: [pubKey],
+                    limit: 1,
+                  ),
+                ],
+              )
+              .stream) {
         if (loadedContactList == null ||
             loadedContactList.createdAt < event.createdAt) {
           loadedContactList = ContactList.fromEvent(event);
@@ -88,7 +92,8 @@ class Follows {
     if (contactList != null) {
       contactList.loadedTimestamp = Helpers.now;
     }
-    int sometimeAgo = DateTime.now()
+    int sometimeAgo =
+        DateTime.now()
             .subtract(kRefreshContactListDuration)
             .millisecondsSinceEpoch ~/
         1000;

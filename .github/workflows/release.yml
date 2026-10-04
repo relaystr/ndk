@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  FLUTTER_VERSION: "3.47.0"
+  FLUTTER_VERSION: "3.47.5"
   JAVA_VERSION: "17"
   FLUTTER_RUST_BRIDGE_VERSION: "1.80.1"
   RUST_VERSION: "1.93"
@@ -138,6 +138,23 @@ jobs:
           release_version="${GITHUB_REF_NAME#v}"
           echo "release_version=${release_version}" >> "$GITHUB_OUTPUT"
 
+          # The sample app is not a melos workspace package, so its pubspec
+          # version is never bumped. Derive the APK version from the tag.
+          # versionCode keeps semver order: MAJOR*1e6 + MINOR*1e4 + PATCH*100
+          # + dev number (0-98) for prereleases, or 99 for stable releases.
+          if [[ ! "$release_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-dev\.([0-9]+))?$ ]]; then
+            echo "::error::Unsupported release version: $release_version" >&2
+            exit 1
+          fi
+          major=${BASH_REMATCH[1]} minor=${BASH_REMATCH[2]} patch=${BASH_REMATCH[3]}
+          dev=${BASH_REMATCH[5]}
+          if (( minor > 99 || patch > 99 || ${dev:-0} > 98 )); then
+            echo "::error::Version part out of range for versionCode: $release_version" >&2
+            exit 1
+          fi
+          build_number=$(( major * 1000000 + minor * 10000 + patch * 100 + ${dev:-99} ))
+          echo "build_number=${build_number}" >> "$GITHUB_OUTPUT"
+
       - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
@@ -165,7 +182,7 @@ jobs:
           architecture: x64 # optional, x64 or arm64
 
       - name: 🔐 Retrieve base64 keystore and decode it to a file
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > "${{ github.workspace }}/android-keystore.jks"
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > "${{ github.workspace }}/packages/sample-app/android-keystore.jks"
 
       - name: 📝🔐 Create key.properties file
         env:
@@ -185,11 +202,15 @@ jobs:
       - name: build apk-split
         run: |
           cd packages/sample-app
-          flutter build apk --split-per-abi
+          flutter build apk --split-per-abi \
+            --build-name="${{ steps.meta.outputs.release_version }}" \
+            --build-number="${{ steps.meta.outputs.build_number }}"
       - name: build apk
         run: |
           cd packages/sample-app
-          flutter build apk
+          flutter build apk \
+            --build-name="${{ steps.meta.outputs.release_version }}" \
+            --build-number="${{ steps.meta.outputs.build_number }}"
 
       # APK
       - name: Upload APK to release

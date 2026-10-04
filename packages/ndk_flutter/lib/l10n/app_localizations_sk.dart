@@ -1721,4 +1721,129 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get balanceRefreshed => 'Zostatok obnovený';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Obnoviť mint ponuku';
+
+  @override
+  String get recoverQuote => 'Obnoviť ponuku';
+
+  @override
+  String get enterQuoteId =>
+      'Zadajte ID mint ponuky na obnovenie. Lock kľúč sa obnoví z vašej seed frázy.';
+
+  @override
+  String get quoteId => 'ID ponuky';
+
+  @override
+  String get quoteIdHint => 'Sem vložte ID ponuky';
+
+  @override
+  String get pleaseEnterQuoteId => 'Zadajte ID ponuky';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'Načítava sa ponuka z mintu...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'Obnovuje sa lock kľúč z vašej seed...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint => 'Dokončuje sa mint...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Lock kľúč obnovený (derivačný čítač $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Ponuka obnovená a prostriedky pridané do vášho zostatku';
+
+  @override
+  String get quoteRecoveryFailed => 'Obnovenie ponuky zlyhalo';
+
+  @override
+  String get restoreFundsFromMint => 'Obnoviť prostriedky z mintu';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Obnoviť prostriedky z mintu';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Prehľadá mint, či neobsahuje dôkazy odvodené z vašej seed, a obnoví ich do tejto peňaženky.';
+
+  @override
+  String get startRestore => 'Spustiť obnovenie';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets =>
+      'Načítavajú sa mint keysety...';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'Prehľadáva sa mint pre vaše prostriedky...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return 'Preskenovaných $keysets keyset(-ov) · nájdených $proofs dôkaz(-ov)';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Obnovenie dokončené';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Obnoví tiež čakajúce mint ponuky';
+
+  @override
+  String restoredFromMint(int count) {
+    return 'Obnovených $count dôkazov z mintu';
+  }
+
+  @override
+  String get restoreFailed => 'Obnovenie zlyhalo';
+
+  @override
+  String get restoreFromBackup => 'Obnoviť zo zálohy';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Obnovenie a zálohovanie';
+
+  @override
+  String get cashuSeedPhraseOption => 'Nastaviť seed frázu';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Cashu seed fráza';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Táto seed fráza je spoločná pre VŠETKY Cashu peňaženky. Je to jediný spôsob, ako obnoviť vaše prostriedky po strate tohto zariadenia. Jej zmenou sa nahradí seed používaná na odvodenie kľúčov pre každú Cashu peňaženku, takže prostriedky prijaté pod predchádzajúcou seed sa už nebudú dať nájsť automaticky.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Zadajte frázu na obnovenie, ktorú chcete použiť (12, 15, 18, 21 alebo 24 slov). Seed meňte len pri obnove peňaženiek z frázy, ktorú ste si už uložili.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Seed fráza';
+
+  @override
+  String get cashuSeedPhraseHint => 'Vložte sem svoju seed frázu';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Rozumiem, že to zmení seed pre všetky Cashu peňaženky';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'Toto nevyzerá ako platná seed fráza. Skontrolujte, či sú všetky slová napísané správne a v správnom poradí.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Seed fráza aktualizovaná. Teraz sa vzťahuje na všetky Cashu peňaženky. Zálohujte si novú frázu.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed =>
+      'Seed frázu sa nepodarilo aktualizovať';
 }

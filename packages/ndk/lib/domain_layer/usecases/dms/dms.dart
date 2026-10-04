@@ -57,13 +57,13 @@ class Dms {
     required UserRelayLists userRelayLists,
     required CacheManager cacheManager,
     required EventVerifier eventVerifier,
-  })  : _accounts = accounts,
-        _requests = requests,
-        _broadcast = broadcast,
-        _giftWrap = giftWrap,
-        _userRelayLists = userRelayLists,
-        _cacheManager = cacheManager,
-        _eventVerifier = eventVerifier;
+  }) : _accounts = accounts,
+       _requests = requests,
+       _broadcast = broadcast,
+       _giftWrap = giftWrap,
+       _userRelayLists = userRelayLists,
+       _cacheManager = cacheManager,
+       _eventVerifier = eventVerifier;
 
   /// Sends a direct message to [recipientPubKey].
   ///
@@ -220,8 +220,10 @@ class Dms {
       }
       try {
         // ignore: deprecated_member_use
-        final plaintext =
-            await account.signer.decrypt(event.content, peerPubKey);
+        final plaintext = await account.signer.decrypt(
+          event.content,
+          peerPubKey,
+        );
         if (plaintext == null) continue;
         byId[event.id] = LegacyNip04Message(
           event: event,
@@ -530,8 +532,7 @@ class Dms {
         peerPubKey: entry.key,
         messages: List.unmodifiable(peerMessages),
       );
-    }).toList()
-      ..sort((a, b) => b.latestCreatedAt.compareTo(a.latestCreatedAt));
+    }).toList()..sort((a, b) => b.latestCreatedAt.compareTo(a.latestCreatedAt));
 
     return conversations;
   }
@@ -572,10 +573,7 @@ class Dms {
       final rumor = result.rumor;
 
       if (!result.isCryptographicallyValid ||
-          !_hasExactlyOneRecipient(
-            wrappedEvent,
-            expectedRecipient: myPubKey,
-          ) ||
+          !_hasExactlyOneRecipient(wrappedEvent, expectedRecipient: myPubKey) ||
           result.seal.kind != GiftWrap.kSealEventKind ||
           result.seal.tags.isNotEmpty ||
           rumor.sig != null ||
@@ -616,8 +614,9 @@ class Dms {
     Nip01Event giftWrap, {
     required String expectedRecipient,
   }) {
-    final recipientTags =
-        giftWrap.tags.where((tag) => tag.isNotEmpty && tag[0] == 'p').toList();
+    final recipientTags = giftWrap.tags
+        .where((tag) => tag.isNotEmpty && tag[0] == 'p')
+        .toList();
     return recipientTags.length == 1 &&
         recipientTags.single.length >= 2 &&
         recipientTags.single[1] == expectedRecipient;
@@ -650,8 +649,9 @@ class Dms {
   }
 
   bool _hasWellFormedParticipants(Nip01Event rumor) {
-    final participantTags =
-        rumor.tags.where((tag) => tag.isNotEmpty && tag[0] == 'p').toList();
+    final participantTags = rumor.tags
+        .where((tag) => tag.isNotEmpty && tag[0] == 'p')
+        .toList();
     return participantTags.isNotEmpty &&
         participantTags.every(
           (tag) => tag.length >= 2 && _hexPubKey.hasMatch(tag[1]),
@@ -709,8 +709,9 @@ class Dms {
     required String recipientPubKey,
   }) async {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    final recipientTags =
-        event.tags.where((tag) => tag.length >= 2 && tag.first == 'p').toList();
+    final recipientTags = event.tags
+        .where((tag) => tag.length >= 2 && tag.first == 'p')
+        .toList();
     return await _eventVerifier.verify(event) &&
         event.kind == kLegacyNip04MessageKind &&
         event.pubKey == senderPubKey &&

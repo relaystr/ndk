@@ -12,7 +12,7 @@ class MockRefusingSigner implements EventSigner {
   int signAttempts = 0;
 
   MockRefusingSigner({required EventSigner innerSigner})
-      : _innerSigner = innerSigner;
+    : _innerSigner = innerSigner;
 
   @override
   bool get requiresInteractiveSigning => true;
@@ -51,21 +51,19 @@ class MockRefusingSigner implements EventSigner {
   Future<String?> encryptNip44({
     required String plaintext,
     required String recipientPubKey,
-  }) =>
-      _innerSigner.encryptNip44(
-        plaintext: plaintext,
-        recipientPubKey: recipientPubKey,
-      );
+  }) => _innerSigner.encryptNip44(
+    plaintext: plaintext,
+    recipientPubKey: recipientPubKey,
+  );
 
   @override
   Future<String?> decryptNip44({
     required String ciphertext,
     required String senderPubKey,
-  }) =>
-      _innerSigner.decryptNip44(
-        ciphertext: ciphertext,
-        senderPubKey: senderPubKey,
-      );
+  }) => _innerSigner.decryptNip44(
+    ciphertext: ciphertext,
+    senderPubKey: senderPubKey,
+  );
 
   @override
   Stream<List<PendingSignerRequest>> get pendingRequestsStream =>

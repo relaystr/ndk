@@ -1,3 +1,34 @@
+## 0.3.0
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.3.0-dev.1
+
+ - Update a dependency to the latest release.
+
+## 0.3.0-dev.0
+
+> Note: This release has breaking changes.
+
+ - **FIX**: reduce background polling and cache work.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
+## 0.2.12-dev.18
+
+ - Update a dependency to the latest release.
+
+## 0.2.12-dev.17
+
+ - **FIX**: reduce background polling and cache work.
+
+## 0.2.12-dev.16
+
+ - Update a dependency to the latest release.
+
 ## 0.2.12-dev.15
 
  - Update a dependency to the latest release.

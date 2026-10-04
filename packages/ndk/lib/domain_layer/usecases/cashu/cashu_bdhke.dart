@@ -47,7 +47,6 @@ class CashuBdhke {
 
         final myR = BigInt.parse(mySecret.blindingHex, radix: 16);
 
-        //final secret = Helpers.getSecureRandomString(32);
         final (blindedMessageHex, r) = blindMessage(secret, r: myR);
 
         if (blindedMessageHex.isEmpty) {

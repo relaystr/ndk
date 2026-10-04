@@ -10,7 +10,7 @@ class _WatchRequests implements Requests {
   String? closedRequestId;
 
   _WatchRequests(Stream<Nip01Event> events)
-      : response = NdkResponse('software-watch-test', events);
+    : response = NdkResponse('software-watch-test', events);
 
   @override
   Future<void> closeSubscription(String subId, {String debugLabel = ''}) async {
@@ -28,13 +28,13 @@ class _QueryRequests implements Requests {
   final NdkResponse response;
 
   _QueryRequests(RelayRequestStatus status)
-      : response = NdkResponse(
-          'software-query-test',
-          const Stream<Nip01Event>.empty(),
-          relayOutcomes: () => {
-            'wss://relay.example': RelayRequestOutcome(status),
-          },
-        );
+    : response = NdkResponse(
+        'software-query-test',
+        const Stream<Nip01Event>.empty(),
+        relayOutcomes: () => {
+          'wss://relay.example': RelayRequestOutcome(status),
+        },
+      );
 
   @override
   dynamic noSuchMethod(Invocation invocation) {
@@ -47,15 +47,13 @@ class _EventQueryRequests implements Requests {
   final NdkResponse response;
 
   _EventQueryRequests(Iterable<Nip01Event> events)
-      : response = NdkResponse(
-          'software-event-query-test',
-          Stream.fromIterable(events),
-          relayOutcomes: () => const {
-            'wss://relay.example': RelayRequestOutcome(
-              RelayRequestStatus.eose,
-            ),
-          },
-        );
+    : response = NdkResponse(
+        'software-event-query-test',
+        Stream.fromIterable(events),
+        relayOutcomes: () => const {
+          'wss://relay.example': RelayRequestOutcome(RelayRequestStatus.eose),
+        },
+      );
 
   @override
   dynamic noSuchMethod(Invocation invocation) {
@@ -101,15 +99,14 @@ void main() {
     String id = hash,
     String pubKey = publisher,
     int createdAt = 100,
-  }) =>
-      Nip01Event(
-        id: id,
-        pubKey: pubKey,
-        kind: kind,
-        tags: tags,
-        content: content,
-        createdAt: createdAt,
-      );
+  }) => Nip01Event(
+    id: id,
+    pubKey: pubKey,
+    kind: kind,
+    tags: tags,
+    content: content,
+    createdAt: createdAt,
+  );
 
   Nip01Event networkEvent(
     int kind,
@@ -117,19 +114,16 @@ void main() {
     String content = '',
     String pubKey = publisher,
     int createdAt = 100,
-  }) =>
-      Nip01Event(
-        pubKey: pubKey,
-        kind: kind,
-        tags: tags,
-        content: content,
-        createdAt: createdAt,
-      );
+  }) => Nip01Event(
+    pubKey: pubKey,
+    kind: kind,
+    tags: tags,
+    content: content,
+    createdAt: createdAt,
+  );
 
   test('getApp distinguishes missing application from relay failure', () async {
-    final missing = Software(
-      requests: _QueryRequests(RelayRequestStatus.eose),
-    );
+    final missing = Software(requests: _QueryRequests(RelayRequestStatus.eose));
     expect(await missing.getApp(app: appRef), isNull);
 
     final failed = Software(
@@ -141,78 +135,81 @@ void main() {
     );
   });
 
-  test('watch emits only changed releases and closes its subscription',
-      () async {
-    Nip01Event release({
-      int createdAt = 100,
-      String version = '1.0.0',
-      String identifier = 'com.example.app',
-      String author = publisher,
-      String channel = 'main',
-    }) =>
-        networkEvent(
-            softwareReleaseKind,
-            [
-              ['i', identifier],
-              ['version', version],
-              ['d', '$identifier@$version'],
-              ['c', channel],
-              ['e', hash],
-            ],
-            pubKey: author,
-            createdAt: createdAt);
+  test(
+    'watch emits only changed releases and closes its subscription',
+    () async {
+      Nip01Event release({
+        int createdAt = 100,
+        String version = '1.0.0',
+        String identifier = 'com.example.app',
+        String author = publisher,
+        String channel = 'main',
+      }) => networkEvent(
+        softwareReleaseKind,
+        [
+          ['i', identifier],
+          ['version', version],
+          ['d', '$identifier@$version'],
+          ['c', channel],
+          ['e', hash],
+        ],
+        pubKey: author,
+        createdAt: createdAt,
+      );
 
-    final first = release();
-    final newer = release(createdAt: 200);
-    final otherVersion = release(createdAt: 150, version: '2.0.0');
-    final requests = _WatchRequests(Stream.fromIterable([
-      event(softwareReleaseKind, []),
-      release(author: hash),
-      release(identifier: 'com.other.app'),
-      release(channel: 'beta'),
-      first,
-      first,
-      release(createdAt: 99),
-      release(channel: 'beta'),
-      event(softwareReleaseKind, []),
-      release(author: hash),
-      release(identifier: 'com.other.app'),
-      newer,
-      otherVersion,
-      release(createdAt: 200),
-    ]));
-    final snapshots = await Software(requests: requests)
-        .watchReleases(
-          app: const SoftwareAppRef(
-            publisher: publisher,
-            identifier: 'com.example.app',
-          ),
-        )
-        .toList();
+      final first = release();
+      final newer = release(createdAt: 200);
+      final otherVersion = release(createdAt: 150, version: '2.0.0');
+      final requests = _WatchRequests(
+        Stream.fromIterable([
+          event(softwareReleaseKind, []),
+          release(author: hash),
+          release(identifier: 'com.other.app'),
+          release(channel: 'beta'),
+          first,
+          first,
+          release(createdAt: 99),
+          release(channel: 'beta'),
+          event(softwareReleaseKind, []),
+          release(author: hash),
+          release(identifier: 'com.other.app'),
+          newer,
+          otherVersion,
+          release(createdAt: 200),
+        ]),
+      );
+      final snapshots = await Software(requests: requests)
+          .watchReleases(
+            app: const SoftwareAppRef(
+              publisher: publisher,
+              identifier: 'com.example.app',
+            ),
+          )
+          .toList();
 
-    expect(
-      snapshots.map((releases) => releases.map((release) => release.event.id)),
-      [
-        [first.id],
-        [newer.id],
-        [newer.id, otherVersion.id],
-      ],
-    );
-    expect(requests.closedRequestId, requests.response.requestId);
-  });
+      expect(
+        snapshots.map(
+          (releases) => releases.map((release) => release.event.id),
+        ),
+        [
+          [first.id],
+          [newer.id],
+          [newer.id, otherVersion.id],
+        ],
+      );
+      expect(requests.closedRequestId, requests.response.requestId);
+    },
+  );
 
   test('getReleases keeps newest addressable event for each version', () async {
-    Nip01Event release(String version, int createdAt) => networkEvent(
-          softwareReleaseKind,
-          [
-            ['i', 'com.example.app'],
-            ['version', version],
-            ['d', 'com.example.app@$version'],
-            ['c', 'main'],
-            ['e', hash],
-          ],
-          createdAt: createdAt,
-        );
+    Nip01Event release(String version, int createdAt) =>
+        networkEvent(softwareReleaseKind, [
+          ['i', 'com.example.app'],
+          ['version', version],
+          ['d', 'com.example.app@$version'],
+          ['c', 'main'],
+          ['e', hash],
+        ], createdAt: createdAt);
 
     final oldCopy = release('1.0.0', 100);
     final newCopy = release('1.0.0', 200);
@@ -227,88 +224,96 @@ void main() {
     ]);
   });
 
-  test('parses current NIP-82 application, release, and Android asset tags',
-      () {
-    final app = SoftwareApp.fromEvent(event(
-        softwareApplicationKind,
-        [
+  test(
+    'parses current NIP-82 application, release, and Android asset tags',
+    () {
+      final app = SoftwareApp.fromEvent(
+        event(softwareApplicationKind, [
           ['d', 'com.example.app'],
           ['name', 'Example'],
           ['summary', 'Small summary'],
-        ],
-        content: 'Description'));
-    expect(app.ref.identifier, 'com.example.app');
-    expect(app.name, 'Example');
+        ], content: 'Description'),
+      );
+      expect(app.ref.identifier, 'com.example.app');
+      expect(app.name, 'Example');
 
-    final release = SoftwareRelease.fromEvent(event(
-        softwareReleaseKind,
-        [
+      final release = SoftwareRelease.fromEvent(
+        event(softwareReleaseKind, [
           ['i', 'com.example.app'],
           ['version', '1.2.0'],
           ['d', 'com.example.app@1.2.0'],
           ['c', 'main'],
           ['e', hash, 'wss://example.com'],
-        ],
-        content: 'Changes'));
-    expect(release.assets.single.relayHint, 'wss://example.com');
+        ], content: 'Changes'),
+      );
+      expect(release.assets.single.relayHint, 'wss://example.com');
 
-    final asset = SoftwareAsset.fromEvent(event(softwareAssetKind, [
-      ['i', 'com.example.app'],
-      ['version', '1.2.0'],
-      ['m', androidPackageMimeType],
-      ['x', hash],
-      ['url', 'https://example.com/app.apk'],
-      ['url', 'https://cdn.example.com/app.apk'],
-      ['version_code', '12'],
-      ['f', 'android-arm64-v8a'],
-      ['min_platform_version', '24'],
-      ['apk_certificate_hash', certificate],
-    ]));
-    expect(asset.versionCode, 12);
-    expect(asset.certificateHashes, [certificate]);
-    expect(asset.urls, [
-      'https://example.com/app.apk',
-      'https://cdn.example.com/app.apk',
-    ]);
-    expect(asset.url, 'https://example.com/app.apk');
-  });
+      final asset = SoftwareAsset.fromEvent(
+        event(softwareAssetKind, [
+          ['i', 'com.example.app'],
+          ['version', '1.2.0'],
+          ['m', androidPackageMimeType],
+          ['x', hash],
+          ['url', 'https://example.com/app.apk'],
+          ['url', 'https://cdn.example.com/app.apk'],
+          ['version_code', '12'],
+          ['f', 'android-arm64-v8a'],
+          ['min_platform_version', '24'],
+          ['apk_certificate_hash', certificate],
+        ]),
+      );
+      expect(asset.versionCode, 12);
+      expect(asset.certificateHashes, [certificate]);
+      expect(asset.urls, [
+        'https://example.com/app.apk',
+        'https://cdn.example.com/app.apk',
+      ]);
+      expect(asset.url, 'https://example.com/app.apk');
+    },
+  );
 
   test('asset relay hints supplement default relay resolution', () async {
     final requests = _CapturingRequests();
-    final release = SoftwareRelease.fromEvent(event(softwareReleaseKind, [
-      ['i', 'com.example.app'],
-      ['version', '1.2.0'],
-      ['d', 'com.example.app@1.2.0'],
-      ['c', 'main'],
-      ['e', hash, 'wss://hint.example'],
-    ]));
+    final release = SoftwareRelease.fromEvent(
+      event(softwareReleaseKind, [
+        ['i', 'com.example.app'],
+        ['version', '1.2.0'],
+        ['d', 'com.example.app@1.2.0'],
+        ['c', 'main'],
+        ['e', hash, 'wss://hint.example'],
+      ]),
+    );
 
     await Software(requests: requests).resolveAssets(release);
 
     expect(requests.explicitRelayCalls, [
       null,
-      {'wss://hint.example'}
+      {'wss://hint.example'},
     ]);
   });
 
   test('rejects malformed release coordinate and incomplete Android asset', () {
     expect(
-      () => SoftwareRelease.fromEvent(event(softwareReleaseKind, [
-        ['i', 'com.example.app'],
-        ['version', '1.2.0'],
-        ['d', 'wrong'],
-        ['c', 'main'],
-        ['e', hash],
-      ])),
+      () => SoftwareRelease.fromEvent(
+        event(softwareReleaseKind, [
+          ['i', 'com.example.app'],
+          ['version', '1.2.0'],
+          ['d', 'wrong'],
+          ['c', 'main'],
+          ['e', hash],
+        ]),
+      ),
       throwsA(isA<SoftwareParseException>()),
     );
     expect(
-      () => SoftwareAsset.fromEvent(event(softwareAssetKind, [
-        ['i', 'com.example.app'],
-        ['version', '1.2.0'],
-        ['m', androidPackageMimeType],
-        ['x', hash],
-      ])),
+      () => SoftwareAsset.fromEvent(
+        event(softwareAssetKind, [
+          ['i', 'com.example.app'],
+          ['version', '1.2.0'],
+          ['m', androidPackageMimeType],
+          ['x', hash],
+        ]),
+      ),
       throwsA(isA<SoftwareParseException>()),
     );
   });
@@ -322,17 +327,19 @@ void main() {
       ['e', hash],
     ]);
     final release = SoftwareRelease.fromEvent(releaseEvent);
-    final asset = SoftwareAsset.fromEvent(event(softwareAssetKind, [
-      ['i', 'com.example.app'],
-      ['version', '1.2.0'],
-      ['m', androidPackageMimeType],
-      ['x', hash],
-      ['url', 'https://updates.example/app.apk'],
-      ['version_code', '12'],
-      ['f', 'android-arm64-v8a'],
-      ['min_platform_version', '24'],
-      ['apk_certificate_hash', certificate],
-    ]));
+    final asset = SoftwareAsset.fromEvent(
+      event(softwareAssetKind, [
+        ['i', 'com.example.app'],
+        ['version', '1.2.0'],
+        ['m', androidPackageMimeType],
+        ['x', hash],
+        ['url', 'https://updates.example/app.apk'],
+        ['version_code', '12'],
+        ['f', 'android-arm64-v8a'],
+        ['min_platform_version', '24'],
+        ['apk_certificate_hash', certificate],
+      ]),
+    );
     final unusableNewerAsset = SoftwareAsset.fromEvent(
       event(softwareAssetKind, [
         ['i', 'com.example.app'],
@@ -413,14 +420,10 @@ void main() {
 
     test('gets application and sorted valid releases', () async {
       relay.textNotes = {
-        Bip340.generatePrivateKey(): networkEvent(
-          softwareApplicationKind,
-          [
-            ['d', 'com.example.app'],
-            ['name', 'Example'],
-          ],
-          content: 'Description',
-        ),
+        Bip340.generatePrivateKey(): networkEvent(softwareApplicationKind, [
+          ['d', 'com.example.app'],
+          ['name', 'Example'],
+        ], content: 'Description'),
       };
 
       final ref = SoftwareAppRef(
@@ -431,38 +434,27 @@ void main() {
       expect(app?.name, 'Example');
 
       relay.textNotes = {
-        Bip340.generatePrivateKey(): networkEvent(
-          softwareReleaseKind,
-          [
-            ['i', 'com.example.app'],
-            ['version', '1.0.0'],
-            ['d', 'com.example.app@1.0.0'],
-            ['c', 'main'],
-            ['e', hash],
-          ],
-          createdAt: 100,
-        ),
-        Bip340.generatePrivateKey(): networkEvent(
-          softwareReleaseKind,
-          [
-            ['i', 'com.example.app'],
-            ['version', '2.0.0'],
-            ['d', 'com.example.app@2.0.0'],
-            ['c', 'main'],
-            ['e', hash],
-          ],
-          createdAt: 200,
-        ),
-        Bip340.generatePrivateKey(): networkEvent(
-          softwareReleaseKind,
-          [
-            ['i', 'com.example.app'],
-            ['version', 'broken'],
-            ['d', 'wrong'],
-            ['c', 'main'],
-            ['e', hash],
-          ],
-        ),
+        Bip340.generatePrivateKey(): networkEvent(softwareReleaseKind, [
+          ['i', 'com.example.app'],
+          ['version', '1.0.0'],
+          ['d', 'com.example.app@1.0.0'],
+          ['c', 'main'],
+          ['e', hash],
+        ], createdAt: 100),
+        Bip340.generatePrivateKey(): networkEvent(softwareReleaseKind, [
+          ['i', 'com.example.app'],
+          ['version', '2.0.0'],
+          ['d', 'com.example.app@2.0.0'],
+          ['c', 'main'],
+          ['e', hash],
+        ], createdAt: 200),
+        Bip340.generatePrivateKey(): networkEvent(softwareReleaseKind, [
+          ['i', 'com.example.app'],
+          ['version', 'broken'],
+          ['d', 'wrong'],
+          ['c', 'main'],
+          ['e', hash],
+        ]),
       };
 
       final releases = await ndk.software.getReleases(
@@ -472,124 +464,96 @@ void main() {
       expect(releases.map((release) => release.version), ['2.0.0', '1.0.0']);
     });
 
-    test('resolves referenced assets with independent identifiers and versions',
-        () async {
-      final assetEvent = networkEvent(
-        softwareAssetKind,
-        [
+    test(
+      'resolves referenced assets with independent identifiers and versions',
+      () async {
+        final assetEvent = networkEvent(softwareAssetKind, [
           ['i', 'com.example.app'],
           ['version', '2.0.0'],
           ['m', androidPackageMimeType],
           ['x', hash],
           ['version_code', '20'],
           ['apk_certificate_hash', certificate],
-        ],
-      );
-      final independentIdentifierAsset = networkEvent(
-        softwareAssetKind,
-        [
+        ]);
+        final independentIdentifierAsset = networkEvent(softwareAssetKind, [
           ['i', 'com.example.other'],
           ['version', '2.0.0'],
           ['m', androidPackageMimeType],
           ['x', hash],
           ['version_code', '20'],
           ['apk_certificate_hash', certificate],
-        ],
-      );
-      final independentVersionAsset = networkEvent(
-        softwareAssetKind,
-        [
+        ]);
+        final independentVersionAsset = networkEvent(softwareAssetKind, [
           ['i', 'com.example.app'],
           ['version', '3.0.0'],
           ['m', androidPackageMimeType],
           ['x', hash],
           ['version_code', '30'],
           ['apk_certificate_hash', certificate],
-        ],
-      );
-      final release = SoftwareRelease.fromEvent(event(
-        softwareReleaseKind,
-        [
-          ['i', 'com.example.app'],
-          ['version', '2.0.0'],
-          ['d', 'com.example.app@2.0.0'],
-          ['c', 'main'],
-          ['e', assetEvent.id, relay.url],
-          ['e', independentIdentifierAsset.id, relay.url],
-          ['e', independentVersionAsset.id, relay.url],
-        ],
-        id: 'release',
-      ));
-      relay.textNotes = {
-        Bip340.generatePrivateKey(): assetEvent,
-        Bip340.generatePrivateKey(): independentIdentifierAsset,
-        Bip340.generatePrivateKey(): independentVersionAsset,
-      };
-
-      final assets = await ndk.software.resolveAssets(
-        release,
-        relays: [relay.url],
-      );
-      expect(
-        assets.map((asset) => asset.event.id),
-        [
-          assetEvent.id,
-          independentIdentifierAsset.id,
-          independentVersionAsset.id,
-        ],
-      );
-    });
-
-    test('resolves assets for multiple releases in one request', () async {
-      final firstAsset = networkEvent(
-        softwareAssetKind,
-        [
-          ['i', 'com.example.app'],
-          ['version', '1.0.0'],
-          ['m', androidPackageMimeType],
-          ['x', hash],
-          ['version_code', '10'],
-          ['apk_certificate_hash', certificate],
-        ],
-        createdAt: 100,
-      );
-      final secondAsset = networkEvent(
-        softwareAssetKind,
-        [
-          ['i', 'com.example.app'],
-          ['version', '2.0.0'],
-          ['m', androidPackageMimeType],
-          ['x', hash],
-          ['version_code', '20'],
-          ['apk_certificate_hash', certificate],
-        ],
-        createdAt: 200,
-      );
-      final firstRelease = SoftwareRelease.fromEvent(
-        event(
-          softwareReleaseKind,
-          [
-            ['i', 'com.example.app'],
-            ['version', '1.0.0'],
-            ['d', 'com.example.app@1.0.0'],
-            ['c', 'main'],
-            ['e', firstAsset.id, relay.url],
-          ],
-          id: 'release-1',
-        ),
-      );
-      final secondRelease = SoftwareRelease.fromEvent(
-        event(
-          softwareReleaseKind,
-          [
+        ]);
+        final release = SoftwareRelease.fromEvent(
+          event(softwareReleaseKind, [
             ['i', 'com.example.app'],
             ['version', '2.0.0'],
             ['d', 'com.example.app@2.0.0'],
             ['c', 'main'],
-            ['e', secondAsset.id, relay.url],
-          ],
-          id: 'release-2',
-        ),
+            ['e', assetEvent.id, relay.url],
+            ['e', independentIdentifierAsset.id, relay.url],
+            ['e', independentVersionAsset.id, relay.url],
+          ], id: 'release'),
+        );
+        relay.textNotes = {
+          Bip340.generatePrivateKey(): assetEvent,
+          Bip340.generatePrivateKey(): independentIdentifierAsset,
+          Bip340.generatePrivateKey(): independentVersionAsset,
+        };
+
+        final assets = await ndk.software.resolveAssets(
+          release,
+          relays: [relay.url],
+        );
+        expect(assets.map((asset) => asset.event.id), [
+          assetEvent.id,
+          independentIdentifierAsset.id,
+          independentVersionAsset.id,
+        ]);
+      },
+    );
+
+    test('resolves assets for multiple releases in one request', () async {
+      final firstAsset = networkEvent(softwareAssetKind, [
+        ['i', 'com.example.app'],
+        ['version', '1.0.0'],
+        ['m', androidPackageMimeType],
+        ['x', hash],
+        ['version_code', '10'],
+        ['apk_certificate_hash', certificate],
+      ], createdAt: 100);
+      final secondAsset = networkEvent(softwareAssetKind, [
+        ['i', 'com.example.app'],
+        ['version', '2.0.0'],
+        ['m', androidPackageMimeType],
+        ['x', hash],
+        ['version_code', '20'],
+        ['apk_certificate_hash', certificate],
+      ], createdAt: 200);
+      final firstRelease = SoftwareRelease.fromEvent(
+        event(softwareReleaseKind, [
+          ['i', 'com.example.app'],
+          ['version', '1.0.0'],
+          ['d', 'com.example.app@1.0.0'],
+          ['c', 'main'],
+          ['e', firstAsset.id, relay.url],
+        ], id: 'release-1'),
+      );
+      final secondRelease = SoftwareRelease.fromEvent(
+        event(softwareReleaseKind, [
+          ['i', 'com.example.app'],
+          ['version', '2.0.0'],
+          ['d', 'com.example.app@2.0.0'],
+          ['c', 'main'],
+          ['e', secondAsset.id, relay.url],
+        ], id: 'release-2'),
       );
       relay.textNotes = {
         Bip340.generatePrivateKey(): firstAsset,
@@ -602,14 +566,8 @@ void main() {
         relays: [relay.url],
       );
 
-      expect(
-        assets[firstRelease.event.id]?.single.event.id,
-        firstAsset.id,
-      );
-      expect(
-        assets[secondRelease.event.id]?.single.event.id,
-        secondAsset.id,
-      );
+      expect(assets[firstRelease.event.id]?.single.event.id, firstAsset.id);
+      expect(assets[secondRelease.event.id]?.single.event.id, secondAsset.id);
       expect(relay.totalRequestedSubscriptionCount - requestsBefore, 1);
     });
   });

@@ -3,6 +3,300 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-10-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.10.1`](#ndk---v0101)
+ - [`ndk_flutter` - `v0.10.1`](#ndk_flutter---v0101)
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.2.0`](#ndk_drift---v020)
+ - [`ndk_objectbox` - `v0.3.0`](#ndk_objectbox---v030)
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `ndk` - `v0.10.1`
+ - `ndk_drift` - `v0.2.0`
+ - `ndk_flutter` - `v0.10.1`
+ - `ndk_objectbox` - `v0.3.0`
+
+---
+
+#### `ndk` - `v0.10.1`
+
+#### `ndk_flutter` - `v0.10.1`
+
+#### `ndk_drift` - `v0.2.0`
+
+#### `ndk_objectbox` - `v0.3.0`
+
+
+## 2026-10-01
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.1-dev.1`](#ndk---v0101-dev1)
+ - [`ndk_objectbox` - `v0.3.0-dev.1`](#ndk_objectbox---v030-dev1)
+ - [`ndk_drift` - `v0.2.0-dev.1`](#ndk_drift---v020-dev1)
+ - [`ndk_flutter` - `v0.10.1-dev.1`](#ndk_flutter---v0101-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.3.0-dev.1`
+ - `ndk_drift` - `v0.2.0-dev.1`
+ - `ndk_flutter` - `v0.10.1-dev.1`
+
+---
+
+#### `ndk` - `v0.10.1-dev.1`
+
+ - **FIX**: parse the BUD-08 nip94 field as a tag array.
+
+
+## 2026-10-01
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk_drift` - `v0.2.0-dev.0`](#ndk_drift---v020-dev0)
+ - [`ndk_objectbox` - `v0.3.0-dev.0`](#ndk_objectbox---v030-dev0)
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0-dev.0+1`](#ndk---v0100-dev01)
+ - [`ndk_flutter` - `v0.10.0-dev.0+1`](#ndk_flutter---v0100-dev01)
+
+---
+
+#### `ndk_drift` - `v0.2.0-dev.0`
+
+ - **REFACTOR**: rename RelayAuth to AuthPolicy.
+ - **PERF**: index the drift events table by pub_key, kind and created_at.
+ - **FIX**(release): use unpublished Drift version.
+ - **FIX**: attach a broadcast auth policy to the relay target, not the event.
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FEAT**: let a broadcast say which identity it may be attributed to.
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
+#### `ndk_objectbox` - `v0.3.0-dev.0`
+
+ - **FIX**: reduce background polling and cache work.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
+#### `ndk` - `v0.10.0-dev.0+1`
+
+ - **REFACTOR**: inject RelayInfo HTTP fetch via RelayInfoRepo and HttpRequestDS.
+ - **FIX**: bump the rust toolchain to 1.98.1 for macOS 27.
+ - **FIX**: persist background delivery retry results.
+ - **FIX**: stop reconnecting for stale RPC delivery.
+ - **FIX**: abort stalled relay HTTP requests.
+ - **FIX**: close transports before replacement.
+ - **FIX**: release idle wallet and abandoned sockets.
+
+#### `ndk_flutter` - `v0.10.0-dev.0+1`
+
+ - **FIX**: allow flutter_secure_storage 11.
+
+
+## 2026-09-30
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk_drift` - `v0.1.1`](#ndk_drift---v011)
+ - [`ndk_objectbox` - `v0.2.12`](#ndk_objectbox---v0212)
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0`](#ndk---v0100)
+ - [`ndk_flutter` - `v0.10.0`](#ndk_flutter---v0100)
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `ndk` - `v0.10.0`
+ - `ndk_drift` - `v0.1.1`
+ - `ndk_flutter` - `v0.10.0`
+ - `ndk_objectbox` - `v0.2.12`
+
+---
+
+#### `ndk_drift` - `v0.1.1`
+
+#### `ndk_objectbox` - `v0.2.12`
+
+#### `ndk` - `v0.10.0`
+
+#### `ndk_flutter` - `v0.10.0`
+
+
+## 2026-09-28
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0-dev.9`](#ndk---v0100-dev9)
+ - [`ndk_objectbox` - `v0.2.12-dev.18`](#ndk_objectbox---v0212-dev18)
+ - [`ndk_drift` - `v0.1.1-dev.22`](#ndk_drift---v011-dev22)
+ - [`ndk_flutter` - `v0.10.0-dev.10`](#ndk_flutter---v0100-dev10)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.18`
+ - `ndk_drift` - `v0.1.1-dev.22`
+ - `ndk_flutter` - `v0.10.0-dev.10`
+
+---
+
+#### `ndk` - `v0.10.0-dev.9`
+
+ - **FIX**: don't hold NIP-46 responses until the slowest relay acks.
+
+
+## 2026-09-27
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.21`](#ndk_drift---v011-dev21)
+
+---
+
+#### `ndk_drift` - `v0.1.1-dev.21`
+
+ - **PERF**: index the drift events table by pub_key, kind and created_at.
+
+
+## 2026-09-26
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0-dev.8`](#ndk---v0100-dev8)
+ - [`ndk_flutter` - `v0.10.0-dev.9`](#ndk_flutter---v0100-dev9)
+ - [`ndk_objectbox` - `v0.2.12-dev.17`](#ndk_objectbox---v0212-dev17)
+ - [`ndk_drift` - `v0.1.1-dev.20`](#ndk_drift---v011-dev20)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_drift` - `v0.1.1-dev.20`
+
+---
+
+#### `ndk` - `v0.10.0-dev.8`
+
+ - **FIX**: reduce background polling and cache work.
+ - **FIX**(nwc): expose hold settle deadline.
+ - **FIX**: seedStore.write() first.
+ - **FIX**: carry seed language.
+ - **FIX**: normalize and await cashu seed phrase save.
+
+#### `ndk_flutter` - `v0.10.0-dev.9`
+
+ - **FIX**: seedStore.write() first.
+ - **FIX**: normalize and await cashu seed phrase save.
+ - **FEAT**: set cashu seed.
+ - **FEAT**: restore quote ui.
+
+#### `ndk_objectbox` - `v0.2.12-dev.17`
+
+ - **FIX**: reduce background polling and cache work.
+
+
+## 2026-09-25
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.10.0-dev.7`](#ndk---v0100-dev7)
+
+Packages with other changes:
+
+ - [`ndk_objectbox` - `v0.2.12-dev.16`](#ndk_objectbox---v0212-dev16)
+ - [`ndk_drift` - `v0.1.1-dev.19`](#ndk_drift---v011-dev19)
+ - [`ndk_flutter` - `v0.10.0-dev.8`](#ndk_flutter---v0100-dev8)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.16`
+ - `ndk_drift` - `v0.1.1-dev.19`
+ - `ndk_flutter` - `v0.10.0-dev.8`
+
+---
+
+#### `ndk` - `v0.10.0-dev.7`
+
+ - **REFACTOR**: let the blossom repository authorise on refusal.
+ - **REFACTOR**: surface the http status code on every request failure.
+ - **FIX**: stay anonymous with each blossom server until it refuses.
+ - **FIX**: use hex secret in nostrconnect URI.
+ - **FIX**: keep an anonymous blossom report anonymous.
+ - **FIX**: carry the blossom authorization through every request it makes.
+ - **FEAT**: pass an auth policy through the files facade.
+ - **FEAT**: let a blossom operation say which identity it may reveal.
+ - **FEAT**: add the blossom authorization, the repository half of a policy.
+ - **BREAKING** **FEAT**: drop blossom useAuth and customSigner in favour of auth.
+
+
 ## 2026-09-23
 
 ### Changes

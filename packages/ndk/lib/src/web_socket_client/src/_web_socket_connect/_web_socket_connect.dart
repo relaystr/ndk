@@ -6,6 +6,7 @@ Future<Stream<dynamic>> connect(
   Duration? pingInterval,
   String? binaryType,
   bool compressionEnabled = true,
+  Future<void>? abortTrigger,
 }) {
   throw UnsupportedError('No implementation of the api provided');
 }

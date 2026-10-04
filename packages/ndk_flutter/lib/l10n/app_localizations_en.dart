@@ -1711,4 +1711,126 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get balanceRefreshed => 'Balance refreshed';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Recover Mint Quote';
+
+  @override
+  String get recoverQuote => 'Recover quote';
+
+  @override
+  String get enterQuoteId =>
+      'Enter the mint quote ID to recover. The lock key is recovered from your seed phrase.';
+
+  @override
+  String get quoteId => 'Quote ID';
+
+  @override
+  String get quoteIdHint => 'Paste the quote ID here';
+
+  @override
+  String get pleaseEnterQuoteId => 'Please enter a quote ID';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'Fetching quote from mint...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'Recovering lock key from your seed...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint => 'Completing mint...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Lock key recovered (derivation counter $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Quote recovered and funds added to your balance';
+
+  @override
+  String get quoteRecoveryFailed => 'Quote recovery failed';
+
+  @override
+  String get restoreFundsFromMint => 'Restore funds from mint';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Restore Funds from Mint';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Scans the mint for proofs derived from your seed and restores them to this wallet.';
+
+  @override
+  String get startRestore => 'Start restore';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets => 'Fetching mint keysets...';
+
+  @override
+  String get cashuRestoreStageScanning => 'Scanning mint for your funds...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return 'Scanned $keysets keyset(s) · $proofs proof(s) found';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Restore complete';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Also recovers pending mint quotes';
+
+  @override
+  String restoredFromMint(int count) {
+    return 'Restored $count proofs from the mint';
+  }
+
+  @override
+  String get restoreFailed => 'Restore failed';
+
+  @override
+  String get restoreFromBackup => 'Restore from backup';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Restore & backup';
+
+  @override
+  String get cashuSeedPhraseOption => 'Set seed phrase';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Cashu seed phrase';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Seed phrase';
+
+  @override
+  String get cashuSeedPhraseHint => 'Paste your seed phrase here';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'I understand this changes the seed for all Cashu wallets';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed => 'Could not update the seed phrase';
 }

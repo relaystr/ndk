@@ -21,3 +21,6 @@ export 'app_update/n_release_engagement.dart';
 export 'app_update/update_installer.dart';
 export 'wallets/n_lnbits_icon.dart';
 export 'wallets/n_wallet_input_dialog.dart';
+export 'wallets/cashu_quote_recovery.dart';
+export 'wallets/cashu_restore.dart';
+export 'wallets/cashu_seed_phrase.dart';

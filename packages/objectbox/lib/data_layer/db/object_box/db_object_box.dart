@@ -85,8 +85,10 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   Future<Nip01Event?> loadEvent(String id) async {
     await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
-    final existingEvent =
-        eventBox.query(DbNip01Event_.nostrId.equals(id)).build().findFirst();
+    final existingEvent = eventBox
+        .query(DbNip01Event_.nostrId.equals(id))
+        .build()
+        .findFirst();
     if (existingEvent == null) {
       return null;
     }
@@ -125,8 +127,9 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     if (stored == null) {
       return [];
     }
-    final sources =
-        (jsonDecode(stored) as List).map((entry) => entry.toString()).toSet();
+    final sources = (jsonDecode(stored) as List)
+        .map((entry) => entry.toString())
+        .toSet();
     _eventSources[eventId] = sources;
     final sortedSources = sources.toList()..sort();
     return sortedSources;
@@ -200,8 +203,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
 
     var filtered = records.where((record) {
       return status == null || record.status == status;
-    }).toList()
-      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    }).toList()..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     if (limit != null && limit < filtered.length) {
       filtered = filtered.take(limit).toList();
@@ -290,29 +292,29 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       ..clear()
       ..addEntries(targets.map((target) => MapEntry(target.key, target)));
 
-    var filtered = targets.where((target) {
-      if (eventId != null && target.eventId != eventId) {
-        return false;
-      }
-      if (relayUrl != null && target.relayUrl != relayUrl) {
-        return false;
-      }
-      if (state != null && target.state != state) {
-        return false;
-      }
-      if (excludeAcked && target.state == RelayDeliveryState.acked) {
-        return false;
-      }
-      return true;
-    }).toList()
-      ..sort((a, b) {
-        final retryA = a.nextRetryAt ?? 0;
-        final retryB = b.nextRetryAt ?? 0;
-        if (retryA != retryB) {
-          return retryA.compareTo(retryB);
-        }
-        return a.key.compareTo(b.key);
-      });
+    var filtered =
+        targets.where((target) {
+          if (eventId != null && target.eventId != eventId) {
+            return false;
+          }
+          if (relayUrl != null && target.relayUrl != relayUrl) {
+            return false;
+          }
+          if (state != null && target.state != state) {
+            return false;
+          }
+          if (excludeAcked && target.state == RelayDeliveryState.acked) {
+            return false;
+          }
+          return true;
+        }).toList()..sort((a, b) {
+          final retryA = a.nextRetryAt ?? 0;
+          final retryB = b.nextRetryAt ?? 0;
+          if (retryA != retryB) {
+            return retryA.compareTo(retryB);
+          }
+          return a.key.compareTo(b.key);
+        });
 
     if (limit != null && limit < filtered.length) {
       filtered = filtered.take(limit).toList();
@@ -545,8 +547,9 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     // Add ids filter
     if (ids != null && ids.isNotEmpty) {
       Condition<DbNip01Event> idsCondition = DbNip01Event_.nostrId.oneOf(ids);
-      condition =
-          (condition == null) ? idsCondition : condition.and(idsCondition);
+      condition = (condition == null)
+          ? idsCondition
+          : condition.and(idsCondition);
     }
 
     // Add pubKeys filter
@@ -562,35 +565,46 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     // Add kinds filter
     if (kinds != null && kinds.isNotEmpty) {
       Condition<DbNip01Event> kindsCondition = DbNip01Event_.kind.oneOf(kinds);
-      condition =
-          (condition == null) ? kindsCondition : condition.and(kindsCondition);
+      condition = (condition == null)
+          ? kindsCondition
+          : condition.and(kindsCondition);
     }
 
     // Add since filter
     if (since != null) {
-      Condition<DbNip01Event> sinceCondition =
-          DbNip01Event_.createdAt.greaterOrEqual(since);
-      condition =
-          (condition == null) ? sinceCondition : condition.and(sinceCondition);
+      Condition<DbNip01Event> sinceCondition = DbNip01Event_.createdAt
+          .greaterOrEqual(since);
+      condition = (condition == null)
+          ? sinceCondition
+          : condition.and(sinceCondition);
     }
 
     // Add until filter
     if (until != null) {
-      Condition<DbNip01Event> untilCondition =
-          DbNip01Event_.createdAt.lessOrEqual(until);
-      condition =
-          (condition == null) ? untilCondition : condition.and(untilCondition);
+      Condition<DbNip01Event> untilCondition = DbNip01Event_.createdAt
+          .lessOrEqual(until);
+      condition = (condition == null)
+          ? untilCondition
+          : condition.and(untilCondition);
     }
 
     if (tags != null && tags.isNotEmpty) {
-      final matchingEventIds = _findEventIdsByTags(eventBox, tags);
-      if (matchingEventIds.isEmpty) {
-        return [];
+      for (final entry in tags.entries) {
+        final key = entry.key.trim().toLowerCase();
+        final values = entry.value
+            .map((v) => v.trim().toLowerCase())
+            .where((v) => v.isNotEmpty)
+            .toSet();
+        if (key.isEmpty || values.isEmpty) return [];
+        Condition<DbNip01Event>? tagCondition;
+        for (final value in values) {
+          final match = DbNip01Event_.tagsIndex.containsElement('$key:$value');
+          tagCondition = tagCondition == null ? match : tagCondition.or(match);
+        }
+        condition = condition == null
+            ? tagCondition
+            : condition.and(tagCondition!);
       }
-
-      final tagCondition = DbNip01Event_.dbId.oneOf(matchingEventIds.toList());
-      condition =
-          (condition == null) ? tagCondition : condition.and(tagCondition);
     }
 
     // Create and build the query
@@ -606,9 +620,12 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
 
     // Build and execute the query
     final query = queryBuilder.build();
-    final results = query.find();
-
-    var events = results.map((dbEvent) => dbEvent.toNdk()).toList();
+    late List<Nip01Event> events;
+    try {
+      events = query.find().map((dbEvent) => dbEvent.toNdk()).toList();
+    } finally {
+      query.close();
+    }
 
     if (limit != null && limit > 0 && events.length > limit) {
       events = events.take(limit).toList();
@@ -655,8 +672,10 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   Future<void> removeAllEventsByPubKey(String pubKey) async {
     await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
-    final events =
-        eventBox.query(DbNip01Event_.pubKey.equals(pubKey)).build().find();
+    final events = eventBox
+        .query(DbNip01Event_.pubKey.equals(pubKey))
+        .build()
+        .find();
     final eventIds = events.map((e) => e.nostrId).toList();
     eventBox.removeMany(events.map((e) => e.dbId).toList());
     _removeEventSidecarsByIds(eventIds);
@@ -700,8 +719,9 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     await dbRdy;
     return _objectBox.store.runInTransaction(TxMode.write, () {
       final eventBox = _objectBox.store.box<DbNip01Event>();
-      final query =
-          eventBox.query(DbNip01Event_.nostrId.equals(event.id)).build();
+      final query = eventBox
+          .query(DbNip01Event_.nostrId.equals(event.id))
+          .build();
       try {
         if (query.findFirst() != null) {
           return false;
@@ -904,8 +924,10 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   Future<void> removeEvent(String id) async {
     await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
-    final existingEvent =
-        eventBox.query(DbNip01Event_.nostrId.equals(id)).build().findFirst();
+    final existingEvent = eventBox
+        .query(DbNip01Event_.nostrId.equals(id))
+        .build()
+        .findFirst();
     if (existingEvent != null) {
       eventBox.remove(existingEvent.dbId);
     }
@@ -973,10 +995,10 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     }
 
     return plan.toResult().copyWith(
-          removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
-          removedTerminalFailedDeliveries:
-              deliverySweep.removedTerminalFailedDeliveries,
-        );
+      removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
+      removedTerminalFailedDeliveries:
+          deliverySweep.removedTerminalFailedDeliveries,
+    );
   }
 
   /// Removes only the delivery record and relay delivery targets for
@@ -1272,8 +1294,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       return metadata.matchesSearch(normalizedSearch) ||
           (metadata.about?.toLowerCase().contains(normalizedSearch) ?? false) ||
           (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
-    }).toList()
-      ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
+    }).toList()..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
 
     return matches.take(limit);
   }
@@ -1359,7 +1380,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
 
   @override
   Future<List<FilterFetchedRangeRecord>>
-      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
+  loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
     await dbRdy;
     final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
     final results = box
@@ -1521,8 +1542,8 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   @override
   Future<void> saveKeyset(CahsuKeyset keyset) async {
     _objectBox.store.box<DbWalletCahsuKeyset>().put(
-          DbWalletCahsuKeyset.fromNdk(keyset),
-        );
+      DbWalletCahsuKeyset.fromNdk(keyset),
+    );
     return Future.value();
   }
 
@@ -1539,13 +1560,15 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     store.runInTransaction(TxMode.write, () {
       final box = store.box<DbWalletCashuProof>();
 
-      final dbTokens =
-          proofs.map((t) => DbWalletCashuProof.fromNdk(t)).toList();
+      final dbTokens = proofs
+          .map((t) => DbWalletCashuProof.fromNdk(t))
+          .toList();
 
       // find existing proofs by secret
       final secretsToCheck = dbTokens.map((t) => t.secret).toList();
-      final query =
-          box.query(DbWalletCashuProof_.secret.oneOf(secretsToCheck)).build();
+      final query = box
+          .query(DbWalletCashuProof_.secret.oneOf(secretsToCheck))
+          .build();
 
       try {
         final existing = query.find();
@@ -1580,15 +1603,17 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     }
     if (unit != null && unit.isNotEmpty) {
       final unitCondition = DbWalletTransaction_.unit.equals(unit);
-      condition =
-          (condition == null) ? unitCondition : condition.and(unitCondition);
+      condition = (condition == null)
+          ? unitCondition
+          : condition.and(unitCondition);
     }
     if (walletType != null) {
       final typeCondition = DbWalletTransaction_.walletType.equals(
         walletType.toString(),
       );
-      condition =
-          (condition == null) ? typeCondition : condition.and(typeCondition);
+      condition = (condition == null)
+          ? typeCondition
+          : condition.and(typeCondition);
     }
     QueryBuilder<DbWalletTransaction> queryBuilder;
     if (condition != null) {
@@ -1625,14 +1650,16 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
 
     store.runInTransaction(TxMode.write, () {
       final box = store.box<DbWalletTransaction>();
-      final dbTransactions =
-          transactions.map((t) => DbWalletTransaction.fromNdk(t)).toList();
+      final dbTransactions = transactions
+          .map((t) => DbWalletTransaction.fromNdk(t))
+          .toList();
 
       // find existing transactions by id
       final idsToCheck = dbTransactions.map((t) => t.id).toList();
 
-      final query =
-          box.query(DbWalletTransaction_.id.oneOf(idsToCheck)).build();
+      final query = box
+          .query(DbWalletTransaction_.id.oneOf(idsToCheck))
+          .build();
 
       try {
         final existing = query.find();
@@ -1680,14 +1707,19 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     await dbRdy;
 
     return Future.value(
-      _objectBox.store.box<DbWallet>().getAll().map((dbWallet) {
-        return dbWallet.toNdk();
-      }).where((wallet) {
-        if (ids == null || ids.isEmpty) {
-          return true; // return all wallets
-        }
-        return ids.contains(wallet.id);
-      }).toList(),
+      _objectBox.store
+          .box<DbWallet>()
+          .getAll()
+          .map((dbWallet) {
+            return dbWallet.toNdk();
+          })
+          .where((wallet) {
+            if (ids == null || ids.isEmpty) {
+              return true; // return all wallets
+            }
+            return ids.contains(wallet.id);
+          })
+          .toList(),
     );
   }
 

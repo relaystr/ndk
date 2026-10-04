@@ -81,7 +81,7 @@ void main() {
           viewerPubKey: 'viewer-pubkey',
           scheme: DecryptedPayloadScheme.nip44,
           decrypt: () async => throw StateError('boom'),
-          classifyFailure: (_, __) => DecryptedPayloadStatus.permanentFailure,
+          classifyFailure: (_, _) => DecryptedPayloadStatus.permanentFailure,
         ),
         throwsA(isA<StateError>()),
       );

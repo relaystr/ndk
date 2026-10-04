@@ -41,6 +41,20 @@ class _RelayPaginationState {
 class Requests {
   static const int _persistedEventIdsMaxSize = 20000;
 
+  /// NIP-01 caps subscription ids at 64 chars. [name] only reaches the relay
+  /// in [_debugMode], so production ids do not fingerprint NDK (#716).
+  String _requestId(String name) {
+    if (!_debugMode) return Helpers.getSecureRandomHex(16);
+    final prefix = name.length > 32 ? name.substring(0, 32) : name;
+    return '$prefix-${Helpers.getSecureRandomHex(8)}';
+  }
+
+  static void _checkExplicitId(String? id) {
+    if (id == null) return;
+    if (id.isNotEmpty && id.length <= 64) return;
+    throw ArgumentError.value(id, 'id', 'must be 1 to 64 characters long');
+  }
+
   final GlobalState _globalState;
   final CacheRead _cacheRead;
   final CacheManager _cacheManager;
@@ -49,6 +63,7 @@ class Requests {
   final EventVerifier _eventVerifier;
   final List<EventFilter> _eventOutFilters;
   final Duration _defaultQueryTimeout;
+  final bool _debugMode;
   FetchedRanges? _fetchedRanges;
 
   /// ids of events whose signature was already checked by this [Ndk]
@@ -71,14 +86,16 @@ class Requests {
     required EventVerifier eventVerifier,
     required List<EventFilter> eventOutFilters,
     required Duration defaultQueryTimeout,
-  })  : _engine = networkEngine,
-        _relayManager = relayManager,
-        _cacheManager = cacheManager,
-        _cacheRead = cacheRead,
-        _globalState = globalState,
-        _eventVerifier = eventVerifier,
-        _eventOutFilters = eventOutFilters,
-        _defaultQueryTimeout = defaultQueryTimeout;
+    bool debugMode = false,
+  }) : _engine = networkEngine,
+       _relayManager = relayManager,
+       _cacheManager = cacheManager,
+       _cacheRead = cacheRead,
+       _globalState = globalState,
+       _eventVerifier = eventVerifier,
+       _eventOutFilters = eventOutFilters,
+       _defaultQueryTimeout = defaultQueryTimeout,
+       _debugMode = debugMode;
 
   /// Clears signature-verification reuse state owned by this NDK instance.
   void clearVerifiedEventCache() => _verifiedEventIds.clear();
@@ -129,11 +146,9 @@ class Requests {
     if (existingPersistence != null) {
       await existingPersistence;
     } else if (persistedEventIds.add(event.id)) {
-      final persistence = Future<void>.sync(
-        () async {
-          await _cacheManager.saveEventIfAbsent(event);
-        },
-      );
+      final persistence = Future<void>.sync(() async {
+        await _cacheManager.saveEventIfAbsent(event);
+      });
       persistenceInFlight[event.id] = persistence;
       try {
         await persistence;
@@ -170,7 +185,8 @@ class Requests {
   ///
   /// [filter] The filter to apply to the query \
   /// [filters] @deprecated A list of filters to apply to the query. Use [filter] instead \
-  /// [name] An optional name used as an ID prefix \
+  /// [name] An optional name for logging, also prefixed to the ID (first 32 characters) when [NdkConfig.debugMode] is on \
+  /// [id] An optional ID sent as the NIP-01 subscription id (1 to 64 characters), overriding name; not allowed with [paginate] \
   /// [relaySet] An optional set of relays to query \
   /// [cacheRead] Whether to read from cache \
   /// [cacheWrite] Whether to write results to cache \
@@ -191,6 +207,7 @@ class Requests {
     )
     List<Filter>? filters,
     String name = '',
+    String? id,
     RelaySet? relaySet,
     bool cacheRead = true,
     bool cacheWrite = true,
@@ -208,6 +225,11 @@ class Requests {
   }) {
     if (filter == null && (filters == null || filters.isEmpty)) {
       throw ArgumentError('Either filter or filters must be provided');
+    }
+    _checkExplicitId(id);
+    if (id != null && paginate) {
+      // each page sends its own REQ, so there is no single id to give it
+      throw ArgumentError('id cannot be combined with paginate');
     }
     final effectiveFilters = filter != null ? [filter] : filters!;
     final effectiveAuth =
@@ -232,7 +254,7 @@ class Requests {
 
     return requestNostrEvent(
       NdkRequest.query(
-        '$name-${Helpers.getRandomString(10)}',
+        id ?? _requestId(name),
         name: name,
         filters: effectiveFilters.map((e) => e.clone()).toList(),
         relaySet: relaySet,
@@ -253,8 +275,8 @@ class Requests {
   ///
   /// [filter] The filter to apply to the subscription \
   /// [filters] @deprecated A list of filters to apply to the subscription. Use [filter] instead \
-  /// [name] An optional name for the subscription \
-  /// [id] An optional ID for the subscription, overriding name \
+  /// [name] An optional name for logging, also prefixed to the ID (first 32 characters) when [NdkConfig.debugMode] is on \
+  /// [id] An optional ID sent as the NIP-01 subscription id (1 to 64 characters), overriding name \
   /// [relaySet] An optional set of relays to subscribe to \
   /// [cacheRead] Whether to read from cache \
   /// [cacheWrite] Whether to write results to cache \
@@ -286,12 +308,13 @@ class Requests {
     if (filter == null && (filters == null || filters.isEmpty)) {
       throw ArgumentError('Either filter or filters must be provided');
     }
+    _checkExplicitId(id);
     final effectiveFilters = filter != null ? [filter] : filters!;
     final effectiveAuth =
         auth ?? AuthPolicy.fromDeprecatedAccounts(authenticateAs);
     return requestNostrEvent(
       NdkRequest.subscription(
-        id ?? "$name-${Helpers.getRandomString(10)}",
+        id ?? _requestId(name),
         name: name,
         filters: effectiveFilters.map((e) => e.clone()).toList(),
         relaySet: relaySet,
@@ -325,7 +348,8 @@ class Requests {
       final request = state.requests[relay.key]!;
       // a request the relay ended itself, with a CLOSED or with the EOSE of a
       // query, is already closed on its side
-      final endedOnRelay = request.receivedClosed ||
+      final endedOnRelay =
+          request.receivedClosed ||
           (state.request.closeOnEOSE && request.receivedEOSE);
       if (endedOnRelay) {
         continue;
@@ -498,7 +522,7 @@ class Requests {
     int? desiredCoverage,
     AuthPolicy? auth,
   }) {
-    final requestId = '$name-paginated-${Helpers.getRandomString(10)}';
+    final requestId = _requestId(name);
     final aggregatedController = ReplaySubject<Nip01Event>();
     final seenEventIds = <String>{};
 
@@ -535,7 +559,7 @@ class Requests {
       // First request to discover relays and get initial events
       final initialResponse = requestNostrEvent(
         NdkRequest.query(
-          '$name-page-initial-${Helpers.getRandomString(5)}',
+          _requestId(name),
           name: name,
           filters: [filter.clone()],
           relaySet: relaySet,
@@ -614,7 +638,7 @@ class Requests {
           // `until` of a single relay
           final response = requestNostrEvent(
             NdkRequest.query(
-              '$name-page-${Helpers.getRandomString(5)}',
+              _requestId(name),
               name: name,
               filters: [pageFilter],
               cacheRead: false, // Don't read from cache for subsequent pages

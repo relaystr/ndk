@@ -41,7 +41,7 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
   NdkCacheDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration {
@@ -86,6 +86,10 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
             relayDeliveryTargetsTable,
             relayDeliveryTargetsTable.authCanonical,
           );
+        }
+        if (from < 8) {
+          await m.createIndex(eventsPubKeyKindCreatedAt);
+          await m.createIndex(eventsKindCreatedAt);
         }
       },
     );
