@@ -729,7 +729,8 @@ class Blossom {
       case AuthPolicyAllow(:final account):
         // allow never promised a signature, so an account that cannot give one
         // reports anonymously rather than as whoever happens to be logged in
-        signer = account.signer.canSign() &&
+        signer =
+            account.signer.canSign() &&
                 await _consent(serverUrl, account.pubkey)
             ? account.signer
             : _throwawaySigner();

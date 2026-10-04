@@ -116,8 +116,8 @@ class BlossomAuthorizationOnRefusal extends BlossomAuthorization {
   BlossomAuthorizationOnRefusal(
     BlossomAuthorizationSigner sign, {
     BlossomAuthorizationConsent? consent,
-  })  : _sign = sign,
-        _consent = consent;
+  }) : _sign = sign,
+       _consent = consent;
 
   @override
   Nip01Event? get upfront => null;

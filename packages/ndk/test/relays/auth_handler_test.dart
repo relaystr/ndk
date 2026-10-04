@@ -28,13 +28,13 @@ Nip01Event _textNote(KeyPair key, String content) =>
     );
 
 Account _signable(KeyPair key) => Account(
-      pubkey: key.publicKey,
-      type: AccountType.privateKey,
-      signer: Bip340EventSigner(
-        privateKey: key.privateKey!,
-        publicKey: key.publicKey,
-      ),
-    );
+  pubkey: key.publicKey,
+  type: AccountType.privateKey,
+  signer: Bip340EventSigner(
+    privateKey: key.privateKey!,
+    publicKey: key.publicKey,
+  ),
+);
 
 Filter _notesOf(KeyPair key) =>
     Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key.publicKey]);
@@ -68,18 +68,21 @@ void authHandlerTests(NdkEngine engine) {
     }
 
     Ndk ndkFor(List<MockRelay> relays, _Handler? handler) => Ndk(
-          NdkConfig(
-            eventVerifier: MockEventVerifier(),
-            cache: MemCacheManager(),
-            bootstrapRelays: [for (final relay in relays) relay.url],
-            engine: engine,
-            authHandler: handler?.call,
-          ),
-        );
+      NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        bootstrapRelays: [for (final relay in relays) relay.url],
+        engine: engine,
+        authHandler: handler?.call,
+      ),
+    );
 
-    Iterable<RelayConnectionKey> boundKeys(Ndk ndk, String url) =>
-        ndk.relays.globalState.relays.keys
-            .where((k) => !k.isAnonymous && k.url == url);
+    Iterable<RelayConnectionKey> boundKeys(Ndk ndk, String url) => ndk
+        .relays
+        .globalState
+        .relays
+        .keys
+        .where((k) => !k.isAnonymous && k.url == url);
 
     test('require goes out only where the handler agrees', () async {
       final relays = [await authRelay(), await authRelay(), await authRelay()];
@@ -177,35 +180,36 @@ void authHandlerTests(NdkEngine engine) {
       await relay.stopServer();
     });
 
-    test('without auth the handler is asked about the logged account',
-        () async {
-      final relay = await authRelay();
-      final handler = _Handler((_) => false);
-      final ndk = ndkFor([relay], handler);
-      ndk.accounts.loginPrivateKey(
-        pubkey: key.publicKey,
-        privkey: key.privateKey!,
-      );
+    test(
+      'without auth the handler is asked about the logged account',
+      () async {
+        final relay = await authRelay();
+        final handler = _Handler((_) => false);
+        final ndk = ndkFor([relay], handler);
+        ndk.accounts.loginPrivateKey(
+          pubkey: key.publicKey,
+          privkey: key.privateKey!,
+        );
 
-      final response = ndk.requests.query(
-        filter: _notesOf(key),
-        explicitRelays: [relay.url],
-      );
+        final response = ndk.requests.query(
+          filter: _notesOf(key),
+          explicitRelays: [relay.url],
+        );
 
-      expect(await response.future, isEmpty);
-      expect(handler.asked, [(relay.url, key.publicKey)]);
-      expect(relay.receivedAuths, 0);
+        expect(await response.future, isEmpty);
+        expect(handler.asked, [(relay.url, key.publicKey)]);
+        expect(relay.receivedAuths, 0);
 
-      await ndk.destroy();
-      await relay.stopServer();
-    });
+        await ndk.destroy();
+        await relay.stopServer();
+      },
+    );
 
     test('a handler that throws is a refusal', () async {
       final relay = await authRelay();
-      final ndk = ndkFor(
-        [relay],
-        _Handler((_) => throw StateError('no ui to ask')),
-      );
+      final ndk = ndkFor([
+        relay,
+      ], _Handler((_) => throw StateError('no ui to ask')));
 
       final response = ndk.requests.query(
         filter: _notesOf(key),
@@ -231,10 +235,10 @@ void authHandlerTests(NdkEngine engine) {
       final account = _signable(key);
 
       NdkResponse query() => ndk.requests.query(
-            filter: _notesOf(key),
-            explicitRelays: [relay.url],
-            auth: AuthPolicy.require(account),
-          );
+        filter: _notesOf(key),
+        explicitRelays: [relay.url],
+        auth: AuthPolicy.require(account),
+      );
 
       final concurrent = await Future.wait([query().future, query().future]);
       expect(concurrent, everyElement(isNotEmpty));
@@ -297,143 +301,151 @@ void authHandlerTests(NdkEngine engine) {
       await relay.stopServer();
     });
 
-    test('concurrent questions keep the timeout paused until the last',
-        () async {
-      final relays = [await authRelay(), await authRelay()];
-      final slow = relays.last;
-      final ndk = ndkFor(
-        relays,
-        _Handler((url) async {
-          if (url == slow.url) {
-            await Future.delayed(const Duration(milliseconds: 1500));
-          }
-          return true;
-        }),
-      );
-
-      const requestId = 'paused-until-last';
-      final response = ndk.requests.requestNostrEvent(
-        NdkRequest.query(
-          requestId,
-          filters: [_notesOf(key)],
-          explicitRelays: [for (final relay in relays) relay.url],
-          timeoutDuration: const Duration(seconds: 1),
-          auth: AuthPolicy.require(_signable(key)),
-        ),
-      );
-
-      await response.future;
-      expect(slow.connectionsThatRequested(requestId), 1);
-
-      await ndk.destroy();
-      for (final relay in relays) {
-        await relay.stopServer();
-      }
-    });
-
-    test('a request closed while the handler decides does not time out',
-        () async {
-      final relay = await authRelay();
-      final answer = Completer<bool>();
-      final handler = _Handler((_) => answer.future);
-      final ndk = ndkFor([relay], handler);
-
-      var timeouts = 0;
-      final response = ndk.requests.requestNostrEvent(
-        NdkRequest.subscription(
-          'closed-while-asking',
-          filters: [_notesOf(key)],
-          explicitRelays: [relay.url],
-          auth: AuthPolicy.require(_signable(key)),
-        )
-          ..timeoutDuration = const Duration(milliseconds: 300)
-          ..timeoutCallbackUserFacing = () => timeouts++,
-      );
-
-      await _waitUntil(
-        () => handler.asked.isNotEmpty,
-        reason: 'the handler was never asked',
-      );
-      await ndk.requests.closeSubscription(response.requestId);
-      answer.complete(true);
-      await Future.delayed(const Duration(milliseconds: 600));
-
-      expect(timeouts, 0);
-
-      await ndk.destroy();
-      await relay.stopServer();
-    });
-
-    test('waiting on the handler does not spend the broadcast timeout',
-        () async {
-      final relay = await authRelay(requireAuthForEvents: true);
-      final ndk = Ndk(
-        NdkConfig(
-          eventVerifier: MockEventVerifier(),
-          cache: MemCacheManager(),
-          bootstrapRelays: [relay.url],
-          engine: engine,
-          defaultBroadcastTimeout: const Duration(seconds: 1),
-          authHandler: (_, _) async {
-            await Future.delayed(const Duration(milliseconds: 1500));
+    test(
+      'concurrent questions keep the timeout paused until the last',
+      () async {
+        final relays = [await authRelay(), await authRelay()];
+        final slow = relays.last;
+        final ndk = ndkFor(
+          relays,
+          _Handler((url) async {
+            if (url == slow.url) {
+              await Future.delayed(const Duration(milliseconds: 1500));
+            }
             return true;
-          },
-        ),
-      );
+          }),
+        );
 
-      final result = await ndk.broadcast
-          .broadcast(
-            nostrEvent: _textNote(key, "slow consent"),
-            specificRelays: [relay.url],
+        const requestId = 'paused-until-last';
+        final response = ndk.requests.requestNostrEvent(
+          NdkRequest.query(
+            requestId,
+            filters: [_notesOf(key)],
+            explicitRelays: [for (final relay in relays) relay.url],
+            timeoutDuration: const Duration(seconds: 1),
             auth: AuthPolicy.require(_signable(key)),
-          )
-          .broadcastDoneFuture;
+          ),
+        );
 
-      expect(result.any((r) => r.broadcastSuccessful), isTrue);
+        await response.future;
+        expect(slow.connectionsThatRequested(requestId), 1);
 
-      await ndk.destroy();
-      await relay.stopServer();
-    });
+        await ndk.destroy();
+        for (final relay in relays) {
+          await relay.stopServer();
+        }
+      },
+    );
+
+    test(
+      'a request closed while the handler decides does not time out',
+      () async {
+        final relay = await authRelay();
+        final answer = Completer<bool>();
+        final handler = _Handler((_) => answer.future);
+        final ndk = ndkFor([relay], handler);
+
+        var timeouts = 0;
+        final response = ndk.requests.requestNostrEvent(
+          NdkRequest.subscription(
+              'closed-while-asking',
+              filters: [_notesOf(key)],
+              explicitRelays: [relay.url],
+              auth: AuthPolicy.require(_signable(key)),
+            )
+            ..timeoutDuration = const Duration(milliseconds: 300)
+            ..timeoutCallbackUserFacing = () => timeouts++,
+        );
+
+        await _waitUntil(
+          () => handler.asked.isNotEmpty,
+          reason: 'the handler was never asked',
+        );
+        await ndk.requests.closeSubscription(response.requestId);
+        answer.complete(true);
+        await Future.delayed(const Duration(milliseconds: 600));
+
+        expect(timeouts, 0);
+
+        await ndk.destroy();
+        await relay.stopServer();
+      },
+    );
+
+    test(
+      'waiting on the handler does not spend the broadcast timeout',
+      () async {
+        final relay = await authRelay(requireAuthForEvents: true);
+        final ndk = Ndk(
+          NdkConfig(
+            eventVerifier: MockEventVerifier(),
+            cache: MemCacheManager(),
+            bootstrapRelays: [relay.url],
+            engine: engine,
+            defaultBroadcastTimeout: const Duration(seconds: 1),
+            authHandler: (_, _) async {
+              await Future.delayed(const Duration(milliseconds: 1500));
+              return true;
+            },
+          ),
+        );
+
+        final result = await ndk.broadcast
+            .broadcast(
+              nostrEvent: _textNote(key, "slow consent"),
+              specificRelays: [relay.url],
+              auth: AuthPolicy.require(_signable(key)),
+            )
+            .broadcastDoneFuture;
+
+        expect(result.any((r) => r.broadcastSuccessful), isTrue);
+
+        await ndk.destroy();
+        await relay.stopServer();
+      },
+    );
   });
 }
 
 void nip77AuthHandlerTests() {
   group('AuthHandler NIP-77', () {
-    test('waiting on the handler does not spend the reconciliation timeout',
-        () async {
-      final key = Bip340.generatePrivateKey();
-      final relay = MockRelay(name: "neg relay", signEvents: false)
-        ..requireAuthForNegentropy = true
-        ..requireAuthForRequests = true;
-      relay.negentropyItems['a' * 64] = 1000;
-      await relay.startServer();
+    test(
+      'waiting on the handler does not spend the reconciliation timeout',
+      () async {
+        final key = Bip340.generatePrivateKey();
+        final relay = MockRelay(name: "neg relay", signEvents: false)
+          ..requireAuthForNegentropy = true
+          ..requireAuthForRequests = true;
+        relay.negentropyItems['a' * 64] = 1000;
+        await relay.startServer();
 
-      final ndk = Ndk(
-        NdkConfig(
-          eventVerifier: MockEventVerifier(),
-          cache: MemCacheManager(),
-          bootstrapRelays: [relay.url],
-          authHandler: (_, _) async {
-            await Future.delayed(const Duration(milliseconds: 1500));
-            return true;
-          },
-        ),
-      );
+        final ndk = Ndk(
+          NdkConfig(
+            eventVerifier: MockEventVerifier(),
+            cache: MemCacheManager(),
+            bootstrapRelays: [relay.url],
+            authHandler: (_, _) async {
+              await Future.delayed(const Duration(milliseconds: 1500));
+              return true;
+            },
+          ),
+        );
 
-      final result = await ndk.nip77
-          .reconcile(
-            relayUrl: relay.url,
-            filter: _notesOf(key),
-            timeout: const Duration(seconds: 1),
-            auth: AuthPolicy.require(_signable(key)),
-          )
-          .future;
+        final result = await ndk.nip77
+            .reconcile(
+              relayUrl: relay.url,
+              filter: _notesOf(key),
+              timeout: const Duration(seconds: 1),
+              auth: AuthPolicy.require(_signable(key)),
+            )
+            .future;
 
-      expect(result.needIds, contains('a' * 64));
+        expect(result.needIds, contains('a' * 64));
 
-      await ndk.destroy();
-      await relay.stopServer();
-    });
+        await ndk.destroy();
+        await relay.stopServer();
+      },
+    );
   });
 }
 

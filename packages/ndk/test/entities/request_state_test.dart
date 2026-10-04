@@ -64,14 +64,14 @@ void main() {
 
   group('RequestState timeout pauses', () {
     RequestState withTimeout(Duration timeout) => RequestState(
-          NdkRequest.query(
-            'a-query',
-            filters: [
-              Filter(kinds: [Nip01Event.kTextNodeKind])
-            ],
-            timeoutDuration: timeout,
-          ),
-        );
+      NdkRequest.query(
+        'a-query',
+        filters: [
+          Filter(kinds: [Nip01Event.kTextNodeKind]),
+        ],
+        timeoutDuration: timeout,
+      ),
+    );
 
     test('the timer waits for every pause to resume', () async {
       final state = withTimeout(const Duration(milliseconds: 300));

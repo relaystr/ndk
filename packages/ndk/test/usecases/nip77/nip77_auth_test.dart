@@ -159,30 +159,32 @@ void main() async {
       await relay.stopServer();
     });
 
-    test('without auth it authenticates as the logged account once asked',
-        () async {
-      final relay = await negentropyRelay(port: portBase + 4);
-      final ndk = ndkFor(relay, authHandler: (_, _) async => true);
+    test(
+      'without auth it authenticates as the logged account once asked',
+      () async {
+        final relay = await negentropyRelay(port: portBase + 4);
+        final ndk = ndkFor(relay, authHandler: (_, _) async => true);
 
-      ndk.accounts.loginPrivateKey(
-        pubkey: key1.publicKey,
-        privkey: key1.privateKey!,
-      );
-      await Future.delayed(Duration(seconds: 1));
+        ndk.accounts.loginPrivateKey(
+          pubkey: key1.publicKey,
+          privkey: key1.privateKey!,
+        );
+        await Future.delayed(Duration(seconds: 1));
 
-      final response = ndk.nip77.reconcile(
-        relayUrl: relay.url,
-        filter: notesOf(key1),
-        timeout: Duration(seconds: 10),
-      );
+        final response = ndk.nip77.reconcile(
+          relayUrl: relay.url,
+          filter: notesOf(key1),
+          timeout: Duration(seconds: 10),
+        );
 
-      final result = await response.future;
-      expect(result.needIds, contains('a' * 64));
-      expect(relay.connectionsAuthenticatedAs(key1.publicKey), 1);
+        final result = await response.future;
+        expect(result.needIds, contains('a' * 64));
+        expect(relay.connectionsAuthenticatedAs(key1.publicKey), 1);
 
-      await ndk.destroy();
-      await relay.stopServer();
-    });
+        await ndk.destroy();
+        await relay.stopServer();
+      },
+    );
 
     test('without auth or handler it reveals nobody', () async {
       final relay = await negentropyRelay(port: portBase + 10);

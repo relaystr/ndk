@@ -219,11 +219,10 @@ void main() {
       expect(await auth.onRefusal(_first), isNull);
       expect(await auth.onRefusal(_second), same(event));
       expect(auth.resolvedFor(_first), isNull);
-      expect(
-        asked,
-        [_first, _second],
-        reason: 'one operation asks once per server',
-      );
+      expect(asked, [
+        _first,
+        _second,
+      ], reason: 'one operation asks once per server');
     });
   });
 }

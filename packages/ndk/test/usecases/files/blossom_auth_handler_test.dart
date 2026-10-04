@@ -36,8 +36,10 @@ void main() {
             : null,
       ),
     );
-    ndk.accounts
-        .loginPrivateKey(pubkey: key.publicKey, privkey: key.privateKey!);
+    ndk.accounts.loginPrivateKey(
+      pubkey: key.publicKey,
+      privkey: key.privateKey!,
+    );
     return ndk.blossom;
   }
 
@@ -79,19 +81,21 @@ void main() {
       expect(serverB.requests, isEmpty);
     });
 
-    test('sends and signs nothing when no server may see the account',
-        () async {
-      answer = (_) => false;
-      final client = clientWith(handler: true);
+    test(
+      'sends and signs nothing when no server may see the account',
+      () async {
+        answer = (_) => false;
+        final client = clientWith(handler: true);
 
-      await expectLater(
-        client.deleteBlob(sha256: 'a' * 64, serverUrls: [urlA, urlB]),
-        throwsA(isA<BlossomAuthUnavailableException>()),
-      );
+        await expectLater(
+          client.deleteBlob(sha256: 'a' * 64, serverUrls: [urlA, urlB]),
+          throwsA(isA<BlossomAuthUnavailableException>()),
+        );
 
-      expect(serverA.requests, isEmpty);
-      expect(serverB.requests, isEmpty);
-    });
+        expect(serverA.requests, isEmpty);
+        expect(serverB.requests, isEmpty);
+      },
+    );
 
     test('signs with a throwaway key when there is no handler', () async {
       final client = clientWith(handler: false);
@@ -108,41 +112,42 @@ void main() {
   });
 
   group('require()', () {
-    test('asks before sending and skips a server the handler refuses',
-        () async {
-      answer = (url) => url == urlB;
-      final client = clientWith(handler: true);
-      final other = Bip340.generatePrivateKey();
-      final account = Account(
-        type: AccountType.privateKey,
-        pubkey: other.publicKey,
-        signer: Bip340EventSigner(
-          privateKey: other.privateKey,
-          publicKey: other.publicKey,
-        ),
-      );
+    test(
+      'asks before sending and skips a server the handler refuses',
+      () async {
+        answer = (url) => url == urlB;
+        final client = clientWith(handler: true);
+        final other = Bip340.generatePrivateKey();
+        final account = Account(
+          type: AccountType.privateKey,
+          pubkey: other.publicKey,
+          signer: Bip340EventSigner(
+            privateKey: other.privateKey,
+            publicKey: other.publicKey,
+          ),
+        );
 
-      final results = await client.mirrorToServers(
-        blossomUrl: Uri.parse('https://cdn.example.com/${'b' * 64}'),
-        targetServerUrls: [urlA, urlB],
-        auth: AuthPolicy.require(account),
-      );
+        final results = await client.mirrorToServers(
+          blossomUrl: Uri.parse('https://cdn.example.com/${'b' * 64}'),
+          targetServerUrls: [urlA, urlB],
+          auth: AuthPolicy.require(account),
+        );
 
-      expect(results, hasLength(1));
-      expect(asked.map((q) => q.$2), everyElement(other.publicKey));
-      expect(serverA.requests, isEmpty);
-      expect(serverB.requests.single.authPubkey, other.publicKey);
-    });
+        expect(results, hasLength(1));
+        expect(asked.map((q) => q.$2), everyElement(other.publicKey));
+        expect(serverA.requests, isEmpty);
+        expect(serverB.requests.single.authPubkey, other.publicKey);
+      },
+    );
   });
 
   group('a read that is refused', () {
     late String sha256;
 
     setUp(() async {
-      final seeded = await clientWith(handler: false).uploadBlob(
-        data: bytes('private blob ' * 300),
-        serverUrls: [urlA],
-      );
+      final seeded = await clientWith(
+        handler: false,
+      ).uploadBlob(data: bytes('private blob ' * 300), serverUrls: [urlA]);
       sha256 = seeded.single.descriptor!.sha256;
       serverA.requireAuthForReads = true;
       serverA.clearRequests();
