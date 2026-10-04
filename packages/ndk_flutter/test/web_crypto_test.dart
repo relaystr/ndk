@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk_flutter/signers/ndk_event_signer.dart'
+    show NdkEventSignerFactory;
 import 'package:ndk_flutter/signers/web_event_signer.dart';
 import 'package:ndk_flutter/verifiers/web_event_verifier.dart';
 
@@ -221,6 +223,24 @@ void main() {
           publicKey: keyPair.publicKey,
         );
       });
+    });
+  });
+
+  group('NdkEventSignerFactory', () {
+    const factory = NdkEventSignerFactory();
+
+    test('derivePublicKey matches Bip340', () {
+      final keyPair = Bip340.generatePrivateKey();
+      expect(
+        factory.derivePublicKey(keyPair.privateKey!),
+        equals(keyPair.publicKey),
+      );
+    });
+
+    test('generateKeyPair returns a matching key pair', () {
+      final (privateKey, publicKey) = factory.generateKeyPair();
+      expect(privateKey, hasLength(64));
+      expect(publicKey, equals(Bip340.getPublicKey(privateKey)));
     });
   });
 

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:js_interop';
 
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:web/web.dart' as web;
 
@@ -29,12 +29,21 @@ class NdkEventSignerFactory implements LocalEventSignerFactory {
   }
 
   @override
-  String derivePublicKey(String privateKey) => Bip340.getPublicKey(privateKey);
+  String derivePublicKey(String privateKey) {
+    WebEventSigner._injectJS();
+    final crypto = nostrCrypto;
+    if (crypto == null) {
+      throw Exception(
+        'NostrCrypto not available. JS injection may have failed.',
+      );
+    }
+    return crypto.getPublicKey(privateKey.toJS).toDart;
+  }
 
   @override
   (String, String) generateKeyPair() {
-    final keyPair = Bip340.generatePrivateKey();
-    return (keyPair.privateKey!, keyPair.publicKey);
+    final privateKey = Helpers.getSecureRandomHex(32);
+    return (privateKey, derivePublicKey(privateKey));
   }
 
   @override
@@ -78,7 +87,7 @@ class WebEventSigner implements EventSigner {
     _isInitialized.complete(true);
   }
 
-  void _injectJS() {
+  static void _injectJS() {
     // Check if already loaded (e.g., via index.html or WebEventVerifier)
     if (nostrCrypto != null) {
       return;
