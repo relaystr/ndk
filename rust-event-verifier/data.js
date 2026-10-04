@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790936403365,
+  "lastUpdate": 1791158069635,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1746,6 +1746,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1502758,
             "range": "1476480-1533450",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4d47c3de59c112922c2171cbdcd5d662ada7045e",
+          "message": "Merge pull request #883 from relaystr/fix/visibility-padded-d-tag\n\nFix/visibility padded d tag",
+          "timestamp": "2026-10-05T01:52:40+02:00",
+          "tree_id": "2034c1d76f68275084849ab659e01b1f0899a253",
+          "url": "https://github.com/relaystr/ndk/commit/4d47c3de59c112922c2171cbdcd5d662ada7045e"
+        },
+        "date": 1791158067274,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46276,
+            "range": "46156-49416",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1600862,
+            "range": "1595974-1601672",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
