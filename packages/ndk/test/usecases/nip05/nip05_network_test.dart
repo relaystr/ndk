@@ -207,7 +207,7 @@ void main() {
     });
 
     test(
-      'returns true when updatedAt is older than the given duration',
+      'returns true when updatedAt is more recent than the given duration',
       () async {
         final client = MockClient(requestHandler);
 
@@ -215,23 +215,22 @@ void main() {
         final nip05Repos = Nip05HttpRepositoryImpl(
           httpDS: HttpRequestDS(client),
         );
-        // Create a Nip05 object with an old updatedAt timestamp
-        final oldTimestamp =
+        final recentTimestamp =
             (DateTime.now()
                 .subtract(
-                  Duration(seconds: NIP_05_VALID_DURATION.inSeconds - 1),
+                  Duration(seconds: NIP_05_VALID_DURATION.inSeconds - 60),
                 )
                 .millisecondsSinceEpoch ~/
             1000);
 
-        final oldNip05 = Nip05(
+        final recentNip05 = Nip05(
           pubKey: 'test_pubkey',
           nip05: 'test@example.com',
           valid: true,
-          networkFetchTime: oldTimestamp,
+          networkFetchTime: recentTimestamp,
         );
 
-        await cache.saveNip05(oldNip05);
+        await cache.saveNip05(recentNip05);
 
         Nip05Usecase nip05Usecase = Nip05Usecase(
           database: cache,
@@ -243,15 +242,12 @@ void main() {
           pubkey: 'test_pubkey',
         );
 
-        expect(
-          result.valid,
-          true,
-        ); // Should return true since the object is older than 5 days
+        expect(result.valid, true);
       },
     );
 
     test(
-      'returns false when updatedAt is more recent than the given duration',
+      'returns false when updatedAt is older than the given duration',
       () async {
         final client = MockClient(requestHandler);
 
@@ -264,8 +260,7 @@ void main() {
           nip05Repository: nip05Repos,
         );
 
-        // Create a Nip05 object with a recent updatedAt timestamp
-        final recentTimestamp =
+        final oldTimestamp =
             (DateTime.now()
                 .subtract(
                   Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 200),
@@ -276,20 +271,16 @@ void main() {
           pubKey: 'test_pubkey',
           nip05: 'test@example.com',
           valid: true,
-          networkFetchTime: recentTimestamp,
+          networkFetchTime: oldTimestamp,
         );
 
         await cache.saveNip05(oldNip05);
 
-        // Test with a duration of 5 days
         final result = await nip05Usecase.check(
           nip05: 'test@example.com',
           pubkey: 'test_pubkey',
         );
-        expect(
-          result.valid,
-          false,
-        ); // Should return false since the object is more recent than 5 days
+        expect(result.valid, false);
       },
     );
 
