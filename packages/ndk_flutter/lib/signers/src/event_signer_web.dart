@@ -31,13 +31,9 @@ class NdkEventSignerFactory implements LocalEventSignerFactory {
   @override
   String derivePublicKey(String privateKey) {
     WebEventSigner._injectJS();
-    final crypto = nostrCrypto;
-    if (crypto == null) {
-      throw Exception(
-        'NostrCrypto not available. JS injection may have failed.',
-      );
-    }
-    return crypto.getPublicKey(privateKey.toJS).toDart;
+    return WebEventSigner._requireNostrCrypto()
+        .getPublicKey(privateKey.toJS)
+        .toDart;
   }
 
   @override
@@ -100,15 +96,15 @@ class WebEventSigner implements EventSigner {
     web.document.head?.appendChild(script);
   }
 
+  static NostrCrypto _requireNostrCrypto() =>
+      nostrCrypto ??
+      (throw Exception(
+        'NostrCrypto not available. JS injection may have failed.',
+      ));
+
   Future<NostrCrypto> _getCrypto() async {
     await _isInitialized.future;
-    final crypto = nostrCrypto;
-    if (crypto == null) {
-      throw Exception(
-        'NostrCrypto not available. JS injection may have failed.',
-      );
-    }
-    return crypto;
+    return _requireNostrCrypto();
   }
 
   @override
