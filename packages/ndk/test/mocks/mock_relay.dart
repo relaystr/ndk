@@ -145,6 +145,14 @@ class MockRelay {
   /// events the relay reconciles against, id to created_at
   final Map<String, int> negentropyItems = {};
 
+  /// how many negentropy messages are answered before the relay goes quiet,
+  /// the way a relay that stalls in the middle of a reconciliation does. Null
+  /// answers them all
+  int? silenceNegentropyAfter;
+
+  /// NEG-MSG the relay sent back so far, across every session
+  int negentropyAnswers = 0;
+
   /// every NEG-OPEN the relay received, refused ones included, kept for the
   /// whole run. A NEG-CLOSE or a socket that dies must not erase what a test
   /// is about to assert on
@@ -692,6 +700,11 @@ class MockRelay {
     String subscriptionId,
     String payload,
   ) {
+    final limit = silenceNegentropyAfter;
+    if (limit != null && negentropyAnswers >= limit) {
+      return;
+    }
+
     final items = negentropyItems.entries
         .map((e) => NegentropyItem.fromHex(timestamp: e.value, idHex: e.key))
         .toList();
@@ -704,6 +717,7 @@ class MockRelay {
       if (response.length <= 1) {
         return;
       }
+      negentropyAnswers++;
       _send(
         webSocket,
         jsonEncode([

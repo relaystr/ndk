@@ -19,7 +19,8 @@ class _Nip77Internal {
   Nip77Response reconcile({
     required String relayUrl,
     required Filter filter,
-    Duration timeout = Nip77.defaultTimeout,
+    Duration openTimeout = Nip77.defaultOpenTimeout,
+    Duration idleTimeout = Nip77.defaultIdleTimeout,
     List<String>? localIds,
     AuthPolicy? auth,
   }) {
@@ -45,18 +46,13 @@ class _Nip77Internal {
       connectionKey: connectionKey,
       filter: filter,
       localItems: [],
+      openTimeout: openTimeout,
+      idleTimeout: idleTimeout,
       auth: auth,
     );
 
     // Register in global state
     _globalState.inFlightNegotiations[subscriptionId] = state;
-
-    // Set up timeout. The state owns it so an authentication can pause it
-    state.startTimeout(timeout, () {
-      if (state.isCompleted) return;
-      _sendNegClose(state.connectionKey, subscriptionId);
-      _fail(state, Nip77TimeoutException(cleanUrl, timeout));
-    });
 
     // Start async initialization
     _startReconciliation(
@@ -77,7 +73,7 @@ class _Nip77Internal {
     try {
       final connectivity = await _openConnection(state);
       if (state.isCompleted) {
-        return; // Guard: timeout may have fired during await
+        return; // Guard: the session may have been closed during await
       }
       if (connectivity == null) {
         state.completeWithError(
@@ -103,7 +99,7 @@ class _Nip77Internal {
         localItems = await _buildItemsFromFilter(state.filter);
       }
       if (state.isCompleted) {
-        return; // Guard: timeout may have fired during await
+        return; // Guard: the session may have been closed during await
       }
 
       // Update state with local items
@@ -147,10 +143,32 @@ class _Nip77Internal {
       neg.NegentropyEncoder.bytesToHex(initialMessage),
     ];
     _send(state.connectionKey, negOpen);
+    _awaitAnswer(state, state.openTimeout, openUnanswered: true);
 
     Logger.log.d(
       () => 'NEG-OPEN sent to ${state.connectionKey}: ${state.subscriptionId}',
     );
+  }
+
+  /// Gives the relay [timeout] to answer what was just sent, and ends the
+  /// session if it stays silent.
+  void _awaitAnswer(
+    Nip77State state,
+    Duration timeout, {
+    required bool openUnanswered,
+  }) {
+    state.startTimeout(timeout, () {
+      if (state.isCompleted) return;
+      _sendNegClose(state.connectionKey, state.subscriptionId);
+      _fail(
+        state,
+        Nip77TimeoutException(
+          state.relayUrl,
+          timeout,
+          openUnanswered: openUnanswered,
+        ),
+      );
+    });
   }
 
   void _send(RelayConnectionKey key, List<dynamic> message) {
@@ -250,6 +268,7 @@ class _Nip77Internal {
         // Send response (hex encoded)
         final responsePayload = neg.NegentropyEncoder.bytesToHex(response);
         _send(key, ['NEG-MSG', subscriptionId, responsePayload]);
+        _awaitAnswer(state, state.idleTimeout, openUnanswered: false);
         Logger.log.d(() => 'NEG-MSG sent to $key');
       }
     } catch (e) {
@@ -360,21 +379,21 @@ class _Nip77Internal {
 
   /// Answers the challenge on the bound connection, then reopens.
   ///
-  /// The timeout is paused: signing may sit on a remote signer waiting for a
-  /// human, which is not time the relay is taking to reconcile.
+  /// No timeout runs until the NEG-OPEN is sent again: signing may sit on a
+  /// remote signer waiting for a human, which is not the relay being silent.
   Future<void> _authenticateAndReopen(Nip77State state, String message) async {
     final url = state.connectionKey.url;
     state.authenticatedAfterRefusal = true;
 
-    state.pauseTimeout();
+    state.cancelTimeout();
     final bool authenticated;
     try {
       authenticated = await _relayManager.authenticateConnection(
         state.connectionKey,
       );
     } catch (e) {
-      // nothing resumes a paused timeout once this future is gone, so a session
-      // that cannot authenticate has to end here rather than wait forever
+      // no timeout runs while authenticating, so a session that cannot
+      // authenticate has to end here rather than wait forever
       if (!state.isCompleted) {
         _fail(state, Nip77AuthRequiredException(url, '$message ($e)'));
       }
@@ -382,7 +401,6 @@ class _Nip77Internal {
     }
 
     if (state.isCompleted) return;
-    state.resumeTimeout();
 
     if (!authenticated) {
       _fail(state, Nip77AuthRequiredException(url, message));
@@ -392,8 +410,8 @@ class _Nip77Internal {
   }
 
   /// Moves a refused anonymous negotiation onto a connection bound to
-  /// [account]. The timeout is paused for the same reason as above: opening
-  /// that connection is not the relay reconciling.
+  /// [account]. No timeout runs for the same reason as above: opening that
+  /// connection is not the relay being silent.
   Future<void> _moveToBoundConnection(
     Nip77State state,
     Account account,
@@ -408,7 +426,7 @@ class _Nip77Internal {
           'retrying as ${account.pubkey}',
     );
 
-    state.pauseTimeout();
+    state.cancelTimeout();
     final RelayConnectivity? bound;
     try {
       bound = await _relayManager.openConnectionAs(
@@ -424,7 +442,6 @@ class _Nip77Internal {
     }
 
     if (state.isCompleted) return;
-    state.resumeTimeout();
 
     if (bound == null) {
       _fail(state, Nip77AuthRequiredException(url, message));

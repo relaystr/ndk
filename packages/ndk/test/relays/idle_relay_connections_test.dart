@@ -16,7 +16,7 @@ import 'package:ndk/domain_layer/entities/request_state.dart';
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/domain_layer/repositories/nostr_transport.dart';
 import 'package:ndk/domain_layer/usecases/relay_manager.dart';
-import 'package:ndk/ndk.dart' show Ndk;
+import 'package:ndk/ndk.dart' show Ndk, Nip77;
 import 'package:ndk/shared/nips/nip01/client_msg.dart';
 
 class _Transport implements NostrTransport {
@@ -378,6 +378,8 @@ void main() {
       connectionKey: authenticated,
       filter: Filter(kinds: [1]),
       localItems: [],
+      openTimeout: Nip77.defaultOpenTimeout,
+      idleTimeout: Nip77.defaultIdleTimeout,
     );
     await manager.closeIdleConnections();
     expect(state.relays.keys, [authenticated]);

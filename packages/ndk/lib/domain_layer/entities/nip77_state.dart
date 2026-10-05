@@ -23,6 +23,12 @@ class Nip77State {
   /// Which identity this session may be attributed to (NIP-42)
   final AuthPolicy? auth;
 
+  /// how long the relay may take to answer a NEG-OPEN
+  final Duration openTimeout;
+
+  /// how long the relay may stay silent between two rounds
+  final Duration idleTimeout;
+
   /// whether the negotiation already moved from the anonymous connection to a
   /// bound one
   bool movedToBoundConnection = false;
@@ -62,6 +68,8 @@ class Nip77State {
     required this.connectionKey,
     required this.filter,
     required this.localItems,
+    required this.openTimeout,
+    required this.idleTimeout,
     this.auth,
   });
 
@@ -78,50 +86,20 @@ class Nip77State {
   bool get isCompleted => _isCompleted;
 
   Timer? _timeoutTimer;
-  DateTime? _timeoutStartedAt;
-  Duration? _remainingTimeout;
-  void Function()? _onTimeout;
 
-  /// how long the reconciliation itself may take. A paused timeout resumes
-  /// with what is left of it, not with a fresh one
-  Duration? _timeoutDuration;
-
-  /// Starts the session timeout, [onTimeout] firing at most once.
+  /// Gives the relay [duration] to answer what was just sent, replacing the
+  /// previous deadline. There is no overall one, so a session that keeps
+  /// getting answers never times out.
   void startTimeout(Duration duration, void Function() onTimeout) {
-    _timeoutDuration = duration;
-    _onTimeout = onTimeout;
-    _startTimeout(duration);
+    _timeoutTimer?.cancel();
+    _timeoutTimer = Timer(duration, onTimeout);
   }
 
-  void _startTimeout(Duration duration) {
-    _timeoutStartedAt = DateTime.now();
-    _timeoutTimer = Timer(duration, () => _onTimeout?.call());
-  }
-
-  /// Pauses the timeout for a wait that is not the relay's to answer, the way
-  /// a request pauses before signing. Call it before an authentication.
-  void pauseTimeout() {
-    if (_timeoutTimer == null || _timeoutDuration == null) return;
-
-    final elapsed = DateTime.now().difference(_timeoutStartedAt!);
-    final remaining = _timeoutDuration! - elapsed;
-    _remainingTimeout = remaining.isNegative ? Duration.zero : remaining;
-    _timeoutTimer!.cancel();
-    _timeoutTimer = null;
-  }
-
-  /// Resumes a paused timeout with the time it had left.
-  void resumeTimeout() {
-    final remaining = _remainingTimeout;
-    if (remaining == null) return;
-    _remainingTimeout = null;
-    _startTimeout(remaining);
-  }
-
-  void _cancelTimeout() {
+  /// Stops the clock for a wait that is not the relay's to answer, such as an
+  /// authentication before the NEG-OPEN is sent again.
+  void cancelTimeout() {
     _timeoutTimer?.cancel();
     _timeoutTimer = null;
-    _remainingTimeout = null;
   }
 
   /// Process an incoming NEG-MSG from relay
@@ -159,7 +137,7 @@ class Nip77State {
   void complete() {
     if (_isCompleted) return;
     _isCompleted = true;
-    _cancelTimeout();
+    cancelTimeout();
     _needController.close();
     _haveController.close();
     _completer.complete(
@@ -174,7 +152,7 @@ class Nip77State {
   void completeWithError(Object error) {
     if (_isCompleted) return;
     _isCompleted = true;
-    _cancelTimeout();
+    cancelTimeout();
     this.error = error.toString();
     _needController.close();
     _haveController.close();
@@ -185,7 +163,7 @@ class Nip77State {
   void close() {
     if (_isCompleted) return;
     _isCompleted = true;
-    _cancelTimeout();
+    cancelTimeout();
     _needController.close();
     _haveController.close();
     if (!_completer.isCompleted) {
