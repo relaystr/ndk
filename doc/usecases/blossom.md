@@ -47,9 +47,9 @@ round trip, and for an upload a body sent twice, so prefer `require` when the
 server is known to ask. If `require` names an account that cannot sign, nothing
 is sent and the call throws `BlossomAuthUnavailableException`.
 
-Without `auth`, reads stay anonymous and everything else authorises as the
-logged-in account, or as a throwaway key when none is. This default is expected
-to change.
+Without `auth`, reads stay anonymous and everything else authorises as a
+throwaway key. With an [`AuthHandler`](/concepts/nip42-auth.md#authhandler), it authorises as the logged-in account
+instead, and only reaches the servers the handler agrees to.
 
 `useAuth` and `customSigner` were removed in favour of `auth`:
 

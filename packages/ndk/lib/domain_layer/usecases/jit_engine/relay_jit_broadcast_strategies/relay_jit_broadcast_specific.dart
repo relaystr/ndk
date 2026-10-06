@@ -41,6 +41,8 @@ class RelayJitBroadcastSpecificRelaysStrategy {
           relayUrl,
           auth,
           connectTimeout: 1,
+          pausing:
+              relayManager.globalState.inFlightBroadcasts[eventToPublish.id],
         );
         if (relay == null) {
           relayManager.failBroadcast(

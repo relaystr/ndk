@@ -123,6 +123,7 @@ class _Nip77Internal {
       state.connectionKey,
       connectionSource: ConnectionSource.explicit,
       as: state.auth?.account,
+      pausing: state,
     );
     if (!connected) {
       return null;

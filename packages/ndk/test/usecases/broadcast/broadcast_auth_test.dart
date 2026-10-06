@@ -28,7 +28,7 @@ void broadcastAuthTests(NdkEngine engine) {
       ),
     );
 
-    Ndk ndkFor(MockRelay relay) {
+    Ndk ndkFor(MockRelay relay, {AuthHandler? authHandler}) {
       final ndk = Ndk(
         NdkConfig(
           eventVerifier: MockEventVerifier(),
@@ -39,6 +39,7 @@ void broadcastAuthTests(NdkEngine engine) {
           // complete even when the full suite competes for CPU.
           defaultBroadcastTimeout: const Duration(seconds: 10),
           engine: engine,
+          authHandler: authHandler,
         ),
       );
       addTearDown(ndk.destroy);
@@ -295,12 +296,19 @@ void broadcastAuthTests(NdkEngine engine) {
     });
 
     test(
-      'without auth a delayed refusal still authenticates as the author',
+      'without auth a delayed refusal authenticates as the author once asked',
       () async {
         final relay = await authRelay(
           delayResponse: const Duration(milliseconds: 600),
         );
-        final ndk = ndkFor(relay);
+        final asked = <String>[];
+        final ndk = ndkFor(
+          relay,
+          authHandler: (url, pubkey) async {
+            asked.add(pubkey);
+            return true;
+          },
+        );
         ndk.accounts.loginPrivateKey(
           pubkey: key.publicKey,
           privkey: key.privateKey!,
@@ -322,8 +330,29 @@ void broadcastAuthTests(NdkEngine engine) {
               'accepted=${relay.acceptedAuths}; responses='
               '${result.map((r) => '${r.okReceived}/${r.broadcastSuccessful}/${r.msg}').toList()}',
         );
+        expect(asked, [key.publicKey]);
         expect(relay.connectionsAuthenticatedAs(key.publicKey), greaterThan(0));
       },
     );
+
+    test('without auth or handler a refusal reveals nobody', () async {
+      final relay = await authRelay();
+      final ndk = ndkFor(relay);
+      ndk.accounts.loginPrivateKey(
+        pubkey: key.publicKey,
+        privkey: key.privateKey!,
+      );
+
+      final result = await ndk.broadcast
+          .broadcast(
+            nostrEvent: noteFrom(key, "default"),
+            specificRelays: [relay.url],
+          )
+          .broadcastDoneFuture;
+
+      expect(result.any((r) => r.broadcastSuccessful), isFalse);
+      expect(relay.acceptedAuths, 0);
+      expect(relay.connectionsAuthenticatedAs(key.publicKey), 0);
+    });
   });
 }

@@ -38,6 +38,7 @@ void authTests(NdkEngine engine) {
 
         final ndk = Ndk(
           NdkConfig(
+            authHandler: (_, _) async => true,
             eventVerifier: MockEventVerifier(),
             cache: MemCacheManager(),
             bootstrapRelays: [relay.url],
@@ -75,6 +76,7 @@ void authTests(NdkEngine engine) {
 
         final ndk = Ndk(
           NdkConfig(
+            authHandler: (_, _) async => true,
             eventVerifier: MockEventVerifier(),
             cache: MemCacheManager(),
             bootstrapRelays: [relay.url],
@@ -120,6 +122,7 @@ void authTests(NdkEngine engine) {
 
         final ndk = Ndk(
           NdkConfig(
+            authHandler: (_, _) async => true,
             eventVerifier: MockEventVerifier(),
             cache: MemCacheManager(),
             bootstrapRelays: [relay.url],
@@ -172,6 +175,7 @@ void authTests(NdkEngine engine) {
 
         final ndk = Ndk(
           NdkConfig(
+            authHandler: (_, _) async => true,
             eventVerifier: MockEventVerifier(),
             cache: MemCacheManager(),
             bootstrapRelays: [relay.url],
@@ -282,6 +286,7 @@ void authTests(NdkEngine engine) {
 
         final ndk = Ndk(
           NdkConfig(
+            authHandler: (_, _) async => true,
             eventVerifier: MockEventVerifier(),
             cache: MemCacheManager(),
             bootstrapRelays: [relay.url],
