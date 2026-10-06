@@ -1,7 +1,11 @@
 // ignore_for_file: avoid_print
+import 'dart:async';
+
+import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ndk/entities.dart';
@@ -12,16 +16,19 @@ import 'package:ndk_drift/ndk_drift.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart' as ndk_flutter;
 import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:protocol_handler/protocol_handler.dart';
 
 import 'dm_live_state.dart';
 import 'l10n/generated/sample_app_localizations.dart';
+import 'protocol_registration.dart';
 
 bool signerAppAvailable = false;
 
 late Ndk ndk;
-final ndkFlutter = NdkFlutter(ndk: ndk);
+late NdkFlutter ndkFlutter;
+late NAppUpdateController appUpdater;
+Future<void> Function(String url)? activeWalletProtocolHandler;
 final localeNotifier = ValueNotifier<Locale>(const Locale('en'));
+final appLinks = AppLinks();
 DmLiveState? _dmLiveState;
 DmLiveState get dmLiveState => _dmLiveState ??= DmLiveState(ndk: ndk)..start();
 
@@ -29,9 +36,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
   try {
-    await protocolHandler.register("ndk");
-  } catch (err) {
-    print(err);
+    await registerProtocol('ndk');
+  } catch (error) {
+    print('MyApp: Error registering protocol: $error');
   }
 
   try {
@@ -47,20 +54,41 @@ Future<void> main() async {
           databasePath: (await getApplicationDocumentsDirectory()).path,
         );
 
+  // The default data protection keychain needs an entitlement ad-hoc signing can't grant.
+  const secureStorage = FlutterSecureStorage(
+    mOptions: MacOsOptions(usesDataProtectionKeychain: false),
+  );
+
   // Load the cashu seed phrase from secure storage, generating a fresh one on
   // first run. Never hardcode this — it controls cashu funds.
-  final cashuSeedPhrase = await const CashuSeedStore().loadOrCreate();
+  final cashuSeedPhrase = await const CashuSeedStore(
+    storage: secureStorage,
+  ).loadOrCreate();
 
   final eventVerifier = kIsWeb ? WebEventVerifier() : RustEventVerifier();
   ndk = Ndk(
     NdkConfig(
       eventVerifier: eventVerifier,
       cache: cacheManager,
-      walletsRepo: FlutterSecureStorageWalletsRepo(),
+      walletsRepo: FlutterSecureStorageWalletsRepo(storage: secureStorage),
       logLevel: Logger.logLevels.info,
       cashuUserSeedphrase: CashuUserSeedphrase(seedPhrase: cashuSeedPhrase),
     ),
   );
+  ndkFlutter = NdkFlutter(ndk: ndk, storage: secureStorage);
+  appUpdater = NAppUpdateController.self(
+    ndkFlutter: ndkFlutter,
+    app: const SoftwareAppRef(
+      publisher:
+          '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177',
+      identifier: 'relaystr.ndk.sample',
+    ),
+    currentVersion: packageVersion,
+    externalUpdateUrl: Uri.parse('https://github.com/relaystr/ndk/'),
+    channel: 'main',
+    relays: const ['wss://relay.zapstore.dev'],
+  );
+  unawaited(appUpdater.start());
   final _ = dmLiveState;
 
   await ndkFlutter.restoreAccountsState();
@@ -77,31 +105,28 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> with ProtocolListener {
+class _MyAppState extends State<MyApp> {
+  StreamSubscription<Uri>? _linkSubscription;
+
   @override
   void initState() {
     super.initState();
-    protocolHandler.addListener(this);
-    _handleInitialUri();
+    _linkSubscription = appLinks.uriLinkStream.listen(
+      (uri) => onProtocolUrlReceived(uri.toString()),
+      onError: (Object error) => print('MyApp: Error receiving URL: $error'),
+    );
   }
 
-  Future<void> _handleInitialUri() async {
-    try {
-      final String? initialUrl = await protocolHandler.getInitialUrl();
-      if (initialUrl != null && initialUrl.isNotEmpty) {
-        onProtocolUrlReceived(initialUrl);
-      }
-    } catch (e) {
-      print('MyApp: Error getting initial URL: $e');
-    }
-  }
-
-  @override
   void onProtocolUrlReceived(String url) {
     try {
       final uri = Uri.parse(url);
       if (uri.scheme == 'ndk' && uri.host == 'nwc') {
-        appRouter.go('/wallets', extra: url);
+        final handler = activeWalletProtocolHandler;
+        if (handler != null) {
+          handler(url);
+        } else {
+          appRouter.go('/wallets', extra: url);
+        }
       }
     } catch (e) {
       print('MyApp: Error parsing protocol URL: $e');
@@ -110,7 +135,8 @@ class _MyAppState extends State<MyApp> with ProtocolListener {
 
   @override
   void dispose() {
-    protocolHandler.removeListener(this);
+    _linkSubscription?.cancel();
+    appUpdater.dispose();
     super.dispose();
   }
 

@@ -29,7 +29,12 @@ void main() {
       final current = ndk.relays.getRelayConnectivity(relay.url);
       if (current?.isConnected != true) {
         await ndk.connectivity.relayConnectivityChanges
-            .firstWhere((relays) => relays[relay.url]?.isConnected == true)
+            .firstWhere(
+              (connections) => connections.any(
+                (connection) =>
+                    connection.url == relay.url && connection.isConnected,
+              ),
+            )
             .timeout(const Duration(seconds: 10));
       }
 

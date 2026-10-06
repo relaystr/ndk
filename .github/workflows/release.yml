@@ -5,10 +5,9 @@ on:
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
   workflow_dispatch:
-    branches: [ master ]
 
 env:
-  FLUTTER_VERSION: "3.41.4"
+  FLUTTER_VERSION: "3.47.5"
   JAVA_VERSION: "17"
   FLUTTER_RUST_BRIDGE_VERSION: "1.80.1"
   RUST_VERSION: "1.93"
@@ -23,18 +22,22 @@ jobs:
         include:
           - os: ubuntu-latest
             target: linux_x64
+            architecture: x64
             platform_name: linux-x64
             content_type: application/gzip
           - os: macos-latest
             target: macos_arm64
+            architecture: arm64
             platform_name: macos-arm64
             content_type: application/gzip
           - os: macos-latest
             target: macos_x64
+            architecture: x64
             platform_name: macos-x64
             content_type: application/gzip
           - os: windows-latest
             target: windows_x64
+            architecture: x64
             platform_name: windows-x64
             content_type: application/gzip
     defaults:
@@ -45,23 +48,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Dart
-        if: matrix.target != 'macos_x64'
-        uses: dart-lang/setup-dart@v1
+      - name: Install Rosetta
+        if: matrix.target == 'macos_x64' && runner.arch == 'ARM64'
+        run: softwareupdate --install-rosetta --agree-to-license
 
-      - name: Set up Dart (x86_64 SDK)
-        if: matrix.target == 'macos_x64'
-        run: |
-          curl -fsSL "https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-macos-x64-release.zip" -o dart-sdk.zip
-          unzip -q dart-sdk.zip
-          echo "$PWD/dart-sdk/bin" >> $GITHUB_PATH
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          architecture: ${{ matrix.architecture }}
+          cache: true
 
       - name: Install dependencies
-        run: dart pub get
-
-      - name: Install Rosetta
-        if: matrix.target == 'macos_x64'
-        run: softwareupdate --install-rosetta --agree-to-license
+        run: flutter pub get
 
       - name: Build CLI executable (x64 via Rosetta)
         run: |
@@ -75,12 +75,12 @@ jobs:
         id: meta
         run: |
           ref_name="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
-          safe_ref_name="${ref_name//\//-}"
-          echo "safe_ref_name=${safe_ref_name}" >> "$GITHUB_OUTPUT"
+          release_version="${ref_name#v}"
+          echo "release_version=${release_version}" >> "$GITHUB_OUTPUT"
 
       - name: Package CLI bundle
         run: |
-          tar -czf "build/ndk-cli-${{ matrix.platform_name }}.tar.gz" -C "build/cli/${{ matrix.target }}/bundle" .
+          tar -czf "build/ndk-cli-${{ steps.meta.outputs.release_version }}-${{ matrix.platform_name }}.tar.gz" -C "build/cli/${{ matrix.target }}/bundle" .
 
       - name: Build Linux DEB package
         if: matrix.target == 'linux_x64'
@@ -92,7 +92,7 @@ jobs:
           ln -s ../lib/ndk/bin/ndk "$deb_root/usr/bin/ndk"
           cat > "$deb_root/DEBIAN/control" <<'EOF'
           Package: ndk
-          Version: 0.0.0~${{ github.run_number }}
+          Version: ${{ steps.meta.outputs.release_version }}
           Section: utils
           Priority: optional
           Architecture: amd64
@@ -100,7 +100,7 @@ jobs:
           Depends: libc6 (>= 2.27)
           Description: Nostr Development Kit command line interface
           EOF
-          dpkg-deb --build "$deb_root" "build/ndk-cli-linux-x64.deb"
+          dpkg-deb --build "$deb_root" "build/ndk-cli-${{ steps.meta.outputs.release_version }}-linux-x64.deb"
 
       - name: Upload CLI executable to release
         uses: actions/upload-release-asset@v1
@@ -108,8 +108,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: packages/ndk/build/ndk-cli-${{ matrix.platform_name }}.tar.gz
-          asset_name: ndk-cli-${{ matrix.platform_name }}.tar.gz
+          asset_path: packages/ndk/build/ndk-cli-${{ steps.meta.outputs.release_version }}-${{ matrix.platform_name }}.tar.gz
+          asset_name: ndk-cli-${{ steps.meta.outputs.release_version }}-${{ matrix.platform_name }}.tar.gz
           asset_content_type: ${{ matrix.content_type }}
 
       - name: Upload Linux DEB to release
@@ -119,8 +119,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: packages/ndk/build/ndk-cli-linux-x64.deb
-          asset_name: ndk-cli-linux-x64.deb
+          asset_path: packages/ndk/build/ndk-cli-${{ steps.meta.outputs.release_version }}-linux-x64.deb
+          asset_name: ndk-cli-${{ steps.meta.outputs.release_version }}-linux-x64.deb
           asset_content_type: application/vnd.debian.binary-package
 
   build_android:
@@ -129,10 +129,33 @@ jobs:
     defaults:
       run:
         shell: bash
-#        working-directory: ./packages/sample-app
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
+      - uses: actions/checkout@v4
+
+      - name: Build release artifact name metadata
+        id: meta
+        run: |
+          release_version="${GITHUB_REF_NAME#v}"
+          echo "release_version=${release_version}" >> "$GITHUB_OUTPUT"
+
+          # The sample app is not a melos workspace package, so its pubspec
+          # version is never bumped. Derive the APK version from the tag.
+          # versionCode keeps semver order: MAJOR*1e6 + MINOR*1e4 + PATCH*100
+          # + dev number (0-98) for prereleases, or 99 for stable releases.
+          if [[ ! "$release_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-dev\.([0-9]+))?$ ]]; then
+            echo "::error::Unsupported release version: $release_version" >&2
+            exit 1
+          fi
+          major=${BASH_REMATCH[1]} minor=${BASH_REMATCH[2]} patch=${BASH_REMATCH[3]}
+          dev=${BASH_REMATCH[5]}
+          if (( minor > 99 || patch > 99 || ${dev:-0} > 98 )); then
+            echo "::error::Version part out of range for versionCode: $release_version" >&2
+            exit 1
+          fi
+          build_number=$(( major * 1000000 + minor * 10000 + patch * 100 + ${dev:-99} ))
+          echo "build_number=${build_number}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: ${{ env.JAVA_VERSION }}
@@ -159,7 +182,7 @@ jobs:
           architecture: x64 # optional, x64 or arm64
 
       - name: 🔐 Retrieve base64 keystore and decode it to a file
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > "${{ github.workspace }}/android-keystore.jks"
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > "${{ github.workspace }}/packages/sample-app/android-keystore.jks"
 
       - name: 📝🔐 Create key.properties file
         env:
@@ -179,11 +202,15 @@ jobs:
       - name: build apk-split
         run: |
           cd packages/sample-app
-          flutter build apk --split-per-abi
+          flutter build apk --split-per-abi \
+            --build-name="${{ steps.meta.outputs.release_version }}" \
+            --build-number="${{ steps.meta.outputs.build_number }}"
       - name: build apk
         run: |
           cd packages/sample-app
-          flutter build apk
+          flutter build apk \
+            --build-name="${{ steps.meta.outputs.release_version }}" \
+            --build-number="${{ steps.meta.outputs.build_number }}"
 
       # APK
       - name: Upload APK to release
@@ -193,7 +220,7 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: packages/sample-app/build/app/outputs/flutter-apk/app-release.apk
-          asset_name: ndk_demo-${{ github.ref_name }}-android-universal.apk
+          asset_name: ndk-demo-${{ steps.meta.outputs.release_version }}-android-universal.apk
           asset_content_type: application/zip
       - name: Upload APK to release
         uses: actions/upload-release-asset@v1
@@ -202,7 +229,7 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: packages/sample-app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-          asset_name: ndk_demo-${{ github.ref_name }}-android-arm64-v8a.apk
+          asset_name: ndk-demo-${{ steps.meta.outputs.release_version }}-android-arm64-v8a.apk
           asset_content_type: application/zip
       - name: Upload APK to release
         uses: actions/upload-release-asset@v1
@@ -211,7 +238,7 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: packages/sample-app/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-          asset_name: ndk_demo-${{ github.ref_name }}-android-armeabi-v7a.apk
+          asset_name: ndk-demo-${{ steps.meta.outputs.release_version }}-android-armeabi-v7a.apk
           asset_content_type: application/zip
       - name: Upload APK to release
         uses: actions/upload-release-asset@v1
@@ -220,7 +247,7 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: packages/sample-app/build/app/outputs/flutter-apk/app-x86_64-release.apk
-          asset_name: ndk_demo-${{ github.ref_name }}-android-x86_64.apk
+          asset_name: ndk-demo-${{ steps.meta.outputs.release_version }}-android-x86_64.apk
           asset_content_type: application/zip
 
   call-build:
@@ -333,6 +360,25 @@ jobs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
       id: ${{ steps.create_release.outputs.id }}
     steps:
+      - name: Check out the release source
+        uses: actions/checkout@v4
+
+      - name: Prepare release notes from the NDK changelog
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          version="${RELEASE_TAG#v}"
+          awk -v heading="## ${version}" '
+            $0 == heading { found = 1; next }
+            found && $0 ~ /^## / { exit }
+            found { print }
+          ' packages/ndk/CHANGELOG.md > release-notes.md
+
+          if [[ ! -s release-notes.md ]]; then
+            echo "No NDK changelog section found for ${version}." >&2
+            exit 1
+          fi
+
       # Create Release
       - name: Create Release
         id: create_release
@@ -342,6 +388,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
+          body_path: release-notes.md
           draft: true
           prerelease: ${{ contains(github.ref, '-dev') }}
 

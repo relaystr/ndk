@@ -9,6 +9,56 @@ class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
   @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'No LNbits, escolha a carteira que pretende ligar, abra-a, clique em Documentação da API e copie a chave de administrador. Cole-a abaixo:';
+
+  @override
+  String get lnbitsAdminKey => 'Chave de administrador LNbits';
+
+  @override
+  String get lnbitsKeyType => 'Tipo de chave LNbits';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'Chave de fatura/leitura LNbits';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Carteira apenas para receber: consulte saldo e histórico e crie faturas. O envio de pagamentos está desativado.';
+
+  @override
+  String get lnbitsUrl => 'URL do LNbits';
+
+  @override
+  String get lnbitsCredentialsRequired =>
+      'Introduza a chave de administrador e o URL do LNbits.';
+
+  @override
+  String get lnbitsWalletAdded => 'Carteira LNbits adicionada';
+
+  @override
+  String get walletDetailWalletId => 'ID da carteira';
+
+  @override
+  String get saveBackupToFile => 'Guardar cópia num ficheiro';
+
+  @override
+  String get backupSavedToFile => 'Cópia guardada num ficheiro';
+
+  @override
+  String get restoreFromFile => 'Restaurar de um ficheiro';
+
+  @override
+  String get backupFileReadFailed =>
+      'Não foi possível ler o ficheiro de cópia selecionado.';
+
+  @override
+  String get fetchingWalletConnectionInfo =>
+      'A obter informações de ligação da carteira…';
+
+  @override
   String get createAccount => 'Criar a sua conta';
 
   @override
@@ -776,6 +826,29 @@ class AppLocalizationsPt extends AppLocalizations {
   String get payInvoiceTitle => 'Pagar fatura';
 
   @override
+  String get sendToWallet => 'Enviar para uma carteira';
+
+  @override
+  String get sendToWalletDescription =>
+      'Transferir para outra carteira compatível';
+
+  @override
+  String get noCompatibleReceivingWallets =>
+      'Nenhuma carteira de receção compatível';
+
+  @override
+  String get noCompatibleReceivingWalletsDescription =>
+      'Adicione ou ligue outra carteira que possa receber um pagamento suportado por esta carteira.';
+
+  @override
+  String get destinationWallet => 'Carteira de destino';
+
+  @override
+  String walletTransferSubmitted(String walletName) {
+    return 'Pagamento enviado para $walletName';
+  }
+
+  @override
   String get invoice => 'Fatura';
 
   @override
@@ -973,6 +1046,90 @@ class AppLocalizationsPt extends AppLocalizations {
   String get addWalletTitle => 'Adicionar carteira';
 
   @override
+  String get addWalletDescription =>
+      'Digitalize o código QR de uma carteira compatível, cole os dados ou ligue através de uma aplicação de carteira.';
+
+  @override
+  String get scanWalletQrCode => 'Digitalizar QR da carteira';
+
+  @override
+  String get connectWithWallet => 'Ligar a uma carteira';
+
+  @override
+  String get chooseWalletApp => 'Escolher aplicação de carteira';
+
+  @override
+  String get oneClickConnect => 'Ligação com 1 clique';
+
+  @override
+  String get chooseWallet => 'Escolher carteira';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => 'Ligação NWC manual';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return 'Conclua a ligação em $walletName';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return 'A ligar a $walletName…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '$walletName ligada';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return 'Não foi possível ligar a $walletName';
+  }
+
+  @override
+  String get retry => 'Tentar novamente';
+
+  @override
+  String get walletUnreachable => 'Carteira inacessível';
+
+  @override
+  String get chooseAnotherWallet => 'Escolher outra carteira';
+
+  @override
+  String get chooseWalletAppDescription =>
+      'Aprove uma ligação NWC numa carteira instalada';
+
+  @override
+  String get walletInput => 'Endereço ou ligação da carteira';
+
+  @override
+  String get walletInputHint =>
+      'NWC, endereço Lightning/BIP353, oferta BOLT12/BIP321 ou URL HTTPS de um mint Cashu';
+
+  @override
+  String get unsupportedWalletInput =>
+      'Este endereço ou ligação de carteira não é compatível.';
+
+  @override
+  String get detected => 'Detetado';
+
+  @override
+  String get lightningAddressInputType => 'Endereço Lightning ou BIP353';
+
+  @override
+  String get manualWalletSetup => 'Configurar manualmente';
+
+  @override
   String get chooseWalletType => 'Escolha o tipo de carteira';
 
   @override
@@ -990,6 +1147,32 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => 'Escolher mint Cashu';
+
+  @override
+  String get cashuMintRatingsNotice =>
+      'As avaliações da comunidade provêm de análises Nostr assinadas. Uma avaliação alta não garante que um mint seja seguro.';
+
+  @override
+  String get cashuMintDiscoveryFailed =>
+      'Não foi possível carregar sugestões de mints.';
+
+  @override
+  String get noCashuMintSuggestions =>
+      'Não foram encontradas sugestões de mints disponíveis.';
+
+  @override
+  String get noRatingsYet => 'Ainda sem avaliações';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · $count avaliações';
+  }
+
+  @override
+  String get enterMintUrlManually => 'Introduzir URL do mint manualmente';
 
   @override
   String get cashuWalletTypeSubtitle =>
@@ -1012,6 +1195,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'No Alby Go, toque em «Enviar» e depois leia este código QR.';
 
   @override
   String get manualOption => 'Manual';
@@ -1037,6 +1224,12 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get paste => 'Colar';
+
+  @override
+  String get clearInput => 'Limpar entrada';
+
+  @override
+  String get pasteOrEnter => 'Colar ou digitar';
 
   @override
   String get fromYourProfile => 'Do seu perfil';
@@ -1099,51 +1292,624 @@ class AppLocalizationsPt extends AppLocalizations {
   String get budgetNever => 'Nunca';
 
   @override
-  String get backup => 'Backup';
+  String get backup => 'Cópia de segurança';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Restaurar';
 
   @override
-  String get cashuBackupTitle => 'Cashu Backup';
+  String get cashuBackupTitle => 'Cópia de segurança Cashu';
 
   @override
   String get cashuBackupWarning =>
-      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+      'Esta cópia contém as suas provas ecash, que permitem a quem as possui gastar os fundos. Mantenha-a privada e guarde-a num local seguro. A frase de recuperação é guardada separadamente.';
 
   @override
-  String get generatingBackup => 'Generating backup...';
+  String get generatingBackup => 'A criar cópia de segurança...';
 
   @override
-  String get copyBackup => 'Copy backup';
+  String get copyBackup => 'Copiar cópia de segurança';
 
   @override
-  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+  String get backupCopiedToClipboard =>
+      'Cópia de segurança copiada para a área de transferência';
 
   @override
-  String get cashuRestoreTitle => 'Restore Cashu Backup';
+  String get cashuRestoreTitle => 'Restaurar cópia de segurança Cashu';
 
   @override
-  String get backupJson => 'Backup JSON';
+  String get backupJson => 'Cópia de segurança JSON';
 
   @override
-  String get backupJsonHint => 'Paste your backup JSON here';
+  String get backupJsonHint => 'Cole aqui a cópia de segurança JSON';
 
   @override
-  String get pleaseEnterBackup => 'Please enter a backup';
+  String get pleaseEnterBackup => 'Introduza uma cópia de segurança';
 
   @override
-  String get restoringBackup => 'Restoring backup...';
+  String get restoringBackup => 'A restaurar cópia de segurança...';
+
+  @override
+  String appUpdateVersionAvailable(String version) {
+    return 'Versão $version disponível';
+  }
+
+  @override
+  String get appUpdateLater => 'Mais tarde';
+
+  @override
+  String get appUpdateView => 'Ver atualização';
+
+  @override
+  String get appUpdateChecking => 'A procurar atualizações…';
+
+  @override
+  String get appUpdateCheckFailed => 'Falha ao procurar atualizações';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return 'Instalada: $version';
+  }
+
+  @override
+  String get appUpdatesTitle => 'Atualizações da aplicação';
+
+  @override
+  String get appUpdateNone => 'Nenhuma atualização disponível';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return 'Atualizar $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String get appUpdateAllowInstalls =>
+      'Permita instalações desta aplicação e toque novamente em Atualizar.';
+
+  @override
+  String get appUpdateCompleteInstallation =>
+      'Conclua a instalação no instalador do sistema Android.';
+
+  @override
+  String get appUpdateFailed => 'Falha na atualização';
+
+  @override
+  String get appUpdateCancel => 'Cancelar';
+
+  @override
+  String get appUpdateAction => 'Atualizar';
+
+  @override
+  String get appUpdateDownload => 'Baixar';
+
+  @override
+  String get appUpdateUpToDate => 'A aplicação está atualizada';
+
+  @override
+  String get appUpdateAheadOfPublished =>
+      'Mais recente do que a versão publicada';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return 'A versão instalada $installedVersion é mais recente do que a última versão publicada $publishedVersion. Os detalhes aparecerão quando esta versão for publicada.';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage =>
+      'Não foi possível procurar atualizações.';
+
+  @override
+  String appUpdateLatest(String version) {
+    return 'A versão $version é a mais recente disponível.';
+  }
+
+  @override
+  String get appUpdateClose => 'Fechar';
+
+  @override
+  String get appUpdateCheckAgain => 'Verificar novamente';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return 'Versão instalada $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return 'Versão instalada $installedVersion. Atualização $availableVersion disponível.';
+  }
+
+  @override
+  String get appUpdateChangelog => 'Registo de alterações';
+
+  @override
+  String get appUpdateReleaseHistory => 'Histórico de versões';
+
+  @override
+  String get appUpdateInstalledBadge => 'Instalada';
+
+  @override
+  String get appUpdateAvailableBadge => 'Atualização disponível';
+
+  @override
+  String get appUpdateLatestBadge => 'Mais recente';
+
+  @override
+  String get appUpdateNoReleases => 'Ainda não foi publicada nenhuma versão.';
+
+  @override
+  String get appUpdateAcrossAllReleases => 'Em todas as versões';
+
+  @override
+  String get appUpdateReleaseDetails => 'Detalhes da versão';
+
+  @override
+  String get appUpdateWhatsNew => 'Novidades';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return 'Publicado em $date';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return 'Canal: $channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return 'Arquitetura: $architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return 'Compilação $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return 'Versão $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes => 'Não foram publicadas notas da versão.';
+
+  @override
+  String get appUpdatePublisher => 'Editor';
+
+  @override
+  String get appUpdatePublisherSignatureVerified =>
+      'Assinatura do evento Nostr verificada';
+
+  @override
+  String get appUpdateCertificateDeclared =>
+      'Certificado de assinatura Android declarado pelo editor';
+
+  @override
+  String appUpdateSource(String host) {
+    return 'Fonte da transferência: $host';
+  }
+
+  @override
+  String get appUpdateCommunity => 'Comunidade';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return '$count zaps · $sats sats';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'sats por';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return '$count reações';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return '$count comentários';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed =>
+      'Não foi possível carregar a atividade da comunidade.';
+
+  @override
+  String get appUpdateComments => 'Comentários';
+
+  @override
+  String get appUpdateNoComments => 'Ainda não há comentários.';
+
+  @override
+  String get appUpdateCommentHint => 'Partilhe a sua opinião sobre esta versão';
+
+  @override
+  String get appUpdatePostComment => 'Publicar comentário';
+
+  @override
+  String get appUpdateSignInToComment =>
+      'Inicie sessão com uma conta Nostr para comentar.';
+
+  @override
+  String get appUpdateTechnicalDetails => 'Detalhes técnicos';
+
+  @override
+  String get appUpdateViewStatus => 'Ver estado da atualização';
 
   @override
   String restoreSuccess(int count) {
-    return 'Restored $count proofs from backup';
+    return 'Provas restauradas da cópia de segurança: $count';
   }
+
+  @override
+  String get bolt12Wallet => 'Carteira BOLT12';
+
+  @override
+  String get bolt12WalletSubtitle => 'Oferta Lightning reutilizável';
+
+  @override
+  String get bolt12PrivateOfferSubtitle => 'Oferta privada reutilizável';
+
+  @override
+  String get anyAmount => 'Qualquer montante';
+
+  @override
+  String get blindedRoute => 'Rota oculta';
+
+  @override
+  String fromAmountSats(String amount) {
+    return 'A partir de $amount sats';
+  }
+
+  @override
+  String fromAmountMsats(String amount) {
+    return 'A partir de $amount msats';
+  }
+
+  @override
+  String fromCurrencyAmount(String amount, String currency) {
+    return 'A partir de $amount $currency';
+  }
+
+  @override
+  String bolt12Expires(String date) {
+    return 'Expira em $date';
+  }
+
+  @override
+  String get bolt12WalletTypeTitle => 'Oferta BOLT12';
+
+  @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
+
+  @override
+  String get bolt12WalletTypeSubtitle =>
+      'Carteira apenas de receção com oferta reutilizável';
+
+  @override
+  String get addBolt12WalletTitle => 'Adicionar carteira BOLT12';
+
+  @override
+  String get enterBolt12Input =>
+      'Introduza ou digitalize uma oferta lno, um URI bitcoin:?lno=… ou um endereço BIP353.';
+
+  @override
+  String get bolt12Input => 'Destino de pagamento BOLT12';
+
+  @override
+  String get bolt12InputHint =>
+      'lno1…, bitcoin:?lno=… ou utilizador@dominio.com';
+
+  @override
+  String get walletNameOptional => 'Nome da carteira (opcional)';
+
+  @override
+  String get scanBolt12QrCodeTitle => 'Digitalizar código QR BOLT12';
+
+  @override
+  String get invalidBolt12QrCode =>
+      'O código QR não contém um destino de pagamento BOLT12, BIP321 ou BIP353.';
+
+  @override
+  String get pleaseEnterBolt12Input =>
+      'Introduza uma oferta BOLT12 ou um endereço BIP353.';
+
+  @override
+  String get bolt12WalletAdded => 'Carteira BOLT12 adicionada!';
+
+  @override
+  String get bolt12OfferTitle => 'Receber com BOLT12';
+
+  @override
+  String get bolt12OfferInstructions =>
+      'Partilhe esta oferta reutilizável para receber um pagamento Lightning.';
+
+  @override
+  String get confirm => 'Confirmar';
+
+  @override
+  String get reviewWallet => 'Rever carteira';
+
+  @override
+  String get confirmWalletTitle => 'Confirmar carteira';
+
+  @override
+  String get confirmWalletDescription =>
+      'Reveja estes dados antes de adicionar a carteira.';
+
+  @override
+  String get walletDetailType => 'Tipo de carteira';
+
+  @override
+  String get walletDetailAddress => 'Endereço';
+
+  @override
+  String get walletDetailDomain => 'Domínio';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => 'Chave pública';
+
+  @override
+  String get walletDetailRelay => 'Relay';
+
+  @override
+  String get walletDetailRelays => 'Relays';
+
+  @override
+  String get walletDetailSecret => 'Segredo da ligação';
+
+  @override
+  String get walletSecretHidden => 'Presente e oculto por segurança';
+
+  @override
+  String get walletDetailDescription => 'Descrição';
+
+  @override
+  String get walletDetailDetails => 'Detalhes';
+
+  @override
+  String get walletDetailIssuer => 'Emissor';
+
+  @override
+  String get walletDetailAmount => 'Montante';
+
+  @override
+  String get walletDetailCurrency => 'Moeda';
+
+  @override
+  String get walletDetailExpiry => 'Expira';
+
+  @override
+  String get walletDetailNodeId => 'ID do nó';
+
+  @override
+  String get walletDetailOffer => 'Oferta BOLT12';
+
+  @override
+  String get walletDetailVersion => 'Versão';
+
+  @override
+  String get walletDetailUnits => 'Unidades suportadas';
+
+  @override
+  String get walletDetailContact => 'Contacto';
+
+  @override
+  String get walletDetailTerms => 'Termos de serviço';
+
+  @override
+  String get walletDetailMessage => 'Mensagem';
+
+  @override
+  String get walletDetailCommunityRating => 'Avaliação da comunidade';
+
+  @override
+  String get walletDetailCommunityReviews =>
+      'Avaliações recentes da comunidade';
+
+  @override
+  String get refreshBalance => 'Atualizar saldo';
+
+  @override
+  String get balanceRefreshed => 'Saldo atualizado';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Recuperar Cotação da Mint';
+
+  @override
+  String get recoverQuote => 'Recuperar cotação';
+
+  @override
+  String get enterQuoteId =>
+      'Introduza o ID da cotação da mint a recuperar. A chave de bloqueio é recuperada a partir da sua frase semente.';
+
+  @override
+  String get quoteId => 'ID da cotação';
+
+  @override
+  String get quoteIdHint => 'Cole o ID da cotação aqui';
+
+  @override
+  String get pleaseEnterQuoteId => 'Por favor, introduza um ID de cotação';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'A obter cotação da mint...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'A recuperar chave de bloqueio da sua semente...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint => 'A completar mint...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Chave de bloqueio recuperada (contador de derivação $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Cotação recuperada e fundos adicionados ao seu saldo';
+
+  @override
+  String get quoteRecoveryFailed => 'Falha na recuperação da cotação';
+
+  @override
+  String get restoreFundsFromMint => 'Restaurar fundos da mint';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Restaurar Fundos da Mint';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Procura a mint por provas derivadas da sua semente e restaura-as para esta carteira.';
+
+  @override
+  String get startRestore => 'Iniciar restauração';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets =>
+      'A obter conjuntos de chaves da mint...';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'A procurar os seus fundos na mint...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return 'Verificados $keysets conjunto(s) de chaves · $proofs prova(s) encontrada(s)';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Restauração concluída';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Também recupera cotações pendentes da mint';
+
+  @override
+  String restoredFromMint(int count) {
+    return 'Restauradas $count provas da mint';
+  }
+
+  @override
+  String get restoreFailed => 'Falha na restauração';
+
+  @override
+  String get restoreFromBackup => 'Restaurar a partir de backup';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Restaurar e backup';
+
+  @override
+  String get cashuSeedPhraseOption => 'Definir frase semente';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Frase semente Cashu';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Esta frase semente é partilhada por TODAS as carteiras Cashu. É a única forma de recuperar os seus fundos depois de perder este dispositivo. Alterá-la substitui a semente utilizada para derivar as chaves de todas as carteiras Cashu, pelo que os fundos recebidos com a semente anterior deixarão de ser encontrados automaticamente.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Introduza a frase de recuperação que pretende utilizar (12, 15, 18, 21 ou 24 palavras). Altere a semente apenas quando restaurar carteiras a partir de uma frase que já guardou.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Frase semente';
+
+  @override
+  String get cashuSeedPhraseHint => 'Cole aqui a sua frase semente';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Entendo que isto altera a semente de todas as carteiras Cashu';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'Isso não parece uma frase semente válida. Verifique se todas as palavras estão escritas corretamente e na ordem certa.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Frase semente atualizada. Passa a aplicar-se a todas as carteiras Cashu. Faça uma cópia de segurança da nova frase.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed =>
+      'Não foi possível atualizar a frase semente';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
 class AppLocalizationsPtBr extends AppLocalizationsPt {
   AppLocalizationsPtBr() : super('pt_BR');
+
+  @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'No LNbits, escolha a carteira que deseja conectar, abra-a, clique em Documentação da API e copie a chave de administrador. Cole-a abaixo:';
+
+  @override
+  String get lnbitsAdminKey => 'Chave de administrador LNbits';
+
+  @override
+  String get lnbitsKeyType => 'Tipo de chave LNbits';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'Chave de fatura/leitura LNbits';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Carteira somente para receber: consulte saldo e histórico e crie faturas. O envio de pagamentos está desativado.';
+
+  @override
+  String get lnbitsUrl => 'URL do LNbits';
+
+  @override
+  String get lnbitsCredentialsRequired =>
+      'Insira a chave de administrador e a URL do LNbits.';
+
+  @override
+  String get lnbitsWalletAdded => 'Carteira LNbits adicionada';
+
+  @override
+  String get walletDetailWalletId => 'ID da carteira';
+
+  @override
+  String get saveBackupToFile => 'Salvar backup em arquivo';
+
+  @override
+  String get backupSavedToFile => 'Backup salvo em arquivo';
+
+  @override
+  String get restoreFromFile => 'Restaurar de arquivo';
+
+  @override
+  String get backupFileReadFailed =>
+      'Não foi possível ler o arquivo de backup selecionado.';
+
+  @override
+  String get fetchingWalletConnectionInfo =>
+      'Obtendo informações de conexão da carteira…';
 
   @override
   String get createAccount => 'Criar sua conta';
@@ -1912,6 +2678,29 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get payInvoiceTitle => 'Pagar fatura';
 
   @override
+  String get sendToWallet => 'Enviar para uma carteira';
+
+  @override
+  String get sendToWalletDescription =>
+      'Transferir para outra carteira compatível';
+
+  @override
+  String get noCompatibleReceivingWallets =>
+      'Nenhuma carteira de recebimento compatível';
+
+  @override
+  String get noCompatibleReceivingWalletsDescription =>
+      'Adicione ou conecte outra carteira que possa receber um pagamento compatível com esta carteira.';
+
+  @override
+  String get destinationWallet => 'Carteira de destino';
+
+  @override
+  String walletTransferSubmitted(String walletName) {
+    return 'Pagamento enviado para $walletName';
+  }
+
+  @override
   String get invoice => 'Fatura';
 
   @override
@@ -2109,6 +2898,90 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get addWalletTitle => 'Adicionar carteira';
 
   @override
+  String get addWalletDescription =>
+      'Escaneie o código QR de uma carteira compatível, cole os dados ou conecte por um aplicativo de carteira.';
+
+  @override
+  String get scanWalletQrCode => 'Escanear QR da carteira';
+
+  @override
+  String get connectWithWallet => 'Conectar com uma carteira';
+
+  @override
+  String get chooseWalletApp => 'Escolher aplicativo de carteira';
+
+  @override
+  String get oneClickConnect => 'Conexão com 1 clique';
+
+  @override
+  String get chooseWallet => 'Escolher carteira';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => 'Conexão NWC manual';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return 'Conclua a conexão em $walletName';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return 'Conectando a $walletName…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '$walletName conectada';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return 'Não foi possível conectar a $walletName';
+  }
+
+  @override
+  String get retry => 'Tentar novamente';
+
+  @override
+  String get walletUnreachable => 'Carteira inacessível';
+
+  @override
+  String get chooseAnotherWallet => 'Escolher outra carteira';
+
+  @override
+  String get chooseWalletAppDescription =>
+      'Aprove uma conexão NWC em uma carteira instalada';
+
+  @override
+  String get walletInput => 'Endereço ou conexão da carteira';
+
+  @override
+  String get walletInputHint =>
+      'NWC, endereço Lightning/BIP353, oferta BOLT12/BIP321 ou URL HTTPS de um mint Cashu';
+
+  @override
+  String get unsupportedWalletInput =>
+      'Este endereço ou conexão de carteira não é compatível.';
+
+  @override
+  String get detected => 'Detectado';
+
+  @override
+  String get lightningAddressInputType => 'Endereço Lightning ou BIP353';
+
+  @override
+  String get manualWalletSetup => 'Configurar manualmente';
+
+  @override
   String get chooseWalletType => 'Escolha o tipo de carteira';
 
   @override
@@ -2126,6 +2999,32 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => 'Escolher mint Cashu';
+
+  @override
+  String get cashuMintRatingsNotice =>
+      'As avaliações da comunidade vêm de análises Nostr assinadas. Uma avaliação alta não garante que um mint seja seguro.';
+
+  @override
+  String get cashuMintDiscoveryFailed =>
+      'Não foi possível carregar sugestões de mints.';
+
+  @override
+  String get noCashuMintSuggestions =>
+      'Nenhuma sugestão de mint disponível foi encontrada.';
+
+  @override
+  String get noRatingsYet => 'Ainda sem avaliações';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · $count avaliações';
+  }
+
+  @override
+  String get enterMintUrlManually => 'Inserir URL do mint manualmente';
 
   @override
   String get cashuWalletTypeSubtitle =>
@@ -2148,6 +3047,10 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'No Alby Go, toque em “Enviar” e escaneie este código QR.';
 
   @override
   String get manualOption => 'Manual';
@@ -2173,6 +3076,12 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get paste => 'Colar';
+
+  @override
+  String get clearInput => 'Limpar entrada';
+
+  @override
+  String get pasteOrEnter => 'Colar ou digitar';
 
   @override
   String get fromYourProfile => 'Do seu perfil';
@@ -2233,4 +3142,567 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get budgetNever => 'Nunca';
+
+  @override
+  String get backup => 'Backup';
+
+  @override
+  String get restore => 'Restaurar';
+
+  @override
+  String get cashuBackupTitle => 'Backup Cashu';
+
+  @override
+  String get cashuBackupWarning =>
+      'Este backup contém suas provas ecash, que permitem a quem as possui gastar os fundos. Mantenha-o privado e guarde-o em um local seguro. A frase de recuperação é salva separadamente.';
+
+  @override
+  String get generatingBackup => 'Gerando backup...';
+
+  @override
+  String get copyBackup => 'Copiar backup';
+
+  @override
+  String get backupCopiedToClipboard =>
+      'Backup copiado para a área de transferência';
+
+  @override
+  String get cashuRestoreTitle => 'Restaurar backup Cashu';
+
+  @override
+  String get backupJson => 'Backup JSON';
+
+  @override
+  String get backupJsonHint => 'Cole seu backup JSON aqui';
+
+  @override
+  String get pleaseEnterBackup => 'Insira um backup';
+
+  @override
+  String get restoringBackup => 'Restaurando backup...';
+
+  @override
+  String appUpdateVersionAvailable(String version) {
+    return 'Versão $version disponível';
+  }
+
+  @override
+  String get appUpdateLater => 'Mais tarde';
+
+  @override
+  String get appUpdateView => 'Ver atualização';
+
+  @override
+  String get appUpdateChecking => 'Procurando atualizações…';
+
+  @override
+  String get appUpdateCheckFailed => 'Falha ao procurar atualizações';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return 'Instalada: $version';
+  }
+
+  @override
+  String get appUpdatesTitle => 'Atualizações do aplicativo';
+
+  @override
+  String get appUpdateNone => 'Nenhuma atualização disponível';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return 'Atualizar $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String get appUpdateAllowInstalls =>
+      'Permita instalações deste aplicativo e toque novamente em Atualizar.';
+
+  @override
+  String get appUpdateCompleteInstallation =>
+      'Conclua a instalação no instalador do sistema Android.';
+
+  @override
+  String get appUpdateFailed => 'Falha na atualização';
+
+  @override
+  String get appUpdateCancel => 'Cancelar';
+
+  @override
+  String get appUpdateAction => 'Atualizar';
+
+  @override
+  String get appUpdateDownload => 'Baixar';
+
+  @override
+  String get appUpdateUpToDate => 'O aplicativo está atualizado';
+
+  @override
+  String get appUpdateAheadOfPublished => 'Mais recente que a versão publicada';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return 'A versão instalada $installedVersion é mais recente que a última versão publicada $publishedVersion. Os detalhes aparecerão quando esta versão for publicada.';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage =>
+      'Não foi possível procurar atualizações.';
+
+  @override
+  String appUpdateLatest(String version) {
+    return 'A versão $version é a mais recente disponível.';
+  }
+
+  @override
+  String get appUpdateClose => 'Fechar';
+
+  @override
+  String get appUpdateCheckAgain => 'Verificar novamente';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return 'Versão instalada $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return 'Versão instalada $installedVersion. Atualização $availableVersion disponível.';
+  }
+
+  @override
+  String get appUpdateChangelog => 'Registro de alterações';
+
+  @override
+  String get appUpdateReleaseHistory => 'Histórico de versões';
+
+  @override
+  String get appUpdateInstalledBadge => 'Instalada';
+
+  @override
+  String get appUpdateAvailableBadge => 'Atualização disponível';
+
+  @override
+  String get appUpdateLatestBadge => 'Mais recente';
+
+  @override
+  String get appUpdateNoReleases => 'Nenhuma versão foi publicada ainda.';
+
+  @override
+  String get appUpdateAcrossAllReleases => 'Em todas as versões';
+
+  @override
+  String get appUpdateReleaseDetails => 'Detalhes da versão';
+
+  @override
+  String get appUpdateWhatsNew => 'Novidades';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return 'Publicado em $date';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return 'Canal: $channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return 'Arquitetura: $architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return 'Compilação $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return 'Versão $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes => 'Nenhuma nota de versão foi publicada.';
+
+  @override
+  String get appUpdatePublisher => 'Publicador';
+
+  @override
+  String get appUpdatePublisherSignatureVerified =>
+      'Assinatura do evento Nostr verificada';
+
+  @override
+  String get appUpdateCertificateDeclared =>
+      'Certificado de assinatura Android declarado pelo publicador';
+
+  @override
+  String appUpdateSource(String host) {
+    return 'Fonte do download: $host';
+  }
+
+  @override
+  String get appUpdateCommunity => 'Comunidade';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return '$count zaps · $sats sats';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'sats por';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return '$count reações';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return '$count comentários';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed =>
+      'Não foi possível carregar a atividade da comunidade.';
+
+  @override
+  String get appUpdateComments => 'Comentários';
+
+  @override
+  String get appUpdateNoComments => 'Ainda não há comentários.';
+
+  @override
+  String get appUpdateCommentHint =>
+      'Compartilhe sua opinião sobre esta versão';
+
+  @override
+  String get appUpdatePostComment => 'Publicar comentário';
+
+  @override
+  String get appUpdateSignInToComment =>
+      'Entre com uma conta Nostr para comentar.';
+
+  @override
+  String get appUpdateTechnicalDetails => 'Detalhes técnicos';
+
+  @override
+  String get appUpdateViewStatus => 'Ver status da atualização';
+
+  @override
+  String restoreSuccess(int count) {
+    return 'Provas restauradas do backup: $count';
+  }
+
+  @override
+  String get bolt12Wallet => 'Carteira BOLT12';
+
+  @override
+  String get bolt12WalletSubtitle => 'Oferta Lightning reutilizável';
+
+  @override
+  String get bolt12PrivateOfferSubtitle => 'Oferta privada reutilizável';
+
+  @override
+  String get anyAmount => 'Qualquer valor';
+
+  @override
+  String get blindedRoute => 'Rota oculta';
+
+  @override
+  String fromAmountSats(String amount) {
+    return 'A partir de $amount sats';
+  }
+
+  @override
+  String fromAmountMsats(String amount) {
+    return 'A partir de $amount msats';
+  }
+
+  @override
+  String fromCurrencyAmount(String amount, String currency) {
+    return 'A partir de $amount $currency';
+  }
+
+  @override
+  String bolt12Expires(String date) {
+    return 'Expira em $date';
+  }
+
+  @override
+  String get bolt12WalletTypeTitle => 'Oferta BOLT12';
+
+  @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
+
+  @override
+  String get bolt12WalletTypeSubtitle =>
+      'Carteira apenas de recebimento com oferta reutilizável';
+
+  @override
+  String get addBolt12WalletTitle => 'Adicionar carteira BOLT12';
+
+  @override
+  String get enterBolt12Input =>
+      'Insira ou escaneie uma oferta lno, um URI bitcoin:?lno=… ou um endereço BIP353.';
+
+  @override
+  String get bolt12Input => 'Destino de pagamento BOLT12';
+
+  @override
+  String get bolt12InputHint => 'lno1…, bitcoin:?lno=… ou usuario@dominio.com';
+
+  @override
+  String get walletNameOptional => 'Nome da carteira (opcional)';
+
+  @override
+  String get scanBolt12QrCodeTitle => 'Escanear código QR BOLT12';
+
+  @override
+  String get invalidBolt12QrCode =>
+      'O código QR não contém um destino de pagamento BOLT12, BIP321 ou BIP353.';
+
+  @override
+  String get pleaseEnterBolt12Input =>
+      'Insira uma oferta BOLT12 ou um endereço BIP353.';
+
+  @override
+  String get bolt12WalletAdded => 'Carteira BOLT12 adicionada!';
+
+  @override
+  String get bolt12OfferTitle => 'Receber com BOLT12';
+
+  @override
+  String get bolt12OfferInstructions =>
+      'Compartilhe esta oferta reutilizável para receber um pagamento Lightning.';
+
+  @override
+  String get confirm => 'Confirmar';
+
+  @override
+  String get reviewWallet => 'Revisar carteira';
+
+  @override
+  String get confirmWalletTitle => 'Confirmar carteira';
+
+  @override
+  String get confirmWalletDescription =>
+      'Revise estes dados antes de adicionar a carteira.';
+
+  @override
+  String get walletDetailType => 'Tipo de carteira';
+
+  @override
+  String get walletDetailAddress => 'Endereço';
+
+  @override
+  String get walletDetailDomain => 'Domínio';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => 'Chave pública';
+
+  @override
+  String get walletDetailRelay => 'Relay';
+
+  @override
+  String get walletDetailRelays => 'Relays';
+
+  @override
+  String get walletDetailSecret => 'Segredo da conexão';
+
+  @override
+  String get walletSecretHidden => 'Presente e oculto por segurança';
+
+  @override
+  String get walletDetailDescription => 'Descrição';
+
+  @override
+  String get walletDetailDetails => 'Detalhes';
+
+  @override
+  String get walletDetailIssuer => 'Emissor';
+
+  @override
+  String get walletDetailAmount => 'Valor';
+
+  @override
+  String get walletDetailCurrency => 'Moeda';
+
+  @override
+  String get walletDetailExpiry => 'Expira';
+
+  @override
+  String get walletDetailNodeId => 'ID do nó';
+
+  @override
+  String get walletDetailOffer => 'Oferta BOLT12';
+
+  @override
+  String get walletDetailVersion => 'Versão';
+
+  @override
+  String get walletDetailUnits => 'Unidades compatíveis';
+
+  @override
+  String get walletDetailContact => 'Contato';
+
+  @override
+  String get walletDetailTerms => 'Termos de serviço';
+
+  @override
+  String get walletDetailMessage => 'Mensagem';
+
+  @override
+  String get walletDetailCommunityRating => 'Avaliação da comunidade';
+
+  @override
+  String get walletDetailCommunityReviews =>
+      'Avaliações recentes da comunidade';
+
+  @override
+  String get refreshBalance => 'Atualizar saldo';
+
+  @override
+  String get balanceRefreshed => 'Saldo atualizado';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Recuperar Cotação da Mint';
+
+  @override
+  String get recoverQuote => 'Recuperar cotação';
+
+  @override
+  String get enterQuoteId =>
+      'Insira o ID da cotação da mint para recuperar. A chave de bloqueio é recuperada a partir da sua frase semente.';
+
+  @override
+  String get quoteId => 'ID da cotação';
+
+  @override
+  String get quoteIdHint => 'Cole o ID da cotação aqui';
+
+  @override
+  String get pleaseEnterQuoteId => 'Por favor, insira um ID de cotação';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'Buscando cotação da mint...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'Recuperando chave de bloqueio da sua semente...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint => 'Concluindo mint...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Chave de bloqueio recuperada (contador de derivação $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Cotação recuperada e fundos adicionados ao seu saldo';
+
+  @override
+  String get quoteRecoveryFailed => 'Falha ao recuperar cotação';
+
+  @override
+  String get restoreFundsFromMint => 'Restaurar fundos da mint';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Restaurar Fundos da Mint';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Verifica a mint em busca de provas derivadas da sua semente e as restaura nesta carteira.';
+
+  @override
+  String get startRestore => 'Iniciar restauração';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets => 'Buscando keysets da mint...';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'Verificando mint em busca dos seus fundos...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return 'Verificados $keysets keyset(s) · $proofs prova(s) encontrada(s)';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Restauração concluída';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Também recupera cotações de mint pendentes';
+
+  @override
+  String restoredFromMint(int count) {
+    return 'Restauradas $count provas da mint';
+  }
+
+  @override
+  String get restoreFailed => 'Falha na restauração';
+
+  @override
+  String get restoreFromBackup => 'Restaurar a partir de backup';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Restaurar e backup';
+
+  @override
+  String get cashuSeedPhraseOption => 'Definir frase semente';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Frase semente Cashu';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Esta frase semente é compartilhada por TODAS as carteiras Cashu. É a única forma de recuperar seus fundos depois de perder este dispositivo. Alterá-la substitui a semente usada para derivar as chaves de todas as carteiras Cashu, portanto os fundos recebidos sob a semente anterior não poderão mais ser encontrados automaticamente.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Insira a frase de recuperação que deseja usar (12, 15, 18, 21 ou 24 palavras). Altere a semente apenas ao restaurar carteiras a partir de uma frase que você já salvou.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Frase semente';
+
+  @override
+  String get cashuSeedPhraseHint => 'Cole sua frase semente aqui';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Entendo que isso altera a semente de todas as carteiras Cashu';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'Isso não parece uma frase semente válida. Verifique se todas as palavras estão escritas corretamente e na ordem certa.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Frase semente atualizada. Agora ela se aplica a todas as carteiras Cashu. Faça backup da nova frase.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed =>
+      'Não foi possível atualizar a frase semente';
 }

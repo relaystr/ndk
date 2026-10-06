@@ -104,6 +104,14 @@ class MockUserRelayList extends _i1.Mock implements _i6.UserRelayList {
           as Iterable<String>);
 
   @override
+  Iterable<String> get writeUrls =>
+      (super.noSuchMethod(
+            Invocation.getter(#writeUrls),
+            returnValue: <String>[],
+          )
+          as Iterable<String>);
+
+  @override
   set pubKey(String? value) => super.noSuchMethod(
     Invocation.setter(#pubKey, value),
     returnValueForMissingStub: null,

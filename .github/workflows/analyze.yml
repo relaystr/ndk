@@ -2,8 +2,13 @@ name: analyze
 
 on:
   push:
+    branches: [master]
   pull_request:
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   analyze:
@@ -13,10 +18,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - package: ./packages/bip32_keys
-            pub_get_directory: .
-            pub_get_command: dart pub get
-            analyze_command: flutter analyze --fatal-infos --fatal-warnings .
           - package: ./packages/ndk
             pub_get_directory: .
             pub_get_command: dart pub get

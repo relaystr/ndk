@@ -715,17 +715,13 @@ void main() async {
       );
     }, timeout: const Timeout.factor(10));
 
-    test(
-      'Love is Bitcoin (3k follows) feed best relays',
-      () async {
-        await calculateBestRelaysForNpubContactsFeed(
-          "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx",
-          iterations: 1,
-          relayMinCountPerPubKey: 2,
-        );
-      },
-      timeout: const Timeout.factor(10),
-    );
+    test('Love is Bitcoin (3k follows) feed best relays', () async {
+      await calculateBestRelaysForNpubContactsFeed(
+        "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx",
+        iterations: 1,
+        relayMinCountPerPubKey: 2,
+      );
+    }, timeout: const Timeout.factor(10));
   });
   // test('testing not timing out on subscriptions', () async {
   //   RelayManager manager = RelayManager();

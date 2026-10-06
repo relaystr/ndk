@@ -64,6 +64,12 @@ class NdkConfig {
   /// Store this securely! Seed phrase allow full access to cashu funds!
   final CashuUserSeedphrase? cashuUserSeedphrase;
 
+  /// when false (default), automatic cashu quote completion on startup
+  /// requires an explicit `Cashu.restore()` call for the mint/unit first;
+  /// when true, it instead runs a bounded NUT-09 scan itself to verify the
+  /// mint derivation counter before minting. See [Cashu.retrieveFunds].
+  bool autoVerifyMintCounters;
+
   /// whether to save broadcasted events to cache by default
   bool defaultBroadcastSaveToCache;
 
@@ -73,14 +79,37 @@ class NdkConfig {
   /// User agent string for Http requests and websockets.
   String userAgent;
 
+  /// Whether native WebSocket connections negotiate per-message compression.
+  ///
+  /// Defaults to true, preserving existing behavior. Disable this to reduce
+  /// memory and codec overhead at the cost of sending more bytes for
+  /// compressible traffic. Browser WebSocket APIs do not expose compression
+  /// controls, so this option has no effect on web builds.
+  bool webSocketCompression;
+
+  /// Native WebSocket heartbeat interval. Null disables client pings.
+  ///
+  /// Longer intervals reduce idle network traffic, but also delay detection of
+  /// silent connection failures (the pong timeout equals this interval).
+  /// Browser WebSocket APIs do not expose heartbeat controls.
+  Duration? webSocketPingInterval;
+
+  /// Maximum exponential reconnect step, starting at 500 milliseconds.
+  ///
+  /// The default of 4 caps retries at 4 seconds. For example, 7 caps retries
+  /// at 32 seconds. This only affects failed connections, not event delivery
+  /// on healthy connections.
+  int webSocketReconnectMaximumStep;
+
   /// Enable fetched ranges tracking.
   /// When enabled, NDK tracks which time ranges have been fetched from which relays.
   /// Disabled by default for performance.
   bool fetchedRangesEnabled;
 
-  /// If true, AUTH immediately when relay sends challenge.
-  /// If false (default), AUTH only after relay responds with auth-required.
-  /// False is more privacy-respecting as it doesn't reveal identity until necessary.
+  /// Has no effect. A connection now carries at most one identity, chosen when
+  /// it is opened: an anonymous connection never answers a challenge and a
+  /// bound one always does, so there is nothing left to choose.
+  @Deprecated('Has no effect, a connection is bound to an identity or to none')
   bool eagerAuth;
 
   /// Timeout for AUTH callbacks (how long to wait for AUTH OK response).
@@ -89,6 +118,13 @@ class NdkConfig {
 
   /// Interval for retrying pending broadcast deliveries while relays remain connected.
   Duration pendingDeliveryRetryInterval;
+
+  /// Whether persisted broadcast deliveries are retried automatically in the
+  /// background.
+  ///
+  /// Disable this for short-lived clients such as command-line tools that
+  /// should only perform the network work requested by the current command.
+  bool pendingDeliveryRetriesEnabled;
 
   /// Default trusted providers for NIP-85 trusted assertions.
   List<Nip85TrustedProvider> defaultTrustedProviders;
@@ -108,6 +144,13 @@ class NdkConfig {
   /// Whether to run cache eviction once on startup before periodic runs.
   bool runCacheEvictionOnStartup;
 
+  /// Development aid, off by default. Flutter apps can pass `kDebugMode`.
+  ///
+  /// When enabled:
+  /// - request ids sent to relays start with the request name, so relays
+  ///   see which usecase opened each subscription. Keep it off in production.
+  bool debugMode;
+
   /// Creates a new instance of [NdkConfig].
   ///
   /// [eventVerifier] The verifier used to validate Nostr events. \
@@ -120,6 +163,7 @@ class NdkConfig {
   /// [defaultQueryTimeout] The default timeout for queries (defaults to DEFAULT_QUERY_TIMEOUT). \
   /// [logLevel] The log level for the NDK (defaults to warning).
   /// [cashuUserSeedphrase] The cashu user seed phrase, required for using cashu features
+  /// [webSocketCompression] Whether native WebSockets negotiate compression.
   NdkConfig({
     required this.eventVerifier,
     required this.cache,
@@ -136,17 +180,24 @@ class NdkConfig {
     this.defaultBroadcastSaveToCache = BroadcastDefaults.SAVE_TO_CACHE,
     this.logLevel = defaultLogLevel,
     this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
+    this.webSocketCompression = true,
+    this.webSocketPingInterval = const Duration(seconds: 10),
+    this.webSocketReconnectMaximumStep = 4,
     this.cashuUserSeedphrase,
+    this.autoVerifyMintCounters = false,
     this.fetchedRangesEnabled = false,
+    // ignore: deprecated_member_use_from_same_package
     this.eagerAuth = false,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
     this.pendingDeliveryRetryInterval = const Duration(seconds: 15),
+    this.pendingDeliveryRetriesEnabled = true,
     this.defaultTrustedProviders = DEFAULT_NIP85_PROVIDERS,
     this.cacheEvictionEnabled = false,
     this.cacheEvictionPolicy = const EvictionPolicy(),
     this.cacheEvictionStartupDelay = const Duration(minutes: 1),
     this.cacheEvictionInterval = const Duration(hours: 1),
     this.runCacheEvictionOnStartup = true,
+    this.debugMode = false,
   });
 }
 

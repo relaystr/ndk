@@ -1,7 +1,7 @@
 /// Quantum-secure event verifier with platform-specific implementations.
 ///
 /// On native platforms (Android, iOS, Linux, macOS, Windows), this uses FFI
-/// to call Rust code for CRYSTALS-Dilithium verification.
+/// to call Rust code for ML-DSA (FIPS 204) verification.
 ///
 /// On web platforms, this exports a stub that throws [UnsupportedError].
 library;

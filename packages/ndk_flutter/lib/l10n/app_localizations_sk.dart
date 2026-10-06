@@ -9,6 +9,55 @@ class AppLocalizationsSk extends AppLocalizations {
   AppLocalizationsSk([String locale = 'sk']) : super(locale);
 
   @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'V LNbits vyberte peňaženku, ktorú chcete pripojiť, otvorte ju, kliknite na Dokumentáciu API a skopírujte kľúč správcu. Vložte ho nižšie:';
+
+  @override
+  String get lnbitsAdminKey => 'Kľúč správcu LNbits';
+
+  @override
+  String get lnbitsKeyType => 'Typ kľúča LNbits';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'Kľúč faktúr/čítania LNbits';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Peňaženka len na prijímanie: zobrazuje zostatok a históriu a vytvára faktúry. Odosielanie platieb je vypnuté.';
+
+  @override
+  String get lnbitsUrl => 'URL LNbits';
+
+  @override
+  String get lnbitsCredentialsRequired => 'Zadajte kľúč správcu aj URL LNbits.';
+
+  @override
+  String get lnbitsWalletAdded => 'Peňaženka LNbits bola pridaná';
+
+  @override
+  String get walletDetailWalletId => 'ID peňaženky';
+
+  @override
+  String get saveBackupToFile => 'Uložiť zálohu do súboru';
+
+  @override
+  String get backupSavedToFile => 'Záloha bola uložená do súboru';
+
+  @override
+  String get restoreFromFile => 'Obnoviť zo súboru';
+
+  @override
+  String get backupFileReadFailed =>
+      'Vybraný súbor zálohy sa nepodarilo prečítať.';
+
+  @override
+  String get fetchingWalletConnectionInfo =>
+      'Načítavajú sa údaje pripojenia peňaženky…';
+
+  @override
   String get createAccount => 'Vytvorte si účet';
 
   @override
@@ -772,6 +821,29 @@ class AppLocalizationsSk extends AppLocalizations {
   String get payInvoiceTitle => 'Zaplatiť faktúru';
 
   @override
+  String get sendToWallet => 'Poslať do peňaženky';
+
+  @override
+  String get sendToWalletDescription =>
+      'Previesť do inej kompatibilnej peňaženky';
+
+  @override
+  String get noCompatibleReceivingWallets =>
+      'Žiadne kompatibilné prijímacie peňaženky';
+
+  @override
+  String get noCompatibleReceivingWalletsDescription =>
+      'Pridaj alebo pripoj inú peňaženku, ktorá dokáže prijať platbu podporovanú touto peňaženkou.';
+
+  @override
+  String get destinationWallet => 'Cieľová peňaženka';
+
+  @override
+  String walletTransferSubmitted(String walletName) {
+    return 'Platba odoslaná do peňaženky $walletName';
+  }
+
+  @override
   String get invoice => 'Faktúra';
 
   @override
@@ -967,6 +1039,90 @@ class AppLocalizationsSk extends AppLocalizations {
   String get addWalletTitle => 'Pridať peňaženku';
 
   @override
+  String get addWalletDescription =>
+      'Naskenujte podporovaný QR kód peňaženky, vložte údaje alebo sa pripojte cez aplikáciu peňaženky.';
+
+  @override
+  String get scanWalletQrCode => 'Naskenovať QR kód peňaženky';
+
+  @override
+  String get connectWithWallet => 'Pripojiť peňaženku';
+
+  @override
+  String get chooseWalletApp => 'Vybrať aplikáciu peňaženky';
+
+  @override
+  String get oneClickConnect => 'Pripojiť jedným kliknutím';
+
+  @override
+  String get chooseWallet => 'Vybrať peňaženku';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => 'Ručné pripojenie NWC';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return 'Dokončite pripojenie v $walletName';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return 'Pripája sa $walletName…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '$walletName pripojená';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return 'Nepodarilo sa pripojiť $walletName';
+  }
+
+  @override
+  String get retry => 'Skúsiť znova';
+
+  @override
+  String get walletUnreachable => 'Peňaženka je nedostupná';
+
+  @override
+  String get chooseAnotherWallet => 'Vybrať inú peňaženku';
+
+  @override
+  String get chooseWalletAppDescription =>
+      'Schváľte pripojenie NWC v nainštalovanej peňaženke';
+
+  @override
+  String get walletInput => 'Adresa alebo pripojenie peňaženky';
+
+  @override
+  String get walletInputHint =>
+      'NWC, adresa Lightning/BIP353, ponuka BOLT12/BIP321 alebo HTTPS URL Cashu mintu';
+
+  @override
+  String get unsupportedWalletInput =>
+      'Táto adresa alebo pripojenie peňaženky nie je podporované.';
+
+  @override
+  String get detected => 'Rozpoznané';
+
+  @override
+  String get lightningAddressInputType => 'Adresa Lightning alebo BIP353';
+
+  @override
+  String get manualWalletSetup => 'Nastaviť ručne';
+
+  @override
   String get chooseWalletType => 'Vyberte typ peňaženky';
 
   @override
@@ -984,6 +1140,31 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => 'Vybrať Cashu mint';
+
+  @override
+  String get cashuMintRatingsNotice =>
+      'Hodnotenia komunity pochádzajú z podpísaných recenzií Nostr. Vysoké hodnotenie nezaručuje bezpečnosť mintu.';
+
+  @override
+  String get cashuMintDiscoveryFailed => 'Návrhy mintov sa nepodarilo načítať.';
+
+  @override
+  String get noCashuMintSuggestions =>
+      'Nenašli sa žiadne dostupné návrhy mintov.';
+
+  @override
+  String get noRatingsYet => 'Zatiaľ bez hodnotení';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · $count recenzií';
+  }
+
+  @override
+  String get enterMintUrlManually => 'Zadať URL mintu ručne';
 
   @override
   String get cashuWalletTypeSubtitle =>
@@ -1006,6 +1187,10 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'V Alby Go ťuknite na „Odoslať“ a potom naskenujte tento QR kód.';
 
   @override
   String get manualOption => 'Manuálne';
@@ -1031,6 +1216,12 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get paste => 'Vložiť';
+
+  @override
+  String get clearInput => 'Vymazať vstup';
+
+  @override
+  String get pasteOrEnter => 'Prilepiť alebo zadať';
 
   @override
   String get fromYourProfile => 'Z vášho profilu';
@@ -1130,7 +1321,529 @@ class AppLocalizationsSk extends AppLocalizations {
   String get restoringBackup => 'Obnovuje sa záloha...';
 
   @override
+  String appUpdateVersionAvailable(String version) {
+    return 'Verzia $version je k dispozícii';
+  }
+
+  @override
+  String get appUpdateLater => 'Neskôr';
+
+  @override
+  String get appUpdateView => 'Zobraziť aktualizáciu';
+
+  @override
+  String get appUpdateChecking => 'Kontrolujú sa aktualizácie…';
+
+  @override
+  String get appUpdateCheckFailed => 'Kontrola aktualizácií zlyhala';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return 'Nainštalovaná: $version';
+  }
+
+  @override
+  String get appUpdatesTitle => 'Aktualizácie aplikácie';
+
+  @override
+  String get appUpdateNone => 'Nie je k dispozícii žiadna aktualizácia';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return 'Aktualizácia $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String get appUpdateAllowInstalls =>
+      'Povoľte inštalácie z tejto aplikácie a potom znova klepnite na Aktualizovať.';
+
+  @override
+  String get appUpdateCompleteInstallation =>
+      'Dokončite inštaláciu v systémovom inštalátore Android.';
+
+  @override
+  String get appUpdateFailed => 'Aktualizácia zlyhala';
+
+  @override
+  String get appUpdateCancel => 'Zrušiť';
+
+  @override
+  String get appUpdateAction => 'Aktualizovať';
+
+  @override
+  String get appUpdateDownload => 'Stiahnuť';
+
+  @override
+  String get appUpdateUpToDate => 'Aplikácia je aktuálna';
+
+  @override
+  String get appUpdateAheadOfPublished => 'Novšia než publikovaná verzia';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return 'Nainštalovaná verzia $installedVersion je novšia než posledná publikovaná verzia $publishedVersion. Podrobnosti sa zobrazia po publikovaní tejto verzie.';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage =>
+      'Aktualizácie sa nepodarilo skontrolovať.';
+
+  @override
+  String appUpdateLatest(String version) {
+    return 'Verzia $version je najnovšia dostupná verzia.';
+  }
+
+  @override
+  String get appUpdateClose => 'Zavrieť';
+
+  @override
+  String get appUpdateCheckAgain => 'Skontrolovať znova';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return 'Nainštalovaná verzia $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return 'Nainštalovaná verzia $installedVersion. Aktualizácia $availableVersion je k dispozícii.';
+  }
+
+  @override
+  String get appUpdateChangelog => 'Zoznam zmien';
+
+  @override
+  String get appUpdateReleaseHistory => 'História vydaní';
+
+  @override
+  String get appUpdateInstalledBadge => 'Nainštalovaná';
+
+  @override
+  String get appUpdateAvailableBadge => 'Dostupná aktualizácia';
+
+  @override
+  String get appUpdateLatestBadge => 'Najnovšia';
+
+  @override
+  String get appUpdateNoReleases => 'Zatiaľ neboli publikované žiadne vydania.';
+
+  @override
+  String get appUpdateAcrossAllReleases => 'Vo všetkých vydaniach';
+
+  @override
+  String get appUpdateReleaseDetails => 'Podrobnosti vydania';
+
+  @override
+  String get appUpdateWhatsNew => 'Čo je nové';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return 'Publikované $date';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return 'Kanál: $channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return 'Architektúra: $architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return 'Zostava $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return 'Vydanie $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes =>
+      'Neboli publikované poznámky k vydaniu.';
+
+  @override
+  String get appUpdatePublisher => 'Vydavateľ';
+
+  @override
+  String get appUpdatePublisherSignatureVerified =>
+      'Podpis udalosti Nostr bol overený';
+
+  @override
+  String get appUpdateCertificateDeclared =>
+      'Certifikát podpisu Android deklarovaný vydavateľom';
+
+  @override
+  String appUpdateSource(String host) {
+    return 'Zdroj sťahovania: $host';
+  }
+
+  @override
+  String get appUpdateCommunity => 'Komunita';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return '$count zapov · $sats satov';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'satov od';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return 'Reakcie: $count';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return 'Komentáre: $count';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed =>
+      'Aktivitu komunity sa nepodarilo načítať.';
+
+  @override
+  String get appUpdateComments => 'Komentáre';
+
+  @override
+  String get appUpdateNoComments => 'Zatiaľ žiadne komentáre.';
+
+  @override
+  String get appUpdateCommentHint => 'Podeľte sa o názor na toto vydanie';
+
+  @override
+  String get appUpdatePostComment => 'Publikovať komentár';
+
+  @override
+  String get appUpdateSignInToComment =>
+      'Ak chcete komentovať, prihláste sa účtom Nostr.';
+
+  @override
+  String get appUpdateTechnicalDetails => 'Technické podrobnosti';
+
+  @override
+  String get appUpdateViewStatus => 'Zobraziť stav aktualizácie';
+
+  @override
   String restoreSuccess(int count) {
     return 'Obnovených $count dôkazov zo zálohy';
   }
+
+  @override
+  String get bolt12Wallet => 'Peňaženka BOLT12';
+
+  @override
+  String get bolt12WalletSubtitle => 'Opakovane použiteľná ponuka Lightning';
+
+  @override
+  String get bolt12PrivateOfferSubtitle =>
+      'Súkromná opakovane použiteľná ponuka';
+
+  @override
+  String get anyAmount => 'Ľubovoľná suma';
+
+  @override
+  String get blindedRoute => 'Skrytá trasa';
+
+  @override
+  String fromAmountSats(String amount) {
+    return 'Od $amount sat';
+  }
+
+  @override
+  String fromAmountMsats(String amount) {
+    return 'Od $amount msat';
+  }
+
+  @override
+  String fromCurrencyAmount(String amount, String currency) {
+    return 'Od $amount $currency';
+  }
+
+  @override
+  String bolt12Expires(String date) {
+    return 'Platnosť do $date';
+  }
+
+  @override
+  String get bolt12WalletTypeTitle => 'Ponuka BOLT12';
+
+  @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
+
+  @override
+  String get bolt12WalletTypeSubtitle =>
+      'Peňaženka iba na prijímanie s opakovane použiteľnou ponukou';
+
+  @override
+  String get addBolt12WalletTitle => 'Pridať peňaženku BOLT12';
+
+  @override
+  String get enterBolt12Input =>
+      'Zadajte alebo naskenujte ponuku lno, URI bitcoin:?lno=… alebo adresu BIP353.';
+
+  @override
+  String get bolt12Input => 'Platobný cieľ BOLT12';
+
+  @override
+  String get bolt12InputHint =>
+      'lno1…, bitcoin:?lno=… alebo používateľ@doména.com';
+
+  @override
+  String get walletNameOptional => 'Názov peňaženky (voliteľné)';
+
+  @override
+  String get scanBolt12QrCodeTitle => 'Naskenovať QR kód BOLT12';
+
+  @override
+  String get invalidBolt12QrCode =>
+      'QR kód neobsahuje cieľ platby BOLT12, BIP321 ani BIP353.';
+
+  @override
+  String get pleaseEnterBolt12Input =>
+      'Zadajte ponuku BOLT12 alebo adresu BIP353.';
+
+  @override
+  String get bolt12WalletAdded => 'Peňaženka BOLT12 bola pridaná!';
+
+  @override
+  String get bolt12OfferTitle => 'Prijať cez BOLT12';
+
+  @override
+  String get bolt12OfferInstructions =>
+      'Zdieľaj túto opakovane použiteľnú ponuku a prijmi platbu Lightning.';
+
+  @override
+  String get confirm => 'Potvrdiť';
+
+  @override
+  String get reviewWallet => 'Skontrolovať peňaženku';
+
+  @override
+  String get confirmWalletTitle => 'Potvrdiť peňaženku';
+
+  @override
+  String get confirmWalletDescription =>
+      'Pred pridaním peňaženky skontrolujte tieto údaje.';
+
+  @override
+  String get walletDetailType => 'Typ peňaženky';
+
+  @override
+  String get walletDetailAddress => 'Adresa';
+
+  @override
+  String get walletDetailDomain => 'Doména';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => 'Verejný kľúč';
+
+  @override
+  String get walletDetailRelay => 'Relay';
+
+  @override
+  String get walletDetailRelays => 'Relaye';
+
+  @override
+  String get walletDetailSecret => 'Tajný údaj pripojenia';
+
+  @override
+  String get walletSecretHidden => 'Prítomný a z bezpečnostných dôvodov skrytý';
+
+  @override
+  String get walletDetailDescription => 'Popis';
+
+  @override
+  String get walletDetailDetails => 'Podrobnosti';
+
+  @override
+  String get walletDetailIssuer => 'Vydavateľ';
+
+  @override
+  String get walletDetailAmount => 'Suma';
+
+  @override
+  String get walletDetailCurrency => 'Mena';
+
+  @override
+  String get walletDetailExpiry => 'Platnosť vyprší';
+
+  @override
+  String get walletDetailNodeId => 'ID uzla';
+
+  @override
+  String get walletDetailOffer => 'Ponuka BOLT12';
+
+  @override
+  String get walletDetailVersion => 'Verzia';
+
+  @override
+  String get walletDetailUnits => 'Podporované jednotky';
+
+  @override
+  String get walletDetailContact => 'Kontakt';
+
+  @override
+  String get walletDetailTerms => 'Podmienky služby';
+
+  @override
+  String get walletDetailMessage => 'Správa';
+
+  @override
+  String get walletDetailCommunityRating => 'Hodnotenie komunity';
+
+  @override
+  String get walletDetailCommunityReviews => 'Najnovšie recenzie komunity';
+
+  @override
+  String get refreshBalance => 'Obnoviť zostatok';
+
+  @override
+  String get balanceRefreshed => 'Zostatok obnovený';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Obnoviť mint ponuku';
+
+  @override
+  String get recoverQuote => 'Obnoviť ponuku';
+
+  @override
+  String get enterQuoteId =>
+      'Zadajte ID mint ponuky na obnovenie. Lock kľúč sa obnoví z vašej seed frázy.';
+
+  @override
+  String get quoteId => 'ID ponuky';
+
+  @override
+  String get quoteIdHint => 'Sem vložte ID ponuky';
+
+  @override
+  String get pleaseEnterQuoteId => 'Zadajte ID ponuky';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'Načítava sa ponuka z mintu...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'Obnovuje sa lock kľúč z vašej seed...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint => 'Dokončuje sa mint...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Lock kľúč obnovený (derivačný čítač $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Ponuka obnovená a prostriedky pridané do vášho zostatku';
+
+  @override
+  String get quoteRecoveryFailed => 'Obnovenie ponuky zlyhalo';
+
+  @override
+  String get restoreFundsFromMint => 'Obnoviť prostriedky z mintu';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Obnoviť prostriedky z mintu';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Prehľadá mint, či neobsahuje dôkazy odvodené z vašej seed, a obnoví ich do tejto peňaženky.';
+
+  @override
+  String get startRestore => 'Spustiť obnovenie';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets =>
+      'Načítavajú sa mint keysety...';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'Prehľadáva sa mint pre vaše prostriedky...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return 'Preskenovaných $keysets keyset(-ov) · nájdených $proofs dôkaz(-ov)';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Obnovenie dokončené';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Obnoví tiež čakajúce mint ponuky';
+
+  @override
+  String restoredFromMint(int count) {
+    return 'Obnovených $count dôkazov z mintu';
+  }
+
+  @override
+  String get restoreFailed => 'Obnovenie zlyhalo';
+
+  @override
+  String get restoreFromBackup => 'Obnoviť zo zálohy';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Obnovenie a zálohovanie';
+
+  @override
+  String get cashuSeedPhraseOption => 'Nastaviť seed frázu';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Cashu seed fráza';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Táto seed fráza je spoločná pre VŠETKY Cashu peňaženky. Je to jediný spôsob, ako obnoviť vaše prostriedky po strate tohto zariadenia. Jej zmenou sa nahradí seed používaná na odvodenie kľúčov pre každú Cashu peňaženku, takže prostriedky prijaté pod predchádzajúcou seed sa už nebudú dať nájsť automaticky.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Zadajte frázu na obnovenie, ktorú chcete použiť (12, 15, 18, 21 alebo 24 slov). Seed meňte len pri obnove peňaženiek z frázy, ktorú ste si už uložili.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Seed fráza';
+
+  @override
+  String get cashuSeedPhraseHint => 'Vložte sem svoju seed frázu';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Rozumiem, že to zmení seed pre všetky Cashu peňaženky';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'Toto nevyzerá ako platná seed fráza. Skontrolujte, či sú všetky slová napísané správne a v správnom poradí.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Seed fráza aktualizovaná. Teraz sa vzťahuje na všetky Cashu peňaženky. Zálohujte si novú frázu.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed =>
+      'Seed frázu sa nepodarilo aktualizovať';
 }

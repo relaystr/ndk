@@ -9,6 +9,52 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      '在 LNbits 中选择并打开要连接的钱包，点击 API 文档并复制管理员密钥。粘贴到下方：';
+
+  @override
+  String get lnbitsAdminKey => 'LNbits 管理员密钥';
+
+  @override
+  String get lnbitsKeyType => 'LNbits 密钥类型';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'LNbits 发票/只读密钥';
+
+  @override
+  String get lnbitsReadOnlyDescription => '仅收款钱包：可查看余额和历史记录并创建发票，无法发送付款。';
+
+  @override
+  String get lnbitsUrl => 'LNbits URL';
+
+  @override
+  String get lnbitsCredentialsRequired => '请输入 LNbits 管理员密钥和 URL。';
+
+  @override
+  String get lnbitsWalletAdded => 'LNbits 钱包已添加';
+
+  @override
+  String get walletDetailWalletId => '钱包 ID';
+
+  @override
+  String get saveBackupToFile => '将备份保存到文件';
+
+  @override
+  String get backupSavedToFile => '备份已保存到文件';
+
+  @override
+  String get restoreFromFile => '从文件恢复';
+
+  @override
+  String get backupFileReadFailed => '无法读取所选备份文件。';
+
+  @override
+  String get fetchingWalletConnectionInfo => '正在获取钱包连接信息…';
+
+  @override
   String get createAccount => '创建账户';
 
   @override
@@ -765,6 +811,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get payInvoiceTitle => '支付发票';
 
   @override
+  String get sendToWallet => '发送到钱包';
+
+  @override
+  String get sendToWalletDescription => '转账到其他兼容的钱包';
+
+  @override
+  String get noCompatibleReceivingWallets => '没有兼容的收款钱包';
+
+  @override
+  String get noCompatibleReceivingWalletsDescription =>
+      '添加或连接另一个可以接收此钱包所支持付款的钱包。';
+
+  @override
+  String get destinationWallet => '目标钱包';
+
+  @override
+  String walletTransferSubmitted(String walletName) {
+    return '已向 $walletName 付款';
+  }
+
+  @override
   String get invoice => '发票';
 
   @override
@@ -958,6 +1025,87 @@ class AppLocalizationsZh extends AppLocalizations {
   String get addWalletTitle => '添加钱包';
 
   @override
+  String get addWalletDescription => '扫描受支持的钱包二维码、粘贴连接信息，或通过钱包应用连接。';
+
+  @override
+  String get scanWalletQrCode => '扫描钱包二维码';
+
+  @override
+  String get connectWithWallet => '连接钱包';
+
+  @override
+  String get chooseWalletApp => '选择钱包应用';
+
+  @override
+  String get oneClickConnect => '一键连接';
+
+  @override
+  String get chooseWallet => '选择钱包';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => '手动连接 NWC';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return '请在 $walletName 中完成连接';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return '正在连接 $walletName…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '已连接 $walletName';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return '无法连接 $walletName';
+  }
+
+  @override
+  String get retry => '重试';
+
+  @override
+  String get walletUnreachable => '无法连接钱包';
+
+  @override
+  String get chooseAnotherWallet => '选择其他钱包';
+
+  @override
+  String get chooseWalletAppDescription => '在已安装的钱包中批准 NWC 连接';
+
+  @override
+  String get walletInput => '钱包地址或连接信息';
+
+  @override
+  String get walletInputHint =>
+      'NWC、Lightning/BIP353 地址、BOLT12/BIP321 报价或 Cashu 铸币厂 HTTPS URL';
+
+  @override
+  String get unsupportedWalletInput => '不支持此钱包地址或连接信息。';
+
+  @override
+  String get detected => '已检测';
+
+  @override
+  String get lightningAddressInputType => 'Lightning 或 BIP353 地址';
+
+  @override
+  String get manualWalletSetup => '手动设置';
+
+  @override
   String get chooseWalletType => '选择钱包类型';
 
   @override
@@ -974,6 +1122,29 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => '选择 Cashu 铸币厂';
+
+  @override
+  String get cashuMintRatingsNotice => '社区评分来自已签名的 Nostr 评论。高评分并不能保证铸币厂安全。';
+
+  @override
+  String get cashuMintDiscoveryFailed => '无法加载铸币厂建议。';
+
+  @override
+  String get noCashuMintSuggestions => '未找到可用的铸币厂建议。';
+
+  @override
+  String get noRatingsYet => '暂无评分';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · $count 条评论';
+  }
+
+  @override
+  String get enterMintUrlManually => '手动输入铸币厂 URL';
 
   @override
   String get cashuWalletTypeSubtitle => '使用由 Cashu mint 支持的 ecash 钱包';
@@ -995,6 +1166,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions => '在 Alby Go 中点击“发送”，然后扫描此二维码。';
 
   @override
   String get manualOption => '手动';
@@ -1019,6 +1193,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get paste => '粘贴';
+
+  @override
+  String get clearInput => '清除输入';
+
+  @override
+  String get pasteOrEnter => '粘贴或输入';
 
   @override
   String get fromYourProfile => '来自您的个人资料';
@@ -1081,44 +1261,538 @@ class AppLocalizationsZh extends AppLocalizations {
   String get budgetNever => '从不';
 
   @override
-  String get backup => 'Backup';
+  String get backup => '备份';
 
   @override
-  String get restore => 'Restore';
+  String get restore => '恢复';
 
   @override
-  String get cashuBackupTitle => 'Cashu Backup';
+  String get cashuBackupTitle => 'Cashu 备份';
 
   @override
   String get cashuBackupWarning =>
-      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+      '此备份包含您的 ecash 凭证，持有凭证的人即可花费资金。请勿公开，并将其保存在安全的地方。助记词需单独备份。';
 
   @override
-  String get generatingBackup => 'Generating backup...';
+  String get generatingBackup => '正在生成备份...';
 
   @override
-  String get copyBackup => 'Copy backup';
+  String get copyBackup => '复制备份';
 
   @override
-  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+  String get backupCopiedToClipboard => '备份已复制到剪贴板';
 
   @override
-  String get cashuRestoreTitle => 'Restore Cashu Backup';
+  String get cashuRestoreTitle => '恢复 Cashu 备份';
 
   @override
-  String get backupJson => 'Backup JSON';
+  String get backupJson => 'JSON 备份';
 
   @override
-  String get backupJsonHint => 'Paste your backup JSON here';
+  String get backupJsonHint => '在此粘贴您的 JSON 备份';
 
   @override
-  String get pleaseEnterBackup => 'Please enter a backup';
+  String get pleaseEnterBackup => '请输入备份';
 
   @override
-  String get restoringBackup => 'Restoring backup...';
+  String get restoringBackup => '正在恢复备份...';
+
+  @override
+  String appUpdateVersionAvailable(String version) {
+    return '版本 $version 可用';
+  }
+
+  @override
+  String get appUpdateLater => '稍后';
+
+  @override
+  String get appUpdateView => '查看更新';
+
+  @override
+  String get appUpdateChecking => '正在检查更新…';
+
+  @override
+  String get appUpdateCheckFailed => '检查更新失败';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return '已安装：$version';
+  }
+
+  @override
+  String get appUpdatesTitle => '应用更新';
+
+  @override
+  String get appUpdateNone => '没有可用更新';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return '更新 $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String get appUpdateAllowInstalls => '允许从此应用安装，然后再次点击“更新”。';
+
+  @override
+  String get appUpdateCompleteInstallation => '请在 Android 系统安装程序中完成安装。';
+
+  @override
+  String get appUpdateFailed => '更新失败';
+
+  @override
+  String get appUpdateCancel => '取消';
+
+  @override
+  String get appUpdateAction => '更新';
+
+  @override
+  String get appUpdateDownload => '下载';
+
+  @override
+  String get appUpdateUpToDate => '已是最新版本';
+
+  @override
+  String get appUpdateAheadOfPublished => '比已发布版本更新';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return '已安装版本 $installedVersion 比最新发布版本 $publishedVersion 更新。发布此版本后将显示版本详情。';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage => '无法检查更新。';
+
+  @override
+  String appUpdateLatest(String version) {
+    return '版本 $version 是当前最新版本。';
+  }
+
+  @override
+  String get appUpdateClose => '关闭';
+
+  @override
+  String get appUpdateCheckAgain => '重新检查';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return '已安装版本 $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return '已安装版本 $installedVersion。更新 $availableVersion 可用。';
+  }
+
+  @override
+  String get appUpdateChangelog => '更新日志';
+
+  @override
+  String get appUpdateReleaseHistory => '版本历史';
+
+  @override
+  String get appUpdateInstalledBadge => '已安装';
+
+  @override
+  String get appUpdateAvailableBadge => '有可用更新';
+
+  @override
+  String get appUpdateLatestBadge => '最新';
+
+  @override
+  String get appUpdateNoReleases => '尚未发布任何版本。';
+
+  @override
+  String get appUpdateAcrossAllReleases => '所有版本共有';
+
+  @override
+  String get appUpdateReleaseDetails => '版本详情';
+
+  @override
+  String get appUpdateWhatsNew => '更新内容';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return '发布于 $date';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return '频道：$channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return '架构：$architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return '构建 $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return '版本 $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes => '未发布版本说明。';
+
+  @override
+  String get appUpdatePublisher => '发布者';
+
+  @override
+  String get appUpdatePublisherSignatureVerified => 'Nostr 事件签名已验证';
+
+  @override
+  String get appUpdateCertificateDeclared => '发布者已声明 Android 签名证书';
+
+  @override
+  String appUpdateSource(String host) {
+    return '下载来源：$host';
+  }
+
+  @override
+  String get appUpdateCommunity => '社区';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return '$count 次打赏 · $sats sats';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'sats，来自';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return '$count 条回应';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return '$count 条评论';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed => '无法加载社区动态。';
+
+  @override
+  String get appUpdateComments => '评论';
+
+  @override
+  String get appUpdateNoComments => '暂无评论。';
+
+  @override
+  String get appUpdateCommentHint => '分享对此版本的反馈';
+
+  @override
+  String get appUpdatePostComment => '发表评论';
+
+  @override
+  String get appUpdateSignInToComment => '登录 Nostr 账户后即可评论。';
+
+  @override
+  String get appUpdateTechnicalDetails => '技术详情';
+
+  @override
+  String get appUpdateViewStatus => '查看更新状态';
 
   @override
   String restoreSuccess(int count) {
-    return 'Restored $count proofs from backup';
+    return '已从备份恢复 $count 份凭证';
   }
+
+  @override
+  String get bolt12Wallet => 'BOLT12 钱包';
+
+  @override
+  String get bolt12WalletSubtitle => '可重复使用的 Lightning 报价';
+
+  @override
+  String get bolt12PrivateOfferSubtitle => '可重复使用的私密报价';
+
+  @override
+  String get anyAmount => '任意金额';
+
+  @override
+  String get blindedRoute => '隐藏路由';
+
+  @override
+  String fromAmountSats(String amount) {
+    return '$amount sats 起';
+  }
+
+  @override
+  String fromAmountMsats(String amount) {
+    return '$amount msats 起';
+  }
+
+  @override
+  String fromCurrencyAmount(String amount, String currency) {
+    return '$amount $currency 起';
+  }
+
+  @override
+  String bolt12Expires(String date) {
+    return '到期时间：$date';
+  }
+
+  @override
+  String get bolt12WalletTypeTitle => 'BOLT12 报价';
+
+  @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
+
+  @override
+  String get bolt12WalletTypeSubtitle => '使用可重复报价的仅收款钱包';
+
+  @override
+  String get addBolt12WalletTitle => '添加 BOLT12 钱包';
+
+  @override
+  String get enterBolt12Input => '输入或扫描 lno 报价、bitcoin:?lno=… URI 或 BIP353 地址。';
+
+  @override
+  String get bolt12Input => 'BOLT12 支付目标';
+
+  @override
+  String get bolt12InputHint => 'lno1…、bitcoin:?lno=… 或 user@domain.com';
+
+  @override
+  String get walletNameOptional => '钱包名称（可选）';
+
+  @override
+  String get scanBolt12QrCodeTitle => '扫描 BOLT12 二维码';
+
+  @override
+  String get invalidBolt12QrCode => '此二维码不包含 BOLT12、BIP321 或 BIP353 付款目标。';
+
+  @override
+  String get pleaseEnterBolt12Input => '请输入 BOLT12 报价或 BIP353 地址。';
+
+  @override
+  String get bolt12WalletAdded => 'BOLT12 钱包添加成功！';
+
+  @override
+  String get bolt12OfferTitle => '通过 BOLT12 收款';
+
+  @override
+  String get bolt12OfferInstructions => '分享此可重复使用的报价以接收 Lightning 付款。';
+
+  @override
+  String get confirm => '确认';
+
+  @override
+  String get reviewWallet => '检查钱包';
+
+  @override
+  String get confirmWalletTitle => '确认钱包';
+
+  @override
+  String get confirmWalletDescription => '添加钱包前请检查这些信息。';
+
+  @override
+  String get walletDetailType => '钱包类型';
+
+  @override
+  String get walletDetailAddress => '地址';
+
+  @override
+  String get walletDetailDomain => '域名';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => '公钥';
+
+  @override
+  String get walletDetailRelay => '中继';
+
+  @override
+  String get walletDetailRelays => '中继';
+
+  @override
+  String get walletDetailSecret => '连接密钥';
+
+  @override
+  String get walletSecretHidden => '已提供并因安全原因隐藏';
+
+  @override
+  String get walletDetailDescription => '说明';
+
+  @override
+  String get walletDetailDetails => '详情';
+
+  @override
+  String get walletDetailIssuer => '发行方';
+
+  @override
+  String get walletDetailAmount => '金额';
+
+  @override
+  String get walletDetailCurrency => '货币';
+
+  @override
+  String get walletDetailExpiry => '到期时间';
+
+  @override
+  String get walletDetailNodeId => '节点 ID';
+
+  @override
+  String get walletDetailOffer => 'BOLT12 报价';
+
+  @override
+  String get walletDetailVersion => '版本';
+
+  @override
+  String get walletDetailUnits => '支持的单位';
+
+  @override
+  String get walletDetailContact => '联系方式';
+
+  @override
+  String get walletDetailTerms => '服务条款';
+
+  @override
+  String get walletDetailMessage => '消息';
+
+  @override
+  String get walletDetailCommunityRating => '社区评分';
+
+  @override
+  String get walletDetailCommunityReviews => '近期社区评论';
+
+  @override
+  String get refreshBalance => '刷新余额';
+
+  @override
+  String get balanceRefreshed => '余额已刷新';
+
+  @override
+  String get cashuQuoteRecoveryTitle => '恢复铸币报价';
+
+  @override
+  String get recoverQuote => '恢复报价';
+
+  @override
+  String get enterQuoteId => '输入要恢复的铸币报价 ID。锁定密钥将从您的助记词中恢复。';
+
+  @override
+  String get quoteId => '报价 ID';
+
+  @override
+  String get quoteIdHint => '在此粘贴报价 ID';
+
+  @override
+  String get pleaseEnterQuoteId => '请输入报价 ID';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote => '正在从铸币厂获取报价…';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey => '正在从您的助记词中恢复锁定密钥…';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint => '正在完成铸币…';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return '锁定密钥已恢复（派生计数器 $counter）';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted => '报价已恢复，资金已添加到您的余额中';
+
+  @override
+  String get quoteRecoveryFailed => '报价恢复失败';
+
+  @override
+  String get restoreFundsFromMint => '从铸币厂恢复资金';
+
+  @override
+  String get cashuRestoreFundsTitle => '从铸币厂恢复资金';
+
+  @override
+  String get cashuRestoreDescription => '扫描铸币厂中由您的助记词派生的凭证，并将其恢复到该钱包中。';
+
+  @override
+  String get startRestore => '开始恢复';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets => '正在获取铸币厂密钥集…';
+
+  @override
+  String get cashuRestoreStageScanning => '正在扫描铸币厂以查找您的资金…';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return '已扫描 $keysets 个密钥集 · 找到 $proofs 个凭证';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => '恢复完成';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes => '同时恢复待处理的铸币报价';
+
+  @override
+  String restoredFromMint(int count) {
+    return '已从铸币厂恢复 $count 个凭证';
+  }
+
+  @override
+  String get restoreFailed => '恢复失败';
+
+  @override
+  String get restoreFromBackup => '从备份恢复';
+
+  @override
+  String get cashuRestoreMenuTitle => '恢复与备份';
+
+  @override
+  String get cashuSeedPhraseOption => '设置助记词';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Cashu 助记词';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      '此助记词由所有 Cashu 钱包共享。这是您在丢失此设备后恢复资金的唯一方法。更改它会替换用于为每个 Cashu 钱包派生密钥的助记词，因此使用先前助记词收到的资金将无法再自动找到。';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      '输入您要使用的恢复短语（12、15、18、21 或 24 个单词）。仅在从您已保存的短语恢复钱包时更改助记词。';
+
+  @override
+  String get cashuSeedPhraseLabel => '助记词';
+
+  @override
+  String get cashuSeedPhraseHint => '在此粘贴您的助记词';
+
+  @override
+  String get cashuSeedPhraseConfirmChange => '我了解这会更改所有 Cashu 钱包的助记词';
+
+  @override
+  String get cashuSeedPhraseInvalid => '这看起来不是有效的助记词。请检查所有单词是否拼写正确且顺序正确。';
+
+  @override
+  String get cashuSeedPhraseUpdated => '助记词已更新。现在适用于所有 Cashu 钱包。请备份新的助记词。';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed => '无法更新助记词';
 }

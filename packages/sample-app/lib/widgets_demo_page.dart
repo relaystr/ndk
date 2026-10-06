@@ -5,6 +5,8 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 
 import 'main.dart';
 
+const _clientMetadata = Nip46ClientMetadata(name: 'NDK sample app');
+
 class WidgetsDemoPage extends StatefulWidget {
   const WidgetsDemoPage({super.key});
 
@@ -49,6 +51,40 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
                 ),
               ),
             if (!isLoggedIn) const SizedBox(height: 24),
+
+            _buildSection(
+              title: 'NAppUpdateBanner / NAppUpdateTile',
+              description:
+                  'Trusted NIP-82 update notice and Android install handoff. '
+                  'Configured for sample app releases published on Zapstore.',
+              child: Card(
+                child: Column(
+                  children: [
+                    NAppUpdateBanner(controller: appUpdater),
+                    NAppUpdateTile(controller: appUpdater),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          const Text('Installed version: '),
+                          NAppVersion(
+                            controller: appUpdater,
+                            fallbackVersion: packageVersion,
+                          ),
+                        ],
+                      ),
+                    ),
+                    NAppUpdateBuilder(
+                      controller: appUpdater,
+                      builder: (context, state) => Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        child: Text('Custom UI state: ${state.status.name}'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
             // NName Widget Section
             _buildSection(
@@ -214,11 +250,12 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
                           },
                           enableNip07Login: false,
                           enableSignerAppLogin: false,
+                          clientMetadata: _clientMetadata,
                           nostrConnect: NostrConnect(
-                            appName: 'NDK sample app',
+                            clientMetadata: _clientMetadata,
                             relays: [
                               "wss://relay.damus.io",
-                              "wss://relay.primal.net",
+                              "wss://nos.lol",
                               "wss://relay.nmail.li",
                             ],
                           ),
@@ -270,16 +307,18 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
       children: [
         Text(
           title,
-          style: Theme.of(
-            context,
-          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+          style: Theme.of(context)
+              .textTheme
+              .headlineSmall
+              ?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(
           description,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: Colors.grey[600]),
         ),
         const SizedBox(height: 12),
         child,

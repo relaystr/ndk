@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -49,11 +50,30 @@ class HttpRequestDS {
   HttpRequestDS(this._client);
 
   /// make a get request to the given url
-  Future<Map<String, dynamic>> jsonRequest(String url) async {
-    http.Response response = await _client.get(
-      Uri.parse(url).replace(scheme: 'https'),
-      headers: {"Accept": "application/json"},
-    );
+  Future<Map<String, dynamic>> jsonRequest(
+    String url, {
+    bool followRedirects = true,
+    Duration? timeout,
+    Map<String, String> headers = const {"Accept": "application/json"},
+  }) async {
+    final uri = Uri.parse(url).replace(scheme: 'https');
+
+    final http.Response response;
+    if (followRedirects && timeout == null) {
+      response = await _client.get(uri, headers: headers);
+    } else {
+      final abort = Completer<void>();
+      final timer = timeout == null ? null : Timer(timeout, abort.complete);
+      final request =
+          http.AbortableRequest('GET', uri, abortTrigger: abort.future)
+            ..headers.addAll(headers)
+            ..followRedirects = followRedirects;
+      try {
+        response = await http.Response.fromStream(await _client.send(request));
+      } finally {
+        timer?.cancel();
+      }
+    }
 
     if (!_isSuccessStatus(response.statusCode)) {
       throw HttpRequestException(
@@ -62,7 +82,9 @@ class HttpRequestDS {
         url: url,
       );
     }
-    return jsonDecode(response.body);
+    // JSON is UTF-8 (RFC 8259); `body` would fall back to latin1 for media
+    // types such as application/nostr+json that carry no charset.
+    return jsonDecode(utf8.decode(response.bodyBytes));
   }
 
   Future<http.Response> put({
@@ -77,8 +99,10 @@ class HttpRequestDS {
     );
 
     if (!_isSuccessStatus(response.statusCode)) {
-      throw Exception(
-        "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url",
+      throw HttpRequestException(
+        statusCode: response.statusCode,
+        body: response.body,
+        url: url.toString(),
       );
     }
 
@@ -139,8 +163,10 @@ class HttpRequestDS {
         final response = await http.Response.fromStream(streamedResponse);
 
         if (!_isSuccessStatus(response.statusCode)) {
-          final error = Exception(
-            "error fetching STATUS: ${response.statusCode}, Link: $url",
+          final error = HttpRequestException(
+            statusCode: response.statusCode,
+            body: response.body,
+            url: url.toString(),
           );
           progressSubject.addError(error);
           await progressSubject.close();
@@ -180,8 +206,10 @@ class HttpRequestDS {
     );
 
     if (!_isSuccessStatus(response.statusCode)) {
-      throw Exception(
-        "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url,  ",
+      throw HttpRequestException(
+        statusCode: response.statusCode,
+        body: response.body,
+        url: url.toString(),
       );
     }
 
@@ -192,8 +220,10 @@ class HttpRequestDS {
     http.Response response = await _client.head(url, headers: headers);
 
     if (!_isSuccessStatus(response.statusCode)) {
-      throw Exception(
-        "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url",
+      throw HttpRequestException(
+        statusCode: response.statusCode,
+        body: response.body,
+        url: url.toString(),
       );
     }
 
@@ -204,8 +234,10 @@ class HttpRequestDS {
     http.Response response = await _client.get(url, headers: headers);
 
     if (!_isSuccessStatus(response.statusCode)) {
-      throw Exception(
-        "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url",
+      throw HttpRequestException(
+        statusCode: response.statusCode,
+        body: response.body,
+        url: url.toString(),
       );
     }
 
@@ -226,8 +258,10 @@ class HttpRequestDS {
     final streamedResponse = await _client.send(request);
 
     if (!_isSuccessStatus(streamedResponse.statusCode)) {
-      throw Exception(
-        "error fetching STATUS: ${streamedResponse.statusCode}, Link: $url",
+      throw HttpRequestException(
+        statusCode: streamedResponse.statusCode,
+        body: '',
+        url: url.toString(),
       );
     }
 
@@ -238,8 +272,10 @@ class HttpRequestDS {
     http.Response response = await _client.delete(url, headers: headers);
 
     if (!_isSuccessStatus(response.statusCode)) {
-      throw Exception(
-        "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url",
+      throw HttpRequestException(
+        statusCode: response.statusCode,
+        body: response.body,
+        url: url.toString(),
       );
     }
 

@@ -1,6 +1,7 @@
 import '../../entities/broadcast_state.dart';
 import '../../entities/event_cache_records.dart';
 import '../../entities/nip_01_event.dart';
+import '../../entities/auth_policy.dart';
 import '../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../shared/nips/nip09/deletion.dart';
 
@@ -54,7 +55,12 @@ class DeliveryPolicy {
     'too large',
     'forbidden',
     'policy violation',
+    'tag must reference',
   ];
+
+  static final RegExp _kindNotAllowedPattern = RegExp(
+    r'\bkind(?:\s+\d+)?\s+is\s+not\s+allowed\b',
+  );
 
   final DeliveryPolicyKind kind;
 
@@ -76,7 +82,12 @@ class DeliveryPolicy {
 
   bool get retainsOnlyLatest => kind == DeliveryPolicyKind.latestStateOnly;
 
-  RelayDeliveryState resolveNextState(RelayBroadcastResponse response) {
+  /// [auth] is the policy the broadcast went out under, so a refusal can be
+  /// judged against what this event is allowed to reveal.
+  RelayDeliveryState resolveNextState(
+    RelayBroadcastResponse response, {
+    AuthPolicy? auth,
+  }) {
     if (response.okReceived && response.broadcastSuccessful) {
       return RelayDeliveryState.acked;
     }
@@ -93,7 +104,11 @@ class DeliveryPolicy {
 
     if (prefix == 'auth-required' ||
         normalizedMsg.startsWith('auth-required')) {
-      return RelayDeliveryState.authRequired;
+      // no identity may ever be revealed here, so no retry can turn this
+      // refusal into an accepted event
+      return auth is AuthPolicyNever
+          ? RelayDeliveryState.permanentFailure
+          : RelayDeliveryState.authRequired;
     }
 
     if (_looksPermanent(response.msg)) {
@@ -177,7 +192,8 @@ class DeliveryPolicy {
       }
     }
 
-    return _permanentFailureMarkers.any(normalized.contains);
+    return _permanentFailureMarkers.any(normalized.contains) ||
+        _kindNotAllowedPattern.hasMatch(normalized);
   }
 
   static String? _machineReadablePrefix(String normalizedMessage) {

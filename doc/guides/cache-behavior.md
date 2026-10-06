@@ -29,6 +29,19 @@ When NDK reads events from cache, it applies these visibility rules:
 
 App-facing reads return the current logical state, not raw historical storage.
 
+## Reading hidden events
+
+Hidden events stay in the cache, and `loadHiddenEvents` is the read that returns them. This is what an app needs to show previous versions of an addressable event, or the content behind a deletion.
+
+```dart
+final versions = await ndk.config.cache.loadHiddenEvents(
+  coordinates: ['30023:$pubKey:my-article'],
+  reasons: {HiddenEventReason.superseded},
+);
+```
+
+Eviction sweeps exactly these events, so keep `sweepSuperseded` and `sweepDeleted` disabled if your app shows history.
+
 ## Event sources vs delivery targets
 
 These are different concepts:

@@ -9,6 +9,55 @@ class AppLocalizationsFi extends AppLocalizations {
   AppLocalizationsFi([String locale = 'fi']) : super(locale);
 
   @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'Valitse LNbitsissä yhdistettävä lompakko, avaa se, napsauta API-ohjeita ja kopioi ylläpitäjän avain. Liitä se alle:';
+
+  @override
+  String get lnbitsAdminKey => 'LNbits-ylläpitäjän avain';
+
+  @override
+  String get lnbitsKeyType => 'LNbits-avaimen tyyppi';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'LNbits-laskutus-/lukuavain';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Vain vastaanottava lompakko: näytä saldo ja historia sekä luo laskuja. Maksujen lähetys on poistettu käytöstä.';
+
+  @override
+  String get lnbitsUrl => 'LNbits-URL';
+
+  @override
+  String get lnbitsCredentialsRequired =>
+      'Anna LNbits-ylläpitäjän avain ja URL-osoite.';
+
+  @override
+  String get lnbitsWalletAdded => 'LNbits-lompakko lisättiin';
+
+  @override
+  String get walletDetailWalletId => 'Lompakon tunnus';
+
+  @override
+  String get saveBackupToFile => 'Tallenna varmuuskopio tiedostoon';
+
+  @override
+  String get backupSavedToFile => 'Varmuuskopio tallennettu tiedostoon';
+
+  @override
+  String get restoreFromFile => 'Palauta tiedostosta';
+
+  @override
+  String get backupFileReadFailed =>
+      'Valittua varmuuskopiotiedostoa ei voitu lukea.';
+
+  @override
+  String get fetchingWalletConnectionInfo => 'Haetaan lompakon yhteystietoja…';
+
+  @override
   String get createAccount => 'Luo tili';
 
   @override
@@ -772,6 +821,29 @@ class AppLocalizationsFi extends AppLocalizations {
   String get payInvoiceTitle => 'Maksa lasku';
 
   @override
+  String get sendToWallet => 'Lähetä lompakkoon';
+
+  @override
+  String get sendToWalletDescription =>
+      'Siirrä toiseen yhteensopivaan lompakkoon';
+
+  @override
+  String get noCompatibleReceivingWallets =>
+      'Ei yhteensopivia vastaanottavia lompakoita';
+
+  @override
+  String get noCompatibleReceivingWalletsDescription =>
+      'Lisää tai yhdistä toinen lompakko, joka voi vastaanottaa tämän lompakon tukeman maksun.';
+
+  @override
+  String get destinationWallet => 'Kohdelompakko';
+
+  @override
+  String walletTransferSubmitted(String walletName) {
+    return 'Maksu lähetetty lompakkoon $walletName';
+  }
+
+  @override
   String get invoice => 'Lasku';
 
   @override
@@ -967,6 +1039,90 @@ class AppLocalizationsFi extends AppLocalizations {
   String get addWalletTitle => 'Lisää lompakko';
 
   @override
+  String get addWalletDescription =>
+      'Skannaa tuetun lompakon QR-koodi, liitä sen tiedot tai yhdistä lompakkosovelluksella.';
+
+  @override
+  String get scanWalletQrCode => 'Skannaa lompakon QR-koodi';
+
+  @override
+  String get connectWithWallet => 'Yhdistä lompakkoon';
+
+  @override
+  String get chooseWalletApp => 'Valitse lompakkosovellus';
+
+  @override
+  String get oneClickConnect => 'Yhdistä yhdellä napsautuksella';
+
+  @override
+  String get chooseWallet => 'Valitse lompakko';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => 'Manuaalinen NWC-yhteys';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return 'Viimeistele yhteys sovelluksessa $walletName';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return 'Yhdistetään lompakkoon $walletName…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '$walletName yhdistetty';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return 'Lompakkoon $walletName ei voitu yhdistää';
+  }
+
+  @override
+  String get retry => 'Yritä uudelleen';
+
+  @override
+  String get walletUnreachable => 'Lompakkoa ei tavoiteta';
+
+  @override
+  String get chooseAnotherWallet => 'Valitse toinen lompakko';
+
+  @override
+  String get chooseWalletAppDescription =>
+      'Hyväksy NWC-yhteys asennetussa lompakossa';
+
+  @override
+  String get walletInput => 'Lompakon osoite tai yhteys';
+
+  @override
+  String get walletInputHint =>
+      'NWC, Lightning-/BIP353-osoite, BOLT12-/BIP321-tarjous tai Cashu-mintin HTTPS-URL';
+
+  @override
+  String get unsupportedWalletInput =>
+      'Tätä lompakon osoitetta tai yhteyttä ei tueta.';
+
+  @override
+  String get detected => 'Havaittu';
+
+  @override
+  String get lightningAddressInputType => 'Lightning- tai BIP353-osoite';
+
+  @override
+  String get manualWalletSetup => 'Määritä manuaalisesti';
+
+  @override
   String get chooseWalletType => 'Valitse lompakon tyyppi';
 
   @override
@@ -984,6 +1140,31 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => 'Valitse Cashu-mintti';
+
+  @override
+  String get cashuMintRatingsNotice =>
+      'Yhteisöarviot ovat allekirjoitettuja Nostr-arvosteluja. Korkea arvio ei takaa mintin turvallisuutta.';
+
+  @override
+  String get cashuMintDiscoveryFailed => 'Minttiehdotuksia ei voitu ladata.';
+
+  @override
+  String get noCashuMintSuggestions =>
+      'Saatavilla olevia minttiehdotuksia ei löytynyt.';
+
+  @override
+  String get noRatingsYet => 'Ei vielä arvioita';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · $count arvostelua';
+  }
+
+  @override
+  String get enterMintUrlManually => 'Syötä mintin URL manuaalisesti';
 
   @override
   String get cashuWalletTypeSubtitle =>
@@ -1006,6 +1187,10 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'Napauta Alby Go -sovelluksessa Lähetä ja skannaa sitten tämä QR-koodi.';
 
   @override
   String get manualOption => 'Manuaalinen';
@@ -1031,6 +1216,12 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get paste => 'Liitä';
+
+  @override
+  String get clearInput => 'Tyhjennä syöte';
+
+  @override
+  String get pasteOrEnter => 'Liitä tai kirjoita';
 
   @override
   String get fromYourProfile => 'Profiilistasi';
@@ -1093,44 +1284,564 @@ class AppLocalizationsFi extends AppLocalizations {
   String get budgetNever => 'Ei koskaan';
 
   @override
-  String get backup => 'Backup';
+  String get backup => 'Varmuuskopio';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Palauta';
 
   @override
-  String get cashuBackupTitle => 'Cashu Backup';
+  String get cashuBackupTitle => 'Cashu-varmuuskopio';
 
   @override
   String get cashuBackupWarning =>
-      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+      'Tämä varmuuskopio sisältää ecash-todisteesi, joiden haltija voi käyttää varat. Pidä se yksityisenä ja säilytä turvallisessa paikassa. Palautuslause varmuuskopioidaan erikseen.';
 
   @override
-  String get generatingBackup => 'Generating backup...';
+  String get generatingBackup => 'Luodaan varmuuskopiota...';
 
   @override
-  String get copyBackup => 'Copy backup';
+  String get copyBackup => 'Kopioi varmuuskopio';
 
   @override
-  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+  String get backupCopiedToClipboard => 'Varmuuskopio kopioitu leikepöydälle';
 
   @override
-  String get cashuRestoreTitle => 'Restore Cashu Backup';
+  String get cashuRestoreTitle => 'Palauta Cashu-varmuuskopio';
 
   @override
-  String get backupJson => 'Backup JSON';
+  String get backupJson => 'JSON-varmuuskopio';
 
   @override
-  String get backupJsonHint => 'Paste your backup JSON here';
+  String get backupJsonHint => 'Liitä JSON-varmuuskopiosi tähän';
 
   @override
-  String get pleaseEnterBackup => 'Please enter a backup';
+  String get pleaseEnterBackup => 'Anna varmuuskopio';
 
   @override
-  String get restoringBackup => 'Restoring backup...';
+  String get restoringBackup => 'Palautetaan varmuuskopiota...';
+
+  @override
+  String appUpdateVersionAvailable(String version) {
+    return 'Versio $version saatavilla';
+  }
+
+  @override
+  String get appUpdateLater => 'Myöhemmin';
+
+  @override
+  String get appUpdateView => 'Näytä päivitys';
+
+  @override
+  String get appUpdateChecking => 'Tarkistetaan päivityksiä…';
+
+  @override
+  String get appUpdateCheckFailed => 'Päivitysten tarkistus epäonnistui';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return 'Asennettu: $version';
+  }
+
+  @override
+  String get appUpdatesTitle => 'Sovelluspäivitykset';
+
+  @override
+  String get appUpdateNone => 'Päivityksiä ei ole saatavilla';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return 'Päivitys $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size Mt';
+  }
+
+  @override
+  String get appUpdateAllowInstalls =>
+      'Salli asennukset tästä sovelluksesta ja napauta sitten Päivitä uudelleen.';
+
+  @override
+  String get appUpdateCompleteInstallation =>
+      'Viimeistele asennus Androidin järjestelmäasennuksessa.';
+
+  @override
+  String get appUpdateFailed => 'Päivitys epäonnistui';
+
+  @override
+  String get appUpdateCancel => 'Peruuta';
+
+  @override
+  String get appUpdateAction => 'Päivitä';
+
+  @override
+  String get appUpdateDownload => 'Lataa';
+
+  @override
+  String get appUpdateUpToDate => 'Sovellus on ajan tasalla';
+
+  @override
+  String get appUpdateAheadOfPublished => 'Uudempi kuin julkaistu versio';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return 'Asennettu versio $installedVersion on uudempi kuin viimeisin julkaistu versio $publishedVersion. Julkaisutiedot näkyvät, kun tämä versio julkaistaan.';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage => 'Päivityksiä ei voitu tarkistaa.';
+
+  @override
+  String appUpdateLatest(String version) {
+    return 'Versio $version on uusin saatavilla oleva versio.';
+  }
+
+  @override
+  String get appUpdateClose => 'Sulje';
+
+  @override
+  String get appUpdateCheckAgain => 'Tarkista uudelleen';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return 'Asennettu versio $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return 'Asennettu versio $installedVersion. Päivitys $availableVersion saatavilla.';
+  }
+
+  @override
+  String get appUpdateChangelog => 'Muutosloki';
+
+  @override
+  String get appUpdateReleaseHistory => 'Versiohistoria';
+
+  @override
+  String get appUpdateInstalledBadge => 'Asennettu';
+
+  @override
+  String get appUpdateAvailableBadge => 'Päivitys saatavilla';
+
+  @override
+  String get appUpdateLatestBadge => 'Uusin';
+
+  @override
+  String get appUpdateNoReleases => 'Yhtään versiota ei ole vielä julkaistu.';
+
+  @override
+  String get appUpdateAcrossAllReleases => 'Kaikissa versioissa';
+
+  @override
+  String get appUpdateReleaseDetails => 'Julkaisun tiedot';
+
+  @override
+  String get appUpdateWhatsNew => 'Uutta';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return 'Julkaistu $date';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return 'Kanava: $channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return 'Arkkitehtuuri: $architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return 'Koontiversio $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return 'Julkaisu $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes => 'Julkaisutietoja ei ole julkaistu.';
+
+  @override
+  String get appUpdatePublisher => 'Julkaisija';
+
+  @override
+  String get appUpdatePublisherSignatureVerified =>
+      'Nostr-tapahtuman allekirjoitus vahvistettu';
+
+  @override
+  String get appUpdateCertificateDeclared =>
+      'Julkaisijan ilmoittama Android-allekirjoitusvarmenne';
+
+  @override
+  String appUpdateSource(String host) {
+    return 'Latauslähde: $host';
+  }
+
+  @override
+  String get appUpdateCommunity => 'Yhteisö';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return '$count zappia · $sats satsia';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'sats käyttäjiltä';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return '$count reaktiota';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return '$count kommenttia';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed => 'Yhteisön toimintaa ei voitu ladata.';
+
+  @override
+  String get appUpdateComments => 'Kommentit';
+
+  @override
+  String get appUpdateNoComments => 'Ei vielä kommentteja.';
+
+  @override
+  String get appUpdateCommentHint => 'Jaa palautetta tästä julkaisusta';
+
+  @override
+  String get appUpdatePostComment => 'Lähetä kommentti';
+
+  @override
+  String get appUpdateSignInToComment =>
+      'Kirjaudu Nostr-tilillä kommentoidaksesi.';
+
+  @override
+  String get appUpdateTechnicalDetails => 'Tekniset tiedot';
+
+  @override
+  String get appUpdateViewStatus => 'Näytä päivityksen tila';
 
   @override
   String restoreSuccess(int count) {
-    return 'Restored $count proofs from backup';
+    return 'Varmuuskopiosta palautettuja todisteita: $count';
   }
+
+  @override
+  String get bolt12Wallet => 'BOLT12-lompakko';
+
+  @override
+  String get bolt12WalletSubtitle => 'Uudelleenkäytettävä Lightning-tarjous';
+
+  @override
+  String get bolt12PrivateOfferSubtitle =>
+      'Yksityinen uudelleenkäytettävä tarjous';
+
+  @override
+  String get anyAmount => 'Mikä tahansa summa';
+
+  @override
+  String get blindedRoute => 'Piilotettu reitti';
+
+  @override
+  String fromAmountSats(String amount) {
+    return 'Alkaen $amount sats';
+  }
+
+  @override
+  String fromAmountMsats(String amount) {
+    return 'Alkaen $amount msats';
+  }
+
+  @override
+  String fromCurrencyAmount(String amount, String currency) {
+    return 'Alkaen $amount $currency';
+  }
+
+  @override
+  String bolt12Expires(String date) {
+    return 'Vanhenee $date';
+  }
+
+  @override
+  String get bolt12WalletTypeTitle => 'BOLT12-tarjous';
+
+  @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
+
+  @override
+  String get bolt12WalletTypeSubtitle =>
+      'Vain vastaanottoon tarkoitettu lompakko uudelleenkäytettävällä tarjouksella';
+
+  @override
+  String get addBolt12WalletTitle => 'Lisää BOLT12-lompakko';
+
+  @override
+  String get enterBolt12Input =>
+      'Syötä tai skannaa lno-tarjous, bitcoin:?lno=…-URI tai BIP353-osoite.';
+
+  @override
+  String get bolt12Input => 'BOLT12-maksukohde';
+
+  @override
+  String get bolt12InputHint =>
+      'lno1…, bitcoin:?lno=… tai käyttäjä@verkkotunnus.com';
+
+  @override
+  String get walletNameOptional => 'Lompakon nimi (valinnainen)';
+
+  @override
+  String get scanBolt12QrCodeTitle => 'Skannaa BOLT12-QR-koodi';
+
+  @override
+  String get invalidBolt12QrCode =>
+      'QR-koodi ei sisällä BOLT12-, BIP321- tai BIP353-maksukohdetta.';
+
+  @override
+  String get pleaseEnterBolt12Input =>
+      'Syötä BOLT12-tarjous tai BIP353-osoite.';
+
+  @override
+  String get bolt12WalletAdded => 'BOLT12-lompakko lisätty!';
+
+  @override
+  String get bolt12OfferTitle => 'Vastaanota BOLT12:lla';
+
+  @override
+  String get bolt12OfferInstructions =>
+      'Jaa tämä uudelleenkäytettävä tarjous vastaanottaaksesi Lightning-maksun.';
+
+  @override
+  String get confirm => 'Vahvista';
+
+  @override
+  String get reviewWallet => 'Tarkista lompakko';
+
+  @override
+  String get confirmWalletTitle => 'Vahvista lompakko';
+
+  @override
+  String get confirmWalletDescription =>
+      'Tarkista nämä tiedot ennen lompakon lisäämistä.';
+
+  @override
+  String get walletDetailType => 'Lompakon tyyppi';
+
+  @override
+  String get walletDetailAddress => 'Osoite';
+
+  @override
+  String get walletDetailDomain => 'Verkkotunnus';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => 'Julkinen avain';
+
+  @override
+  String get walletDetailRelay => 'Rele';
+
+  @override
+  String get walletDetailRelays => 'Releet';
+
+  @override
+  String get walletDetailSecret => 'Yhteyssalaisuus';
+
+  @override
+  String get walletSecretHidden =>
+      'Olemassa ja piilotettu turvallisuuden vuoksi';
+
+  @override
+  String get walletDetailDescription => 'Kuvaus';
+
+  @override
+  String get walletDetailDetails => 'Tiedot';
+
+  @override
+  String get walletDetailIssuer => 'Myöntäjä';
+
+  @override
+  String get walletDetailAmount => 'Summa';
+
+  @override
+  String get walletDetailCurrency => 'Valuutta';
+
+  @override
+  String get walletDetailExpiry => 'Vanhenee';
+
+  @override
+  String get walletDetailNodeId => 'Solmun tunnus';
+
+  @override
+  String get walletDetailOffer => 'BOLT12-tarjous';
+
+  @override
+  String get walletDetailVersion => 'Versio';
+
+  @override
+  String get walletDetailUnits => 'Tuetut yksiköt';
+
+  @override
+  String get walletDetailContact => 'Yhteystieto';
+
+  @override
+  String get walletDetailTerms => 'Käyttöehdot';
+
+  @override
+  String get walletDetailMessage => 'Viesti';
+
+  @override
+  String get walletDetailCommunityRating => 'Yhteisön arvio';
+
+  @override
+  String get walletDetailCommunityReviews => 'Viimeisimmät yhteisöarvostelut';
+
+  @override
+  String get refreshBalance => 'Päivitä saldo';
+
+  @override
+  String get balanceRefreshed => 'Saldo päivitetty';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Palauta Mint-tarjous';
+
+  @override
+  String get recoverQuote => 'Palauta tarjous';
+
+  @override
+  String get enterQuoteId =>
+      'Anna palautettavan mint-tarjouksen tunnus. Lukkoavain palautetaan siemenlauseestasi.';
+
+  @override
+  String get quoteId => 'Tarjouksen tunnus';
+
+  @override
+  String get quoteIdHint => 'Liitä tarjouksen tunnus tähän';
+
+  @override
+  String get pleaseEnterQuoteId => 'Anna tarjouksen tunnus';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'Haetaan tarjousta mintistä...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'Palautetaan lukkoavainta siemenlauseestasi...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint =>
+      'Suoritetaan mintti valmiiksi...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Lukkoavain palautettu (johtamislaskuri $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Tarjous palautettu ja varat lisätty saldoosi';
+
+  @override
+  String get quoteRecoveryFailed => 'Tarjouksen palautus epäonnistui';
+
+  @override
+  String get restoreFundsFromMint => 'Palauta varat mintistä';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Palauta varat mintistä';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Skannaa minttiä siemenlauseestasi johdettujen todistusten suhteen ja palauttaa ne tähän lompakkoon.';
+
+  @override
+  String get startRestore => 'Aloita palautus';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets =>
+      'Haetaan mint-avainjoukkoja...';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'Skannataan minttiä varojesi suhteen...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return 'Skannattu $keysets avainjoukko(a) · Löydetty $proofs todistus(ta)';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Palautus valmis';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Palauttaa myös odottavat mint-tarjoukset';
+
+  @override
+  String restoredFromMint(int count) {
+    return 'Palautettiin $count todistusta mintistä';
+  }
+
+  @override
+  String get restoreFailed => 'Palautus epäonnistui';
+
+  @override
+  String get restoreFromBackup => 'Palauta varmuuskopiosta';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Palautus ja varmuuskopiointi';
+
+  @override
+  String get cashuSeedPhraseOption => 'Aseta siemenlause';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Cashu-siemenlause';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Tämä siemenlause on KAIKKIEN Cashu-lompakoiden yhteinen. Se on ainoa tapa palauttaa varasi, jos menetät tämän laitteen. Sen muuttaminen korvaa siemenen, josta johdetaan avaimet jokaiseen Cashu-lompakkoon, joten aiemman siemenen alla vastaanotettuja varoja ei voida enää löytää automaattisesti.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Anna käytettävä palautuslause (12, 15, 18, 21 tai 24 sanaa). Muuta siementä vain, kun palautat lompakoita jo tallentamastasi lauseesta.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Siemenlause';
+
+  @override
+  String get cashuSeedPhraseHint => 'Liitä siemenlauseesi tähän';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Ymmärrän, että tämä muuttaa siemenen kaikille Cashu-lompakoille';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'Tämä ei näytä kelvolliselta siemenlauseelta. Tarkista, että kaikki sanat on kirjoitettu oikein ja oikeassa järjestyksessä.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Siemenlause päivitetty. Se koskee nyt kaikkia Cashu-lompakoita. Varmuuskopioi uusi lause.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed => 'Siemenlausetta ei voitu päivittää';
 }

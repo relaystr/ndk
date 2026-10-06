@@ -11,6 +11,7 @@ import '../data_layer/repositories/blossom/blossom_impl.dart';
 import '../data_layer/repositories/cashu/cashu_repo_impl.dart';
 import '../data_layer/repositories/lnurl_http_impl.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
+import '../data_layer/repositories/relay_info_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/connection_source.dart';
@@ -19,6 +20,8 @@ import '../domain_layer/entities/relay_connectivity.dart';
 import '../domain_layer/entities/wallet/providers/cashu/cashu_wallet_provider.dart';
 import '../domain_layer/entities/wallet/providers/nwc/nwc_wallet_provider.dart';
 import '../domain_layer/entities/wallet/providers/lnurl/lnurl_wallet_provider.dart';
+import '../domain_layer/entities/wallet/providers/bolt12/bolt12_wallet_provider.dart';
+import '../domain_layer/entities/wallet/providers/lnbits/lnbits_wallet_provider.dart';
 import '../domain_layer/repositories/blossom.dart';
 import '../domain_layer/repositories/cashu_repo.dart';
 import '../domain_layer/repositories/lnurl_transport.dart';
@@ -31,8 +34,8 @@ import '../domain_layer/usecases/broadcast/pending_broadcast_delivery.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/cache_eviction/cache_eviction_scheduler.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
-import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/cashu/cashu.dart';
+import '../domain_layer/usecases/cashu/cashu_mint_recommendations.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/decrypted_event_payloads/decrypted_event_payloads.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
@@ -56,6 +59,7 @@ import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/search/search.dart';
+import '../domain_layer/usecases/software/software.dart';
 import '../domain_layer/usecases/ta/trusted_assertions.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 import '../domain_layer/usecases/wallets/wallets.dart';
@@ -75,15 +79,14 @@ class Initialization {
 
   /// repositories with no dependencies
 
-  final _webSocketNostrTransportFactory =
-      WebSocketClientNostrTransportFactory();
+  late final WebSocketClientNostrTransportFactory
+  _webSocketNostrTransportFactory;
 
   /// state obj
 
   /// use cases
 
   late RelayManager relayManager;
-  late CacheWrite cacheWrite;
   late CacheRead cacheRead;
   late Requests requests;
   late Accounts accounts;
@@ -102,6 +105,7 @@ class Initialization {
   late Blossom blossom;
   late BlossomUserServerList blossomUserServerList;
   late Search search;
+  late Software software;
   late GiftWrap giftWrap;
   late Dms dms;
   late Connectivy connectivity;
@@ -112,8 +116,7 @@ class Initialization {
   CacheEvictionScheduler? cacheEvictionScheduler;
   late ProofOfWork proofOfWork;
   late TrustedAssertions trustedAssertions;
-  StreamSubscription<Map<String, RelayConnectivity>>?
-  _relayConnectivitySubscription;
+  StreamSubscription<List<RelayConnectivity>>? _relayConnectivitySubscription;
   final Map<String, bool> _relayOpenStates = {};
 
   late Nip05Usecase nip05;
@@ -131,6 +134,12 @@ class Initialization {
     // Configure global WebSocket User-Agent on dart:io platforms
     configureDefaultUserAgent(ndkConfig.userAgent);
 
+    _webSocketNostrTransportFactory = WebSocketClientNostrTransportFactory(
+      compressionEnabled: ndkConfig.webSocketCompression,
+      pingInterval: ndkConfig.webSocketPingInterval,
+      reconnectMaximumStep: ndkConfig.webSocketReconnectMaximumStep,
+    );
+
     accounts = Accounts(_ndkConfig.eventSignerFactory);
 
     switch (_ndkConfig.engine) {
@@ -140,8 +149,8 @@ class Initialization {
           accounts: accounts,
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
-          eagerAuth: _ndkConfig.eagerAuth,
           authCallbackTimeout: _ndkConfig.authCallbackTimeout,
+          relayInfoRepo: RelayInfoHttpRepoImpl(httpDS: _httpRequestDS),
         );
 
         engine = RelaySetsEngine(
@@ -158,8 +167,8 @@ class Initialization {
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
-          eagerAuth: _ndkConfig.eagerAuth,
           authCallbackTimeout: _ndkConfig.authCallbackTimeout,
+          relayInfoRepo: RelayInfoHttpRepoImpl(httpDS: _httpRequestDS),
         );
 
         engine = JitEngine(
@@ -185,7 +194,6 @@ class Initialization {
     final CashuRepo cashuRepo = CashuRepoImpl(client: _httpRequestDS);
 
     ///   use cases
-    cacheWrite = CacheWrite(_ndkConfig.cache);
     cacheRead = CacheRead(_ndkConfig.cache);
     decryptedEventPayloads = DecryptedEventPayloads(
       cacheManager: _ndkConfig.cache,
@@ -195,11 +203,12 @@ class Initialization {
       defaultQueryTimeout: _ndkConfig.defaultQueryTimeout,
       globalState: _globalState,
       cacheRead: cacheRead,
-      cacheWrite: cacheWrite,
+      cacheManager: _ndkConfig.cache,
       networkEngine: engine,
       relayManager: relayManager,
       eventVerifier: _ndkConfig.eventVerifier,
       eventOutFilters: _ndkConfig.eventOutFilters,
+      debugMode: _ndkConfig.debugMode,
     );
 
     final broadcastSender = BroadcastSender(
@@ -222,24 +231,27 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
       pendingDelivery: pendingBroadcastDelivery,
     );
-    _relayConnectivitySubscription = relayManager.relayConnectivityChanges
-        .listen(_handleRelayConnectivityUpdate);
-    pendingBroadcastDelivery.startPeriodicRetry(
-      connectedRelayUrls: () =>
-          relayManager.connectedRelays.map((relay) => relay.url),
-      reconnectRelay: (relayUrl) => relayManager.reconnectRelay(
-        relayUrl,
-        connectionSource: ConnectionSource.explicit,
-        force: true,
-      ),
-      retryInterval: _ndkConfig.pendingDeliveryRetryInterval,
-    );
+    if (_ndkConfig.pendingDeliveryRetriesEnabled) {
+      _relayConnectivitySubscription = relayManager.relayConnectivityChanges
+          .listen(_handleRelayConnectivityUpdate);
+      pendingBroadcastDelivery.startPeriodicRetry(
+        connectedRelayUrls: () =>
+            relayManager.connectedRelays.map((relay) => relay.url),
+        reconnectRelay: (relayUrl) => relayManager.reconnectRelay(
+          relayUrl,
+          connectionSource: ConnectionSource.explicit,
+          force: true,
+        ),
+        retryInterval: _ndkConfig.pendingDeliveryRetryInterval,
+      );
+    }
 
     // Initialize nwc and cashu before walletsOperationsRepo since they are dependencies
     nwc = Nwc(
       requests: requests,
       broadcast: broadcast,
       eventSignerFactory: _ndkConfig.eventSignerFactory,
+      waitForRequestSent: relayManager.waitForRequestSent,
     );
 
     if (_ndkConfig.walletsRepo == null) {
@@ -257,6 +269,8 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
       cashuUserSeedphrase: _ndkConfig.cashuUserSeedphrase,
       cashuKeyDerivation: DartCashuKeyDerivation(),
+      mintRecommendations: CashuMintRecommendations(requests: requests),
+      autoVerifyMintCounters: _ndkConfig.autoVerifyMintCounters,
     );
 
     // Create wallet providers
@@ -320,6 +334,8 @@ class Initialization {
 
     // Create LNURL wallet provider after lnurl is initialized
     final lnurlProvider = LnurlWalletProvider(lnurl);
+    const bolt12Provider = Bolt12WalletProvider();
+    final lnbitsProvider = LnBitsWalletProvider();
 
     zaps = Zaps(requests: requests, nwc: nwc, lnurl: lnurl);
 
@@ -339,6 +355,7 @@ class Initialization {
     files = Files(blossom: blossom);
 
     search = Search(cacheManager: _ndkConfig.cache, requests: requests);
+    software = Software(requests: requests);
 
     fetchedRanges = FetchedRanges(cacheManager: _ndkConfig.cache);
 
@@ -360,12 +377,19 @@ class Initialization {
       giftWrap: giftWrap,
       userRelayLists: userRelayLists,
       cacheManager: _ndkConfig.cache,
+      eventVerifier: _ndkConfig.eventVerifier,
     );
 
     connectivity = Connectivy(relayManager);
 
     wallets = Wallets(
-      providers: [cashuProvider, nwcProvider, lnurlProvider],
+      providers: [
+        cashuProvider,
+        nwcProvider,
+        lnurlProvider,
+        bolt12Provider,
+        lnbitsProvider,
+      ],
       repository: _ndkConfig.walletsRepo!,
     );
     proofOfWork = ProofOfWork();
@@ -379,6 +403,7 @@ class Initialization {
     // Wire up NIP-77 handlers
     relayManager.onNegMsg = nip77.processNegMsg;
     relayManager.onNegErr = nip77.processNegErr;
+    relayManager.onNegClosed = nip77.processNegClosed;
 
     trustedAssertions = TrustedAssertions(
       requests: requests,
@@ -410,14 +435,22 @@ class Initialization {
     await _relayConnectivitySubscription?.cancel();
   }
 
-  void _handleRelayConnectivityUpdate(Map<String, RelayConnectivity> relays) {
-    for (final entry in relays.entries) {
-      final relayUrl = entry.key;
-      final isOpen = entry.value.relayTransport?.isOpen() ?? false;
-      final wasOpen = _relayOpenStates[relayUrl] ?? false;
-      _relayOpenStates[relayUrl] = isOpen;
+  void _handleRelayConnectivityUpdate(List<RelayConnectivity> connections) {
+    // deliveries are still addressed by relay, so a relay counts as reachable
+    // as soon as one of its connections is open
+    final openByUrl = <String, bool>{};
+    for (final connection in connections) {
+      final isOpen = connection.relayTransport?.isOpen() ?? false;
+      openByUrl[connection.url] =
+          (openByUrl[connection.url] ?? false) || isOpen;
+    }
 
-      if (isOpen && !wasOpen) {
+    for (final entry in openByUrl.entries) {
+      final relayUrl = entry.key;
+      final wasOpen = _relayOpenStates[relayUrl] ?? false;
+      _relayOpenStates[relayUrl] = entry.value;
+
+      if (entry.value && !wasOpen) {
         unawaited(
           pendingBroadcastDelivery.retryInteractiveSigningForTransportRelay(
             relayUrl,
@@ -428,7 +461,7 @@ class Initialization {
     }
 
     final removedUrls = _relayOpenStates.keys
-        .where((relayUrl) => !relays.containsKey(relayUrl))
+        .where((relayUrl) => !openByUrl.containsKey(relayUrl))
         .toList();
     for (final relayUrl in removedUrls) {
       _relayOpenStates.remove(relayUrl);

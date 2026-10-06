@@ -2,34 +2,6 @@
 
 NDK handles NIP-42 relay authentication automatically. When a relay requires authentication, NDK will sign and send AUTH events, then retry the original request.
 
-## Auth Strategies
+A connection carries at most one identity, chosen when it is opened and immutable for its whole lifetime, so a request that authenticates moves to its own connection.
 
-NDK supports two authentication strategies:
-
-### Lazy Auth (default)
-
-```dart
-final ndk = Ndk(NdkConfig(
-  eventVerifier: Bip340EventVerifier(),
-  cache: MemCacheManager(),
-  // eagerAuth: false (default)
-));
-```
-
-- AUTH is sent **only after** the relay responds with `auth-required`
-- More privacy-respecting: doesn't reveal identity until necessary
-- Flow: `REQ` → `CLOSED auth-required` → `AUTH` → `OK` → `REQ` (retry)
-
-### Eager Auth
-
-```dart
-final ndk = Ndk(NdkConfig(
-  eventVerifier: Bip340EventVerifier(),
-  cache: MemCacheManager(),
-  eagerAuth: true,
-));
-```
-
-- AUTH is sent **immediately** when the relay sends a challenge
-- Faster for relays that always require auth
-- Flow: `AUTH challenge` → `AUTH` → `OK` → `REQ`
+Which identity a request may be attributed to is the `auth` parameter, see [requests](/usecases/requests.md#relay-authentication-nip-42). The same parameter says which identity a negentropy reconciliation may use, see [negentropy](/usecases/negentropy.md#relay-authentication-nip-42), and which identity an event may be published under, see [broadcast](/usecases/broadcast.md#relay-authentication-nip-42).

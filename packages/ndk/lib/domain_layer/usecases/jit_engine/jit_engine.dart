@@ -71,7 +71,7 @@ class JitEngine with Logger implements NetworkEngine {
         final cleanedExplicitRelays = cleanRelayUrls(
           requestState.request.explicitRelays!.toList(),
         );
-        RelayJitRequestSpecificStrategy.handleRequest(
+        await RelayJitRequestSpecificStrategy.handleRequest(
           relayManager: relayManagerLight,
           requestState: requestState,
           filter: filter,
@@ -82,13 +82,13 @@ class JitEngine with Logger implements NetworkEngine {
       }
 
       if ((filter.authors != null && filter.authors!.isNotEmpty)) {
-        RelayJitPubkeyStrategy.handleRequest(
+        await RelayJitPubkeyStrategy.handleRequest(
           globalState: globalState,
           relayManager: relayManagerLight,
           requestState: requestState,
           cacheManager: cache,
           filter: filter,
-          connectedRelays: relayManagerLight.connectedRelays
+          connectedRelays: relayManagerLight.connectedAnonymousRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
           bootstrapRelays: bootstrapRelays,
@@ -102,13 +102,13 @@ class JitEngine with Logger implements NetworkEngine {
       }
 
       if (filter.pTags?.isNotEmpty != null && filter.pTags!.isNotEmpty) {
-        RelayJitPubkeyStrategy.handleRequest(
+        await RelayJitPubkeyStrategy.handleRequest(
           relayManager: relayManagerLight,
           globalState: globalState,
           requestState: requestState,
           cacheManager: cache,
           filter: filter,
-          connectedRelays: relayManagerLight.connectedRelays
+          connectedRelays: relayManagerLight.connectedAnonymousRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
           bootstrapRelays: bootstrapRelays,
@@ -136,7 +136,7 @@ class JitEngine with Logger implements NetworkEngine {
         relayManager: relayManagerLight,
         requestState: requestState,
         filter: filter,
-        connectedRelays: relayManagerLight.connectedRelays
+        connectedRelays: relayManagerLight.connectedAnonymousRelays
             .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
             .toList(),
         bootstrapRelays: bootstrapRelays,
@@ -144,16 +144,7 @@ class JitEngine with Logger implements NetworkEngine {
       );
     }
 
-    // Late auth for subscriptions with authenticateAs
-    if (ndkRequest.authenticateAs != null &&
-        ndkRequest.authenticateAs!.isNotEmpty) {
-      for (final relayUrl in requestState.requests.keys) {
-        relayManagerLight.authenticateIfNeeded(
-          relayUrl,
-          ndkRequest.authenticateAs!,
-        );
-      }
-    }
+    requestState.closeIfNoRelays();
   }
 
   /// broadcasts given event using inbox/outbox (gossip) if explicit relays are given they are used instead
@@ -190,9 +181,7 @@ class JitEngine with Logger implements NetworkEngine {
           relayManager: relayManagerLight,
           cacheManager: cache,
           eventToPublish: workingNostrEvent,
-          connectedRelays: relayManagerLight.connectedRelays
-              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-              .toList(),
+          auth: broadcastState.auth,
         );
         broadcastState.closeIfNoRelays();
         return;
@@ -201,12 +190,10 @@ class JitEngine with Logger implements NetworkEngine {
       // default publish to own outbox
       await RelayJitBroadcastOutboxStrategy.broadcast(
         eventToPublish: workingNostrEvent,
-        connectedRelays: relayManagerLight.connectedRelays
-            .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-            .toList(),
         cacheManager: cache,
         relayManager: relayManagerLight,
         bootstrapRelays: bootstrapRelays,
+        auth: broadcastState.auth,
       );
 
       // check if we need to publish to others inboxes
@@ -214,12 +201,10 @@ class JitEngine with Logger implements NetworkEngine {
           workingNostrEvent.kind != ContactList.kKind) {
         await RelayJitBroadcastOtherReadStrategy.broadcast(
           eventToPublish: workingNostrEvent,
-          connectedRelays: relayManagerLight.connectedRelays
-              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-              .toList(),
           cacheManager: cache,
           relayManager: relayManagerLight,
           pubkeysOfInbox: workingNostrEvent.pTags,
+          auth: broadcastState.auth,
         );
       }
       broadcastState.closeIfNoRelays();

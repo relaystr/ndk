@@ -9,7 +9,7 @@ import '../../../domain_layer/entities/pending_signer_request.dart';
 import '../../../domain_layer/repositories/event_signer.dart';
 import '../../../src/rust_lib.dart' as rust_lib;
 
-/// Holds a Dilithium keypair (public key + full keypair bytes for signing).
+/// Holds an ML-DSA keypair (public key + full keypair bytes for signing).
 class QsKeypair {
   final Uint8List publicKeyBytes;
   final Uint8List keypairBytes;
@@ -23,9 +23,9 @@ class QsKeypair {
 }
 
 /// An implementation of [EventSigner] that uses quantum-secure
-/// CRYSTALS-Dilithium signatures via native Rust FFI.
+/// ML-DSA (FIPS 204) signatures via native Rust FFI.
 class QsRustEventSigner implements EventSigner {
-  /// The Dilithium security level (2, 3, or 5).
+  /// The ML-DSA parameter set: 44, 65 or 87.
   final int level;
 
   late final QsKeypair _keypair;
@@ -36,7 +36,7 @@ class QsRustEventSigner implements EventSigner {
   /// Creates a [QsRustEventSigner] from an existing [QsKeypair].
   ///
   /// Use [QsRustEventSigner.generate] to create a new keypair first.
-  QsRustEventSigner({required QsKeypair keypair, this.level = 2})
+  QsRustEventSigner({required QsKeypair keypair, this.level = 87})
     : _keypair = keypair;
 
   @override
@@ -48,10 +48,11 @@ class QsRustEventSigner implements EventSigner {
   @override
   Iterable<String> get signerTransportRelayUrls => const <String>[];
 
-  /// Generates a new Dilithium keypair.
+  /// Generates a new ML-DSA keypair.
   /// Its only added here for testing purposes!
   ///
-  /// [level] selects the security level: 2 (~AES-128), 3 (~AES-192), or 5 (~AES-256).
+  /// [level] selects the ML-DSA parameter set: 44 (~AES-128), 65 (~AES-192), or
+  /// 87 (~AES-256, the CNSA 2.0 set). The old Dilithium values 2/3/5 are rejected.
   ///
   /// Returns a [QsKeypair] that can be stored and later passed to the constructor.
   ///
@@ -59,10 +60,10 @@ class QsRustEventSigner implements EventSigner {
   ///
   /// Example:
   /// ```dart
-  /// final keypair = QsRustEventSigner.generateKeypair(level: 2);
-  /// final signer = QsRustEventSigner(keypair: keypair, level: 2);
+  /// final keypair = QsRustEventSigner.generateKeypair(level: 87);
+  /// final signer = QsRustEventSigner(keypair: keypair, level: 87);
   /// ```
-  static QsKeypair generateKeypair({int level = 2}) {
+  static QsKeypair generateKeypair({int level = 87}) {
     final outPk = calloc<rust_lib.QsBuffer>();
     final outSk = calloc<rust_lib.QsBuffer>();
 
@@ -70,9 +71,7 @@ class QsRustEventSigner implements EventSigner {
       final result = rust_lib.qsGenerateKeypair(level, outPk, outSk);
 
       if (result != 1) {
-        throw StateError(
-          'Failed to generate Dilithium keypair at level $level',
-        );
+        throw StateError('Failed to generate ML-DSA keypair at level $level');
       }
 
       final pkLen = outPk.ref.len;
@@ -126,7 +125,7 @@ class QsRustEventSigner implements EventSigner {
       );
 
       if (result != 1) {
-        throw StateError('Failed to sign event with Dilithium');
+        throw StateError('Failed to sign event with ML-DSA');
       }
 
       final sigLen = outSig.ref.len;

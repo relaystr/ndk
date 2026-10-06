@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:ndk/data_layer/repositories/cache_manager/sembast_cache_manager.dart';
 import 'package:ndk/entities.dart';
 
@@ -45,6 +46,23 @@ void main() {
         expect(loadedEvent.kind, equals(event.kind));
         expect(loadedEvent.content, equals(event.content));
         expect(loadedEvent.createdAt, equals(event.createdAt));
+      });
+
+      test('saveEventIfAbsent does not overwrite an existing id', () async {
+        final original = Nip01Event(
+          pubKey: 'test_pubkey',
+          kind: 1,
+          tags: [],
+          content: 'original',
+        );
+        final replacement = original.copyWith(content: 'replacement');
+
+        expect(await cacheManager.saveEventIfAbsent(original), isTrue);
+        expect(await cacheManager.saveEventIfAbsent(replacement), isFalse);
+
+        final loaded = await cacheManager.loadEvent(original.id);
+        expect(loaded, isNotNull);
+        expect(loaded!.content, 'original');
       });
 
       test('saveEvents batch operation', () async {

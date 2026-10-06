@@ -55,6 +55,23 @@ NSwitchAccount(ndkFlutter: ndkFlutter);
 
 By default, the logged-in user is used for user widgets; you can override it by passing a `pubkey` parameter.
 
+### Android app updates
+
+See the complete [software update guide](../../doc/usecases/software.md) for
+NIP-82 publishing requirements, controller setup, widgets, and installer
+validation.
+
+Apps using `AndroidPackageInstaller` must opt into APK installation in their
+application manifest:
+
+```xml
+<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+```
+
+This restricted permission is not added automatically by `ndk_flutter`. Only
+declare it when installing updates is a core app feature and applicable store
+policies permit that use.
+
 ## TODO
 
 - [ ] NUserProfile optionnal show nsec and copy
@@ -63,3 +80,43 @@ By default, the logged-in user is used for user widgets; you can override it by 
 ## Need more Widgets
 
 Open an Issue
+
+
+## Shared wallet input UI
+
+`NWallets` includes the wallet chooser, paste/manual input, Cashu discovery,
+LNbits setup, connection status/retry screens, and Alby Cloud/Coinos connection
+presets. The presets reuse `albyGoConnectConfig` for the host app name and
+callback URL. Register that callback scheme in your app and forward incoming
+URLs to `NWalletsState.onProtocolUrlReceived`; on mobile resume without a
+callback, call `resumePendingWalletAuth`. Legacy untagged providers are
+revalidated every five seconds while their connection screen remains open.
+
+Only camera decoding is supplied by the host, so ndk_flutter does not depend on
+a camera plugin, WebRTC, or a native QR decoder:
+
+```dart
+NWallets(
+  ndkFlutter: ndkFlutter,
+  albyGoConnectConfig: const AlbyGoConnectConfig(
+    appName: 'My app',
+    appIconUrl: 'https://example.com/icon.png',
+    callback: 'myapp://nwc',
+  ),
+  walletQrScannerBuilder: (context, onScan, onError) =>
+      MyQrCamera(onScan: onScan, onError: onError),
+)
+```
+
+`MyQrCamera` is your camera widget. Report decoded text through `onScan`,
+report failures through `onError`, and release camera resources on disposal.
+The shared UI removes the camera during nested input dialogs and connection
+status, then recreates it when scanning resumes. The same builder is used for
+nested NWC and LNbits QR input. Pass null on platforms without camera support;
+paste and wallet setup still work.
+
+No provider list is needed. Set `nwcConnectionOptions` to replace the defaults,
+or pass an empty list to disable web presets. `defaultNwcConnectionOptions`
+is also available when extending the list. Existing `walletInputScanner`,
+`nwcUriScanner` and `bolt12InputScanner` overrides remain supported.
+`showWalletInputDialog` exposes the shared UI separately from `NWallets`.

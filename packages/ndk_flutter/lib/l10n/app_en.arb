@@ -1,4 +1,19 @@
 {
+  "lnbitsWalletOption": "LNbits",
+  "lnbitsConnectionInstructions": "In LNbits, choose the wallet you want to connect, open it, click API docs, and copy the Admin Key. Paste it below:",
+  "lnbitsAdminKey": "LNbits Admin Key",
+  "lnbitsKeyType": "LNbits key type",
+  "lnbitsInvoiceReadKey": "LNbits invoice/read key",
+  "lnbitsReadOnlyDescription": "Receive-only wallet: view balance and history, and create invoices. Sending payments is disabled.",
+  "lnbitsUrl": "LNbits URL",
+  "lnbitsCredentialsRequired": "Enter both the LNbits Admin Key and URL.",
+  "lnbitsWalletAdded": "LNbits wallet added successfully",
+  "walletDetailWalletId": "Wallet ID",
+  "saveBackupToFile": "Save backup to file",
+  "backupSavedToFile": "Backup saved to file",
+  "restoreFromFile": "Restore from file",
+  "backupFileReadFailed": "Could not read the selected backup file.",
+  "fetchingWalletConnectionInfo": "Fetching wallet connection info…",
   "@@locale": "en",
   "createAccount": "Create your account",
   "@createAccount": {
@@ -1015,6 +1030,19 @@
     "description": "Description for send by Lightning option"
   },
   "payInvoiceTitle": "Pay Invoice",
+  "sendToWallet": "Send to Wallet",
+  "sendToWalletDescription": "Transfer to another compatible wallet",
+  "noCompatibleReceivingWallets": "No compatible receiving wallets",
+  "noCompatibleReceivingWalletsDescription": "Add or connect another wallet that can receive a payment supported by this wallet.",
+  "destinationWallet": "Destination wallet",
+  "walletTransferSubmitted": "Payment sent to {walletName}",
+  "@walletTransferSubmitted": {
+    "placeholders": {
+      "walletName": {
+        "type": "String"
+      }
+    }
+  },
   "@payInvoiceTitle": {
     "description": "Title for pay invoice dialog"
   },
@@ -1273,6 +1301,98 @@
   "@addWalletTitle": {
     "description": "Title for add wallet dialog"
   },
+  "addWalletDescription": "Scan any supported wallet QR code, paste its details, or connect through a wallet app.",
+  "@addWalletDescription": {
+    "description": "Description for the unified add wallet flow"
+  },
+  "scanWalletQrCode": "Scan wallet QR code",
+  "@scanWalletQrCode": {
+    "description": "Button for opening the universal wallet QR scanner"
+  },
+  "connectWithWallet": "Connect with a wallet",
+  "@connectWithWallet": {
+    "description": "Heading for wallet-assisted NWC connection options"
+  },
+  "chooseWalletApp": "Choose wallet app",
+  "oneClickConnect": "1-click connect",
+  "chooseWallet": "Choose wallet",
+  "albyWalletOption": "Alby",
+  "albyCloudOption": "Alby Cloud",
+  "coinosWalletOption": "Coinos",
+  "manualNwcConnection": "Manual NWC connection",
+  "walletConnectionFinishIn": "Finish connection in {walletName}",
+  "@walletConnectionFinishIn": {
+    "description": "Prompt shown while an external wallet is authorizing",
+    "placeholders": {
+      "walletName": {
+        "type": "String"
+      }
+    }
+  },
+  "walletConnectionConnecting": "Connecting {walletName}…",
+  "@walletConnectionConnecting": {
+    "description": "Progress shown while adding an externally authorized wallet",
+    "placeholders": {
+      "walletName": {
+        "type": "String"
+      }
+    }
+  },
+  "walletConnectionConnected": "{walletName} connected",
+  "@walletConnectionConnected": {
+    "description": "Animated success message after adding a wallet",
+    "placeholders": {
+      "walletName": {
+        "type": "String"
+      }
+    }
+  },
+  "walletConnectionFailed": "Could not connect {walletName}",
+  "@walletConnectionFailed": {
+    "description": "Heading shown when an external wallet connection fails",
+    "placeholders": {
+      "walletName": {
+        "type": "String"
+      }
+    }
+  },
+  "retry": "Retry",
+  "walletUnreachable": "Wallet unreachable",
+  "@walletUnreachable": {
+    "description": "Status shown when a wallet's remote service cannot be reached"
+  },
+  "chooseAnotherWallet": "Choose another wallet",
+  "@chooseWalletApp": {
+    "description": "Button for opening the standard NWC wallet chooser"
+  },
+  "chooseWalletAppDescription": "Approve an NWC connection in an installed wallet",
+  "@chooseWalletAppDescription": {
+    "description": "Description for the standard NWC wallet chooser"
+  },
+  "walletInput": "Wallet address or connection",
+  "@walletInput": {
+    "description": "Label for unified wallet input"
+  },
+  "walletInputHint": "NWC, Lightning/BIP353 address, BOLT12/BIP321 offer, or HTTPS Cashu mint URL",
+  "@walletInputHint": {
+    "description": "Hint listing supported wallet inputs"
+  },
+  "unsupportedWalletInput": "This is not a supported wallet address or connection.",
+  "@unsupportedWalletInput": {
+    "description": "Error for an unrecognized unified wallet input"
+  },
+  "detected": "Detected",
+  "@detected": {
+    "description": "Label shown before a detected wallet type"
+  },
+  "lightningAddressInputType": "Lightning or BIP353 address",
+  "@lightningAddressInputType": {
+    "description": "Detected type label for an ambiguous user at domain address"
+  },
+  "manualWalletSetup": "Set up manually",
+  "@manualWalletSetup": {
+    "description": "Button revealing type-specific manual wallet setup"
+  },
   "chooseWalletType": "Choose wallet type",
   "@chooseWalletType": {
     "description": "Prompt to choose wallet type"
@@ -1294,6 +1414,23 @@
     "description": "Subtitle for the LNURL wallet type option"
   },
   "cashuWalletTypeTitle": "Cashu",
+  "chooseCashuMint": "Choose Cashu mint",
+  "cashuMintRatingsNotice": "Community ratings come from signed Nostr reviews. A high rating does not guarantee that a mint is safe.",
+  "cashuMintDiscoveryFailed": "Could not load mint suggestions.",
+  "noCashuMintSuggestions": "No available mint suggestions found.",
+  "noRatingsYet": "No ratings yet",
+  "cashuMintRating": "★ {rating} · {count} reviews",
+  "@cashuMintRating": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "enterMintUrlManually": "Enter mint URL manually",
   "@cashuWalletTypeTitle": {
     "description": "Title for the Cashu wallet type option"
   },
@@ -1325,6 +1462,10 @@
   "@albyGoOption": {
     "description": "Label for Alby Go option"
   },
+  "albyGoQrScanInstructions": "In Alby Go, tap Send, then scan this QR code.",
+  "@albyGoQrScanInstructions": {
+    "description": "Instructions shown beside the Alby Go wallet authorization QR code"
+  },
   "manualOption": "Manual",
   "@manualOption": {
     "description": "Label for manual connection option"
@@ -1354,6 +1495,8 @@
     "description": "Error message for invalid NWC URI"
   },
   "paste": "Paste",
+  "clearInput": "Clear input",
+  "pasteOrEnter": "Paste or type",
   "@paste": {
     "description": "Label for paste action"
   },
@@ -1487,6 +1630,194 @@
   "@restoringBackup": {
     "description": "Shown while a cashu backup is being restored"
   },
+  "appUpdateVersionAvailable": "Version {version} available",
+  "@appUpdateVersionAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateLater": "Later",
+  "appUpdateView": "View update",
+  "appUpdateChecking": "Checking for updates…",
+  "appUpdateCheckFailed": "Update check failed",
+  "appUpdateInstalled": "Installed {version}",
+  "@appUpdateInstalled": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdatesTitle": "App updates",
+  "appUpdateNone": "No update available",
+  "appUpdateTitle": "Update {currentVersion} → {availableVersion}",
+  "@appUpdateTitle": {
+    "placeholders": {
+      "currentVersion": {
+        "type": "String"
+      },
+      "availableVersion": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateSizeMb": "{size} MB",
+  "@appUpdateSizeMb": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateAllowInstalls": "Allow installs from this app, then tap Update again.",
+  "appUpdateCompleteInstallation": "Complete installation in Android system installer.",
+  "appUpdateFailed": "Update failed",
+  "appUpdateCancel": "Cancel",
+  "appUpdateAction": "Update",
+  "appUpdateDownload": "Download",
+  "appUpdateUpToDate": "You’re up to date",
+  "appUpdateAheadOfPublished": "Newer than published",
+  "appUpdateAheadOfPublishedMessage": "Installed version {installedVersion} is newer than latest published version {publishedVersion}. Release details will appear after this version is published.",
+  "@appUpdateAheadOfPublishedMessage": {
+    "placeholders": {
+      "installedVersion": {
+        "type": "String"
+      },
+      "publishedVersion": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateCheckFailedMessage": "Could not check for updates.",
+  "appUpdateLatest": "Version {version} is the latest available version.",
+  "@appUpdateLatest": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateClose": "Close",
+  "appUpdateCheckAgain": "Check again",
+  "appUpdateInstalledVersion": "Installed version {version}",
+  "@appUpdateInstalledVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateInstalledAndAvailable": "Installed version {installedVersion}. Update {availableVersion} available.",
+  "@appUpdateInstalledAndAvailable": {
+    "placeholders": {
+      "installedVersion": {
+        "type": "String"
+      },
+      "availableVersion": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateChangelog": "Changelog",
+  "appUpdateReleaseHistory": "Release history",
+  "appUpdateInstalledBadge": "Installed",
+  "appUpdateAvailableBadge": "Update available",
+  "appUpdateLatestBadge": "Latest",
+  "appUpdateNoReleases": "No releases have been published yet.",
+  "appUpdateAcrossAllReleases": "Across all releases",
+  "appUpdateReleaseDetails": "Release details",
+  "appUpdateWhatsNew": "What’s new",
+  "appUpdatePublishedOn": "Published {date}",
+  "@appUpdatePublishedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateChannel": "Channel: {channel}",
+  "@appUpdateChannel": {
+    "placeholders": {
+      "channel": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateArchitecture": "Architecture: {architecture}",
+  "@appUpdateArchitecture": {
+    "placeholders": {
+      "architecture": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateVersionCode": "Build {versionCode}",
+  "@appUpdateVersionCode": {
+    "placeholders": {
+      "versionCode": {
+        "type": "int"
+      }
+    }
+  },
+  "appUpdateReleaseVersion": "Release {version}",
+  "@appUpdateReleaseVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateNoReleaseNotes": "No release notes were published.",
+  "appUpdatePublisher": "Publisher",
+  "appUpdatePublisherSignatureVerified": "Nostr event signature verified",
+  "appUpdateCertificateDeclared": "Android signing certificate declared by publisher",
+  "appUpdateSource": "Download source: {host}",
+  "@appUpdateSource": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateCommunity": "Community",
+  "appUpdateZapSummary": "{count} zaps · {sats} sats",
+  "appUpdateSatsBy": "sats by",
+  "@appUpdateZapSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "sats": {
+        "type": "int"
+      }
+    }
+  },
+  "appUpdateReactionCount": "{count} reactions",
+  "@appUpdateReactionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appUpdateCommentCount": "{count} comments",
+  "@appUpdateCommentCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appUpdateSocialLoadFailed": "Community activity could not be loaded.",
+  "appUpdateComments": "Comments",
+  "appUpdateNoComments": "No comments yet.",
+  "appUpdateCommentHint": "Share feedback about this release",
+  "appUpdatePostComment": "Post comment",
+  "appUpdateSignInToComment": "Sign in with a Nostr account to comment.",
+  "appUpdateTechnicalDetails": "Technical details",
+  "appUpdateViewStatus": "View update status",
   "restoreSuccess": "Restored {count} proofs from backup",
   "@restoreSuccess": {
     "description": "Confirmation after a successful restore",
@@ -1496,5 +1827,252 @@
         "description": "Number of restored proofs"
       }
     }
+  },
+  "bolt12Wallet": "BOLT12 Wallet",
+  "bolt12WalletSubtitle": "Reusable Lightning offer",
+  "bolt12PrivateOfferSubtitle": "Reusable private offer",
+  "anyAmount": "Any amount",
+  "blindedRoute": "Blinded",
+  "fromAmountSats": "From {amount} sats",
+  "@fromAmountSats": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "fromAmountMsats": "From {amount} msats",
+  "@fromAmountMsats": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "fromCurrencyAmount": "From {amount} {currency}",
+  "@fromCurrencyAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bolt12Expires": "Expires {date}",
+  "@bolt12Expires": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bolt12WalletTypeTitle": "BOLT12 Offer",
+  "bip353WalletTypeTitle": "BIP353",
+  "lnurlProtocol": "LNURL",
+  "bolt12WalletTypeSubtitle": "Receive-only wallet using a reusable offer",
+  "addBolt12WalletTitle": "Add BOLT12 Wallet",
+  "enterBolt12Input": "Enter or scan an lno offer, a bitcoin:?lno=... URI, or a BIP353 address.",
+  "bolt12Input": "BOLT12 payment target",
+  "bolt12InputHint": "lno1..., bitcoin:?lno=..., or user@domain.com",
+  "walletNameOptional": "Wallet name (optional)",
+  "scanBolt12QrCodeTitle": "Scan BOLT12 QR code",
+  "invalidBolt12QrCode": "The QR code is not a BOLT12, BIP321, or BIP353 payment target.",
+  "pleaseEnterBolt12Input": "Please enter a BOLT12 offer or BIP353 address.",
+  "bolt12WalletAdded": "BOLT12 wallet added successfully!",
+  "bolt12OfferTitle": "Receive with BOLT12",
+  "bolt12OfferInstructions": "Share this reusable offer to receive a Lightning payment.",
+  "confirm": "Confirm",
+  "reviewWallet": "Review wallet",
+  "confirmWalletTitle": "Confirm wallet",
+  "confirmWalletDescription": "Review these details before adding this wallet.",
+  "walletDetailType": "Wallet type",
+  "walletDetailAddress": "Address",
+  "walletDetailDomain": "Domain",
+  "walletDetailUrl": "URL",
+  "walletDetailPublicKey": "Public key",
+  "walletDetailRelay": "Relay",
+  "walletDetailRelays": "Relays",
+  "walletDetailSecret": "Connection secret",
+  "walletSecretHidden": "Present and hidden for security",
+  "walletDetailDescription": "Description",
+  "walletDetailDetails": "Details",
+  "walletDetailIssuer": "Issuer",
+  "walletDetailAmount": "Amount",
+  "walletDetailCurrency": "Currency",
+  "walletDetailExpiry": "Expires",
+  "walletDetailNodeId": "Node ID",
+  "walletDetailOffer": "BOLT12 offer",
+  "walletDetailVersion": "Version",
+  "walletDetailUnits": "Supported units",
+  "walletDetailContact": "Contact",
+  "walletDetailTerms": "Terms of service",
+  "walletDetailMessage": "Message",
+  "walletDetailCommunityRating": "Community rating",
+  "walletDetailCommunityReviews": "Recent community reviews",
+  "refreshBalance": "Refresh balance",
+  "balanceRefreshed": "Balance refreshed",
+  "cashuQuoteRecoveryTitle": "Recover Mint Quote",
+  "@cashuQuoteRecoveryTitle": {
+    "description": "Title of the dialog to recover a mint quote"
+  },
+  "recoverQuote": "Recover quote",
+  "@recoverQuote": {
+    "description": "Menu item / button to start recovering a mint quote"
+  },
+  "enterQuoteId": "Enter the mint quote ID to recover. The lock key is recovered from your seed phrase.",
+  "@enterQuoteId": {
+    "description": "Prompt to enter a mint quote ID"
+  },
+  "quoteId": "Quote ID",
+  "@quoteId": {
+    "description": "Label for the quote ID input field"
+  },
+  "quoteIdHint": "Paste the quote ID here",
+  "@quoteIdHint": {
+    "description": "Hint text for the quote ID input field"
+  },
+  "pleaseEnterQuoteId": "Please enter a quote ID",
+  "@pleaseEnterQuoteId": {
+    "description": "Validation message when the quote ID field is empty"
+  },
+  "cashuQuoteRecoveryStageFetchingQuote": "Fetching quote from mint...",
+  "@cashuQuoteRecoveryStageFetchingQuote": {
+    "description": "Progress line while the quote is fetched from the mint"
+  },
+  "cashuQuoteRecoveryStageRecoveringKey": "Recovering lock key from your seed...",
+  "@cashuQuoteRecoveryStageRecoveringKey": {
+    "description": "Progress line while the lock key is recovered by scanning seed-derived counters"
+  },
+  "cashuQuoteRecoveryStageCompletingMint": "Completing mint...",
+  "@cashuQuoteRecoveryStageCompletingMint": {
+    "description": "Progress line while the mint is being completed"
+  },
+  "cashuQuoteRecoveryKeyRecovered": "Lock key recovered (derivation counter {counter})",
+  "@cashuQuoteRecoveryKeyRecovered": {
+    "description": "Confirmation shown once the lock key is recovered",
+    "placeholders": {
+      "counter": {
+        "type": "int",
+        "description": "Derivation counter of the recovered lock key"
+      }
+    }
+  },
+  "cashuQuoteRecoveryCompleted": "Quote recovered and funds added to your balance",
+  "@cashuQuoteRecoveryCompleted": {
+    "description": "Success message shown when the quote is recovered and minted"
+  },
+  "quoteRecoveryFailed": "Quote recovery failed",
+  "@quoteRecoveryFailed": {
+    "description": "Error prefix shown when the quote recovery fails"
+  },
+  "restoreFundsFromMint": "Restore funds from mint",
+  "@restoreFundsFromMint": {
+    "description": "Menu item to restore funds from a mint using the seed"
+  },
+  "cashuRestoreFundsTitle": "Restore Funds from Mint",
+  "@cashuRestoreFundsTitle": {
+    "description": "Title of the dialog to restore funds from a mint"
+  },
+  "cashuRestoreDescription": "Scans the mint for proofs derived from your seed and restores them to this wallet.",
+  "@cashuRestoreDescription": {
+    "description": "Explanation shown in the restore-from-mint dialog"
+  },
+  "startRestore": "Start restore",
+  "@startRestore": {
+    "description": "Button to start the restore-from-mint flow"
+  },
+  "cashuRestoreStageFetchingKeysets": "Fetching mint keysets...",
+  "@cashuRestoreStageFetchingKeysets": {
+    "description": "Progress line while the mint keysets are fetched"
+  },
+  "cashuRestoreStageScanning": "Scanning mint for your funds...",
+  "@cashuRestoreStageScanning": {
+    "description": "Progress line while the mint is scanned for seed-derived proofs"
+  },
+  "cashuRestoreScanProgress": "Scanned {keysets} keyset(s) · {proofs} proof(s) found",
+  "@cashuRestoreScanProgress": {
+    "description": "Scan progress in the restore-from-mint dialog",
+    "placeholders": {
+      "keysets": {
+        "type": "int",
+        "description": "Number of keysets scanned"
+      },
+      "proofs": {
+        "type": "int",
+        "description": "Number of proofs found so far"
+      }
+    }
+  },
+  "cashuRestoreStageCompleted": "Restore complete",
+  "@cashuRestoreStageCompleted": {
+    "description": "Progress line shown once the restore-from-mint scan completes"
+  },
+  "cashuRestoreAlsoRestoresQuotes": "Also recovers pending mint quotes",
+  "@cashuRestoreAlsoRestoresQuotes": {
+    "description": "Note shown while restoring that pending mint quotes are recovered too"
+  },
+  "restoredFromMint": "Restored {count} proofs from the mint",
+  "@restoredFromMint": {
+    "description": "Confirmation after a successful restore-from-mint",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
+  },
+  "restoreFailed": "Restore failed",
+  "@restoreFailed": {
+    "description": "Error prefix shown when the restore-from-mint fails"
+  },
+  "restoreFromBackup": "Restore from backup",
+  "@restoreFromBackup": {
+    "description": "Label for restoring a Cashu wallet from a backup JSON"
+  },
+  "cashuRestoreMenuTitle": "Restore & backup",
+  "@cashuRestoreMenuTitle": {
+    "description": "Title of the sheet that reveals all cashu restore and backup options"
+  },
+  "cashuSeedPhraseOption": "Set seed phrase",
+  "@cashuSeedPhraseOption": {
+    "description": "Menu entry to set or override the global cashu seed phrase"
+  },
+  "cashuSeedPhraseTitle": "Cashu seed phrase",
+  "@cashuSeedPhraseTitle": {
+    "description": "Title of the dialog to set or override the global cashu seed phrase"
+  },
+  "cashuSeedPhraseWarning": "This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.",
+  "@cashuSeedPhraseWarning": {
+    "description": "Warning shown before overriding the global cashu seed phrase"
+  },
+  "cashuSeedPhraseInstructions": "Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.",
+  "@cashuSeedPhraseInstructions": {
+    "description": "Instructions for entering the seed phrase"
+  },
+  "cashuSeedPhraseLabel": "Seed phrase",
+  "@cashuSeedPhraseLabel": {
+    "description": "Label for the seed phrase input field"
+  },
+  "cashuSeedPhraseHint": "Paste your seed phrase here",
+  "@cashuSeedPhraseHint": {
+    "description": "Hint text for the seed phrase input field"
+  },
+  "cashuSeedPhraseConfirmChange": "I understand this changes the seed for all Cashu wallets",
+  "@cashuSeedPhraseConfirmChange": {
+    "description": "Checkbox confirmation before overriding the seed phrase"
+  },
+  "cashuSeedPhraseInvalid": "That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.",
+  "@cashuSeedPhraseInvalid": {
+    "description": "Validation message for an invalid seed phrase"
+  },
+  "cashuSeedPhraseUpdated": "Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.",
+  "@cashuSeedPhraseUpdated": {
+    "description": "Confirmation shown after the seed phrase is updated"
+  },
+  "cashuSeedPhraseUpdateFailed": "Could not update the seed phrase",
+  "@cashuSeedPhraseUpdateFailed": {
+    "description": "Error prefix shown when updating the seed phrase fails"
   }
 }

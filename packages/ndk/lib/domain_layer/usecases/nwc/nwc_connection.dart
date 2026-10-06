@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:meta/meta.dart';
 import 'package:ndk/ndk.dart';
+
 import 'nwc_notification.dart';
 
 import 'responses/nwc_response.dart';
@@ -47,17 +49,47 @@ class NwcConnection {
     }
   }
 
+  /// Cancels only the relay listener, retaining public notification streams.
+  Future<void> cancelSubscriptionListener() async {
+    final listener = _streamSubscription;
+    _streamSubscription = null;
+    await listener?.cancel();
+  }
+
+  bool _closed = false;
+
+  /// True once closing has started; a closed connection cannot be reused.
+  bool get isClosed => _closed;
+
+  /// Marks the connection closed before its asynchronous teardown starts.
+  // ignore: invalid_internal_annotation
+  @internal
+  void markClosed() => _closed = true;
+
   /// cancels subscription and closes stream controllers
   Future<void> close() async {
-    if (_streamSubscription != null) {
-      await _streamSubscription!.cancel();
-    }
+    _closed = true;
+    await cancelSubscriptionListener();
     await responseStream.close();
     await notificationStream.close();
   }
 
   List<String> supportedVersions = ["0.0"];
   List<String> supportedEncryptions = ["nip04"];
+
+  /// Optional NWC extension specifications advertised by the wallet service.
+  Set<NwcExtension> supportedExtensions = {};
+
+  /// Adds extension identifiers advertised by an info event or `get_info`.
+  /// Unknown identifiers are ignored for forward compatibility.
+  void addSupportedExtensions(Iterable<String> identifiers) {
+    supportedExtensions.addAll(NwcExtension.fromIdentifiers(identifiers));
+  }
+
+  /// Whether the wallet service advertises support for [extension].
+  bool supportsExtension(NwcExtension extension) {
+    return supportedExtensions.contains(extension);
+  }
 
   Set<String> permissions = {};
   final LocalEventSignerFactory eventSignerFactory;

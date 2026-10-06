@@ -1,6 +1,12 @@
 name: tests
 on: [push, workflow_dispatch]
 jobs:
+  release-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash .github/scripts/tests/release-pr-title-test.sh
+
   tests:
     runs-on: ubuntu-latest
     defaults:
@@ -9,6 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+        with:
+          # Pin to the Dart version bundled with Flutter stable (3.47.5).
+          # Unpinned "latest" breaks analyze/test whenever a new Dart
+          # stable changes diagnostics or formatter output.
+          sdk: 3.13.4
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -19,7 +30,7 @@ jobs:
       - run: dart pub get
       - run: dart format --output=none .
       - run: dart analyze --no-fatal-warnings
-      - run: dart test --coverage="coverage" -j 2
+      - run: dart test --coverage="coverage" -j 1
       - run: dart test ./example -j 2
       - run: dart pub global activate coverage
       - run: $HOME/.pub-cache/bin/format_coverage --ignore-files **/*.g.dart --lcov --check-ignore --in=coverage --out=coverage.lcov --report-on=lib
@@ -40,6 +51,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+        with:
+          # Pin to the Dart version bundled with Flutter stable (3.47.5).
+          sdk: 3.13.4
       - uses: subosito/flutter-action@v2
         with:
           channel: stable

@@ -1,7 +1,53 @@
+import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:ndk/shared/nips/nip77/negentropy.dart';
 import 'package:test/test.dart';
+
+Uint8List _id(int i) => Uint8List.fromList(sha256.convert([i]).bytes);
+
+List<NegentropyItem> _items(
+  int count, {
+  int baseTimestamp = 1700000000,
+  int step = 17,
+}) => [
+  for (var i = 0; i < count; i++)
+    NegentropyItem(timestamp: baseTimestamp + i * step, id: _id(i)),
+];
+
+/// Drives a full reconciliation to convergence and returns what the initiator
+/// learned.
+({List<String> needIds, List<String> haveIds, int rounds}) _syncToCompletion(
+  List<NegentropyItem> initiator,
+  List<NegentropyItem> responder, {
+  int maxRounds = 50,
+}) {
+  final needIds = <String>[];
+  final haveIds = <String>[];
+  var message = NegentropyEncoder.createInitialMessage(initiator);
+
+  for (var round = 1; round <= maxRounds; round++) {
+    final response = NegentropyEncoder.respond(message, responder);
+    if (response.length == 1) {
+      return (needIds: needIds, haveIds: haveIds, rounds: round);
+    }
+
+    final (next, newNeed, newHave) = NegentropyEncoder.reconcile(
+      response,
+      initiator,
+    );
+    needIds.addAll(newNeed);
+    haveIds.addAll(newHave);
+
+    if (next.length == 1) {
+      return (needIds: needIds, haveIds: haveIds, rounds: round);
+    }
+    message = next;
+  }
+
+  fail('reconciliation did not converge within $maxRounds rounds');
+}
 
 void main() {
   group('NegentropyEncoder Varint', () {
@@ -52,9 +98,60 @@ void main() {
         expect(decoded, equals(value), reason: 'Failed for value $value');
       }
     });
+
+    test('throws on truncated varint', () {
+      expect(
+        () => NegentropyEncoder.decodeVarint(Uint8List.fromList([0x81])),
+        throwsArgumentError,
+      );
+      expect(
+        () => NegentropyEncoder.decodeVarint(Uint8List(0)),
+        throwsArgumentError,
+      );
+    });
+
+    test('throws when the varint exceeds the supported range', () {
+      final tooBig = Uint8List.fromList([
+        0xFF,
+        0xFF,
+        0xFF,
+        0xFF,
+        0xFF,
+        0xFF,
+        0xFF,
+        0xFF,
+        0xFF,
+        0x7F,
+      ]);
+      expect(() => NegentropyEncoder.decodeVarint(tooBig), throwsArgumentError);
+    });
   });
 
   group('NegentropyEncoder Fingerprint', () {
+    // Golden values from an independent implementation of the
+    // Negentropy V1 fingerprint algorithm (sum of IDs mod 2^256 as
+    // little-endian integers, concatenated with a varint count, SHA-256,
+    // first 16 bytes). IDs are sha256([i]).
+    test('matches the spec for known ID sets', () {
+      final expected = {
+        0: '7f9c9e31ac8256ca2f258583df262dbc',
+        1: 'c7ff0bfd6010fdb4d1e3220933f1e183',
+        3: 'c67390ff1b306527670a720b71c13133',
+        8: 'a8c30ae01b85dbf46744d5eaafbd8229',
+      };
+
+      expected.forEach((count, hex) {
+        final ids = [for (var i = 0; i < count; i++) _id(i)];
+        expect(
+          NegentropyEncoder.bytesToHex(
+            NegentropyEncoder.calculateFingerprint(ids),
+          ),
+          equals(hex),
+          reason: 'fingerprint of $count IDs',
+        );
+      });
+    });
+
     test('empty list fingerprint', () {
       final fp = NegentropyEncoder.calculateFingerprint([]);
       expect(fp.length, equals(NegentropyEncoder.fingerprintSize));
@@ -81,18 +178,49 @@ void main() {
       expect(fp1, isNot(equals(fp2)));
     });
 
-    test('order matters for fingerprint', () {
-      final id1 = Uint8List(32);
-      final id2 = Uint8List(32);
-      id1[0] = 1;
-      id2[0] = 2;
+    test('is order independent', () {
+      final fp1 = NegentropyEncoder.calculateFingerprint([
+        _id(0),
+        _id(1),
+        _id(2),
+      ]);
+      final fp2 = NegentropyEncoder.calculateFingerprint([
+        _id(2),
+        _id(0),
+        _id(1),
+      ]);
+      final fp3 = NegentropyEncoder.calculateFingerprint([
+        _id(1),
+        _id(2),
+        _id(0),
+      ]);
 
-      final fp1 = NegentropyEncoder.calculateFingerprint([id1, id2]);
-      final fp2 = NegentropyEncoder.calculateFingerprint([id2, id1]);
-
-      // Sum is commutative, so fingerprints should be equal
-      // Actually, the sum mod 2^256 is commutative, so these should be equal
       expect(fp1, equals(fp2));
+      expect(fp2, equals(fp3));
+    });
+
+    test('carries between limbs of the 256 bit accumulator', () {
+      final allOnes = Uint8List(32)..fillRange(0, 32, 0xFF);
+      final one = Uint8List(32)..[0] = 1;
+
+      // 2^256 - 1 + 1 wraps to zero, which is the accumulator of an empty
+      // range, so only the element count separates the two fingerprints.
+      final wrapped = NegentropyEncoder.calculateFingerprint([allOnes, one]);
+      final zeroes = NegentropyEncoder.calculateFingerprint([
+        Uint8List(32),
+        Uint8List(32),
+      ]);
+
+      expect(wrapped, equals(zeroes));
+    });
+
+    test('fingerprint includes the element count', () {
+      final id = Uint8List(32)..[0] = 1;
+
+      final fp1 = NegentropyEncoder.calculateFingerprint([id]);
+      final fp2 = NegentropyEncoder.calculateFingerprint([id, id]);
+
+      expect(fp1, isNot(equals(fp2)));
     });
   });
 
@@ -136,6 +264,55 @@ void main() {
       expect(decodedPrefix, equals(prefix));
       expect(consumed, equals(encoded.length));
     });
+
+    test('delta encodes timestamps against the previous bound', () {
+      // 1 + (1700000100 - 1700000000) == 101
+      final encoded = NegentropyEncoder.encodeBound(
+        1700000100,
+        Uint8List(0),
+        lastTimestamp: 1700000000,
+      );
+      expect(encoded, equals([101, 0]));
+
+      final (ts, _, _) = NegentropyEncoder.decodeBound(encoded, 0, 1700000000);
+      expect(ts, equals(1700000100));
+    });
+
+    test('encodes the infinity timestamp as zero', () {
+      final encoded = NegentropyEncoder.encodeBound(
+        NegentropyEncoder.infiniteTimestamp,
+        Uint8List(0),
+        lastTimestamp: 1700000000,
+      );
+      expect(encoded, equals([0, 0]));
+
+      final (ts, _, _) = NegentropyEncoder.decodeBound(encoded, 0, 1700000000);
+      expect(ts, equals(NegentropyEncoder.infiniteTimestamp));
+    });
+
+    test('rejects decreasing timestamps', () {
+      expect(
+        () => NegentropyEncoder.encodeBound(
+          100,
+          Uint8List(0),
+          lastTimestamp: 200,
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('rejects an over-long ID prefix', () {
+      expect(
+        () => NegentropyEncoder.encodeBound(1, Uint8List(33)),
+        throwsArgumentError,
+      );
+      expect(
+        () => NegentropyEncoder.decodeBound(
+          Uint8List.fromList([2, 33, ...List.filled(33, 0)]),
+        ),
+        throwsArgumentError,
+      );
+    });
   });
 
   group('NegentropyItem', () {
@@ -147,199 +324,263 @@ void main() {
       expect(item.id.length, equals(32));
       expect(NegentropyEncoder.bytesToHex(item.id), equals(hexId));
     });
+
+    test('rejects IDs that are not 32 bytes', () {
+      expect(
+        () => NegentropyItem.fromHex(timestamp: 1000, idHex: 'aabb'),
+        throwsArgumentError,
+      );
+    });
   });
 
-  group('NegentropyEncoder Protocol', () {
-    test('creates initial message with version byte', () {
-      final items = <NegentropyItem>[];
-      final msg = NegentropyEncoder.createInitialMessage(
-        items,
-        NegentropyEncoder.idSize,
-      );
-      expect(msg[0], equals(NegentropyEncoder.protocolVersion));
+  group('NegentropyEncoder wire format', () {
+    // Golden messages produced by an independent implementation written
+    // directly from the Negentropy Protocol V1 spec.
+    test('initial message for an empty set is an empty ID list', () {
+      final msg = NegentropyEncoder.createInitialMessage([]);
+      expect(NegentropyEncoder.bytesToHex(msg), equals('6100000200'));
     });
 
-    test('creates initial message for empty items with fingerprint mode', () {
-      final items = <NegentropyItem>[];
-      final msg = NegentropyEncoder.createInitialMessage(
-        items,
-        NegentropyEncoder.idSize,
+    test('initial message for a small set is an ID list to infinity', () {
+      final msg = NegentropyEncoder.createInitialMessage(_items(3));
+      expect(
+        NegentropyEncoder.bytesToHex(msg),
+        equals(
+          '610000020'
+          '36e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d'
+          '4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a'
+          'dbc1b4c900ffe48d575b5da5c638040125f65db0fe3e24494b76ea986457d986',
+        ),
       );
-      // Should have: version(1) + bound + mode(1) + fingerprint(16)
-      expect(msg.length, greaterThanOrEqualTo(1 + 16));
-      // Should use fingerprint mode, not skip
-      expect(msg.contains(NegentropyEncoder.modeFingerprint), isTrue);
     });
 
-    test('creates initial message for single item', () {
+    test('initial message for a large set is 16 fingerprint buckets', () {
+      final msg = NegentropyEncoder.createInitialMessage(_items(40));
+      expect(
+        NegentropyEncoder.bytesToHex(msg),
+        equals(
+          '6186aacfe2340001c67390ff1b306527670a720b71c1313334000168e8aac011'
+          '05aee8cbd5cef6d861d7853400017bdb8c88ea5c2575d64d4485c5f31d3b3400'
+          '01e57703823294d3e1bfb1fd48ad02e7fa340001e466c5e561f2086830cb942e'
+          '2012120e340001bcdad9758968b3e8858c463f277cd4e5340001abe26abb02d3'
+          'f24122bdc508a9f01ce2340001305acbaa7248174e19fc580550fa6b38230001'
+          'b5a057a5e1965d648738943acd9358162300011431730cce1783fa1dc714ffd0'
+          '2b8bfa23000171b0f1f0f5efe008d9fd5520268ed05f230001650d16d7641d13'
+          '18a09f3f69df601c66230001bcee68120de574cb63cdea05aa0073d223000105'
+          'd71f04b1dbcda58cc3537b15242d3e230001681e53ebcdfd0c76e7a3e5ea3a8e'
+          '993000000134fa1dc1e9052ea5984b6577a21e845e',
+        ),
+      );
+    });
+
+    test('uses minimal ID prefixes when timestamps collide', () {
       final items = [
-        NegentropyItem.fromHex(
-          timestamp: 1000,
-          idHex:
-              '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
-        ),
+        for (var i = 0; i < 40; i++)
+          NegentropyItem(timestamp: 1700000000, id: _id(i)),
       ];
-      final msg = NegentropyEncoder.createInitialMessage(
-        items,
-        NegentropyEncoder.idSize,
+      final msg = NegentropyEncoder.createInitialMessage(items);
+      expect(
+        NegentropyEncoder.bytesToHex(msg),
+        equals(
+          '6186aacfe201011f01d3a291a13bdbbeb688fe4cc887490b0501012f013fa762'
+          '0c1c5d8ea725f9108aeaf0e3e90101450178df7268a706b6e4c1c4a4b6f1fde7'
+          'd501014d01332bd0d364a1fa4bbd02ebaa5cb67dcf010168015fe304b8584ee2'
+          '855a6e920dbcf4749d01017c01c53c0157c33f9daf1c30c235a5675f8f01018f'
+          '01eee7e11a36e2a542730dce9bcc18a71c01019d011b716da103785d9b2dfea6'
+          '88dcff74850101bb0147f429640cd3b84a1fbd8c2250308b5d0101bd01b67cb5'
+          '757a57df84ba13fb802c75dd380101c5017b717ab4b889d84ff3959ffea49912'
+          'a60101db0184c7dac297950e8a907cd6d62efc4db60101e5011c5852a1e50dde'
+          'c660884334b4d878840102e7cf0138175aae4678cc025c5e508d6c02868c0101'
+          'f2013fa8bc22ac8d2b55f1fbec0f8ceb7991000001373a6e8fb77cfad502c265'
+          '359d45e7e0',
+        ),
       );
-      expect(msg[0], equals(NegentropyEncoder.protocolVersion));
-      expect(msg.length, greaterThan(1));
     });
 
-    test('creates initial message with fingerprint mode', () {
-      final items = [
-        NegentropyItem.fromHex(
-          timestamp: 1000,
-          idHex:
-              '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+    test('rejects an unknown protocol version', () {
+      expect(
+        () => NegentropyEncoder.reconcile(
+          Uint8List.fromList([0x62, 0x00, 0x00, 0x02, 0x00]),
+          [],
         ),
-        NegentropyItem.fromHex(
-          timestamp: 2000,
-          idHex:
-              'fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210',
-        ),
-      ];
-      final msg = NegentropyEncoder.createInitialMessage(
-        items,
-        NegentropyEncoder.idSize,
+        throwsArgumentError,
       );
-      expect(msg[0], equals(NegentropyEncoder.protocolVersion));
-      // Should contain fingerprint (16 bytes) plus overhead
-      expect(msg.length, greaterThanOrEqualTo(1 + 16));
     });
 
-    test('sorts items by timestamp then id', () {
-      final items = [
-        NegentropyItem.fromHex(
-          timestamp: 2000,
-          idHex:
-              'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    test('rejects an unknown mode', () {
+      expect(
+        () => NegentropyEncoder.reconcile(
+          Uint8List.fromList([0x61, 0x00, 0x00, 0x07]),
+          [],
         ),
-        NegentropyItem.fromHex(
-          timestamp: 1000,
-          idHex:
-              'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-        ),
-        NegentropyItem.fromHex(
-          timestamp: 1000,
-          idHex:
-              'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        ),
-      ];
-      // createInitialMessage sorts internally
-      final msg = NegentropyEncoder.createInitialMessage(
-        items,
-        NegentropyEncoder.idSize,
+        throwsArgumentError,
       );
-      expect(msg[0], equals(NegentropyEncoder.protocolVersion));
+    });
+
+    test('rejects a truncated ID list', () {
+      expect(
+        () => NegentropyEncoder.reconcile(
+          Uint8List.fromList([0x61, 0x00, 0x00, 0x02, 0x02, 0xAA]),
+          [],
+        ),
+        throwsArgumentError,
+      );
     });
   });
 
   group('NegentropyEncoder Reconcile', () {
-    test('reconcile with matching fingerprints returns empty lists', () {
-      final id1 =
-          '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
-      final id2 =
-          'fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210';
-
-      final localItems = [
-        NegentropyItem.fromHex(timestamp: 1000, idHex: id1),
-        NegentropyItem.fromHex(timestamp: 2000, idHex: id2),
-      ];
-
-      // Create message from same items (simulating relay has same data)
-      final relayItems = [
-        NegentropyItem.fromHex(timestamp: 1000, idHex: id1),
-        NegentropyItem.fromHex(timestamp: 2000, idHex: id2),
-      ];
-
-      final relayMsg = NegentropyEncoder.createInitialMessage(
-        relayItems,
-        NegentropyEncoder.idSize,
-      );
-      final (response, needIds, haveIds) = NegentropyEncoder.reconcile(
-        relayMsg,
-        localItems,
-      );
-
-      // When fingerprints match, no IDs needed
-      expect(needIds, isEmpty);
-      expect(haveIds, isEmpty);
+    test('identical sets converge with nothing to exchange', () {
+      final result = _syncToCompletion(_items(3), _items(3));
+      expect(result.needIds, isEmpty);
+      expect(result.haveIds, isEmpty);
     });
 
-    test('reconcile detects missing local IDs (needIds)', () {
-      final id1 =
-          '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
-      final id2 =
-          'fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210';
+    test('reports IDs only the responder has as needIds', () {
+      final result = _syncToCompletion(_items(1), _items(3));
 
-      // Local has only id1
-      final localItems = [NegentropyItem.fromHex(timestamp: 1000, idHex: id1)];
-
-      // Relay has both
-      final relayItems = [
-        NegentropyItem.fromHex(timestamp: 1000, idHex: id1),
-        NegentropyItem.fromHex(timestamp: 2000, idHex: id2),
-      ];
-
-      final relayMsg = NegentropyEncoder.createInitialMessage(
-        relayItems,
-        NegentropyEncoder.idSize,
+      expect(result.haveIds, isEmpty);
+      expect(
+        result.needIds.toSet(),
+        equals({
+          NegentropyEncoder.bytesToHex(_id(1)),
+          NegentropyEncoder.bytesToHex(_id(2)),
+        }),
       );
-      NegentropyEncoder.reconcile(relayMsg, localItems);
-
-      // Fingerprints won't match, but full reconciliation needs multiple rounds
-      // Initial message just sends fingerprint, doesn't reveal individual IDs yet
-      expect(true, isTrue);
     });
 
-    test('reconcile with empty local items', () {
-      final localItems = <NegentropyItem>[];
+    test('reports IDs only the initiator has as haveIds', () {
+      final result = _syncToCompletion(_items(3), _items(1));
 
-      final relayItems = [
-        NegentropyItem.fromHex(
-          timestamp: 1000,
-          idHex:
-              '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+      expect(result.needIds, isEmpty);
+      expect(
+        result.haveIds.toSet(),
+        equals({
+          NegentropyEncoder.bytesToHex(_id(1)),
+          NegentropyEncoder.bytesToHex(_id(2)),
+        }),
+      );
+    });
+
+    test('empty initiator needs everything', () {
+      final result = _syncToCompletion([], _items(5));
+      expect(result.haveIds, isEmpty);
+      expect(result.needIds, hasLength(5));
+    });
+
+    test('empty responder needs nothing back', () {
+      final result = _syncToCompletion(_items(5), []);
+      expect(result.needIds, isEmpty);
+      expect(result.haveIds, hasLength(5));
+    });
+
+    // ndk#718: against a relay holding 53 of 236 cached events the answer is
+    // 183 to send and 0 to fetch.
+    test('large partially overlapping sets reconcile exactly', () {
+      final local = _items(236);
+      final remote = [for (var i = 0; i < 53; i++) local[i * 4]];
+
+      final result = _syncToCompletion(local, remote);
+
+      expect(result.needIds, isEmpty);
+      expect(result.haveIds, hasLength(183));
+      expect(
+        result.haveIds.toSet(),
+        equals(
+          local
+              .where((item) => !remote.contains(item))
+              .map((item) => NegentropyEncoder.bytesToHex(item.id))
+              .toSet(),
         ),
-      ];
-
-      final relayMsg = NegentropyEncoder.createInitialMessage(
-        relayItems,
-        NegentropyEncoder.idSize,
       );
-      final (response, needIds, haveIds) = NegentropyEncoder.reconcile(
-        relayMsg,
-        localItems,
-      );
-
-      // Should produce a valid response
-      expect(response[0], equals(NegentropyEncoder.protocolVersion));
     });
 
-    test('reconcile with empty relay items', () {
-      final localItems = [
-        NegentropyItem.fromHex(
-          timestamp: 1000,
-          idHex:
-              '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
-        ),
+    test('sets differing at both ends reconcile exactly', () {
+      final local = _items(50);
+      final remote = [
+        ..._items(50).skip(20),
+        for (var i = 0; i < 10; i++)
+          NegentropyItem(timestamp: 1800000000 + i, id: _id(200 + i)),
       ];
 
-      final relayItems = <NegentropyItem>[];
+      final result = _syncToCompletion(local, remote);
 
-      final relayMsg = NegentropyEncoder.createInitialMessage(
-        relayItems,
-        NegentropyEncoder.idSize,
-      );
-      final (response, needIds, haveIds) = NegentropyEncoder.reconcile(
-        relayMsg,
-        localItems,
-      );
+      expect(result.needIds, hasLength(10));
+      expect(result.haveIds, hasLength(20));
+    });
 
-      // Should produce a valid response
-      expect(response[0], equals(NegentropyEncoder.protocolVersion));
+    test('sets sharing a timestamp reconcile exactly', () {
+      final local = [
+        for (var i = 0; i < 60; i++)
+          NegentropyItem(timestamp: 1700000000, id: _id(i)),
+      ];
+      final remote = [
+        for (var i = 20; i < 80; i++)
+          NegentropyItem(timestamp: 1700000000, id: _id(i)),
+      ];
+
+      final result = _syncToCompletion(local, remote);
+
+      expect(result.haveIds, hasLength(20));
+      expect(result.needIds, hasLength(20));
+    });
+
+    test('duplicate local items do not confuse reconciliation', () {
+      final local = [..._items(5), ..._items(5)];
+      final result = _syncToCompletion(local, _items(5));
+
+      expect(result.needIds, isEmpty);
+      expect(result.haveIds, isEmpty);
+    });
+
+    test('random set pairs reconcile exactly', () {
+      final random = Random(0x77);
+
+      for (var trial = 0; trial < 40; trial++) {
+        final universe = [
+          for (var i = 0; i < 250; i++)
+            NegentropyItem(
+              // A small timestamp spread guarantees collisions, which is what
+              // exercises the ID-prefix bounds.
+              timestamp: 1700000000 + random.nextInt(20),
+              id: _id(i),
+            ),
+        ];
+
+        final local = <NegentropyItem>[];
+        final remote = <NegentropyItem>[];
+        for (final item in universe) {
+          if (random.nextInt(3) != 0) local.add(item);
+          if (random.nextInt(3) != 0) remote.add(item);
+        }
+
+        final localIds = local
+            .map((i) => i.id)
+            .map(NegentropyEncoder.bytesToHex);
+        final remoteIds = remote
+            .map((i) => i.id)
+            .map(NegentropyEncoder.bytesToHex);
+
+        final result = _syncToCompletion(local, remote);
+
+        expect(
+          result.haveIds.toSet(),
+          equals(localIds.toSet().difference(remoteIds.toSet())),
+          reason: 'trial $trial haveIds',
+        );
+        expect(
+          result.needIds.toSet(),
+          equals(remoteIds.toSet().difference(localIds.toSet())),
+          reason: 'trial $trial needIds',
+        );
+      }
+    });
+
+    test('a converged reconciliation returns only the version byte', () {
+      final message = NegentropyEncoder.createInitialMessage(_items(3));
+      final response = NegentropyEncoder.respond(message, _items(3));
+      final (next, _, _) = NegentropyEncoder.reconcile(response, _items(3));
+
+      expect(next, equals([NegentropyEncoder.protocolVersion]));
     });
   });
 
@@ -368,50 +609,6 @@ void main() {
       final (decoded, consumed) = NegentropyEncoder.decodeVarint(data, 2);
       expect(decoded, equals(300));
       expect(consumed, equals(2));
-    });
-  });
-
-  group('NegentropyEncoder Fingerprint XOR Properties', () {
-    test('XOR is commutative (order independent)', () {
-      final id1 = Uint8List(32);
-      final id2 = Uint8List(32);
-      final id3 = Uint8List(32);
-      id1[0] = 1;
-      id2[0] = 2;
-      id3[0] = 3;
-
-      final fp1 = NegentropyEncoder.calculateFingerprint([id1, id2, id3]);
-      final fp2 = NegentropyEncoder.calculateFingerprint([id3, id1, id2]);
-      final fp3 = NegentropyEncoder.calculateFingerprint([id2, id3, id1]);
-
-      expect(fp1, equals(fp2));
-      expect(fp2, equals(fp3));
-    });
-
-    test('same ID twice cancels out (XOR property)', () {
-      final id1 = Uint8List(32);
-      final id2 = Uint8List(32);
-      id1[0] = 1;
-      id2[0] = 2;
-
-      // [id1, id2] should NOT equal [id1, id2, id1, id1] because count differs
-      final fp1 = NegentropyEncoder.calculateFingerprint([id1, id2]);
-      final fp2 = NegentropyEncoder.calculateFingerprint([id1, id2, id1, id1]);
-
-      // Different counts = different fingerprints
-      expect(fp1, isNot(equals(fp2)));
-    });
-
-    test('fingerprint includes count', () {
-      final id = Uint8List(32);
-      id[0] = 1;
-
-      // Same IDs but different counts
-      final fp1 = NegentropyEncoder.calculateFingerprint([id]);
-      final fp2 = NegentropyEncoder.calculateFingerprint([id, id]);
-
-      // XOR of same ID = 0, but counts differ (1 vs 2)
-      expect(fp1, isNot(equals(fp2)));
     });
   });
 

@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:convert' show base64Decode, base64Encode, utf8;
+
 import 'package:xxh3/xxh3.dart';
 
 /// generic bloom filter with xxh3

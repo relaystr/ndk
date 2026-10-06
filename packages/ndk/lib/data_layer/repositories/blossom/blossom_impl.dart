@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../domain_layer/entities/blob_upload_progress.dart';
+import '../../../domain_layer/entities/blossom_authorization.dart';
 import '../../../domain_layer/entities/blossom_blobs.dart';
 import '../../../domain_layer/entities/blossom_strategies.dart';
 import '../../../domain_layer/entities/file_hash_progress.dart';
@@ -17,6 +18,40 @@ import '../../models/nip_01_event_model.dart';
 
 bool _isSuccessStatus(int statusCode) => statusCode >= 200 && statusCode < 300;
 
+String _authHeader(Nip01Event event) =>
+    "Nostr ${Nip01EventModel.fromEntity(event).toBase64()}";
+
+/// Whether a server refused for want of an identity, which is an invitation to
+/// try again with one. BUD-01 says 401 and some servers say 403, but a 403 on
+/// a request that already carried an authorization refuses that identity
+/// rather than asking for one, so replaying it would change nothing.
+bool _isAuthRefusal(Object error, {required bool sentAuth}) =>
+    error is HttpRequestException &&
+    (error.statusCode == 401 || (!sentAuth && error.statusCode == 403));
+
+/// What to send [serverUrl] before it refuses: the upfront event, or the one
+/// an earlier refusal from that same server already signed.
+Nip01Event? _initial(BlossomAuthorization authorization, String serverUrl) =>
+    authorization.upfront ?? authorization.resolvedFor(serverUrl);
+
+/// Sends, and sends once more with a freshly signed event if the server
+/// answered by asking for one.
+Future<T> _withAuthRetry<T>(
+  BlossomAuthorization authorization,
+  String serverUrl,
+  Future<T> Function(Nip01Event? authEvent) send,
+) async {
+  final initial = _initial(authorization, serverUrl);
+  try {
+    return await send(initial);
+  } catch (e) {
+    if (!_isAuthRefusal(e, sentAuth: initial != null)) rethrow;
+    final signed = await authorization.onRefusal(serverUrl);
+    if (signed == null) rethrow;
+    return await send(signed);
+  }
+}
+
 class BlossomRepositoryImpl implements BlossomRepository {
   final HttpRequestDS client;
   final FileIO fileIO;
@@ -27,7 +62,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
   Stream<BlobUploadProgress> uploadBlob({
     required Stream<List<int>> Function() dataStreamFactory,
     required int contentLength,
-    required Nip01Event authorization,
+    required BlossomAuthorization authorization,
     String? contentType,
     required List<String> serverUrls,
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
@@ -67,7 +102,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
   @override
   Stream<BlobUploadProgress> uploadBlobFromFile({
     required String filePath,
-    required Nip01Event authorization,
+    required BlossomAuthorization authorization,
     String? contentType,
     required List<String> serverUrls,
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
@@ -114,7 +149,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
   Stream<BlobUploadProgress> _uploadWithMirroring({
     required Stream<List<int>> Function() dataStreamFactory,
     required int contentLength,
-    required Nip01Event authorization,
+    required BlossomAuthorization authorization,
     required List<String> serverUrls,
     String? contentType,
     bool mediaOptimisation = false,
@@ -127,7 +162,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
       try {
         await for (final progress in _uploadToServer(
           serverUrl: serverUrl,
-          dataStream: dataStreamFactory(), // Create new stream for each attempt
+          dataStreamFactory: dataStreamFactory,
           contentLength: contentLength,
           contentType: contentType,
           authorization: authorization,
@@ -237,7 +272,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     required Stream<List<int>> Function() dataStreamFactory,
     required int contentLength,
     required List<String> serverUrls,
-    required Nip01Event authorization,
+    required BlossomAuthorization authorization,
     String? contentType,
     bool mediaOptimisation = false,
   }) async* {
@@ -258,7 +293,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
       try {
         await for (final progress in _uploadToServer(
           serverUrl: serverUrl,
-          dataStream: dataStreamFactory(),
+          dataStreamFactory: dataStreamFactory,
           contentLength: contentLength,
           contentType: contentType,
           authorization: authorization,
@@ -361,7 +396,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     required Stream<List<int>> Function() dataStreamFactory,
     required int contentLength,
     required List<String> serverUrls,
-    required Nip01Event authorization,
+    required BlossomAuthorization authorization,
     String? contentType,
     bool mediaOptimisation = false,
   }) async* {
@@ -371,7 +406,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
       try {
         await for (final progress in _uploadToServer(
           serverUrl: url,
-          dataStream: dataStreamFactory(),
+          dataStreamFactory: dataStreamFactory,
           contentLength: contentLength,
           contentType: contentType,
           authorization: authorization,
@@ -440,28 +475,44 @@ class BlossomRepositoryImpl implements BlossomRepository {
   /// If [mediaOptimisation] is true, the server will optimise the file for media streaming using the /media endpoint [BUD-05]
   Stream<UploadProgress> _uploadToServer({
     required String serverUrl,
-    required Stream<List<int>> dataStream,
+    required Stream<List<int>> Function() dataStreamFactory,
     required int contentLength,
-    Nip01Event? authorization,
+    BlossomAuthorization authorization = const BlossomAuthorization.none(),
     String? contentType,
     bool mediaOptimisation = false,
-  }) {
+  }) async* {
     final endpointUrl = mediaOptimisation
         ? '$serverUrl/media'
         : '$serverUrl/upload';
 
-    return client.putStream(
+    Map<String, String> headersFor(Nip01Event? authEvent) => {
+      'Content-Type': ?contentType,
+      if (authEvent != null) 'Authorization': _authHeader(authEvent),
+      'Content-Length': '$contentLength',
+    };
+
+    Stream<UploadProgress> send(Nip01Event? authEvent) => client.putStream(
       url: Uri.parse(endpointUrl),
-      body: dataStream,
-      headers: {
-        if (contentType != null) 'Content-Type': contentType,
-        if (authorization != null)
-          'Authorization':
-              "Nostr ${Nip01EventModel.fromEntity(authorization).toBase64()}",
-        'Content-Length': '$contentLength',
-      },
+      body: dataStreamFactory(),
+      headers: headersFor(authEvent),
       contentLength: contentLength,
     );
+
+    final initial = _initial(authorization, serverUrl);
+    try {
+      // consumed rather than delegated with yield*, which would forward the
+      // refusal straight to the caller instead of raising it here
+      await for (final progress in send(initial)) {
+        yield progress;
+      }
+      return;
+    } catch (e) {
+      if (!_isAuthRefusal(e, sentAuth: initial != null)) rethrow;
+      final signed = await authorization.onRefusal(serverUrl);
+      if (signed == null) rethrow;
+      // the body is read from scratch, so progress starts over
+      yield* send(signed);
+    }
   }
 
   /// Mirror a file from one server to another, based on the file URL
@@ -470,21 +521,24 @@ class BlossomRepositoryImpl implements BlossomRepository {
     required String fileUrl,
     required String serverUrl,
     required String sha256,
-    required Nip01Event authorization,
+    required BlossomAuthorization authorization,
   }) async {
     final jsonMsg = {"url": fileUrl};
 
     final String myBody = jsonEncode(jsonMsg);
     try {
       // Mirror endpoint is PUT /mirror/
-      final response = await client.put(
-        url: Uri.parse('$serverUrl/mirror'),
-        body: myBody,
-        headers: {
-          'Authorization':
-              "Nostr ${Nip01EventModel.fromEntity(authorization).toBase64()}",
-          'Content-Type': 'application/json',
-        },
+      final response = await _withAuthRetry(
+        authorization,
+        serverUrl,
+        (authEvent) => client.put(
+          url: Uri.parse('$serverUrl/mirror'),
+          body: myBody,
+          headers: {
+            if (authEvent != null) 'Authorization': _authHeader(authEvent),
+            'Content-Type': 'application/json',
+          },
+        ),
       );
 
       if (!_isSuccessStatus(response.statusCode)) {
@@ -513,29 +567,28 @@ class BlossomRepositoryImpl implements BlossomRepository {
   Future<BlobResponse> getBlob({
     required String sha256,
     required List<String> serverUrls,
-    Nip01Event? authorization,
+    BlossomAuthorization authorization = const BlossomAuthorization.none(),
     int? start,
     int? end,
   }) async {
     Exception? lastError;
 
+    Map<String, String> headersFor(Nip01Event? authEvent) => {
+      // Create range header in format "bytes=start-end"
+      // If end is null, it means "until the end of the file"
+      if (start != null) 'range': 'bytes=$start-${end ?? ''}',
+      if (authEvent != null) 'Authorization': _authHeader(authEvent),
+    };
+
     for (final url in serverUrls) {
       try {
-        final headers = <String, String>{};
-        if (start != null) {
-          // Create range header in format "bytes=start-end"
-          // If end is null, it means "until the end of the file"
-          headers['range'] = 'bytes=$start-${end ?? ''}';
-        }
-
-        if (authorization != null) {
-          headers['Authorization'] =
-              "Nostr ${Nip01EventModel.fromEntity(authorization).toBase64()}";
-        }
-
-        final response = await client.get(
-          url: Uri.parse('$url/$sha256'),
-          headers: headers,
+        final response = await _withAuthRetry(
+          authorization,
+          url,
+          (authEvent) => client.get(
+            url: Uri.parse('$url/$sha256'),
+            headers: headersFor(authEvent),
+          ),
         );
 
         // Check for both 200 (full content) and 206 (partial content) status codes
@@ -564,20 +617,22 @@ class BlossomRepositoryImpl implements BlossomRepository {
   Future<String> checkBlob({
     required String sha256,
     required List<String> serverUrls,
-    Nip01Event? authorization,
+    BlossomAuthorization authorization = const BlossomAuthorization.none(),
   }) async {
     Exception? lastError;
 
-    final headers = <String, String>{};
-
-    if (authorization != null) {
-      headers['Authorization'] =
-          "Nostr ${Nip01EventModel.fromEntity(authorization).toBase64()}";
-    }
-
     for (final url in serverUrls) {
       try {
-        final response = await client.head(url: Uri.parse('$url/$sha256'));
+        final response = await _withAuthRetry(
+          authorization,
+          url,
+          (authEvent) => client.head(
+            url: Uri.parse('$url/$sha256'),
+            headers: <String, String>{
+              if (authEvent != null) 'Authorization': _authHeader(authEvent),
+            },
+          ),
+        );
 
         if (_isSuccessStatus(response.statusCode)) {
           return '$url/$sha256';
@@ -599,9 +654,19 @@ class BlossomRepositoryImpl implements BlossomRepository {
   Future<Tuple<bool, int?>> supportsRangeRequests({
     required String sha256,
     required String serverUrl,
+    BlossomAuthorization authorization = const BlossomAuthorization.none(),
   }) async {
     try {
-      final response = await client.head(url: Uri.parse('$serverUrl/$sha256'));
+      final response = await _withAuthRetry(
+        authorization,
+        serverUrl,
+        (authEvent) => client.head(
+          url: Uri.parse('$serverUrl/$sha256'),
+          headers: <String, String>{
+            if (authEvent != null) 'Authorization': _authHeader(authEvent),
+          },
+        ),
+      );
 
       final acceptRanges = response.headers['accept-ranges'];
       final contentLength = int.tryParse(
@@ -617,7 +682,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
   Future<Stream<BlobResponse>> getBlobStream({
     required String sha256,
     required List<String> serverUrls,
-    Nip01Event? authorization,
+    BlossomAuthorization authorization = const BlossomAuthorization.none(),
     int chunkSize = 1024 * 1024, // 1MB chunks
   }) async {
     // Find a server that supports range requests
@@ -629,6 +694,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
         final rangeResponse = await supportsRangeRequests(
           sha256: sha256,
           serverUrl: url,
+          authorization: authorization,
         );
         if (rangeResponse.first) {
           supportedServer = url;
@@ -642,35 +708,44 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
     if (supportedServer == null || contentLength == null) {
       // Fallback to regular download if no server supports range requests
-      final bytes = await getBlob(sha256: sha256, serverUrls: serverUrls);
+      final bytes = await getBlob(
+        sha256: sha256,
+        serverUrls: serverUrls,
+        authorization: authorization,
+      );
       return Stream.value(bytes);
     }
 
-    // Create a stream controller to manage the chunks
-    final controller = StreamController<BlobResponse>();
+    return _chunkedBlobStream(
+      sha256: sha256,
+      serverUrl: supportedServer,
+      authorization: authorization,
+      contentLength: contentLength,
+      chunkSize: chunkSize,
+    );
+  }
 
-    // Start downloading chunks
+  /// Fetches one range at a time, as the caller reads, so a large blob is
+  /// never held whole in memory.
+  Stream<BlobResponse> _chunkedBlobStream({
+    required String sha256,
+    required String serverUrl,
+    required int contentLength,
+    required int chunkSize,
+    BlossomAuthorization authorization = const BlossomAuthorization.none(),
+  }) async* {
     int offset = 0;
     while (offset < contentLength) {
       final end = (offset + chunkSize - 1).clamp(0, contentLength - 1);
-
-      try {
-        final chunk = await getBlob(
-          sha256: sha256,
-          serverUrls: [supportedServer],
-          start: offset,
-          end: end,
-        );
-        controller.add(chunk);
-        offset = end + 1;
-      } catch (e) {
-        await controller.close();
-        rethrow;
-      }
+      yield await getBlob(
+        sha256: sha256,
+        serverUrls: [serverUrl],
+        authorization: authorization,
+        start: offset,
+        end: end,
+      );
+      offset = end + 1;
     }
-
-    await controller.close();
-    return controller.stream;
   }
 
   @override
@@ -679,7 +754,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     required List<String> serverUrls,
     DateTime? since,
     DateTime? until,
-    Nip01Event? authorization,
+    BlossomAuthorization authorization = const BlossomAuthorization.none(),
   }) async {
     Exception? lastError;
 
@@ -690,17 +765,17 @@ class BlossomRepositoryImpl implements BlossomRepository {
           if (until != null) 'until': '${until.millisecondsSinceEpoch ~/ 1000}',
         };
 
-        final headers = <String, String>{};
-        if (authorization != null) {
-          headers['Authorization'] =
-              "Nostr ${Nip01EventModel.fromEntity(authorization).toBase64()}";
-        }
-
-        final response = await client.get(
-          url: Uri.parse(
-            '$url/list/$pubkey',
-          ).replace(queryParameters: queryParams),
-          headers: headers,
+        final response = await _withAuthRetry(
+          authorization,
+          url,
+          (authEvent) => client.get(
+            url: Uri.parse(
+              '$url/list/$pubkey',
+            ).replace(queryParameters: queryParams),
+            headers: <String, String>{
+              if (authEvent != null) 'Authorization': _authHeader(authEvent),
+            },
+          ),
         );
 
         if (response.statusCode == 200) {
@@ -722,7 +797,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
   Future<List<BlobDeleteResult>> deleteBlob({
     required String sha256,
     required List<String> serverUrls,
-    required Nip01Event authorization,
+    required BlossomAuthorization authorization,
   }) async {
     final results = await Future.wait(
       serverUrls.map(
@@ -739,15 +814,18 @@ class BlossomRepositoryImpl implements BlossomRepository {
   Future<BlobDeleteResult> _deleteFromServer({
     required String serverUrl,
     required String sha256,
-    required Nip01Event authorization,
+    required BlossomAuthorization authorization,
   }) async {
     try {
-      final response = await client.delete(
-        url: Uri.parse('$serverUrl/$sha256'),
-        headers: {
-          'Authorization':
-              "Nostr ${Nip01EventModel.fromEntity(authorization).toBase64()}",
-        },
+      final response = await _withAuthRetry(
+        authorization,
+        serverUrl,
+        (authEvent) => client.delete(
+          url: Uri.parse('$serverUrl/$sha256'),
+          headers: {
+            if (authEvent != null) 'Authorization': _authHeader(authEvent),
+          },
+        ),
       );
 
       return BlobDeleteResult(
@@ -794,7 +872,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     required String sha256,
     required String outputPath,
     required List<String> serverUrls,
-    Nip01Event? authorization,
+    BlossomAuthorization authorization = const BlossomAuthorization.none(),
   }) async {
     // Use the streaming method to download and write to file
     final stream = await getBlobStream(

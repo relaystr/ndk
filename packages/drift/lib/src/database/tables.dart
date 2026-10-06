@@ -1,6 +1,11 @@
 import 'package:drift/drift.dart';
 
 /// Table for storing Nostr events (NIP-01)
+@TableIndex(
+  name: 'events_pub_key_kind_created_at',
+  columns: {#pubKey, #kind, #createdAt},
+)
+@TableIndex(name: 'events_kind_created_at', columns: {#kind, #createdAt})
 @DataClassName('DbEvent')
 class Events extends Table {
   TextColumn get id => text()();
@@ -111,6 +116,7 @@ class RelayDeliveryTargetsTable extends Table {
   IntColumn get nextRetryAt => integer().nullable()();
   TextColumn get lastError => text().nullable()();
   TextColumn get lastOkMessage => text().nullable()();
+  TextColumn get authCanonical => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {eventId, relayUrl};

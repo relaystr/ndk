@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 
 import 'pubkey_mapping.dart';
 import 'read_write.dart';
+import 'relay_connection_key.dart';
 import 'request_state.dart';
 import 'filter.dart';
 
@@ -42,11 +43,18 @@ class RelaySet {
   static const int kMaxAuthorsPerRequest = 100;
 
   void splitIntoRequests(Filter filter, RequestState groupRequest) {
-    for (var entry in relaysMap.entries) {
-      String url = entry.key;
+    for (final entry in relaysMap.entries) {
+      final String url = entry.key;
+      final connectionKey = RelayConnectionKey.forAuth(
+        url,
+        groupRequest.request.auth,
+      );
+      if (connectionKey == null) {
+        continue;
+      }
       List<PubkeyMapping> pubKeyMappings = entry.value;
       if (pubKeyMappings.isEmpty) {
-        groupRequest.addRequest(url, [filter]);
+        groupRequest.addRequest(connectionKey, [filter]);
       } else if (filter.authors != null &&
           filter.authors!.isNotEmpty &&
           direction == RelayDirection.outbox) {
@@ -62,7 +70,7 @@ class RelaySet {
         }
         if (pubKeysForRelay.isNotEmpty) {
           groupRequest.addRequest(
-            url,
+            connectionKey,
             sliceFilterAuthors(filter.cloneWithAuthors(pubKeysForRelay)),
           );
         }
@@ -81,12 +89,12 @@ class RelaySet {
         }
         if (pubKeysForRelay.isNotEmpty) {
           groupRequest.addRequest(
-            url,
+            connectionKey,
             sliceFilterAuthors(filter.cloneWithPTags(pubKeysForRelay)),
           );
         }
       } else if (filter.eTags != null && direction == RelayDirection.inbox) {
-        groupRequest.addRequest(url, [filter]);
+        groupRequest.addRequest(connectionKey, [filter]);
       } else {
         /// TODO: Define what to do in this edge case
       }

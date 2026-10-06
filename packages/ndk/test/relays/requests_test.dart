@@ -434,7 +434,7 @@ void main() async {
         defaultQueryTimeout: Duration(seconds: 10),
         globalState: globalState,
         cacheRead: MockCacheRead(cache),
-        cacheWrite: init.cacheWrite,
+        cacheManager: cache,
         networkEngine: init.engine,
         relayManager: init.relayManager,
         eventVerifier: eventVerifier,
@@ -453,6 +453,64 @@ void main() async {
       //   subscription
       requests.subscription(filters: [originalFilterSub], cacheRead: true);
       expect(originalFilterSub.authors!.length, equals(1));
+    });
+  });
+
+  group('request ids', () {
+    late Ndk ndk;
+    final filter = Filter(kinds: [1]);
+
+    Ndk createNdk({bool debugMode = false}) => Ndk(
+      NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        bootstrapRelays: [],
+        debugMode: debugMode,
+      ),
+    );
+
+    setUp(() => ndk = createNdk());
+
+    tearDown(() => ndk.destroy());
+
+    test('ids are random hex and never carry the name', () {
+      final query = ndk.requests.query(filter: filter, name: 'secret');
+      final sub = ndk.requests.subscription(filter: filter, name: 'secret');
+
+      for (final id in [query.requestId, sub.requestId]) {
+        expect(id, matches(RegExp(r'^[0-9a-f]{32}$')));
+      }
+    });
+
+    test('debugMode ids keep the name, cut to 32 characters', () {
+      final debugNdk = createNdk(debugMode: true);
+      addTearDown(debugNdk.destroy);
+      final name = 'n' * 32;
+      final query = debugNdk.requests.query(filter: filter, name: '${name}x');
+      final sub = debugNdk.requests.subscription(filter: filter, name: name);
+
+      for (final id in [query.requestId, sub.requestId]) {
+        expect(id, matches(RegExp('^$name-[0-9a-f]{16}\$')));
+      }
+    });
+
+    test('an explicit id must be 1 to 64 characters', () {
+      final requests = <NdkResponse Function(String id)>[
+        (id) => ndk.requests.query(filter: filter, id: id),
+        (id) => ndk.requests.subscription(filter: filter, id: id),
+      ];
+      for (final request in requests) {
+        expect(() => request(''), throwsArgumentError);
+        expect(() => request('i' * 65), throwsArgumentError);
+        expect(request('i' * 64).requestId, 'i' * 64);
+      }
+    });
+
+    test('an explicit query id cannot be combined with paginate', () {
+      expect(
+        () => ndk.requests.query(filter: filter, id: 'q', paginate: true),
+        throwsArgumentError,
+      );
     });
   });
 

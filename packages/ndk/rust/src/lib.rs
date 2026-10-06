@@ -1,34 +1,54 @@
+pub mod pq;
+
 use std::ffi::{c_char, CStr};
 use std::slice;
 
-use crystals_dilithium::{dilithium2, dilithium3, dilithium5};
-use hex::decode;
+use fips204::traits::{KeyGen, SerDes, Signer, Verifier};
+use fips204::{ml_dsa_44, ml_dsa_65, ml_dsa_87};
+use hex::decode_to_slice;
+use hkdf::Hkdf;
 use secp256k1::{schnorr::Signature, XOnlyPublicKey, SECP256K1};
 use sha2::{Digest, Sha256};
+use zeroize::Zeroize;
 
-/// Verifies a Nostr event signature.
+/// Verifies id derivation, NIP-13 proof-of-work, and the Schnorr signature of a
+/// Nostr event from one packed ASCII buffer (id, pubkey, signature) plus the
+/// remaining fields needed to recompute the id hash.
+///
+/// This replaces the previous split between a Dart-side id/PoW check
+/// (`Nip01Utils.isIdValid`, which serializes the event to JSON and re-hashes it)
+/// and a Rust-side signature-only check: both now happen here, in one call, with
+/// only the fixed-size id/pubkey/signature triplet packed into a single buffer.
 ///
 /// # Safety
-/// All string pointers must be valid null-terminated C strings.
-/// tags_data must point to a valid array of tag strings.
+/// `packed` must point to exactly `packed_len` (256) readable bytes. `tags_data`/
+/// `tags_lengths` must describe `tags_count` valid C strings, and `content` must
+/// be a valid null-terminated C string.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn verify_nostr_event(
-    event_id_hex: *const c_char,
-    pub_key_hex: *const c_char,
+pub unsafe extern "C" fn verify_nostr_event_packed(
+    packed: *const u8,
+    packed_len: usize,
     created_at: u64,
     kind: u32,
     tags_data: *const *const c_char,
     tags_lengths: *const u32,
     tags_count: u32,
     content: *const c_char,
-    signature_hex: *const c_char,
 ) -> i32 {
-    // Convert C strings to Rust strings
-    let event_id = match unsafe { CStr::from_ptr(event_id_hex) }.to_str() {
+    const PACKED_LEN: usize = 64 + 64 + 128;
+    if packed.is_null() || packed_len != PACKED_LEN || content.is_null() {
+        return 0;
+    }
+    let bytes = unsafe { slice::from_raw_parts(packed, packed_len) };
+    let event_id_hex = &bytes[..64];
+    let pub_key_hex = &bytes[64..128];
+    let signature_hex = &bytes[128..];
+
+    let pub_key_str = match std::str::from_utf8(pub_key_hex) {
         Ok(s) => s,
         Err(_) => return 0,
     };
-    let pub_key = match unsafe { CStr::from_ptr(pub_key_hex) }.to_str() {
+    let event_id_str = match std::str::from_utf8(event_id_hex) {
         Ok(s) => s,
         Err(_) => return 0,
     };
@@ -36,116 +56,136 @@ pub unsafe extern "C" fn verify_nostr_event(
         Ok(s) => s,
         Err(_) => return 0,
     };
-    let signature = match unsafe { CStr::from_ptr(signature_hex) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return 0,
+
+    let tags = match unsafe { parse_tags(tags_data, tags_lengths, tags_count) } {
+        Some(t) => t,
+        None => return 0,
     };
 
-    // Parse tags from flat array
-    // tags_lengths contains the length of each tag (number of elements)
-    // tags_data contains all tag strings concatenated
-    let tags = if tags_count > 0 && !tags_data.is_null() && !tags_lengths.is_null() {
-        let lengths = unsafe { slice::from_raw_parts(tags_lengths, tags_count as usize) };
-        let mut result: Vec<Vec<String>> = Vec::with_capacity(tags_count as usize);
-        let mut offset = 0usize;
-
-        for &len in lengths {
-            let mut tag: Vec<String> = Vec::with_capacity(len as usize);
-            for i in 0..len as usize {
-                let ptr = unsafe { *tags_data.add(offset + i) };
-                if ptr.is_null() {
-                    return 0;
-                }
-                match unsafe { CStr::from_ptr(ptr) }.to_str() {
-                    Ok(s) => tag.push(s.to_string()),
-                    Err(_) => return 0,
-                }
-            }
-            result.push(tag);
-            offset += len as usize;
-        }
-        result
-    } else {
-        Vec::new()
-    };
-
-    // Check id
-    let calc_id = hash_event_data_internal(pub_key, created_at, kind as u16, &tags, content_str);
-    if calc_id != event_id {
+    let calc_id =
+        hash_event_data_internal(pub_key_str, created_at, kind as u16, &tags, content_str);
+    if calc_id.as_bytes() != event_id_hex {
         return 0;
     }
 
-    // Check signature
-    if verify_schnorr_signature_internal(pub_key, event_id, signature) {
+    if !nip13_difficulty_ok(&tags, event_id_str) {
+        return 0;
+    }
+
+    if verify_schnorr_signature_bytes(pub_key_hex, event_id_hex, signature_hex) {
         1
     } else {
         0
     }
 }
 
-/// Verifies a Schnorr signature.
+/// Parses the flat tags array passed across FFI back into `Vec<Vec<String>>`.
+/// `tags_lengths` holds the item count of each tag; `tags_data` holds all tag
+/// items concatenated in order. Returns `None` on any null pointer or invalid
+/// UTF-8, which callers treat as a verification failure.
 ///
 /// # Safety
-/// All pointers must be valid null-terminated C strings.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn verify_schnorr_signature(
-    pub_key_hex: *const c_char,
-    event_id_hex: *const c_char,
-    signature_hex: *const c_char,
-) -> i32 {
-    let pub_key = match unsafe { CStr::from_ptr(pub_key_hex) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return 0,
-    };
-    let event_id = match unsafe { CStr::from_ptr(event_id_hex) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return 0,
-    };
-    let signature = match unsafe { CStr::from_ptr(signature_hex) }.to_str() {
-        Ok(s) => s,
-        Err(_) => return 0,
-    };
+/// `tags_data` must point to a flat array covering the sum of `tags_lengths`
+/// valid C strings, and `tags_lengths` to `tags_count` `u32`s.
+unsafe fn parse_tags(
+    tags_data: *const *const c_char,
+    tags_lengths: *const u32,
+    tags_count: u32,
+) -> Option<Vec<Vec<String>>> {
+    if tags_count == 0 || tags_data.is_null() || tags_lengths.is_null() {
+        return Some(Vec::new());
+    }
 
-    if verify_schnorr_signature_internal(pub_key, event_id, signature) {
-        1
-    } else {
-        0
+    let lengths = unsafe { slice::from_raw_parts(tags_lengths, tags_count as usize) };
+    let mut result: Vec<Vec<String>> = Vec::with_capacity(tags_count as usize);
+    let mut offset = 0usize;
+
+    for &len in lengths {
+        let mut tag: Vec<String> = Vec::with_capacity(len as usize);
+        for i in 0..len as usize {
+            let ptr = unsafe { *tags_data.add(offset + i) };
+            if ptr.is_null() {
+                return None;
+            }
+            match unsafe { CStr::from_ptr(ptr) }.to_str() {
+                Ok(s) => tag.push(s.to_string()),
+                Err(_) => return None,
+            }
+        }
+        result.push(tag);
+        offset += len as usize;
+    }
+    Some(result)
+}
+
+/// Mirrors `Nip13.getTargetDifficultyFromEvent`: the target difficulty from the
+/// first `["nonce", <value>, <difficulty>]` tag, or `None` if there is no such
+/// tag *or* its difficulty field fails to parse (matching Dart's `int.tryParse`
+/// returning null, which `Nip13.validateEvent` treats as "no requirement").
+fn nip13_target_difficulty(tags: &[Vec<String>]) -> Option<i64> {
+    for tag in tags {
+        if tag.len() >= 3 && tag[0] == "nonce" {
+            return tag[2].parse::<i64>().ok();
+        }
+    }
+    None
+}
+
+/// Mirrors `Nip13.countLeadingZeroBits`: counts leading zero bits across the hex
+/// digits of `hex`, stopping at the first nonzero nibble.
+fn count_leading_zero_bits(hex: &[u8]) -> usize {
+    let mut count = 0usize;
+    for &c in hex {
+        let nibble = match (c as char).to_digit(16) {
+            Some(n) => n,
+            None => return count,
+        };
+        if nibble == 0 {
+            count += 4;
+        } else {
+            if nibble & 8 == 0 {
+                count += 1;
+            }
+            if nibble & 12 == 0 {
+                count += 1;
+            }
+            if nibble & 14 == 0 {
+                count += 1;
+            }
+            break;
+        }
+    }
+    count
+}
+
+/// Mirrors `Nip13.validateEvent`: an event without a `nonce` tag (or with an
+/// unparsable difficulty) always passes; otherwise the event id's leading zero
+/// bits must meet the declared target.
+fn nip13_difficulty_ok(tags: &[Vec<String>], event_id_hex: &str) -> bool {
+    match nip13_target_difficulty(tags) {
+        None => true,
+        Some(target) => count_leading_zero_bits(event_id_hex.as_bytes()) as i64 >= target,
     }
 }
 
-fn verify_schnorr_signature_internal(
-    pub_key_hex: &str,
-    event_id_hex: &str,
-    signature_hex: &str,
+fn verify_schnorr_signature_bytes(
+    pub_key_hex: &[u8],
+    event_id_hex: &[u8],
+    signature_hex: &[u8],
 ) -> bool {
-    let pub_key_bytes = match decode(pub_key_hex) {
-        Ok(bytes) => bytes,
-        Err(_) => return false,
-    };
-
-    let event_id_bytes = match decode(event_id_hex) {
-        Ok(bytes) => bytes,
-        Err(_) => return false,
-    };
-
-    let signature_bytes = match decode(signature_hex) {
-        Ok(bytes) => bytes,
-        Err(_) => return false,
-    };
-
-    if event_id_bytes.len() != 32 || pub_key_bytes.len() != 32 || signature_bytes.len() != 64 {
+    if pub_key_hex.len() != 64 || event_id_hex.len() != 64 || signature_hex.len() != 128 {
         return false;
     }
 
-    let pub_key_array: [u8; 32] = match pub_key_bytes.try_into() {
-        Ok(arr) => arr,
-        Err(_) => return false,
-    };
-
-    let signature_array: [u8; 64] = match signature_bytes.try_into() {
-        Ok(arr) => arr,
-        Err(_) => return false,
-    };
+    let mut pub_key_array = [0u8; 32];
+    let mut event_id_array = [0u8; 32];
+    let mut signature_array = [0u8; 64];
+    if decode_to_slice(pub_key_hex, &mut pub_key_array).is_err()
+        || decode_to_slice(event_id_hex, &mut event_id_array).is_err()
+        || decode_to_slice(signature_hex, &mut signature_array).is_err()
+    {
+        return false;
+    }
 
     let pubkey = match XOnlyPublicKey::from_byte_array(pub_key_array) {
         Ok(key) => key,
@@ -155,8 +195,30 @@ fn verify_schnorr_signature_internal(
     let signature = Signature::from_byte_array(signature_array);
 
     SECP256K1
-        .verify_schnorr(&signature, &event_id_bytes, &pubkey)
+        .verify_schnorr(&signature, &event_id_array, &pubkey)
         .is_ok()
+}
+
+/// Appends JSON string contents using the same escapes as Dart's json.encode.
+fn push_json_escaped(output: &mut String, value: &str) {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    for c in value.chars() {
+        match c {
+            '"' => output.push_str("\\\""),
+            '\\' => output.push_str("\\\\"),
+            '\u{08}' => output.push_str("\\b"),
+            '\u{0c}' => output.push_str("\\f"),
+            '\n' => output.push_str("\\n"),
+            '\r' => output.push_str("\\r"),
+            '\t' => output.push_str("\\t"),
+            '\u{00}'..='\u{1f}' => {
+                output.push_str("\\u00");
+                output.push(HEX[(c as usize) >> 4] as char);
+                output.push(HEX[(c as usize) & 0x0f] as char);
+            }
+            _ => output.push(c),
+        }
+    }
 }
 
 fn hash_event_data_internal(
@@ -185,42 +247,41 @@ fn hash_event_data_internal(
                 serialized_event.push(',');
             }
             serialized_event.push('"');
-            for c in item.chars() {
-                match c {
-                    '"' => serialized_event.push_str("\\\""),
-                    '\\' => serialized_event.push_str("\\\\"),
-                    '\n' => serialized_event.push_str("\\n"),
-                    '\r' => serialized_event.push_str("\\r"),
-                    '\t' => serialized_event.push_str("\\t"),
-                    _ => serialized_event.push(c),
-                }
-            }
+            push_json_escaped(&mut serialized_event, item);
             serialized_event.push('"');
         }
         serialized_event.push(']');
     }
 
     serialized_event.push_str("],\"");
-    for c in content.chars() {
-        match c {
-            '"' => serialized_event.push_str("\\\""),
-            '\\' => serialized_event.push_str("\\\\"),
-            '\n' => serialized_event.push_str("\\n"),
-            '\r' => serialized_event.push_str("\\r"),
-            '\t' => serialized_event.push_str("\\t"),
-            _ => serialized_event.push(c),
-        }
-    }
+    push_json_escaped(&mut serialized_event, content);
     serialized_event.push_str("\"]");
 
     let mut hasher = Sha256::new();
     hasher.update(serialized_event.as_bytes());
     let result = hasher.finalize();
 
-    format!("{:x}", result)
+    hex::encode(result)
 }
 
-// ── Quantum-Secure Dilithium Functions ─────────────────────────────────
+// ── Quantum-Secure ML-DSA (FIPS 204) Functions ─────────────────────────
+//
+// These were CRYSTALS-Dilithium (the round-3 NIST submission). NIST changed the
+// algorithm during standardisation, so Dilithium and ML-DSA are not wire-compatible:
+// keys and signatures produced by the old code cannot be verified by any FIPS 204
+// implementation, and vice versa. Anything published with the previous keys is
+// therefore unverifiable by the wider ecosystem, which defeats the point of signing.
+//
+// `level` selects the parameter set and now takes the ML-DSA numbers — 44, 65 or 87 —
+// rather than Dilithium's 2, 3 and 5. The old values are rejected rather than
+// remapped, so a caller that was not updated fails loudly instead of silently
+// producing keys with different security properties than it asked for.
+
+/// Domain-separation profile for seed-derived keys. Shared with the ML-KEM derivation.
+const PQ_PROFILE: &str = "nip-pqc/v1";
+
+/// A BIP-39 seed is always 64 bytes, whatever the mnemonic length.
+const SEED_BYTES: usize = 64;
 
 /// Represents a buffer returned to the caller.
 /// The caller must free it with `qs_free_buffer`.
@@ -232,24 +293,53 @@ pub struct QsBuffer {
 
 /// Frees a buffer previously returned by a qs_ function.
 ///
+/// The contents are zeroized before the allocation is released: these buffers carry
+/// secret keys, and a freed-but-not-wiped secret is recoverable from a core dump, a
+/// swap file, or a later heap read.
+///
 /// # Safety
-/// `buf` must be a QsBuffer previously returned by this library.
+/// `buf` must be a QsBuffer previously returned by this library, and must not be
+/// freed twice.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn qs_free_buffer(buf: QsBuffer) {
     if !buf.data.is_null() && buf.len > 0 {
-        let _ = unsafe { Vec::from_raw_parts(buf.data, buf.len, buf.len) };
+        let mut v = unsafe { Vec::from_raw_parts(buf.data, buf.len, buf.len) };
+        v.zeroize();
     }
 }
 
-/// Generates a Dilithium keypair.
+/// Derives the 32-byte ML-DSA key seed (xi) from a BIP-39 seed.
 ///
-/// `level` selects the security level: 2, 3, or 5.
+/// Domain-separated per algorithm and account so the signing key is a *sibling* of the
+/// secp256k1 key rather than a child of it. Deriving from the Nostr private key would
+/// be circular: an adversary who recovers it from the published pubkey would repeat the
+/// derivation and obtain this key too.
+fn derive_dsa_xi(seed: &[u8], level: u32, account: u32) -> Option<[u8; 32]> {
+    // A BIP-39 seed is always 64 bytes; requiring exactly that blocks passing a
+    // 32-byte secp256k1 private key as the seed.
+    if seed.len() != SEED_BYTES {
+        return None;
+    }
+    let info = format!("{PQ_PROFILE}/ml-dsa-{level}/{account}");
+    let hk = Hkdf::<Sha256>::new(None, seed);
+    let mut xi = [0u8; 32];
+    hk.expand(info.as_bytes(), &mut xi).ok()?;
+    Some(xi)
+}
+
+/// Generates a random ML-DSA keypair.
 ///
-/// On success, writes the public key into `out_pk` and the secret key into
-/// `out_sk` and returns 1. On failure returns 0.
+/// `level` selects the parameter set: 44, 65 or 87.
+///
+/// Prefer `qs_derive_keypair_from_seed` for anything that represents an identity — a
+/// randomly generated key cannot be restored from a mnemonic, so losing it loses the
+/// identity permanently.
+///
+/// On success, writes the public key into `out_pk` and the secret key into `out_sk`
+/// and returns 1. On failure returns 0.
 ///
 /// # Safety
-/// `out_pk` and `out_sk` must be valid pointers to `QsBuffer`.
+/// `out_pk` and `out_sk` must be valid, non-aliasing pointers to `QsBuffer`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn qs_generate_keypair(
     level: u32,
@@ -259,52 +349,81 @@ pub unsafe extern "C" fn qs_generate_keypair(
     if out_pk.is_null() || out_sk.is_null() {
         return 0;
     }
-
+    macro_rules! gen {
+        ($m:ident) => {{
+            match $m::KG::try_keygen() {
+                Ok((pk, sk)) => {
+                    let mut sk_bytes = sk.into_bytes().to_vec();
+                    unsafe {
+                        write_buffer(out_pk, pk.into_bytes().to_vec());
+                        write_buffer(out_sk, sk_bytes.clone());
+                    }
+                    sk_bytes.zeroize();
+                    1
+                }
+                Err(_) => 0,
+            }
+        }};
+    }
     match level {
-        2 => {
-            let keypair = match dilithium2::Keypair::generate(None) {
-                Ok(kp) => kp,
-                Err(_) => return 0,
-            };
-            let pk = keypair.public.to_bytes().to_vec();
-            let sk = keypair.to_bytes().to_vec(); // full keypair bytes (secret + public)
-            write_buffer(out_pk, pk);
-            write_buffer(out_sk, sk);
-            1
-        }
-        3 => {
-            let keypair = match dilithium3::Keypair::generate(None) {
-                Ok(kp) => kp,
-                Err(_) => return 0,
-            };
-            let pk = keypair.public.to_bytes().to_vec();
-            let sk = keypair.to_bytes().to_vec();
-            write_buffer(out_pk, pk);
-            write_buffer(out_sk, sk);
-            1
-        }
-        5 => {
-            let keypair = match dilithium5::Keypair::generate(None) {
-                Ok(kp) => kp,
-                Err(_) => return 0,
-            };
-            let pk = keypair.public.to_bytes().to_vec();
-            let sk = keypair.to_bytes().to_vec();
-            write_buffer(out_pk, pk);
-            write_buffer(out_sk, sk);
-            1
-        }
+        44 => gen!(ml_dsa_44),
+        65 => gen!(ml_dsa_65),
+        87 => gen!(ml_dsa_87),
         _ => 0,
     }
 }
 
-/// Signs a message with a Dilithium secret key.
+/// Derives an ML-DSA keypair deterministically from a 64-byte BIP-39 seed.
 ///
-/// `level` selects the security level: 2, 3, or 5.
-/// `sk_ptr` / `sk_len` is the secret key bytes.
-/// `msg_ptr` / `msg_len` is the message bytes.
+/// One mnemonic therefore restores the signing key, and — because the ML-KEM
+/// derivation in `pq.rs` uses the same seed with a different domain string — the
+/// encryption key too.
 ///
-/// On success, writes the signature into `out_sig` and returns 1.
+/// # Safety
+/// `seed_ptr` must be valid for `seed_len` bytes; `out_pk` and `out_sk` must be valid,
+/// non-aliasing pointers to `QsBuffer`.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn qs_derive_keypair_from_seed(
+    level: u32,
+    seed_ptr: *const u8,
+    seed_len: usize,
+    account: u32,
+    out_pk: *mut QsBuffer,
+    out_sk: *mut QsBuffer,
+) -> i32 {
+    if seed_ptr.is_null() || out_pk.is_null() || out_sk.is_null() || seed_len == 0 {
+        return 0;
+    }
+    let seed = unsafe { slice::from_raw_parts(seed_ptr, seed_len) };
+    let mut xi = match derive_dsa_xi(seed, level, account) {
+        Some(x) => x,
+        None => return 0,
+    };
+    macro_rules! derive {
+        ($m:ident) => {{
+            let (pk, sk) = $m::KG::keygen_from_seed(&xi);
+            let mut sk_bytes = sk.into_bytes().to_vec();
+            unsafe {
+                write_buffer(out_pk, pk.into_bytes().to_vec());
+                write_buffer(out_sk, sk_bytes.clone());
+            }
+            sk_bytes.zeroize();
+            1
+        }};
+    }
+    let rc = match level {
+        44 => derive!(ml_dsa_44),
+        65 => derive!(ml_dsa_65),
+        87 => derive!(ml_dsa_87),
+        _ => 0,
+    };
+    xi.zeroize();
+    rc
+}
+
+/// Signs a message with an ML-DSA secret key, using an empty FIPS 204 context string.
+///
+/// `level` selects the parameter set: 44, 65 or 87.
 ///
 /// # Safety
 /// All pointers must be valid for their indicated lengths.
@@ -320,56 +439,40 @@ pub unsafe extern "C" fn qs_sign(
     if sk_ptr.is_null() || msg_ptr.is_null() || out_sig.is_null() {
         return 0;
     }
-
     let sk_bytes = unsafe { slice::from_raw_parts(sk_ptr, sk_len) };
     let msg = unsafe { slice::from_raw_parts(msg_ptr, msg_len) };
 
+    macro_rules! sign {
+        ($m:ident) => {{
+            let arr: [u8; $m::SK_LEN] = match sk_bytes.try_into() {
+                Ok(a) => a,
+                Err(_) => return 0,
+            };
+            let sk = match $m::PrivateKey::try_from_bytes(arr) {
+                Ok(k) => k,
+                Err(_) => return 0,
+            };
+            match sk.try_sign(msg, &[]) {
+                Ok(sig) => {
+                    unsafe { write_buffer(out_sig, sig.to_vec()) };
+                    1
+                }
+                Err(_) => 0,
+            }
+        }};
+    }
     match level {
-        2 => {
-            if sk_len != dilithium2::KEYPAIRBYTES {
-                return 0;
-            }
-            let keypair = match dilithium2::Keypair::from_bytes(sk_bytes) {
-                Ok(kp) => kp,
-                Err(_) => return 0,
-            };
-            let sig = keypair.sign(msg);
-            write_buffer(out_sig, sig.to_vec());
-            1
-        }
-        3 => {
-            if sk_len != dilithium3::KEYPAIRBYTES {
-                return 0;
-            }
-            let keypair = match dilithium3::Keypair::from_bytes(sk_bytes) {
-                Ok(kp) => kp,
-                Err(_) => return 0,
-            };
-            let sig = keypair.sign(msg);
-            write_buffer(out_sig, sig.to_vec());
-            1
-        }
-        5 => {
-            if sk_len != dilithium5::KEYPAIRBYTES {
-                return 0;
-            }
-            let keypair = match dilithium5::Keypair::from_bytes(sk_bytes) {
-                Ok(kp) => kp,
-                Err(_) => return 0,
-            };
-            let sig = keypair.sign(msg);
-            write_buffer(out_sig, sig.to_vec());
-            1
-        }
+        44 => sign!(ml_dsa_44),
+        65 => sign!(ml_dsa_65),
+        87 => sign!(ml_dsa_87),
         _ => 0,
     }
 }
 
-/// Verifies a Dilithium signature.
+/// Verifies an ML-DSA signature against an empty FIPS 204 context string.
 ///
-/// `level` selects the security level: 2, 3, or 5.
-///
-/// Returns 1 if valid, 0 if invalid.
+/// Returns 1 when the signature is valid, 0 otherwise — including for malformed
+/// inputs, which are indistinguishable from an invalid signature by design.
 ///
 /// # Safety
 /// All pointers must be valid for their indicated lengths.
@@ -386,69 +489,48 @@ pub unsafe extern "C" fn qs_verify(
     if pk_ptr.is_null() || msg_ptr.is_null() || sig_ptr.is_null() {
         return 0;
     }
-
     let pk_bytes = unsafe { slice::from_raw_parts(pk_ptr, pk_len) };
     let msg = unsafe { slice::from_raw_parts(msg_ptr, msg_len) };
     let sig_bytes = unsafe { slice::from_raw_parts(sig_ptr, sig_len) };
 
+    macro_rules! verify {
+        ($m:ident) => {{
+            let pk_arr: [u8; $m::PK_LEN] = match pk_bytes.try_into() {
+                Ok(a) => a,
+                Err(_) => return 0,
+            };
+            let sig_arr: [u8; $m::SIG_LEN] = match sig_bytes.try_into() {
+                Ok(a) => a,
+                Err(_) => return 0,
+            };
+            let pk = match $m::PublicKey::try_from_bytes(pk_arr) {
+                Ok(k) => k,
+                Err(_) => return 0,
+            };
+            i32::from(pk.verify(msg, &sig_arr, &[]))
+        }};
+    }
     match level {
-        2 => {
-            if pk_len != dilithium2::PUBLICKEYBYTES || sig_len != dilithium2::SIGNBYTES {
-                return 0;
-            }
-            let pubkey = match dilithium2::PublicKey::from_bytes(pk_bytes) {
-                Ok(pk) => pk,
-                Err(_) => return 0,
-            };
-            let mut sig_arr = [0u8; dilithium2::SIGNBYTES];
-            sig_arr.copy_from_slice(sig_bytes);
-            if pubkey.verify(msg, &sig_arr) {
-                1
-            } else {
-                0
-            }
-        }
-        3 => {
-            if pk_len != dilithium3::PUBLICKEYBYTES || sig_len != dilithium3::SIGNBYTES {
-                return 0;
-            }
-            let pubkey = match dilithium3::PublicKey::from_bytes(pk_bytes) {
-                Ok(pk) => pk,
-                Err(_) => return 0,
-            };
-            let mut sig_arr = [0u8; dilithium3::SIGNBYTES];
-            sig_arr.copy_from_slice(sig_bytes);
-            if pubkey.verify(msg, &sig_arr) {
-                1
-            } else {
-                0
-            }
-        }
-        5 => {
-            if pk_len != dilithium5::PUBLICKEYBYTES || sig_len != dilithium5::SIGNBYTES {
-                return 0;
-            }
-            let pubkey = match dilithium5::PublicKey::from_bytes(pk_bytes) {
-                Ok(pk) => pk,
-                Err(_) => return 0,
-            };
-            let mut sig_arr = [0u8; dilithium5::SIGNBYTES];
-            sig_arr.copy_from_slice(sig_bytes);
-            if pubkey.verify(msg, &sig_arr) {
-                1
-            } else {
-                0
-            }
-        }
-
+        44 => verify!(ml_dsa_44),
+        65 => verify!(ml_dsa_65),
+        87 => verify!(ml_dsa_87),
         _ => 0,
     }
 }
 
 /// Helper: move a Vec<u8> into a QsBuffer, leaking the memory for the caller.
-unsafe fn write_buffer(out: *mut QsBuffer, data: Vec<u8>) {
+///
+/// The Vec is converted to a boxed slice first. `qs_free_buffer` reconstructs the
+/// allocation with `Vec::from_raw_parts(data, len, len)`, which is undefined behaviour
+/// unless capacity equals length — and nothing about `Vec` guarantees that in general.
+/// It happens to hold for every value passed here today, so this is a latent trap
+/// rather than a live bug: the next contributor to build an output with `push` or
+/// `extend` would introduce heap corruption in the free path with no compiler
+/// diagnostic. `into_boxed_slice` reallocates to the exact size and removes the trap.
+pub(crate) unsafe fn write_buffer(out: *mut QsBuffer, data: Vec<u8>) {
+    let data = data.into_boxed_slice();
     let len = data.len();
-    let ptr = data.leak().as_mut_ptr();
+    let ptr = Box::leak(data).as_mut_ptr();
     unsafe {
         (*out).data = ptr;
         (*out).len = len;
@@ -466,10 +548,10 @@ mod tests {
         let pub_key_hex = "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
         let event_id = "a47c525970d21575c67e6f1e47674f1b82fc7edabb098fac4be21bb05425b389";
         let signature_hex = "b03ddc4930776698d39caa3df0cd887558ceea281eb9e2524daaba324906b2e3efc06f2f65a7fbba95c0b3ce9817df81f53d2d8da0124028446b0cc3a59ae6d9";
-        assert!(verify_schnorr_signature_internal(
-            pub_key_hex,
-            event_id,
-            signature_hex
+        assert!(verify_schnorr_signature_bytes(
+            pub_key_hex.as_bytes(),
+            event_id.as_bytes(),
+            signature_hex.as_bytes()
         ));
     }
 
@@ -478,10 +560,10 @@ mod tests {
         let pub_key_hex = "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
         let event_id = "a47c525970d21575c67e6f1e47674f1b82fc7edabb098fac4be21bb05425b389";
         let signature_hex = "a03ddc4930776698d39caa3df0cd887558ceea281eb9e2524daaba324906b2e3efc06f2f65a7fbba95c0b3ce9817df81f53d2d8da0124028446b0cc3a59ae6d9";
-        assert!(!verify_schnorr_signature_internal(
-            pub_key_hex,
-            event_id,
-            signature_hex
+        assert!(!verify_schnorr_signature_bytes(
+            pub_key_hex.as_bytes(),
+            event_id.as_bytes(),
+            signature_hex.as_bytes()
         ));
     }
 
@@ -514,36 +596,265 @@ mod tests {
     }
 
     #[test]
-    fn qs_dilithium2_roundtrip() {
-        let keypair = dilithium2::Keypair::generate(None).unwrap();
-        let msg = b"hello quantum world";
-        let sig = keypair.secret.sign(msg);
-        assert!(keypair.public.verify(msg, &sig));
+    fn hash_event_data_escapes_control_characters_in_content_and_tags() {
+        let pubkey = "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
+        for code in 0..0x20u8 {
+            let value = format!("before{}after", char::from(code));
+            for (tags, content) in [
+                (vec![], value.clone()),
+                (vec![vec!["t".to_string(), value.clone()]], String::new()),
+            ] {
+                let serialized = serde_json::to_vec(&serde_json::json!([
+                    0, pubkey, 1726215220u64, 1, tags, content
+                ]))
+                .unwrap();
+                let expected = hex::encode(Sha256::digest(serialized));
+                assert_eq!(
+                    hash_event_data_internal(pubkey, 1726215220, 1, &tags, &content),
+                    expected,
+                    "control character {code:#04x}, tags: {tags:?}"
+                );
+            }
+        }
     }
 
     #[test]
-    fn qs_dilithium3_roundtrip() {
-        let keypair = dilithium3::Keypair::generate(None).unwrap();
-        let msg = b"hello quantum world";
-        let sig = keypair.secret.sign(msg);
-        assert!(keypair.public.verify(msg, &sig));
+    fn count_leading_zero_bits_matches_reference_values() {
+        assert_eq!(count_leading_zero_bits(b"00"), 8);
+        assert_eq!(count_leading_zero_bits(b"0f"), 4);
+        assert_eq!(count_leading_zero_bits(b"1f"), 3);
+        assert_eq!(count_leading_zero_bits(b"8f"), 0);
+        assert_eq!(count_leading_zero_bits(b"000f"), 12);
     }
 
     #[test]
-    fn qs_dilithium5_roundtrip() {
-        let keypair = dilithium5::Keypair::generate(None).unwrap();
-        let msg = b"hello quantum world";
-        let sig = keypair.secret.sign(msg);
-        assert!(keypair.public.verify(msg, &sig));
+    fn nip13_target_difficulty_finds_first_nonce_tag() {
+        let tags = vec![
+            vec!["p".to_string(), "abc".to_string()],
+            vec!["nonce".to_string(), "42".to_string(), "20".to_string()],
+            vec!["nonce".to_string(), "99".to_string(), "5".to_string()],
+        ];
+        assert_eq!(nip13_target_difficulty(&tags), Some(20));
     }
 
     #[test]
-    fn qs_dilithium2_bad_sig_fails() {
-        let keypair = dilithium2::Keypair::generate(None).unwrap();
+    fn nip13_target_difficulty_none_without_nonce_tag() {
+        let tags = vec![vec!["p".to_string(), "abc".to_string()]];
+        assert_eq!(nip13_target_difficulty(&tags), None);
+    }
+
+    /// An unparsable difficulty field is treated as "no requirement", mirroring
+    /// `int.tryParse` returning null in `Nip13.getTargetDifficultyFromEvent`.
+    #[test]
+    fn nip13_target_difficulty_none_when_unparsable() {
+        let tags = vec![vec![
+            "nonce".to_string(),
+            "42".to_string(),
+            "not-a-number".to_string(),
+        ]];
+        assert_eq!(nip13_target_difficulty(&tags), None);
+    }
+
+    #[test]
+    fn nip13_difficulty_ok_passes_without_nonce_tag() {
+        let tags: Vec<Vec<String>> = vec![];
+        assert!(nip13_difficulty_ok(&tags, "8f00000000000000000000000000000000000000000000000000000000000000"));
+    }
+
+    #[test]
+    fn nip13_difficulty_ok_enforces_declared_target() {
+        let tags = vec![vec!["nonce".to_string(), "1".to_string(), "8".to_string()]];
+        assert!(nip13_difficulty_ok(
+            &tags,
+            "00be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"
+        ));
+        assert!(!nip13_difficulty_ok(
+            &tags,
+            "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"
+        ));
+    }
+
+    /// Builds a null-terminated C string on the heap, for feeding raw pointer FFI
+    /// entry points from safe test code.
+    fn cstring(value: &str) -> std::ffi::CString {
+        std::ffi::CString::new(value).unwrap()
+    }
+
+    #[test]
+    fn verify_nostr_event_packed_rejects_wrong_packed_length() {
+        let content = cstring("hello world");
+        let rc = unsafe {
+            verify_nostr_event_packed(
+                [0u8; 10].as_ptr(),
+                10,
+                0,
+                1,
+                std::ptr::null(),
+                std::ptr::null(),
+                0,
+                content.as_ptr(),
+            )
+        };
+        assert_eq!(rc, 0);
+    }
+
+    #[test]
+    fn verify_nostr_event_packed_rejects_id_mismatch() {
+        let pubkey = "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
+        let wrong_id = "0000000000000000000000000000000000000000000000000000000000000000";
+        let signature = "b03ddc4930776698d39caa3df0cd887558ceea281eb9e2524daaba324906b2e3efc06f2f65a7fbba95c0b3ce9817df81f53d2d8da0124028446b0cc3a59ae6d9";
+        let mut packed = Vec::with_capacity(256);
+        packed.extend_from_slice(&wrong_id.as_bytes()[..64]);
+        packed.extend_from_slice(pubkey.as_bytes());
+        packed.extend_from_slice(signature.as_bytes());
+
+        let content = cstring("hello world");
+        let rc = unsafe {
+            verify_nostr_event_packed(
+                packed.as_ptr(),
+                packed.len(),
+                1726215220,
+                1,
+                std::ptr::null(),
+                std::ptr::null(),
+                0,
+                content.as_ptr(),
+            )
+        };
+        assert_eq!(rc, 0);
+    }
+
+    /// The difficulty check runs on the (already id-matched) hash before the
+    /// signature is checked, so a PoW failure is caught even with a bogus
+    /// signature — matching `Nip01Utils.isIdValid`, which never reaches
+    /// signature verification for a failed `Nip13.validateEvent`.
+    #[test]
+    fn verify_nostr_event_packed_rejects_insufficient_pow() {
+        let pubkey = "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
+        let valid_id = "2bd7b2af40868949001713ffdcf95e1b1659dbbabe659ef9299d0fe11e31421d";
+        let bogus_signature = "0".repeat(128);
+
+        let mut packed = Vec::with_capacity(256);
+        packed.extend_from_slice(&valid_id.as_bytes()[..64]);
+        packed.extend_from_slice(pubkey.as_bytes());
+        packed.extend_from_slice(bogus_signature.as_bytes());
+
+        let tag_item_0 = cstring("nonce");
+        let tag_item_1 = cstring("1");
+        let tag_item_2 = cstring("255");
+        let tags_data = [tag_item_0.as_ptr(), tag_item_1.as_ptr(), tag_item_2.as_ptr()];
+        let tags_lengths = [3u32];
+        let content = cstring("hello world");
+
+        let rc = unsafe {
+            verify_nostr_event_packed(
+                packed.as_ptr(),
+                packed.len(),
+                1726215220,
+                1,
+                tags_data.as_ptr(),
+                tags_lengths.as_ptr(),
+                1,
+                content.as_ptr(),
+            )
+        };
+        assert_eq!(rc, 0);
+    }
+
+    #[test]
+    fn qs_mldsa_roundtrip_all_levels() {
+        for level in [44u32, 65, 87] {
+            let seed = [7u8; 64];
+            let xi = derive_dsa_xi(&seed, level, 0).unwrap();
+            let msg = b"hello quantum world";
+            match level {
+                44 => {
+                    let (pk, sk) = ml_dsa_44::KG::keygen_from_seed(&xi);
+                    let sig = sk.try_sign(msg, &[]).unwrap();
+                    assert!(pk.verify(msg, &sig, &[]));
+                }
+                65 => {
+                    let (pk, sk) = ml_dsa_65::KG::keygen_from_seed(&xi);
+                    let sig = sk.try_sign(msg, &[]).unwrap();
+                    assert!(pk.verify(msg, &sig, &[]));
+                }
+                _ => {
+                    let (pk, sk) = ml_dsa_87::KG::keygen_from_seed(&xi);
+                    let sig = sk.try_sign(msg, &[]).unwrap();
+                    assert!(pk.verify(msg, &sig, &[]));
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn qs_mldsa_bad_sig_fails() {
+        let (pk, sk) = ml_dsa_87::KG::keygen_from_seed(&[3u8; 32]);
         let msg = b"hello quantum world";
-        let mut sig = keypair.secret.sign(msg);
+        let mut sig = sk.try_sign(msg, &[]).unwrap();
         sig[0] ^= 0xff;
-        assert!(!keypair.public.verify(msg, &sig));
+        assert!(!pk.verify(msg, &sig, &[]));
+    }
+
+    /// Pinned against `@noble/post-quantum`'s `ml_dsa87`, the implementation the
+    /// TypeScript reference uses. The seed is HKDF-derived from bytes 0..64 with
+    /// info "nip-pqc/v1/ml-dsa-87/0", exactly as `dsaInfo` does there.
+    ///
+    /// This is what the previous CRYSTALS-Dilithium code could never satisfy: the
+    /// round-3 submission and FIPS 204 are different algorithms, so its keys and
+    /// signatures were verifiable only by itself.
+    #[test]
+    fn qs_mldsa87_matches_fips204_reference_vector() {
+        let seed: Vec<u8> = (0u8..64).collect();
+        let xi = derive_dsa_xi(&seed, 87, 0).unwrap();
+        assert_eq!(
+            hex::encode(xi),
+            "3d8443c4983bf876911077a0038d5e5084ca107d0d4b6a9438cbf051f79e3917"
+        );
+        let (pk, _) = ml_dsa_87::KG::keygen_from_seed(&xi);
+        let pk_bytes = pk.into_bytes();
+        assert_eq!(pk_bytes.len(), ml_dsa_87::PK_LEN);
+        assert_eq!(
+            hex::encode(Sha256::digest(pk_bytes.as_slice())),
+            "dcc0c445e54e2130ded2c1fa04e8aed2fcd80dfaefe2897b41fec827e6cdb609"
+        );
+    }
+
+    /// A BIP-39 seed is 64 bytes; a secp256k1 private key is 32. Accepting the latter
+    /// would make the derivation circular.
+    #[test]
+    fn qs_seed_derivation_rejects_non_bip39_seeds() {
+        assert!(derive_dsa_xi(&[], 87, 0).is_none());
+        assert!(derive_dsa_xi(&[0x42; 32], 87, 0).is_none());
+        assert!(derive_dsa_xi(&[0x42; 64], 87, 0).is_some());
+    }
+
+    /// Same seed, different account or parameter set, different key.
+    #[test]
+    fn qs_seed_derivation_is_domain_separated() {
+        let seed = [9u8; 64];
+        let a = derive_dsa_xi(&seed, 87, 0).unwrap();
+        assert_ne!(a, derive_dsa_xi(&seed, 87, 1).unwrap());
+        assert_ne!(a, derive_dsa_xi(&seed, 65, 0).unwrap());
+    }
+
+    /// The Dilithium level numbers must not silently mean something else now.
+    #[test]
+    fn qs_rejects_legacy_dilithium_levels() {
+        unsafe {
+            for level in [2u32, 3, 5] {
+                let mut pk = QsBuffer {
+                    data: std::ptr::null_mut(),
+                    len: 0,
+                };
+                let mut sk = QsBuffer {
+                    data: std::ptr::null_mut(),
+                    len: 0,
+                };
+                assert_eq!(qs_generate_keypair(level, &mut pk, &mut sk), 0);
+                assert!(pk.data.is_null());
+            }
+        }
     }
 
     #[test]
@@ -558,47 +869,84 @@ mod tests {
                 len: 0,
             };
 
-            let ret = qs_generate_keypair(2, &mut pk, &mut sk);
-            assert_eq!(ret, 1);
+            assert_eq!(qs_generate_keypair(87, &mut pk, &mut sk), 1);
             assert!(!pk.data.is_null());
             assert!(!sk.data.is_null());
+            assert_eq!(pk.len, ml_dsa_87::PK_LEN);
+            assert_eq!(sk.len, ml_dsa_87::SK_LEN);
 
             let msg = b"test message";
             let mut sig = QsBuffer {
                 data: std::ptr::null_mut(),
                 len: 0,
             };
-
-            let ret = qs_sign(2, sk.data, sk.len, msg.as_ptr(), msg.len(), &mut sig);
-            assert_eq!(ret, 1);
-
-            let ret = qs_verify(
-                2,
-                pk.data,
-                pk.len,
-                msg.as_ptr(),
-                msg.len(),
-                sig.data,
-                sig.len,
+            assert_eq!(
+                qs_sign(87, sk.data, sk.len, msg.as_ptr(), msg.len(), &mut sig),
+                1
             );
-            assert_eq!(ret, 1);
+            assert_eq!(sig.len, ml_dsa_87::SIG_LEN);
 
-            // wrong message should fail
+            assert_eq!(
+                qs_verify(
+                    87,
+                    pk.data,
+                    pk.len,
+                    msg.as_ptr(),
+                    msg.len(),
+                    sig.data,
+                    sig.len
+                ),
+                1
+            );
+
             let bad_msg = b"wrong message";
-            let ret = qs_verify(
-                2,
-                pk.data,
-                pk.len,
-                bad_msg.as_ptr(),
-                bad_msg.len(),
-                sig.data,
-                sig.len,
+            assert_eq!(
+                qs_verify(
+                    87,
+                    pk.data,
+                    pk.len,
+                    bad_msg.as_ptr(),
+                    bad_msg.len(),
+                    sig.data,
+                    sig.len
+                ),
+                0
             );
-            assert_eq!(ret, 0);
 
             qs_free_buffer(pk);
             qs_free_buffer(sk);
             qs_free_buffer(sig);
+        }
+    }
+
+    /// The seed-derived FFI path must agree with direct derivation, and be stable
+    /// across calls — that is what makes a mnemonic able to restore the key.
+    #[test]
+    fn qs_ffi_seed_derivation_is_deterministic() {
+        unsafe {
+            let seed = [11u8; 64];
+            let mut first: Option<Vec<u8>> = None;
+            for _ in 0..2 {
+                let mut pk = QsBuffer {
+                    data: std::ptr::null_mut(),
+                    len: 0,
+                };
+                let mut sk = QsBuffer {
+                    data: std::ptr::null_mut(),
+                    len: 0,
+                };
+                assert_eq!(
+                    qs_derive_keypair_from_seed(87, seed.as_ptr(), seed.len(), 0, &mut pk, &mut sk),
+                    1
+                );
+                let bytes = std::slice::from_raw_parts(pk.data, pk.len).to_vec();
+                match &first {
+                    None => first = Some(bytes),
+                    Some(f) => assert_eq!(*f, bytes),
+                }
+                qs_free_buffer(pk);
+                qs_free_buffer(sk);
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'dart:io';
+
 import 'package:ndk/ndk.dart';
 
 void main() async {
@@ -13,9 +14,13 @@ void main() async {
   final connection = await ndk.nwc.connect(nwcUri, doGetInfoMethod: true);
 
   print("Connected, permissions: ${connection.permissions}");
+  print(
+    "Supported extensions: ${connection.supportedExtensions.map((extension) => '${extension.identifier} (${extension.name})').join(', ')}",
+  );
 
   if (connection.info != null) {
     print("alias: ${connection.info!.alias}");
+    print("methods: ${connection.info!.methods}");
     if (connection.info!.pubkey != null) {
       print("pubkey: ${connection.info!.pubkey}");
     }

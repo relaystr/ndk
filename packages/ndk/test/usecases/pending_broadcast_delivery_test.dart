@@ -8,6 +8,11 @@ import 'package:ndk/domain_layer/entities/event_cache_records.dart';
 import 'package:ndk/domain_layer/entities/global_state.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/pending_signer_request.dart';
+import 'package:ndk/domain_layer/entities/account.dart';
+import 'package:ndk/domain_layer/entities/auth_policy.dart';
+import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/domain_layer/entities/signer_request_rejected_exception.dart';
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/domain_layer/usecases/accounts/accounts.dart';
@@ -60,6 +65,265 @@ void main() {
       await pendingDelivery.stop();
     });
 
+    /// One event may be published to two relays under two identities, so the
+    /// policy belongs to the relay target, not to the event.
+    test('keeps one policy per relay for the same event', () async {
+      final alice = Bip340.generatePrivateKey();
+      final bob = Bip340.generatePrivateKey();
+
+      Account accountOf(KeyPair k) => Account(
+        pubkey: k.publicKey,
+        type: AccountType.privateKey,
+        signer: Bip340EventSigner(
+          privateKey: k.privateKey!,
+          publicKey: k.publicKey,
+        ),
+      );
+
+      await pendingDelivery.enqueueSpecificRelayBroadcast(
+        event: event,
+        relayUrls: const ['wss://r1.example'],
+        requiresInteractiveSigning: false,
+        auth: AuthPolicy.require(accountOf(alice)),
+      );
+      await pendingDelivery.enqueueSpecificRelayBroadcast(
+        event: event,
+        relayUrls: const ['wss://r2.example'],
+        requiresInteractiveSigning: false,
+        auth: AuthPolicy.require(accountOf(bob)),
+      );
+
+      await pendingDelivery.flushForRelay('wss://r1.example');
+      await pendingDelivery.flushForRelay('wss://r2.example');
+
+      expect(
+        broadcast.broadcastedAuth.map(
+          (auth) => (auth as AuthPolicyRequire).account.pubkey,
+        ),
+        [alice.publicKey, bob.publicKey],
+        reason: 'the second broadcast must not re-attribute the first',
+      );
+    });
+
+    /// A signer never survives a restart, only the canonical policy does, so a
+    /// retry has to find the account again or hold the delivery.
+    group('auth policy across a restart', () {
+      final signerKey = Bip340.generatePrivateKey();
+
+      Account signable() => Account(
+        pubkey: signerKey.publicKey,
+        type: AccountType.privateKey,
+        signer: Bip340EventSigner(
+          privateKey: signerKey.privateKey!,
+          publicKey: signerKey.publicKey,
+        ),
+      );
+
+      Future<void> enqueueUnder(AuthPolicy auth) async {
+        await pendingDelivery.enqueueSpecificRelayBroadcast(
+          event: event,
+          relayUrls: const ['wss://relay.example'],
+          requiresInteractiveSigning: false,
+          auth: auth,
+        );
+      }
+
+      /// the same durable state seen by a process that never held the policy
+      PendingBroadcastDelivery afterRestart() => PendingBroadcastDelivery(
+        cacheManager: cacheManager,
+        broadcastSender: broadcast,
+        accounts: accounts,
+      );
+
+      test('persists the canonical policy, never a signer', () async {
+        await enqueueUnder(AuthPolicy.require(signable()));
+
+        final targets = await cacheManager.loadRelayDeliveryTargets(
+          eventId: event.id,
+        );
+        expect(targets.single.authCanonical, 'require:${signerKey.publicKey}');
+      });
+
+      test('never survives a restart, since it names nobody', () async {
+        await enqueueUnder(const AuthPolicy.never());
+        final restarted = afterRestart();
+        addTearDown(restarted.stop);
+
+        await restarted.flushForRelay('wss://relay.example');
+
+        expect(broadcast.broadcastedAuth, [isA<AuthPolicyNever>()]);
+      });
+
+      test('rebuilds a named policy from a registered account', () async {
+        await enqueueUnder(AuthPolicy.allow(signable()));
+        accounts.addAccount(
+          pubkey: signerKey.publicKey,
+          type: AccountType.privateKey,
+          signer: Bip340EventSigner(
+            privateKey: signerKey.privateKey!,
+            publicKey: signerKey.publicKey,
+          ),
+        );
+        final restarted = afterRestart();
+        addTearDown(restarted.stop);
+
+        await restarted.flushForRelay('wss://relay.example');
+
+        expect(broadcast.broadcastedAuth, [isA<AuthPolicyAllow>()]);
+        expect(
+          (broadcast.broadcastedAuth.single as AuthPolicyAllow).account.pubkey,
+          signerKey.publicKey,
+        );
+      });
+
+      test('holds a delivery whose identity no account can sign for', () async {
+        await enqueueUnder(AuthPolicy.require(signable()));
+        // the account was handed over, never registered, so a new process has
+        // the pubkey and no way to sign as it
+        final restarted = afterRestart();
+        addTearDown(restarted.stop);
+
+        await restarted.flushForRelay('wss://relay.example');
+
+        expect(
+          broadcast.broadcastedEvents,
+          isEmpty,
+          reason: 'sending it as anybody else is what require ruled out',
+        );
+
+        final targets = await cacheManager.loadRelayDeliveryTargets(
+          eventId: event.id,
+        );
+        expect(targets.single.state, RelayDeliveryState.authRequired);
+        expect(targets.single.nextRetryAt, isNull);
+        expect(targets.single.lastError, contains(signerKey.publicKey));
+
+        final record = await cacheManager.loadEventDeliveryRecord(event.id);
+        expect(record?.status, EventDeliveryStatus.needsAction);
+      });
+
+      test('drops the live policy once every target settled', () async {
+        // handed over, never registered, so it only exists in memory
+        await enqueueUnder(AuthPolicy.require(signable()));
+
+        await pendingDelivery.persistSpecificRelayBroadcastResult(event, [
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: true,
+            broadcastSuccessful: true,
+          ),
+        ]);
+
+        // a delivery revived after that has to rebuild the policy from the
+        // target, so the handed-over identity is gone even in this process
+        final settled = await cacheManager.loadRelayDeliveryTargets(
+          eventId: event.id,
+        );
+        await cacheManager.saveRelayDeliveryTarget(
+          settled.single.copyWith(state: RelayDeliveryState.pending),
+        );
+        await pendingDelivery.flushForRelay('wss://relay.example');
+
+        expect(broadcast.broadcastedEvents, isEmpty);
+        final targets = await cacheManager.loadRelayDeliveryTargets(
+          eventId: event.id,
+        );
+        expect(targets.single.state, RelayDeliveryState.authRequired);
+      });
+
+      test('keeps the live policy while a target is still pending', () async {
+        await enqueueUnder(AuthPolicy.require(signable()));
+
+        await pendingDelivery.persistSpecificRelayBroadcastResult(event, [
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: false,
+            broadcastSuccessful: false,
+            msg: 'auth-required: please authenticate',
+          ),
+        ]);
+        await pendingDelivery.flushForRelay('wss://relay.example');
+
+        expect(broadcast.broadcastedAuth, [isA<AuthPolicyRequire>()]);
+      });
+
+      test('a parked delivery does not reconnect on every interval', () async {
+        await enqueueUnder(AuthPolicy.require(signable()));
+        final restarted = afterRestart();
+        addTearDown(restarted.stop);
+        await restarted.flushForRelay('wss://relay.example');
+
+        // nothing about it changes on its own, so waking the relay for it would
+        // only rewrite the same state every interval
+        await restarted.retryDueDeliveries(
+          connectedRelayUrls: () => const <String>[],
+          reconnectRelay: (relayUrl) async {
+            reconnectAttempts.add(relayUrl);
+            return true;
+          },
+        );
+
+        expect(reconnectAttempts, isEmpty);
+        expect(broadcast.broadcastedEvents, isEmpty);
+      });
+
+      test(
+        'a parked delivery becomes due again once an identity is named',
+        () async {
+          await enqueueUnder(AuthPolicy.require(signable()));
+          final restarted = afterRestart();
+          addTearDown(restarted.stop);
+          await restarted.flushForRelay('wss://relay.example');
+
+          accounts.addAccount(
+            pubkey: signerKey.publicKey,
+            type: AccountType.privateKey,
+            signer: Bip340EventSigner(
+              privateKey: signerKey.privateKey!,
+              publicKey: signerKey.publicKey,
+            ),
+          );
+          await restarted.enqueueSpecificRelayBroadcast(
+            event: event,
+            relayUrls: const ['wss://relay.example'],
+            requiresInteractiveSigning: false,
+            auth: AuthPolicy.require(signable()),
+          );
+
+          await restarted.retryDueDeliveries(
+            connectedRelayUrls: () => const <String>[],
+            reconnectRelay: (relayUrl) async {
+              reconnectAttempts.add(relayUrl);
+              return true;
+            },
+          );
+
+          expect(reconnectAttempts, ['wss://relay.example']);
+          expect(broadcast.broadcastedEvents, [event]);
+        },
+      );
+
+      test('resumes once the event is broadcast with the account', () async {
+        await enqueueUnder(AuthPolicy.require(signable()));
+        final restarted = afterRestart();
+        addTearDown(restarted.stop);
+        await restarted.flushForRelay('wss://relay.example');
+        expect(broadcast.broadcastedEvents, isEmpty);
+
+        // the app hands the identity back by broadcasting the same event again
+        await restarted.enqueueSpecificRelayBroadcast(
+          event: event,
+          relayUrls: const ['wss://relay.example'],
+          requiresInteractiveSigning: false,
+          auth: AuthPolicy.require(signable()),
+        );
+        await restarted.flushForRelay('wss://relay.example');
+
+        expect(broadcast.broadcastedEvents, [event]);
+        expect(broadcast.broadcastedAuth, [isA<AuthPolicyRequire>()]);
+      });
+    });
+
     test('does not rebroadcast permanent failures during due flush', () async {
       await cacheManager.saveRelayDeliveryTarget(
         RelayDeliveryTarget(
@@ -76,6 +340,35 @@ void main() {
 
       expect(broadcast.broadcastedEvents, isEmpty);
     });
+
+    test(
+      'persists a permanent result across relay URL spelling variants',
+      () async {
+        await cacheManager.saveRelayDeliveryTarget(
+          RelayDeliveryTarget(
+            eventId: event.id,
+            relayUrl: 'wss://relay.example/',
+            reason: RelayDeliveryReason.explicit,
+          ),
+        );
+
+        await pendingDelivery.persistSpecificRelayBroadcastResult(event, [
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: true,
+            broadcastSuccessful: false,
+            msg: 'kind 1059 is not allowed on this relay',
+          ),
+        ]);
+
+        final targets = await cacheManager.loadRelayDeliveryTargets(
+          eventId: event.id,
+        );
+        expect(targets, hasLength(1));
+        expect(targets.single.state, RelayDeliveryState.permanentFailure);
+        expect(targets.single.nextRetryAt, isNull);
+      },
+    );
 
     test(
       'does not rebroadcast auth-required targets before next retry time',
@@ -196,6 +489,214 @@ void main() {
         expect(broadcast.broadcastedEvents.map((e) => e.id), [event.id]);
       },
     );
+
+    for (final outcome in [
+      (
+        'accepted',
+        true,
+        RelayDeliveryState.acked,
+        EventDeliveryStatus.delivered,
+      ),
+      (
+        'invalid: bad event',
+        false,
+        RelayDeliveryState.permanentFailure,
+        EventDeliveryStatus.failed,
+      ),
+      (
+        'error: temporarily unavailable',
+        false,
+        RelayDeliveryState.transientFailure,
+        EventDeliveryStatus.inProgress,
+      ),
+    ]) {
+      test('persists retry result ${outcome.$1}', () async {
+        const relay = 'wss://retry.example';
+        await pendingDelivery.enqueueSpecificRelayBroadcast(
+          event: event,
+          relayUrls: const [relay],
+          requiresInteractiveSigning: false,
+          auth: const AuthPolicy.never(),
+        );
+        broadcast.responses = [
+          RelayBroadcastResponse(
+            relayUrl: relay,
+            okReceived: true,
+            broadcastSuccessful: outcome.$2,
+            msg: outcome.$1,
+          ),
+        ];
+        await pendingDelivery.flushForRelay(relay, onlyDue: true);
+        final first = (await cacheManager.loadRelayDeliveryTargets(
+          eventId: event.id,
+        )).single;
+        expect(first.state, outcome.$3);
+        expect(first.attemptCount, 1);
+        expect(first.lastAttemptAt, isNotNull);
+        expect(first.authCanonical, 'never');
+        expect(
+          (await cacheManager.loadEventDeliveryRecord(event.id))!.status,
+          outcome.$4,
+        );
+        await pendingDelivery.flushForRelay(relay, onlyDue: true);
+        expect(
+          broadcast.broadcastedEvents,
+          hasLength(1),
+          reason: 'terminal states and future retries must not resend',
+        );
+        if (outcome.$3 == RelayDeliveryState.transientFailure) {
+          expect(first.nextRetryAt! - first.lastAttemptAt!, 5);
+          await cacheManager.saveRelayDeliveryTarget(
+            first.copyWith(nextRetryAt: Nip01Event.secondsSinceEpoch() - 1),
+          );
+          await pendingDelivery.flushForRelay(relay, onlyDue: true);
+          final second = (await cacheManager.loadRelayDeliveryTargets(
+            eventId: event.id,
+          )).single;
+          expect(second.attemptCount, 2);
+          expect(second.nextRetryAt! - second.lastAttemptAt!, 15);
+        } else {
+          expect(first.nextRetryAt, isNull);
+        }
+      });
+    }
+
+    test('preserves an ephemeral initial attempt until it finishes', () async {
+      final rpc = event.copyWith(kind: 23194);
+      await cacheManager.saveEvent(rpc);
+      await pendingDelivery.enqueueSpecificRelayBroadcast(
+        event: rpc,
+        relayUrls: const ['wss://rpc.example'],
+        requiresInteractiveSigning: false,
+      );
+      broadcast.inFlightEventIds.add(rpc.id);
+      await pendingDelivery.retryDueDeliveries(
+        connectedRelayUrls: () => const [],
+        reconnectRelay: (url) async {
+          reconnectAttempts.add(url);
+          return true;
+        },
+      );
+      expect(reconnectAttempts, isEmpty);
+      expect(await cacheManager.loadEventDeliveryRecord(rpc.id), isNotNull);
+      expect(
+        await cacheManager.loadRelayDeliveryTargets(eventId: rpc.id),
+        hasLength(1),
+      );
+      broadcast.inFlightEventIds.clear();
+      await pendingDelivery.retryDueDeliveries(
+        connectedRelayUrls: () => const [],
+        reconnectRelay: (url) async {
+          reconnectAttempts.add(url);
+          return true;
+        },
+      );
+      expect(reconnectAttempts, isEmpty);
+      expect(await cacheManager.loadEventDeliveryRecord(rpc.id), isNull);
+      expect(await cacheManager.loadEvent(rpc.id), isNotNull);
+    });
+
+    for (final entryPoint in ['periodic', 'relay flush', 'signer reconnect']) {
+      test('drops unsigned ephemeral before signing via $entryPoint', () async {
+        final rpc = Nip01Event(
+          id: 'unsigned-rpc',
+          pubKey: 'remote-signer',
+          kind: 23194,
+          tags: const [],
+          content: 'request',
+        );
+        final signer = _RemoteTestSigner(
+          pubKey: rpc.pubKey,
+          requiresSignerNetwork: true,
+          transportRelayUrls: const ['wss://signer.example'],
+          onSign: (event) async => event.copyWith(sig: 'unexpected'),
+        );
+        accounts.loginExternalSigner(signer: signer);
+        await cacheManager.saveEvent(rpc);
+        await pendingDelivery.enqueueSpecificRelayBroadcast(
+          event: rpc,
+          relayUrls: const ['wss://rpc.example'],
+          requiresInteractiveSigning: true,
+        );
+        if (entryPoint == 'periodic') {
+          await pendingDelivery.retryDueDeliveries(
+            connectedRelayUrls: () => const [],
+            reconnectRelay: (url) async {
+              reconnectAttempts.add(url);
+              return true;
+            },
+          );
+        } else if (entryPoint == 'relay flush') {
+          await pendingDelivery.flushForRelay('wss://rpc.example');
+        } else {
+          await pendingDelivery.retryInteractiveSigningForTransportRelay(
+            'wss://signer.example',
+          );
+        }
+        expect(reconnectAttempts, isEmpty);
+        expect(signer.signCallCount, 0);
+        expect(broadcast.broadcastedEvents, isEmpty);
+        expect(await cacheManager.loadEventDeliveryRecord(rpc.id), isNull);
+        expect(await cacheManager.loadEvent(rpc.id), isNotNull);
+      });
+    }
+
+    for (final kind in [23194, 25195]) {
+      for (final state in [
+        RelayDeliveryState.pending,
+        RelayDeliveryState.attempting,
+        RelayDeliveryState.authRequired,
+      ]) {
+        test('drops stale RPC $kind $state before reconnecting', () async {
+          final rpc = Nip01Event(
+            id: 'rpc-$kind-${state.name}',
+            pubKey: 'pubkey',
+            kind: kind,
+            tags: const [],
+            content: 'request',
+            sig: 'sig',
+          );
+          // Old saveToCache:false broadcasts still have serialized recovery
+          // records; cleanup must work without a raw cached event too.
+          await pendingDelivery.enqueueSpecificRelayBroadcast(
+            event: rpc,
+            relayUrls: const ['wss://rpc-1.example', 'wss://rpc-2.example'],
+            requiresInteractiveSigning: false,
+          );
+          for (final relay in ['wss://rpc-1.example', 'wss://rpc-2.example']) {
+            await cacheManager.saveRelayDeliveryTarget(
+              RelayDeliveryTarget(
+                eventId: rpc.id,
+                relayUrl: relay,
+                reason: RelayDeliveryReason.explicit,
+                state: state,
+              ),
+            );
+          }
+          for (var cycle = 0; cycle < 3; cycle++) {
+            await pendingDelivery.retryDueDeliveries(
+              connectedRelayUrls: () => const [],
+              reconnectRelay: (url) async {
+                reconnectAttempts.add(url);
+                return true;
+              },
+            );
+          }
+          expect(reconnectAttempts, isEmpty);
+          expect(broadcast.broadcastedEvents, isEmpty);
+          expect(await cacheManager.loadEventDeliveryRecord(rpc.id), isNull);
+          expect(
+            await cacheManager.loadRelayDeliveryTargets(eventId: rpc.id),
+            isEmpty,
+          );
+          expect(
+            await cacheManager.loadEvent(rpc.id),
+            isNotNull,
+            reason: 'discard retry metadata without deleting cached events',
+          );
+        });
+      }
+    }
 
     test(
       'purges ephemeral event and sidecars once delivery is complete',
@@ -810,6 +1311,12 @@ void main() {
 
 class RecordingBroadcastSender extends BroadcastSender {
   final List<Nip01Event> broadcastedEvents = [];
+  final List<AuthPolicy?> broadcastedAuth = [];
+  final Set<String> inFlightEventIds = {};
+  List<RelayBroadcastResponse> responses = const [];
+
+  @override
+  bool isEventInFlight(String eventId) => inFlightEventIds.contains(eventId);
 
   RecordingBroadcastSender({required MemCacheManager cacheManager})
     : super(
@@ -830,11 +1337,13 @@ class RecordingBroadcastSender extends BroadcastSender {
     double? considerDonePercent,
     Duration? timeout,
     bool? saveToCache,
+    AuthPolicy? auth,
   }) {
     broadcastedEvents.add(nostrEvent);
+    broadcastedAuth.add(auth);
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
-      broadcastDoneStream: Stream.value(const <RelayBroadcastResponse>[]),
+      broadcastDoneStream: Stream.value(responses),
     );
   }
 }

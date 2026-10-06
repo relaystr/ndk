@@ -67,7 +67,6 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
           "https://nostr.download",
           "https://cdn.hzrd149.com",
         ],
-        useAuth: false,
       );
 
       setState(() {
@@ -99,7 +98,6 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
           "https://nostr.download",
           "https://cdn.hzrd149.com",
         ],
-        useAuth: false,
       );
 
       setState(() {
@@ -121,14 +119,13 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
 
   Future<void> _pickAndUploadFile() async {
     // Pick a file
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    final file = await FilePicker.pickFile();
 
-    if (result == null) {
+    if (file == null) {
       return;
     }
 
     // On web, path is null but bytes are available
-    final file = result.files.single;
     if (!kIsWeb && file.path == null) {
       return;
     }
@@ -168,6 +165,12 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
             setState(() {
               _uploadedSha256 = descriptor.sha256;
               _uploadedUrl = descriptor.url;
+            });
+          } else {
+            setState(() {
+              _uploadError = progress.completedUploads
+                  .map((r) => '${r.serverUrl}: ${r.error}')
+                  .join('\n');
             });
           }
         }
@@ -214,14 +217,12 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
       await widget.ndk.files.downloadToFile(
         url: _uploadedUrl!,
         outputPath: outputPath,
-        useAuth: false,
         serverUrls: ["https://nostr.download", "https://cdn.hzrd149.com"],
       );
 
       setState(() {
-        _downloadedFilePath = kIsWeb
-            ? context.l10n.blossomDownloadedToBrowser
-            : outputPath;
+        _downloadedFilePath =
+            kIsWeb ? context.l10n.blossomDownloadedToBrowser : outputPath;
       });
     } catch (e) {
       setState(() {
@@ -372,9 +373,8 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton(
-                            onPressed: _isLoadingVideo
-                                ? null
-                                : _checkAndInitVideo,
+                            onPressed:
+                                _isLoadingVideo ? null : _checkAndInitVideo,
                             child: Text(l10n.blossomLoadVideo),
                           ),
                           ElevatedButton(

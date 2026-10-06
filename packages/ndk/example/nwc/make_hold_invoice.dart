@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
+
 import 'package:crypto/crypto.dart';
 import 'package:convert/convert.dart';
 import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
@@ -19,7 +20,7 @@ void main() async {
   final nwcUri = Platform.environment['NWC_URI']!;
   final connection = await ndk.nwc.connect(nwcUri);
 
-  final amount = 29;
+  final amount = 1000;
   final description = "hello hold";
 
   // Generate a random 32-byte preimage
@@ -54,19 +55,6 @@ void main() async {
       print(
         "Hold invoice created successfully. Invoice: $invoice Payment Hash: ${makeResponse.paymentHash}",
       );
-
-      // if (invoice.isNotEmpty) {
-      // print("\nScan QR Code to pay/hold:");
-      // try {
-      //   final asciiQr = AsciiQrGenerator.generate(
-      //     invoice.toUpperCase(),
-      //   );
-      //   print(asciiQr.toString());
-      // } catch (e) {
-      //   print("Error generating ASCII QR code: $e");
-      // }
-      //   print("\nOr copy Bolt11 invoice:\n$invoice\n");
-      // }
 
       final duration =
           makeResponse.expiresAt! -

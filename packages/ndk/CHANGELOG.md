@@ -1,3 +1,384 @@
+## 0.10.1
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.10.1-dev.1
+
+ - **FIX**: parse the BUD-08 nip94 field as a tag array.
+
+## 0.10.1-dev.0
+
+ - **FIX**: release idle wallet and abandoned sockets.
+ - **FIX**: close transports before replacement.
+ - **FIX**: abort stalled relay HTTP requests.
+ - **FIX**: stop reconnecting for stale RPC delivery.
+ - **FIX**: persist background delivery retry results.
+ - **FIX**: reduce background battery usage by removing closed connections only once.
+ - **FIX**: NWC error handling for Rizful.
+ - **REFACTOR**: inject RelayInfo HTTP fetch via RelayInfoRepo and HttpRequestDS.
+
+## 0.10.0
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.10.0-dev.9
+
+ - **FIX**: don't hold NIP-46 responses until the slowest relay acks.
+
+## 0.10.0-dev.8
+
+ - **FIX**: reduce background polling and cache work.
+ - **FIX**(nwc): expose hold settle deadline.
+ - **FIX**: seedStore.write() first.
+ - **FIX**: carry seed language.
+ - **FIX**: normalize and await cashu seed phrase save.
+
+## 0.10.0-dev.7
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: let the blossom repository authorise on refusal.
+ - **REFACTOR**: surface the http status code on every request failure.
+ - **FIX**: stay anonymous with each blossom server until it refuses.
+ - **FIX**: use hex secret in nostrconnect URI.
+ - **FIX**: keep an anonymous blossom report anonymous.
+ - **FIX**: carry the blossom authorization through every request it makes.
+ - **FEAT**: pass an auth policy through the files facade.
+ - **FEAT**: let a blossom operation say which identity it may reveal.
+ - **FEAT**: add the blossom authorization, the repository half of a policy.
+ - **BREAKING** **FEAT**: drop blossom useAuth and customSigner in favour of auth.
+
+## 0.10.0-dev.6
+
+ - **REFACTOR**: rename RelayAuth to AuthPolicy.
+ - **FIX**: match nip05 check cache and dedup on both identifier and pubkey.
+ - **FIX**: key nip05 cache by canonical identifier and skip failed checks in resolve.
+ - **FIX**: abort nip05 requests after a 5s timeout.
+ - **FIX**: ignore nip05 redirects and normalize identifier parsing.
+ - **FIX**: stop resolving unknown names to the _ root entry.
+ - **FEAT**: add retryDelivery opt-out to broadcast.
+
+## 0.10.0-dev.5
+
+ - **PERF**: cache master key for cashu quote.
+ - **FIX**: guard cashu quote op (on autostart).
+ - **FIX**: backfill method, usedKeysets if missing.
+ - **FIX**: scanUpperBound.
+ - **FIX**: updatePendingQuotes to return all refreshed transactions.
+ - **FIX**: global quote counter.
+ - **FIX**: forward the connect timeout to a broadcast's bound connection.
+ - **FIX**(test): keep the connection's identity set with each received event.
+ - **FIX**: stop waking a relay for a delivery parked on a missing identity.
+ - **FIX**: attach a broadcast auth policy to the relay target, not the event.
+ - **FIX**: stop opening an anonymous connection for a required broadcast.
+ - **FIX**: release a broadcast auth policy once its delivery settled.
+ - **FEAT**: ensureMintCounterSafety.
+ - **FEAT**: streamable recoverAndCompleteQuote().
+ - **FEAT**: recoverAndCompleteQuote() api.
+ - **FEAT**: auto resume pending transactions.
+ - **FEAT**: determenistic cashu quote key.
+ - **FEAT**: let a broadcast say which identity it may be attributed to.
+
+## 0.10.0-dev.4
+
+ - **FIX**: address app update review feedback.
+ - **FEAT**(updates): add NIP-82 release support.
+
+## 0.10.0-dev.3
+
+> Note: This release has breaking changes.
+
+ - **PERF**(cache): batch visibility context reads.
+ - **PERF**: improve rust verifier memory usage.
+ - **FIX**(metadata): cache the metadata event that was broadcast.
+ - **FIX**(cache): compare conflict coordinates byte for byte.
+ - **FIX**(cache): keep d-tag whitespace when matching deletion coordinates.
+ - **FIX**: address Rust verifier review feedback.
+ - **FIX**(cache): keep d-tag case when matching deletion coordinates.
+ - **FIX**(cache): stop a limited read from dropping visible events.
+ - **FIX**: missing amount in bip321.
+ - **FIX**: add tbs.
+ - **FIX**: not add lnurl wallet if invalid.
+ - **FEAT**(wallets): add LNbits provider.
+ - **FEAT**: packed event verification in rust.
+ - **FEAT**(nwc): add optional maxFeeMsat to pay (NWC-321 max_fee).
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
+## 0.10.0-dev.2
+
+ - **REFACTOR**: internalize the WebSocket client and remove wrapper package dependencies.
+
+> Note: This release has breaking changes.
+
+ - **FIX**: end a reconciliation whose signer refuses to answer the challenge.
+ - **FIX**: stop spending the reconciliation budget on waiting for a signer.
+ - **FIX**: raise an impossible reconciliation from the call, not from its future.
+ - **FEAT**: let a negentropy reconciliation say which identity it may use.
+ - **FEAT**: add native WebSocket compression opt-out.
+ - **BREAKING** **FEAT**(accounts): add accountsStream.
+
+## 0.10.0-dev.1
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: prerelease.
+ - **FIX**: final over var.
+ - **FIX**(requests): end a query that reached no relay.
+ - **FIX**: do not resurrect a jit request that already ended.
+ - **FIX**: do not send a relay set request closed while connecting.
+ - **FIX**: keep a request open while its auth retry connects.
+ - **FIX**(cli): avoid wallet startup network work.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**: keep a jit request open while its other relays are still connecting.
+ - **FIX**: do not send a jit request that was closed while its connection opened.
+ - **FIX**: authenticate as an account that was handed over, not only a registered one.
+ - **FIX**: answer an impossible request without waiting for its timeout.
+ - **FIX**: tell two requests apart by the identity they authenticate as.
+ - **FIX**: paginate each relay of a relay set on its own.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: send a required request only on its bound connection in the jit engine.
+ - **FEAT**: send a required request only on its bound connection.
+ - **FEAT**: add RelayAuth, the identity a request may be attributed to.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+ - **DOCS**(release): add 0.9.3 notes.
+ - **DOCS**(cli): condense wallet command help.
+ - **DOCS**(ndk): finalize 0.9.2 changelog.
+ - **BREAKING** **FIX**: stop authenticating to relays that never asked.
+ - **BREAKING** **FEAT**: let a request say which identity it may authenticate as.
+
+## 0.10.0-dev.0
+
+> Note: This release has breaking changes.
+
+ - Start the 0.10.0 prerelease series.
+
+## 0.9.4-dev.2
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: final over var.
+ - **FIX**(requests): end a query that reached no relay.
+ - **FIX**: do not resurrect a jit request that already ended.
+ - **FIX**: do not send a relay set request closed while connecting.
+ - **FIX**: keep a request open while its auth retry connects.
+ - **FIX**(cli): avoid wallet startup network work.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**: keep a jit request open while its other relays are still connecting.
+ - **FIX**: do not send a jit request that was closed while its connection opened.
+ - **FIX**: authenticate as an account that was handed over, not only a registered one.
+ - **FIX**: answer an impossible request without waiting for its timeout.
+ - **FIX**: tell two requests apart by the identity they authenticate as.
+ - **FIX**: paginate each relay of a relay set on its own.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: send a required request only on its bound connection in the jit engine.
+ - **FEAT**: send a required request only on its bound connection.
+ - **FEAT**: add RelayAuth, the identity a request may be attributed to.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+ - **DOCS**(release): add 0.9.3 notes.
+ - **DOCS**(cli): condense wallet command help.
+ - **DOCS**(ndk): finalize 0.9.2 changelog.
+ - **BREAKING** **FIX**: stop authenticating to relays that never asked.
+ - **BREAKING** **FEAT**: let a request say which identity it may authenticate as.
+
+## 0.9.4-dev.1
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: final over var.
+ - **FIX**: do not resurrect a jit request that already ended.
+ - **FIX**: do not send a relay set request closed while connecting.
+ - **FIX**: keep a request open while its auth retry connects.
+ - **FIX**(cli): avoid wallet startup network work.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**: keep a jit request open while its other relays are still connecting.
+ - **FIX**: do not send a jit request that was closed while its connection opened.
+ - **FIX**: authenticate as an account that was handed over, not only a registered one.
+ - **FIX**: answer an impossible request without waiting for its timeout.
+ - **FIX**: tell two requests apart by the identity they authenticate as.
+ - **FIX**: paginate each relay of a relay set on its own.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: send a required request only on its bound connection in the jit engine.
+ - **FEAT**: send a required request only on its bound connection.
+ - **FEAT**: add RelayAuth, the identity a request may be attributed to.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+ - **DOCS**(release): add 0.9.3 notes.
+ - **DOCS**(cli): condense wallet command help.
+ - **DOCS**(ndk): finalize 0.9.2 changelog.
+ - **BREAKING** **FIX**: stop authenticating to relays that never asked.
+ - **BREAKING** **FEAT**: let a request say which identity it may authenticate as.
+
+## 0.9.4-dev.0
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+
+## 0.9.3
+
+ - **FIX**(cli): prevent wallet commands from replaying pending deliveries or
+   restoring unrelated remote signers, and close CLI databases cleanly.
+ - **FIX**(installer): download stable CLI releases without consuming the
+   GitHub REST API quota.
+ - **DOCS**(cli): condense wallet help and standardize optional argument
+   notation.
+ - **CI**: run NDK tests serially to reduce peak native verifier memory usage.
+
+## 0.9.2
+
+ - **FEAT**: add DM relay discovery and publishing APIs.
+ - **FEAT**: add explicit legacy NIP-04 DMs and NIP-17 file messages.
+ - **FEAT**(nwc): expose supported extensions, add hold-invoice timeouts,
+   and support `max_fee` for `pay_invoice`.
+ - **FIX**: paginate every relay in a relay set independently.
+ - **FIX**: make request hashes independent of filter-list ordering.
+ - **FIX**: record fetched ranges only from network events and retain the
+   oldest timestamp reported by each relay.
+ - **FIX**: normalize relay URLs and treat disallowed event kinds as permanent
+   failures.
+ - **FIX**(release): isolate generated package-version updates.
+
+## 0.9.1-dev.3
+
+ - **FIX**(release): isolate version generation.
+ - **FIX**: hash a request independently of the order of its filter lists.
+ - **FIX**: clean relay url.
+ - **FIX**: more dms.
+ - **FIX**: kind not allowed is a permanet failure.
+ - **FIX**: track only the oldest event timestamp per relay for fetched ranges.
+ - **FIX**: record fetched ranges from network events only.
+ - **FEAT**(nwc): add optional maxFeeMsat to pay_invoice (NIP-47 max_fee).
+
+## 0.9.1-dev.2
+
+ - **FIX**(release): isolate version generation.
+ - **FIX**: hash a request independently of the order of its filter lists.
+ - **FIX**: clean relay url.
+ - **FIX**: more dms.
+ - **FIX**: kind not allowed is a permanet failure.
+ - **FIX**: track only the oldest event timestamp per relay for fetched ranges.
+ - **FIX**: record fetched ranges from network events only.
+ - **FEAT**(nwc): add optional maxFeeMsat to pay_invoice (NIP-47 max_fee).
+
+## 0.9.1-dev.1
+
+ - **FIX**: isolate relay, request, broadcast, and authentication state per NDK instance.
+ - **FEAT**: publishDmRelays.
+ - **FEAT**: allow explicit dm relay discovery.
+ - **FEAT**: add explicit legacy nip04 dms.
+
+## 0.9.1-dev.0
+
+ - **FEAT**: publishDmRelays.
+ - **FEAT**: nip17 file message.
+
+## 0.9.0
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: key request state by connection instead of relay url.
+ - **REFACTOR**: key the connect path by connection instead of relay url.
+ - **REFACTOR**: key relay connections by RelayConnectionKey.
+ - **REFACTOR**: drop the CacheWrite usecase in favor of CacheManager.
+ - **FIX**: recompute event id when building a NIP-51 set event.
+ - **FIX**: mem cache for event verification.
+ - **FIX**: index relay connectivity by list, not by url.
+ - **FIX**: unblock dart analyze on Dart 3.13.
+ - **FIX**: test lacl first test cacheWrite.
+ - **FIX**: encode negentropy messages per protocol v1.
+ - **FIX**: count the requests open on a connection by id.
+ - **FIX**: drop authentication state on a transient disconnect.
+ - **FIX**: keep a request alive while its authentication reconnects.
+ - **FIX**: route socket errors through the same disconnect handler as onDone.
+ - **FIX**: replay a query whose socket died before its EOSE.
+ - **FIX**: replay a request whose authentication died with its socket.
+ - **FIX**: account active requests where they are sent.
+ - **FIX**: scope authentication state to a transport generation.
+ - **FIX**: forget connections that have no transport left.
+ - **FIX**: do not send REQ for a request that was closed.
+ - **FIX**: engines pick relays, so they must see one connection per relay.
+ - **FIX**: replay subscriptions on their own connection only.
+ - **FIX**: send CLOSE on the connection the subscription was sent on.
+ - **FIX**: include target relays and request lifetime in the request dedup key.
+ - **FEAT**: add post-quantum hybrid encryption for direct messages (ML-KEM-1024).
+ - **FEAT**: bind each connection to at most one identity.
+ - **FEAT**: add RelayConnectionKey to identify a relay connection.
+ - **BREAKING** **FIX**: replace GPL-3.0-only crystals-dilithium with fips204 (ML-DSA).
+ - **BREAKING** **FEAT**: stream relay connections as a list instead of a url keyed map.
+
+## 0.8.4
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.8.4-dev.12
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: key request state by connection instead of relay url.
+ - **REFACTOR**: key the connect path by connection instead of relay url.
+ - **REFACTOR**: key relay connections by RelayConnectionKey.
+ - **REFACTOR**: drop the CacheWrite usecase in favor of CacheManager.
+ - **FIX**: recompute event id when building a NIP-51 set event.
+ - **FIX**: mem cache for event verification.
+ - **FIX**: index relay connectivity by list, not by url.
+ - **FIX**: unblock dart analyze on Dart 3.13.
+ - **FIX**: test lacl first test cacheWrite.
+ - **FIX**: encode negentropy messages per protocol v1.
+ - **FIX**: count the requests open on a connection by id.
+ - **FIX**: drop authentication state on a transient disconnect.
+ - **FIX**: keep a request alive while its authentication reconnects.
+ - **FIX**: route socket errors through the same disconnect handler as onDone.
+ - **FIX**: replay a query whose socket died before its EOSE.
+ - **FIX**: replay a request whose authentication died with its socket.
+ - **FIX**: account active requests where they are sent.
+ - **FIX**: scope authentication state to a transport generation.
+ - **FIX**: forget connections that have no transport left.
+ - **FIX**: do not send REQ for a request that was closed.
+ - **FIX**: engines pick relays, so they must see one connection per relay.
+ - **FIX**: replay subscriptions on their own connection only.
+ - **FIX**: send CLOSE on the connection the subscription was sent on.
+ - **FIX**: include target relays and request lifetime in the request dedup key.
+ - **FEAT**: add post-quantum hybrid encryption for direct messages (ML-KEM-1024).
+ - **FEAT**: bind each connection to at most one identity.
+ - **FEAT**: add RelayConnectionKey to identify a relay connection.
+ - **BREAKING** **FIX**: replace GPL-3.0-only crystals-dilithium with fips204 (ML-DSA).
+ - **BREAKING** **FEAT**: stream relay connections as a list instead of a url keyed map.
+
 ## 0.8.4-dev.11
 
  - **FIX**: dart format with standalone SDK 3.12.2 (match CI).

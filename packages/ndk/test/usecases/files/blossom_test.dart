@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:http/http.dart' as http;
 
 import 'package:ndk/data_layer/data_sources/http_request.dart';
@@ -25,6 +26,7 @@ void main() {
   late MockBlossomServer server;
   late MockBlossomServer server2;
   late Blossom client;
+  late Account loggedAccount;
 
   setUp(() async {
     server = MockBlossomServer(port: primaryServerPort);
@@ -46,6 +48,7 @@ void main() {
       privkey: key1.privateKey!,
     );
 
+    loggedAccount = ndk.accounts.getLoggedAccount()!;
     client = ndk.blossom;
   });
 
@@ -76,7 +79,7 @@ void main() {
       final getResponseAuth = await client.getBlob(
         sha256: sha256,
         serverUrls: ['http://localhost:${server.port}'],
-        useAuth: true,
+        auth: AuthPolicy.require(loggedAccount),
       );
       expect(utf8.decode(getResponse.data), equals('Hello, Blossom!'));
       expect(utf8.decode(getResponseAuth.data), equals('Hello, Blossom!'));
@@ -122,7 +125,7 @@ void main() {
       final getResponseAuth = client.checkBlob(
         sha256: sha256,
         serverUrls: ['http://localhost:${server.port}'],
-        useAuth: true,
+        auth: AuthPolicy.require(loggedAccount),
       );
 
       /// expect not to throw
@@ -561,7 +564,7 @@ void main() {
           'http://localhost:${server.port}',
           'http://another-nonexistent:${server.port}',
         ],
-        useAuth: true,
+        auth: AuthPolicy.require(loggedAccount),
         chunkSize: 1024,
       );
 
@@ -982,7 +985,7 @@ void main() {
         sha256: sha256,
         outputPath: downloadFile.path,
         serverUrls: ['http://localhost:$primaryServerPort'],
-        useAuth: true,
+        auth: AuthPolicy.require(loggedAccount),
       );
 
       expect(await downloadFile.exists(), true);

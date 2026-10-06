@@ -10,8 +10,13 @@ class RelayStats {
   /// number of connection errors
   int connectionErrors = 0;
 
+  /// ids of the requests open on the connection, so that a request replayed on
+  /// a socket that came back is not counted twice and a CLOSE that lands late
+  /// does not count below what is open
+  final Set<String> openRequestIds = {};
+
   /// number of active requests on this relay
-  int activeRequests = 0;
+  int get activeRequests => openRequestIds.length;
 
   /// gets incremented on every touch => search if it has a pubkey assigned
   int touched = 1;

@@ -1,4 +1,13 @@
 enum ErrorCode {
+  badRequest('BAD_REQUEST', 'The request contains an invalid parameter.'),
+  unsupportedPaymentInstruction(
+    'UNSUPPORTED_PAYMENT_INSTRUCTION',
+    'The wallet cannot select a supported payment instruction.',
+  ),
+  unsupportedNetwork(
+    'UNSUPPORTED_NETWORK',
+    'The payment instruction uses a different Bitcoin network.',
+  ),
   rateLimited(
     'RATE_LIMITED',
     'The client is sending commands too fast. It should retry in a few seconds.',
@@ -29,6 +38,10 @@ enum ErrorCode {
   ),
   unauthorized('UNAUTHORIZED', 'This public key has no wallet connected.'),
   internal('INTERNAL', 'An internal error.'),
+  feeLimitExceeded(
+    'FEE_LIMIT_EXCEEDED',
+    'No route fit the max_fee budget and no payment was attempted.',
+  ),
   other('OTHER', 'Other error.');
 
   final String value;

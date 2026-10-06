@@ -16,7 +16,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.2.0
+version: 0.10.2
 
 environment:
   sdk: ">=3.2.1 <4.0.0"
@@ -36,8 +36,9 @@ dependencies:
   media_kit: ^1.1.11
   media_kit_video: ^1.2.5
   media_kit_libs_video: ^1.0.5
-  file_picker: ^10.3.10
+  file_picker: ">=12.3.0 <14.0.0"
   path_provider: ^2.1.5
+  flutter_secure_storage: ^10.0.0
 
   ndk: 0.7.0
   ndk_flutter: ^0.0.2-dev.2
@@ -48,11 +49,15 @@ dependencies:
   flutter_riverpod: ^2.6.1
   provider: ^6.0.0 # Added provider package
 #  android_intent_plus: ^5.3.0
+  app_links: ^7.2.1
   url_launcher: 6.3.1
-  protocol_handler: ^0.2.0
+  win32_registry: ^3.0.3
   http: ^1.2.0
   qr_flutter: ^4.1.0
   mobile_scanner: ^7.2.1
+  flutter_webrtc_zxing: ^0.2.1
+  flutter_webrtc: ^1.6.2+hotfix.1
+  image: ^4.8.0
   convert: ^3.1.2
   crypto: ^3.0.7
 
@@ -79,6 +84,9 @@ dependency_overrides:
 
 # The following section is specific to Flutter packages.
 flutter:
+  config:
+    # flutter_webrtc_zxing 0.2.1 ships empty SwiftPM Sources (gitignored upstream)
+    enable-swift-package-manager: false
   generate: true
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

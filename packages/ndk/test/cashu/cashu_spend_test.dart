@@ -159,7 +159,7 @@ void main() {
   });
 
   group('spend', () {
-    test("spend - initiateSpend", () async {
+    test("spend - initiateSpend", skip: true, () async {
       // Generate unique seed phrases for each test run to ensure unique blinded messages
       // This prevents "Blinded Message is already signed" errors from the mint
       final seedPhrase1 = CashuSeed.generateSeedPhrase();

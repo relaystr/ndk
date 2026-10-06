@@ -6,12 +6,14 @@ import '../../entities/broadcast_state.dart';
 import '../../entities/event_cache_records.dart';
 import '../../entities/nip_01_event.dart';
 import '../../entities/pending_signer_request.dart';
+import '../../entities/auth_policy.dart';
 import '../../entities/signer_request_cancelled_exception.dart';
 import '../../entities/signer_request_rejected_exception.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/event_signer.dart';
 import '../accounts/accounts.dart';
 import '../../../shared/logger/logger.dart';
+import '../../../shared/helpers/relay_helper.dart';
 import '../../../shared/nips/nip01/event_kind_classification.dart';
 import 'broadcast_sender.dart';
 import 'delivery_policy.dart';
@@ -36,6 +38,13 @@ class PendingBroadcastDelivery {
   final Set<String> _flushInProgress = {};
   final Map<String, int> _activeSignAttemptIds = {};
   final Map<String, int> _latestSignAttemptIds = {};
+
+  /// auth policy per relay target, keyed by [RelayDeliveryTarget.key] so one
+  /// event may go to two relays as two identities. For as long as this process
+  /// lives: a signer cannot be persisted, so an account the caller handed over
+  /// without ever registering it only survives here. What outlives a restart is
+  /// the canonical form on the target, see [_authForTarget].
+  final Map<String, AuthPolicy> _authPolicies = {};
   Iterable<String> Function()? _connectedRelayUrlsProvider;
   Timer? _retryTimer;
   bool _stopped = false;
@@ -84,6 +93,7 @@ class PendingBroadcastDelivery {
     _stopped = true;
     _retryTimer?.cancel();
     _retryTimer = null;
+    _authPolicies.clear();
     final operations = _inFlightOperations.toList(growable: false);
     if (operations.isNotEmpty) {
       await Future.wait(operations);
@@ -179,6 +189,10 @@ class PendingBroadcastDelivery {
         continue;
       }
 
+      if (await _discardNonRetryableEvent(event)) {
+        continue;
+      }
+
       final signer = _resolveSignerForEvent(event);
       if (signer == null ||
           !signer.requiresSignerNetwork ||
@@ -194,6 +208,7 @@ class PendingBroadcastDelivery {
     required Nip01Event event,
     required Iterable<String> relayUrls,
     required bool requiresInteractiveSigning,
+    AuthPolicy? auth,
   }) async {
     if (_stopped) {
       return;
@@ -236,17 +251,43 @@ class PendingBroadcastDelivery {
       for (final target in existingTargets) target.relayUrl: target,
     };
 
-    await _cacheManager.saveRelayDeliveryTargets(
-      relayUrlList.map((relayUrl) {
-        final existingTarget = existingByRelay[relayUrl];
-        return existingTarget ??
-            RelayDeliveryTarget(
-              eventId: event.id,
-              relayUrl: relayUrl,
-              reason: RelayDeliveryReason.explicit,
-            );
-      }).toList(),
-    );
+    final targets = relayUrlList.map((relayUrl) {
+      final existingTarget = existingByRelay[relayUrl];
+      if (existingTarget != null) {
+        // only the relays of this call are re-attributed; the same event may
+        // be on its way to another relay as somebody else
+        if (auth == null) {
+          return existingTarget;
+        }
+        final reattributed = existingTarget.copyWith(
+          authCanonical: auth.canonical,
+        );
+        // naming an identity is what a target parked for a missing one was
+        // waiting for, so it can move again
+        return _isParkedForIdentity(reattributed)
+            ? reattributed.copyWith(
+                state: RelayDeliveryState.pending,
+                lastError: null,
+              )
+            : reattributed;
+      }
+      return RelayDeliveryTarget(
+        eventId: event.id,
+        relayUrl: relayUrl,
+        reason: RelayDeliveryReason.explicit,
+        authCanonical: auth?.canonical,
+      );
+    }).toList();
+
+    if (auth != null) {
+      // keyed off the targets themselves, so the live policy can only ever be
+      // found under the key the persisted target is read back with
+      for (final target in targets) {
+        _authPolicies[target.key] = auth;
+      }
+    }
+
+    await _cacheManager.saveRelayDeliveryTargets(targets);
   }
 
   Future<void> persistSpecificRelayBroadcastResult(
@@ -270,20 +311,26 @@ class PendingBroadcastDelivery {
       eventId: event.id,
     );
     final targetsByRelay = {
-      for (final target in existingTargets) target.relayUrl: target,
+      for (final target in existingTargets)
+        cleanRelayUrl(target.relayUrl) ?? target.relayUrl: target,
     };
 
     final updatedTargets = <RelayDeliveryTarget>[];
     final policy = DeliveryPolicy.forEvent(event);
     final attemptTimestamp = Nip01Event.secondsSinceEpoch();
     for (final response in responses) {
-      final current = targetsByRelay[response.relayUrl];
+      final responseRelayUrl =
+          cleanRelayUrl(response.relayUrl) ?? response.relayUrl;
+      final current = targetsByRelay[responseRelayUrl];
       if (current == null) {
         continue;
       }
 
       final isAcked = response.okReceived && response.broadcastSuccessful;
-      final nextState = policy.resolveNextState(response);
+      final nextState = policy.resolveNextState(
+        response,
+        auth: _authForTarget(current).policy,
+      );
       final nextRetryAt = policy.shouldRetryState(nextState)
           ? attemptTimestamp +
                 policy
@@ -351,6 +398,7 @@ class PendingBroadcastDelivery {
         completedAt: completionTimestamp,
       ),
     );
+    _dropSettledAuthPolicies(allTargets);
     await _purgeEphemeralIfResolved(
       event.id,
       deliveryStatus,
@@ -385,6 +433,10 @@ class PendingBroadcastDelivery {
 
         if (!onlyDue) {
           return true;
+        }
+
+        if (_isParkedForIdentity(target)) {
+          return false;
         }
 
         return target.nextRetryAt == null || target.nextRetryAt! <= now;
@@ -425,6 +477,10 @@ class PendingBroadcastDelivery {
           continue;
         }
         var event = loadedEvent;
+
+        if (await _discardNonRetryableEvent(event)) {
+          continue;
+        }
 
         if (_isExpiredEvent(event)) {
           Logger.log.d(
@@ -468,13 +524,89 @@ class PendingBroadcastDelivery {
           continue;
         }
 
-        await _sender
-            .broadcast(nostrEvent: event, specificRelays: [relayUrl])
+        final auth = _authForTarget(target);
+        if (!auth.available) {
+          await _parkUnattributableDelivery(target, deliveryRecord);
+          continue;
+        }
+
+        final responses = await _sender
+            .broadcast(
+              nostrEvent: event,
+              specificRelays: [relayUrl],
+              auth: auth.policy,
+            )
             .broadcastDoneFuture;
+        // Retries bypass Broadcast's initial-send persistence wrapper. Apply
+        // the same acknowledgement and backoff bookkeeping before retrying.
+        await persistSpecificRelayBroadcastResult(event, responses);
       }
     } finally {
       _flushInProgress.remove(relayUrl);
     }
+  }
+
+  /// The auth policy a retry to this relay must go out under.
+  ///
+  /// The live policy wins: it holds the [Account] itself, so an identity the
+  /// caller handed over without registering it still works. After a restart
+  /// only the canonical form is left, and the account behind its pubkey is
+  /// looked up in [Accounts], the way [_resolveSignerForEvent] looks up a
+  /// signer. An identity nobody can sign for resolves to nothing rather than
+  /// falling back to the logged account, which is what the policy ruled out.
+  _AuthResolution _authForTarget(RelayDeliveryTarget target) {
+    final live = _authPolicies[target.key];
+    if (live != null) {
+      return _AuthResolution(live);
+    }
+
+    final canonical = target.authCanonical;
+    if (canonical == null) {
+      return const _AuthResolution(null);
+    }
+    if (canonical == 'never') {
+      return const _AuthResolution(AuthPolicy.never());
+    }
+
+    final separator = canonical.indexOf(':');
+    if (separator < 0) {
+      Logger.log.w(() => 'Unknown auth policy "$canonical", ignoring it');
+      return const _AuthResolution(null);
+    }
+    final kind = canonical.substring(0, separator);
+    final pubkey = canonical.substring(separator + 1);
+    final account = _accounts.accounts[pubkey];
+    if (account == null || !account.signer.canSign()) {
+      return _AuthResolution.unavailable;
+    }
+
+    return switch (kind) {
+      'allow' => _AuthResolution(AuthPolicy.allow(account)),
+      'require' => _AuthResolution(AuthPolicy.require(account)),
+      _ => const _AuthResolution(null),
+    };
+  }
+
+  /// Holds a delivery whose identity is gone until the app supplies it again,
+  /// rather than sending it as somebody else. Re-broadcasting the same event
+  /// with [AuthPolicy] in hand rewrites the record and resumes it.
+  Future<void> _parkUnattributableDelivery(
+    RelayDeliveryTarget target,
+    EventDeliveryRecord record,
+  ) async {
+    Logger.log.w(
+      () =>
+          'delivery ${target.eventId} to ${target.relayUrl} needs '
+          '${target.authCanonical}, which no account can sign for',
+    );
+    await _cacheManager.saveRelayDeliveryTargets([
+      target.copyWith(
+        state: RelayDeliveryState.authRequired,
+        nextRetryAt: null,
+        lastError: 'No available account for ${target.authCanonical}',
+      ),
+    ]);
+    await _saveSigningOutcome(record);
   }
 
   /// A NIP-40 expired event has no delivery value: relays reject it and it will
@@ -519,10 +651,47 @@ class PendingBroadcastDelivery {
     return visibleEvents.single.id != event.id;
   }
 
+  /// A live policy is only needed while something may still be sent to that
+  /// relay. Dropping the settled ones keeps the map from growing for the life
+  /// of the process. A delivery that is revived supplies it again through
+  /// [enqueueSpecificRelayBroadcast].
+  void _dropSettledAuthPolicies(List<RelayDeliveryTarget> targets) {
+    for (final target in targets) {
+      if (target.state == RelayDeliveryState.acked ||
+          target.state == RelayDeliveryState.permanentFailure) {
+        _authPolicies.remove(target.key);
+      }
+    }
+  }
+
   Future<void> _discardEventDelivery(String eventId) async {
+    final prefix = RelayDeliveryTarget.keyPrefixFor(eventId);
+    _authPolicies.removeWhere((key, _) => key.startsWith(prefix));
     await _cacheManager.removeRelayDeliveryTargets(eventId);
     await _cacheManager.removeEventDeliveryRecord(eventId);
   }
+
+  /// Ephemeral events may be tracked for their original publication, but
+  /// their delivery policy forbids retries. Old pending records must not keep
+  /// reconnecting relay or signer transports after that attempt has finished.
+  Future<bool> _discardNonRetryableEvent(Nip01Event event) async {
+    if (DeliveryPolicy.forEvent(event).kind != DeliveryPolicyKind.doNotRetry) {
+      return false;
+    }
+    if (!_sender.isEventInFlight(event.id)) {
+      await _discardEventDelivery(event.id);
+    }
+    return true;
+  }
+
+  /// A target waiting for an identity the app has to name again. Nothing about
+  /// it changes on its own, so it must not make its relay due: it would
+  /// reconnect and rewrite the same state on every retry interval, forever.
+  /// A normal auth-required refusal carries a [RelayDeliveryTarget.nextRetryAt]
+  /// and stays retryable.
+  bool _isParkedForIdentity(RelayDeliveryTarget target) =>
+      target.state == RelayDeliveryState.authRequired &&
+      target.nextRetryAt == null;
 
   Future<Set<String>> _relayUrlsWithDuePendingTargets() async {
     final now = Nip01Event.secondsSinceEpoch();
@@ -531,8 +700,35 @@ class PendingBroadcastDelivery {
     );
 
     final relayUrls = <String>{};
+    final nonRetryableEventIds = <String>{};
+    final checkedEventIds = <String>{};
     for (final target in targets) {
+      if (_sender.isEventInFlight(target.eventId)) {
+        continue;
+      }
+      // One event can have many relay targets. Resolve its policy once per
+      // pass, before selecting any transport to reconnect.
+      if (checkedEventIds.add(target.eventId)) {
+        final record = await _cacheManager.loadEventDeliveryRecord(
+          target.eventId,
+        );
+        if (record != null) {
+          final event = await _loadRecoverableEvent(
+            target.eventId,
+            record: record,
+          );
+          if (event != null && await _discardNonRetryableEvent(event)) {
+            nonRetryableEventIds.add(target.eventId);
+          }
+        }
+      }
+      if (nonRetryableEventIds.contains(target.eventId)) {
+        continue;
+      }
       if (target.state == RelayDeliveryState.permanentFailure) {
+        continue;
+      }
+      if (_isParkedForIdentity(target)) {
         continue;
       }
       if (target.nextRetryAt != null && target.nextRetryAt! > now) {
@@ -576,6 +772,10 @@ class PendingBroadcastDelivery {
       final event = await _loadRecoverableEvent(record.eventId, record: record);
       if (event == null) {
         await _discardEventDelivery(record.eventId);
+        continue;
+      }
+
+      if (await _discardNonRetryableEvent(event)) {
         continue;
       }
 
@@ -957,6 +1157,7 @@ class PendingBroadcastDelivery {
             : null,
       ),
     );
+    _dropSettledAuthPolicies(targets);
     await _purgeEphemeralIfResolved(
       record.eventId,
       resolvedStatus,
@@ -1106,4 +1307,24 @@ class PendingBroadcastDelivery {
 
     return EventDeliveryStatus.inProgress;
   }
+}
+
+/// Outcome of rebuilding a persisted auth policy.
+///
+/// A null [policy] is the historical default, "authenticate as whoever the
+/// relay manager picks". [unavailable] is different: the caller named an
+/// identity and nobody here can sign for it, so nothing may be sent.
+class _AuthResolution {
+  final AuthPolicy? policy;
+
+  /// false only for [unavailable]; a const `never` policy would otherwise be
+  /// canonically identical to it
+  final bool available;
+
+  const _AuthResolution(this.policy) : available = true;
+
+  const _AuthResolution._unavailable() : policy = null, available = false;
+
+  /// the named identity is gone, so this delivery has to wait for it
+  static const _AuthResolution unavailable = _AuthResolution._unavailable();
 }

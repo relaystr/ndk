@@ -26,29 +26,41 @@ export 'domain_layer/entities/nip_51_list.dart';
 export 'domain_layer/entities/contact_list.dart';
 export 'domain_layer/entities/read_write.dart';
 export 'domain_layer/entities/relay.dart';
+export 'domain_layer/entities/auth_policy.dart';
+export 'domain_layer/entities/relay_connection_key.dart';
+export 'domain_layer/entities/relay_request_outcome.dart';
 export 'domain_layer/entities/relay_set.dart';
 export 'domain_layer/entities/metadata.dart';
 export 'domain_layer/entities/event_filter.dart';
+export 'domain_layer/entities/software.dart';
 
 export 'domain_layer/usecases/nwc/responses/get_balance_response.dart';
 export 'domain_layer/usecases/nwc/responses/get_budget_response.dart';
 export 'domain_layer/usecases/nwc/responses/get_info_response.dart';
 export 'domain_layer/usecases/nwc/responses/make_invoice_response.dart';
 export 'domain_layer/usecases/nwc/responses/pay_invoice_response.dart';
+export 'domain_layer/usecases/nwc/responses/pay_response.dart';
+export 'domain_layer/usecases/nwc/responses/receive_response.dart';
+export 'domain_layer/entities/wallet/bip321.dart';
 export 'domain_layer/usecases/nwc/responses/list_transactions_response.dart';
 export 'domain_layer/usecases/nwc/responses/lookup_invoice_response.dart';
 export 'domain_layer/usecases/nwc/nwc_connection.dart';
 export 'domain_layer/usecases/nwc/nostr_wallet_connect_uri.dart';
 export 'domain_layer/usecases/nwc/consts/nwc_method.dart';
+export 'domain_layer/usecases/nwc/consts/nwc_extension.dart';
 export 'domain_layer/usecases/nwc/consts/budget_renewal_period.dart';
 export 'domain_layer/entities/blossom_blobs.dart';
 export 'domain_layer/entities/blossom_strategies.dart';
+export 'domain_layer/entities/blossom_authorization.dart';
 export 'domain_layer/entities/blob_upload_progress.dart';
 export 'domain_layer/entities/file_hash_progress.dart';
 export 'domain_layer/entities/cache_eviction.dart';
 export 'domain_layer/entities/event_cache_records.dart';
 export 'domain_layer/entities/event_delivery_inspection.dart';
+export 'domain_layer/entities/hidden_event.dart';
 export 'domain_layer/entities/nip_17_conversation.dart';
+export 'domain_layer/entities/nip_17_message.dart';
+export 'domain_layer/entities/nip_17_file_message.dart';
 export '';
 
 export 'domain_layer/entities/account.dart';
@@ -88,6 +100,7 @@ export 'domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 export 'domain_layer/usecases/lists/lists.dart';
 export 'domain_layer/usecases/relay_sets/relay_sets.dart';
 export 'domain_layer/usecases/broadcast/broadcast.dart';
+export 'domain_layer/usecases/broadcast/broadcast_exceptions.dart';
 export 'domain_layer/usecases/nwc/nwc.dart';
 export 'domain_layer/usecases/zaps/zaps.dart';
 export 'domain_layer/usecases/zaps/zap_request.dart';
@@ -95,14 +108,18 @@ export 'domain_layer/usecases/zaps/zap_receipt.dart';
 export 'domain_layer/usecases/zaps/invoice_response.dart';
 export 'domain_layer/usecases/files/files.dart';
 export 'domain_layer/usecases/files/blossom.dart';
+export 'domain_layer/usecases/files/blossom_exceptions.dart';
 export 'domain_layer/usecases/accounts/accounts.dart';
 export 'domain_layer/usecases/files/blossom_user_server_list.dart';
 export 'domain_layer/usecases/search/search.dart';
+export 'domain_layer/usecases/software/software.dart';
 export 'domain_layer/usecases/gift_wrap/gift_wrap.dart';
 export 'domain_layer/usecases/decrypted_event_payloads/decrypted_event_payloads.dart';
 export 'domain_layer/usecases/cache_eviction/cache_eviction_scheduler.dart';
 export 'domain_layer/usecases/dms/dms.dart';
 export 'domain_layer/usecases/cashu/cashu.dart';
+export 'domain_layer/usecases/cashu/cashu_mint_recommendations.dart';
+export 'domain_layer/entities/cashu/cashu_mint_recommendation.dart';
 export 'domain_layer/usecases/cashu/cashu_seed.dart';
 export 'domain_layer/usecases/cashu/cashu_export_import.dart';
 export 'domain_layer/entities/cashu/cashu_blinded_message.dart';
@@ -111,6 +128,7 @@ export 'domain_layer/entities/cashu/cashu_restore_result.dart';
 export 'domain_layer/usecases/wallets/wallets.dart';
 export 'domain_layer/usecases/bunkers/bunkers.dart';
 export 'domain_layer/usecases/bunkers/models/bunker_connection.dart';
+export 'domain_layer/entities/nip46_client_metadata.dart';
 export 'domain_layer/usecases/bunkers/models/nostr_connect.dart';
 export 'domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 export 'domain_layer/entities/filter_fetched_ranges.dart';
@@ -121,7 +139,9 @@ export 'domain_layer/usecases/nip77/nip77.dart'
         Nip77,
         Nip77Response,
         Nip77NotSupportedException,
-        Nip77TimeoutException;
+        Nip77TimeoutException,
+        Nip77AuthUnavailableException,
+        Nip77AuthRequiredException;
 export 'domain_layer/entities/nip77_state.dart' show Nip77Result;
 export 'domain_layer/usecases/ta/trusted_assertions.dart';
 export 'domain_layer/entities/nip_85.dart';

@@ -8,6 +8,12 @@ abstract class CliCommand {
   String get description;
   String get usage;
 
+  /// Whether persisted accounts should be restored before this command runs.
+  ///
+  /// Commands that do not use NDK accounts should opt out so a persisted
+  /// remote signer cannot introduce unrelated network work at startup.
+  bool get restoreAccountsOnStartup => true;
+
   Future<int> run(
     List<String> args,
     Ndk ndk,

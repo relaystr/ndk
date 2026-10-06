@@ -6,6 +6,7 @@ import 'package:ndk/ndk.dart';
 
 import 'cli_accounts_store.dart';
 import 'cli_command.dart';
+import 'native_library_errors.dart';
 
 class NdkCliApp {
   final String appName;
@@ -56,7 +57,8 @@ class NdkCliApp {
     final ndk = _createNdk(walletsRepo, cache, globalOptions.logLevel);
     try {
       final accountsStore = await CliAccountsStore.load();
-      if (accountsStore.records.isNotEmpty) {
+      if (command.restoreAccountsOnStartup &&
+          accountsStore.records.isNotEmpty) {
         await restoreAccountsIntoNdk(ndk: ndk, store: accountsStore);
       }
       return await command.run(
@@ -74,6 +76,8 @@ class NdkCliApp {
       } catch (e) {
         // ignore
       }
+      await cache.close();
+      await walletsRepo.close();
     }
   }
 
@@ -110,7 +114,7 @@ class NdkCliApp {
     return null;
   }
 
-  Future<WalletsRepo> _createWalletsRepo() {
+  Future<SembastWalletsRepo> _createWalletsRepo() {
     return SembastWalletsRepo.create(filename: 'wallets_db.db');
   }
 
@@ -136,6 +140,7 @@ class NdkCliApp {
         eventVerifier: _CliEventVerifier(),
         bootstrapRelays: const [],
         logLevel: logLevel,
+        pendingDeliveryRetriesEnabled: false,
       ),
     );
   }
@@ -238,19 +243,12 @@ class _CliEventVerifier implements EventVerifier {
       _enableFallback();
       return _fallbackVerifier.verify(event);
     } on ArgumentError catch (error) {
-      if (!_isNativeLibraryLoadError(error)) {
+      if (!isNativeLibraryLoadError(error)) {
         rethrow;
       }
       _enableFallback();
       return _fallbackVerifier.verify(event);
     }
-  }
-
-  bool _isNativeLibraryLoadError(ArgumentError error) {
-    final message = error.toString().toLowerCase();
-    return message.contains('dynamic library') ||
-        message.contains('verify_nostr_event') ||
-        message.contains('failed to load');
   }
 
   void _enableFallback() {

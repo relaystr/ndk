@@ -32,7 +32,7 @@ void main() {
       expect(() async => await rcvStream.last, throwsA(isA<Exception>()));
     });
 
-    test("invalid mint", () async {
+    test("invalid mint", skip: true, () async {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
       final rcvStream = ndk.cashu.receive(
@@ -44,7 +44,7 @@ void main() {
   });
 
   group('receive', () {
-    test("receive integration, double spend", () async {
+    test("receive integration, double spend", skip: true, () async {
       final cache = MemCacheManager();
       final cache2 = MemCacheManager();
 

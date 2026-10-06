@@ -27,6 +27,7 @@ import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/search/search.dart';
+import '../domain_layer/usecases/software/software.dart';
 import '../domain_layer/usecases/ta/trusted_assertions.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 import '../domain_layer/usecases/wallets/wallets.dart';
@@ -37,23 +38,24 @@ import 'ndk_config.dart';
 /// Main entry point for the NDK (Nostr Development Kit) library.
 ///
 /// This file contains the primary class [Ndk] which provides access to various
-/// Nostr-related functionalities/usecases and manages the global state of the application.
+/// Nostr-related functionalities/usecases and manages the state of this NDK instance.
 class Ndk {
   /// Configuration for the NDK instance
   final NdkConfig config;
 
-  /// Global state shared across the application
-  static final GlobalState _globalState = GlobalState();
+  /// Request, broadcast, and relay state owned by this NDK instance.
+  final GlobalState _globalState;
 
   /// Internal initialization object for setting up repositories and usecases
-  final Initialization _initialization;
+  late final Initialization _initialization;
 
   /// Creates a new instance of [Ndk] with the given [config]
-  Ndk(this.config)
-    : _initialization = Initialization(
-        ndkConfig: config,
-        globalState: _globalState,
-      );
+  Ndk(this.config) : _globalState = GlobalState() {
+    _initialization = Initialization(
+      ndkConfig: config,
+      globalState: _globalState,
+    );
+  }
 
   /// Creates a new instance of [Ndk] with default configuration
   Ndk.defaultConfig()
@@ -166,6 +168,15 @@ class Ndk {
   @experimental // needs more docs & tests
   Nwc get nwc => _initialization.nwc;
 
+  /// Suspends wallet notifications and balance polling, and closes idle relay
+  /// connections when the application enters background. Active requests keep
+  /// their connections.
+  Future<void> setBackgrounded(bool backgrounded) async {
+    wallets.setBackgrounded(backgrounded);
+    await nwc.setBackgrounded(backgrounded);
+    if (backgrounded) await relays.closeIdleConnections();
+  }
+
   /// Zaps
   @experimental // needs more docs & tests
   Zaps get zaps => _initialization.zaps;
@@ -173,6 +184,9 @@ class Ndk {
   /// Search
   @experimental
   Search get search => _initialization.search;
+
+  /// NIP-82 software application, release, and asset discovery.
+  Software get software => _initialization.software;
 
   /// Cashu Wallet
   @experimental // in development
@@ -207,6 +221,8 @@ class Ndk {
 
   /// Close all transports on relay manager
   Future<void> destroy() async {
+    _initialization.requests.clearVerifiedEventCache();
+
     final allFutures = [
       _initialization.dispose(),
       Future(() => _initialization.closeAllNip77Negotiations()),
@@ -219,5 +235,6 @@ class Ndk {
     ];
 
     await Future.wait(allFutures);
+    _initialization.requests.clearVerifiedEventCache();
   }
 }

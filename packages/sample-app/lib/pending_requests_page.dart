@@ -365,9 +365,10 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
           const SizedBox(height: 8),
           Text(
             l10n.pendingDescription,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: Colors.grey),
           ),
           const SizedBox(height: 16),
 
@@ -576,9 +577,8 @@ class _PendingRequestCard extends StatelessWidget {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: _getColorForMethod(
-                    method,
-                  ).withValues(alpha: 0.2),
+                  backgroundColor:
+                      _getColorForMethod(method).withValues(alpha: 0.2),
                   child: Icon(
                     _getIconForMethod(method),
                     color: _getColorForMethod(method),

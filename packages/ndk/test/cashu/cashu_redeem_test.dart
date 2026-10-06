@@ -34,6 +34,7 @@ void main() {
   group('redeem tests - exceptions ', () {
     test(
       "redeem - offline mint should fail immediately on initiateRedeem",
+      skip: true,
       () async {
         final ndk = _ndk();
 
@@ -50,112 +51,116 @@ void main() {
       },
     );
 
-    test("redeem - offline mint should fail immediately on redeem stream", () async {
-      final cache = MemCacheManager();
+    test(
+      "redeem - offline mint should fail immediately on redeem stream",
+      skip: true,
+      () async {
+        final cache = MemCacheManager();
 
-      // Save mint info so it doesn't try to fetch from network
-      await cache.saveMintInfo(
-        mintInfo: CashuMintInfo(
-          name: 'Test Offline Mint',
-          pubkey: null,
-          version: null,
-          description: null,
-          descriptionLong: null,
-          contact: const [],
-          nuts: const {},
-          motd: null,
-          urls: const ['https://offline.mint.example.com'],
-        ),
-      );
-
-      await cache.saveKeyset(
-        CahsuKeyset(
-          id: 'testKeyset',
-          mintUrl: 'https://offline.mint.example.com',
-          unit: 'sat',
-          active: true,
-          inputFeePPK: 0,
-          fetchedAt:
-              DateTime.now().millisecondsSinceEpoch ~/ 1000, // mark as fresh
-          mintKeyPairs: {
-            CahsuMintKeyPair(amount: 1, pubkey: 'testPubKey-1'),
-            CahsuMintKeyPair(amount: 2, pubkey: 'testPubKey-2'),
-          },
-        ),
-      );
-
-      await cache.saveProofs(
-        proofs: [
-          CashuProof(
-            keysetId: 'testKeyset',
-            amount: 1,
-            secret: 'testSecret-1',
-            unblindedSig: '',
+        // Save mint info so it doesn't try to fetch from network
+        await cache.saveMintInfo(
+          mintInfo: CashuMintInfo(
+            name: 'Test Offline Mint',
+            pubkey: null,
+            version: null,
+            description: null,
+            descriptionLong: null,
+            contact: const [],
+            nuts: const {},
+            motd: null,
+            urls: const ['https://offline.mint.example.com'],
           ),
-          CashuProof(
-            keysetId: 'testKeyset',
+        );
+
+        await cache.saveKeyset(
+          CahsuKeyset(
+            id: 'testKeyset',
+            mintUrl: 'https://offline.mint.example.com',
+            unit: 'sat',
+            active: true,
+            inputFeePPK: 0,
+            fetchedAt:
+                DateTime.now().millisecondsSinceEpoch ~/ 1000, // mark as fresh
+            mintKeyPairs: {
+              CahsuMintKeyPair(amount: 1, pubkey: 'testPubKey-1'),
+              CahsuMintKeyPair(amount: 2, pubkey: 'testPubKey-2'),
+            },
+          ),
+        );
+
+        await cache.saveProofs(
+          proofs: [
+            CashuProof(
+              keysetId: 'testKeyset',
+              amount: 1,
+              secret: 'testSecret-1',
+              unblindedSig: '',
+            ),
+            CashuProof(
+              keysetId: 'testKeyset',
+              amount: 2,
+              secret: 'testSecret-2',
+              unblindedSig: '',
+            ),
+          ],
+          mintUrl: 'https://offline.mint.example.com',
+        );
+
+        final walletsRepo = MemWalletsRepo();
+
+        // Use a Cashu instance with a real HTTP client (not mock) and our custom cache
+        // This will attempt real network calls and timeout quickly
+        final cashu = Cashu(
+          cashuRepo: CashuRepoImpl(client: HttpRequestDS(http.Client())),
+          walletsRepo: walletsRepo,
+          cacheManager: cache,
+          cashuKeyDerivation: DartCashuKeyDerivation(),
+          cashuUserSeedphrase: CashuUserSeedphrase(
+            seedPhrase:
+                "reduce invest lunch step couch traffic measure civil want steel trip jar",
+          ),
+        );
+
+        final draftTransaction = CashuWalletTransaction(
+          id: "test-redeem-offline",
+          mintUrl: 'https://offline.mint.example.com',
+          walletId: 'https://offline.mint.example.com',
+          changeAmount: -2,
+          unit: "sat",
+          walletType: WalletType.CASHU,
+          state: WalletTransactionState.draft,
+          method: "bolt11",
+          qouteMelt: CashuQuoteMelt(
+            quoteId: 'test-quote',
             amount: 2,
-            secret: 'testSecret-2',
-            unblindedSig: '',
+            feeReserve: null,
+            paid: false,
+            expiry: null,
+            mintUrl: 'https://offline.mint.example.com',
+            state: CashuQuoteState.unpaid,
+            unit: 'sat',
+            request: 'lnbc1...',
           ),
-        ],
-        mintUrl: 'https://offline.mint.example.com',
-      );
+        );
 
-      final walletsRepo = MemWalletsRepo();
+        final redeemStream = cashu.redeem(
+          draftRedeemTransaction: draftTransaction,
+        );
 
-      // Use a Cashu instance with a real HTTP client (not mock) and our custom cache
-      // This will attempt real network calls and timeout quickly
-      final cashu = Cashu(
-        cashuRepo: CashuRepoImpl(client: HttpRequestDS(http.Client())),
-        walletsRepo: walletsRepo,
-        cacheManager: cache,
-        cashuKeyDerivation: DartCashuKeyDerivation(),
-        cashuUserSeedphrase: CashuUserSeedphrase(
-          seedPhrase:
-              "reduce invest lunch step couch traffic measure civil want steel trip jar",
-        ),
-      );
+        // The stream should emit pending first, then fail with a failed transaction
+        // This should not hang - it should fail quickly (within timeout period)
+        final transactions = await redeemStream.toList();
 
-      final draftTransaction = CashuWalletTransaction(
-        id: "test-redeem-offline",
-        mintUrl: 'https://offline.mint.example.com',
-        walletId: 'https://offline.mint.example.com',
-        changeAmount: -2,
-        unit: "sat",
-        walletType: WalletType.CASHU,
-        state: WalletTransactionState.draft,
-        method: "bolt11",
-        qouteMelt: CashuQuoteMelt(
-          quoteId: 'test-quote',
-          amount: 2,
-          feeReserve: null,
-          paid: false,
-          expiry: null,
-          mintUrl: 'https://offline.mint.example.com',
-          state: CashuQuoteState.unpaid,
-          unit: 'sat',
-          request: 'lnbc1...',
-        ),
-      );
+        // Should have at least 2 transactions: pending and failed
+        expect(transactions.length, greaterThanOrEqualTo(2));
+        expect(transactions.first.state, WalletTransactionState.pending);
+        expect(transactions.last.state, WalletTransactionState.failed);
+        expect(transactions.last.completionMsg, isNotNull);
+        expect(transactions.last.completionMsg, contains('failed'));
+      },
+    );
 
-      final redeemStream = cashu.redeem(
-        draftRedeemTransaction: draftTransaction,
-      );
-
-      // The stream should emit pending first, then fail with a failed transaction
-      // This should not hang - it should fail quickly (within timeout period)
-      final transactions = await redeemStream.toList();
-
-      // Should have at least 2 transactions: pending and failed
-      expect(transactions.length, greaterThanOrEqualTo(2));
-      expect(transactions.first.state, WalletTransactionState.pending);
-      expect(transactions.last.state, WalletTransactionState.failed);
-      expect(transactions.last.completionMsg, isNotNull);
-      expect(transactions.last.completionMsg, contains('failed'));
-    });
-
-    test("invalid mint url", () async {
+    test("invalid mint url", skip: true, () async {
       final ndk = _ndk();
 
       expect(

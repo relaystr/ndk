@@ -5,10 +5,10 @@ homepage: https://github.com/relaystr/ndk
 publish_to: 'none'
 
 environment:
-  sdk: ">=3.6.0 <4.0.0"
+  sdk: ">=3.9.0 <4.0.0"
 
 resolution: workspace
 
 dependencies:
-  ndk: ^0.8.4-dev.11
-  test: ^1.30.0
+  ndk: ^0.10.1
+  test: any

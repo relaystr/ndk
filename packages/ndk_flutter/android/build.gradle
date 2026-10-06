@@ -57,6 +57,7 @@ android {
         testImplementation 'org.mockito:mockito-core:5.23.0'
         implementation 'com.google.code.gson:gson:2.13.2'
         implementation 'fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.23.0'
+        implementation 'androidx.core:core:1.17.0'
     }
 
     testOptions {

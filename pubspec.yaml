@@ -5,11 +5,10 @@ description: Workspace configuration for the NDK melos monorepo.
 environment:
   sdk: '>=3.6.0 <4.0.0'
 dev_dependencies:
-  melos: ^7.5.0
+  melos: ^7.8.1
 
 
 workspace:
-  - packages/bip32_keys
   - packages/ndk
   - packages/ndk_cache_manager_test_suite
   - packages/objectbox
@@ -18,6 +17,13 @@ workspace:
   - packages/ndk_flutter
 
 melos:
+  command:
+    version:
+      hooks:
+        preCommit: |
+          melos exec --fail-fast --scope="ndk" -- "dart run tool/update_version.dart"
+          git add packages/ndk/lib/src/version.dart
+
   scripts:
     analyze:
       exec: flutter analyze --fatal-infos --fatal-warnings .
@@ -65,10 +71,3 @@ melos:
       select-package:
         flutter: true
         dir-exists: test
-
-    command:
-      version:
-        hooks:
-          preCommit: |
-            melos exec --fail-fast --scope="ndk" -- "dart run build_runner build --delete-conflicting-outputs"
-            git add packages/ndk/lib/src/version.dart

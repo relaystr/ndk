@@ -4,6 +4,12 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
 
+/// Builds the card used to add a wallet.
+///
+/// [onTap] is null when no add-wallet action is available.
+typedef AddWalletCardBuilder =
+    Widget Function(BuildContext context, VoidCallback? onTap);
+
 /// Reorderable list of wallet cards backed by `ndk.wallets.walletsStream`.
 class NWalletCardList extends StatefulWidget {
   final NdkFlutter ndkFlutter;
@@ -29,8 +35,14 @@ class NWalletCardList extends StatefulWidget {
   /// Custom icon configuration for LNURL wallets
   final WalletIconConfig? lnurlIcon;
 
+  /// Custom icon configuration for BOLT12 wallets
+  final WalletIconConfig? bolt12Icon;
+
   /// Whether to show the add-wallet template card.
   final bool showAddWalletCard;
+
+  /// Optional builder replacing the default add-wallet template card.
+  final AddWalletCardBuilder? addWalletCardBuilder;
 
   const NWalletCardList({
     super.key,
@@ -44,7 +56,9 @@ class NWalletCardList extends StatefulWidget {
     this.cashuIcon,
     this.nwcIcon,
     this.lnurlIcon,
+    this.bolt12Icon,
     this.showAddWalletCard = true,
+    this.addWalletCardBuilder,
   });
 
   @override
@@ -119,6 +133,7 @@ class _NWalletCardListState extends State<NWalletCardList> {
         name: wallet.name,
         supportedUnits: wallet.supportedUnits,
         nwcUrl: wallet.nwcUrl,
+        providerId: wallet.providerId,
         metadata: metadata,
       );
     }
@@ -132,6 +147,25 @@ class _NWalletCardListState extends State<NWalletCardList> {
         minSendable: wallet.minSendable,
         maxSendable: wallet.maxSendable,
         metadataFetchedAt: wallet.metadataFetchedAt,
+        metadata: metadata,
+      );
+    }
+    if (wallet is Bolt12Wallet) {
+      return Bolt12Wallet(
+        id: wallet.id,
+        name: wallet.name,
+        supportedUnits: wallet.supportedUnits,
+        offer: wallet.offer,
+        source: wallet.source,
+        bip353Address: wallet.bip353Address,
+        description: wallet.description,
+        nodeId: wallet.nodeId,
+        amount: wallet.amount,
+        issuer: wallet.issuer,
+        currency: wallet.currency,
+        expiresAt: wallet.expiresAt,
+        quantityMax: wallet.quantityMax,
+        hasBlindedPaths: wallet.hasBlindedPaths,
         metadata: metadata,
       );
     }
@@ -231,9 +265,14 @@ class _NWalletCardListState extends State<NWalletCardList> {
               _handleReorder(oldIndex, newIndex, orderedWallets),
           itemBuilder: (context, index) {
             if (widget.showAddWalletCard && index == orderedWallets.length) {
-              return _AddWalletCard(
+              return KeyedSubtree(
                 key: const ValueKey('add_wallet_card'),
-                onTap: widget.onAddWallet,
+                child:
+                    widget.addWalletCardBuilder?.call(
+                      context,
+                      widget.onAddWallet,
+                    ) ??
+                    _AddWalletCard(onTap: widget.onAddWallet),
               );
             }
 
@@ -253,6 +292,7 @@ class _NWalletCardListState extends State<NWalletCardList> {
                 cashuIcon: widget.cashuIcon,
                 nwcIcon: widget.nwcIcon,
                 lnurlIcon: widget.lnurlIcon,
+                bolt12Icon: widget.bolt12Icon,
               ),
             );
           },
@@ -265,16 +305,17 @@ class _NWalletCardListState extends State<NWalletCardList> {
 class _AddWalletCard extends StatelessWidget {
   final VoidCallback? onTap;
 
-  const _AddWalletCard({super.key, this.onTap});
+  const _AddWalletCard({this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final Color baseColor = Colors.grey[100]!;
-    final Color accentColor = Colors.grey[200]!;
-    final Color borderColor = Colors.grey[200]!;
-    final Color iconColor = Colors.grey[300]!;
-    final Color textColor = Colors.grey[400]!;
+    final colors = Theme.of(context).colorScheme;
+    final Color baseColor = colors.surfaceContainerLow;
+    final Color accentColor = colors.surfaceContainerHighest;
+    final Color borderColor = colors.outlineVariant;
+    final Color iconColor = colors.onSurfaceVariant.withValues(alpha: 0.4);
+    final Color textColor = colors.onSurfaceVariant.withValues(alpha: 0.65);
     return GestureDetector(
       onTap: onTap,
       child: Container(

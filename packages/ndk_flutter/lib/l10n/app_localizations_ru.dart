@@ -9,6 +9,56 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'В LNbits выберите кошелёк для подключения, откройте его, нажмите «Документация API» и скопируйте ключ администратора. Вставьте его ниже:';
+
+  @override
+  String get lnbitsAdminKey => 'Ключ администратора LNbits';
+
+  @override
+  String get lnbitsKeyType => 'Тип ключа LNbits';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'Ключ счетов/чтения LNbits';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Кошелёк только для получения: просмотр баланса и истории, создание счетов. Отправка платежей отключена.';
+
+  @override
+  String get lnbitsUrl => 'URL LNbits';
+
+  @override
+  String get lnbitsCredentialsRequired =>
+      'Введите ключ администратора и URL LNbits.';
+
+  @override
+  String get lnbitsWalletAdded => 'Кошелёк LNbits добавлен';
+
+  @override
+  String get walletDetailWalletId => 'ID кошелька';
+
+  @override
+  String get saveBackupToFile => 'Сохранить резервную копию в файл';
+
+  @override
+  String get backupSavedToFile => 'Резервная копия сохранена в файл';
+
+  @override
+  String get restoreFromFile => 'Восстановить из файла';
+
+  @override
+  String get backupFileReadFailed =>
+      'Не удалось прочитать выбранный файл резервной копии.';
+
+  @override
+  String get fetchingWalletConnectionInfo =>
+      'Получение данных подключения кошелька…';
+
+  @override
   String get createAccount => 'Создать аккаунт';
 
   @override
@@ -771,6 +821,29 @@ class AppLocalizationsRu extends AppLocalizations {
   String get payInvoiceTitle => 'Оплатить Счёт';
 
   @override
+  String get sendToWallet => 'Отправить на кошелёк';
+
+  @override
+  String get sendToWalletDescription =>
+      'Перевести на другой совместимый кошелёк';
+
+  @override
+  String get noCompatibleReceivingWallets =>
+      'Нет совместимых кошельков для получения';
+
+  @override
+  String get noCompatibleReceivingWalletsDescription =>
+      'Добавьте или подключите другой кошелёк, который может принять платёж, поддерживаемый этим кошельком.';
+
+  @override
+  String get destinationWallet => 'Кошелёк получателя';
+
+  @override
+  String walletTransferSubmitted(String walletName) {
+    return 'Платёж отправлен на $walletName';
+  }
+
+  @override
   String get invoice => 'Счёт';
 
   @override
@@ -967,6 +1040,90 @@ class AppLocalizationsRu extends AppLocalizations {
   String get addWalletTitle => 'Добавить Кошелёк';
 
   @override
+  String get addWalletDescription =>
+      'Отсканируйте поддерживаемый QR-код кошелька, вставьте данные или подключитесь через приложение кошелька.';
+
+  @override
+  String get scanWalletQrCode => 'Сканировать QR-код кошелька';
+
+  @override
+  String get connectWithWallet => 'Подключить кошелёк';
+
+  @override
+  String get chooseWalletApp => 'Выбрать приложение кошелька';
+
+  @override
+  String get oneClickConnect => 'Подключить в 1 клик';
+
+  @override
+  String get chooseWallet => 'Выбрать кошелёк';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => 'Ручное подключение NWC';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return 'Завершите подключение в $walletName';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return 'Подключение к $walletName…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '$walletName подключён';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return 'Не удалось подключить $walletName';
+  }
+
+  @override
+  String get retry => 'Повторить';
+
+  @override
+  String get walletUnreachable => 'Кошелёк недоступен';
+
+  @override
+  String get chooseAnotherWallet => 'Выбрать другой кошелёк';
+
+  @override
+  String get chooseWalletAppDescription =>
+      'Подтвердите NWC-подключение в установленном кошельке';
+
+  @override
+  String get walletInput => 'Адрес или подключение кошелька';
+
+  @override
+  String get walletInputHint =>
+      'NWC, адрес Lightning/BIP353, предложение BOLT12/BIP321 или HTTPS-адрес минта Cashu';
+
+  @override
+  String get unsupportedWalletInput =>
+      'Этот адрес или подключение кошелька не поддерживается.';
+
+  @override
+  String get detected => 'Обнаружено';
+
+  @override
+  String get lightningAddressInputType => 'Адрес Lightning или BIP353';
+
+  @override
+  String get manualWalletSetup => 'Настроить вручную';
+
+  @override
   String get chooseWalletType => 'Выберите тип кошелька';
 
   @override
@@ -985,6 +1142,32 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => 'Выбрать минт Cashu';
+
+  @override
+  String get cashuMintRatingsNotice =>
+      'Оценки сообщества взяты из подписанных отзывов Nostr. Высокая оценка не гарантирует безопасность минта.';
+
+  @override
+  String get cashuMintDiscoveryFailed =>
+      'Не удалось загрузить предложения минтов.';
+
+  @override
+  String get noCashuMintSuggestions =>
+      'Доступные предложения минтов не найдены.';
+
+  @override
+  String get noRatingsYet => 'Оценок пока нет';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · отзывов: $count';
+  }
+
+  @override
+  String get enterMintUrlManually => 'Ввести URL минта вручную';
 
   @override
   String get cashuWalletTypeSubtitle =>
@@ -1007,6 +1190,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'В Alby Go нажмите «Отправить», затем отсканируйте этот QR-код.';
 
   @override
   String get manualOption => 'Вручную';
@@ -1032,6 +1219,12 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get paste => 'Вставить';
+
+  @override
+  String get clearInput => 'Очистить поле';
+
+  @override
+  String get pasteOrEnter => 'Вставить или ввести';
 
   @override
   String get fromYourProfile => 'Из вашего профиля';
@@ -1094,44 +1287,562 @@ class AppLocalizationsRu extends AppLocalizations {
   String get budgetNever => 'Никогда';
 
   @override
-  String get backup => 'Backup';
+  String get backup => 'Резервная копия';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Восстановить';
 
   @override
-  String get cashuBackupTitle => 'Cashu Backup';
+  String get cashuBackupTitle => 'Резервная копия Cashu';
 
   @override
   String get cashuBackupWarning =>
-      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+      'Эта копия содержит ваши доказательства ecash, позволяющие их владельцу потратить средства. Не раскрывайте её и храните в безопасном месте. Резервная копия фразы восстановления создаётся отдельно.';
 
   @override
-  String get generatingBackup => 'Generating backup...';
+  String get generatingBackup => 'Создание резервной копии...';
 
   @override
-  String get copyBackup => 'Copy backup';
+  String get copyBackup => 'Копировать резервную копию';
 
   @override
-  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+  String get backupCopiedToClipboard =>
+      'Резервная копия скопирована в буфер обмена';
 
   @override
-  String get cashuRestoreTitle => 'Restore Cashu Backup';
+  String get cashuRestoreTitle => 'Восстановить резервную копию Cashu';
 
   @override
-  String get backupJson => 'Backup JSON';
+  String get backupJson => 'Резервная копия JSON';
 
   @override
-  String get backupJsonHint => 'Paste your backup JSON here';
+  String get backupJsonHint => 'Вставьте сюда резервную копию JSON';
 
   @override
-  String get pleaseEnterBackup => 'Please enter a backup';
+  String get pleaseEnterBackup => 'Введите резервную копию';
 
   @override
-  String get restoringBackup => 'Restoring backup...';
+  String get restoringBackup => 'Восстановление резервной копии...';
+
+  @override
+  String appUpdateVersionAvailable(String version) {
+    return 'Доступна версия $version';
+  }
+
+  @override
+  String get appUpdateLater => 'Позже';
+
+  @override
+  String get appUpdateView => 'Показать обновление';
+
+  @override
+  String get appUpdateChecking => 'Проверка обновлений…';
+
+  @override
+  String get appUpdateCheckFailed => 'Не удалось проверить обновления';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return 'Установлена: $version';
+  }
+
+  @override
+  String get appUpdatesTitle => 'Обновления приложения';
+
+  @override
+  String get appUpdateNone => 'Обновлений нет';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return 'Обновление $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size МБ';
+  }
+
+  @override
+  String get appUpdateAllowInstalls =>
+      'Разрешите установку из этого приложения, затем снова нажмите «Обновить».';
+
+  @override
+  String get appUpdateCompleteInstallation =>
+      'Завершите установку в системном установщике Android.';
+
+  @override
+  String get appUpdateFailed => 'Обновление не удалось';
+
+  @override
+  String get appUpdateCancel => 'Отмена';
+
+  @override
+  String get appUpdateAction => 'Обновить';
+
+  @override
+  String get appUpdateDownload => 'Скачать';
+
+  @override
+  String get appUpdateUpToDate => 'У вас последняя версия';
+
+  @override
+  String get appUpdateAheadOfPublished => 'Новее опубликованной версии';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return 'Установленная версия $installedVersion новее последней опубликованной версии $publishedVersion. Сведения появятся после публикации этой версии.';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage => 'Не удалось проверить обновления.';
+
+  @override
+  String appUpdateLatest(String version) {
+    return 'Версия $version — самая новая из доступных.';
+  }
+
+  @override
+  String get appUpdateClose => 'Закрыть';
+
+  @override
+  String get appUpdateCheckAgain => 'Проверить снова';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return 'Установлена версия $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return 'Установлена версия $installedVersion. Доступно обновление $availableVersion.';
+  }
+
+  @override
+  String get appUpdateChangelog => 'Журнал изменений';
+
+  @override
+  String get appUpdateReleaseHistory => 'История версий';
+
+  @override
+  String get appUpdateInstalledBadge => 'Установлена';
+
+  @override
+  String get appUpdateAvailableBadge => 'Доступно обновление';
+
+  @override
+  String get appUpdateLatestBadge => 'Последняя';
+
+  @override
+  String get appUpdateNoReleases => 'Пока не опубликовано ни одной версии.';
+
+  @override
+  String get appUpdateAcrossAllReleases => 'Для всех версий';
+
+  @override
+  String get appUpdateReleaseDetails => 'Сведения о выпуске';
+
+  @override
+  String get appUpdateWhatsNew => 'Что нового';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return 'Опубликовано $date';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return 'Канал: $channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return 'Архитектура: $architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return 'Сборка $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return 'Версия $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes => 'Примечания к выпуску не опубликованы.';
+
+  @override
+  String get appUpdatePublisher => 'Издатель';
+
+  @override
+  String get appUpdatePublisherSignatureVerified =>
+      'Подпись события Nostr проверена';
+
+  @override
+  String get appUpdateCertificateDeclared =>
+      'Издатель указал сертификат подписи Android';
+
+  @override
+  String appUpdateSource(String host) {
+    return 'Источник загрузки: $host';
+  }
+
+  @override
+  String get appUpdateCommunity => 'Сообщество';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return 'Запов: $count · $sats сат';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'сат от';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return 'Реакций: $count';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return 'Комментариев: $count';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed =>
+      'Не удалось загрузить активность сообщества.';
+
+  @override
+  String get appUpdateComments => 'Комментарии';
+
+  @override
+  String get appUpdateNoComments => 'Комментариев пока нет.';
+
+  @override
+  String get appUpdateCommentHint => 'Оставьте отзыв об этой версии';
+
+  @override
+  String get appUpdatePostComment => 'Опубликовать комментарий';
+
+  @override
+  String get appUpdateSignInToComment =>
+      'Войдите в аккаунт Nostr, чтобы комментировать.';
+
+  @override
+  String get appUpdateTechnicalDetails => 'Технические сведения';
+
+  @override
+  String get appUpdateViewStatus => 'Показать статус обновления';
 
   @override
   String restoreSuccess(int count) {
-    return 'Restored $count proofs from backup';
+    return 'Восстановлено доказательств из резервной копии: $count';
   }
+
+  @override
+  String get bolt12Wallet => 'Кошелёк BOLT12';
+
+  @override
+  String get bolt12WalletSubtitle => 'Многоразовое предложение Lightning';
+
+  @override
+  String get bolt12PrivateOfferSubtitle => 'Приватное многоразовое предложение';
+
+  @override
+  String get anyAmount => 'Любая сумма';
+
+  @override
+  String get blindedRoute => 'Скрытый маршрут';
+
+  @override
+  String fromAmountSats(String amount) {
+    return 'От $amount сат';
+  }
+
+  @override
+  String fromAmountMsats(String amount) {
+    return 'От $amount мсат';
+  }
+
+  @override
+  String fromCurrencyAmount(String amount, String currency) {
+    return 'От $amount $currency';
+  }
+
+  @override
+  String bolt12Expires(String date) {
+    return 'Истекает $date';
+  }
+
+  @override
+  String get bolt12WalletTypeTitle => 'Предложение BOLT12';
+
+  @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
+
+  @override
+  String get bolt12WalletTypeSubtitle =>
+      'Кошелёк только для получения с многоразовым предложением';
+
+  @override
+  String get addBolt12WalletTitle => 'Добавить кошелёк BOLT12';
+
+  @override
+  String get enterBolt12Input =>
+      'Введите или отсканируйте предложение lno, URI bitcoin:?lno=… или адрес BIP353.';
+
+  @override
+  String get bolt12Input => 'Цель платежа BOLT12';
+
+  @override
+  String get bolt12InputHint =>
+      'lno1…, bitcoin:?lno=… или пользователь@домен.com';
+
+  @override
+  String get walletNameOptional => 'Название кошелька (необязательно)';
+
+  @override
+  String get scanBolt12QrCodeTitle => 'Сканировать QR-код BOLT12';
+
+  @override
+  String get invalidBolt12QrCode =>
+      'QR-код не содержит адресата платежа BOLT12, BIP321 или BIP353.';
+
+  @override
+  String get pleaseEnterBolt12Input =>
+      'Введите предложение BOLT12 или адрес BIP353.';
+
+  @override
+  String get bolt12WalletAdded => 'Кошелёк BOLT12 успешно добавлен!';
+
+  @override
+  String get bolt12OfferTitle => 'Получить через BOLT12';
+
+  @override
+  String get bolt12OfferInstructions =>
+      'Поделитесь этим многоразовым предложением, чтобы получить платёж Lightning.';
+
+  @override
+  String get confirm => 'Подтвердить';
+
+  @override
+  String get reviewWallet => 'Проверить кошелёк';
+
+  @override
+  String get confirmWalletTitle => 'Подтвердить кошелёк';
+
+  @override
+  String get confirmWalletDescription =>
+      'Проверьте эти данные перед добавлением кошелька.';
+
+  @override
+  String get walletDetailType => 'Тип кошелька';
+
+  @override
+  String get walletDetailAddress => 'Адрес';
+
+  @override
+  String get walletDetailDomain => 'Домен';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => 'Публичный ключ';
+
+  @override
+  String get walletDetailRelay => 'Ретранслятор';
+
+  @override
+  String get walletDetailRelays => 'Ретрансляторы';
+
+  @override
+  String get walletDetailSecret => 'Секрет подключения';
+
+  @override
+  String get walletSecretHidden => 'Присутствует и скрыт для безопасности';
+
+  @override
+  String get walletDetailDescription => 'Описание';
+
+  @override
+  String get walletDetailDetails => 'Сведения';
+
+  @override
+  String get walletDetailIssuer => 'Эмитент';
+
+  @override
+  String get walletDetailAmount => 'Сумма';
+
+  @override
+  String get walletDetailCurrency => 'Валюта';
+
+  @override
+  String get walletDetailExpiry => 'Истекает';
+
+  @override
+  String get walletDetailNodeId => 'ID узла';
+
+  @override
+  String get walletDetailOffer => 'Предложение BOLT12';
+
+  @override
+  String get walletDetailVersion => 'Версия';
+
+  @override
+  String get walletDetailUnits => 'Поддерживаемые единицы';
+
+  @override
+  String get walletDetailContact => 'Контакт';
+
+  @override
+  String get walletDetailTerms => 'Условия использования';
+
+  @override
+  String get walletDetailMessage => 'Сообщение';
+
+  @override
+  String get walletDetailCommunityRating => 'Оценка сообщества';
+
+  @override
+  String get walletDetailCommunityReviews => 'Недавние отзывы сообщества';
+
+  @override
+  String get refreshBalance => 'Обновить баланс';
+
+  @override
+  String get balanceRefreshed => 'Баланс обновлён';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Восстановление котировки минта';
+
+  @override
+  String get recoverQuote => 'Восстановить котировку';
+
+  @override
+  String get enterQuoteId =>
+      'Введите ID котировки минта для восстановления. Ключ блокировки восстанавливается из вашей seed-фразы.';
+
+  @override
+  String get quoteId => 'ID котировки';
+
+  @override
+  String get quoteIdHint => 'Вставьте сюда ID котировки';
+
+  @override
+  String get pleaseEnterQuoteId => 'Пожалуйста, введите ID котировки';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'Получение котировки с минта...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'Восстановление ключа блокировки из вашей seed-фразы...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint => 'Завершение чеканки...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Ключ блокировки восстановлен (счётчик деривации $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Котировка восстановлена, средства добавлены на ваш баланс';
+
+  @override
+  String get quoteRecoveryFailed => 'Не удалось восстановить котировку';
+
+  @override
+  String get restoreFundsFromMint => 'Восстановить средства с минта';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Восстановление средств с минта';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Сканирует минт на предмет доказательств, полученных из вашей seed-фразы, и восстанавливает их в этот кошелёк.';
+
+  @override
+  String get startRestore => 'Начать восстановление';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets => 'Получение keysets минта...';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'Сканирование минта в поисках ваших средств...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return 'Отсканировано keysets: $keysets · найдено proofs: $proofs';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Восстановление завершено';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Также восстанавливает ожидающие котировки минтов';
+
+  @override
+  String restoredFromMint(int count) {
+    return 'Восстановлено $count доказательств с минта';
+  }
+
+  @override
+  String get restoreFailed => 'Не удалось выполнить восстановление';
+
+  @override
+  String get restoreFromBackup => 'Восстановить из резервной копии';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Восстановление и резервная копия';
+
+  @override
+  String get cashuSeedPhraseOption => 'Задать seed-фразу';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Cashu seed-фраза';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Эта seed-фраза является общей для ВСЕХ кошельков Cashu. Это единственный способ восстановить средства после потери этого устройства. Её изменение заменяет seed, используемую для создания ключей каждого кошелька Cashu, поэтому средства, полученные под предыдущей seed, больше не будут находиться автоматически.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Введите фразу восстановления, которую хотите использовать (12, 15, 18, 21 или 24 слова). Меняйте seed только при восстановлении кошельков из уже сохранённой фразы.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Seed-фраза';
+
+  @override
+  String get cashuSeedPhraseHint => 'Вставьте сюда вашу seed-фразу';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Я понимаю, что это изменит seed для всех кошельков Cashu';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'Похоже, это не корректная seed-фраза. Проверьте, что все слова написаны правильно и в правильном порядке.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Seed-фраза обновлена. Теперь она применяется ко всем кошелькам Cashu. Создайте резервную копию новой фразы.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed => 'Не удалось обновить seed-фразу';
 }

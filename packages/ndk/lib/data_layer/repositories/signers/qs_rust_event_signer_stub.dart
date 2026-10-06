@@ -24,7 +24,7 @@ class QsKeypair {
 class QsRustEventSigner implements EventSigner {
   final int level;
 
-  QsRustEventSigner({required QsKeypair keypair, this.level = 2});
+  QsRustEventSigner({required QsKeypair keypair, this.level = 87});
 
   @override
   bool get requiresInteractiveSigning => false;
@@ -35,7 +35,7 @@ class QsRustEventSigner implements EventSigner {
   @override
   Iterable<String> get signerTransportRelayUrls => const <String>[];
 
-  static QsKeypair generateKeypair({int level = 2}) {
+  static QsKeypair generateKeypair({int level = 87}) {
     throw UnsupportedError(
       'QsRustEventSigner is not available on this platform. '
       'FFI is not supported on web.',

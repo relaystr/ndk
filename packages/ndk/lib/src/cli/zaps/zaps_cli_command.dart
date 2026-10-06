@@ -12,7 +12,7 @@ import '../cli_command.dart';
 /// - `invoice`  fetch a lightning/zap invoice (no payment)
 /// - `zap`      pay a zap from a stored NWC sending wallet
 /// - `receipts` list zap receipts for a recipient pubkey
-class ZapsCliCommand implements CliCommand {
+class ZapsCliCommand extends CliCommand {
   @override
   String get name => 'zaps';
 

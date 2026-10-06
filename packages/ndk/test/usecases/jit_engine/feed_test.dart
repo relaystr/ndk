@@ -5,7 +5,9 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
+
 import 'dart:developer' as developer;
+
 import '../../mocks/mock_event_verifier.dart';
 
 void main() async {
@@ -181,15 +183,11 @@ void main() async {
       );
     }, timeout: const Timeout.factor(10));
 
-    test(
-      'Love is Bitcoin (3k follows) feed best relays',
-      () async {
-        await calculateBestRelaysForNpubContactsFeed(
-          "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx",
-          relayMinCountPerPubKey: 2,
-        );
-      },
-      timeout: const Timeout.factor(10),
-    );
+    test('Love is Bitcoin (3k follows) feed best relays', () async {
+      await calculateBestRelaysForNpubContactsFeed(
+        "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx",
+        relayMinCountPerPubKey: 2,
+      );
+    }, timeout: const Timeout.factor(10));
   });
 }

@@ -186,6 +186,7 @@ class UserRelayLists {
   Future<List<String>?> getDmRelays(
     String pubKey, {
     bool forceRefresh = false,
+    Iterable<String>? discoveryRelays,
   }) async {
     if (!forceRefresh) {
       final cached = await _cacheManager.loadEvents(
@@ -204,6 +205,7 @@ class UserRelayLists {
           filters: [
             Filter(authors: [pubKey], kinds: [Nip51List.kDmRelays], limit: 1),
           ],
+          explicitRelays: discoveryRelays,
         )
         .future;
 

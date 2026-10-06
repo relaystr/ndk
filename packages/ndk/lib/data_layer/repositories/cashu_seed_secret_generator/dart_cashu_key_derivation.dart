@@ -1,16 +1,19 @@
 import 'dart:typed_data';
 import 'dart:convert';
+
 import 'package:crypto/crypto.dart';
 
 import 'package:convert/convert.dart';
-import 'package:ndk_bip32_keys/ndk_bip32_keys.dart';
+import 'package:bip32_keys/bip32_keys.dart';
 
 import '../../../domain_layer/repositories/cashu_key_derivation.dart';
+import '../../../domain_layer/usecases/cashu/cashu_keypair.dart';
 import '../../../domain_layer/usecases/cashu/cashu_seed.dart';
 
 enum DerivationType {
   secret(0),
-  blindingFactor(1);
+  blindingFactor(1),
+  quoteKey(2);
 
   final int value;
 
@@ -27,6 +30,13 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
   );
 
   DartCashuKeyDerivation();
+
+  // Caches the constant `m/129373'/20'/0'/0'` prefix of the quote-key path
+  // per seed so scanning many counters (e.g. quote-key recovery) doesn't
+  // re-derive the master key and shared parent - each of which needs several
+  // EC point computations - from scratch on every single counter.
+  Uint8List? _cachedQuoteKeySeed;
+  Bip32Keys? _cachedQuoteKeyParent;
 
   @override
   Future<CashuSeedDeriveSecretResult> deriveSecret({
@@ -58,6 +68,38 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
     throw Exception(
       'Unrecognized keyset ID version ${keysetId.substring(0, 2)}',
     );
+  }
+
+  @override
+  Future<CashuKeypair> deriveQuoteKey({
+    required Uint8List seedBytes,
+    required int counter,
+  }) async {
+    final handle = _deriveQuoteKeyWithSeed(seed: seedBytes, counter: counter);
+    return CashuKeypair.fromPrivateKeyHex(handle);
+  }
+
+  /// Deterministic derivation of a NUT-20 mint quote lock key.
+  ///
+  String _deriveQuoteKeyWithSeed({
+    required Uint8List seed,
+    required int counter,
+  }) {
+    // The `m/129373'/20'/0'/0'` prefix is the same for every counter derived
+    // from a given seed, so it is cached and only the final (unhardened)
+    // counter step is derived on each call.
+    Bip32Keys parent;
+    if (_cachedQuoteKeyParent != null && identical(seed, _cachedQuoteKeySeed)) {
+      parent = _cachedQuoteKeyParent!;
+    } else {
+      parent = Bip32Keys.fromSeed(seed).derivePath("m/129373'/20'/0'/0'");
+      _cachedQuoteKeySeed = seed;
+      _cachedQuoteKeyParent = parent;
+    }
+
+    final child = parent.derivePath("$counter");
+
+    return hex.encode(child.private!);
   }
 
   /// Modern derivation method with explicit seed parameter
@@ -113,6 +155,10 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
       case DerivationType.blindingFactor:
         messageBuilder.add([0x01]);
         break;
+      case DerivationType.quoteKey:
+        throw UnsupportedError(
+          'quoteKey is derived via deriveQuoteKey(), not deriveSecret()',
+        );
     }
 
     final message = messageBuilder.toBytes();

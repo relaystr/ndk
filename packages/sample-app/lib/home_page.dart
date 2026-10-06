@@ -50,10 +50,23 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          '${l10n.appBarTitle} · v$packageVersion',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                l10n.appBarTitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const Text(' · '),
+            NAppVersion(
+              controller: appUpdater,
+              fallbackVersion: packageVersion,
+              style: Theme.of(context).appBarTheme.titleTextStyle,
+            ),
+          ],
         ),
         actions: [
           NLocaleSwitcher(
@@ -66,9 +79,8 @@ class _HomePageState extends State<HomePage> {
               final profileIcon = loggedPubkey == null
                   ? CircleAvatar(
                       radius: 14,
-                      backgroundColor: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
+                      backgroundColor:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
                       child: Icon(
                         Icons.person_outline,
                         size: 16,
@@ -76,9 +88,8 @@ class _HomePageState extends State<HomePage> {
                       ),
                     )
                   : NPicture(ndkFlutter: ndkFlutter, circleAvatarRadius: 14);
-              final unreadDmCount = loggedPubkey == null
-                  ? 0
-                  : dmLiveState.unreadCount;
+              final unreadDmCount =
+                  loggedPubkey == null ? 0 : dmLiveState.unreadCount;
               return IconButton(
                 tooltip: l10n.profileTooltip,
                 onPressed: () {
@@ -131,7 +142,9 @@ class _HomePageState extends State<HomePage> {
                           child: Text(
                             unreadDmCount > 99 ? '99+' : '$unreadDmCount',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.labelSmall
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
                                 ?.copyWith(
                                   color: Theme.of(context).colorScheme.onError,
                                   fontWeight: FontWeight.w700,
@@ -300,9 +313,9 @@ class _UnreadBadge extends StatelessWidget {
       child: Text(
         count > 99 ? '99+' : '$count',
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: Theme.of(context).colorScheme.onError,
-          fontWeight: FontWeight.w700,
-        ),
+              color: Theme.of(context).colorScheme.onError,
+              fontWeight: FontWeight.w700,
+            ),
       ),
     );
   }
