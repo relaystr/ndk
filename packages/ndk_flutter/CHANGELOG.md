@@ -1,3 +1,7 @@
+## 0.10.2-dev.0+1
+
+ - **FIX**: clear toasts.
+
 ## 0.10.1
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
