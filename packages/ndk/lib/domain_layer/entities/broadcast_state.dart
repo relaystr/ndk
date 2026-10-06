@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 
 import 'nip_01_event.dart';
+import 'auth_handler.dart';
 import 'auth_policy.dart';
 
 /// hols information about a individual relay broadcast response \
@@ -39,7 +40,7 @@ class RelayBroadcastResponse {
 }
 
 /// hold state information for a broadcast
-class BroadcastState {
+class BroadcastState implements TimeoutPausable {
   /// value between 0 and 1, 1 =>  all relays have responded with "OK" the broadcast is considered done
   final double considerDonePercent;
 
@@ -101,6 +102,10 @@ class BroadcastState {
   final Completer<BroadcastState> _publishDoneCompleter = Completer();
 
   bool _timeoutStarted = false;
+  DateTime? _timeoutStartedAt;
+  Duration? _timeoutLeftAtStart;
+  Duration? _remainingTimeout;
+  int _timeoutPauses = 0;
 
   /// creates a new [BroadcastState] instance
   BroadcastState({
@@ -127,12 +132,43 @@ class BroadcastState {
   void startTimeout() {
     if (_timeoutStarted) return;
     _timeoutStarted = true;
-    _timeoutTimer = Timer(timeout, () {
+    _startTimeout(timeout);
+  }
+
+  void _startTimeout(Duration duration) {
+    _timeoutStartedAt = DateTime.now();
+    _timeoutLeftAtStart = duration;
+    _timeoutTimer = Timer(duration, () {
       if (!publishDone) {
         _stateUpdatesController.add(this);
         _dispose();
       }
     });
+  }
+
+  /// Pauses the timeout while an [AuthHandler] decides.
+  @override
+  void pauseTimeout() {
+    _timeoutPauses++;
+    final timer = _timeoutTimer;
+    if (_timeoutPauses > 1 || timer == null || !timer.isActive) return;
+
+    final elapsed = DateTime.now().difference(_timeoutStartedAt!);
+    final remaining = _timeoutLeftAtStart! - elapsed;
+    _remainingTimeout = remaining.isNegative ? Duration.zero : remaining;
+    timer.cancel();
+    _timeoutTimer = null;
+  }
+
+  /// Resumes a paused timeout with the time it had left.
+  @override
+  void resumeTimeout() {
+    if (_timeoutPauses == 0) return;
+    _timeoutPauses--;
+    final remaining = _remainingTimeout;
+    if (_timeoutPauses > 0 || remaining == null || _isDisposed) return;
+    _remainingTimeout = null;
+    _startTimeout(remaining);
   }
 
   void _checkBroadcastDone() {
@@ -149,6 +185,7 @@ class BroadcastState {
     }
     _isDisposed = true;
     _timeoutTimer?.cancel();
+    _remainingTimeout = null;
     _networkSubscription.cancel();
     if (!_publishDoneCompleter.isCompleted) {
       _publishDoneCompleter.complete(this);

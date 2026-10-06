@@ -150,6 +150,7 @@ class Initialization {
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           authCallbackTimeout: _ndkConfig.authCallbackTimeout,
+          authHandler: _ndkConfig.authHandler,
           relayInfoRepo: RelayInfoHttpRepoImpl(httpDS: _httpRequestDS),
         );
 
@@ -168,6 +169,7 @@ class Initialization {
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
           authCallbackTimeout: _ndkConfig.authCallbackTimeout,
+          authHandler: _ndkConfig.authHandler,
           relayInfoRepo: RelayInfoHttpRepoImpl(httpDS: _httpRequestDS),
         );
 
@@ -349,6 +351,7 @@ class Initialization {
       accounts: accounts,
       blossomUserServerList: blossomUserServerList,
       eventSignerFactory: _ndkConfig.eventSignerFactory,
+      authHandler: _ndkConfig.authHandler,
     );
 
     files = Files(blossom: blossom);
