@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791275412159,
+  "lastUpdate": 1791302532608,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1822,6 +1822,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1805866,
             "range": "1799744-1812222",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "43d8113226090ca8ff33a1bdba39be9dd534e993",
+          "message": "Merge pull request #862 from relaystr/feat/auth-handler\n\nfeat!: add AuthHandler to consent before an identity authenticates",
+          "timestamp": "2026-10-06T18:00:24+02:00",
+          "tree_id": "8e10830ca60781504db16f910a8eecb685f8af38",
+          "url": "https://github.com/relaystr/ndk/commit/43d8113226090ca8ff33a1bdba39be9dd534e993"
+        },
+        "date": 1791302530122,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 29745.4,
+            "range": "29223-33093",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 836824,
+            "range": "823060-873352",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
