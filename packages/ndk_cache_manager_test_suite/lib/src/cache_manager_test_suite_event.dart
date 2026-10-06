@@ -206,7 +206,7 @@ void _runEventTests(
     expect(loadedEvents.first.pTags.contains('target_pubkey_ptag'), isTrue);
   });
 
-  test('loadEvents with the #-prefixed tag keys of a Filter', () async {
+  test('loadEvents with the tag keys of a Filter', () async {
     final cacheManager = getCacheManager();
     await cacheManager.removeAllEvents();
 
@@ -233,6 +233,15 @@ void _runEventTests(
     ]);
 
     final filter = Filter(kinds: [1059], pTags: ['recipient_pubkey']);
+    // A Filter stores tag keys bare: the NIP-01 '#' prefix only exists on the
+    // wire, so a cache manager never sees it.
+    expect(
+      filter.tags,
+      equals({
+        'p': ['recipient_pubkey'],
+      }),
+    );
+
     final loadedEvents = await cacheManager.loadEvents(
       kinds: filter.kinds,
       tags: filter.tags,
