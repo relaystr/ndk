@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791158069635,
+  "lastUpdate": 1791275412159,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1784,6 +1784,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1600862,
             "range": "1595974-1601672",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "58687994+1-leo@users.noreply.github.com",
+            "name": "Leo",
+            "username": "1-leo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7f6257413686726c52b426af47b514af7c3c92e4",
+          "message": "Merge pull request #881 from relaystr/chore/package-upgrades\n\nchore: package upgrades",
+          "timestamp": "2026-10-06T10:28:01+02:00",
+          "tree_id": "be1e43abb4db336a0eff5430102aa22ccc949943",
+          "url": "https://github.com/relaystr/ndk/commit/7f6257413686726c52b426af47b514af7c3c92e4"
+        },
+        "date": 1791275409876,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 51777.2,
+            "range": "51530-54457",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1805866,
+            "range": "1799744-1812222",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
