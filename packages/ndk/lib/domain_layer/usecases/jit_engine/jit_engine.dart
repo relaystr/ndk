@@ -181,7 +181,7 @@ class JitEngine with Logger implements NetworkEngine {
           relayManager: relayManagerLight,
           cacheManager: cache,
           eventToPublish: workingNostrEvent,
-          auth: broadcastState.auth,
+          broadcastState: broadcastState,
         );
         broadcastState.closeIfNoRelays();
         return;
@@ -193,7 +193,7 @@ class JitEngine with Logger implements NetworkEngine {
         cacheManager: cache,
         relayManager: relayManagerLight,
         bootstrapRelays: bootstrapRelays,
-        auth: broadcastState.auth,
+        broadcastState: broadcastState,
       );
 
       // check if we need to publish to others inboxes
@@ -204,7 +204,7 @@ class JitEngine with Logger implements NetworkEngine {
           cacheManager: cache,
           relayManager: relayManagerLight,
           pubkeysOfInbox: workingNostrEvent.pTags,
-          auth: broadcastState.auth,
+          broadcastState: broadcastState,
         );
       }
       broadcastState.closeIfNoRelays();

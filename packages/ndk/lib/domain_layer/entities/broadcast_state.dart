@@ -52,6 +52,10 @@ class BroadcastState implements TimeoutPausable {
   /// which identity this broadcast may be attributed to on the relays (NIP-42)
   final AuthPolicy? auth;
 
+  /// relay urls this broadcast is currently re-sending to after an
+  /// auth-required refusal
+  final Set<String> retryingAuth = {};
+
   /// stream controller for state updates
   final BehaviorSubject<BroadcastState> _stateUpdatesController =
       BehaviorSubject<BroadcastState>();

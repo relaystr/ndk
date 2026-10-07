@@ -1,4 +1,5 @@
 import '../../../../shared/nips/nip01/client_msg.dart';
+import '../../../entities/broadcast_state.dart';
 import '../../../entities/nip_01_event.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../relay_manager.dart';
@@ -10,6 +11,7 @@ class RelayJitBroadcastAllStrategy {
     required Nip01Event eventToPublish,
     required List<RelayConnectivity> connectedRelays,
     required RelayManager relayManger,
+    required BroadcastState broadcastState,
   }) async {
     final ClientMsg myClientMsg = ClientMsg(
       ClientMsgType.kEvent,
@@ -20,6 +22,7 @@ class RelayJitBroadcastAllStrategy {
 
     for (final relay in connectedRelays) {
       relayManger.registerRelayBroadcast(
+        broadcastState: broadcastState,
         eventToPublish: eventToPublish,
         relayUrl: relay.url,
       );

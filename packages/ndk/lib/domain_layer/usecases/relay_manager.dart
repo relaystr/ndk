@@ -705,18 +705,10 @@ class RelayManager<T> {
   /// use this to register your broadcast against a relay, \
   /// this is needed so the response from a relay can be tracked back
   void registerRelayBroadcast({
+    required BroadcastState broadcastState,
     required String relayUrl,
     required Nip01Event eventToPublish,
   }) {
-    final broadcastState = globalState.inFlightBroadcasts[eventToPublish.id];
-    if (broadcastState == null) {
-      Logger.log.w(
-        () =>
-            "registerRelayBroadcast: no broadcast state for ${eventToPublish.id}",
-      );
-      return;
-    }
-
     // Store the event for potential retries on auth-required
     broadcastState.event ??= eventToPublish;
 
@@ -735,15 +727,11 @@ class RelayManager<T> {
   }
 
   /// use this to signal a failed broadcast
-  void failBroadcast(String nostrEventId, String relay, String msg) {
-    final broadcastState = globalState.inFlightBroadcasts[nostrEventId];
-    if (broadcastState == null) {
-      return;
-    }
+  void failBroadcast(BroadcastState broadcastState, String relay, String msg) {
     if (broadcastState.networkController.isClosed) {
       Logger.log.w(
         () =>
-            "Ignoring late failed broadcast for $nostrEventId on $relay because the broadcast controller is already closed",
+            "Ignoring late failed broadcast for ${broadcastState.event?.id} on $relay because the broadcast controller is already closed",
       );
       return;
     }
@@ -958,32 +946,8 @@ class RelayManager<T> {
       //nip 20 used to notify clients if an EVENT was successful
       if (!success) {
         Logger.log.e(() => "NOT OK from ${relayConnectivity.url}: $eventJson");
-
-        // Check if this is auth-required for a broadcast - don't mark as done, will retry
-        if (msg != null && msg.startsWith("auth-required")) {
-          _handleBroadcastAuthRequired(eventId, relayConnectivity);
-          return Future.value(); // Don't add to network controller yet, wait for retry result
-        }
       }
-      if (globalState.inFlightBroadcasts[eventId] != null &&
-          !globalState
-              .inFlightBroadcasts[eventId]!
-              .networkController
-              .isClosed) {
-        globalState.inFlightBroadcasts[eventId]?.networkController.add(
-          RelayBroadcastResponse(
-            relayUrl: relayConnectivity.url,
-            okReceived: true,
-            broadcastSuccessful: success,
-            msg: msg ?? '',
-          ),
-        );
-      } else {
-        Logger.log.w(
-          () =>
-              "Received OK for broadcast $eventId but the network controller is already closed",
-        );
-      }
+      _routeBroadcastOk(eventId, relayConnectivity, success, msg ?? '');
       return Future.value();
     }
     if (nostrMsg.type == NostrMessageRawType.notice) {
@@ -1740,19 +1704,73 @@ class RelayManager<T> {
     return _loggedSigner();
   }
 
-  /// Handles OK auth-required for broadcasts by moving the retry onto an
+  /// A relay answers every EVENT it receives, and the same event can be in
+  /// flight in several broadcasts. An acceptance means the relay holds the
+  /// event, so it answers all of them; a refusal answers a single EVENT.
+  void _routeBroadcastOk(
+    String eventId,
+    RelayConnectivity relayConnectivity,
+    bool success,
+    String msg,
+  ) {
+    final waiting = _broadcastsWaitingOn(eventId, relayConnectivity.url);
+    if (waiting.isEmpty) {
+      Logger.log.w(
+        () =>
+            "Received OK for broadcast $eventId from ${relayConnectivity.url} but no broadcast is waiting for it",
+      );
+      return;
+    }
+
+    // not an answer yet: each broadcast retries under its own auth policy
+    if (!success && msg.startsWith("auth-required")) {
+      for (final broadcastState in waiting) {
+        _handleBroadcastAuthRequired(broadcastState, relayConnectivity);
+      }
+      return;
+    }
+
+    for (final broadcastState in success ? waiting : waiting.take(1)) {
+      broadcastState.networkController.add(
+        RelayBroadcastResponse(
+          relayUrl: relayConnectivity.url,
+          okReceived: true,
+          broadcastSuccessful: success,
+          msg: msg,
+        ),
+      );
+    }
+  }
+
+  /// In-flight broadcasts of [eventId] sent to [relayUrl] that have no answer
+  /// from it yet.
+  List<BroadcastState> _broadcastsWaitingOn(String eventId, String relayUrl) {
+    final states = globalState.inFlightBroadcasts[eventId] ?? const [];
+    return states
+        .where(
+          (state) =>
+              !state.networkController.isClosed &&
+              state.broadcasts.values.any(
+                (response) =>
+                    cleanRelayUrl(response.relayUrl) == relayUrl &&
+                    !response.okReceived &&
+                    response.msg.isEmpty,
+              ),
+        )
+        .toList();
+  }
+
+  /// Handles OK auth-required for a broadcast by moving the retry onto an
   /// account-bound connection, authenticating it once, and re-sending EVENT.
   /// Concurrent broadcasts share [authenticateConnection], avoiding duplicate
   /// AUTH events whose identical ids used to overwrite each other's callbacks.
   void _handleBroadcastAuthRequired(
-    String eventId,
+    BroadcastState broadcastState,
     RelayConnectivity relayConnectivity,
   ) {
-    final broadcastState = globalState.inFlightBroadcasts[eventId];
-    if (broadcastState == null) {
-      Logger.log.w(
-        () => "Received OK auth-required for unknown broadcast $eventId",
-      );
+    final relayUrl = relayConnectivity.url;
+    // the refusal of another broadcast of the same event reaches this one too
+    if (broadcastState.retryingAuth.contains(relayUrl)) {
       return;
     }
 
@@ -1760,21 +1778,21 @@ class RelayManager<T> {
     if (eventToResend == null) {
       Logger.log.w(
         () =>
-            "Received OK auth-required but no event stored for broadcast $eventId",
+            "Received OK auth-required from $relayUrl but no event stored for the broadcast",
       );
       return;
     }
+    final eventId = eventToResend.id;
 
     final resolved = _accountForBroadcast(broadcastState, eventToResend);
 
     if (resolved == null) {
       Logger.log.w(
-        () =>
-            "Cannot satisfy auth-required for broadcast $eventId on ${relayConnectivity.url}",
+        () => "Cannot satisfy auth-required for broadcast $eventId on $relayUrl",
       );
       failBroadcast(
-        eventId,
-        relayConnectivity.url,
+        broadcastState,
+        relayUrl,
         'auth-required: this broadcast may not reveal an identity',
       );
       return;
@@ -1782,30 +1800,23 @@ class RelayManager<T> {
     final account = resolved;
 
     final boundKey = RelayConnectionKey.authenticated(
-      relayConnectivity.url,
+      relayUrl,
       account.pubkey,
     );
 
     Future<void> retryOnBoundConnection() async {
       try {
         final bound = await openConnectionAs(
-          relayConnectivity.url,
+          relayUrl,
           account,
           connectionSource: relayConnectivity.relay.connectionSource,
           pausing: broadcastState,
         );
-        if (!identical(
-          globalState.inFlightBroadcasts[eventId],
-          broadcastState,
-        )) {
+        if (broadcastState.networkController.isClosed) {
           return;
         }
         if (bound == null) {
-          failBroadcast(
-            eventId,
-            relayConnectivity.url,
-            'auth connection failed',
-          );
+          failBroadcast(broadcastState, relayUrl, 'auth connection failed');
           return;
         }
 
@@ -1822,18 +1833,11 @@ class RelayManager<T> {
         }
 
         final accepted = await authenticateConnection(boundKey);
-        if (!identical(
-          globalState.inFlightBroadcasts[eventId],
-          broadcastState,
-        )) {
+        if (broadcastState.networkController.isClosed) {
           return;
         }
         if (!accepted) {
-          failBroadcast(
-            eventId,
-            relayConnectivity.url,
-            'authentication failed',
-          );
+          failBroadcast(broadcastState, relayUrl, 'authentication failed');
           return;
         }
         await sendOrThrow(
@@ -1846,15 +1850,15 @@ class RelayManager<T> {
           error: error,
           stackTrace: stackTrace,
         );
-        if (identical(
-          globalState.inFlightBroadcasts[eventId],
-          broadcastState,
-        )) {
-          failBroadcast(eventId, relayConnectivity.url, 'auth retry failed');
+        if (!broadcastState.networkController.isClosed) {
+          failBroadcast(broadcastState, relayUrl, 'auth retry failed');
         }
+      } finally {
+        broadcastState.retryingAuth.remove(relayUrl);
       }
     }
 
+    broadcastState.retryingAuth.add(relayUrl);
     unawaited(retryOnBoundConnection());
   }
 
@@ -1987,7 +1991,7 @@ class RelayManager<T> {
         return true;
       }
     }
-    return globalState.inFlightBroadcasts.values.any(
+    return globalState.inFlightBroadcasts.values.expand((states) => states).any(
       (state) => !state.networkController.isClosed && state.broadcasts.isEmpty,
     );
   }
@@ -2013,7 +2017,9 @@ class RelayManager<T> {
         return true;
       }
     }
-    for (final state in globalState.inFlightBroadcasts.values) {
+    for (final state in globalState.inFlightBroadcasts.values.expand(
+      (states) => states,
+    )) {
       if (state.networkController.isClosed) continue;
       if (state.broadcasts.keys.any((url) => cleanRelayUrl(url) == key.url)) {
         return true;

@@ -112,10 +112,11 @@ void main() {
 
   BroadcastState broadcast(String id, {String? url}) {
     final broadcast = BroadcastState(timeout: const Duration(minutes: 1));
-    state.inFlightBroadcasts[id] = broadcast;
+    state.inFlightBroadcasts[id] = [broadcast];
     broadcasts.add(broadcast);
     if (url != null) {
       manager.registerRelayBroadcast(
+        broadcastState: broadcast,
         relayUrl: url,
         eventToPublish: Nip01Event(
           id: id,
