@@ -8,6 +8,7 @@ import 'follows_page.dart';
 import 'home_page.dart';
 import 'main.dart';
 import 'dm_page.dart';
+import 'nip77_page.dart';
 import 'profile_page.dart';
 import 'quantum_secure_page.dart';
 import 'relays_page.dart';
@@ -76,5 +77,6 @@ final appRouter = GoRouter(
       path: '/quantum',
       builder: (context, state) => const QuantumSecurePage(),
     ),
+    GoRoute(path: '/nip77', builder: (context, state) => const Nip77Page()),
   ],
 );
