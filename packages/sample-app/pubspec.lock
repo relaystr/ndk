@@ -533,14 +533,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
-  idb_shim:
-    dependency: transitive
-    description:
-      name: idb_shim
-      sha256: "110fe0514a52dc8da5414df42405a8f9e880dfac3e84852fdab8e5559ee6ad07"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.9.11"
   image:
     dependency: "direct main"
     description:
@@ -826,13 +818,6 @@ packages:
       relative: true
     source: path
     version: "0.10.2"
-  ndk_sembast:
-    dependency: "direct main"
-    description:
-      path: "../sembast"
-      relative: true
-    source: path
-    version: "0.1.0"
   nested:
     dependency: transitive
     description:
@@ -1073,22 +1058,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
-  sembast:
-    dependency: transitive
-    description:
-      name: sembast
-      sha256: a976f04d492b82b06c74b3c654795ca5bbf9b670468081a339f6035f121359a3
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.8.11"
-  sembast_web:
-    dependency: transitive
-    description:
-      name: sembast_web
-      sha256: "0dc954ffa88ae75958f4750892e86b29289bb1d0cb16b8f5b27b9fdb84d5d2ee"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.4.6"
   shared_preferences:
     dependency: transitive
     description:
