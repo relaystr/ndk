@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791302532608,
+  "lastUpdate": 1791366611631,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1860,6 +1860,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 836824,
             "range": "823060-873352",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "58687994+1-leo@users.noreply.github.com",
+            "name": "Leo",
+            "username": "1-leo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7c51c23b8de69be7c5ec3d8afd0bc101c95c5102",
+          "message": "Merge pull request #889 from relaystr/perf/web-noble-key-derivation\n\nperf(web): derive public keys with @noble/curves in NdkEventSignerFactory",
+          "timestamp": "2026-10-07T11:48:25+02:00",
+          "tree_id": "7704bc5c7d44c4e4da4e52583b81e38133bcb8bb",
+          "url": "https://github.com/relaystr/ndk/commit/7c51c23b8de69be7c5ec3d8afd0bc101c95c5102"
+        },
+        "date": 1791366609600,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 51538.2,
+            "range": "51291-57510",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1812454,
+            "range": "1803606-1897366",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
