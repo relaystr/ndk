@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791368291692,
+  "lastUpdate": 1791368753951,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1936,6 +1936,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1790722,
             "range": "1786280-1791654",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "eb6de33664cd54fe3be116487cdc08e80e136408",
+          "message": "Merge pull request #886 from relaystr/fix/keep-app-user-agent\n\nfix: leave the app's websocket user agent untouched by default",
+          "timestamp": "2026-10-07T12:23:58+02:00",
+          "tree_id": "bfacb07fa3eb1c599c14f3dffb98e0e029dc6a39",
+          "url": "https://github.com/relaystr/ndk/commit/eb6de33664cd54fe3be116487cdc08e80e136408"
+        },
+        "date": 1791368751154,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46490.6,
+            "range": "46317-48887",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1704210,
+            "range": "1680200-1714446",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
