@@ -46,6 +46,7 @@ class RelayManager<T> {
   /// signer for nip-42 AUTH challenges from relays
   final Accounts? _accounts;
   final RelayInfoRepo? _relayInfoRepo;
+  final Map<String, Future<RelayInfo?>> _relayInfoCache = {};
 
   /// stores the last AUTH challenge per connection for late authentication;
   /// each socket gets its own challenge, so this cannot be keyed by relay
@@ -1981,9 +1982,23 @@ class RelayManager<T> {
     }
   }
 
-  /// fetches relay info; returns null when no [RelayInfoRepo] is configured
+  /// fetches relay info once per relay for the lifetime of this manager;
+  /// concurrent calls share the request and failures are not cached. Returns
+  /// null when no [RelayInfoRepo] is configured
   Future<RelayInfo?> getRelayInfo(String url) async {
-    return await _relayInfoRepo?.getRelayInfo(url);
+    final repo = _relayInfoRepo;
+    if (repo == null) return null;
+    final key = cleanRelayUrl(url) ?? url;
+    final pending = _relayInfoCache[key];
+    if (pending != null) return pending;
+    final fetch = _relayInfoCache[key] = repo.getRelayInfo(key);
+    RelayInfo? info;
+    try {
+      info = await fetch;
+      return info;
+    } finally {
+      if (info == null) _relayInfoCache.remove(key);
+    }
   }
 
   /// return [RelayConnectivity] by url
