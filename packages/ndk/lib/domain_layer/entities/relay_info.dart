@@ -14,8 +14,8 @@ class RelayInfo {
   /// Alternative contact of the relay admin
   final String contact;
 
-  /// Supported NIPS
-  final List<dynamic> nips;
+  /// Supported NIPs, normalized by [normalizeNip]
+  final List<String> nips;
 
   /// Software description
   final String software;
@@ -53,7 +53,9 @@ class RelayInfo {
     } else {
       icon = "$url${url.endsWith("/") ? "" : "/"}favicon.ico";
     }
-    final List<dynamic> nips = json["supported_nips"] ?? [];
+    final List<String> nips = [
+      for (final nip in json["supported_nips"] ?? []) normalizeNip(nip),
+    ];
     final String software = json["software"] ?? "";
     final String version = json["version"] ?? "";
     final String privacyPolicy = json["privacy_policy"] ?? "";
@@ -90,8 +92,17 @@ class RelayInfo {
     }
   }
 
-  /// does this relay support given nip
-  bool supportsNip(int nip) {
-    return nips.contains(nip);
+  /// does this relay support given nip, e.g. "1", "01", "77" or "EE"
+  bool supportsNip(String nip) {
+    return nips.contains(normalizeNip(nip));
+  }
+
+  /// Relays list NIPs as ints (1) or strings ("01", "7D", "ee").
+  static String normalizeNip(Object nip) {
+    return nip
+        .toString()
+        .trim()
+        .toUpperCase()
+        .replaceFirst(RegExp(r'^0+(?=.)'), '');
   }
 }
