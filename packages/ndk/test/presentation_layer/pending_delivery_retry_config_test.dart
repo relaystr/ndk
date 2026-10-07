@@ -1,16 +1,11 @@
 import 'dart:async';
 
 import 'package:ndk/ndk.dart';
-import 'package:ndk/src/cli/wallets/wallets_cli_command.dart';
 import 'package:test/test.dart';
 
 import '../mocks/mock_event_verifier.dart';
 
 void main() {
-  test('wallet commands do not restore unrelated remote signer accounts', () {
-    expect(WalletsCliCommand().restoreAccountsOnStartup, isFalse);
-  });
-
   test(
     'pending delivery retries can be disabled for short-lived clients',
     () async {

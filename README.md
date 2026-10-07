@@ -29,6 +29,10 @@ ObjectBox database implementation.
 
 Flutter widgets and utilities that require Flutter as a dependency, including the NIP-07 browser-extension signer.
 
+### [🔗 CLI](./packages/cli/)
+
+The `ndk` command line interface.
+
 ### [🔗 sample app](./packages/sample-app/)
 
 example app using the NDK.

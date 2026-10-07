@@ -4,9 +4,6 @@ version: 0.10.2
 homepage: https://github.com/relaystr/ndk
 repository: https://github.com/relaystr/ndk
 
-executables:
-  ndk: ndk
-
 topics:
   - nostr
 
