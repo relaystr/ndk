@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:ndk/data_layer/repositories/wallets/wallet_extensions.dart';
+import 'wallet_extensions.dart';
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/entities.dart';
 import 'package:sembast/sembast.dart' as sembast;

@@ -22,7 +22,7 @@ import 'package:ndk/ndk.dart';
 final ndk = Ndk(
   NdkConfig(
     eventVerifier: Bip340EventVerifier(), // or RustEventVerifier() for better perf
-    cache: MemCacheManager(),             // or SembastCacheManager() for persistence
+    cache: MemCacheManager(),             // or a persistent cache, see Cache options
   ),
 );
 ```
@@ -32,7 +32,7 @@ final ndk = Ndk(
 | Field | Type | Default | Notes |
 | ----- | ---- | ------- | ----- |
 | `eventVerifier` | `EventVerifier` | **required** | `Bip340EventVerifier` or `RustEventVerifier` |
-| `cache` | `CacheManager` | **required** | `MemCacheManager` or `SembastCacheManager` |
+| `cache` | `CacheManager` | **required** | `MemCacheManager` or `SembastCacheManager` (`ndk_sembast`) |
 | `engine` | `NdkEngine` | `RELAY_SETS` | `RELAY_SETS` (inbox/outbox) or `JIT` |
 | `bootstrapRelays` | `List<String>` | DEFAULT_BOOTSTRAP_RELAYS | Connect on start |
 | `ignoreRelays` | `List<String>` | `[]` | Skip for inbox/outbox |
@@ -61,8 +61,8 @@ NdkEngine.JIT
 // In-memory (no persistence)
 cache: MemCacheManager()
 
-// Sembast (file-based persistence, dart:io only)
-cache: SembastCacheManager(path: '/path/to/db')
+// Sembast (persistent, native and web), from package:ndk_sembast/ndk_sembast.dart
+cache: await SembastCacheManager.create(databasePath: '/path/to/db')
 ```
 
 ## Cleanup

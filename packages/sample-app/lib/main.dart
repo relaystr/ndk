@@ -15,6 +15,7 @@ import 'package:ndk_demo/router.dart';
 import 'package:ndk_drift/ndk_drift.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart' as ndk_flutter;
 import 'package:ndk_flutter/ndk_flutter.dart';
+import 'package:ndk_sembast/ndk_sembast.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'dm_live_state.dart';

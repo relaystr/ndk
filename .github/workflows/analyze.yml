@@ -34,6 +34,10 @@ jobs:
             pub_get_directory: .
             pub_get_command: dart pub get
             analyze_command: flutter analyze --fatal-infos --fatal-warnings .
+          - package: ./packages/sembast
+            pub_get_directory: .
+            pub_get_command: dart pub get
+            analyze_command: dart analyze --fatal-infos --fatal-warnings .
           - package: ./packages/cli
             pub_get_directory: .
             pub_get_command: dart pub get

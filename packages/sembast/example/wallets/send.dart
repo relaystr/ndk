@@ -2,7 +2,7 @@
 
 import 'dart:io';
 
-import 'package:ndk/data_layer/repositories/wallets/sembast_wallets_repo.dart';
+import 'package:ndk_sembast/ndk_sembast.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import 'package:ndk/ndk.dart';
 

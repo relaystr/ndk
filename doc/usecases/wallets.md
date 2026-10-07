@@ -33,16 +33,14 @@ Use it if your app:
 
 Provide a concrete `WalletsRepo` implementation in your `NdkConfig`.
 
-- if you use only core `ndk`, use a core implementation such as `SembastWalletsRepo`
+- without Flutter, use `SembastWalletsRepo` from the `ndk_sembast` package
 - if possible, prefer the optional `ndk_flutter` package and `FlutterSecureStorageWalletsRepo` for more secure wallet storage
 
 ```dart
 final ndk = Ndk(
   NdkConfig(
     cache: cacheManager,
-    walletsRepo: SembastWalletsRepo.create(
-      databasePath: databasePath,
-    ),
+    walletsRepo: await SembastWalletsRepo.create(filename: 'wallets.db'),
   ),
 );
 ```
