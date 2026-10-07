@@ -123,25 +123,28 @@ void sameEventBroadcastTests(NdkEngine engine) {
       expectAcceptedOnlyBy(await toB.broadcastDoneFuture, relayB);
     });
 
-    test('both receive the relay OK after it asks for authentication', () async {
-      final relay = await startRelay(requireAuthForEvents: true);
-      final ndk = ndkFor([relay]);
-      final auth = AuthPolicy.allow(ndk.accounts.getLoggedAccount()!);
-      final event = signedNote('auth');
+    test(
+      'both receive the relay OK after it asks for authentication',
+      () async {
+        final relay = await startRelay(requireAuthForEvents: true);
+        final ndk = ndkFor([relay]);
+        final auth = AuthPolicy.allow(ndk.accounts.getLoggedAccount()!);
+        final event = signedNote('auth');
 
-      final first = ndk.broadcast.broadcast(
-        nostrEvent: event,
-        specificRelays: [relay.url],
-        auth: auth,
-      );
-      final second = ndk.broadcast.broadcast(
-        nostrEvent: event,
-        specificRelays: [relay.url],
-        auth: auth,
-      );
+        final first = ndk.broadcast.broadcast(
+          nostrEvent: event,
+          specificRelays: [relay.url],
+          auth: auth,
+        );
+        final second = ndk.broadcast.broadcast(
+          nostrEvent: event,
+          specificRelays: [relay.url],
+          auth: auth,
+        );
 
-      expectAcceptedOnlyBy(await first.broadcastDoneFuture, relay);
-      expectAcceptedOnlyBy(await second.broadcastDoneFuture, relay);
-    });
+        expectAcceptedOnlyBy(await first.broadcastDoneFuture, relay);
+        expectAcceptedOnlyBy(await second.broadcastDoneFuture, relay);
+      },
+    );
   });
 }

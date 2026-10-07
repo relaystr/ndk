@@ -392,11 +392,7 @@ class RelaySetsEngine implements NetworkEngine {
             specificRelays.map(
               (relayUrl) =>
                   // broadcast async
-                  doRelayBroadcast(
-                    relayUrl,
-                    workingEvent,
-                    broadcastState,
-                  ),
+                  doRelayBroadcast(relayUrl, workingEvent, broadcastState),
             ),
           );
         }
@@ -430,11 +426,8 @@ class RelaySetsEngine implements NetworkEngine {
 
         await Future.wait(
           writeRelaysUrls.map(
-            (relayUrl) => doRelayBroadcast(
-              relayUrl,
-              workingEvent,
-              broadcastState,
-            ),
+            (relayUrl) =>
+                doRelayBroadcast(relayUrl, workingEvent, broadcastState),
           ),
         );
 
@@ -469,11 +462,8 @@ class RelaySetsEngine implements NetworkEngine {
 
           await Future.wait(
             myWriteRelayUrlsOthers.map(
-              (relayUrl) => doRelayBroadcast(
-                relayUrl,
-                workingEvent,
-                broadcastState,
-              ),
+              (relayUrl) =>
+                  doRelayBroadcast(relayUrl, workingEvent, broadcastState),
             ),
           );
         }

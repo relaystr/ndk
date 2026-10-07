@@ -1788,7 +1788,8 @@ class RelayManager<T> {
 
     if (resolved == null) {
       Logger.log.w(
-        () => "Cannot satisfy auth-required for broadcast $eventId on $relayUrl",
+        () =>
+            "Cannot satisfy auth-required for broadcast $eventId on $relayUrl",
       );
       failBroadcast(
         broadcastState,
@@ -1799,10 +1800,7 @@ class RelayManager<T> {
     }
     final account = resolved;
 
-    final boundKey = RelayConnectionKey.authenticated(
-      relayUrl,
-      account.pubkey,
-    );
+    final boundKey = RelayConnectionKey.authenticated(relayUrl, account.pubkey);
 
     Future<void> retryOnBoundConnection() async {
       try {
@@ -1991,9 +1989,12 @@ class RelayManager<T> {
         return true;
       }
     }
-    return globalState.inFlightBroadcasts.values.expand((states) => states).any(
-      (state) => !state.networkController.isClosed && state.broadcasts.isEmpty,
-    );
+    return globalState.inFlightBroadcasts.values
+        .expand((states) => states)
+        .any(
+          (state) =>
+              !state.networkController.isClosed && state.broadcasts.isEmpty,
+        );
   }
 
   bool _connectionHasWork(RelayConnectionKey key) {
