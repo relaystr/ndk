@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791366611631,
+  "lastUpdate": 1791368291692,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -1898,6 +1898,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1812454,
             "range": "1803606-1897366",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "037a777ab9c2237cb3583a958c8ddc86cfe3c2b0",
+          "message": "Merge pull request #851 from relaystr/feat/nip46-switch-relays\n\nfeat: add NIP-46 switch_relays to Nip46EventSigner",
+          "timestamp": "2026-10-07T12:16:26+02:00",
+          "tree_id": "73b796612e10216d2c9a0ca9ffc53939b1323b3a",
+          "url": "https://github.com/relaystr/ndk/commit/037a777ab9c2237cb3583a958c8ddc86cfe3c2b0"
+        },
+        "date": 1791368289577,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 51362,
+            "range": "51118-54098",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1790722,
+            "range": "1786280-1791654",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
