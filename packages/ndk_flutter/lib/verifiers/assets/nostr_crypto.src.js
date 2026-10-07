@@ -90,6 +90,15 @@ async function signEvent(privateKeyHex, messageHashHex) {
   }
 }
 
+/**
+ * Derive the x-only public key of a private key
+ * @param {string} privateKeyHex - 32-byte private key in hex
+ * @returns {string} - 32-byte public key in hex
+ */
+function getPublicKey(privateKeyHex) {
+  return bytesToHex(schnorr.getPublicKey(hexToBytes(privateKeyHex)));
+}
+
 // ---------------------------------------------------------------------------
 // Crypto helpers
 // ---------------------------------------------------------------------------
@@ -330,6 +339,7 @@ window.NostrCrypto = {
   verifyEvent,
   verifySignature,
   signEvent,
+  getPublicKey,
   nip04Encrypt,
   nip04Decrypt,
   nip44Encrypt,
