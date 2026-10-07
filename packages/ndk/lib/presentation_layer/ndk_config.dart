@@ -77,8 +77,11 @@ class NdkConfig {
   /// log level
   LogLevel logLevel;
 
-  /// User agent string for Http requests and websockets.
-  String userAgent;
+  /// User agent for websockets on dart:io, set globally on `WebSocket.userAgent`.
+  ///
+  /// Null (default) leaves the app's user agent untouched. Pass
+  /// [RequestDefaults.DEFAULT_USER_AGENT] to identify as NDK.
+  String? userAgent;
 
   /// Whether native WebSocket connections negotiate per-message compression.
   ///
@@ -185,7 +188,7 @@ class NdkConfig {
         BroadcastDefaults.CONSIDER_DONE_PERCENT,
     this.defaultBroadcastSaveToCache = BroadcastDefaults.SAVE_TO_CACHE,
     this.logLevel = defaultLogLevel,
-    this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
+    this.userAgent,
     this.webSocketCompression = true,
     this.webSocketPingInterval = const Duration(seconds: 10),
     this.webSocketReconnectMaximumStep = 4,
