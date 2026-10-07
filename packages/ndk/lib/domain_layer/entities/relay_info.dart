@@ -99,10 +99,9 @@ class RelayInfo {
 
   /// Relays list NIPs as ints (1) or strings ("01", "7D", "ee").
   static String normalizeNip(Object nip) {
-    return nip
-        .toString()
-        .trim()
-        .toUpperCase()
-        .replaceFirst(RegExp(r'^0+(?=.)'), '');
+    return nip.toString().trim().toUpperCase().replaceFirst(
+      RegExp(r'^0+(?=.)'),
+      '',
+    );
   }
 }
