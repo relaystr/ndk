@@ -5,6 +5,7 @@ import 'package:ndk_sqlite3/ndk_sqlite3.dart';
 Future<void> main() async {
   final cache = SqliteCacheManager.open('ndk_cache.db');
   final ndk = Ndk(
+    // NdkEventVerifier lives in ndk_flutter; in production RustEventVerifier() is recommended
     NdkConfig(cache: cache, eventVerifier: Bip340EventVerifier()),
   );
 
