@@ -1,3 +1,9 @@
+## 0.10.2-dev.0+1
+
+ - **REFACTOR**(web): share the NostrCrypto null check between signer and factory.
+ - **PERF**(web): derive public keys with @noble/curves in NdkEventSignerFactory.
+ - **FIX**: clear toasts.
+
 ## 0.10.1
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
