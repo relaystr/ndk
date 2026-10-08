@@ -29,23 +29,32 @@ class Nip04 {
   }
 
   static String encryptWithAgreement(
-      String message, ECDHBasicAgreement agreement, String publicKey) {
+    String message,
+    ECDHBasicAgreement agreement,
+    String publicKey,
+  ) {
     var pubKey = getPubKey(publicKey);
     var agreementD0 = agreement.calculateAgreement(pubKey);
     var encryptKey = agreementD0.toRadixString(16).padLeft(64, "0");
 
     final random = Random.secure();
-    var ivData =
-        Uint8List.fromList(List<int>.generate(16, (i) => random.nextInt(256)));
+    var ivData = Uint8List.fromList(
+      List<int>.generate(16, (i) => random.nextInt(256)),
+    );
     // var iv = "UeAMaJl5Hj6IZcot7zLfmQ==";
     // var ivData = base64.decode(iv);
 
-    final cipherCbc =
-        PaddedBlockCipherImpl(PKCS7Padding(), CBCBlockCipher(AESEngine()));
+    final cipherCbc = PaddedBlockCipherImpl(
+      PKCS7Padding(),
+      CBCBlockCipher(AESEngine()),
+    );
     final paramsCbc = PaddedBlockCipherParameters(
-        ParametersWithIV(
-            KeyParameter(Uint8List.fromList(hex.decode(encryptKey))), ivData),
-        null);
+      ParametersWithIV(
+        KeyParameter(Uint8List.fromList(hex.decode(encryptKey))),
+        ivData,
+      ),
+      null,
+    );
     cipherCbc.init(true, paramsCbc);
 
     // print(cipherCbc.algorithmName);
@@ -56,7 +65,10 @@ class Nip04 {
   }
 
   static String decryptWithAgreement(
-      String message, ECDHBasicAgreement agreement, String publicKey) {
+    String message,
+    ECDHBasicAgreement agreement,
+    String publicKey,
+  ) {
     var strs = message.split("?iv=");
     if (strs.length != 2) {
       return "";
@@ -74,12 +86,17 @@ class Nip04 {
     //     mode: AESMode.cbc));
     // return encrypter.decrypt(Encrypted.from64(message), iv: IV.fromBase64(iv));
 
-    final cipherCbc =
-        PaddedBlockCipherImpl(PKCS7Padding(), CBCBlockCipher(AESEngine()));
+    final cipherCbc = PaddedBlockCipherImpl(
+      PKCS7Padding(),
+      CBCBlockCipher(AESEngine()),
+    );
     final paramsCbc = PaddedBlockCipherParameters(
-        ParametersWithIV(
-            KeyParameter(Uint8List.fromList(hex.decode(encryptKey))), ivData),
-        null);
+      ParametersWithIV(
+        KeyParameter(Uint8List.fromList(hex.decode(encryptKey))),
+        ivData,
+      ),
+      null,
+    );
     cipherCbc.init(false, paramsCbc);
 
     var result = cipherCbc.process(base64.decode(message));
@@ -89,8 +106,10 @@ class Nip04 {
 
   static ECPublicKey getPubKey(String pk) {
     // BigInt x = BigInt.parse(pk, radix: 16);
-    BigInt x =
-        BigInt.parse(hex.encode(hex.decode(pk.padLeft(64, '0'))), radix: 16);
+    BigInt x = BigInt.parse(
+      hex.encode(hex.decode(pk.padLeft(64, '0'))),
+      radix: 16,
+    );
     BigInt? y;
     try {
       y = liftX(x);
@@ -102,8 +121,9 @@ class Nip04 {
   }
 
   static var curveP = BigInt.parse(
-      'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F',
-      radix: 16);
+    'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F',
+    radix: 16,
+  );
 
   // helper methods:
   // liftX returns Y for this X

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
-import '../../utils/nip_avatar.dart';
 
 class NBanner extends StatelessWidget {
   final NdkFlutter ndkFlutter;
@@ -57,7 +56,7 @@ class NBanner extends StatelessWidget {
 
   Widget _buildDefaultBanner(BuildContext context) {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: NipAvatar.getColor(_pubkey!).background,
+      seedColor: StringColor.fromString(_pubkey!),
       brightness: Theme.of(context).brightness,
     );
 
@@ -76,7 +75,7 @@ class NBanner extends StatelessWidget {
         if (loadingProgress == null) return child;
 
         return ColoredBox(
-          color: NipAvatar.getColor(_pubkey!).background.withValues(alpha: 0.3),
+          color: StringColor.fromString(_pubkey!).withValues(alpha: 0.3),
         );
       },
       errorBuilder: (context, error, stackTrace) {

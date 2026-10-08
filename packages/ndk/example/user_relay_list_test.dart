@@ -21,7 +21,8 @@ void main() async {
 
     // Use a prebuilt ndk usecase (userRelayLists in this case)
     final response = await ndk.userRelayLists.getSingleUserRelayList(
-        '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177');
+      '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177',
+    );
 
     // read entity
     print("RELAYS:");
@@ -29,7 +30,10 @@ void main() async {
     print(response!.toNip65());
 
     expect(response, isNotNull, reason: 'response is Null');
-    expect(response.relays.length, greaterThan(0),
-        reason: 'relay list is empty');
+    expect(
+      response.relays.length,
+      greaterThan(0),
+      reason: 'relay list is empty',
+    );
   });
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
+
 import '../../utils/nip_avatar.dart';
 
 class NPicture extends StatelessWidget {
@@ -88,10 +89,15 @@ class NPicture extends StatelessWidget {
 
   Widget _buildDefaultPicture(BuildContext context, Metadata? metadata) {
     final initial = NipAvatar.getInitial(_pubkey!, metadata);
-    final avatarColor = NipAvatar.getColor(_pubkey!);
+    final background = StringColor.fromString(_pubkey!);
+    // Keep the initial legible by contrasting against the derived background.
+    final textColor =
+        ThemeData.estimateBrightnessForColor(background) == Brightness.dark
+        ? const Color(0xFFFFFFFF)
+        : const Color(0xDE000000);
 
     return Container(
-      color: avatarColor.background,
+      color: background,
       child: Center(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -101,7 +107,7 @@ class NPicture extends StatelessWidget {
             return Text(
               initial,
               style: TextStyle(
-                color: avatarColor.text,
+                color: textColor,
                 fontWeight: FontWeight.bold,
                 fontSize: fontSize,
               ),

@@ -173,11 +173,13 @@ void main() {
     });
 
     test('Query without trailling / and JIT', () async {
-      final ndk = Ndk(NdkConfig(
-        eventVerifier: Bip340EventVerifier(),
-        cache: MemCacheManager(),
-        engine: NdkEngine.JIT,
-      ));
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          engine: NdkEngine.JIT,
+        ),
+      );
 
       final query = ndk.requests.query(
         filter: Filter(kinds: [1], limit: 1),
@@ -193,11 +195,13 @@ void main() {
     });
 
     test('Query with trailling / and JIT', () async {
-      final ndk = Ndk(NdkConfig(
-        eventVerifier: Bip340EventVerifier(),
-        cache: MemCacheManager(),
-        engine: NdkEngine.JIT,
-      ));
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          engine: NdkEngine.JIT,
+        ),
+      );
 
       final query = ndk.requests.query(
         filter: Filter(kinds: [1], limit: 1),
@@ -213,11 +217,13 @@ void main() {
     });
 
     test('Subscription without trailling / and JIT', () async {
-      final ndk = Ndk(NdkConfig(
-        eventVerifier: Bip340EventVerifier(),
-        cache: MemCacheManager(),
-        engine: NdkEngine.JIT,
-      ));
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          engine: NdkEngine.JIT,
+        ),
+      );
 
       final query = ndk.requests.subscription(
         filter: Filter(kinds: [1], limit: 1),
@@ -233,11 +239,13 @@ void main() {
     });
 
     test('Subscription with trailling / and JIT', () async {
-      final ndk = Ndk(NdkConfig(
-        eventVerifier: Bip340EventVerifier(),
-        cache: MemCacheManager(),
-        engine: NdkEngine.JIT,
-      ));
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          engine: NdkEngine.JIT,
+        ),
+      );
 
       final query = ndk.requests.subscription(
         filter: Filter(kinds: [1], limit: 1),
@@ -253,11 +261,13 @@ void main() {
     });
 
     test('Broadcast without trailling / and JIT', () async {
-      final ndk = Ndk(NdkConfig(
-        eventVerifier: Bip340EventVerifier(),
-        cache: MemCacheManager(),
-        engine: NdkEngine.JIT,
-      ));
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          engine: NdkEngine.JIT,
+        ),
+      );
 
       final keyPair = Bip340.generatePrivateKey();
       ndk.accounts.loginPrivateKey(
@@ -287,11 +297,13 @@ void main() {
     });
 
     test('Broadcast with trailling / and JIT', () async {
-      final ndk = Ndk(NdkConfig(
-        eventVerifier: Bip340EventVerifier(),
-        cache: MemCacheManager(),
-        engine: NdkEngine.JIT,
-      ));
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          engine: NdkEngine.JIT,
+        ),
+      );
 
       final keyPair = Bip340.generatePrivateKey();
       ndk.accounts.loginPrivateKey(

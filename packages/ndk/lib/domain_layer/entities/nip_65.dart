@@ -22,11 +22,7 @@ class Nip65 {
   }
 
   /// creates a new [Nip65] instance
-  Nip65({
-    required this.pubKey,
-    required this.relays,
-    required this.createdAt,
-  });
+  Nip65({required this.pubKey, required this.relays, required this.createdAt});
 
   Nip65.fromEvent(Nip01Event event) {
     pubKey = event.pubKey;
@@ -78,10 +74,11 @@ class Nip65 {
     );
   }
 
-// coverage:ignore-start
+  // coverage:ignore-start
   @override
   String toString() {
     return 'Nip65{urls: $relays}';
   }
-// coverage:ignore-end
+
+  // coverage:ignore-end
 }

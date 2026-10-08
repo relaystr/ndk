@@ -1,7 +1,7 @@
 /// Exception thrown when a signer request is rejected by the remote signer.
 ///
 /// This occurs when the user explicitly rejects/denies the request on the
-/// remote signer (bunker, browser extension, Amber, etc.).
+/// remote signer (bunker, browser extension, NIP-55 signer app, etc.).
 class SignerRequestRejectedException implements Exception {
   /// The ID of the request that was rejected (if available)
   final String? requestId;

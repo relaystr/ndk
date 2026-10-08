@@ -7,17 +7,14 @@ import 'nwc_request.dart';
 class MultiPayKeysendRequest extends NwcRequest {
   final List<MultiPayKeysendRequestInvoicesElement> keysends;
 
-  const MultiPayKeysendRequest({
-    required this.keysends,
-  }) : super(method: NwcMethod.MULTI_PAY_KEYSEND);
+  const MultiPayKeysendRequest({required this.keysends})
+    : super(method: NwcMethod.MULTI_PAY_KEYSEND);
 
   @override
   Map<String, dynamic> toMap() {
     return {
       ...super.toMap(),
-      'params': {
-        'keysends': keysends.map((e) => e.toMap()).toList(),
-      }
+      'params': {'keysends': keysends.map((e) => e.toMap()).toList()},
     };
   }
 }

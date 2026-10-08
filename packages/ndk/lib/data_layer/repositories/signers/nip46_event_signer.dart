@@ -16,7 +16,7 @@ class _PendingRequestEntry {
   _PendingRequestEntry(this.completer, this.request);
 }
 
-class Nip46EventSigner implements EventSigner {
+class Nip46EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   BunkerConnection connection;
   Requests requests;
   Broadcast broadcast;
@@ -30,7 +30,16 @@ class Nip46EventSigner implements EventSigner {
 
   String? cachedPublicKey;
 
-  late Bip340EventSigner localEventSigner;
+  late EventSigner localEventSigner;
+  final LocalEventSignerFactory eventSignerFactory;
+
+  @override
+  final int maxConcurrentRequests;
+
+  /// Default bunker concurrency. NIP-46 round-trips through a relay, so the
+  /// limit guards against flooding it with thousands of pending events.
+  /// Lower this if you hit relay rate limits.
+  static const int defaultMaxConcurrentRequests = 100;
 
   Nip46EventSigner({
     required this.connection,
@@ -38,7 +47,9 @@ class Nip46EventSigner implements EventSigner {
     required this.broadcast,
     this.authCallback,
     this.cachedPublicKey,
-  }) {
+    required this.eventSignerFactory,
+    this.maxConcurrentRequests = defaultMaxConcurrentRequests,
+  }) : assert(maxConcurrentRequests > 0, 'maxConcurrentRequests must be > 0') {
     final privKey = connection.privateKey;
     final pubKey = Bip340.getPublicKey(privKey);
 
@@ -47,8 +58,8 @@ class Nip46EventSigner implements EventSigner {
 
     final keyPair = KeyPair(privKey, pubKey, privKeyHr, pubKeyHr);
 
-    localEventSigner = Bip340EventSigner(
-      privateKey: keyPair.privateKey,
+    localEventSigner = eventSignerFactory.create(
+      privateKey: keyPair.privateKey!,
       publicKey: keyPair.publicKey,
     );
 
@@ -61,7 +72,7 @@ class Nip46EventSigner implements EventSigner {
       filter: Filter(
         authors: [connection.remotePubkey],
         kinds: [BunkerRequest.kKind],
-        pTags: [localEventSigner.publicKey],
+        pTags: [localEventSigner.getPublicKey()],
       ),
     );
 
@@ -88,19 +99,25 @@ class Nip46EventSigner implements EventSigner {
       _notifyPendingRequestsChange();
 
       if (response["error"] != null && response["result"] != "auth_url") {
-        entry.completer.completeError(SignerRequestRejectedException(
-          requestId: response["id"],
-          originalMessage: response["error"],
-        ));
+        entry.completer.completeError(
+          SignerRequestRejectedException(
+            requestId: response["id"],
+            originalMessage: response["error"],
+          ),
+        );
       } else {
-        entry.completer.complete(response["result"]);
+        final result = response["result"];
+        entry.completer.complete(
+          result is String ? result : jsonEncode(result),
+        );
       }
     }
   }
 
   void _notifyPendingRequestsChange() {
-    _pendingRequestsController
-        .add(_pendingRequests.values.map((e) => e.request).toList());
+    _pendingRequestsController.add(
+      _pendingRequests.values.map((e) => e.request).toList(),
+    );
   }
 
   Future<String> remoteRequest({
@@ -127,29 +144,38 @@ class Nip46EventSigner implements EventSigner {
     );
     _notifyPendingRequestsChange();
 
-    final encryptedRequest = await localEventSigner.encryptNip44(
-      plaintext: jsonEncode(request),
-      recipientPubKey: connection.remotePubkey,
-    );
+    return runThrottled(() async {
+      // If the request was cancelled while queued, bail out before touching
+      // the relay so we don't broadcast an event the caller no longer wants.
+      if (!_pendingRequests.containsKey(request.id)) {
+        throw SignerRequestCancelledException(request.id);
+      }
 
-    final requestEvent = Nip01Event(
-      createdAt: 0,
-      pubKey: localEventSigner.publicKey,
-      kind: BunkerRequest.kKind,
-      tags: [
-        ["p", connection.remotePubkey],
-      ],
-      content: encryptedRequest!,
-    );
+      final encryptedRequest = await localEventSigner.encryptNip44(
+        plaintext: jsonEncode(request),
+        recipientPubKey: connection.remotePubkey,
+      );
 
-    final signedEvent = await localEventSigner.sign(requestEvent);
-    final broadcastRes = broadcast.broadcast(
-      nostrEvent: signedEvent,
-      specificRelays: connection.relays,
-    );
-    await broadcastRes.broadcastDoneFuture;
+      final requestEvent = Nip01Event(
+        createdAt: 0,
+        pubKey: localEventSigner.getPublicKey(),
+        kind: BunkerRequest.kKind,
+        tags: [
+          ["p", connection.remotePubkey],
+        ],
+        content: encryptedRequest!,
+      );
 
-    return completer.future;
+      final signedEvent = await localEventSigner.sign(requestEvent);
+      // not awaiting the broadcast: the slowest relay's OK would delay a
+      // response already received through a faster one
+      broadcast.broadcast(
+        nostrEvent: signedEvent,
+        specificRelays: connection.relays,
+      );
+
+      return completer.future;
+    });
   }
 
   @override
@@ -158,7 +184,16 @@ class Nip46EventSigner implements EventSigner {
   }
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
+  bool get requiresInteractiveSigning => true;
+
+  @override
+  bool get requiresSignerNetwork => true;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls => connection.relays;
+
+  @override
+  Future<String?> decrypt(String msg, String destPubKey) async {
     final request = BunkerRequest(
       method: SignerMethod.nip04Decrypt,
       params: [destPubKey, msg],
@@ -191,7 +226,7 @@ class Nip46EventSigner implements EventSigner {
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> encrypt(String msg, String destPubKey) async {
     final request = BunkerRequest(
       method: SignerMethod.nip04Encrypt,
       params: [destPubKey, msg],
@@ -253,13 +288,11 @@ class Nip46EventSigner implements EventSigner {
       params: [jsonEncode(eventMap)],
     );
 
-    final signedEventJson = await remoteRequest(
-      request: request,
-      event: event,
-    );
-    final signedEvent = jsonDecode(signedEventJson);
+    final signedEventJson = await remoteRequest(request: request, event: event);
 
-    return event.copyWith(id: signedEvent["id"], sig: signedEvent["sig"]);
+    final signedEvent = Nip01EventModel.fromJson(jsonDecode(signedEventJson));
+
+    return signedEvent;
   }
 
   Future<String> ping() async {
@@ -267,6 +300,26 @@ class Nip46EventSigner implements EventSigner {
 
     final response = await remoteRequest(request: request);
     return response;
+  }
+
+  /// Returns the relays the remote signer moved to, or null if it keeps the
+  /// current ones.
+  Future<List<String>?> switchRelays() async {
+    final request = BunkerRequest(method: SignerMethod.switchRelays);
+
+    final response = await remoteRequest(request: request);
+
+    final relays = jsonDecode(response);
+    if (relays is! List || relays.isEmpty) return null;
+
+    final previousSubscription = subscription;
+    connection.relays = List<String>.from(relays);
+    await listenRelays();
+    if (previousSubscription != null) {
+      await requests.closeSubscription(previousSubscription.requestId);
+    }
+
+    return connection.relays;
   }
 
   @override
@@ -290,6 +343,7 @@ class Nip46EventSigner implements EventSigner {
 
   @override
   Future<void> dispose() async {
+    cancelAllQueued();
     if (subscription != null) {
       await requests.closeSubscription(subscription!.requestId);
     }

@@ -25,7 +25,9 @@ class FileIONative implements FileIO {
 
   @override
   Future<void> writeFileStream(
-      String filePath, Stream<Uint8List> dataStream) async {
+    String filePath,
+    Stream<Uint8List> dataStream,
+  ) async {
     final file = File(filePath);
     await file.create(recursive: true);
     final sink = file.openWrite();
@@ -57,10 +59,21 @@ class FileIONative implements FileIO {
   }
 
   @override
-  Stream<FileHashProgress> computeFileHash(String filePath) {
-    return IsolateManager.instance
+  Stream<FileHashProgress> computeFileHash(String filePath) async* {
+    final file = File(filePath);
+    if (!await file.exists()) {
+      throw PathNotFoundException(
+        'Cannot open file',
+        OSError('No such file or directory', 2),
+        filePath,
+      );
+    }
+
+    yield* IsolateManager.instance
         .runInComputeIsolateStream<String, FileHashProgress>(
-            _computeFileHashTask, filePath);
+          _computeFileHashTask,
+          filePath,
+        );
   }
 }
 
@@ -75,28 +88,28 @@ Future<void> _computeFileHashTask(
   final input = sha256.startChunkedConversion(digestSink);
 
   int processedBytes = 0;
-  emit(FileHashProgress(
-    processedBytes: processedBytes,
-    totalBytes: totalBytes,
-  ));
+  emit(
+    FileHashProgress(processedBytes: processedBytes, totalBytes: totalBytes),
+  );
 
   await for (final chunk in file.openRead()) {
     input.add(chunk);
     processedBytes += chunk.length;
-    emit(FileHashProgress(
-      processedBytes: processedBytes,
-      totalBytes: totalBytes,
-    ));
+    emit(
+      FileHashProgress(processedBytes: processedBytes, totalBytes: totalBytes),
+    );
   }
 
   input.close();
 
-  emit(FileHashProgress(
-    processedBytes: totalBytes,
-    totalBytes: totalBytes,
-    isComplete: true,
-    hash: digestSink.value?.toString(),
-  ));
+  emit(
+    FileHashProgress(
+      processedBytes: totalBytes,
+      totalBytes: totalBytes,
+      isComplete: true,
+      hash: digestSink.value?.toString(),
+    ),
+  );
 }
 
 class _DigestSink implements Sink<Digest> {

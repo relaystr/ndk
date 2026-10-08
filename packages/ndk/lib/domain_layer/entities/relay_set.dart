@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 
 import 'pubkey_mapping.dart';
 import 'read_write.dart';
+import 'relay_connection_key.dart';
 import 'request_state.dart';
 import 'filter.dart';
 
@@ -25,14 +26,15 @@ class RelaySet {
 
   List<NotCoveredPubKey> notCoveredPubkeys = [];
 
-  RelaySet(
-      {required this.name,
-      required this.pubKey,
-      this.relayMinCountPerPubkey = 0,
-      required this.relaysMap,
-      this.notCoveredPubkeys = const [],
-      required this.direction,
-      this.fallbackToBootstrapRelays = true});
+  RelaySet({
+    required this.name,
+    required this.pubKey,
+    this.relayMinCountPerPubkey = 0,
+    required this.relaysMap,
+    this.notCoveredPubkeys = const [],
+    required this.direction,
+    this.fallbackToBootstrapRelays = true,
+  });
 
   static String buildId(String name, String pubKey) {
     return "$name,$pubKey";
@@ -41,43 +43,58 @@ class RelaySet {
   static const int kMaxAuthorsPerRequest = 100;
 
   void splitIntoRequests(Filter filter, RequestState groupRequest) {
-    for (var entry in relaysMap.entries) {
-      String url = entry.key;
+    for (final entry in relaysMap.entries) {
+      final String url = entry.key;
+      final connectionKey = RelayConnectionKey.forAuth(
+        url,
+        groupRequest.request.auth,
+      );
+      if (connectionKey == null) {
+        continue;
+      }
       List<PubkeyMapping> pubKeyMappings = entry.value;
       if (pubKeyMappings.isEmpty) {
-        groupRequest.addRequest(url, [filter]);
+        groupRequest.addRequest(connectionKey, [filter]);
       } else if (filter.authors != null &&
           filter.authors!.isNotEmpty &&
           direction == RelayDirection.outbox) {
         List<String> pubKeysForRelay = [];
         for (String pubKey in filter.authors!) {
-          if (pubKeyMappings.any((pubKeyMapping) =>
-              pubKey == pubKeyMapping.pubKey ||
-              notCoveredPubkeys.any((element) => element.pubKey == pubKey))) {
+          if (pubKeyMappings.any(
+            (pubKeyMapping) =>
+                pubKey == pubKeyMapping.pubKey ||
+                notCoveredPubkeys.any((element) => element.pubKey == pubKey),
+          )) {
             pubKeysForRelay.add(pubKey);
           }
         }
         if (pubKeysForRelay.isNotEmpty) {
-          groupRequest.addRequest(url,
-              sliceFilterAuthors(filter.cloneWithAuthors(pubKeysForRelay)));
+          groupRequest.addRequest(
+            connectionKey,
+            sliceFilterAuthors(filter.cloneWithAuthors(pubKeysForRelay)),
+          );
         }
       } else if (filter.pTags != null &&
           filter.pTags!.isNotEmpty &&
           direction == RelayDirection.inbox) {
         List<String> pubKeysForRelay = [];
         for (String pubKey in filter.pTags!) {
-          if (pubKeyMappings.any((pubKeyMapping) =>
-              pubKey == pubKeyMapping.pubKey ||
-              notCoveredPubkeys.any((element) => element.pubKey == pubKey))) {
+          if (pubKeyMappings.any(
+            (pubKeyMapping) =>
+                pubKey == pubKeyMapping.pubKey ||
+                notCoveredPubkeys.any((element) => element.pubKey == pubKey),
+          )) {
             pubKeysForRelay.add(pubKey);
           }
         }
         if (pubKeysForRelay.isNotEmpty) {
           groupRequest.addRequest(
-              url, sliceFilterAuthors(filter.cloneWithPTags(pubKeysForRelay)));
+            connectionKey,
+            sliceFilterAuthors(filter.cloneWithPTags(pubKeysForRelay)),
+          );
         }
       } else if (filter.eTags != null && direction == RelayDirection.inbox) {
-        groupRequest.addRequest(url, [filter]);
+        groupRequest.addRequest(connectionKey, [filter]);
       } else {
         /// TODO: Define what to do in this edge case
       }

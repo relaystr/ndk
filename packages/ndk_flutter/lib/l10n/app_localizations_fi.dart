@@ -1,0 +1,1847 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Finnish (`fi`).
+class AppLocalizationsFi extends AppLocalizations {
+  AppLocalizationsFi([String locale = 'fi']) : super(locale);
+
+  @override
+  String get lnbitsWalletOption => 'LNbits';
+
+  @override
+  String get lnbitsConnectionInstructions =>
+      'Valitse LNbitsissä yhdistettävä lompakko, avaa se, napsauta API-ohjeita ja kopioi ylläpitäjän avain. Liitä se alle:';
+
+  @override
+  String get lnbitsAdminKey => 'LNbits-ylläpitäjän avain';
+
+  @override
+  String get lnbitsKeyType => 'LNbits-avaimen tyyppi';
+
+  @override
+  String get lnbitsInvoiceReadKey => 'LNbits-laskutus-/lukuavain';
+
+  @override
+  String get lnbitsReadOnlyDescription =>
+      'Vain vastaanottava lompakko: näytä saldo ja historia sekä luo laskuja. Maksujen lähetys on poistettu käytöstä.';
+
+  @override
+  String get lnbitsUrl => 'LNbits-URL';
+
+  @override
+  String get lnbitsCredentialsRequired =>
+      'Anna LNbits-ylläpitäjän avain ja URL-osoite.';
+
+  @override
+  String get lnbitsWalletAdded => 'LNbits-lompakko lisättiin';
+
+  @override
+  String get walletDetailWalletId => 'Lompakon tunnus';
+
+  @override
+  String get saveBackupToFile => 'Tallenna varmuuskopio tiedostoon';
+
+  @override
+  String get backupSavedToFile => 'Varmuuskopio tallennettu tiedostoon';
+
+  @override
+  String get restoreFromFile => 'Palauta tiedostosta';
+
+  @override
+  String get backupFileReadFailed =>
+      'Valittua varmuuskopiotiedostoa ei voitu lukea.';
+
+  @override
+  String get fetchingWalletConnectionInfo => 'Haetaan lompakon yhteystietoja…';
+
+  @override
+  String get createAccount => 'Luo tili';
+
+  @override
+  String get newHere => 'Oletko uusi täällä?';
+
+  @override
+  String get nostrAddress => 'Nostr-osoite';
+
+  @override
+  String get publicKey => 'Julkinen avain';
+
+  @override
+  String get privateKey => 'Yksityinen avain (turvaton)';
+
+  @override
+  String get browserExtension => 'Selainlaajennus';
+
+  @override
+  String get connect => 'Yhdistä';
+
+  @override
+  String get install => 'Asenna';
+
+  @override
+  String get logout => 'Kirjaudu ulos';
+
+  @override
+  String get nostrAddressHint => 'nimi@esimerkki.com';
+
+  @override
+  String get invalidAddress => 'Virheellinen osoite';
+
+  @override
+  String get unableToConnect => 'Yhdistäminen epäonnistui';
+
+  @override
+  String get publicKeyHint => 'npub1...';
+
+  @override
+  String get privateKeyHint => 'nsec1...';
+
+  @override
+  String get newToNostr => 'Uusi Nostrissa?';
+
+  @override
+  String get getStarted => 'Aloita';
+
+  @override
+  String get bunker => 'Bunkkeri';
+
+  @override
+  String get bunkerAuthentication => 'Bunkkeri-todennus';
+
+  @override
+  String tapToOpen(String url) {
+    return 'Avaa napauttamalla: $url';
+  }
+
+  @override
+  String get showNostrConnectQrcode => 'Näytä Nostr Connect -QR-koodi';
+
+  @override
+  String get loginWithSignerApp => 'Kirjaudu allekirjoitussovelluksella';
+
+  @override
+  String get nostrConnectUrl => 'Nostr Connect -URL';
+
+  @override
+  String get copy => 'Kopioi';
+
+  @override
+  String get addAccount => 'Lisää tili';
+
+  @override
+  String get readOnly => 'Vain luku';
+
+  @override
+  String get nsec => 'Nsec';
+
+  @override
+  String get extension => 'Laajennus';
+
+  @override
+  String get userMetadata => 'Käyttäjän metatiedot';
+
+  @override
+  String get shortTextNote => 'Lyhyt tekstiviesti';
+
+  @override
+  String get recommendRelay => 'Suosittele välittäjää';
+
+  @override
+  String get follows => 'Seuraa';
+
+  @override
+  String get encryptedDirectMessages => 'Salatut suorat viestit';
+
+  @override
+  String get eventDeletionRequest => 'Tapahtuman poistopyyntö';
+
+  @override
+  String get repost => 'Uudelleenjulkaisu';
+
+  @override
+  String get reaction => 'Reaktio';
+
+  @override
+  String get badgeAward => 'Merkkipalkinto';
+
+  @override
+  String get chatMessage => 'Chat-viesti';
+
+  @override
+  String get groupChatThreadedReply => 'Ryhmächatin ketjutettu vastaus';
+
+  @override
+  String get thread => 'Ketju';
+
+  @override
+  String get groupThreadReply => 'Ryhmän ketjuvastaus';
+
+  @override
+  String get seal => 'Sinetti';
+
+  @override
+  String get directMessage => 'Suora viesti';
+
+  @override
+  String get fileMessage => 'Tiedostoviesti';
+
+  @override
+  String get genericRepost => 'Yleinen uudelleenjulkaisu';
+
+  @override
+  String get reactionToWebsite => 'Reaktio verkkosivustoon';
+
+  @override
+  String get picture => 'Kuva';
+
+  @override
+  String get videoEvent => 'Videotapahtuma';
+
+  @override
+  String get shortFormPortraitVideoEvent => 'Lyhyt pystyvideotapahtuma';
+
+  @override
+  String get internalReference => 'Sisäinen viite';
+
+  @override
+  String get externalReference => 'Ulkoinen viite';
+
+  @override
+  String get hardcopyReference => 'Paperinen viite';
+
+  @override
+  String get promptReference => 'Kehoteviite';
+
+  @override
+  String get channelCreation => 'Kanavan luonti';
+
+  @override
+  String get channelMetadata => 'Kanavan metatiedot';
+
+  @override
+  String get channelMessage => 'Kanavaviesti';
+
+  @override
+  String get channelHideMessage => 'Kanavan piilota viesti';
+
+  @override
+  String get channelMuteUser => 'Kanavan mykistä käyttäjä';
+
+  @override
+  String get requestToVanish => 'Pyyntö hävitä';
+
+  @override
+  String get chessPgn => 'Shakki (PGN)';
+
+  @override
+  String get mlsKeyPackage => 'MLS KeyPackage';
+
+  @override
+  String get mlsWelcome => 'MLS Welcome';
+
+  @override
+  String get mlsGroupEvent => 'MLS Group Event';
+
+  @override
+  String get mergeRequests => 'Yhdistämispyynnöt';
+
+  @override
+  String get pollResponse => 'Äänestyksen vastaus';
+
+  @override
+  String get marketplaceBid => 'Markkinapaikan tarjous';
+
+  @override
+  String get marketplaceBidConfirmation => 'Markkinapaikan tarjousvahvistus';
+
+  @override
+  String get openTimestamps => 'OpenTimestamps';
+
+  @override
+  String get giftWrap => 'Lahjapaketti';
+
+  @override
+  String get fileMetadata => 'Tiedoston metatiedot';
+
+  @override
+  String get poll => 'Äänestys';
+
+  @override
+  String get comment => 'Kommentti';
+
+  @override
+  String get voiceMessage => 'Ääniviesti';
+
+  @override
+  String get voiceMessageComment => 'Ääniviestikommentti';
+
+  @override
+  String get liveChatMessage => 'Live-chat-viesti';
+
+  @override
+  String get codeSnippet => 'Koodinpätkä';
+
+  @override
+  String get gitPatch => 'Git-korjaus';
+
+  @override
+  String get gitPullRequest => 'Git Pull Request';
+
+  @override
+  String get gitStatusUpdate => 'Git-tilapäivitys';
+
+  @override
+  String get gitIssue => 'Git-ongelma';
+
+  @override
+  String get gitIssueUpdate => 'Git-ongelman päivitys';
+
+  @override
+  String get status => 'Tila';
+
+  @override
+  String get statusUpdate => 'Tilapäivitys';
+
+  @override
+  String get statusDelete => 'Tilan poisto';
+
+  @override
+  String get statusReply => 'Tilavastaus';
+
+  @override
+  String get problemTracker => 'Ongelmanseuranta';
+
+  @override
+  String get reporting => 'Raportointi';
+
+  @override
+  String get label => 'Tarra';
+
+  @override
+  String get relayReviews => 'Välittäjäarvostelut';
+
+  @override
+  String get aiEmbeddings => 'AI-sulautukset / vektoriluettelot';
+
+  @override
+  String get torrent => 'Torrent';
+
+  @override
+  String get torrentComment => 'Torrent-kommentti';
+
+  @override
+  String get coinjoinPool => 'Coinjoin-pooli';
+
+  @override
+  String get communityPostApproval => 'Yhteisön julkaisun hyväksyntä';
+
+  @override
+  String get jobRequest => 'Työpyyntö';
+
+  @override
+  String get jobResult => 'Työn tulos';
+
+  @override
+  String get jobFeedback => 'Työpalaute';
+
+  @override
+  String get cashuWalletToken => 'Cashu-lompakkovarmenteet';
+
+  @override
+  String get cashuWalletProofs => 'Cashu-lompakontodistukset';
+
+  @override
+  String get cashuWalletHistory => 'Cashu-lompakon historia';
+
+  @override
+  String get geocacheCreate => 'Geocachen luonti';
+
+  @override
+  String get geocacheUpdate => 'Geocachen päivitys';
+
+  @override
+  String get groupControlEvent => 'Ryhmän hallintatapahtuma';
+
+  @override
+  String get zapGoal => 'Zap-tavoite';
+
+  @override
+  String get nutzap => 'Nutzap';
+
+  @override
+  String get tidalLogin => 'Tidal-kirjautuminen';
+
+  @override
+  String get zapRequest => 'Zap-pyyntö';
+
+  @override
+  String get zap => 'Zap';
+
+  @override
+  String get highlights => 'Kohokohdat';
+
+  @override
+  String get muteList => 'Mykistysluettelo';
+
+  @override
+  String get pinList => 'Kiinnitysluettelo';
+
+  @override
+  String get relayListMetadata => 'Välittäjäluettelon metatiedot';
+
+  @override
+  String get bookmarkList => 'Kirjanmerkkiluettelo';
+
+  @override
+  String get communitiesList => 'Yhteisöluettelo';
+
+  @override
+  String get publicChatsList => 'Julkisten chatien luettelo';
+
+  @override
+  String get blockedRelaysList => 'Estettyjen välittäjien luettelo';
+
+  @override
+  String get searchRelaysList => 'Hakuvälittäjien luettelo';
+
+  @override
+  String get userGroups => 'Käyttäjäryhmät';
+
+  @override
+  String get favoritesList => 'Suosikkiluettelo';
+
+  @override
+  String get privateEventsList => 'Yksityisten tapahtumien luettelo';
+
+  @override
+  String get interestsList => 'Kiinnostusluettelo';
+
+  @override
+  String get mediaFollowsList => 'Median seurantalista';
+
+  @override
+  String get peopleFollowsList => 'Henkilöiden seurantalista';
+
+  @override
+  String get userEmojiList => 'Käyttäjän emojiluettelo';
+
+  @override
+  String get dmRelayList => 'DM-välittäjäluettelo';
+
+  @override
+  String get keyPackageRelayList => 'KeyPackage-välittäjäluettelo';
+
+  @override
+  String get userServerList => 'Käyttäjäpalvelinluettelo';
+
+  @override
+  String get fileStorageServerList => 'Tiedostotallennuspalvelinluettelo';
+
+  @override
+  String get relayMonitorAnnouncement => 'Välittäjänvalvojan ilmoitus';
+
+  @override
+  String get roomPresence => 'Huoneen läsnäolo';
+
+  @override
+  String get proxyAnnouncement => 'Välityspalvelimen ilmoitus';
+
+  @override
+  String get transportMethodAnnouncement => 'Kuljetustavan ilmoitus';
+
+  @override
+  String get walletInfo => 'Lompakon tiedot';
+
+  @override
+  String get cashuWalletEvent => 'Cashu-lompakotapahtuma';
+
+  @override
+  String get lightningPubRpc => 'Lightning Pub RPC';
+
+  @override
+  String get clientAuthentication => 'Asiakkaan todennus';
+
+  @override
+  String get walletRequest => 'Lompakkopyyntö';
+
+  @override
+  String get walletResponse => 'Lompakon vastaus';
+
+  @override
+  String get nostrConnectEvent => 'Nostr Connect';
+
+  @override
+  String get blobsStoredOnMediaservers =>
+      'Mediapalvelimille tallennetut blobit';
+
+  @override
+  String get httpAuth => 'HTTP-todennus';
+
+  @override
+  String get categorizedPeopleList => 'Luokiteltu henkilöluettelo';
+
+  @override
+  String get categorizedBookmarkList => 'Luokiteltu kirjanmerkkiluettelo';
+
+  @override
+  String get categorizedRelayList => 'Luokiteltu välittäjäluettelo';
+
+  @override
+  String get bookmarkSets => 'Kirjanmerkkisarjat';
+
+  @override
+  String get curationSets => 'Kuraattorisarjat';
+
+  @override
+  String get videoSets => 'Videosarjat';
+
+  @override
+  String get kindMuteSets => 'Tyyppimykistysjoukot';
+
+  @override
+  String get profileBadges => 'Profiilimerkit';
+
+  @override
+  String get badgeDefinition => 'Merkkien määritelmä';
+
+  @override
+  String get interestSets => 'Kiinnostussarjat';
+
+  @override
+  String get createOrUpdateStall => 'Luo tai päivitä koju';
+
+  @override
+  String get createOrUpdateProduct => 'Luo tai päivitä tuote';
+
+  @override
+  String get marketplaceUiUx => 'Markkinapaikan UI/UX';
+
+  @override
+  String get productSoldAsAuction => 'Tuote myyty huutokaupassa';
+
+  @override
+  String get longFormContent => 'Pitkämuotoinen sisältö';
+
+  @override
+  String get draftLongFormContent => 'Pitkämuotoisen sisällön luonnos';
+
+  @override
+  String get emojiSets => 'Emojisarjat';
+
+  @override
+  String get curatedPublicationItem => 'Kuraattorin julkaisu';
+
+  @override
+  String get curatedPublicationDraft => 'Kuraattorin julkaisuluonnos';
+
+  @override
+  String get releaseArtifactSets => 'Julkaisuartifacttisarjat';
+
+  @override
+  String get applicationSpecificData => 'Sovelluskohtaiset tiedot';
+
+  @override
+  String get relayDiscovery => 'Välittäjän löytäminen';
+
+  @override
+  String get appCurationSets => 'Sovelluskuraattorisarjat';
+
+  @override
+  String get liveEvent => 'Live-tapahtuma';
+
+  @override
+  String get userStatus => 'Käyttäjän tila';
+
+  @override
+  String get slideSet => 'Diasarja';
+
+  @override
+  String get classifiedListing => 'Luokiteltu ilmoitus';
+
+  @override
+  String get draftClassifiedListing => 'Luokitellun ilmoituksen luonnos';
+
+  @override
+  String get repositoryAnnouncement => 'Varaston ilmoitus';
+
+  @override
+  String get repositoryStateAnnouncement => 'Varaston tilan ilmoitus';
+
+  @override
+  String get wikiArticle => 'Wiki-artikkeli';
+
+  @override
+  String get redirects => 'Uudelleenohjaukset';
+
+  @override
+  String get draftEvent => 'Luonnostapahtuma';
+
+  @override
+  String get linkSet => 'Linkkisarja';
+
+  @override
+  String get feed => 'Syöte';
+
+  @override
+  String get dateBasedCalendarEvent =>
+      'Päivämäärään perustuva kalenteritapahtuma';
+
+  @override
+  String get timeBasedCalendarEvent => 'Aikaan perustuva kalenteritapahtuma';
+
+  @override
+  String get calendar => 'Kalenteri';
+
+  @override
+  String get calendarEventRsvp => 'Kalenteritapahtuman RSVP';
+
+  @override
+  String get handlerRecommendation => 'Käsittelijän suositus';
+
+  @override
+  String get handlerInformation => 'Käsittelijän tiedot';
+
+  @override
+  String get softwareApplication => 'Sovellus';
+
+  @override
+  String get videoView => 'Videonäkymä';
+
+  @override
+  String get communityDefinition => 'Yhteisön määritelmä';
+
+  @override
+  String get geocacheListing => 'Geocache-luettelo';
+
+  @override
+  String get mintAnnouncement => 'Mint-ilmoitus';
+
+  @override
+  String get mintQuote => 'Mint-tarjous';
+
+  @override
+  String get peerToPeerOrder => 'Vertaisverkkotilaus';
+
+  @override
+  String get groupMetadata => 'Ryhmän metatiedot';
+
+  @override
+  String get groupAdminMetadata => 'Ryhmän ylläpitäjän metatiedot';
+
+  @override
+  String get groupMemberMetadata => 'Ryhmän jäsenen metatiedot';
+
+  @override
+  String get groupAdminsList => 'Ryhmän ylläpitäjien luettelo';
+
+  @override
+  String get groupMembersList => 'Ryhmän jäsenluettelo';
+
+  @override
+  String get groupRoles => 'Ryhmän roolit';
+
+  @override
+  String get groupPermissions => 'Ryhmän oikeudet';
+
+  @override
+  String get groupChatMessage => 'Ryhmän chat-viesti';
+
+  @override
+  String get groupChatThread => 'Ryhmän chat-ketju';
+
+  @override
+  String get groupPinned => 'Ryhmän kiinnitetty';
+
+  @override
+  String get starterPacks => 'Aloituspaketit';
+
+  @override
+  String get mediaStarterPacks => 'Media-aloituspaketit';
+
+  @override
+  String get webBookmarks => 'Verkkokirjanmerkit';
+
+  @override
+  String unknownEventKind(int kind) {
+    return 'Tapahtumatyyppi $kind';
+  }
+
+  @override
+  String get walletsTitle => 'Lompakot';
+
+  @override
+  String get recentActivityTitle => 'Viimeaikainen toiminta';
+
+  @override
+  String get addCashuWallet => 'Lisää Cashu-lompakko';
+
+  @override
+  String get addNwcWallet => 'Lisää NWC-lompakko';
+
+  @override
+  String get addLnurlWallet => 'Lisää LNURL-lompakko';
+
+  @override
+  String get addCashuTooltip => 'Lisää Cashu-lompakko';
+
+  @override
+  String get addNwcTooltip => 'Lisää NWC-lompakko';
+
+  @override
+  String get addLnurlTooltip => 'Lisää LNURL-lompakko';
+
+  @override
+  String get addCashuWalletTitle => 'Lisää Cashu-lompakko';
+
+  @override
+  String get enterMintUrl => 'Anna mint URL lisätäksesi Cashu-lompakon.';
+
+  @override
+  String get mintUrl => 'Mint URL';
+
+  @override
+  String get mintUrlHint => 'https://mint.example.com';
+
+  @override
+  String get pleaseEnterMintUrl => 'Anna mint URL';
+
+  @override
+  String get cashuWalletAdded => 'Cashu-lompakko lisätty onnistuneesti!';
+
+  @override
+  String get failedToAddMint =>
+      'Mintin lisääminen epäonnistui. Tarkista URL ja yritä uudelleen.';
+
+  @override
+  String get addNwcWalletTitle => 'Lisää NWC-lompakko';
+
+  @override
+  String get faucet => 'Hana';
+
+  @override
+  String get manual => 'Manuaalinen';
+
+  @override
+  String get nwcFaucetDescription => 'Luo testilompakko satseilla NWC-hanasta.';
+
+  @override
+  String get startingBalance => 'Aloitussaldo';
+
+  @override
+  String get startingBalanceHint => '10000';
+
+  @override
+  String get nwcConnectionUri => 'NWC-yhteys-URI';
+
+  @override
+  String get nwcConnectionUriHint => 'nostr+walletconnect://...';
+
+  @override
+  String get nwcWalletAdded => 'NWC-lompakko lisätty onnistuneesti!';
+
+  @override
+  String nwcFaucetWalletAdded(int balance) {
+    return 'NWC-hanalompakko lisätty $balance satilla!';
+  }
+
+  @override
+  String get invalidFaucetResponse => 'Virheellinen vastaus hanasta';
+
+  @override
+  String get errorCreatingWallet => 'Virhe lompakon luomisessa';
+
+  @override
+  String get addLnurlWalletTitle => 'Lisää LNURL-lompakko';
+
+  @override
+  String get enterLnurlIdentifier =>
+      'Anna LNURL-tunnisteesi (kayttaja@domain.com).';
+
+  @override
+  String get lnurlIdentifierHint => 'kayttaja@esimerkki.com';
+
+  @override
+  String get pleaseEnterValidIdentifier =>
+      'Anna kelvollinen tunniste (kayttaja@domain.com)';
+
+  @override
+  String get lnurlWalletAdded => 'LNURL-lompakko lisätty onnistuneesti!';
+
+  @override
+  String get cancel => 'Peruuta';
+
+  @override
+  String get add => 'Lisää';
+
+  @override
+  String get send => 'Lähetä';
+
+  @override
+  String get receive => 'Vastaanota';
+
+  @override
+  String get setAsDefaultForReceiving => 'Aseta oletukseksi vastaanottamiseen';
+
+  @override
+  String get setAsDefaultForSending => 'Aseta oletukseksi lähettämiseen';
+
+  @override
+  String get defaultForReceiving => 'Oletus vastaanottamiseen';
+
+  @override
+  String get defaultForSending => 'Oletus lähettämiseen';
+
+  @override
+  String get defaultWalletForReceivingTooltip =>
+      'Tämä lompakko on oletus vastaanottaessa maksuja.';
+
+  @override
+  String get defaultWalletForSendingTooltip =>
+      'Tämä lompakko on oletus lähettäessä maksuja.';
+
+  @override
+  String get sendOptionsTitle => 'Lähetysvaihtoehdot';
+
+  @override
+  String get sendByToken => 'Lähetä tokenilla';
+
+  @override
+  String get sendByTokenDescription => 'Luo Cashu-token lähettääksesi';
+
+  @override
+  String get sendByLightning => 'Lähetä Lightningilla';
+
+  @override
+  String get sendByLightningDescription => 'Maksa Lightning-lasku';
+
+  @override
+  String get payInvoiceTitle => 'Maksa lasku';
+
+  @override
+  String get sendToWallet => 'Lähetä lompakkoon';
+
+  @override
+  String get sendToWalletDescription =>
+      'Siirrä toiseen yhteensopivaan lompakkoon';
+
+  @override
+  String get noCompatibleReceivingWallets =>
+      'Ei yhteensopivia vastaanottavia lompakoita';
+
+  @override
+  String get noCompatibleReceivingWalletsDescription =>
+      'Lisää tai yhdistä toinen lompakko, joka voi vastaanottaa tämän lompakon tukeman maksun.';
+
+  @override
+  String get destinationWallet => 'Kohdelompakko';
+
+  @override
+  String walletTransferSubmitted(String walletName) {
+    return 'Maksu lähetetty lompakkoon $walletName';
+  }
+
+  @override
+  String get invoice => 'Lasku';
+
+  @override
+  String get invoiceHint => 'lnbc...';
+
+  @override
+  String get pleaseEnterInvoice => 'Anna lasku';
+
+  @override
+  String get invoicePaid => 'Lasku maksettu!';
+
+  @override
+  String paymentFailed(String message) {
+    return 'Maksu epäonnistui: $message';
+  }
+
+  @override
+  String get receiveOptionsTitle => 'Vastaanottovaihtoehdot';
+
+  @override
+  String get receiveByToken => 'Vastaanota tokenilla';
+
+  @override
+  String get receiveByTokenDescription => 'Vastaanota Cashu-token';
+
+  @override
+  String get receiveByLightning => 'Vastaanota Lightningilla';
+
+  @override
+  String get receiveByLightningDescription => 'Luo Lightning-lasku';
+
+  @override
+  String get receiveByTokenTitle => 'Vastaanota tokenilla';
+
+  @override
+  String get token => 'Token';
+
+  @override
+  String get tokenHint => 'Liitä token tähän...';
+
+  @override
+  String get pleaseEnterToken => 'Anna token';
+
+  @override
+  String get tokenReceived => 'Token vastaanotettu!';
+
+  @override
+  String get createInvoiceTitle => 'Luo lasku';
+
+  @override
+  String get amount => 'Määrä';
+
+  @override
+  String get amountHint => '100';
+
+  @override
+  String get pleaseEnterValidAmount => 'Anna kelvollinen määrä';
+
+  @override
+  String get tokenCopiedToClipboard => 'Token kopioitu leikepöydälle!';
+
+  @override
+  String get invoiceCreatedAndCopied => 'Lasku luotu ja kopioitu!';
+
+  @override
+  String get invoiceTrackingTitle => 'Lightning-lasku';
+
+  @override
+  String get invoiceCreatedMessage => 'Lasku luotu ja kopioitu!';
+
+  @override
+  String get close => 'Sulje';
+
+  @override
+  String get copyAgain => 'Kopioi uudelleen';
+
+  @override
+  String get copied => 'Kopioitu!';
+
+  @override
+  String get paymentReceived => 'Maksu vastaanotettu!';
+
+  @override
+  String get waitingForPayment => 'Odotetaan maksua...';
+
+  @override
+  String get paid => 'Maksettu!';
+
+  @override
+  String get createToken => 'Luo token';
+
+  @override
+  String get pay => 'Maksa';
+
+  @override
+  String get create => 'Luo';
+
+  @override
+  String get pendingTransactions => 'Odottaa';
+
+  @override
+  String get backupSeedWarning => 'Varmuuskopioi cashu-palautuslause';
+
+  @override
+  String get backupSeedTitle => 'Varmuuskopioi cashu-palautuslause';
+
+  @override
+  String get backupSeedInstructions =>
+      'Kirjoita nämä sanat järjestyksessä ylös ja säilytä ne turvallisessa paikassa. Ne ovat ainoa tapa palauttaa cashu-varasi, jos menetät tämän laitteen.';
+
+  @override
+  String get backupSeedConfirm =>
+      'Olen kirjoittanut palautuslauseen ylös ja tallentanut sen turvallisesti';
+
+  @override
+  String get backupSeedDone => 'Olen varmuuskopioinut sen';
+
+  @override
+  String get reclaimPendingFunds => 'Lunasta odottavat varat';
+
+  @override
+  String get reclaimPendingTitle => 'Lunasta odottavat varat';
+
+  @override
+  String get recentTransactions => 'Viimeaikaiset tapahtumat';
+
+  @override
+  String get noRecentTransactions => 'Ei viimeaikaisia tapahtumia';
+
+  @override
+  String get noWalletsYet => 'Ei lompakoita vielä';
+
+  @override
+  String get noWalletsAvailable => 'Ei lompakoita saatavilla';
+
+  @override
+  String get tapToAddWallet => 'Napauta + lisätäksesi';
+
+  @override
+  String get delete => 'Poista';
+
+  @override
+  String error(String message) {
+    return 'Virhe: $message';
+  }
+
+  @override
+  String get unknownWalletType => 'Tuntematon';
+
+  @override
+  String get cashuWallet => 'Cashu';
+
+  @override
+  String get nwcWallet => 'NWC';
+
+  @override
+  String get lnurlWallet => 'LNURL';
+
+  @override
+  String get nwcWalletSubtitle => 'NWC-lompakko';
+
+  @override
+  String get balance => 'Saldo';
+
+  @override
+  String get sats => 'sats';
+
+  @override
+  String get selected => 'VALITTU';
+
+  @override
+  String get receiveOnlyWallet => 'Vastaanottava lompakko';
+
+  @override
+  String receiveRange(int min, int max) {
+    return 'Vastaanota: $min - $max sats';
+  }
+
+  @override
+  String get limitsUnavailable => 'Rajat eivät saatavilla';
+
+  @override
+  String get tokenCopied => 'Token kopioitu';
+
+  @override
+  String get deleteWalletConfirmation => 'Poista lompakko?';
+
+  @override
+  String get deleteWalletConfirmationMessage =>
+      'Oletko varma, että haluat poistaa tämän lompakon? Tätä toimintoa ei voi kumota.';
+
+  @override
+  String get addWalletTitle => 'Lisää lompakko';
+
+  @override
+  String get addWalletDescription =>
+      'Skannaa tuetun lompakon QR-koodi, liitä sen tiedot tai yhdistä lompakkosovelluksella.';
+
+  @override
+  String get scanWalletQrCode => 'Skannaa lompakon QR-koodi';
+
+  @override
+  String get connectWithWallet => 'Yhdistä lompakkoon';
+
+  @override
+  String get chooseWalletApp => 'Valitse lompakkosovellus';
+
+  @override
+  String get oneClickConnect => 'Yhdistä yhdellä napsautuksella';
+
+  @override
+  String get chooseWallet => 'Valitse lompakko';
+
+  @override
+  String get albyWalletOption => 'Alby';
+
+  @override
+  String get albyCloudOption => 'Alby Cloud';
+
+  @override
+  String get coinosWalletOption => 'Coinos';
+
+  @override
+  String get manualNwcConnection => 'Manuaalinen NWC-yhteys';
+
+  @override
+  String walletConnectionFinishIn(String walletName) {
+    return 'Viimeistele yhteys sovelluksessa $walletName';
+  }
+
+  @override
+  String walletConnectionConnecting(String walletName) {
+    return 'Yhdistetään lompakkoon $walletName…';
+  }
+
+  @override
+  String walletConnectionConnected(String walletName) {
+    return '$walletName yhdistetty';
+  }
+
+  @override
+  String walletConnectionFailed(String walletName) {
+    return 'Lompakkoon $walletName ei voitu yhdistää';
+  }
+
+  @override
+  String get retry => 'Yritä uudelleen';
+
+  @override
+  String get walletUnreachable => 'Lompakkoa ei tavoiteta';
+
+  @override
+  String get chooseAnotherWallet => 'Valitse toinen lompakko';
+
+  @override
+  String get chooseWalletAppDescription =>
+      'Hyväksy NWC-yhteys asennetussa lompakossa';
+
+  @override
+  String get walletInput => 'Lompakon osoite tai yhteys';
+
+  @override
+  String get walletInputHint =>
+      'NWC, Lightning-/BIP353-osoite, BOLT12-/BIP321-tarjous tai Cashu-mintin HTTPS-URL';
+
+  @override
+  String get unsupportedWalletInput =>
+      'Tätä lompakon osoitetta tai yhteyttä ei tueta.';
+
+  @override
+  String get detected => 'Havaittu';
+
+  @override
+  String get lightningAddressInputType => 'Lightning- tai BIP353-osoite';
+
+  @override
+  String get manualWalletSetup => 'Määritä manuaalisesti';
+
+  @override
+  String get chooseWalletType => 'Valitse lompakon tyyppi';
+
+  @override
+  String get nwcWalletTypeTitle => 'Nostr Wallet Connect';
+
+  @override
+  String get nwcWalletTypeSubtitle => 'Yhdistä etälompakkoon NWC:llä';
+
+  @override
+  String get lnurlWalletTypeTitle => 'Lightning-osoite (LNURL)';
+
+  @override
+  String get lnurlWalletTypeSubtitle =>
+      'Käytä Lightning-osoitetta (LNURL) vain vastaanottamiseen';
+
+  @override
+  String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get chooseCashuMint => 'Valitse Cashu-mintti';
+
+  @override
+  String get cashuMintRatingsNotice =>
+      'Yhteisöarviot ovat allekirjoitettuja Nostr-arvosteluja. Korkea arvio ei takaa mintin turvallisuutta.';
+
+  @override
+  String get cashuMintDiscoveryFailed => 'Minttiehdotuksia ei voitu ladata.';
+
+  @override
+  String get noCashuMintSuggestions =>
+      'Saatavilla olevia minttiehdotuksia ei löytynyt.';
+
+  @override
+  String get noRatingsYet => 'Ei vielä arvioita';
+
+  @override
+  String cashuMintRating(String rating, int count) {
+    return '★ $rating · $count arvostelua';
+  }
+
+  @override
+  String get enterMintUrlManually => 'Syötä mintin URL manuaalisesti';
+
+  @override
+  String get cashuWalletTypeSubtitle =>
+      'Käytä ecash-lompakkoa Cashu-mintin tukemana';
+
+  @override
+  String get cashuOption => 'Cashu';
+
+  @override
+  String get nwcOption => 'NWC';
+
+  @override
+  String get lnurlOption => 'LNURL';
+
+  @override
+  String get connectNwcTitle => 'Yhdistä NWC';
+
+  @override
+  String get chooseNwcMethod => 'Valitse yhteystapa';
+
+  @override
+  String get albyGoOption => 'Alby Go';
+
+  @override
+  String get albyGoQrScanInstructions =>
+      'Napauta Alby Go -sovelluksessa Lähetä ja skannaa sitten tämä QR-koodi.';
+
+  @override
+  String get manualOption => 'Manuaalinen';
+
+  @override
+  String get faucetOption => 'Hana';
+
+  @override
+  String get invalidNwcQrCode => 'Virheellinen NWC QR-koodi';
+
+  @override
+  String get scanNwcQrCodeTitle => 'Skannaa NWC QR-koodi';
+
+  @override
+  String get cameraNotAvailable => 'Kamera ei saatavilla';
+
+  @override
+  String get scanNwcInstructions =>
+      'Skannaa QR-koodi NWC-lompakkosovelluksestasi';
+
+  @override
+  String get invalidNwcUri => 'Virheellinen NWC URI';
+
+  @override
+  String get paste => 'Liitä';
+
+  @override
+  String get clearInput => 'Tyhjennä syöte';
+
+  @override
+  String get pasteOrEnter => 'Liitä tai kirjoita';
+
+  @override
+  String get fromYourProfile => 'Profiilistasi';
+
+  @override
+  String get orEnterManually => 'Tai syötä manuaalisesti:';
+
+  @override
+  String get renameWallet => 'Nimeä uudelleen';
+
+  @override
+  String get pickColor => 'Valitse väri';
+
+  @override
+  String get deleteWallet => 'Poista';
+
+  @override
+  String get walletName => 'Lompakon nimi';
+
+  @override
+  String get walletNameHint => 'Syötä lompakon nimi';
+
+  @override
+  String get save => 'Tallenna';
+
+  @override
+  String get walletRenamed => 'Lompakko nimetty uudelleen';
+
+  @override
+  String budgetUsedOf(int used, int total) {
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String usedString = usedNumberFormat.format(used);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Budjetti: $usedString / $totalString';
+  }
+
+  @override
+  String budgetRenewsIn(int days) {
+    return 'Uusii $days päivän kuluttua';
+  }
+
+  @override
+  String get budgetDaily => 'Päivittäin';
+
+  @override
+  String get budgetWeekly => 'Viikoittain';
+
+  @override
+  String get budgetMonthly => 'Kuukausittain';
+
+  @override
+  String get budgetYearly => 'Vuosittain';
+
+  @override
+  String get budgetNever => 'Ei koskaan';
+
+  @override
+  String get backup => 'Varmuuskopio';
+
+  @override
+  String get restore => 'Palauta';
+
+  @override
+  String get cashuBackupTitle => 'Cashu-varmuuskopio';
+
+  @override
+  String get cashuBackupWarning =>
+      'Tämä varmuuskopio sisältää ecash-todisteesi, joiden haltija voi käyttää varat. Pidä se yksityisenä ja säilytä turvallisessa paikassa. Palautuslause varmuuskopioidaan erikseen.';
+
+  @override
+  String get generatingBackup => 'Luodaan varmuuskopiota...';
+
+  @override
+  String get copyBackup => 'Kopioi varmuuskopio';
+
+  @override
+  String get backupCopiedToClipboard => 'Varmuuskopio kopioitu leikepöydälle';
+
+  @override
+  String get cashuRestoreTitle => 'Palauta Cashu-varmuuskopio';
+
+  @override
+  String get backupJson => 'JSON-varmuuskopio';
+
+  @override
+  String get backupJsonHint => 'Liitä JSON-varmuuskopiosi tähän';
+
+  @override
+  String get pleaseEnterBackup => 'Anna varmuuskopio';
+
+  @override
+  String get restoringBackup => 'Palautetaan varmuuskopiota...';
+
+  @override
+  String appUpdateVersionAvailable(String version) {
+    return 'Versio $version saatavilla';
+  }
+
+  @override
+  String get appUpdateLater => 'Myöhemmin';
+
+  @override
+  String get appUpdateView => 'Näytä päivitys';
+
+  @override
+  String get appUpdateChecking => 'Tarkistetaan päivityksiä…';
+
+  @override
+  String get appUpdateCheckFailed => 'Päivitysten tarkistus epäonnistui';
+
+  @override
+  String appUpdateInstalled(String version) {
+    return 'Asennettu: $version';
+  }
+
+  @override
+  String get appUpdatesTitle => 'Sovelluspäivitykset';
+
+  @override
+  String get appUpdateNone => 'Päivityksiä ei ole saatavilla';
+
+  @override
+  String appUpdateTitle(String currentVersion, String availableVersion) {
+    return 'Päivitys $currentVersion → $availableVersion';
+  }
+
+  @override
+  String appUpdateSizeMb(String size) {
+    return '$size Mt';
+  }
+
+  @override
+  String get appUpdateAllowInstalls =>
+      'Salli asennukset tästä sovelluksesta ja napauta sitten Päivitä uudelleen.';
+
+  @override
+  String get appUpdateCompleteInstallation =>
+      'Viimeistele asennus Androidin järjestelmäasennuksessa.';
+
+  @override
+  String get appUpdateFailed => 'Päivitys epäonnistui';
+
+  @override
+  String get appUpdateCancel => 'Peruuta';
+
+  @override
+  String get appUpdateAction => 'Päivitä';
+
+  @override
+  String get appUpdateDownload => 'Lataa';
+
+  @override
+  String get appUpdateUpToDate => 'Sovellus on ajan tasalla';
+
+  @override
+  String get appUpdateAheadOfPublished => 'Uudempi kuin julkaistu versio';
+
+  @override
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  ) {
+    return 'Asennettu versio $installedVersion on uudempi kuin viimeisin julkaistu versio $publishedVersion. Julkaisutiedot näkyvät, kun tämä versio julkaistaan.';
+  }
+
+  @override
+  String get appUpdateCheckFailedMessage => 'Päivityksiä ei voitu tarkistaa.';
+
+  @override
+  String appUpdateLatest(String version) {
+    return 'Versio $version on uusin saatavilla oleva versio.';
+  }
+
+  @override
+  String get appUpdateClose => 'Sulje';
+
+  @override
+  String get appUpdateCheckAgain => 'Tarkista uudelleen';
+
+  @override
+  String appUpdateInstalledVersion(String version) {
+    return 'Asennettu versio $version';
+  }
+
+  @override
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  ) {
+    return 'Asennettu versio $installedVersion. Päivitys $availableVersion saatavilla.';
+  }
+
+  @override
+  String get appUpdateChangelog => 'Muutosloki';
+
+  @override
+  String get appUpdateReleaseHistory => 'Versiohistoria';
+
+  @override
+  String get appUpdateInstalledBadge => 'Asennettu';
+
+  @override
+  String get appUpdateAvailableBadge => 'Päivitys saatavilla';
+
+  @override
+  String get appUpdateLatestBadge => 'Uusin';
+
+  @override
+  String get appUpdateNoReleases => 'Yhtään versiota ei ole vielä julkaistu.';
+
+  @override
+  String get appUpdateAcrossAllReleases => 'Kaikissa versioissa';
+
+  @override
+  String get appUpdateReleaseDetails => 'Julkaisun tiedot';
+
+  @override
+  String get appUpdateWhatsNew => 'Uutta';
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return 'Julkaistu $date';
+  }
+
+  @override
+  String appUpdateChannel(String channel) {
+    return 'Kanava: $channel';
+  }
+
+  @override
+  String appUpdateArchitecture(String architecture) {
+    return 'Arkkitehtuuri: $architecture';
+  }
+
+  @override
+  String appUpdateVersionCode(int versionCode) {
+    return 'Koontiversio $versionCode';
+  }
+
+  @override
+  String appUpdateReleaseVersion(String version) {
+    return 'Julkaisu $version';
+  }
+
+  @override
+  String get appUpdateNoReleaseNotes => 'Julkaisutietoja ei ole julkaistu.';
+
+  @override
+  String get appUpdatePublisher => 'Julkaisija';
+
+  @override
+  String get appUpdatePublisherSignatureVerified =>
+      'Nostr-tapahtuman allekirjoitus vahvistettu';
+
+  @override
+  String get appUpdateCertificateDeclared =>
+      'Julkaisijan ilmoittama Android-allekirjoitusvarmenne';
+
+  @override
+  String appUpdateSource(String host) {
+    return 'Latauslähde: $host';
+  }
+
+  @override
+  String get appUpdateCommunity => 'Yhteisö';
+
+  @override
+  String appUpdateZapSummary(int count, int sats) {
+    return '$count zappia · $sats satsia';
+  }
+
+  @override
+  String get appUpdateSatsBy => 'sats käyttäjiltä';
+
+  @override
+  String appUpdateReactionCount(int count) {
+    return '$count reaktiota';
+  }
+
+  @override
+  String appUpdateCommentCount(int count) {
+    return '$count kommenttia';
+  }
+
+  @override
+  String get appUpdateSocialLoadFailed => 'Yhteisön toimintaa ei voitu ladata.';
+
+  @override
+  String get appUpdateComments => 'Kommentit';
+
+  @override
+  String get appUpdateNoComments => 'Ei vielä kommentteja.';
+
+  @override
+  String get appUpdateCommentHint => 'Jaa palautetta tästä julkaisusta';
+
+  @override
+  String get appUpdatePostComment => 'Lähetä kommentti';
+
+  @override
+  String get appUpdateSignInToComment =>
+      'Kirjaudu Nostr-tilillä kommentoidaksesi.';
+
+  @override
+  String get appUpdateTechnicalDetails => 'Tekniset tiedot';
+
+  @override
+  String get appUpdateViewStatus => 'Näytä päivityksen tila';
+
+  @override
+  String restoreSuccess(int count) {
+    return 'Varmuuskopiosta palautettuja todisteita: $count';
+  }
+
+  @override
+  String get bolt12Wallet => 'BOLT12-lompakko';
+
+  @override
+  String get bolt12WalletSubtitle => 'Uudelleenkäytettävä Lightning-tarjous';
+
+  @override
+  String get bolt12PrivateOfferSubtitle =>
+      'Yksityinen uudelleenkäytettävä tarjous';
+
+  @override
+  String get anyAmount => 'Mikä tahansa summa';
+
+  @override
+  String get blindedRoute => 'Piilotettu reitti';
+
+  @override
+  String fromAmountSats(String amount) {
+    return 'Alkaen $amount sats';
+  }
+
+  @override
+  String fromAmountMsats(String amount) {
+    return 'Alkaen $amount msats';
+  }
+
+  @override
+  String fromCurrencyAmount(String amount, String currency) {
+    return 'Alkaen $amount $currency';
+  }
+
+  @override
+  String bolt12Expires(String date) {
+    return 'Vanhenee $date';
+  }
+
+  @override
+  String get bolt12WalletTypeTitle => 'BOLT12-tarjous';
+
+  @override
+  String get bip353WalletTypeTitle => 'BIP353';
+
+  @override
+  String get lnurlProtocol => 'LNURL';
+
+  @override
+  String get bolt12WalletTypeSubtitle =>
+      'Vain vastaanottoon tarkoitettu lompakko uudelleenkäytettävällä tarjouksella';
+
+  @override
+  String get addBolt12WalletTitle => 'Lisää BOLT12-lompakko';
+
+  @override
+  String get enterBolt12Input =>
+      'Syötä tai skannaa lno-tarjous, bitcoin:?lno=…-URI tai BIP353-osoite.';
+
+  @override
+  String get bolt12Input => 'BOLT12-maksukohde';
+
+  @override
+  String get bolt12InputHint =>
+      'lno1…, bitcoin:?lno=… tai käyttäjä@verkkotunnus.com';
+
+  @override
+  String get walletNameOptional => 'Lompakon nimi (valinnainen)';
+
+  @override
+  String get scanBolt12QrCodeTitle => 'Skannaa BOLT12-QR-koodi';
+
+  @override
+  String get invalidBolt12QrCode =>
+      'QR-koodi ei sisällä BOLT12-, BIP321- tai BIP353-maksukohdetta.';
+
+  @override
+  String get pleaseEnterBolt12Input =>
+      'Syötä BOLT12-tarjous tai BIP353-osoite.';
+
+  @override
+  String get bolt12WalletAdded => 'BOLT12-lompakko lisätty!';
+
+  @override
+  String get bolt12OfferTitle => 'Vastaanota BOLT12:lla';
+
+  @override
+  String get bolt12OfferInstructions =>
+      'Jaa tämä uudelleenkäytettävä tarjous vastaanottaaksesi Lightning-maksun.';
+
+  @override
+  String get confirm => 'Vahvista';
+
+  @override
+  String get reviewWallet => 'Tarkista lompakko';
+
+  @override
+  String get confirmWalletTitle => 'Vahvista lompakko';
+
+  @override
+  String get confirmWalletDescription =>
+      'Tarkista nämä tiedot ennen lompakon lisäämistä.';
+
+  @override
+  String get walletDetailType => 'Lompakon tyyppi';
+
+  @override
+  String get walletDetailAddress => 'Osoite';
+
+  @override
+  String get walletDetailDomain => 'Verkkotunnus';
+
+  @override
+  String get walletDetailUrl => 'URL';
+
+  @override
+  String get walletDetailPublicKey => 'Julkinen avain';
+
+  @override
+  String get walletDetailRelay => 'Rele';
+
+  @override
+  String get walletDetailRelays => 'Releet';
+
+  @override
+  String get walletDetailSecret => 'Yhteyssalaisuus';
+
+  @override
+  String get walletSecretHidden =>
+      'Olemassa ja piilotettu turvallisuuden vuoksi';
+
+  @override
+  String get walletDetailDescription => 'Kuvaus';
+
+  @override
+  String get walletDetailDetails => 'Tiedot';
+
+  @override
+  String get walletDetailIssuer => 'Myöntäjä';
+
+  @override
+  String get walletDetailAmount => 'Summa';
+
+  @override
+  String get walletDetailCurrency => 'Valuutta';
+
+  @override
+  String get walletDetailExpiry => 'Vanhenee';
+
+  @override
+  String get walletDetailNodeId => 'Solmun tunnus';
+
+  @override
+  String get walletDetailOffer => 'BOLT12-tarjous';
+
+  @override
+  String get walletDetailVersion => 'Versio';
+
+  @override
+  String get walletDetailUnits => 'Tuetut yksiköt';
+
+  @override
+  String get walletDetailContact => 'Yhteystieto';
+
+  @override
+  String get walletDetailTerms => 'Käyttöehdot';
+
+  @override
+  String get walletDetailMessage => 'Viesti';
+
+  @override
+  String get walletDetailCommunityRating => 'Yhteisön arvio';
+
+  @override
+  String get walletDetailCommunityReviews => 'Viimeisimmät yhteisöarvostelut';
+
+  @override
+  String get refreshBalance => 'Päivitä saldo';
+
+  @override
+  String get balanceRefreshed => 'Saldo päivitetty';
+
+  @override
+  String get cashuQuoteRecoveryTitle => 'Palauta Mint-tarjous';
+
+  @override
+  String get recoverQuote => 'Palauta tarjous';
+
+  @override
+  String get enterQuoteId =>
+      'Anna palautettavan mint-tarjouksen tunnus. Lukkoavain palautetaan siemenlauseestasi.';
+
+  @override
+  String get quoteId => 'Tarjouksen tunnus';
+
+  @override
+  String get quoteIdHint => 'Liitä tarjouksen tunnus tähän';
+
+  @override
+  String get pleaseEnterQuoteId => 'Anna tarjouksen tunnus';
+
+  @override
+  String get cashuQuoteRecoveryStageFetchingQuote =>
+      'Haetaan tarjousta mintistä...';
+
+  @override
+  String get cashuQuoteRecoveryStageRecoveringKey =>
+      'Palautetaan lukkoavainta siemenlauseestasi...';
+
+  @override
+  String get cashuQuoteRecoveryStageCompletingMint =>
+      'Suoritetaan mintti valmiiksi...';
+
+  @override
+  String cashuQuoteRecoveryKeyRecovered(int counter) {
+    return 'Lukkoavain palautettu (johtamislaskuri $counter)';
+  }
+
+  @override
+  String get cashuQuoteRecoveryCompleted =>
+      'Tarjous palautettu ja varat lisätty saldoosi';
+
+  @override
+  String get quoteRecoveryFailed => 'Tarjouksen palautus epäonnistui';
+
+  @override
+  String get restoreFundsFromMint => 'Palauta varat mintistä';
+
+  @override
+  String get cashuRestoreFundsTitle => 'Palauta varat mintistä';
+
+  @override
+  String get cashuRestoreDescription =>
+      'Skannaa minttiä siemenlauseestasi johdettujen todistusten suhteen ja palauttaa ne tähän lompakkoon.';
+
+  @override
+  String get startRestore => 'Aloita palautus';
+
+  @override
+  String get cashuRestoreStageFetchingKeysets =>
+      'Haetaan mint-avainjoukkoja...';
+
+  @override
+  String get cashuRestoreStageScanning =>
+      'Skannataan minttiä varojesi suhteen...';
+
+  @override
+  String cashuRestoreScanProgress(int keysets, int proofs) {
+    return 'Skannattu $keysets avainjoukko(a) · Löydetty $proofs todistus(ta)';
+  }
+
+  @override
+  String get cashuRestoreStageCompleted => 'Palautus valmis';
+
+  @override
+  String get cashuRestoreAlsoRestoresQuotes =>
+      'Palauttaa myös odottavat mint-tarjoukset';
+
+  @override
+  String restoredFromMint(int count) {
+    return 'Palautettiin $count todistusta mintistä';
+  }
+
+  @override
+  String get restoreFailed => 'Palautus epäonnistui';
+
+  @override
+  String get restoreFromBackup => 'Palauta varmuuskopiosta';
+
+  @override
+  String get cashuRestoreMenuTitle => 'Palautus ja varmuuskopiointi';
+
+  @override
+  String get cashuSeedPhraseOption => 'Aseta siemenlause';
+
+  @override
+  String get cashuSeedPhraseTitle => 'Cashu-siemenlause';
+
+  @override
+  String get cashuSeedPhraseWarning =>
+      'Tämä siemenlause on KAIKKIEN Cashu-lompakoiden yhteinen. Se on ainoa tapa palauttaa varasi, jos menetät tämän laitteen. Sen muuttaminen korvaa siemenen, josta johdetaan avaimet jokaiseen Cashu-lompakkoon, joten aiemman siemenen alla vastaanotettuja varoja ei voida enää löytää automaattisesti.';
+
+  @override
+  String get cashuSeedPhraseInstructions =>
+      'Anna käytettävä palautuslause (12, 15, 18, 21 tai 24 sanaa). Muuta siementä vain, kun palautat lompakoita jo tallentamastasi lauseesta.';
+
+  @override
+  String get cashuSeedPhraseLabel => 'Siemenlause';
+
+  @override
+  String get cashuSeedPhraseHint => 'Liitä siemenlauseesi tähän';
+
+  @override
+  String get cashuSeedPhraseConfirmChange =>
+      'Ymmärrän, että tämä muuttaa siemenen kaikille Cashu-lompakoille';
+
+  @override
+  String get cashuSeedPhraseInvalid =>
+      'Tämä ei näytä kelvolliselta siemenlauseelta. Tarkista, että kaikki sanat on kirjoitettu oikein ja oikeassa järjestyksessä.';
+
+  @override
+  String get cashuSeedPhraseUpdated =>
+      'Siemenlause päivitetty. Se koskee nyt kaikkia Cashu-lompakoita. Varmuuskopioi uusi lause.';
+
+  @override
+  String get cashuSeedPhraseUpdateFailed => 'Siemenlausetta ei voitu päivittää';
+}

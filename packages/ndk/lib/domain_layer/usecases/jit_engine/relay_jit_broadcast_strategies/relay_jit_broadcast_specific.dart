@@ -1,7 +1,8 @@
 import '../../../../shared/nips/nip01/client_msg.dart';
-import '../../../entities/connection_source.dart';
-import '../../../entities/jit_engine_relay_connectivity_data.dart';
+import '../../../../shared/nips/nip01/event_kind_classification.dart';
+import '../../../repositories/cache_manager.dart';
 import '../../../entities/nip_01_event.dart';
+import '../../../entities/auth_policy.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../relay_manager.dart';
 
@@ -10,18 +11,16 @@ class RelayJitBroadcastSpecificRelaysStrategy {
   /// [specificRelays] urls of relays you want to publish to
   static Future broadcast({
     required Nip01Event eventToPublish,
-    required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-        connectedRelays,
+    required CacheManager cacheManager,
     required RelayManager relayManager,
     required List<String> specificRelays,
+    AuthPolicy? auth,
   }) async {
     // Deduplicate relay URLs
     final uniqueRelayUrls = specificRelays.toSet().toList();
 
     // function to send message to relay
-    void sendToRelay({
-      required RelayConnectivity relay,
-    }) {
+    void sendToRelay({required RelayConnectivity relay}) {
       final myClientMsg = ClientMsg(
         ClientMsgType.kEvent,
         event: eventToPublish,
@@ -38,46 +37,37 @@ class RelayJitBroadcastSpecificRelaysStrategy {
       );
 
       try {
-        final isConnected = relayManager.isRelayConnected(relayUrl);
-        if (isConnected) {
-          try {
-            final relay = connectedRelays.firstWhere(
-              (element) => element.url == relayUrl,
-            );
-            sendToRelay(relay: relay);
-          } catch (e) {
-            relayManager.failBroadcast(
-              eventToPublish.id,
-              relayUrl,
-              "relay not found in connected list",
-            );
-          }
+        final relay = await relayManager.connectionForBroadcast(
+          relayUrl,
+          auth,
+          connectTimeout: 1,
+          pausing:
+              relayManager.globalState.inFlightBroadcasts[eventToPublish.id],
+        );
+        if (relay == null) {
+          relayManager.failBroadcast(
+            eventToPublish.id,
+            relayUrl,
+            "no connection could carry this broadcast",
+          );
           return;
         }
 
-        final success = await relayManager.reconnectRelay(
-          relayUrl,
-          connectionSource: ConnectionSource.broadcastSpecific,
-        );
-        if (!success) {
+        // checked once the connection is there: a newer version may have been
+        // persisted while it was opening, and that one supersedes this send
+        if (await _shouldSkipObsoleteReplaceableBroadcast(
+          cacheManager: cacheManager,
+          event: eventToPublish,
+        )) {
           relayManager.failBroadcast(
             eventToPublish.id,
             relayUrl,
-            "connection failed",
+            "obsolete replaceable event skipped",
           );
           return;
         }
-        try {
-          final relay = relayManager.connectedRelays
-              .firstWhere((element) => element.url == relayUrl);
-          sendToRelay(relay: relay);
-        } catch (e) {
-          relayManager.failBroadcast(
-            eventToPublish.id,
-            relayUrl,
-            "relay not found after connection",
-          );
-        }
+
+        sendToRelay(relay: relay);
       } catch (e) {
         relayManager.failBroadcast(
           eventToPublish.id,
@@ -89,5 +79,33 @@ class RelayJitBroadcastSpecificRelaysStrategy {
 
     // Broadcast to all relays in parallel
     await Future.wait(uniqueRelayUrls.map(sendToUrl), eagerError: false);
+  }
+
+  static Future<bool> _shouldSkipObsoleteReplaceableBroadcast({
+    required CacheManager cacheManager,
+    required Nip01Event event,
+  }) async {
+    if (!EventKindClassification.isReplaceableKind(event.kind)) {
+      return false;
+    }
+
+    final dTag = event.getDtag();
+    final visibleEvents = await cacheManager.loadEvents(
+      pubKeys: [event.pubKey],
+      kinds: [event.kind],
+      tags:
+          EventKindClassification.isAddressableKind(event.kind) && dTag != null
+          ? {
+              'd': [dTag],
+            }
+          : null,
+      limit: 1,
+    );
+
+    if (visibleEvents.isEmpty) {
+      return false;
+    }
+
+    return visibleEvents.single.id != event.id;
   }
 }

@@ -19,9 +19,7 @@ class CashuTokenUrEncoder {
   /// Use this for tokens that can fit in a single QR code.
   ///
   /// Returns a UR-formatted string like: "ur:bytes/..."
-  static String encodeSinglePart({
-    required CashuToken token,
-  }) {
+  static String encodeSinglePart({required CashuToken token}) {
     try {
       final json = token.toV4Json();
       final myCbor = CborValue(json);

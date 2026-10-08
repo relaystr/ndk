@@ -1,6 +1,5 @@
 plugins {
     id "com.android.application"
-    id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
 }
 
@@ -33,16 +32,12 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.example.example"
-    compileSdkVersion 35
-    ndkVersion "27.0.12077973"
+    compileSdk = 36
+    ndkVersion "28.2.13676358"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = '17'
     }
 
     sourceSets {
@@ -60,18 +55,33 @@ android {
         versionName flutterVersionName
     }
 
-    buildTypes {
-//        release {
-//            keyAlias keystoreProperties.getProperty('keyAlias', 'defaultKeyAlias')
-//            keyPassword keystoreProperties.getProperty('keyPassword', 'defaultKeyPassword')
-//            storeFile file(keystoreProperties.getProperty('storeFile', 'defaultStoreFile'))
-//            storePassword keystoreProperties.getProperty('storePassword', 'defaultStorePassword')
-//        }
-        release {
-        
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug
+    signingConfigs {
+        if (keystorePropertiesFile.exists()) {
+            release {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
         }
+    }
+
+    buildTypes {
+        release {
+            // Release builds must always be signed with the same key, otherwise
+            // installed apps cannot be upgraded (Android rejects signature
+            // changes and NIP-82 update checks filter by certificate hash).
+            // Fall back to debug keys only for local builds without key.properties.
+            signingConfig keystorePropertiesFile.exists()
+                    ? signingConfigs.release
+                    : signingConfigs.debug
+        }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 

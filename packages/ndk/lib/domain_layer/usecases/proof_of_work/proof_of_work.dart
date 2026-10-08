@@ -8,8 +8,11 @@ class ProofOfWork {
     required int targetDifficulty,
     int? maxIterations,
   }) {
-    return Nip13.mineEvent(event, targetDifficulty,
-        maxIterations: maxIterations);
+    return Nip13.mineEvent(
+      event,
+      targetDifficulty,
+      maxIterations: maxIterations,
+    );
   }
 
   /// Get the proof of work difficulty of this event

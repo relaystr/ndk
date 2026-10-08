@@ -4,7 +4,9 @@ import 'package:ndk/data_layer/repositories/wallets/sembast_wallets_repo.dart';
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
 
+import 'cli_accounts_store.dart';
 import 'cli_command.dart';
+import 'native_library_errors.dart';
 
 class NdkCliApp {
   final String appName;
@@ -51,12 +53,31 @@ class NdkCliApp {
     }
 
     final walletsRepo = await _createWalletsRepo();
-    final ndk = _createNdk(walletsRepo, globalOptions.logLevel);
+    final cache = await _createCache();
+    final ndk = _createNdk(walletsRepo, cache, globalOptions.logLevel);
     try {
+      final accountsStore = await CliAccountsStore.load();
+      if (command.restoreAccountsOnStartup &&
+          accountsStore.records.isNotEmpty) {
+        await restoreAccountsIntoNdk(ndk: ndk, store: accountsStore);
+      }
       return await command.run(
-          globalOptions.commandArgs.sublist(1), ndk, walletsRepo);
+        globalOptions.commandArgs.sublist(1),
+        ndk,
+        walletsRepo,
+        accountsStore,
+      );
     } finally {
-      await ndk.destroy();
+      // Swallow cleanup errors so a failing exit code reflects the actual
+      // command result, not post-run teardown noise (cashu wallet disposal
+      // can throw when no seed is configured).
+      try {
+        await ndk.destroy();
+      } catch (e) {
+        // ignore
+      }
+      await cache.close();
+      await walletsRepo.close();
     }
   }
 
@@ -93,21 +114,33 @@ class NdkCliApp {
     return null;
   }
 
-  Future<WalletsRepo> _createWalletsRepo() {
-    return SembastWalletsRepo.create(
-      filename: 'wallets_db.db',
+  Future<SembastWalletsRepo> _createWalletsRepo() {
+    return SembastWalletsRepo.create(filename: 'wallets_db.db');
+  }
+
+  Future<SembastCacheManager> _createCache() {
+    // Persist proofs/keysets/mint infos next to wallets_db.db so cashu
+    // operations work across CLI invocations.
+    return SembastCacheManager.create(
+      databasePath: '.',
+      databaseName: 'ndk_cache',
     );
   }
 
-  Ndk _createNdk(WalletsRepo walletsRepo, LogLevel logLevel) {
+  Ndk _createNdk(
+    WalletsRepo walletsRepo,
+    SembastCacheManager cache,
+    LogLevel logLevel,
+  ) {
     Logger.setLogLevel(logLevel);
     return Ndk(
       NdkConfig(
-        cache: MemCacheManager(),
+        cache: cache,
         walletsRepo: walletsRepo,
         eventVerifier: _CliEventVerifier(),
         bootstrapRelays: const [],
         logLevel: logLevel,
+        pendingDeliveryRetriesEnabled: false,
       ),
     );
   }
@@ -147,11 +180,13 @@ class NdkCliApp {
     for (final value in remaining) {
       if (value == '--version' || value == '-V') {
         return _GlobalCliOptions(
-            error: '--version must be provided before the command name.');
+          error: '--version must be provided before the command name.',
+        );
       }
       if (value == '-v' || value == '-vv' || value == '-vvv') {
         return _GlobalCliOptions(
-            error: '$value must be provided before the command name.');
+          error: '$value must be provided before the command name.',
+        );
       }
     }
 
@@ -208,19 +243,12 @@ class _CliEventVerifier implements EventVerifier {
       _enableFallback();
       return _fallbackVerifier.verify(event);
     } on ArgumentError catch (error) {
-      if (!_isNativeLibraryLoadError(error)) {
+      if (!isNativeLibraryLoadError(error)) {
         rethrow;
       }
       _enableFallback();
       return _fallbackVerifier.verify(event);
     }
-  }
-
-  bool _isNativeLibraryLoadError(ArgumentError error) {
-    final message = error.toString().toLowerCase();
-    return message.contains('dynamic library') ||
-        message.contains('verify_nostr_event') ||
-        message.contains('failed to load');
   }
 
   void _enableFallback() {

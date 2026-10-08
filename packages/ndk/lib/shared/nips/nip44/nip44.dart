@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:elliptic/ecdh.dart';
 import 'package:elliptic/elliptic.dart';
 import 'package:meta/meta.dart';
+
 import 'utils.dart';
 
 /// NIP-44 encryption and decryption functions.
@@ -16,7 +18,8 @@ class Nip44 {
     Uint8List? customConversationKey,
   }) async {
     // Step 1: Compute Shared Secret
-    final sharedSecret = customConversationKey ??
+    final sharedSecret =
+        customConversationKey ??
         computeSharedSecret(senderPrivateKey, recipientPublicKey);
 
     // Step 2: Derive Conversation Key
@@ -36,8 +39,11 @@ class Nip44 {
     final paddedPlaintext = pad(utf8.encode(plaintext));
 
     // Step 6: Encrypt
-    final ciphertext =
-        await encryptChaCha20(chachaKey, chachaNonce, paddedPlaintext);
+    final ciphertext = await encryptChaCha20(
+      chachaKey,
+      chachaNonce,
+      paddedPlaintext,
+    );
 
     // Step 7: Calculate MAC
     final mac = calculateMac(hmacKey, nonce, ciphertext);
@@ -53,7 +59,8 @@ class Nip44 {
     Uint8List? customConversationKey,
   }) async {
     // Step 1: Compute Shared Secret
-    final sharedSecret = customConversationKey ??
+    final sharedSecret =
+        customConversationKey ??
         computeSharedSecret(recipientPrivateKey, senderPublicKey);
 
     // Step 2: Derive Conversation Key
@@ -76,8 +83,11 @@ class Nip44 {
     verifyMac(hmacKey, nonce, ciphertext, mac);
 
     // Step 6: Decrypt
-    final paddedPlaintext =
-        await decryptChaCha20(chachaKey, chachaNonce, ciphertext);
+    final paddedPlaintext = await decryptChaCha20(
+      chachaKey,
+      chachaNonce,
+      ciphertext,
+    );
 
     // Step 7: Unpad Plaintext
     final plaintextBytes = unpad(paddedPlaintext);
@@ -86,7 +96,9 @@ class Nip44 {
   }
 
   static Uint8List computeSharedSecret(
-      String privateKeyHex, String publicKeyHex) {
+    String privateKeyHex,
+    String publicKeyHex,
+  ) {
     final ec = getS256();
     final privateKey = PrivateKey.fromHex(ec, privateKeyHex);
     final publicKey = PublicKey.fromHex(ec, checkPublicKey(publicKeyHex));

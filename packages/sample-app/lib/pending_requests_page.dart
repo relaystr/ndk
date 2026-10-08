@@ -17,6 +17,9 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
   String? _lastResult;
   String? _lastError;
   String? _ciphertext;
+  bool _isBulkSigning = false;
+  bool _isDuplicateSigning = false;
+  bool _isBulkEncrypting = false;
 
   void _showResult(String result) {
     setState(() {
@@ -48,6 +51,139 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
     }
   }
 
+  Future<void> _signEventsInParallel(EventSigner signer) async {
+    if (_isBulkSigning) return;
+
+    final l10n = context.l10n;
+    final pubkey = signer.getPublicKey();
+    final startedAt = DateTime.now();
+    final createdAt = startedAt.millisecondsSinceEpoch ~/ 1000;
+    final stopwatch = Stopwatch()..start();
+
+    setState(() {
+      _isBulkSigning = true;
+      _lastResult = 'Sending 50 sign event requests...';
+      _lastError = null;
+    });
+
+    Future<bool> signOne(int index) async {
+      final event = Nip01Event(
+        pubKey: pubkey,
+        kind: 1,
+        tags: [
+          ['client', 'ndk-sample-app'],
+          ['test', 'parallel-signing'],
+        ],
+        content:
+            'Parallel signer test #${index + 1}/50 from sample app - $startedAt',
+        createdAt: createdAt,
+      );
+
+      await signer.sign(event);
+      return true;
+    }
+
+    try {
+      final results = await Future.wait(
+        List.generate(50, (index) async {
+          try {
+            return await signOne(index);
+          } catch (_) {
+            return false;
+          }
+        }),
+      );
+
+      stopwatch.stop();
+      final signedCount = results.where((signed) => signed).length;
+      final failedCount = results.length - signedCount;
+
+      if (!mounted) return;
+      setState(() {
+        _isBulkSigning = false;
+        if (failedCount == 0) {
+          _lastResult =
+              'Signed 50/50 events in ${stopwatch.elapsedMilliseconds} ms';
+          _lastError = null;
+        } else {
+          _lastResult = null;
+          _lastError =
+              'Signed $signedCount/50 events; $failedCount failed in ${stopwatch.elapsedMilliseconds} ms';
+        }
+      });
+    } catch (e) {
+      stopwatch.stop();
+      if (!mounted) return;
+      setState(() {
+        _isBulkSigning = false;
+      });
+      _showError(l10n.pendingSignFailed(e.toString()));
+    }
+  }
+
+  Future<void> _signSameEventInParallel(EventSigner signer) async {
+    if (_isDuplicateSigning) return;
+
+    final l10n = context.l10n;
+    final pubkey = signer.getPublicKey();
+    final startedAt = DateTime.now();
+    final event = Nip01Event(
+      pubKey: pubkey,
+      kind: 1,
+      tags: [
+        ['client', 'ndk-sample-app'],
+        ['test', 'duplicate-parallel-signing'],
+      ],
+      content: 'Duplicate signer test from sample app - $startedAt',
+      createdAt: startedAt.millisecondsSinceEpoch ~/ 1000,
+    );
+    final stopwatch = Stopwatch()..start();
+
+    setState(() {
+      _isDuplicateSigning = true;
+      _lastResult = 'Sending 10 sign requests for the same event...';
+      _lastError = null;
+    });
+
+    try {
+      final results = await Future.wait(
+        List.generate(10, (_) async {
+          try {
+            final signed = await signer.sign(event);
+            return signed.id == event.id;
+          } catch (_) {
+            return false;
+          }
+        }),
+      );
+
+      stopwatch.stop();
+      final signedCount = results.where((signed) => signed).length;
+      final failedCount = results.length - signedCount;
+
+      if (!mounted) return;
+      setState(() {
+        _isDuplicateSigning = false;
+        if (failedCount == 0) {
+          _lastResult =
+              'Signed the same event 10/10 times in ${stopwatch.elapsedMilliseconds} ms';
+          _lastError = null;
+        } else {
+          _lastResult = null;
+          _lastError =
+              'Signed the same event $signedCount/10 times; $failedCount failed in ${stopwatch.elapsedMilliseconds} ms';
+        }
+      });
+    } catch (e) {
+      stopwatch.stop();
+      if (!mounted) return;
+      setState(() {
+        _isDuplicateSigning = false;
+      });
+      _showError(l10n.pendingSignFailed(e.toString()));
+    }
+  }
+
   Future<void> _encryptNip44(EventSigner signer) async {
     final l10n = context.l10n;
     try {
@@ -58,8 +194,70 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
       );
       _ciphertext = result;
       _showResult(
-          l10n.pendingEncryptedResult('${result?.substring(0, 30)}...'));
+        l10n.pendingEncryptedResult('${result?.substring(0, 30)}...'),
+      );
     } catch (e) {
+      _showError(l10n.pendingEncryptFailed(e.toString()));
+    }
+  }
+
+  Future<void> _encryptNip44InParallel(EventSigner signer) async {
+    if (_isBulkEncrypting) return;
+
+    final l10n = context.l10n;
+    final pubkey = signer.getPublicKey();
+    final startedAt = DateTime.now();
+    final stopwatch = Stopwatch()..start();
+
+    setState(() {
+      _isBulkEncrypting = true;
+      _lastResult = 'Sending 50 NIP-44 encrypt requests...';
+      _lastError = null;
+    });
+
+    Future<bool> encryptOne(int index) async {
+      await signer.encryptNip44(
+        plaintext:
+            'Parallel NIP-44 encryption test #${index + 1}/50 from sample app - $startedAt',
+        recipientPubKey: pubkey,
+      );
+      return true;
+    }
+
+    try {
+      final results = await Future.wait(
+        List.generate(50, (index) async {
+          try {
+            return await encryptOne(index);
+          } catch (_) {
+            return false;
+          }
+        }),
+      );
+
+      stopwatch.stop();
+      final encryptedCount = results.where((encrypted) => encrypted).length;
+      final failedCount = results.length - encryptedCount;
+
+      if (!mounted) return;
+      setState(() {
+        _isBulkEncrypting = false;
+        if (failedCount == 0) {
+          _lastResult =
+              'Encrypted 50/50 strings in ${stopwatch.elapsedMilliseconds} ms';
+          _lastError = null;
+        } else {
+          _lastResult = null;
+          _lastError =
+              'Encrypted $encryptedCount/50 strings; $failedCount failed in ${stopwatch.elapsedMilliseconds} ms';
+        }
+      });
+    } catch (e) {
+      stopwatch.stop();
+      if (!mounted) return;
+      setState(() {
+        _isBulkEncrypting = false;
+      });
       _showError(l10n.pendingEncryptFailed(e.toString()));
     }
   }
@@ -167,9 +365,10 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
           const SizedBox(height: 8),
           Text(
             l10n.pendingDescription,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey,
-                ),
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: Colors.grey),
           ),
           const SizedBox(height: 16),
 
@@ -195,9 +394,54 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
                         label: Text(l10n.signEvent),
                       ),
                       FilledButton.icon(
+                        onPressed: _isBulkSigning
+                            ? null
+                            : () => _signEventsInParallel(signer),
+                        icon: _isBulkSigning
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.bolt, size: 18),
+                        label: const Text('Sign 50 Events'),
+                      ),
+                      FilledButton.icon(
+                        onPressed: _isDuplicateSigning
+                            ? null
+                            : () => _signSameEventInParallel(signer),
+                        icon: _isDuplicateSigning
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.repeat, size: 18),
+                        label: const Text('Sign Same Event x10'),
+                      ),
+                      FilledButton.icon(
                         onPressed: () => _encryptNip44(signer),
                         icon: const Icon(Icons.lock, size: 18),
                         label: Text(l10n.encrypt),
+                      ),
+                      FilledButton.icon(
+                        onPressed: _isBulkEncrypting
+                            ? null
+                            : () => _encryptNip44InParallel(signer),
+                        icon: _isBulkEncrypting
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.enhanced_encryption, size: 18),
+                        label: const Text('Encrypt 50 Strings'),
                       ),
                       FilledButton.icon(
                         onPressed: () => _decryptNip44(signer),
@@ -232,14 +476,9 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
           const SizedBox(height: 16),
 
           if (widget.embedded)
-            SizedBox(
-              height: 360,
-              child: pendingRequestsList,
-            )
+            SizedBox(height: 360, child: pendingRequestsList)
           else
-            Expanded(
-              child: pendingRequestsList,
-            ),
+            Expanded(child: pendingRequestsList),
         ],
       ),
     );
@@ -250,10 +489,7 @@ class _PendingRequestCard extends StatelessWidget {
   final PendingSignerRequest request;
   final VoidCallback onCancel;
 
-  const _PendingRequestCard({
-    required this.request,
-    required this.onCancel,
-  });
+  const _PendingRequestCard({required this.request, required this.onCancel});
 
   IconData _getIconForMethod(SignerMethod method) {
     switch (method) {
@@ -271,6 +507,8 @@ class _PendingRequestCard extends StatelessWidget {
         return Icons.network_ping;
       case SignerMethod.connect:
         return Icons.link;
+      case SignerMethod.switchRelays:
+        return Icons.swap_horiz;
     }
   }
 
@@ -290,6 +528,8 @@ class _PendingRequestCard extends StatelessWidget {
         return Colors.grey;
       case SignerMethod.connect:
         return Colors.teal;
+      case SignerMethod.switchRelays:
+        return Colors.blueGrey;
     }
   }
 
@@ -312,6 +552,8 @@ class _PendingRequestCard extends StatelessWidget {
         return l10n.pendingMethodPing;
       case SignerMethod.connect:
         return l10n.pendingMethodConnect;
+      case SignerMethod.switchRelays:
+        return l10n.pendingMethodSwitchRelays;
     }
   }
 
@@ -362,10 +604,7 @@ class _PendingRequestCard extends StatelessWidget {
                       ),
                       Text(
                         _formatDuration(context, duration),
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
                       ),
                     ],
                   ),
@@ -374,9 +613,7 @@ class _PendingRequestCard extends StatelessWidget {
                   onPressed: onCancel,
                   icon: const Icon(Icons.cancel, size: 18),
                   label: Text(context.l10n.cancel),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.red,
-                  ),
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
                 ),
               ],
             ),
@@ -392,8 +629,9 @@ class _PendingRequestCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      context.l10n
-                          .pendingEventKind(request.event!.kind.toString()),
+                      context.l10n.pendingEventKind(
+                        request.event!.kind.toString(),
+                      ),
                       style: const TextStyle(fontFamily: 'monospace'),
                     ),
                     const SizedBox(height: 4),

@@ -1,3 +1,232 @@
+## 0.10.1
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.10.1-dev.1
+
+ - Update a dependency to the latest release.
+
+## 0.10.1-dev.0
+
+ - **FIX**: allow flutter_secure_storage 11.
+
+## 0.10.0
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.10.0-dev.10
+
+ - Update a dependency to the latest release.
+
+## 0.10.0-dev.9
+
+ - **FIX**: seedStore.write() first.
+ - **FIX**: normalize and await cashu seed phrase save.
+ - **FEAT**: set cashu seed.
+ - **FEAT**: restore quote ui.
+
+## 0.10.0-dev.8
+
+ - Update a dependency to the latest release.
+
+## 0.10.0-dev.7
+
+ - Update a dependency to the latest release.
+
+## 0.10.0-dev.6
+
+ - Update a dependency to the latest release.
+
+## 0.10.0-dev.5
+
+ - **FIX**(l10n): translate wallet flows.
+ - **FIX**(ndk_flutter): adapt release details modal.
+ - **FIX**(ndk_flutter): unify release summary row.
+ - **FIX**: address app update review feedback.
+ - **FIX**(flutter): keep wallet delete dialog safe.
+ - **FEAT**(flutter): add download update badge.
+ - **FEAT**(updates): add NIP-82 release support.
+
+## 0.10.0-dev.4
+
+ - **FIX**(flutter): support file_picker 12.
+
+## 0.10.0-dev.3
+
+ - **FEAT**(wallets): add LNbits provider.
+
+## 0.10.0-dev.2
+
+ - Align package version with ndk core 0.10.0-dev.2.
+
+## 0.9.0-dev.8
+
+ - Update a dependency to the latest release.
+
+## 0.9.0-dev.7
+
+ - Update a dependency to the latest release.
+
+## 0.9.0-dev.6
+
+ - Update a dependency to the latest release.
+
+## 0.9.0-dev.5
+
+ - Update a dependency to the latest release.
+
+## 0.9.0-dev.4
+
+ - Update a dependency to the latest release.
+
+## 0.9.0-dev.3
+
+ - Update a dependency to the latest release.
+
+## 0.9.0-dev.2
+
+ - Update a dependency to the latest release.
+
+## 0.9.0-dev.1
+
+ - Update a dependency to the latest release.
+
+## 0.9.0-dev.0+1
+
+ - Update a dependency to the latest release.
+
+## 0.9.0
+
+ - **FIX**: use the event returned by NIP-07 and NIP-55 signers.
+
+## 0.8.4
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.8.4-dev.15
+
+ - **FIX**: use the event returned by NIP-07 and NIP-55 signers.
+
+## 0.8.4-dev.14
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FEAT**: add local-first interactive signer retry flow.
+
+## 0.8.4-dev.13
+
+ - Update a dependency to the latest release.
+
+## 0.8.4-dev.12
+
+ - **REFACTOR**(signers): remove id parameter from EventSigner nip04 methods.
+ - **FIX**(ndk_flutter): use unique NIP-55 ids for signing requests.
+ - **FIX**(ndk_flutter): correlate NIP-55 encryption requests.
+ - **FIX**(ndk_flutter): handle batched NIP-55 signer results.
+
+## 0.8.4-dev.11
+
+ - **REFACTOR**: make NWC QR scanning host-provided.
+
+## 0.8.4-dev.10
+
+ - **FIX**: dynamic sdk constraints.
+
+## 0.8.4-dev.9
+
+ - **REFACTOR**: centralized json serialisation for WalletTransaction.
+ - **FIX**: scope backup key to seed key.
+ - **FIX**: better lnurl messages.
+ - **FEAT**: add FlutterSecuredStorage Cashu Seed Store impl.
+
+## 0.8.4-dev.8
+
+ - **FIX**(ndk_flutter): require Flutter 1.20 for pub.dev publish.
+
+## 0.8.4-dev.7
+
+ - **FIX**(ndk_flutter): require pretty_qr_code 3.6.0.
+
+## 0.8.4-dev.6
+
+ - **FIX**(ndk_flutter): correct logic for external signer installation check.
+ - **FIX**(ndk_flutter): detect NIP-55 signers generically.
+ - **FIX**: reset state on fail.
+ - **FEAT**: vendor NIP-55 external signer, drop dead amberflutter dep.
+
+## 0.8.4-dev.5
+
+ - **FIX**: ecash wallet adding navigation bug.
+ - **FEAT**: use StringColor for avatar and banner colors.
+ - **FEAT**: add StringColor deterministic color utility.
+
+## 0.8.4-dev.4
+
+ - **FIX**: ecash wallet adding navigation bug.
+ - **FEAT**: use StringColor for avatar and banner colors.
+ - **FEAT**: add StringColor deterministic color utility.
+
+## 0.8.4-dev.3
+
+ - **FEAT**: add Portuguese and Brazilian Portuguese translations.
+ - **FEAT**: add localization configuration for Flutter.
+ - **FEAT**: add Finnish (fi) and Portuguese (pt) locales.
+
+## 0.8.4-dev.2
+
+ - Update a dependency to the latest release.
+
+## 0.8.4-dev.1
+
+ - **FIX**(ndk_flutter): prevent QR code overflow in nostr connect dialog.
+
+## 0.8.4-dev.0
+
+ - **REFACTOR**: rename ConcurrencyLimitedSignerMixin to ConcurrencyLimiterMixin.
+ - **FIX**: skip remote call when a queued request is cancelled.
+ - **FEAT**: implement ConcurrencyLimitedSignerMixin for managing concurrent requests in signers.
+
+## 0.8.3
+
+ - **FIX**: support WebEventSigner in saveAccountsState on web.
+ - **REFACTOR**: remove unnecessary comments in saveAccountsState method.
+
+## 0.8.2-dev.0+1
+
+ - **REFACTOR**: remove unnecessary comments in saveAccountsState method.
+ - **FIX**: support WebEventSigner in saveAccountsState on web.
+
+## 0.8.2
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.8.2-dev.9
+
+ - **REFACTOR**: merge ndk_event_signer_web and web_event_signer_web.
+ - **REFACTOR**(signers,verifiers): rename to NdkEventSigner/Verifier and add factory.
+ - **REFACTOR**(signers): rename platform stub to native and clarify conditional export.
+ - **FIX**: use constant-time MAC comparison in NIP-44.
+ - **FIX**(web): fix WebEventSigner stub and JS crypto, add tests.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+ - **FEAT**: add PlatformEventSigner for automatic platform selection.
+ - **FEAT**: add web crypto benchmark.
+ - **FEAT**: add WebEventSigner for fast web crypto.
+
+## 0.8.2-dev.8
+
+ - **REFACTOR**: PlatformEventVerifier via conditional imports.
+ - **FIX**: use factory signer.
+ - **FEAT**(ndk_flutter): add PlatformEventVerifier.
+ - **FEAT**: implement NipAvatar utility to standardize initial generation and color selection for profiles and banners.
+
+## 0.8.2-dev.7
+
+ - **REFACTOR**: PlatformEventVerifier via conditional imports.
+ - **FIX**: use factory signer.
+ - **FEAT**(ndk_flutter): add PlatformEventVerifier.
+ - **FEAT**: implement NipAvatar utility to standardize initial generation and color selection for profiles and banners.
+
 ## 0.8.2-dev.6
 
  - Update a dependency to the latest release.

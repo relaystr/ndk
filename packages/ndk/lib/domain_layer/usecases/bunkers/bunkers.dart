@@ -3,11 +3,11 @@ import 'dart:convert';
 
 import 'package:ndk/domain_layer/usecases/bunkers/models/nostr_connect.dart';
 
-import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../../data_layer/repositories/signers/nip46_event_signer.dart';
+import '../../../domain_layer/repositories/event_signer.dart';
 import 'models/bunker_request.dart';
 import 'models/bunker_connection.dart';
-import '../../../shared/nips/nip01/bip340.dart';
+import '../../entities/nip46_client_metadata.dart';
 import '../../entities/filter.dart';
 import '../../entities/nip_01_event.dart';
 import '../broadcast/broadcast.dart';
@@ -17,20 +17,24 @@ import '../requests/requests.dart';
 class Bunkers {
   final Broadcast _broadcast;
   final Requests _requests;
+  final LocalEventSignerFactory _eventSignerFactory;
 
   static const int kMaxWaitingTimeForConnectionSeconds = 600;
 
   Bunkers({
     required Broadcast broadcast,
     required Requests requests,
-  })  : _broadcast = broadcast,
-        _requests = requests;
+    required LocalEventSignerFactory eventSignerFactory,
+  }) : _broadcast = broadcast,
+       _requests = requests,
+       _eventSignerFactory = eventSignerFactory;
 
   /// Connects to a bunker using a bunker URL (bunker://)
   /// authCallback is called with the auth URL if the bunker requires authentication
   Future<BunkerConnection?> connectWithBunkerUrl(
     String bunkerUrl, {
     Function(String)? authCallback,
+    Nip46ClientMetadata? clientMetadata,
   }) async {
     final uri = Uri.parse(bunkerUrl);
     if (uri.scheme != 'bunker') {
@@ -49,15 +53,25 @@ class Bunkers {
       throw ArgumentError('Secret parameter is required in bunker URL');
     }
 
-    final keyPair = Bip340.generatePrivateKey();
-    final localEventSigner = Bip340EventSigner(
-      privateKey: keyPair.privateKey,
-      publicKey: keyPair.publicKey,
+    final keyPair = _eventSignerFactory.generateKeyPair();
+
+    final localEventSigner = _eventSignerFactory.create(
+      privateKey: keyPair.$1,
+      publicKey: keyPair.$2,
     );
+
+    final requestedPerms = clientMetadata?.perms?.join(',') ?? '';
+    final metadata = clientMetadata?.displayInfo ?? {};
 
     final request = BunkerRequest(
       method: SignerMethod.connect,
-      params: [remotePubkey, secret],
+      params: [
+        remotePubkey,
+        secret,
+        // an empty perms string keeps the metadata in fourth position (NIP-46)
+        if (requestedPerms.isNotEmpty || metadata.isNotEmpty) requestedPerms,
+        if (metadata.isNotEmpty) jsonEncode(metadata),
+      ],
     );
 
     final encryptedRequest = await localEventSigner.encryptNip44(
@@ -66,7 +80,7 @@ class Bunkers {
     );
 
     final requestEvent = Nip01Event(
-      pubKey: localEventSigner.publicKey,
+      pubKey: localEventSigner.getPublicKey(),
       kind: BunkerRequest.kKind,
       tags: [
         ["p", remotePubkey],
@@ -83,7 +97,7 @@ class Bunkers {
       filter: Filter(
         authors: [remotePubkey],
         kinds: [BunkerRequest.kKind],
-        pTags: [localEventSigner.publicKey],
+        pTags: [localEventSigner.getPublicKey()],
         since: someTimeAgo(),
       ),
     );
@@ -96,8 +110,9 @@ class Bunkers {
 
     BunkerConnection? result;
 
-    await for (final event in subscription.stream
-        .timeout(Duration(seconds: kMaxWaitingTimeForConnectionSeconds))) {
+    await for (final event in subscription.stream.timeout(
+      Duration(seconds: kMaxWaitingTimeForConnectionSeconds),
+    )) {
       final decryptedContent = await localEventSigner.decryptNip44(
         ciphertext: event.content,
         senderPubKey: remotePubkey,
@@ -116,7 +131,7 @@ class Bunkers {
 
       if (response["result"] == "ack") {
         result = BunkerConnection(
-          privateKey: localEventSigner.privateKey!,
+          privateKey: keyPair.$1,
           remotePubkey: remotePubkey,
           relays: relays,
         );
@@ -141,8 +156,8 @@ class Bunkers {
     }
 
     final keyPair = nostrConnect.keyPair;
-    final localEventSigner = Bip340EventSigner(
-      privateKey: keyPair.privateKey,
+    final localEventSigner = _eventSignerFactory.create(
+      privateKey: keyPair.privateKey!,
       publicKey: keyPair.publicKey,
     );
 
@@ -150,14 +165,15 @@ class Bunkers {
       explicitRelays: relays,
       filter: Filter(
         kinds: [BunkerRequest.kKind],
-        pTags: [localEventSigner.publicKey],
+        pTags: [localEventSigner.getPublicKey()],
         since: someTimeAgo(),
       ),
     );
     BunkerConnection? result;
 
-    await for (final event in subscription.stream
-        .timeout(Duration(seconds: kMaxWaitingTimeForConnectionSeconds))) {
+    await for (final event in subscription.stream.timeout(
+      Duration(seconds: kMaxWaitingTimeForConnectionSeconds),
+    )) {
       final decryptedContent = await localEventSigner.decryptNip44(
         ciphertext: event.content,
         senderPubKey: event.pubKey,
@@ -167,7 +183,7 @@ class Bunkers {
 
       if (response["result"] == secret) {
         result = BunkerConnection(
-          privateKey: localEventSigner.privateKey!,
+          privateKey: nostrConnect.keyPair.privateKey!,
           remotePubkey: event.pubKey,
           relays: relays,
         );
@@ -183,13 +199,16 @@ class Bunkers {
   }
 
   /// Creates a simple signer that delegates to this bunker instance
-  Nip46EventSigner createSigner(BunkerConnection connection,
-      {Function(String)? authCallback}) {
+  Nip46EventSigner createSigner(
+    BunkerConnection connection, {
+    Function(String)? authCallback,
+  }) {
     return Nip46EventSigner(
       connection: connection,
       requests: _requests,
       broadcast: _broadcast,
       authCallback: authCallback,
+      eventSignerFactory: _eventSignerFactory,
     );
   }
 }

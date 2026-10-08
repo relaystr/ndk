@@ -1,8 +1,8 @@
 import '../../../../shared/logger/logger.dart';
 import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../entities/connection_source.dart';
-import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/nip_01_event.dart';
+import '../../../entities/auth_policy.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../../repositories/cache_manager.dart';
 import '../../relay_manager.dart';
@@ -13,11 +13,10 @@ class RelayJitBroadcastOutboxStrategy {
   /// publish event to nip65 outbox relays
   static Future broadcast({
     required Nip01Event eventToPublish,
-    required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-        connectedRelays,
     required CacheManager cacheManager,
     required RelayManager relayManager,
     required List<String> bootstrapRelays,
+    AuthPolicy? auth,
   }) async {
     final nip65Data = await UserRelayLists.getUserRelayListCacheLatestSingle(
       pubkey: eventToPublish.pubKey,
@@ -27,8 +26,10 @@ class RelayJitBroadcastOutboxStrategy {
     List<String> writeRelaysUrls;
 
     if (nip65Data == null) {
-      Logger.log.w(() =>
-          "broadcast - could not find nip65 data for ${eventToPublish.pubKey}, using DEFAULT_BOOTSTRAP_RELAYS for now. \nPlease ensure nip65Data exists to use outbox model => UserRelayLists usecase");
+      Logger.log.w(
+        () =>
+            "broadcast - could not find nip65 data for ${eventToPublish.pubKey}, using DEFAULT_BOOTSTRAP_RELAYS for now. \nPlease ensure nip65Data exists to use outbox model => UserRelayLists usecase",
+      );
 
       writeRelaysUrls = bootstrapRelays;
     } else {
@@ -44,9 +45,7 @@ class RelayJitBroadcastOutboxStrategy {
     final uniqueRelayUrls = writeRelaysUrls.toSet().toList();
 
     // function to send message to relay
-    void sendToRelay({
-      required RelayConnectivity relay,
-    }) {
+    void sendToRelay({required RelayConnectivity relay}) {
       final myClientMsg = ClientMsg(
         ClientMsgType.kEvent,
         event: eventToPublish,
@@ -63,47 +62,22 @@ class RelayJitBroadcastOutboxStrategy {
       );
 
       try {
-        final isConnected = relayManager.isRelayConnected(relayUrl);
-        if (isConnected) {
-          try {
-            final relay = connectedRelays.firstWhere(
-              (element) => element.url == relayUrl,
-            );
-            sendToRelay(relay: relay);
-          } catch (e) {
-            relayManager.failBroadcast(
-              eventToPublish.id,
-              relayUrl,
-              "relay not found in connected list",
-            );
-          }
-          return;
-        }
-
-        final success = await relayManager.connectRelay(
-          dirtyUrl: relayUrl,
+        final relay = await relayManager.connectionForBroadcast(
+          relayUrl,
+          auth,
           connectionSource: ConnectionSource.broadcastOwn,
+          pausing:
+              relayManager.globalState.inFlightBroadcasts[eventToPublish.id],
         );
-        if (!success.first) {
+        if (relay == null) {
           relayManager.failBroadcast(
             eventToPublish.id,
             relayUrl,
-            "connection failed",
+            "no connection could carry this broadcast",
           );
           return;
         }
-
-        try {
-          final relay = relayManager.connectedRelays
-              .firstWhere((element) => element.url == relayUrl);
-          sendToRelay(relay: relay);
-        } catch (e) {
-          relayManager.failBroadcast(
-            eventToPublish.id,
-            relayUrl,
-            "relay not found after connection",
-          );
-        }
+        sendToRelay(relay: relay);
       } catch (e) {
         relayManager.failBroadcast(
           eventToPublish.id,

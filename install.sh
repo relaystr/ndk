@@ -28,6 +28,21 @@ is_truthy() {
   esac
 }
 
+github_api_get() {
+  local url="$1"
+  local token="${GH_TOKEN:-${GITHUB_TOKEN:-}}"
+  local headers=(
+    -H "Accept: application/vnd.github+json"
+    -H "X-GitHub-Api-Version: 2022-11-28"
+  )
+
+  if [ -n "$token" ]; then
+    headers+=(-H "Authorization: Bearer ${token}")
+  fi
+
+  curl -fsSL "${headers[@]}" "$url"
+}
+
 # --- detect platform ---
 detect_target() {
   local os arch
@@ -52,7 +67,8 @@ detect_target() {
 # --- resolve version/tag ---
 resolve_tag() {
   local use_prerelease="0"
-  local tag
+  local tag=""
+  local release_url=""
 
   case "$VERSION" in
     latest-pre | latest-prerelease) use_prerelease="1" ;;
@@ -64,7 +80,7 @@ resolve_tag() {
 
     if [ "$use_prerelease" = "1" ]; then
       tag=$(
-        curl -fsSL "https://api.github.com/repos/${REPO}/releases" \
+        github_api_get "https://api.github.com/repos/${REPO}/releases" \
           | awk '
               BEGIN { tag=""; draft=0; found="" }
               /"tag_name":/ {
@@ -95,11 +111,13 @@ resolve_tag() {
       )
       [ -n "$tag" ] || err "could not determine latest pre-release version"
     else
-      tag=$(
-        curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
-          | grep '"tag_name"' \
-          | sed -E 's/.*"([^"]+)".*/\1/'
-      )
+      release_url="$(
+        curl -fsSLI -o /dev/null -w '%{url_effective}' \
+          "https://github.com/${REPO}/releases/latest"
+      )"
+      case "$release_url" in
+        */releases/tag/*) tag="${release_url##*/}" ;;
+      esac
       [ -n "$tag" ] || err "could not determine latest version"
     fi
   else
@@ -111,51 +129,6 @@ resolve_tag() {
   fi
 
   echo "$tag"
-}
-
-get_release_json() {
-  local tag="$1"
-
-  if curl -fsSL "https://api.github.com/repos/${REPO}/releases/tags/${tag}"; then
-    return 0
-  fi
-
-  if [[ "$tag" =~ ^v ]]; then
-    curl -fsSL "https://api.github.com/repos/${REPO}/releases/tags/${tag#v}" \
-      || err "could not fetch release metadata for tag: ${tag}"
-  else
-    curl -fsSL "https://api.github.com/repos/${REPO}/releases/tags/v${tag}" \
-      || err "could not fetch release metadata for tag: ${tag}"
-  fi
-}
-
-resolve_release_asset() {
-  local release_json="$1"
-  local target="$2"
-
-  printf "%s\n" "$release_json" | awk -v target="$target" '
-    BEGIN { name="" }
-    /"name":/ {
-      if (name == "") {
-        name = $0
-        sub(/^.*"name":[[:space:]]*"/, "", name)
-        sub(/".*$/, "", name)
-      }
-      next
-    }
-    /"browser_download_url":/ {
-      if (name != "") {
-        url = $0
-        sub(/^.*"browser_download_url":[[:space:]]*"/, "", url)
-        sub(/".*$/, "", url)
-        if (name ~ ("-" target "\\.(tar\\.gz|tgz)$")) {
-          print name "\t" url
-          exit
-        }
-      }
-      name = ""
-    }
-  '
 }
 
 check_sudo_needed() {
@@ -200,6 +173,8 @@ Env vars:
   NDK_VERSION       Version or tag. Also supports latest, latest-pre.
   NDK_PRERELEASE    When truthy and NDK_VERSION=latest, picks latest pre-release.
   NDK_INSTALL_MODE  user|system (Linux)
+  GH_TOKEN           GitHub token for authenticated pre-release discovery.
+  GITHUB_TOKEN       Fallback when GH_TOKEN is not set.
 EOF
         exit 0
         ;;
@@ -216,16 +191,15 @@ main() {
   need curl
   need tar
 
-  local target tag release_json asset_name download_url tmp_dir extract_dir
+  local target tag release_version asset_name legacy_asset_name download_url tmp_dir extract_dir
   local bin_src lib_src lib_installed
 
   target="$(detect_target)"
   tag="$(resolve_tag)"
-  release_json="$(get_release_json "$tag")"
-
-  IFS=$'\t' read -r asset_name download_url <<< "$(resolve_release_asset "$release_json" "$target")"
-  [ -n "${asset_name:-}" ] || err "could not find archive asset matching '*-${target}.tar.gz' (or .tgz) for tag ${tag}"
-  [ -n "${download_url:-}" ] || err "could not determine asset download URL for tag ${tag}"
+  release_version="${tag#v}"
+  asset_name="ndk-cli-${release_version}-${target}.tar.gz"
+  legacy_asset_name="ndk-cli-${target}.tar.gz"
+  download_url="https://github.com/${REPO}/releases/download/${tag}/${asset_name}"
 
   info "installing ${BIN_NAME} ${tag} (${target})"
   info "from ${asset_name}"
@@ -235,8 +209,15 @@ main() {
   trap 'rm -rf "${tmp_dir:-}"' EXIT
   mkdir -p "$extract_dir"
 
-  curl -fsSL --progress-bar "$download_url" -o "${tmp_dir}/${asset_name}" \
-    || err "download failed — check that release asset exists: ${download_url}"
+  # Current release assets include the version in their filename. Fall back to
+  # the old unversioned convention so releases through v0.9.1 remain installable.
+  if ! curl -fsSL --progress-bar "$download_url" -o "${tmp_dir}/${asset_name}" 2>/dev/null; then
+    asset_name="$legacy_asset_name"
+    download_url="https://github.com/${REPO}/releases/download/${tag}/${asset_name}"
+    info "versioned asset not found; trying ${asset_name}"
+    curl -fsSL --progress-bar "$download_url" -o "${tmp_dir}/${asset_name}" \
+      || err "download failed — check that release asset exists: ${download_url}"
+  fi
 
   tar -xzf "${tmp_dir}/${asset_name}" -C "$extract_dir" \
     || err "failed to extract archive: ${asset_name}"

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:http/http.dart' as http;
 
 import '../data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
@@ -9,12 +11,17 @@ import '../data_layer/repositories/blossom/blossom_impl.dart';
 import '../data_layer/repositories/cashu/cashu_repo_impl.dart';
 import '../data_layer/repositories/lnurl_http_impl.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
+import '../data_layer/repositories/relay_info_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
+import '../domain_layer/entities/connection_source.dart';
 import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
+import '../domain_layer/entities/relay_connectivity.dart';
 import '../domain_layer/entities/wallet/providers/cashu/cashu_wallet_provider.dart';
 import '../domain_layer/entities/wallet/providers/nwc/nwc_wallet_provider.dart';
 import '../domain_layer/entities/wallet/providers/lnurl/lnurl_wallet_provider.dart';
+import '../domain_layer/entities/wallet/providers/bolt12/bolt12_wallet_provider.dart';
+import '../domain_layer/entities/wallet/providers/lnbits/lnbits_wallet_provider.dart';
 import '../domain_layer/repositories/blossom.dart';
 import '../domain_layer/repositories/cashu_repo.dart';
 import '../domain_layer/repositories/lnurl_transport.dart';
@@ -22,14 +29,17 @@ import '../domain_layer/repositories/nip_05_repo.dart';
 import '../domain_layer/repositories/wallets_repo.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
+import '../domain_layer/usecases/broadcast/broadcast_sender.dart';
+import '../domain_layer/usecases/broadcast/pending_broadcast_delivery.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
-import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
+import '../domain_layer/usecases/cache_eviction/cache_eviction_scheduler.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
-import '../domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
-import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/cashu/cashu.dart';
+import '../domain_layer/usecases/cashu/cashu_mint_recommendations.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
+import '../domain_layer/usecases/decrypted_event_payloads/decrypted_event_payloads.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
+import '../domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/blossom_user_server_list.dart';
 import '../domain_layer/usecases/files/files.dart';
@@ -40,12 +50,16 @@ import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/lnurl/lnurl.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/nip_05.dart';
+import '../domain_layer/usecases/dms/dms.dart';
+import '../domain_layer/usecases/nip77/nip77.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
+import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/search/search.dart';
+import '../domain_layer/usecases/software/software.dart';
 import '../domain_layer/usecases/ta/trusted_assertions.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 import '../domain_layer/usecases/wallets/wallets.dart';
@@ -65,15 +79,14 @@ class Initialization {
 
   /// repositories with no dependencies
 
-  final _webSocketNostrTransportFactory =
-      WebSocketClientNostrTransportFactory();
+  late final WebSocketClientNostrTransportFactory
+  _webSocketNostrTransportFactory;
 
   /// state obj
 
   /// use cases
 
   late RelayManager relayManager;
-  late CacheWrite cacheWrite;
   late CacheRead cacheRead;
   late Requests requests;
   late Accounts accounts;
@@ -84,6 +97,7 @@ class Initialization {
   late Lists lists;
   late RelaySets relaySets;
   late Broadcast broadcast;
+  late PendingBroadcastDelivery pendingBroadcastDelivery;
   late Nwc nwc;
   late Zaps zaps;
   late Lnurl lnurl;
@@ -91,15 +105,22 @@ class Initialization {
   late Blossom blossom;
   late BlossomUserServerList blossomUserServerList;
   late Search search;
+  late Software software;
   late GiftWrap giftWrap;
+  late Dms dms;
   late Connectivy connectivity;
+  late DecryptedEventPayloads decryptedEventPayloads;
   late Cashu cashu;
   late Wallets wallets;
   late FetchedRanges fetchedRanges;
+  CacheEvictionScheduler? cacheEvictionScheduler;
   late ProofOfWork proofOfWork;
   late TrustedAssertions trustedAssertions;
+  StreamSubscription<List<RelayConnectivity>>? _relayConnectivitySubscription;
+  final Map<String, bool> _relayOpenStates = {};
 
   late Nip05Usecase nip05;
+  late Nip77 nip77;
 
   late final NetworkEngine engine;
 
@@ -108,12 +129,18 @@ class Initialization {
   Initialization({
     required NdkConfig ndkConfig,
     required GlobalState globalState,
-  })  : _globalState = globalState,
-        _ndkConfig = ndkConfig {
-    // Configure global WebSocket User-Agent on dart:io platforms
-    configureDefaultUserAgent(ndkConfig.userAgent);
+  }) : _globalState = globalState,
+       _ndkConfig = ndkConfig {
+    final userAgent = ndkConfig.userAgent;
+    if (userAgent != null) configureDefaultUserAgent(userAgent);
 
-    accounts = Accounts();
+    _webSocketNostrTransportFactory = WebSocketClientNostrTransportFactory(
+      compressionEnabled: ndkConfig.webSocketCompression,
+      pingInterval: ndkConfig.webSocketPingInterval,
+      reconnectMaximumStep: ndkConfig.webSocketReconnectMaximumStep,
+    );
+
+    accounts = Accounts(_ndkConfig.eventSignerFactory);
 
     switch (_ndkConfig.engine) {
       case NdkEngine.RELAY_SETS:
@@ -122,8 +149,9 @@ class Initialization {
           accounts: accounts,
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
-          eagerAuth: _ndkConfig.eagerAuth,
           authCallbackTimeout: _ndkConfig.authCallbackTimeout,
+          authHandler: _ndkConfig.authHandler,
+          relayInfoRepo: RelayInfoHttpRepoImpl(httpDS: _httpRequestDS),
         );
 
         engine = RelaySetsEngine(
@@ -140,8 +168,9 @@ class Initialization {
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
-          eagerAuth: _ndkConfig.eagerAuth,
           authCallbackTimeout: _ndkConfig.authCallbackTimeout,
+          authHandler: _ndkConfig.authHandler,
+          relayInfoRepo: RelayInfoHttpRepoImpl(httpDS: _httpRequestDS),
         );
 
         engine = JitEngine(
@@ -155,34 +184,36 @@ class Initialization {
     }
 
     /// repositories
-    final Nip05Repository nip05repository =
-        Nip05HttpRepositoryImpl(httpDS: _httpRequestDS);
+    final Nip05Repository nip05repository = Nip05HttpRepositoryImpl(
+      httpDS: _httpRequestDS,
+    );
 
     final BlossomRepository blossomRepository = BlossomRepositoryImpl(
       client: _httpRequestDS,
       fileIO: createFileIO(),
     );
 
-    final CashuRepo cashuRepo = CashuRepoImpl(
-      client: _httpRequestDS,
-    );
+    final CashuRepo cashuRepo = CashuRepoImpl(client: _httpRequestDS);
 
     ///   use cases
-    cacheWrite = CacheWrite(_ndkConfig.cache);
     cacheRead = CacheRead(_ndkConfig.cache);
+    decryptedEventPayloads = DecryptedEventPayloads(
+      cacheManager: _ndkConfig.cache,
+    );
 
     requests = Requests(
       defaultQueryTimeout: _ndkConfig.defaultQueryTimeout,
       globalState: _globalState,
       cacheRead: cacheRead,
-      cacheWrite: cacheWrite,
+      cacheManager: _ndkConfig.cache,
       networkEngine: engine,
       relayManager: relayManager,
       eventVerifier: _ndkConfig.eventVerifier,
       eventOutFilters: _ndkConfig.eventOutFilters,
+      debugMode: _ndkConfig.debugMode,
     );
 
-    broadcast = Broadcast(
+    final broadcastSender = BroadcastSender(
       globalState: _globalState,
       networkEngine: engine,
       cacheManager: _ndkConfig.cache,
@@ -191,9 +222,39 @@ class Initialization {
       timeout: _ndkConfig.defaultBroadcastTimeout,
       saveToCache: _ndkConfig.defaultBroadcastSaveToCache,
     );
+    pendingBroadcastDelivery = PendingBroadcastDelivery(
+      cacheManager: _ndkConfig.cache,
+      broadcastSender: broadcastSender,
+      accounts: accounts,
+    );
+    broadcast = Broadcast(
+      broadcastSender: broadcastSender,
+      accounts: accounts,
+      cacheManager: _ndkConfig.cache,
+      pendingDelivery: pendingBroadcastDelivery,
+    );
+    if (_ndkConfig.pendingDeliveryRetriesEnabled) {
+      _relayConnectivitySubscription = relayManager.relayConnectivityChanges
+          .listen(_handleRelayConnectivityUpdate);
+      pendingBroadcastDelivery.startPeriodicRetry(
+        connectedRelayUrls: () =>
+            relayManager.connectedRelays.map((relay) => relay.url),
+        reconnectRelay: (relayUrl) => relayManager.reconnectRelay(
+          relayUrl,
+          connectionSource: ConnectionSource.explicit,
+          force: true,
+        ),
+        retryInterval: _ndkConfig.pendingDeliveryRetryInterval,
+      );
+    }
 
     // Initialize nwc and cashu before walletsOperationsRepo since they are dependencies
-    nwc = Nwc(requests: requests, broadcast: broadcast);
+    nwc = Nwc(
+      requests: requests,
+      broadcast: broadcast,
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
+      waitForRequestSent: relayManager.waitForRequestSent,
+    );
 
     if (_ndkConfig.walletsRepo == null) {
       // auto detect if the provided cache manager has wallets capabilities.
@@ -210,6 +271,8 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
       cashuUserSeedphrase: _ndkConfig.cashuUserSeedphrase,
       cashuKeyDerivation: DartCashuKeyDerivation(),
+      mintRecommendations: CashuMintRecommendations(requests: requests),
+      autoVerifyMintCounters: _ndkConfig.autoVerifyMintCounters,
     );
 
     // Create wallet providers
@@ -219,6 +282,7 @@ class Initialization {
     bunkers = Bunkers(
       broadcast: broadcast,
       requests: requests,
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
     );
 
     follows = Follows(
@@ -247,6 +311,8 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
       broadcast: broadcast,
       accounts: accounts,
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
+      decryptedEventPayloads: decryptedEventPayloads,
     );
 
     relaySets = RelaySets(
@@ -261,19 +327,18 @@ class Initialization {
       nip05Repository: nip05repository,
     );
 
-    final LnurlTransport lnurlTransport =
-        LnurlTransportHttpImpl(_httpRequestDS);
+    final LnurlTransport lnurlTransport = LnurlTransportHttpImpl(
+      _httpRequestDS,
+    );
 
     lnurl = Lnurl(transport: lnurlTransport);
 
     // Create LNURL wallet provider after lnurl is initialized
     final lnurlProvider = LnurlWalletProvider(lnurl);
+    const bolt12Provider = Bolt12WalletProvider();
+    final lnbitsProvider = LnBitsWalletProvider();
 
-    zaps = Zaps(
-      requests: requests,
-      nwc: nwc,
-      lnurl: lnurl,
-    );
+    zaps = Zaps(requests: requests, nwc: nwc, lnurl: lnurl);
 
     blossomUserServerList = BlossomUserServerList(
       requests: requests,
@@ -285,18 +350,16 @@ class Initialization {
       blossomRepository: blossomRepository,
       accounts: accounts,
       blossomUserServerList: blossomUserServerList,
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
+      authHandler: _ndkConfig.authHandler,
     );
 
     files = Files(blossom: blossom);
 
-    search = Search(
-      cacheManager: _ndkConfig.cache,
-      requests: requests,
-    );
+    search = Search(cacheManager: _ndkConfig.cache, requests: requests);
+    software = Software(requests: requests);
 
-    fetchedRanges = FetchedRanges(
-      cacheManager: _ndkConfig.cache,
-    );
+    fetchedRanges = FetchedRanges(cacheManager: _ndkConfig.cache);
 
     // Connect fetchedRanges to requests for automatic range recording (if enabled)
     if (_ndkConfig.fetchedRangesEnabled) {
@@ -306,22 +369,104 @@ class Initialization {
     giftWrap = GiftWrap(
       accounts: accounts,
       eventVerifier: _ndkConfig.eventVerifier,
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
+      decryptedEventPayloads: decryptedEventPayloads,
+    );
+    dms = Dms(
+      accounts: accounts,
+      requests: requests,
+      broadcast: broadcast,
+      giftWrap: giftWrap,
+      userRelayLists: userRelayLists,
+      cacheManager: _ndkConfig.cache,
+      eventVerifier: _ndkConfig.eventVerifier,
     );
 
     connectivity = Connectivy(relayManager);
 
     wallets = Wallets(
-      providers: [cashuProvider, nwcProvider, lnurlProvider],
+      providers: [
+        cashuProvider,
+        nwcProvider,
+        lnurlProvider,
+        bolt12Provider,
+        lnbitsProvider,
+      ],
       repository: _ndkConfig.walletsRepo!,
     );
     proofOfWork = ProofOfWork();
+
+    nip77 = Nip77(
+      globalState: _globalState,
+      relayManager: relayManager,
+      cacheManager: _ndkConfig.cache,
+    );
+
+    // Wire up NIP-77 handlers
+    relayManager.onNegMsg = nip77.processNegMsg;
+    relayManager.onNegErr = nip77.processNegErr;
+    relayManager.onNegClosed = nip77.processNegClosed;
 
     trustedAssertions = TrustedAssertions(
       requests: requests,
       defaultProviders: _ndkConfig.defaultTrustedProviders,
     );
 
+    if (_ndkConfig.cacheEvictionEnabled) {
+      cacheEvictionScheduler = CacheEvictionScheduler(
+        cacheManager: _ndkConfig.cache,
+        policy: _ndkConfig.cacheEvictionPolicy,
+        startupDelay: _ndkConfig.cacheEvictionStartupDelay,
+        interval: _ndkConfig.cacheEvictionInterval,
+        runOnStartup: _ndkConfig.runCacheEvictionOnStartup,
+      )..start();
+    }
+
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);
+  }
+
+  /// Close all active NIP-77 negotiations
+  void closeAllNip77Negotiations() {
+    nip77.closeAll();
+  }
+
+  Future<void> dispose() async {
+    await cacheEvictionScheduler?.stop();
+    await pendingBroadcastDelivery.stop();
+    await _relayConnectivitySubscription?.cancel();
+  }
+
+  void _handleRelayConnectivityUpdate(List<RelayConnectivity> connections) {
+    // deliveries are still addressed by relay, so a relay counts as reachable
+    // as soon as one of its connections is open
+    final openByUrl = <String, bool>{};
+    for (final connection in connections) {
+      final isOpen = connection.relayTransport?.isOpen() ?? false;
+      openByUrl[connection.url] =
+          (openByUrl[connection.url] ?? false) || isOpen;
+    }
+
+    for (final entry in openByUrl.entries) {
+      final relayUrl = entry.key;
+      final wasOpen = _relayOpenStates[relayUrl] ?? false;
+      _relayOpenStates[relayUrl] = entry.value;
+
+      if (entry.value && !wasOpen) {
+        unawaited(
+          pendingBroadcastDelivery.retryInteractiveSigningForTransportRelay(
+            relayUrl,
+          ),
+        );
+        unawaited(pendingBroadcastDelivery.flushForRelay(relayUrl));
+      }
+    }
+
+    final removedUrls = _relayOpenStates.keys
+        .where((relayUrl) => !openByUrl.containsKey(relayUrl))
+        .toList();
+    for (final relayUrl in removedUrls) {
+      _relayOpenStates.remove(relayUrl);
+    }
   }
 }

@@ -5,11 +5,14 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../entities/wallet/wallet.dart';
 import '../../entities/wallet/wallet_balance.dart';
+import '../../entities/wallet/bip321.dart';
 import '../../entities/wallet/wallet_provider.dart';
 import '../../entities/wallet/wallet_transaction.dart';
 import '../../entities/wallet/wallet_type.dart';
 import '../../repositories/wallets_repo.dart';
 import '../../usecases/nwc/responses/pay_invoice_response.dart';
+import '../../usecases/nwc/responses/pay_response.dart';
+import '../../usecases/nwc/responses/receive_response.dart';
 
 /// Unified wallet system that handles multiple wallet types (NWC, Cashu, etc.)
 /// Uses WalletProvider pattern for pluggability
@@ -35,25 +38,28 @@ class Wallets {
       BehaviorSubject<List<WalletBalance>>();
 
   final BehaviorSubject<List<WalletTransaction>>
-      _combinedPendingTransactionsSubject =
+  _combinedPendingTransactionsSubject =
       BehaviorSubject<List<WalletTransaction>>();
 
   final BehaviorSubject<List<WalletTransaction>>
-      _combinedRecentTransactionsSubject =
+  _combinedRecentTransactionsSubject =
       BehaviorSubject<List<WalletTransaction>>();
 
   /// individual wallet streams - created on demand
   final Map<String, BehaviorSubject<List<WalletBalance>>>
-      _walletBalanceStreams = {};
+  _walletBalanceStreams = {};
 
   final Map<String, BehaviorSubject<List<WalletTransaction>>>
-      _walletPendingTransactionStreams = {};
+  _walletPendingTransactionStreams = {};
 
   final Map<String, BehaviorSubject<List<WalletTransaction>>>
-      _walletRecentTransactionStreams = {};
+  _walletRecentTransactionStreams = {};
 
   /// stream subscriptions for cleanup
   final Map<String, List<StreamSubscription>> _subscriptions = {};
+  final Map<String, StreamSubscription<List<WalletBalance>>>
+  _balanceSubscriptions = {};
+  bool _backgrounded = false;
   late final Future<void> _initializationFuture;
   bool _isDisposed = false;
 
@@ -61,8 +67,8 @@ class Wallets {
     required List<WalletProvider> providers,
     required WalletsRepo repository,
     this.latestTransactionCount = 10,
-  })  : _providers = {for (final p in providers) p.type: p},
-        _repository = repository {
+  }) : _providers = {for (final p in providers) p.type: p},
+       _repository = repository {
     _initializationFuture = _initialize();
   }
 
@@ -168,15 +174,16 @@ class Wallets {
     }
 
     // Listen to discovered wallets from all providers
-    _walletsUsecaseSubscription = Rx.merge(
-      _providers.values.map((p) => p.discoveredWallets),
-    ).listen((wallets) {
-      for (final wallet in wallets) {
-        if (!_wallets.any((w) => w.id == wallet.id)) {
-          addWallet(wallet);
-        }
-      }
-    });
+    _walletsUsecaseSubscription =
+        Rx.merge(_providers.values.map((p) => p.discoveredWallets)).listen((
+          wallets,
+        ) {
+          for (final wallet in wallets) {
+            if (!_wallets.any((w) => w.id == wallet.id)) {
+              addWallet(wallet);
+            }
+          }
+        });
 
     if (_isDisposed) {
       return;
@@ -187,8 +194,9 @@ class Wallets {
 
   void _updateCombinedStreams() {
     // combine all wallet balances
-    final allBalances =
-        _walletsBalances.values.expand((balances) => balances).toList();
+    final allBalances = _walletsBalances.values
+        .expand((balances) => balances)
+        .toList();
     if (!_combinedBalancesSubject.isClosed) {
       _combinedBalancesSubject.add(allBalances);
     }
@@ -230,7 +238,9 @@ class Wallets {
 
     // Initialize transaction streams so combined feeds stay updated.
     // Only subscribe if someone is already listening
-    if (_balancesActivated) _initBalanceStream(wallet.id);
+    if (_balancesActivated || _walletBalanceStreams.containsKey(wallet.id)) {
+      _initBalanceStream(wallet.id);
+    }
     if (_pendingActivated) _initPendingTransactionStream(wallet.id);
     if (_recentActivated) _initRecentTransactionStream(wallet.id);
   }
@@ -257,35 +267,28 @@ class Wallets {
 
   /// Add a new wallet to the system
   Future<void> addWallet(Wallet wallet) async {
-    await _repository.storeWallet(wallet);
-    await _addWalletToMemory(wallet);
-
-    // Initialize with provider
+    // Initialize before persisting so failed setup (for example, an
+    // unreachable LNURL endpoint) cannot leave a partially added wallet.
     final provider = _providers[wallet.type];
+    var walletToStore = wallet;
     if (provider != null) {
       final updatedWallet = await provider.initialize(wallet);
       if (updatedWallet != null) {
-        // Replace old wallet with updated one while preserving order
-        final list = _wallets.toList();
-        final existingIndex = list.indexWhere((w) => w.id == wallet.id);
-        if (existingIndex >= 0) {
-          list[existingIndex] = updatedWallet;
-          _wallets.clear();
-          _wallets.addAll(list);
-          _safeAddWallets(list);
-        }
-        // Also update in repository (addWallet handles updates too)
-        await _repository.storeWallet(updatedWallet);
+        walletToStore = updatedWallet;
       }
     }
 
-    if (wallet.canReceive &&
+    await _repository.storeWallet(walletToStore);
+    await _addWalletToMemory(walletToStore);
+
+    if (walletToStore.canReceive &&
         _repository.getDefaultWalletIdForReceiving() == null) {
-      _repository.setDefaultWalletForReceiving(wallet.id);
+      _repository.setDefaultWalletForReceiving(walletToStore.id);
     }
 
-    if (wallet.canSend && _repository.getDefaultWalletIdForSending() == null) {
-      _repository.setDefaultWalletForSending(wallet.id);
+    if (walletToStore.canSend &&
+        _repository.getDefaultWalletIdForSending() == null) {
+      _repository.setDefaultWalletForSending(walletToStore.id);
     }
 
     _updateCombinedStreams();
@@ -309,6 +312,8 @@ class Wallets {
     _walletsBalances.remove(walletId);
     _walletsPendingTransactions.remove(walletId);
     _walletsRecentTransactions.remove(walletId);
+
+    await _balanceSubscriptions.remove(walletId)?.cancel();
 
     // clean up streams
     _walletBalanceStreams[walletId]?.close();
@@ -370,34 +375,55 @@ class Wallets {
     }
   }
 
-  void _initBalanceStream(String id) {
-    if (_walletBalanceStreams[id] == null) {
-      _walletBalanceStreams[id] = BehaviorSubject<List<WalletBalance>>();
-      final subscriptions = <StreamSubscription>[];
+  /// Whether [setBackgrounded] last suspended background work.
+  bool get isBackgrounded => _backgrounded;
 
-      _getWalletAsync(id).then((wallet) {
-        if (wallet != null) {
-          final provider = _providers[wallet.type];
-          if (provider != null) {
-            subscriptions.add(
-              provider.getBalances(wallet).listen((balances) {
-                _walletsBalances[id] = balances;
-                _walletBalanceStreams[id]?.add(balances);
-                _updateCombinedStreams();
-              }, onError: (error) {
-                _walletBalanceStreams[id]?.add([]);
-              }),
-            );
-          }
-        }
-      });
-
-      if (_subscriptions[id] == null) {
-        _subscriptions[id] = subscriptions;
-      } else {
-        _subscriptions[id]?.addAll(subscriptions);
+  /// Suspends automatic LNbits balance polling while the app is backgrounded.
+  /// Existing balances remain available. NWC notifications, transaction
+  /// monitoring, payments and explicit [refreshBalance] calls are unaffected.
+  void setBackgrounded(bool backgrounded) {
+    if (_isDisposed || _backgrounded == backgrounded) return;
+    _backgrounded = backgrounded;
+    for (final wallet in _wallets) {
+      if (wallet.type != WalletType.LNBITS) continue;
+      if (backgrounded) {
+        unawaited(_balanceSubscriptions.remove(wallet.id)?.cancel());
+      } else if (_walletBalanceStreams.containsKey(wallet.id)) {
+        _initBalanceStream(wallet.id);
       }
     }
+  }
+
+  void _initBalanceStream(String id) {
+    if (_isDisposed) return;
+    final subject = _walletBalanceStreams.putIfAbsent(
+      id,
+      () => BehaviorSubject<List<WalletBalance>>(),
+    );
+    if (_balanceSubscriptions.containsKey(id)) return;
+    final wallet = _wallets.firstWhereOrNull((wallet) => wallet.id == id);
+    if (wallet == null || (_backgrounded && wallet.type == WalletType.LNBITS)) {
+      return;
+    }
+    final provider = _providers[wallet.type];
+    if (provider == null) return;
+    _balanceSubscriptions[id] = provider
+        .getBalances(wallet)
+        .listen(
+          (balances) {
+            if (_isDisposed ||
+                !identical(_walletBalanceStreams[id], subject) ||
+                (_backgrounded && wallet.type == WalletType.LNBITS)) {
+              return;
+            }
+            _walletsBalances[id] = balances;
+            subject.add(balances);
+            _updateCombinedStreams();
+          },
+          onError: (Object error) {
+            if (!_isDisposed && !subject.isClosed) subject.add([]);
+          },
+        );
   }
 
   void _initRecentTransactionStream(String id) {
@@ -411,15 +437,21 @@ class Wallets {
           final provider = _providers[wallet.type];
           if (provider != null) {
             subscriptions.add(
-              provider.getRecentTransactions(wallet).listen((transactions) {
-                transactions =
-                    transactions.where((tx) => tx.state.isDone).toList();
-                _walletsRecentTransactions[id] = transactions;
-                _walletRecentTransactionStreams[id]?.add(transactions);
-                _updateCombinedStreams();
-              }, onError: (error) {
-                _walletRecentTransactionStreams[id]?.add([]);
-              }),
+              provider
+                  .getRecentTransactions(wallet)
+                  .listen(
+                    (transactions) {
+                      transactions = transactions
+                          .where((tx) => tx.state.isDone)
+                          .toList();
+                      _walletsRecentTransactions[id] = transactions;
+                      _walletRecentTransactionStreams[id]?.add(transactions);
+                      _updateCombinedStreams();
+                    },
+                    onError: (error) {
+                      _walletRecentTransactionStreams[id]?.add([]);
+                    },
+                  ),
             );
           }
         }
@@ -444,15 +476,21 @@ class Wallets {
           final provider = _providers[wallet.type];
           if (provider != null) {
             subscriptions.add(
-              provider.getPendingTransactions(wallet).listen((transactions) {
-                transactions =
-                    transactions.where((tx) => tx.state.isPending).toList();
-                _walletsPendingTransactions[id] = transactions;
-                _walletPendingTransactionStreams[id]?.add(transactions);
-                _updateCombinedStreams();
-              }, onError: (error) {
-                _walletPendingTransactionStreams[id]?.add([]);
-              }),
+              provider
+                  .getPendingTransactions(wallet)
+                  .listen(
+                    (transactions) {
+                      transactions = transactions
+                          .where((tx) => tx.state.isPending)
+                          .toList();
+                      _walletsPendingTransactions[id] = transactions;
+                      _walletPendingTransactionStreams[id]?.add(transactions);
+                      _updateCombinedStreams();
+                    },
+                    onError: (error) {
+                      _walletPendingTransactionStreams[id]?.add([]);
+                    },
+                  ),
             );
           }
         }
@@ -475,13 +513,60 @@ class Wallets {
     return _walletBalanceStreams[walletId]!.stream;
   }
 
+  /// Fetches current balances from the wallet provider immediately.
+  Future<List<WalletBalance>> refreshBalance(String walletId) async {
+    await _initializationFuture;
+    final wallet = await _getWalletForOperation(walletId);
+    final provider = _providers[wallet.type];
+    if (provider == null) {
+      throw StateError('No provider registered for wallet type ${wallet.type}');
+    }
+
+    final balances = await provider.getBalances(wallet).first;
+    _walletsBalances[walletId] = balances;
+    _walletBalanceStreams[walletId]?.add(balances);
+    _updateCombinedStreams();
+    return balances;
+  }
+
+  /// Re-establishes access to a wallet's remote service.
+  ///
+  /// Providers use [WalletProvider.initialize] for their connectivity check.
+  /// Any refreshed wallet metadata is persisted without resetting live streams.
+  Future<Wallet> reconnectWallet(String walletId) async {
+    await _initializationFuture;
+    final wallet = await _getWalletForOperation(walletId);
+    final provider = _providers[wallet.type];
+    if (provider == null) {
+      throw StateError('No provider registered for wallet type ${wallet.type}');
+    }
+
+    final updatedWallet = await provider.initialize(wallet);
+    if (updatedWallet == null) return wallet;
+
+    await _repository.storeWallet(updatedWallet);
+    final wallets = _wallets.toList();
+    final index = wallets.indexWhere((item) => item.id == walletId);
+    if (index >= 0) {
+      wallets[index] = updatedWallet;
+    } else {
+      wallets.add(updatedWallet);
+    }
+    _wallets
+      ..clear()
+      ..addAll(wallets);
+    _safeAddWallets(wallets);
+    return updatedWallet;
+  }
+
   Stream<List<WalletTransaction>> getRecentTransactionsStream(String walletId) {
     _initRecentTransactionStream(walletId);
     return _walletRecentTransactionStreams[walletId]!.stream;
   }
 
   Stream<List<WalletTransaction>> getPendingTransactionsStream(
-      String walletId) {
+    String walletId,
+  ) {
     _initPendingTransactionStream(walletId);
     return _walletPendingTransactionStreams[walletId]!.stream;
   }
@@ -492,8 +577,9 @@ class Wallets {
     if (balances == null) {
       return 0;
     }
-    final balance =
-        balances.firstWhereOrNull((balance) => balance.unit == unit);
+    final balance = balances.firstWhereOrNull(
+      (balance) => balance.unit == unit,
+    );
     return balance?.amount ?? 0;
   }
 
@@ -530,8 +616,11 @@ class Wallets {
   }
 
   /// Send payment
-  Future<PayInvoiceResponse> send(
-      {String? walletId, required String invoice}) async {
+  Future<PayInvoiceResponse> send({
+    String? walletId,
+    required String invoice,
+    Duration? timeout,
+  }) async {
     await _initializationFuture;
     walletId ??= _repository.getDefaultWalletIdForSending();
     if (walletId == null) {
@@ -542,7 +631,7 @@ class Wallets {
     if (provider == null) {
       throw ArgumentError('No provider for wallet type: ${wallet.type}');
     }
-    return provider.send(wallet, invoice);
+    return provider.send(wallet, invoice, timeout: timeout);
   }
 
   /// Create a Lightning invoice to receive funds
@@ -561,9 +650,279 @@ class Wallets {
     return provider.receive(wallet, amountSats);
   }
 
+  /// Pays an instruction from a BIP-321 URI using the selected wallet.
+  Future<PayResponse> payBip321({
+    String? walletId,
+    required String payment,
+    int? amountMsat,
+    String? payerNote,
+    Map<String, dynamic>? metadata,
+    Duration? timeout,
+  }) async {
+    await _initializationFuture;
+    walletId ??= _repository.getDefaultWalletIdForSending();
+    if (walletId == null) {
+      throw StateError('No default wallet set');
+    }
+    final wallet = await _getWalletForOperation(walletId);
+    final provider = _providers[wallet.type];
+    if (provider == null) {
+      throw ArgumentError('No provider for wallet type: ${wallet.type}');
+    }
+    return provider.payBip321(
+      wallet,
+      payment: payment,
+      amountMsat: amountMsat,
+      payerNote: payerNote,
+      metadata: metadata,
+      timeout: timeout,
+    );
+  }
+
+  /// Creates a BIP-321 URI using the selected receiving wallet.
+  Future<ReceiveResponse> receiveBip321({
+    String? walletId,
+    int? amountMsat,
+    String? description,
+    Map<String, dynamic>? metadata,
+    Duration? timeout,
+  }) async {
+    await _initializationFuture;
+    walletId ??= _repository.getDefaultWalletIdForReceiving();
+    if (walletId == null) {
+      throw StateError('No default wallet set');
+    }
+    final wallet = await _getWalletForOperation(walletId);
+    final provider = _providers[wallet.type];
+    if (provider == null) {
+      throw ArgumentError('No provider for wallet type: ${wallet.type}');
+    }
+    return provider.receiveBip321(
+      wallet,
+      amountMsat: amountMsat,
+      description: description,
+      metadata: metadata,
+      timeout: timeout,
+    );
+  }
+
+  /// Returns the protocol that can transfer funds from [source] to
+  /// [destination], or null when the wallets have no compatible payment path.
+  WalletPaymentProtocol? compatibleTransferProtocol({
+    required Wallet source,
+    required Wallet destination,
+  }) {
+    if (source.id == destination.id ||
+        !source.canSend ||
+        !destination.canReceive ||
+        !source.supportedUnits.contains('sat') ||
+        !destination.supportedUnits.contains('sat')) {
+      return null;
+    }
+
+    final common = source.sendPaymentProtocols.intersection(
+      destination.receivePaymentProtocols,
+    );
+
+    // A BOLT12-only destination must use the reusable offer through BIP-321.
+    if (destination.receivePaymentProtocols.length == 1 &&
+        destination.receivePaymentProtocols.contains(
+          WalletPaymentProtocol.bolt12,
+        ) &&
+        common.contains(WalletPaymentProtocol.bolt12) &&
+        source.supportsBip321Pay &&
+        destination.supportsBip321Receive) {
+      return WalletPaymentProtocol.bolt12;
+    }
+
+    if (common.contains(WalletPaymentProtocol.bolt11)) {
+      final genericPath =
+          source.supportsBip321Pay &&
+          (destination.supportsBip321Receive ||
+              destination.supportsBolt11InvoiceReceive);
+      final invoicePath =
+          source.supportsBolt11InvoicePay &&
+          destination.supportsBolt11InvoiceReceive;
+      if (genericPath || invoicePath) return WalletPaymentProtocol.bolt11;
+    }
+
+    if (common.contains(WalletPaymentProtocol.bolt12) &&
+        source.supportsBip321Pay &&
+        destination.supportsBip321Receive) {
+      return WalletPaymentProtocol.bolt12;
+    }
+    return null;
+  }
+
+  /// Transfers funds directly between two configured wallets.
+  ///
+  /// BOLT11-capable wallets exchange a fresh invoice. A BOLT12-only receiver
+  /// exposes its reusable offer and requires a BIP-321-capable sender.
+  Future<WalletTransferResult> transfer({
+    required String sourceWalletId,
+    required String destinationWalletId,
+    int? amountMsat,
+    Duration? timeout,
+  }) async {
+    await _initializationFuture;
+    final source = await _getWalletForOperation(sourceWalletId);
+    final destination = await _getWalletForOperation(destinationWalletId);
+    final protocol = compatibleTransferProtocol(
+      source: source,
+      destination: destination,
+    );
+    if (protocol == null) {
+      throw UnsupportedError(
+        'The selected wallets have no compatible payment protocol',
+      );
+    }
+    if (amountMsat != null && amountMsat <= 0) {
+      throw ArgumentError.value(
+        amountMsat,
+        'amountMsat',
+        'Transfer amount must be positive',
+      );
+    }
+    if (protocol == WalletPaymentProtocol.bolt11 &&
+        (amountMsat == null || amountMsat % 1000 != 0)) {
+      throw ArgumentError.value(
+        amountMsat,
+        'amountMsat',
+        'BOLT11 wallet transfers require a positive whole-satoshi amount',
+      );
+    }
+
+    ReceiveResponse? receiveResponse;
+    late final String payment;
+    if (destination.supportsBip321Receive) {
+      receiveResponse = await receiveBip321(
+        walletId: destination.id,
+        amountMsat: amountMsat,
+        timeout: timeout,
+      );
+      payment = receiveResponse.bip321;
+    } else {
+      final invoice = await receive(
+        walletId: destination.id,
+        amountSats: amountMsat! ~/ 1000,
+      );
+      payment = Bip321.fromBolt11(invoice);
+    }
+
+    if (source.supportsBip321Pay) {
+      final payResponse = await payBip321(
+        walletId: source.id,
+        payment: payment,
+        amountMsat: amountMsat,
+        timeout: timeout,
+      );
+      if (payResponse.errorCode != null || payResponse.state == 'failed') {
+        throw StateError(
+          payResponse.errorMessage ??
+              payResponse.failureReason ??
+              'Wallet transfer failed',
+        );
+      }
+      final selectedProtocol = payResponse.instructionType == 'bolt12'
+          ? WalletPaymentProtocol.bolt12
+          : WalletPaymentProtocol.bolt11;
+      await _refreshTransferredWalletData(source.id, destination.id);
+      return WalletTransferResult(
+        sourceWalletId: source.id,
+        destinationWalletId: destination.id,
+        protocol: selectedProtocol,
+        payment: payment,
+        receiveResponse: receiveResponse,
+        payResponse: payResponse,
+      );
+    }
+
+    final invoice = Bip321.getBolt11(payment);
+    final payInvoiceResponse = await send(
+      walletId: source.id,
+      invoice: invoice,
+      timeout: timeout,
+    );
+    if (payInvoiceResponse.errorCode != null) {
+      throw StateError(
+        payInvoiceResponse.errorMessage ?? 'Wallet transfer failed',
+      );
+    }
+    await _refreshTransferredWalletData(source.id, destination.id);
+    return WalletTransferResult(
+      sourceWalletId: source.id,
+      destinationWalletId: destination.id,
+      protocol: WalletPaymentProtocol.bolt11,
+      payment: payment,
+      receiveResponse: receiveResponse,
+      payInvoiceResponse: payInvoiceResponse,
+    );
+  }
+
+  Future<void> _refreshTransferredWalletData(
+    String sourceWalletId,
+    String destinationWalletId,
+  ) async {
+    await Future.wait(
+      {sourceWalletId, destinationWalletId}.map((walletId) async {
+        await Future.wait([
+          _refreshBalanceAfterTransfer(walletId),
+          _refreshActiveTransactionStreamsAfterTransfer(walletId),
+        ]);
+      }),
+    );
+  }
+
+  Future<void> _refreshBalanceAfterTransfer(String walletId) async {
+    try {
+      await refreshBalance(walletId);
+    } catch (_) {
+      // Transfer succeeded. Existing balance streams can retry later.
+    }
+  }
+
+  Future<void> _refreshActiveTransactionStreamsAfterTransfer(
+    String walletId,
+  ) async {
+    final recentStream = _walletRecentTransactionStreams[walletId];
+    final pendingStream = _walletPendingTransactionStreams[walletId];
+    final recentIsActive = recentStream?.hasListener ?? false;
+    final pendingIsActive = pendingStream?.hasListener ?? false;
+    if (!recentIsActive && !pendingIsActive) return;
+
+    try {
+      final wallet = await _getWalletForOperation(walletId);
+      final provider = _providers[wallet.type];
+      if (provider == null) return;
+
+      await Future.wait([
+        if (recentIsActive)
+          provider.getRecentTransactions(wallet).first.then((transactions) {
+            final completed = transactions
+                .where((transaction) => transaction.state.isDone)
+                .toList();
+            _walletsRecentTransactions[walletId] = completed;
+            recentStream!.add(completed);
+          }),
+        if (pendingIsActive)
+          provider.getPendingTransactions(wallet).first.then((transactions) {
+            final pending = transactions
+                .where((transaction) => transaction.state.isPending)
+                .toList();
+            _walletsPendingTransactions[walletId] = pending;
+            pendingStream!.add(pending);
+          }),
+      ]);
+      _updateCombinedStreams();
+    } catch (_) {
+      // Transfer succeeded. Existing transaction streams can retry later.
+    }
+  }
+
   Future<Wallet> _getWalletForOperation(String walletId) async {
-    final inMemory =
-        _wallets.firstWhereOrNull((wallet) => wallet.id == walletId);
+    final inMemory = _wallets.firstWhereOrNull(
+      (wallet) => wallet.id == walletId,
+    );
     if (inMemory != null) {
       return inMemory;
     }
@@ -602,6 +961,13 @@ class Wallets {
         futures.add(provider.removeWallet(wallet));
       }
     }
+
+    // Balance subscriptions are separate so backgrounding never cancels
+    // transaction monitoring or NWC notifications.
+    for (final sub in _balanceSubscriptions.values) {
+      futures.add(sub.cancel());
+    }
+    _balanceSubscriptions.clear();
 
     // cancel all subscriptions
     for (final subs in _subscriptions.values) {
@@ -649,4 +1015,25 @@ class Wallets {
     }
     _walletsSubject.add(wallets);
   }
+}
+
+/// Result of a completed or submitted wallet-to-wallet transfer.
+class WalletTransferResult {
+  final String sourceWalletId;
+  final String destinationWalletId;
+  final WalletPaymentProtocol protocol;
+  final String payment;
+  final ReceiveResponse? receiveResponse;
+  final PayResponse? payResponse;
+  final PayInvoiceResponse? payInvoiceResponse;
+
+  const WalletTransferResult({
+    required this.sourceWalletId,
+    required this.destinationWalletId,
+    required this.protocol,
+    required this.payment,
+    this.receiveResponse,
+    this.payResponse,
+    this.payInvoiceResponse,
+  });
 }

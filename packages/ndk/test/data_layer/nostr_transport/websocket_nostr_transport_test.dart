@@ -3,6 +3,7 @@ import 'package:ndk/data_layer/data_sources/websocket.dart';
 import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
+
 import 'dart:async';
 
 // This will generate a MockWebsocketDS class
@@ -42,15 +43,20 @@ void main() {
     onDone() {}
     final mockSubscription = MockStreamSubscription();
 
-    when(mockWebsocketDS.listen(any,
-            onError: anyNamed('onError'), onDone: anyNamed('onDone')))
-        .thenReturn(mockSubscription);
+    when(
+      mockWebsocketDS.listen(
+        any,
+        onError: anyNamed('onError'),
+        onDone: anyNamed('onDone'),
+      ),
+    ).thenReturn(mockSubscription);
 
     final result = transport.listen(onData, onError: onError, onDone: onDone);
 
     expect(result, equals(mockSubscription));
-    verify(mockWebsocketDS.listen(onData, onError: onError, onDone: onDone))
-        .called(1);
+    verify(
+      mockWebsocketDS.listen(onData, onError: onError, onDone: onDone),
+    ).called(1);
   });
 
   test('send should delegate to WebsocketDS send', () {

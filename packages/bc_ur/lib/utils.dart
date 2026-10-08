@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'dart:convert';
+
 import 'package:ur/crc32.dart';
 
 Uint8List crc32Bytes(Uint8List buf) {
@@ -37,9 +38,9 @@ bool isUrType(String type) {
 
 List<String> partition(String s, int n) {
   return List.generate(
-      (s.length / n).ceil(),
-      (i) =>
-          s.substring(i * n, (i + 1) * n > s.length ? s.length : (i + 1) * n));
+    (s.length / n).ceil(),
+    (i) => s.substring(i * n, (i + 1) * n > s.length ? s.length : (i + 1) * n),
+  );
 }
 
 Tuple<Uint8List, Uint8List> split(Uint8List buf, int count) {

@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+
 import 'package:ur/utils.dart';
 
 class InvalidType implements Exception {
@@ -19,9 +20,7 @@ class UR {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is UR && 
-           other.type == type && 
-           _listEquals(other.cbor, cbor);
+    return other is UR && other.type == type && _listEquals(other.cbor, cbor);
   }
 
   @override

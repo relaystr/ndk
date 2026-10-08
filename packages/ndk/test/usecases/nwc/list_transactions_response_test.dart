@@ -20,9 +20,9 @@ void main() {
               'expires_at': 1633123200,
               'settled_at': 1633040400,
               'metadata': {'key': 'value'},
-            }
-          ]
-        }
+            },
+          ],
+        },
       };
 
       final response = ListTransactionsResponse.deserialize(input);
@@ -78,7 +78,7 @@ void main() {
         feesPaid: 10,
         createdAt: 1633036800,
         metadata: {
-          'nostr': {'kind': 9734, 'pubkey': 'pubkey_123'}
+          'nostr': {'kind': 9734, 'pubkey': 'pubkey_123'},
         },
       );
 

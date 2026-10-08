@@ -1,6 +1,8 @@
 import 'package:ndk/domain_layer/entities/cashu/cashu_proof.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_token.dart';
+
 import '../lib/cashu_token_ur_encoder.dart';
+
 import 'package:test/test.dart';
 
 void main() {
@@ -106,15 +108,17 @@ void main() {
     });
 
     test('decode invalid UR string returns null', () {
-      final decodedToken =
-          CashuTokenUrEncoder.decodeSinglePart('invalid-ur-string');
+      final decodedToken = CashuTokenUrEncoder.decodeSinglePart(
+        'invalid-ur-string',
+      );
       expect(decodedToken, isNull);
     });
 
     test('decode UR with wrong type returns null', () {
       // This is a valid UR but with wrong type
-      final decodedToken =
-          CashuTokenUrEncoder.decodeSinglePart('ur:crypto-seed/oeadgdaxbt');
+      final decodedToken = CashuTokenUrEncoder.decodeSinglePart(
+        'ur:crypto-seed/oeadgdaxbt',
+      );
       expect(decodedToken, isNull);
     });
   });
@@ -196,8 +200,9 @@ void main() {
       expect(parts.length, greaterThan(1));
 
       // Decode the complete message
-      final decodedToken =
-          CashuTokenUrEncoder.decodeFromMultiPartDecoder(decoder);
+      final decodedToken = CashuTokenUrEncoder.decodeFromMultiPartDecoder(
+        decoder,
+      );
 
       // Verify decoded token matches original
       expect(decodedToken, isNotNull);
@@ -285,8 +290,9 @@ void main() {
       decoder.receivePart(firstPart);
 
       // Try to decode incomplete data
-      final decodedToken =
-          CashuTokenUrEncoder.decodeFromMultiPartDecoder(decoder);
+      final decodedToken = CashuTokenUrEncoder.decodeFromMultiPartDecoder(
+        decoder,
+      );
       expect(decodedToken, isNull);
     });
 
@@ -335,8 +341,9 @@ void main() {
 
       expect(decoder.isComplete(), isTrue);
 
-      final decodedToken =
-          CashuTokenUrEncoder.decodeFromMultiPartDecoder(decoder);
+      final decodedToken = CashuTokenUrEncoder.decodeFromMultiPartDecoder(
+        decoder,
+      );
       expect(decodedToken, isNotNull);
       expect(decodedToken!.proofs.length, equals(4));
     });

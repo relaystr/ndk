@@ -16,12 +16,7 @@ class ClientMsg {
   List<Filter>? filters;
   Nip01Event? event;
 
-  ClientMsg(
-    this.type, {
-    this.id,
-    this.event,
-    this.filters,
-  }) {
+  ClientMsg(this.type, {this.id, this.event, this.filters}) {
     // verify based on type
     if (type == ClientMsgType.kEvent) {
       if (event == null) {
@@ -101,4 +96,7 @@ class ClientMsgType {
   static const String kEvent = "EVENT";
   static const String kCount = "COUNT";
   static const String kAuth = "AUTH";
+  static const String kNegOpen = "NEG-OPEN";
+  static const String kNegMsg = "NEG-MSG";
+  static const String kNegClose = "NEG-CLOSE";
 }

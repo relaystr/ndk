@@ -6,10 +6,5 @@ class NdkFile {
   final String? mimeType;
   final int? size;
 
-  NdkFile({
-    required this.data,
-    this.mimeType,
-    this.size,
-    this.sha256,
-  });
+  NdkFile({required this.data, this.mimeType, this.size, this.sha256});
 }

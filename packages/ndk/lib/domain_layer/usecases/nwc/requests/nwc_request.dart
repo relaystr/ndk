@@ -5,9 +5,7 @@ class NwcRequest {
   final NwcMethod method;
 
   ///
-  const NwcRequest({
-    required this.method,
-  });
+  const NwcRequest({required this.method});
 
   // ///
   // factory NwcRequest.fromEvent(
@@ -108,8 +106,6 @@ class NwcRequest {
   // }
 
   Map<String, dynamic> toMap() {
-    return {
-      'method': method.name,
-    };
+    return {'method': method.name};
   }
 }

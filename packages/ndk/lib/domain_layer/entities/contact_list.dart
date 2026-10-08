@@ -95,16 +95,22 @@ class ContactList {
                 bool read = decodedValue["read"] ?? false;
                 bool write = decodedValue["write"] ?? false;
                 if (read || write) {
-                  map[entry.key] =
-                      ReadWriteMarker.from(read: read, write: write);
+                  map[entry.key] = ReadWriteMarker.from(
+                    read: read,
+                    write: write,
+                  );
                 }
                 continue;
               } catch (e) {
-                Logger.log.d(() =>
-                    "Could not parse relay ${entry.key} , entry : ${entry.value}");
+                Logger.log.d(
+                  () =>
+                      "Could not parse relay ${entry.key} , entry : ${entry.value}",
+                );
               }
-              Logger.log.d(() =>
-                  "Could not parse relay ${entry.key} , content : ${event.content}");
+              Logger.log.d(
+                () =>
+                    "Could not parse relay ${entry.key} , content : ${event.content}",
+              );
             }
           }
         }
@@ -122,18 +128,15 @@ class ContactList {
         "p",
         contact,
         contactRelays.length > idx ? contactRelays[idx] : "",
-        petnames.length > idx ? petnames[idx] : ""
+        petnames.length > idx ? petnames[idx] : "",
       ];
       return list;
     }).toList();
   }
 
-  List<List<String>> tagListToJson(final List<String> list, String tag) {
+  List<List<String>> tagListToJson(List<String> list, String tag) {
     return list.map((value) {
-      List<String> list = [
-        tag,
-        value,
-      ];
+      List<String> list = [tag, value];
       return list;
     }).toList();
   }

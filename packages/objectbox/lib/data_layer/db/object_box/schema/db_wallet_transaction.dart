@@ -52,17 +52,18 @@ class DbWalletTransaction {
 
   factory DbWalletTransaction.fromNdk(ndk_entities.WalletTransaction ndkM) {
     final dbM = DbWalletTransaction(
-        id: ndkM.id,
-        walletId: ndkM.walletId,
-        changeAmount: ndkM.changeAmount,
-        unit: ndkM.unit,
-        walletType: ndkM.walletType.toString(),
-        state: ndkM.state.toString(),
-        completionMsg: ndkM.completionMsg,
-        transactionDate: ndkM.transactionDate,
-        initiatedDate: ndkM.initiatedDate,
-        // Note: metadata is stored as a JSON string
-        metadataJsonString: jsonEncode(ndkM.metadata));
+      id: ndkM.id,
+      walletId: ndkM.walletId,
+      changeAmount: ndkM.changeAmount,
+      unit: ndkM.unit,
+      walletType: ndkM.walletType.toString(),
+      state: ndkM.state.toString(),
+      completionMsg: ndkM.completionMsg,
+      transactionDate: ndkM.transactionDate,
+      initiatedDate: ndkM.initiatedDate,
+      // Note: metadata is stored as a JSON string
+      metadataJsonString: jsonEncode(ndkM.metadata),
+    );
 
     return dbM;
   }

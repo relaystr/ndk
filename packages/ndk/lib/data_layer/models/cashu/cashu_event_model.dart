@@ -13,15 +13,16 @@ class CashuEventModel extends CashuEvent {
   });
 
   /// creates a nostr event based on the WalletCashuEvent data
-  Future<Nip01Event> createNostrEvent({
-    required EventSigner signer,
-  }) async {
+  Future<Nip01Event> createNostrEvent({required EventSigner signer}) async {
     final encryptedContent = await signer.encryptNip44(
-        plaintext: jsonEncode(
-          CashuEventContent(privKey: walletPrivkey, mints: mints)
-              .toCashuEventContent(),
-        ),
-        recipientPubKey: userPubkey);
+      plaintext: jsonEncode(
+        CashuEventContent(
+          privKey: walletPrivkey,
+          mints: mints,
+        ).toCashuEventContent(),
+      ),
+      recipientPubKey: userPubkey,
+    );
 
     if (encryptedContent == null) {
       throw Exception("could not encrypt cashu wallet event");
@@ -51,8 +52,9 @@ class CashuEventModel extends CashuEvent {
     }
     final jsonContent = jsonDecode(decryptedContent);
 
-    final extractedContent =
-        CashuEventContent.fromCashuEventContent(jsonContent);
+    final extractedContent = CashuEventContent.fromCashuEventContent(
+      jsonContent,
+    );
 
     return CashuEventModel(
       walletPrivkey: extractedContent.privKey,

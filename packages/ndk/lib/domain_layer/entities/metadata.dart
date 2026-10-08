@@ -114,8 +114,8 @@ class Metadata {
     this.refreshedTimestamp,
     List<List<String>>? tags,
     Map<String, dynamic>? content,
-  })  : tags = tags ?? [],
-        content = content ?? {} {
+  }) : tags = tags ?? [],
+       content = content ?? {} {
     // Initialize content with provided known fields
     if (name != null) this.name = name;
     if (displayName != null) this.displayName = displayName;
@@ -223,11 +223,12 @@ class Metadata {
   /// convert to nip01 event
   Nip01Event toEvent() {
     return Nip01Event(
-        pubKey: pubKey,
-        content: jsonEncode(content),
-        kind: kKind,
-        tags: tags,
-        createdAt: updatedAt ?? 0);
+      pubKey: pubKey,
+      content: jsonEncode(content),
+      kind: kKind,
+      tags: tags,
+      createdAt: updatedAt ?? 0,
+    );
   }
 
   /// Set a custom field in the content

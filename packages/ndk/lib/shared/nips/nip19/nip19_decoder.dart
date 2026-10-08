@@ -47,7 +47,8 @@ class Nip19Decoder {
 
     if (bech32Result.hrp != Hrps.kNprofile) {
       throw ArgumentError(
-          "Invalid HRP: expected '${Hrps.kNprofile}', got '${bech32Result.hrp}'");
+        "Invalid HRP: expected '${Hrps.kNprofile}', got '${bech32Result.hrp}'",
+      );
     }
 
     var data = Nip19Utils.convertBits(bech32Result.data, 5, 8, false);
@@ -81,10 +82,7 @@ class Nip19Decoder {
       throw ArgumentError('Missing required pubkey field (type 0)');
     }
 
-    return Nprofile(
-      pubkey: pubkey,
-      relays: relays.isEmpty ? null : relays,
-    );
+    return Nprofile(pubkey: pubkey, relays: relays.isEmpty ? null : relays);
   }
 
   /// Decode nevent and return Nevent object
@@ -94,7 +92,8 @@ class Nip19Decoder {
 
     if (bech32Result.hrp != Hrps.kNevent) {
       throw ArgumentError(
-          "Invalid HRP: expected '${Hrps.kNevent}', got '${bech32Result.hrp}'");
+        "Invalid HRP: expected '${Hrps.kNevent}', got '${bech32Result.hrp}'",
+      );
     }
 
     var data = Nip19Utils.convertBits(bech32Result.data, 5, 8, false);
@@ -126,7 +125,8 @@ class Nip19Decoder {
           break;
         case 3: // kind
           if (t.value.length == 4) {
-            kind = (t.value[0] << 24) |
+            kind =
+                (t.value[0] << 24) |
                 (t.value[1] << 16) |
                 (t.value[2] << 8) |
                 t.value[3];
@@ -158,7 +158,8 @@ class Nip19Decoder {
 
     if (bech32Result.hrp != Hrps.kNaddr) {
       throw ArgumentError(
-          "Invalid HRP: expected '${Hrps.kNaddr}', got '${bech32Result.hrp}'");
+        "Invalid HRP: expected '${Hrps.kNaddr}', got '${bech32Result.hrp}'",
+      );
     }
 
     var data = Nip19Utils.convertBits(bech32Result.data, 5, 8, false);
@@ -192,7 +193,8 @@ class Nip19Decoder {
           break;
         case 3: // kind
           if (t.value.length == 4) {
-            kind = (t.value[0] << 24) |
+            kind =
+                (t.value[0] << 24) |
                 (t.value[1] << 16) |
                 (t.value[2] << 8) |
                 t.value[3];

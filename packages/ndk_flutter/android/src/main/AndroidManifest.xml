@@ -1,2 +1,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required on Android 11+ to detect and launch a NIP-55 external signer
+         via the nostrsigner: scheme. -->
+    <queries>
+        <package android:name="com.getalby.mobile" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="nostrsigner" />
+        </intent>
+    </queries>
+    <application>
+        <provider
+            android:name="relaystr.ndk.NdkUpdateFileProvider"
+            android:authorities="${applicationId}.ndk_updates"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/ndk_update_paths" />
+        </provider>
+    </application>
 </manifest>

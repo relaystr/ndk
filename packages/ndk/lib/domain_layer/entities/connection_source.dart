@@ -7,5 +7,5 @@ enum ConnectionSource {
   broadcastSpecific,
   explicit,
   connectionProbe,
-  nip51Search
+  nip51Search,
 }

@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ndk/data_layer/repositories/signers/nip46_event_signer.dart';
@@ -9,25 +8,27 @@ import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk_flutter/main/config.dart';
 import 'package:ndk_flutter/models/accounts.dart';
 import 'package:ndk_flutter/models/nip_05_result.dart';
-import 'package:nip07_event_signer/nip07_event_signer.dart';
+import 'package:ndk_flutter/signers/nip07_event_signer.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
-import '../data_layer/data_sources/amber_flutter.dart';
-import '../data_layer/repositories/signers/amber_event_signer.dart';
+import '../data_layer/data_sources/nip55_signer.dart';
+import '../data_layer/repositories/signers/nip55_event_signer.dart';
 
 class NdkFlutter {
   final Ndk ndk;
   final String npubSeparator;
   final int npubPrefixLength;
   final int npubSuffixLength;
+  final FlutterSecureStorage _storage;
 
   NdkFlutter({
     required this.ndk,
     this.npubSeparator = '…',
     this.npubPrefixLength = 10,
     this.npubSuffixLength = 4,
-  });
+    FlutterSecureStorage? storage,
+  }) : _storage = storage ?? const FlutterSecureStorage();
 
   String formatNpub(String pubkey) {
     final npub = Nip19.encodePubKey(pubkey);
@@ -109,9 +110,16 @@ class NdkFlutter {
         continue;
       }
 
-      if (account.signer is AmberEventSigner) {
+      if (account.signer is Nip55EventSigner) {
+        // `signerSeed` holds the signer app package so
+        // silent signing keeps working after restart.
+        final signer = account.signer as Nip55EventSigner;
         accounts.accounts.add(
-          NostrAccount(kind: AccountKinds.amber, pubkey: account.pubkey),
+          NostrAccount(
+            kind: AccountKinds.nip55,
+            pubkey: account.pubkey,
+            signerSeed: signer.nip55Signer.package,
+          ),
         );
         continue;
       }
@@ -129,13 +137,13 @@ class NdkFlutter {
       }
 
       if (account.type == AccountType.privateKey) {
-        final signer = account.signer as Bip340EventSigner;
-        if (signer.privateKey == null) continue;
+        final privateKey = (account.signer as dynamic).privateKey as String?;
+        if (privateKey == null) continue;
         accounts.accounts.add(
           NostrAccount(
             kind: AccountKinds.privkey,
             pubkey: account.pubkey,
-            signerSeed: signer.privateKey!,
+            signerSeed: privateKey,
           ),
         );
         continue;
@@ -151,14 +159,11 @@ class NdkFlutter {
 
     accounts.loggedAccount = ndk.accounts.getPublicKey();
 
-    final storage = FlutterSecureStorage();
-    await storage.write(key: accountsKey, value: jsonEncode(accounts));
+    await _storage.write(key: accountsKey, value: jsonEncode(accounts));
   }
 
   Future<void> restoreAccountsState() async {
-    final storage = FlutterSecureStorage();
-
-    final storedAccounts = await storage.read(key: accountsKey);
+    final storedAccounts = await _storage.read(key: accountsKey);
 
     if (storedAccounts == null) return;
 
@@ -175,16 +180,15 @@ class NdkFlutter {
         continue;
       }
 
-      if (account.kind == AccountKinds.amber) {
-        final amber = Amberflutter();
-        final amberFlutterDS = AmberFlutterDS(amber);
-
+      if (account.kind == AccountKinds.nip55) {
         ndk.accounts.addAccount(
           pubkey: account.pubkey,
           type: AccountType.externalSigner,
-          signer: AmberEventSigner(
+          signer: Nip55EventSigner(
             publicKey: account.pubkey,
-            amberFlutterDS: amberFlutterDS,
+            // restore the signer app package captured at login (null for
+            // legacy accounts -> Android routes through a compatible signer).
+            nip55Signer: Nip55Signer(package: account.signerSeed),
           ),
         );
         continue;
@@ -197,6 +201,7 @@ class NdkFlutter {
           ),
           requests: ndk.requests,
           broadcast: ndk.broadcast,
+          eventSignerFactory: ndk.config.eventSignerFactory,
           cachedPublicKey: account.pubkey,
         );
         ndk.accounts.addAccount(
@@ -211,7 +216,7 @@ class NdkFlutter {
         ndk.accounts.addAccount(
           pubkey: account.pubkey,
           type: AccountType.publicKey,
-          signer: Bip340EventSigner(
+          signer: ndk.config.eventSignerFactory.create(
             privateKey: null,
             publicKey: account.pubkey,
           ),
@@ -224,7 +229,7 @@ class NdkFlutter {
         ndk.accounts.addAccount(
           pubkey: pubkey,
           type: AccountType.privateKey,
-          signer: Bip340EventSigner(
+          signer: ndk.config.eventSignerFactory.create(
             privateKey: account.signerSeed!,
             publicKey: pubkey,
           ),
@@ -235,6 +240,11 @@ class NdkFlutter {
 
     if (accounts.loggedAccount == null) return;
     if (!ndk.accounts.hasAccount(accounts.loggedAccount!)) return;
-    ndk.accounts.switchAccount(pubkey: accounts.loggedAccount!);
+    try {
+      ndk.accounts.switchAccount(pubkey: accounts.loggedAccount!);
+    } catch (_) {
+      // stored logged account could not be restored (e.g. stale/corrupted
+      // state); ignore rather than crash app startup.
+    }
   }
 }

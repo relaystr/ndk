@@ -1,14 +1,15 @@
 {
-  "name": "nostr-verify-bundle",
+  "name": "nostr-crypto-bundle",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "esbuild nostr_verify.src.js --bundle --minify --format=iife --global-name=NostrVerifierModule --outfile=nostr_verify.js"
+    "build": "esbuild nostr_crypto.src.js --bundle --minify --format=iife --global-name=NostrCryptoModule --outfile=nostr_crypto.js"
   },
   "dependencies": {
-    "@noble/curves": "^2.0.1",
-    "@noble/hashes": "^2.0.1"
+    "@noble/ciphers": "^2.2.0",
+    "@noble/curves": "^2.2.0",
+    "@noble/hashes": "^2.2.0"
   },
   "devDependencies": {
     "esbuild": "^0.27.2"

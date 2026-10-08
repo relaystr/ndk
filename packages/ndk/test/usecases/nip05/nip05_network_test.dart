@@ -6,6 +6,7 @@ import 'package:ndk/config/nip_05_defaults.dart';
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/nip_05_http_impl.dart';
 import 'package:ndk/domain_layer/entities/nip_05.dart';
+import 'package:ndk/domain_layer/entities/nip_05_resolve_result.dart';
 import 'package:ndk/domain_layer/usecases/nip05/nip_05.dart';
 import 'package:ndk/ndk.dart';
 
@@ -41,13 +42,18 @@ void main() {
       );
 
       expect(nip05Usecase.check(nip05: '', pubkey: ''), throwsException);
-      expect(nip05Usecase.check(nip05: 'test@example.com', pubkey: ''),
-          throwsException);
       expect(
-          nip05Usecase.check(nip05: '', pubkey: 'testPubkey'), throwsException);
+        nip05Usecase.check(nip05: 'test@example.com', pubkey: ''),
+        throwsException,
+      );
       expect(
-          nip05Usecase.check(nip05: 'test@example.com', pubkey: 'testPubkey'),
-          isA<Future<Nip05>>());
+        nip05Usecase.check(nip05: '', pubkey: 'testPubkey'),
+        throwsException,
+      );
+      expect(
+        nip05Usecase.check(nip05: 'test@example.com', pubkey: 'testPubkey'),
+        isA<Future<Nip05>>(),
+      );
     });
     test('returns Nip05 if the http call completes successfully', () async {
       final client = MockClient(requestHandler);
@@ -63,9 +69,12 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 10));
 
       expect(
-          await nip05Usecase.check(
-              nip05: 'username@example.com', pubkey: 'pubkey'),
-          isA<Nip05>());
+        await nip05Usecase.check(
+          nip05: 'username@example.com',
+          pubkey: 'pubkey',
+        ),
+        isA<Nip05>(),
+      );
     });
 
     test('return false if the http call completes with an error', () async {
@@ -80,7 +89,9 @@ void main() {
       );
 
       var result = await nip05Usecase.check(
-          nip05: 'username@url.test', pubkey: 'pubkey');
+        nip05: 'username@url.test',
+        pubkey: 'pubkey',
+      );
 
       expect(result.valid, false);
     });
@@ -96,7 +107,9 @@ void main() {
       );
 
       var result = await nip05Usecase.check(
-          nip05: 'username@url.test', pubkey: 'non-existing-pubkey');
+        nip05: 'username@url.test',
+        pubkey: 'non-existing-pubkey',
+      );
 
       expect(result.valid, false);
     });
@@ -113,7 +126,9 @@ void main() {
       );
 
       var result = await nip05Usecase.check(
-          nip05: 'username@url.test', pubkey: 'pubkey');
+        nip05: 'username@url.test',
+        pubkey: 'pubkey',
+      );
 
       expect(result.valid, true);
     });
@@ -130,9 +145,30 @@ void main() {
       );
 
       var result = await nip05Usecase.check(
-          nip05: 'domain@domain.test', pubkey: 'pubkey');
+        nip05: '_@domain.test',
+        pubkey: 'pubkey',
+      );
 
       expect(result.valid, true);
+    });
+
+    test('_ entry does not validate other names', () async {
+      final client = MockClient(requestHandler2);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      var result = await nip05Usecase.check(
+        nip05: 'domain@domain.test',
+        pubkey: 'pubkey',
+      );
+
+      expect(result.valid, false);
     });
 
     test('spam requests - check in flight', () async {
@@ -146,14 +182,22 @@ void main() {
         nip05Repository: nip05Repos,
       );
 
-      final check1 =
-          nip05Usecase.check(nip05: 'username@url.test', pubkey: 'pubkey');
+      final check1 = nip05Usecase.check(
+        nip05: 'username@url.test',
+        pubkey: 'pubkey',
+      );
       final check2 = nip05Usecase.check(
-          nip05: 'somethingDiffrent@url.test', pubkey: 'pubkey');
-      final check3 =
-          nip05Usecase.check(nip05: 'username@url.test', pubkey: 'pubkey');
-      final check4 =
-          nip05Usecase.check(nip05: 'username@url.test', pubkey: 'pubkey');
+        nip05: 'somethingDiffrent@url.test',
+        pubkey: 'pubkey',
+      );
+      final check3 = nip05Usecase.check(
+        nip05: 'username@url.test',
+        pubkey: 'pubkey',
+      );
+      final check4 = nip05Usecase.check(
+        nip05: 'username@url.test',
+        pubkey: 'pubkey',
+      );
 
       final results = await Future.wait([check1, check2, check3, check4]);
 
@@ -162,70 +206,92 @@ void main() {
       expect(results.first.hashCode, equals(results.last.hashCode));
     });
 
-    test('returns true when updatedAt is older than the given duration',
-        () async {
-      final client = MockClient(requestHandler);
+    test(
+      'returns true when updatedAt is older than the given duration',
+      () async {
+        final client = MockClient(requestHandler);
 
-      final cache = MemCacheManager();
-      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
-      // Create a Nip05 object with an old updatedAt timestamp
-      final oldTimestamp = (DateTime.now()
-              .subtract(Duration(seconds: NIP_05_VALID_DURATION.inSeconds - 1))
-              .millisecondsSinceEpoch ~/
-          1000);
+        final cache = MemCacheManager();
+        final nip05Repos = Nip05HttpRepositoryImpl(
+          httpDS: HttpRequestDS(client),
+        );
+        // Create a Nip05 object with an old updatedAt timestamp
+        final oldTimestamp =
+            (DateTime.now()
+                .subtract(
+                  Duration(seconds: NIP_05_VALID_DURATION.inSeconds - 1),
+                )
+                .millisecondsSinceEpoch ~/
+            1000);
 
-      final oldNip05 = Nip05(
-        pubKey: 'test_pubkey',
-        nip05: 'test_nip05',
-        valid: true,
-        networkFetchTime: oldTimestamp,
-      );
-
-      await cache.saveNip05(oldNip05);
-
-      Nip05Usecase nip05Usecase = Nip05Usecase(
-        database: cache,
-        nip05Repository: nip05Repos,
-      );
-
-      final result =
-          await nip05Usecase.check(nip05: 'test_nip05', pubkey: 'test_pubkey');
-
-      expect(result.valid,
-          true); // Should return true since the object is older than 5 days
-    });
-
-    test('returns false when updatedAt is more recent than the given duration',
-        () async {
-      final client = MockClient(requestHandler);
-
-      final cache = MemCacheManager();
-      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
-      Nip05Usecase nip05Usecase = Nip05Usecase(
-        database: cache,
-        nip05Repository: nip05Repos,
-      );
-
-      // Create a Nip05 object with a recent updatedAt timestamp
-      final recentTimestamp = (DateTime.now()
-              .subtract(
-                  Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 200))
-              .millisecondsSinceEpoch ~/
-          1000);
-      final oldNip05 = Nip05(
+        final oldNip05 = Nip05(
           pubKey: 'test_pubkey',
-          nip05: 'test_nip05',
+          nip05: 'test@example.com',
           valid: true,
-          networkFetchTime: recentTimestamp);
+          networkFetchTime: oldTimestamp,
+        );
 
-      await cache.saveNip05(oldNip05);
+        await cache.saveNip05(oldNip05);
 
-      // Test with a duration of 5 days
-      final result =
-          await nip05Usecase.check(nip05: 'test_nip05', pubkey: 'test_pubkey');
-      expect(result.valid,
-          false); // Should return false since the object is more recent than 5 days
-    });
+        Nip05Usecase nip05Usecase = Nip05Usecase(
+          database: cache,
+          nip05Repository: nip05Repos,
+        );
+
+        final result = await nip05Usecase.check(
+          nip05: 'test@example.com',
+          pubkey: 'test_pubkey',
+        );
+
+        expect(
+          result.valid,
+          true,
+        ); // Should return true since the object is older than 5 days
+      },
+    );
+
+    test(
+      'returns false when updatedAt is more recent than the given duration',
+      () async {
+        final client = MockClient(requestHandler);
+
+        final cache = MemCacheManager();
+        final nip05Repos = Nip05HttpRepositoryImpl(
+          httpDS: HttpRequestDS(client),
+        );
+        Nip05Usecase nip05Usecase = Nip05Usecase(
+          database: cache,
+          nip05Repository: nip05Repos,
+        );
+
+        // Create a Nip05 object with a recent updatedAt timestamp
+        final recentTimestamp =
+            (DateTime.now()
+                .subtract(
+                  Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 200),
+                )
+                .millisecondsSinceEpoch ~/
+            1000);
+        final oldNip05 = Nip05(
+          pubKey: 'test_pubkey',
+          nip05: 'test@example.com',
+          valid: true,
+          networkFetchTime: recentTimestamp,
+        );
+
+        await cache.saveNip05(oldNip05);
+
+        // Test with a duration of 5 days
+        final result = await nip05Usecase.check(
+          nip05: 'test@example.com',
+          pubkey: 'test_pubkey',
+        );
+        expect(
+          result.valid,
+          false,
+        ); // Should return false since the object is more recent than 5 days
+      },
+    );
 
     test('returns false when updatedAt is exactly the duration ago', () async {
       final client = MockClient(requestHandler);
@@ -238,24 +304,29 @@ void main() {
       );
 
       // Create a Nip05 object with an updatedAt timestamp exactly equal to the duration
-      final exactTimestamp = (DateTime.now()
+      final exactTimestamp =
+          (DateTime.now()
               .subtract(Duration(seconds: NIP_05_VALID_DURATION.inSeconds))
               .millisecondsSinceEpoch ~/
           1000);
       final oldNip05 = Nip05(
         pubKey: 'test_pubkey',
-        nip05: 'test_nip05',
+        nip05: 'test@example.com',
         valid: true,
         networkFetchTime: exactTimestamp,
       );
 
       await cache.saveNip05(oldNip05);
 
-      final result =
-          await nip05Usecase.check(nip05: 'test_nip05', pubkey: 'test_pubkey');
+      final result = await nip05Usecase.check(
+        nip05: 'test@example.com',
+        pubkey: 'test_pubkey',
+      );
 
-      expect(result.valid,
-          false); // Should return false since it's exactly at the limit
+      expect(
+        result.valid,
+        false,
+      ); // Should return false since it's exactly at the limit
     });
 
     test('test if data is saved even when network fails', () async {
@@ -269,7 +340,9 @@ void main() {
       );
 
       await nip05Usecase.check(
-          nip05: 'test_nip05_cache', pubkey: 'test_pubkey_cache');
+        nip05: 'test_nip05_cache',
+        pubkey: 'test_pubkey_cache',
+      );
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
@@ -291,12 +364,14 @@ void main() {
       );
 
       final result = await nip05Usecase.check(
-          nip05: 'username@example.com', pubkey: 'pubkey');
+        nip05: 'username@example.com',
+        pubkey: 'pubkey',
+      );
 
       expect(result.relays, equals(['relay1', 'relay2']));
     });
 
-    test('resolve() returns pubkey without validation', () async {
+    test('resolve() returns Nip05Found on success', () async {
       final client = MockClient(requestHandler);
 
       final cache = MemCacheManager();
@@ -308,13 +383,290 @@ void main() {
 
       final result = await nip05Usecase.resolve('username@example.com');
 
-      expect(result, isNotNull);
-      expect(result!.pubKey, equals('pubkey'));
-      expect(result.nip05, equals('username@example.com'));
-      expect(result.relays, equals(['relay1', 'relay2']));
+      expect(result, isA<Nip05Found>());
+      final found = result as Nip05Found;
+      expect(found.data.pubKey, equals('pubkey'));
+      expect(found.data.nip05, equals('username@example.com'));
+      expect(found.data.relays, equals(['relay1', 'relay2']));
     });
 
-    test('resolve() returns null on error', () async {
+    test(
+      'resolve() returns Nip05NotFound when user is absent from nostr.json',
+      () async {
+        // Server replies 200 with an empty `names` map: the file exists but
+        // the requested user is not in it.
+        Future<http.Response> notFoundHandler(http.Request request) async {
+          return http.Response('{"names": {}}', 200);
+        }
+
+        final client = MockClient(notFoundHandler);
+
+        final cache = MemCacheManager();
+        final nip05Repos = Nip05HttpRepositoryImpl(
+          httpDS: HttpRequestDS(client),
+        );
+        Nip05Usecase nip05Usecase = Nip05Usecase(
+          database: cache,
+          nip05Repository: nip05Repos,
+        );
+
+        final result = await nip05Usecase.resolve('ghost@example.com');
+
+        expect(result, isA<Nip05NotFound>());
+      },
+    );
+
+    test('resolve() does not fall back to the _ entry', () async {
+      final client = MockClient(requestHandler2);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('alice@domain.test');
+
+      expect(result, isA<Nip05NotFound>());
+    });
+
+    test('does not follow redirects', () async {
+      http.Request? sent;
+      final client = MockClient((request) async {
+        sent = request;
+        return http.Response('', 301, headers: {'location': 'https://x.test'});
+      });
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('username@example.com');
+
+      expect(sent!.followRedirects, false);
+      expect(result, isA<Nip05ResolveError>());
+    });
+
+    test('aborts the request on a server that never answers', () async {
+      final client = _NeverAnsweringClient();
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(
+        httpDS: HttpRequestDS(client),
+        timeout: const Duration(milliseconds: 50),
+      );
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final resolved = await nip05Usecase.resolve('username@example.com');
+      final checked = await nip05Usecase.check(
+        nip05: 'username@example.com',
+        pubkey: 'pubkey',
+      );
+
+      expect(resolved, isA<Nip05ResolveError>());
+      expect(checked.valid, false);
+      expect(client.aborted, 2);
+    });
+
+    test('lowercases the identifier', () async {
+      Uri? sentUrl;
+      final client = MockClient((request) async {
+        sentUrl = request.url;
+        return requestHandler(request);
+      });
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('UserName@Example.com');
+
+      expect(sentUrl!.host, 'example.com');
+      expect(sentUrl!.queryParameters['name'], 'username');
+      expect(result, isA<Nip05Found>());
+    });
+
+    test('a bare domain resolves as _@domain', () async {
+      Uri? sentUrl;
+      final client = MockClient((request) async {
+        sentUrl = request.url;
+        return requestHandler2(request);
+      });
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('domain.test');
+
+      expect(sentUrl!.queryParameters['name'], '_');
+      expect((result as Nip05Found).data.pubKey, 'pubkey');
+    });
+
+    test('encodes the name in the query', () async {
+      Uri? sentUrl;
+      final client = MockClient((request) async {
+        sentUrl = request.url;
+        return http.Response('{"names": {}}', 200);
+      });
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      await nip05Usecase.resolve('a&name=_@domain.test');
+
+      expect(sentUrl!.queryParametersAll['name'], ['a&name=_']);
+    });
+
+    test('rejects an identifier with several @', () async {
+      var requested = false;
+      final client = MockClient((request) async {
+        requested = true;
+        return requestHandler(request);
+      });
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('a@b@example.com');
+
+      expect(requested, false);
+      expect(result, isA<Nip05NotFound>());
+    });
+
+    test('resolve() ignores a failed check() in cache', () async {
+      final client = MockClient((request) async => http.Response('', 404));
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      await nip05Usecase.check(nip05: 'moi@github.com', pubkey: 'attacker');
+      final result = await nip05Usecase.resolve('moi@github.com');
+
+      expect(result, isA<Nip05NotFound>());
+    });
+
+    test(
+      'check() does not reuse a cached result for another identifier',
+      () async {
+        final client = MockClient(requestHandler);
+
+        final cache = MemCacheManager();
+        final nip05Repos = Nip05HttpRepositoryImpl(
+          httpDS: HttpRequestDS(client),
+        );
+        Nip05Usecase nip05Usecase = Nip05Usecase(
+          database: cache,
+          nip05Repository: nip05Repos,
+        );
+
+        final previous = await nip05Usecase.check(
+          nip05: 'username@example.com',
+          pubkey: 'pubkey',
+        );
+        final switched = await nip05Usecase.check(
+          nip05: 'jack@example.com',
+          pubkey: 'pubkey',
+        );
+
+        expect(previous.valid, true);
+        expect(switched.valid, false);
+        expect(switched.nip05, 'jack@example.com');
+      },
+    );
+
+    test(
+      'concurrent check() calls for different pubkeys are not merged',
+      () async {
+        final client = MockClient(requestHandler);
+
+        final cache = MemCacheManager();
+        final nip05Repos = Nip05HttpRepositoryImpl(
+          httpDS: HttpRequestDS(client),
+        );
+        Nip05Usecase nip05Usecase = Nip05Usecase(
+          database: cache,
+          nip05Repository: nip05Repos,
+        );
+
+        final results = await Future.wait([
+          nip05Usecase.check(nip05: 'username@example.com', pubkey: 'pubkey'),
+          nip05Usecase.check(nip05: 'username@example.com', pubkey: 'other'),
+        ]);
+
+        expect(results[0].valid, true);
+        expect(results[1].pubKey, 'other');
+        expect(results[1].valid, false);
+      },
+    );
+
+    test('identifiers differing in case share one cache entry', () async {
+      var requests = 0;
+      final client = MockClient((request) async {
+        requests++;
+        return requestHandler(request);
+      });
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final first = await nip05Usecase.resolve(' UserName@Example.com ');
+      final second = await nip05Usecase.resolve('username@example.com');
+
+      expect(requests, 1);
+      expect((first as Nip05Found).data.nip05, 'username@example.com');
+      expect(second, isA<Nip05Found>());
+    });
+
+    test('resolve() returns Nip05NotFound on HTTP 404', () async {
+      Future<http.Response> notFoundHandler(http.Request request) async {
+        return http.Response('', 404);
+      }
+
+      final client = MockClient(notFoundHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('ghost@example.com');
+
+      expect(result, isA<Nip05NotFound>());
+    });
+
+    test('resolve() returns Nip05ResolveError on HTTP error', () async {
       final client = MockClient(requestHandlerErr);
 
       final cache = MemCacheManager();
@@ -326,7 +678,27 @@ void main() {
 
       final result = await nip05Usecase.resolve('username@example.com');
 
-      expect(result, isNull);
+      expect(result, isA<Nip05ResolveError>());
+      expect((result as Nip05ResolveError).cause, isNotNull);
+    });
+
+    test('resolve() returns Nip05ResolveError on malformed JSON', () async {
+      Future<http.Response> malformedHandler(http.Request request) async {
+        return http.Response('not json', 200);
+      }
+
+      final client = MockClient(malformedHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('username@example.com');
+
+      expect(result, isA<Nip05ResolveError>());
     });
 
     test('resolve() throws if nip05 is empty', () async {
@@ -358,7 +730,7 @@ void main() {
 
       final results = await Future.wait([resolve1, resolve2, resolve3]);
 
-      expect(results[0]!.pubKey, equals('pubkey'));
+      expect(results[0], isA<Nip05Found>());
       expect(results[0].hashCode, equals(results[1].hashCode));
       expect(results[1].hashCode, equals(results[2].hashCode));
     });
@@ -374,9 +746,11 @@ void main() {
       );
 
       // Save an expired nip05 in cache
-      final expiredTimestamp = (DateTime.now()
+      final expiredTimestamp =
+          (DateTime.now()
               .subtract(
-                  Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 100))
+                Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 100),
+              )
               .millisecondsSinceEpoch ~/
           1000);
       final expiredNip05 = Nip05(
@@ -389,15 +763,25 @@ void main() {
 
       // resolve() should refetch because cache is expired
       final result = await nip05Usecase.resolve('username@example.com');
-      expect(result, isNotNull);
-      expect(
-          result!.pubKey, equals('pubkey')); // From network, not 'old_pubkey'
+      expect(result, isA<Nip05Found>());
+      // From network, not 'old_pubkey'
+      expect((result as Nip05Found).data.pubKey, equals('pubkey'));
 
       // Second call should return cached result (now valid)
       final result2 = await nip05Usecase.resolve('username@example.com');
-      expect(result2, isNotNull);
-      expect(result2!.pubKey, equals('pubkey'));
-      expect(result.hashCode, equals(result2.hashCode)); // Same cached object
+      expect(result2, isA<Nip05Found>());
+      expect((result2 as Nip05Found).data.pubKey, equals('pubkey'));
     });
   });
+}
+
+class _NeverAnsweringClient extends http.BaseClient {
+  int aborted = 0;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    await (request as http.Abortable).abortTrigger;
+    aborted++;
+    throw http.RequestAbortedException(request.url);
+  }
 }

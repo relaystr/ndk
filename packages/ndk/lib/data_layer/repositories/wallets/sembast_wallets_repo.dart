@@ -36,12 +36,16 @@ class SembastWalletsRepo extends WalletsRepo {
     _keyValueStore = sembast.stringMapStoreFactory.store('key_values');
   }
 
+  /// Closes the underlying database.
+  Future<void> close() => _database.close();
+
   Future<void> initializeWalletDefaults() async {
     final receiving = await _keyValueStore
         .record(defaultWalletForReceivingKey)
         .get(_database);
-    final sending =
-        await _keyValueStore.record(defaultWalletForSendingKey).get(_database);
+    final sending = await _keyValueStore
+        .record(defaultWalletForSendingKey)
+        .get(_database);
 
     _defaultWalletIdForReceiving = receiving?['value'] as String?;
     _defaultWalletIdForSending = sending?['value'] as String?;
@@ -95,15 +99,14 @@ class SembastWalletsRepo extends WalletsRepo {
 
     final records = await _transactionStore.find(_database, finder: finder);
     return records
-        .map((record) =>
-            WalletTransactionExtension.fromJsonStorage(record.value))
+        .map(
+          (record) => WalletTransactionExtension.fromJsonStorage(record.value),
+        )
         .toList();
   }
 
   @override
-  Future<void> saveTransactions(
-    List<WalletTransaction> transactions,
-  ) async {
+  Future<void> saveTransactions(List<WalletTransaction> transactions) async {
     await _database.transaction((txn) async {
       final idsToCheck = transactions.map((t) => t.id).toList();
       final finder = sembast.Finder(
@@ -120,6 +123,19 @@ class SembastWalletsRepo extends WalletsRepo {
   }
 
   @override
+  Future<void> removeTransactions(List<String>? transactionIds) async {
+    if (transactionIds == null || transactionIds.isEmpty) {
+      await _transactionStore.delete(_database);
+      return;
+    }
+
+    final finder = sembast.Finder(
+      filter: sembast.Filter.inList('id', transactionIds),
+    );
+    await _transactionStore.delete(_database, finder: finder);
+  }
+
+  @override
   Future<List<Wallet>> getWallets({List<String>? ids}) async {
     if (ids == null || ids.isEmpty) {
       final records = await _walletStore.find(_database);
@@ -128,9 +144,7 @@ class SembastWalletsRepo extends WalletsRepo {
           .toList();
     }
 
-    final finder = sembast.Finder(
-      filter: sembast.Filter.inList('id', ids),
-    );
+    final finder = sembast.Finder(filter: sembast.Filter.inList('id', ids));
 
     final records = await _walletStore.find(_database, finder: finder);
     return records
@@ -163,18 +177,19 @@ class SembastWalletsRepo extends WalletsRepo {
   @override
   void setDefaultWalletForReceiving(String? walletId) {
     _defaultWalletIdForReceiving = walletId;
-    unawaited(_storeDefaultWallet(
-      key: defaultWalletForReceivingKey,
-      walletId: walletId,
-    ));
+    unawaited(
+      _storeDefaultWallet(
+        key: defaultWalletForReceivingKey,
+        walletId: walletId,
+      ),
+    );
   }
 
   @override
   void setDefaultWalletForSending(String? walletId) {
     _defaultWalletIdForSending = walletId;
-    unawaited(_storeDefaultWallet(
-      key: defaultWalletForSendingKey,
-      walletId: walletId,
-    ));
+    unawaited(
+      _storeDefaultWallet(key: defaultWalletForSendingKey, walletId: walletId),
+    );
   }
 }

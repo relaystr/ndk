@@ -30,12 +30,14 @@ void main() async {
 
     await relay1.startServer();
 
-    ndk = Ndk(NdkConfig(
-      eventVerifier: MockEventVerifier(),
-      cache: MemCacheManager(),
-      bootstrapRelays: [relay1.url],
-      logLevel: LogLevel.off,
-    ));
+    ndk = Ndk(
+      NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        bootstrapRelays: [relay1.url],
+        logLevel: LogLevel.off,
+      ),
+    );
 
     ndk.accounts.loginExternalSigner(signer: signer);
   });
@@ -49,13 +51,7 @@ void main() async {
     test('fetches all events across multiple pages', () async {
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       // Create 5 events spread across time
-      final timestamps = [
-        now - 4000,
-        now - 3000,
-        now - 2000,
-        now - 1000,
-        now,
-      ];
+      final timestamps = [now - 4000, now - 3000, now - 2000, now - 1000, now];
 
       // Publish events to the relay
       for (final ts in timestamps) {
@@ -66,9 +62,7 @@ void main() async {
           tags: [],
           createdAt: ts,
         );
-        final response = ndk.broadcast.broadcast(
-          nostrEvent: event,
-        );
+        final response = ndk.broadcast.broadcast(nostrEvent: event);
         await response.broadcastDoneFuture;
       }
 
@@ -106,9 +100,7 @@ void main() async {
           tags: [],
           createdAt: ts,
         );
-        final response = ndk.broadcast.broadcast(
-          nostrEvent: event,
-        );
+        final response = ndk.broadcast.broadcast(nostrEvent: event);
         await response.broadcastDoneFuture;
       }
 
@@ -153,9 +145,7 @@ void main() async {
           tags: [],
           createdAt: ts,
         );
-        final response = ndk.broadcast.broadcast(
-          nostrEvent: event,
-        );
+        final response = ndk.broadcast.broadcast(nostrEvent: event);
         await response.broadcastDoneFuture;
       }
 
@@ -202,9 +192,7 @@ void main() async {
           tags: [],
           createdAt: timestamps[i],
         );
-        final response = ndk.broadcast.broadcast(
-          nostrEvent: event,
-        );
+        final response = ndk.broadcast.broadcast(nostrEvent: event);
         await response.broadcastDoneFuture;
       }
 
@@ -283,19 +271,16 @@ void main() async {
         firstEventSigned,
         relay1EventSigned,
         middleEventSigned,
-        lastEventSigned
+        lastEventSigned,
       ];
       final relay2Events = [
         firstEventSigned,
         relay2EventSigned,
-        lastEventSigned
+        lastEventSigned,
       ];
 
       // Create a second relay
-      final relay2 = MockRelay(
-        name: "relay 2",
-        explicitPort: 6071,
-      );
+      final relay2 = MockRelay(name: "relay 2", explicitPort: 6071);
       await relay2.startServer();
 
       try {
@@ -333,6 +318,83 @@ void main() async {
       expect(events.length, equals(5));
 
       await relay2.stopServer();
+    });
+
+    test('paginates each relay of a relay set independently', () async {
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+      // relay 1 holds more history than a page can carry, relay 2 a single much
+      // older event, so a page bound to the whole set would drag relay 1 past
+      // the events it has left
+      final relay1Timestamps = [
+        now,
+        now - 1000,
+        now - 2000,
+        now - 3000,
+        now - 4000,
+      ];
+      final relay2Timestamps = [now, now - 9000];
+
+      Future<Nip01Event> signedEventAt(int createdAt) async => signer.sign(
+        Nip01Event(
+          kind: Nip01Event.kTextNodeKind,
+          pubKey: key1.publicKey,
+          content: "Event at $createdAt",
+          tags: [],
+          createdAt: createdAt,
+        ),
+      );
+
+      final relay2 = MockRelay(
+        name: "relay 2",
+        explicitPort: 6072,
+        maxEventsPerRequest: 2,
+      );
+      await relay2.startServer();
+
+      try {
+        for (final ts in relay1Timestamps) {
+          final response = ndk.broadcast.broadcast(
+            nostrEvent: await signedEventAt(ts),
+            specificRelays: [relay1.url],
+          );
+          await response.broadcastDoneFuture;
+        }
+
+        for (final ts in relay2Timestamps) {
+          final response = ndk.broadcast.broadcast(
+            nostrEvent: await signedEventAt(ts),
+            specificRelays: [relay2.url],
+          );
+          await response.broadcastDoneFuture;
+        }
+
+        await ndk.config.cache.clearAll();
+
+        final relaySet = RelaySet(
+          name: "pagination",
+          pubKey: key1.publicKey,
+          relaysMap: {relay1.url: [], relay2.url: []},
+          direction: RelayDirection.outbox,
+          fallbackToBootstrapRelays: false,
+        );
+
+        final query = ndk.requests.query(
+          filter: Filter(
+            kinds: [Nip01Event.kTextNodeKind],
+            authors: [key1.publicKey],
+          ),
+          relaySet: relaySet,
+          paginate: true,
+        );
+
+        final events = await query.future;
+
+        final createdAt = events.map((e) => e.createdAt).toSet();
+        expect(createdAt, equals({...relay1Timestamps, ...relay2Timestamps}));
+      } finally {
+        await relay2.stopServer();
+      }
     });
   });
 }

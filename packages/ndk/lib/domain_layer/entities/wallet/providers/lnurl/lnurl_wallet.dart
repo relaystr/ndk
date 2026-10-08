@@ -31,15 +31,15 @@ class LnurlWallet extends Wallet {
     this.metadataFetchedAt,
     Map<String, dynamic>? metadata,
   }) : super(
-          metadata: Map.unmodifiable({
-            ...(metadata ?? const {}),
-            'identifier': identifier,
-            'lnurlPayUrl': lnurlPayUrl,
-            'minSendable': minSendable,
-            'maxSendable': maxSendable,
-            'metadataFetchedAt': metadataFetchedAt,
-          }),
-        );
+         metadata: Map.unmodifiable({
+           ...(metadata ?? const {}),
+           'identifier': identifier,
+           'lnurlPayUrl': lnurlPayUrl,
+           'minSendable': minSendable,
+           'maxSendable': maxSendable,
+           'metadataFetchedAt': metadataFetchedAt,
+         }),
+       );
 
   @override
   Map<String, dynamic> toMetadata() => metadata;
@@ -55,13 +55,15 @@ class LnurlWallet extends Wallet {
     final identifier = metadata['identifier'] as String?;
     if (identifier == null || identifier.isEmpty) {
       throw ArgumentError(
-          'LnurlWallet storage requires metadata["identifier"]');
+        'LnurlWallet storage requires metadata["identifier"]',
+      );
     }
 
     final lnurlPayUrl = metadata['lnurlPayUrl'] as String?;
     if (lnurlPayUrl == null || lnurlPayUrl.isEmpty) {
       throw ArgumentError(
-          'LnurlWallet storage requires metadata["lnurlPayUrl"]');
+        'LnurlWallet storage requires metadata["lnurlPayUrl"]',
+      );
     }
 
     return LnurlWallet(

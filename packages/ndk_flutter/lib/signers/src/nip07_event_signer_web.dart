@@ -1,0 +1,274 @@
+import 'dart:async';
+import 'dart:js_interop';
+
+import 'package:ndk/ndk.dart';
+import 'package:rxdart/rxdart.dart';
+
+import 'nip07_js_interop.dart' as js;
+
+class _PendingRequestEntry {
+  final Completer<dynamic> completer;
+  final PendingSignerRequest request;
+
+  _PendingRequestEntry(this.completer, this.request);
+}
+
+class Nip07EventSigner with ConcurrencyLimiterMixin implements EventSigner {
+  String? cachedPublicKey;
+
+  final _pendingRequests = <String, _PendingRequestEntry>{};
+  final _pendingRequestsController =
+      BehaviorSubject<List<PendingSignerRequest>>.seeded([]);
+
+  int _requestCounter = 0;
+
+  @override
+  final int maxConcurrentRequests;
+
+  static const int defaultMaxConcurrentRequests = 100;
+
+  Nip07EventSigner({
+    this.cachedPublicKey,
+    this.maxConcurrentRequests = defaultMaxConcurrentRequests,
+  }) : assert(maxConcurrentRequests > 0, 'maxConcurrentRequests must be > 0');
+
+  String _generateRequestId() {
+    return 'nip07_${DateTime.now().millisecondsSinceEpoch}_${_requestCounter++}';
+  }
+
+  void _notifyPendingRequestsChange() {
+    _pendingRequestsController.add(
+      _pendingRequests.values.map((entry) => entry.request).toList(),
+    );
+  }
+
+  Future<T> _trackRequest<T>(
+    SignerMethod method,
+    Future<T> Function() operation, {
+    Nip01Event? event,
+    String? plaintext,
+    String? ciphertext,
+    String? counterpartyPubkey,
+  }) {
+    final requestId = _generateRequestId();
+    final completer = Completer<T>();
+    final pendingRequest = PendingSignerRequest(
+      id: requestId,
+      method: method,
+      createdAt: DateTime.now(),
+      signerPubkey: cachedPublicKey ?? '',
+      event: event,
+      plaintext: plaintext,
+      ciphertext: ciphertext,
+      counterpartyPubkey: counterpartyPubkey,
+    );
+
+    _pendingRequests[requestId] = _PendingRequestEntry(
+      completer as Completer<dynamic>,
+      pendingRequest,
+    );
+    _notifyPendingRequestsChange();
+
+    runThrottled(() async {
+          if (!_pendingRequests.containsKey(requestId)) {
+            throw SignerRequestCancelledException(requestId);
+          }
+          return operation();
+        })
+        .then((result) {
+          if (!completer.isCompleted) {
+            completer.complete(result);
+          }
+        })
+        .catchError((error) {
+          if (!completer.isCompleted) {
+            completer.completeError(
+              SignerRequestRejectedException(
+                requestId: requestId,
+                originalMessage: error.toString(),
+              ),
+            );
+          }
+        })
+        .whenComplete(() {
+          _pendingRequests.remove(requestId);
+          _notifyPendingRequestsChange();
+        });
+
+    return completer.future;
+  }
+
+  @override
+  bool canSign() {
+    return js.nostr != null;
+  }
+
+  @override
+  bool get requiresInteractiveSigning => true;
+
+  @override
+  bool get requiresSignerNetwork => false;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls => const <String>[];
+
+  @override
+  Future<String?> decrypt(String msg, String destPubKey) async {
+    if (js.nostr == null) {
+      throw Exception('NIP-07 extension not available');
+    }
+
+    return _trackRequest(
+      SignerMethod.nip04Decrypt,
+      () async {
+        final result = await js.nostr!.nip04!
+            .decrypt(destPubKey.toJS, msg.toJS)
+            .toDart;
+        return result.toDart;
+      },
+      ciphertext: msg,
+      counterpartyPubkey: destPubKey,
+    );
+  }
+
+  @override
+  Future<String?> decryptNip44({
+    required String ciphertext,
+    required String senderPubKey,
+  }) async {
+    if (js.nostr == null) {
+      throw Exception('NIP-07 extension not available');
+    }
+
+    return _trackRequest(
+      SignerMethod.nip44Decrypt,
+      () async {
+        final result = await js.nostr!.nip44!
+            .decrypt(senderPubKey.toJS, ciphertext.toJS)
+            .toDart;
+        return result.toDart;
+      },
+      ciphertext: ciphertext,
+      counterpartyPubkey: senderPubKey,
+    );
+  }
+
+  @override
+  Future<String?> encrypt(String msg, String destPubKey) async {
+    if (js.nostr == null) {
+      throw Exception('NIP-07 extension not available');
+    }
+
+    return _trackRequest(
+      SignerMethod.nip04Encrypt,
+      () async {
+        final result = await js.nostr!.nip04!
+            .encrypt(destPubKey.toJS, msg.toJS)
+            .toDart;
+        return result.toDart;
+      },
+      plaintext: msg,
+      counterpartyPubkey: destPubKey,
+    );
+  }
+
+  @override
+  Future<String?> encryptNip44({
+    required String plaintext,
+    required String recipientPubKey,
+  }) async {
+    if (js.nostr == null) {
+      throw Exception('NIP-07 extension not available');
+    }
+
+    return _trackRequest(
+      SignerMethod.nip44Encrypt,
+      () async {
+        final result = await js.nostr!.nip44!
+            .encrypt(recipientPubKey.toJS, plaintext.toJS)
+            .toDart;
+        return result.toDart;
+      },
+      plaintext: plaintext,
+      counterpartyPubkey: recipientPubKey,
+    );
+  }
+
+  @override
+  String getPublicKey() {
+    if (cachedPublicKey != null) {
+      return cachedPublicKey!;
+    }
+
+    js.nostr!.getPublicKey().toDart.then((pubkey) {
+      cachedPublicKey = pubkey.toDart;
+    });
+
+    throw Exception('Use getPublicKeyAsync with Nip07EventSigner');
+  }
+
+  Future<String> getPublicKeyAsync() async {
+    return _trackRequest(SignerMethod.getPublicKey, () async {
+      final pubkey = (await js.nostr!.getPublicKey().toDart).toDart;
+      cachedPublicKey = pubkey;
+      return pubkey;
+    });
+  }
+
+  @override
+  Future<Nip01Event> sign(Nip01Event event) async {
+    if (js.nostr == null) {
+      throw Exception('NIP-07 extension not available');
+    }
+
+    return _trackRequest(SignerMethod.signEvent, () async {
+      final jsEvent = js.NostrEvent()
+        ..pubkey = event.pubKey
+        ..created_at = event.createdAt
+        ..kind = event.kind
+        ..content = event.content
+        ..tags = event.tags
+            .map((tag) => tag.map((item) => item.toJS).toList().toJS)
+            .toList()
+            .toJS;
+
+      final signedEvent = await js.nostr!.signEvent(jsEvent).toDart;
+
+      return event.copyWith(
+        id: signedEvent.id!,
+        sig: signedEvent.sig!,
+        pubKey: signedEvent.pubkey,
+        createdAt: signedEvent.created_at,
+        kind: signedEvent.kind,
+        content: signedEvent.content,
+        tags: signedEvent.tagsList,
+      );
+    }, event: event);
+  }
+
+  @override
+  Stream<List<PendingSignerRequest>> get pendingRequestsStream =>
+      _pendingRequestsController.stream;
+
+  @override
+  List<PendingSignerRequest> get pendingRequests =>
+      _pendingRequests.values.map((entry) => entry.request).toList();
+
+  @override
+  bool cancelRequest(String requestId) {
+    final entry = _pendingRequests.remove(requestId);
+    if (entry == null) {
+      return false;
+    }
+
+    entry.completer.completeError(SignerRequestCancelledException(requestId));
+    _notifyPendingRequestsChange();
+    return true;
+  }
+
+  @override
+  Future<void> dispose() async {
+    cancelAllQueued();
+    await _pendingRequestsController.close();
+  }
+}

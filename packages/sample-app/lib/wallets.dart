@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk_demo/l10n/app_localizations_context.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 import 'main.dart';
+import 'nwc_qr_scanner.dart';
 
 class WalletsPage extends StatefulWidget {
   final String? initialUrl;
@@ -22,6 +24,7 @@ class WalletsPageState extends State<WalletsPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    activeWalletProtocolHandler = onProtocolUrlReceived;
     _appLifecycleState = WidgetsBinding.instance.lifecycleState;
     if (widget.initialUrl != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -32,6 +35,9 @@ class WalletsPageState extends State<WalletsPage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    if (activeWalletProtocolHandler == onProtocolUrlReceived) {
+      activeWalletProtocolHandler = null;
+    }
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -45,13 +51,13 @@ class WalletsPageState extends State<WalletsPage> with WidgetsBindingObserver {
 
     final deferredProtocolUrl = _deferredProtocolUrl;
     _deferredProtocolUrl = null;
-    if (deferredProtocolUrl == null) {
-      return;
-    }
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _walletsKey.currentState?.onProtocolUrlReceived(deferredProtocolUrl);
+      if (deferredProtocolUrl != null) {
+        _walletsKey.currentState?.onProtocolUrlReceived(deferredProtocolUrl);
+      } else {
+        _walletsKey.currentState?.resumePendingWalletAuth();
+      }
     });
   }
 
@@ -68,7 +74,16 @@ class WalletsPageState extends State<WalletsPage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.tabWallets)),
-      body: NWallets(key: _walletsKey, ndkFlutter: ndkFlutter),
+      body: NWallets(
+        key: _walletsKey,
+        ndkFlutter: ndkFlutter,
+        walletQrScannerBuilder: kIsWeb ||
+                defaultTargetPlatform == TargetPlatform.android ||
+                defaultTargetPlatform == TargetPlatform.iOS ||
+                defaultTargetPlatform == TargetPlatform.linux
+            ? buildWalletQrScanner
+            : null,
+      ),
     );
   }
 }

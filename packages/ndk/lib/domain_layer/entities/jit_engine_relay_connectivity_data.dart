@@ -7,7 +7,9 @@ class JitEngineRelayConnectivityData {
 
   /// adds pubkeys with a direction to assigned Pubkeys
   void addPubkeysToAssignedPubkeys(
-      List<String> pubkeys, ReadWriteMarker direction) {
+    List<String> pubkeys,
+    ReadWriteMarker direction,
+  ) {
     for (var pubkey in pubkeys) {
       assignedPubkeys.add(RelayJitAssignedPubkey(pubkey, direction));
     }

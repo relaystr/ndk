@@ -8,11 +8,14 @@ import 'package:intl/intl.dart' as intl;
 import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
+import 'app_localizations_fi.dart';
 import 'app_localizations_fr.dart';
 import 'app_localizations_it.dart';
 import 'app_localizations_ja.dart';
 import 'app_localizations_pl.dart';
+import 'app_localizations_pt.dart';
 import 'app_localizations_ru.dart';
+import 'app_localizations_sk.dart';
 import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
@@ -69,7 +72,8 @@ import 'app_localizations_zh.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -77,7 +81,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -89,25 +94,120 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
     Locale('en'),
     Locale('es'),
+    Locale('fi'),
     Locale('fr'),
     Locale('it'),
     Locale('ja'),
     Locale('pl'),
+    Locale('pt'),
+    Locale('pt', 'BR'),
     Locale('ru'),
-    Locale('zh')
+    Locale('sk'),
+    Locale('zh'),
   ];
+
+  /// No description provided for @lnbitsWalletOption.
+  ///
+  /// In en, this message translates to:
+  /// **'LNbits'**
+  String get lnbitsWalletOption;
+
+  /// No description provided for @lnbitsConnectionInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'In LNbits, choose the wallet you want to connect, open it, click API docs, and copy the Admin Key. Paste it below:'**
+  String get lnbitsConnectionInstructions;
+
+  /// No description provided for @lnbitsAdminKey.
+  ///
+  /// In en, this message translates to:
+  /// **'LNbits Admin Key'**
+  String get lnbitsAdminKey;
+
+  /// No description provided for @lnbitsKeyType.
+  ///
+  /// In en, this message translates to:
+  /// **'LNbits key type'**
+  String get lnbitsKeyType;
+
+  /// No description provided for @lnbitsInvoiceReadKey.
+  ///
+  /// In en, this message translates to:
+  /// **'LNbits invoice/read key'**
+  String get lnbitsInvoiceReadKey;
+
+  /// No description provided for @lnbitsReadOnlyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive-only wallet: view balance and history, and create invoices. Sending payments is disabled.'**
+  String get lnbitsReadOnlyDescription;
+
+  /// No description provided for @lnbitsUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'LNbits URL'**
+  String get lnbitsUrl;
+
+  /// No description provided for @lnbitsCredentialsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter both the LNbits Admin Key and URL.'**
+  String get lnbitsCredentialsRequired;
+
+  /// No description provided for @lnbitsWalletAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'LNbits wallet added successfully'**
+  String get lnbitsWalletAdded;
+
+  /// No description provided for @walletDetailWalletId.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet ID'**
+  String get walletDetailWalletId;
+
+  /// No description provided for @saveBackupToFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Save backup to file'**
+  String get saveBackupToFile;
+
+  /// No description provided for @backupSavedToFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup saved to file'**
+  String get backupSavedToFile;
+
+  /// No description provided for @restoreFromFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from file'**
+  String get restoreFromFile;
+
+  /// No description provided for @backupFileReadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the selected backup file.'**
+  String get backupFileReadFailed;
+
+  /// No description provided for @fetchingWalletConnectionInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching wallet connection info…'**
+  String get fetchingWalletConnectionInfo;
 
   /// Button text for creating a new account
   ///
@@ -229,11 +329,11 @@ abstract class AppLocalizations {
   /// **'Show nostr connect qrcode'**
   String get showNostrConnectQrcode;
 
-  /// Button text to login with Amber
+  /// Button text to login with an external Nostr signer app
   ///
   /// In en, this message translates to:
-  /// **'Login with amber'**
-  String get loginWithAmber;
+  /// **'Login with signer app'**
+  String get loginWithSignerApp;
 
   /// Title for nostr connect URL dialog
   ///
@@ -1609,6 +1709,42 @@ abstract class AppLocalizations {
   /// **'Pay Invoice'**
   String get payInvoiceTitle;
 
+  /// No description provided for @sendToWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to Wallet'**
+  String get sendToWallet;
+
+  /// No description provided for @sendToWalletDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer to another compatible wallet'**
+  String get sendToWalletDescription;
+
+  /// No description provided for @noCompatibleReceivingWallets.
+  ///
+  /// In en, this message translates to:
+  /// **'No compatible receiving wallets'**
+  String get noCompatibleReceivingWallets;
+
+  /// No description provided for @noCompatibleReceivingWalletsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Add or connect another wallet that can receive a payment supported by this wallet.'**
+  String get noCompatibleReceivingWalletsDescription;
+
+  /// No description provided for @destinationWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Destination wallet'**
+  String get destinationWallet;
+
+  /// No description provided for @walletTransferSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment sent to {walletName}'**
+  String walletTransferSubmitted(String walletName);
+
   /// Label for invoice input
   ///
   /// In en, this message translates to:
@@ -1807,6 +1943,48 @@ abstract class AppLocalizations {
   /// **'Pending'**
   String get pendingTransactions;
 
+  /// No description provided for @backupSeedWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up your cashu recovery phrase'**
+  String get backupSeedWarning;
+
+  /// No description provided for @backupSeedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up cashu recovery phrase'**
+  String get backupSeedTitle;
+
+  /// No description provided for @backupSeedInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Write down these words in order and store them somewhere safe. They are the only way to recover your cashu funds if you lose this device.'**
+  String get backupSeedInstructions;
+
+  /// No description provided for @backupSeedConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'I have written down my recovery phrase and stored it safely'**
+  String get backupSeedConfirm;
+
+  /// No description provided for @backupSeedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ve backed it up'**
+  String get backupSeedDone;
+
+  /// Label for the action that retries minting tokens for pending funding transactions
+  ///
+  /// In en, this message translates to:
+  /// **'Reclaim pending funds'**
+  String get reclaimPendingFunds;
+
+  /// Title for the reclaim pending funds dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Reclaim Pending Funds'**
+  String get reclaimPendingTitle;
+
   /// Title for recent transactions section
   ///
   /// In en, this message translates to:
@@ -1939,6 +2117,150 @@ abstract class AppLocalizations {
   /// **'Add Wallet'**
   String get addWalletTitle;
 
+  /// Description for the unified add wallet flow
+  ///
+  /// In en, this message translates to:
+  /// **'Scan any supported wallet QR code, paste its details, or connect through a wallet app.'**
+  String get addWalletDescription;
+
+  /// Button for opening the universal wallet QR scanner
+  ///
+  /// In en, this message translates to:
+  /// **'Scan wallet QR code'**
+  String get scanWalletQrCode;
+
+  /// Heading for wallet-assisted NWC connection options
+  ///
+  /// In en, this message translates to:
+  /// **'Connect with a wallet'**
+  String get connectWithWallet;
+
+  /// Button for opening the standard NWC wallet chooser
+  ///
+  /// In en, this message translates to:
+  /// **'Choose wallet app'**
+  String get chooseWalletApp;
+
+  /// No description provided for @oneClickConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'1-click connect'**
+  String get oneClickConnect;
+
+  /// No description provided for @chooseWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose wallet'**
+  String get chooseWallet;
+
+  /// No description provided for @albyWalletOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Alby'**
+  String get albyWalletOption;
+
+  /// No description provided for @albyCloudOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Alby Cloud'**
+  String get albyCloudOption;
+
+  /// No description provided for @coinosWalletOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Coinos'**
+  String get coinosWalletOption;
+
+  /// No description provided for @manualNwcConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual NWC connection'**
+  String get manualNwcConnection;
+
+  /// Prompt shown while an external wallet is authorizing
+  ///
+  /// In en, this message translates to:
+  /// **'Finish connection in {walletName}'**
+  String walletConnectionFinishIn(String walletName);
+
+  /// Progress shown while adding an externally authorized wallet
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting {walletName}…'**
+  String walletConnectionConnecting(String walletName);
+
+  /// Animated success message after adding a wallet
+  ///
+  /// In en, this message translates to:
+  /// **'{walletName} connected'**
+  String walletConnectionConnected(String walletName);
+
+  /// Heading shown when an external wallet connection fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect {walletName}'**
+  String walletConnectionFailed(String walletName);
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// Status shown when a wallet's remote service cannot be reached
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet unreachable'**
+  String get walletUnreachable;
+
+  /// No description provided for @chooseAnotherWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another wallet'**
+  String get chooseAnotherWallet;
+
+  /// Description for the standard NWC wallet chooser
+  ///
+  /// In en, this message translates to:
+  /// **'Approve an NWC connection in an installed wallet'**
+  String get chooseWalletAppDescription;
+
+  /// Label for unified wallet input
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet address or connection'**
+  String get walletInput;
+
+  /// Hint listing supported wallet inputs
+  ///
+  /// In en, this message translates to:
+  /// **'NWC, Lightning/BIP353 address, BOLT12/BIP321 offer, or HTTPS Cashu mint URL'**
+  String get walletInputHint;
+
+  /// Error for an unrecognized unified wallet input
+  ///
+  /// In en, this message translates to:
+  /// **'This is not a supported wallet address or connection.'**
+  String get unsupportedWalletInput;
+
+  /// Label shown before a detected wallet type
+  ///
+  /// In en, this message translates to:
+  /// **'Detected'**
+  String get detected;
+
+  /// Detected type label for an ambiguous user at domain address
+  ///
+  /// In en, this message translates to:
+  /// **'Lightning or BIP353 address'**
+  String get lightningAddressInputType;
+
+  /// Button revealing type-specific manual wallet setup
+  ///
+  /// In en, this message translates to:
+  /// **'Set up manually'**
+  String get manualWalletSetup;
+
   /// Prompt to choose wallet type
   ///
   /// In en, this message translates to:
@@ -1960,13 +2282,13 @@ abstract class AppLocalizations {
   /// Title for the LNURL wallet type option
   ///
   /// In en, this message translates to:
-  /// **'LNURL / Lightning Address'**
+  /// **'Lightning Address (LNURL)'**
   String get lnurlWalletTypeTitle;
 
   /// Subtitle for the LNURL wallet type option
   ///
   /// In en, this message translates to:
-  /// **'Use a custodial wallet with LNURL or a Lightning address'**
+  /// **'Use a Lightning address (LNURL) for receiving only'**
   String get lnurlWalletTypeSubtitle;
 
   /// Title for the Cashu wallet type option
@@ -1974,6 +2296,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cashu'**
   String get cashuWalletTypeTitle;
+
+  /// No description provided for @chooseCashuMint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Cashu mint'**
+  String get chooseCashuMint;
+
+  /// No description provided for @cashuMintRatingsNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Community ratings come from signed Nostr reviews. A high rating does not guarantee that a mint is safe.'**
+  String get cashuMintRatingsNotice;
+
+  /// No description provided for @cashuMintDiscoveryFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load mint suggestions.'**
+  String get cashuMintDiscoveryFailed;
+
+  /// No description provided for @noCashuMintSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'No available mint suggestions found.'**
+  String get noCashuMintSuggestions;
+
+  /// No description provided for @noRatingsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No ratings yet'**
+  String get noRatingsYet;
+
+  /// No description provided for @cashuMintRating.
+  ///
+  /// In en, this message translates to:
+  /// **'★ {rating} · {count} reviews'**
+  String cashuMintRating(String rating, int count);
+
+  /// No description provided for @enterMintUrlManually.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter mint URL manually'**
+  String get enterMintUrlManually;
 
   /// Subtitle for the Cashu wallet type option
   ///
@@ -2016,6 +2380,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Alby Go'**
   String get albyGoOption;
+
+  /// Instructions shown beside the Alby Go wallet authorization QR code
+  ///
+  /// In en, this message translates to:
+  /// **'In Alby Go, tap Send, then scan this QR code.'**
+  String get albyGoQrScanInstructions;
 
   /// Label for manual connection option
   ///
@@ -2064,6 +2434,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Paste'**
   String get paste;
+
+  /// No description provided for @clearInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear input'**
+  String get clearInput;
+
+  /// No description provided for @pasteOrEnter.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste or type'**
+  String get pasteOrEnter;
 
   /// Label indicating a value comes from user's profile
   ///
@@ -2160,9 +2542,970 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Never'**
   String get budgetNever;
+
+  /// Label for the wallet backup action
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get backup;
+
+  /// Label for the wallet restore action
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
+  /// Title of the cashu backup dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Cashu Backup'**
+  String get cashuBackupTitle;
+
+  /// Security warning shown in the cashu backup dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.'**
+  String get cashuBackupWarning;
+
+  /// Shown while the cashu backup is being generated
+  ///
+  /// In en, this message translates to:
+  /// **'Generating backup...'**
+  String get generatingBackup;
+
+  /// Button to copy the cashu backup to the clipboard
+  ///
+  /// In en, this message translates to:
+  /// **'Copy backup'**
+  String get copyBackup;
+
+  /// Confirmation that the backup was copied
+  ///
+  /// In en, this message translates to:
+  /// **'Backup copied to clipboard'**
+  String get backupCopiedToClipboard;
+
+  /// Title of the cashu restore dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Cashu Backup'**
+  String get cashuRestoreTitle;
+
+  /// Label for the backup JSON input field
+  ///
+  /// In en, this message translates to:
+  /// **'Backup JSON'**
+  String get backupJson;
+
+  /// Hint for the backup JSON input field
+  ///
+  /// In en, this message translates to:
+  /// **'Paste your backup JSON here'**
+  String get backupJsonHint;
+
+  /// Validation message when the backup field is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a backup'**
+  String get pleaseEnterBackup;
+
+  /// Shown while a cashu backup is being restored
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring backup...'**
+  String get restoringBackup;
+
+  /// No description provided for @appUpdateVersionAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} available'**
+  String appUpdateVersionAvailable(String version);
+
+  /// No description provided for @appUpdateLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get appUpdateLater;
+
+  /// No description provided for @appUpdateView.
+  ///
+  /// In en, this message translates to:
+  /// **'View update'**
+  String get appUpdateView;
+
+  /// No description provided for @appUpdateChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking for updates…'**
+  String get appUpdateChecking;
+
+  /// No description provided for @appUpdateCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Update check failed'**
+  String get appUpdateCheckFailed;
+
+  /// No description provided for @appUpdateInstalled.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed {version}'**
+  String appUpdateInstalled(String version);
+
+  /// No description provided for @appUpdatesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App updates'**
+  String get appUpdatesTitle;
+
+  /// No description provided for @appUpdateNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No update available'**
+  String get appUpdateNone;
+
+  /// No description provided for @appUpdateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update {currentVersion} → {availableVersion}'**
+  String appUpdateTitle(String currentVersion, String availableVersion);
+
+  /// No description provided for @appUpdateSizeMb.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} MB'**
+  String appUpdateSizeMb(String size);
+
+  /// No description provided for @appUpdateAllowInstalls.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow installs from this app, then tap Update again.'**
+  String get appUpdateAllowInstalls;
+
+  /// No description provided for @appUpdateCompleteInstallation.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete installation in Android system installer.'**
+  String get appUpdateCompleteInstallation;
+
+  /// No description provided for @appUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Update failed'**
+  String get appUpdateFailed;
+
+  /// No description provided for @appUpdateCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get appUpdateCancel;
+
+  /// No description provided for @appUpdateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get appUpdateAction;
+
+  /// No description provided for @appUpdateDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get appUpdateDownload;
+
+  /// No description provided for @appUpdateUpToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'You’re up to date'**
+  String get appUpdateUpToDate;
+
+  /// No description provided for @appUpdateAheadOfPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Newer than published'**
+  String get appUpdateAheadOfPublished;
+
+  /// No description provided for @appUpdateAheadOfPublishedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed version {installedVersion} is newer than latest published version {publishedVersion}. Release details will appear after this version is published.'**
+  String appUpdateAheadOfPublishedMessage(
+    String installedVersion,
+    String publishedVersion,
+  );
+
+  /// No description provided for @appUpdateCheckFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not check for updates.'**
+  String get appUpdateCheckFailedMessage;
+
+  /// No description provided for @appUpdateLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} is the latest available version.'**
+  String appUpdateLatest(String version);
+
+  /// No description provided for @appUpdateClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get appUpdateClose;
+
+  /// No description provided for @appUpdateCheckAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get appUpdateCheckAgain;
+
+  /// No description provided for @appUpdateInstalledVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed version {version}'**
+  String appUpdateInstalledVersion(String version);
+
+  /// No description provided for @appUpdateInstalledAndAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed version {installedVersion}. Update {availableVersion} available.'**
+  String appUpdateInstalledAndAvailable(
+    String installedVersion,
+    String availableVersion,
+  );
+
+  /// No description provided for @appUpdateChangelog.
+  ///
+  /// In en, this message translates to:
+  /// **'Changelog'**
+  String get appUpdateChangelog;
+
+  /// No description provided for @appUpdateReleaseHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Release history'**
+  String get appUpdateReleaseHistory;
+
+  /// No description provided for @appUpdateInstalledBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed'**
+  String get appUpdateInstalledBadge;
+
+  /// No description provided for @appUpdateAvailableBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Update available'**
+  String get appUpdateAvailableBadge;
+
+  /// No description provided for @appUpdateLatestBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest'**
+  String get appUpdateLatestBadge;
+
+  /// No description provided for @appUpdateNoReleases.
+  ///
+  /// In en, this message translates to:
+  /// **'No releases have been published yet.'**
+  String get appUpdateNoReleases;
+
+  /// No description provided for @appUpdateAcrossAllReleases.
+  ///
+  /// In en, this message translates to:
+  /// **'Across all releases'**
+  String get appUpdateAcrossAllReleases;
+
+  /// No description provided for @appUpdateReleaseDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Release details'**
+  String get appUpdateReleaseDetails;
+
+  /// No description provided for @appUpdateWhatsNew.
+  ///
+  /// In en, this message translates to:
+  /// **'What’s new'**
+  String get appUpdateWhatsNew;
+
+  /// No description provided for @appUpdatePublishedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Published {date}'**
+  String appUpdatePublishedOn(String date);
+
+  /// No description provided for @appUpdateChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Channel: {channel}'**
+  String appUpdateChannel(String channel);
+
+  /// No description provided for @appUpdateArchitecture.
+  ///
+  /// In en, this message translates to:
+  /// **'Architecture: {architecture}'**
+  String appUpdateArchitecture(String architecture);
+
+  /// No description provided for @appUpdateVersionCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Build {versionCode}'**
+  String appUpdateVersionCode(int versionCode);
+
+  /// No description provided for @appUpdateReleaseVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Release {version}'**
+  String appUpdateReleaseVersion(String version);
+
+  /// No description provided for @appUpdateNoReleaseNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'No release notes were published.'**
+  String get appUpdateNoReleaseNotes;
+
+  /// No description provided for @appUpdatePublisher.
+  ///
+  /// In en, this message translates to:
+  /// **'Publisher'**
+  String get appUpdatePublisher;
+
+  /// No description provided for @appUpdatePublisherSignatureVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Nostr event signature verified'**
+  String get appUpdatePublisherSignatureVerified;
+
+  /// No description provided for @appUpdateCertificateDeclared.
+  ///
+  /// In en, this message translates to:
+  /// **'Android signing certificate declared by publisher'**
+  String get appUpdateCertificateDeclared;
+
+  /// No description provided for @appUpdateSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Download source: {host}'**
+  String appUpdateSource(String host);
+
+  /// No description provided for @appUpdateCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get appUpdateCommunity;
+
+  /// No description provided for @appUpdateZapSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} zaps · {sats} sats'**
+  String appUpdateZapSummary(int count, int sats);
+
+  /// No description provided for @appUpdateSatsBy.
+  ///
+  /// In en, this message translates to:
+  /// **'sats by'**
+  String get appUpdateSatsBy;
+
+  /// No description provided for @appUpdateReactionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reactions'**
+  String appUpdateReactionCount(int count);
+
+  /// No description provided for @appUpdateCommentCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} comments'**
+  String appUpdateCommentCount(int count);
+
+  /// No description provided for @appUpdateSocialLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Community activity could not be loaded.'**
+  String get appUpdateSocialLoadFailed;
+
+  /// No description provided for @appUpdateComments.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get appUpdateComments;
+
+  /// No description provided for @appUpdateNoComments.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet.'**
+  String get appUpdateNoComments;
+
+  /// No description provided for @appUpdateCommentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Share feedback about this release'**
+  String get appUpdateCommentHint;
+
+  /// No description provided for @appUpdatePostComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Post comment'**
+  String get appUpdatePostComment;
+
+  /// No description provided for @appUpdateSignInToComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with a Nostr account to comment.'**
+  String get appUpdateSignInToComment;
+
+  /// No description provided for @appUpdateTechnicalDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Technical details'**
+  String get appUpdateTechnicalDetails;
+
+  /// No description provided for @appUpdateViewStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'View update status'**
+  String get appUpdateViewStatus;
+
+  /// Confirmation after a successful restore
+  ///
+  /// In en, this message translates to:
+  /// **'Restored {count} proofs from backup'**
+  String restoreSuccess(int count);
+
+  /// No description provided for @bolt12Wallet.
+  ///
+  /// In en, this message translates to:
+  /// **'BOLT12 Wallet'**
+  String get bolt12Wallet;
+
+  /// No description provided for @bolt12WalletSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reusable Lightning offer'**
+  String get bolt12WalletSubtitle;
+
+  /// No description provided for @bolt12PrivateOfferSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reusable private offer'**
+  String get bolt12PrivateOfferSubtitle;
+
+  /// No description provided for @anyAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Any amount'**
+  String get anyAmount;
+
+  /// No description provided for @blindedRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Blinded'**
+  String get blindedRoute;
+
+  /// No description provided for @fromAmountSats.
+  ///
+  /// In en, this message translates to:
+  /// **'From {amount} sats'**
+  String fromAmountSats(String amount);
+
+  /// No description provided for @fromAmountMsats.
+  ///
+  /// In en, this message translates to:
+  /// **'From {amount} msats'**
+  String fromAmountMsats(String amount);
+
+  /// No description provided for @fromCurrencyAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'From {amount} {currency}'**
+  String fromCurrencyAmount(String amount, String currency);
+
+  /// No description provided for @bolt12Expires.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires {date}'**
+  String bolt12Expires(String date);
+
+  /// No description provided for @bolt12WalletTypeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'BOLT12 Offer'**
+  String get bolt12WalletTypeTitle;
+
+  /// No description provided for @bip353WalletTypeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'BIP353'**
+  String get bip353WalletTypeTitle;
+
+  /// No description provided for @lnurlProtocol.
+  ///
+  /// In en, this message translates to:
+  /// **'LNURL'**
+  String get lnurlProtocol;
+
+  /// No description provided for @bolt12WalletTypeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive-only wallet using a reusable offer'**
+  String get bolt12WalletTypeSubtitle;
+
+  /// No description provided for @addBolt12WalletTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add BOLT12 Wallet'**
+  String get addBolt12WalletTitle;
+
+  /// No description provided for @enterBolt12Input.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter or scan an lno offer, a bitcoin:?lno=... URI, or a BIP353 address.'**
+  String get enterBolt12Input;
+
+  /// No description provided for @bolt12Input.
+  ///
+  /// In en, this message translates to:
+  /// **'BOLT12 payment target'**
+  String get bolt12Input;
+
+  /// No description provided for @bolt12InputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'lno1..., bitcoin:?lno=..., or user@domain.com'**
+  String get bolt12InputHint;
+
+  /// No description provided for @walletNameOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet name (optional)'**
+  String get walletNameOptional;
+
+  /// No description provided for @scanBolt12QrCodeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan BOLT12 QR code'**
+  String get scanBolt12QrCodeTitle;
+
+  /// No description provided for @invalidBolt12QrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'The QR code is not a BOLT12, BIP321, or BIP353 payment target.'**
+  String get invalidBolt12QrCode;
+
+  /// No description provided for @pleaseEnterBolt12Input.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a BOLT12 offer or BIP353 address.'**
+  String get pleaseEnterBolt12Input;
+
+  /// No description provided for @bolt12WalletAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'BOLT12 wallet added successfully!'**
+  String get bolt12WalletAdded;
+
+  /// No description provided for @bolt12OfferTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive with BOLT12'**
+  String get bolt12OfferTitle;
+
+  /// No description provided for @bolt12OfferInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this reusable offer to receive a Lightning payment.'**
+  String get bolt12OfferInstructions;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @reviewWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Review wallet'**
+  String get reviewWallet;
+
+  /// No description provided for @confirmWalletTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm wallet'**
+  String get confirmWalletTitle;
+
+  /// No description provided for @confirmWalletDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Review these details before adding this wallet.'**
+  String get confirmWalletDescription;
+
+  /// No description provided for @walletDetailType.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet type'**
+  String get walletDetailType;
+
+  /// No description provided for @walletDetailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get walletDetailAddress;
+
+  /// No description provided for @walletDetailDomain.
+  ///
+  /// In en, this message translates to:
+  /// **'Domain'**
+  String get walletDetailDomain;
+
+  /// No description provided for @walletDetailUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'URL'**
+  String get walletDetailUrl;
+
+  /// No description provided for @walletDetailPublicKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Public key'**
+  String get walletDetailPublicKey;
+
+  /// No description provided for @walletDetailRelay.
+  ///
+  /// In en, this message translates to:
+  /// **'Relay'**
+  String get walletDetailRelay;
+
+  /// No description provided for @walletDetailRelays.
+  ///
+  /// In en, this message translates to:
+  /// **'Relays'**
+  String get walletDetailRelays;
+
+  /// No description provided for @walletDetailSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection secret'**
+  String get walletDetailSecret;
+
+  /// No description provided for @walletSecretHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Present and hidden for security'**
+  String get walletSecretHidden;
+
+  /// No description provided for @walletDetailDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get walletDetailDescription;
+
+  /// No description provided for @walletDetailDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get walletDetailDetails;
+
+  /// No description provided for @walletDetailIssuer.
+  ///
+  /// In en, this message translates to:
+  /// **'Issuer'**
+  String get walletDetailIssuer;
+
+  /// No description provided for @walletDetailAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get walletDetailAmount;
+
+  /// No description provided for @walletDetailCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get walletDetailCurrency;
+
+  /// No description provided for @walletDetailExpiry.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires'**
+  String get walletDetailExpiry;
+
+  /// No description provided for @walletDetailNodeId.
+  ///
+  /// In en, this message translates to:
+  /// **'Node ID'**
+  String get walletDetailNodeId;
+
+  /// No description provided for @walletDetailOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'BOLT12 offer'**
+  String get walletDetailOffer;
+
+  /// No description provided for @walletDetailVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get walletDetailVersion;
+
+  /// No description provided for @walletDetailUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'Supported units'**
+  String get walletDetailUnits;
+
+  /// No description provided for @walletDetailContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact'**
+  String get walletDetailContact;
+
+  /// No description provided for @walletDetailTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of service'**
+  String get walletDetailTerms;
+
+  /// No description provided for @walletDetailMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get walletDetailMessage;
+
+  /// No description provided for @walletDetailCommunityRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Community rating'**
+  String get walletDetailCommunityRating;
+
+  /// No description provided for @walletDetailCommunityReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent community reviews'**
+  String get walletDetailCommunityReviews;
+
+  /// No description provided for @refreshBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh balance'**
+  String get refreshBalance;
+
+  /// No description provided for @balanceRefreshed.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance refreshed'**
+  String get balanceRefreshed;
+
+  /// Title of the dialog to recover a mint quote
+  ///
+  /// In en, this message translates to:
+  /// **'Recover Mint Quote'**
+  String get cashuQuoteRecoveryTitle;
+
+  /// Menu item / button to start recovering a mint quote
+  ///
+  /// In en, this message translates to:
+  /// **'Recover quote'**
+  String get recoverQuote;
+
+  /// Prompt to enter a mint quote ID
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the mint quote ID to recover. The lock key is recovered from your seed phrase.'**
+  String get enterQuoteId;
+
+  /// Label for the quote ID input field
+  ///
+  /// In en, this message translates to:
+  /// **'Quote ID'**
+  String get quoteId;
+
+  /// Hint text for the quote ID input field
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the quote ID here'**
+  String get quoteIdHint;
+
+  /// Validation message when the quote ID field is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a quote ID'**
+  String get pleaseEnterQuoteId;
+
+  /// Progress line while the quote is fetched from the mint
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching quote from mint...'**
+  String get cashuQuoteRecoveryStageFetchingQuote;
+
+  /// Progress line while the lock key is recovered by scanning seed-derived counters
+  ///
+  /// In en, this message translates to:
+  /// **'Recovering lock key from your seed...'**
+  String get cashuQuoteRecoveryStageRecoveringKey;
+
+  /// Progress line while the mint is being completed
+  ///
+  /// In en, this message translates to:
+  /// **'Completing mint...'**
+  String get cashuQuoteRecoveryStageCompletingMint;
+
+  /// Confirmation shown once the lock key is recovered
+  ///
+  /// In en, this message translates to:
+  /// **'Lock key recovered (derivation counter {counter})'**
+  String cashuQuoteRecoveryKeyRecovered(int counter);
+
+  /// Success message shown when the quote is recovered and minted
+  ///
+  /// In en, this message translates to:
+  /// **'Quote recovered and funds added to your balance'**
+  String get cashuQuoteRecoveryCompleted;
+
+  /// Error prefix shown when the quote recovery fails
+  ///
+  /// In en, this message translates to:
+  /// **'Quote recovery failed'**
+  String get quoteRecoveryFailed;
+
+  /// Menu item to restore funds from a mint using the seed
+  ///
+  /// In en, this message translates to:
+  /// **'Restore funds from mint'**
+  String get restoreFundsFromMint;
+
+  /// Title of the dialog to restore funds from a mint
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Funds from Mint'**
+  String get cashuRestoreFundsTitle;
+
+  /// Explanation shown in the restore-from-mint dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Scans the mint for proofs derived from your seed and restores them to this wallet.'**
+  String get cashuRestoreDescription;
+
+  /// Button to start the restore-from-mint flow
+  ///
+  /// In en, this message translates to:
+  /// **'Start restore'**
+  String get startRestore;
+
+  /// Progress line while the mint keysets are fetched
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching mint keysets...'**
+  String get cashuRestoreStageFetchingKeysets;
+
+  /// Progress line while the mint is scanned for seed-derived proofs
+  ///
+  /// In en, this message translates to:
+  /// **'Scanning mint for your funds...'**
+  String get cashuRestoreStageScanning;
+
+  /// Scan progress in the restore-from-mint dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Scanned {keysets} keyset(s) · {proofs} proof(s) found'**
+  String cashuRestoreScanProgress(int keysets, int proofs);
+
+  /// Progress line shown once the restore-from-mint scan completes
+  ///
+  /// In en, this message translates to:
+  /// **'Restore complete'**
+  String get cashuRestoreStageCompleted;
+
+  /// Note shown while restoring that pending mint quotes are recovered too
+  ///
+  /// In en, this message translates to:
+  /// **'Also recovers pending mint quotes'**
+  String get cashuRestoreAlsoRestoresQuotes;
+
+  /// Confirmation after a successful restore-from-mint
+  ///
+  /// In en, this message translates to:
+  /// **'Restored {count} proofs from the mint'**
+  String restoredFromMint(int count);
+
+  /// Error prefix shown when the restore-from-mint fails
+  ///
+  /// In en, this message translates to:
+  /// **'Restore failed'**
+  String get restoreFailed;
+
+  /// Label for restoring a Cashu wallet from a backup JSON
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from backup'**
+  String get restoreFromBackup;
+
+  /// Title of the sheet that reveals all cashu restore and backup options
+  ///
+  /// In en, this message translates to:
+  /// **'Restore & backup'**
+  String get cashuRestoreMenuTitle;
+
+  /// Menu entry to set or override the global cashu seed phrase
+  ///
+  /// In en, this message translates to:
+  /// **'Set seed phrase'**
+  String get cashuSeedPhraseOption;
+
+  /// Title of the dialog to set or override the global cashu seed phrase
+  ///
+  /// In en, this message translates to:
+  /// **'Cashu seed phrase'**
+  String get cashuSeedPhraseTitle;
+
+  /// Warning shown before overriding the global cashu seed phrase
+  ///
+  /// In en, this message translates to:
+  /// **'This seed phrase is shared by ALL Cashu wallets. It is the only way to recover your funds after losing this device. Changing it replaces the seed used to derive keys for every Cashu wallet, so funds received under the previous seed can no longer be found automatically.'**
+  String get cashuSeedPhraseWarning;
+
+  /// Instructions for entering the seed phrase
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the recovery phrase you want to use (12, 15, 18, 21 or 24 words). Only change the seed when restoring wallets from a phrase you already saved.'**
+  String get cashuSeedPhraseInstructions;
+
+  /// Label for the seed phrase input field
+  ///
+  /// In en, this message translates to:
+  /// **'Seed phrase'**
+  String get cashuSeedPhraseLabel;
+
+  /// Hint text for the seed phrase input field
+  ///
+  /// In en, this message translates to:
+  /// **'Paste your seed phrase here'**
+  String get cashuSeedPhraseHint;
+
+  /// Checkbox confirmation before overriding the seed phrase
+  ///
+  /// In en, this message translates to:
+  /// **'I understand this changes the seed for all Cashu wallets'**
+  String get cashuSeedPhraseConfirmChange;
+
+  /// Validation message for an invalid seed phrase
+  ///
+  /// In en, this message translates to:
+  /// **'That does not look like a valid seed phrase. Check that all words are spelled correctly and in the right order.'**
+  String get cashuSeedPhraseInvalid;
+
+  /// Confirmation shown after the seed phrase is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Seed phrase updated. It now applies to all Cashu wallets. Back up the new phrase.'**
+  String get cashuSeedPhraseUpdated;
+
+  /// Error prefix shown when updating the seed phrase fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update the seed phrase'**
+  String get cashuSeedPhraseUpdateFailed;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -2171,32 +3514,70 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['de', 'en', 'es', 'fr', 'it', 'ja', 'pl', 'ru', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+    'de',
+    'en',
+    'es',
+    'fi',
+    'fr',
+    'it',
+    'ja',
+    'pl',
+    'pt',
+    'ru',
+    'sk',
+    'zh',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
+  // Lookup logic when language+country codes are specified.
+  switch (locale.languageCode) {
+    case 'pt':
+      {
+        switch (locale.countryCode) {
+          case 'BR':
+            return AppLocalizationsPtBr();
+        }
+        break;
+      }
+  }
 
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'de': return AppLocalizationsDe();
-    case 'en': return AppLocalizationsEn();
-    case 'es': return AppLocalizationsEs();
-    case 'fr': return AppLocalizationsFr();
-    case 'it': return AppLocalizationsIt();
-    case 'ja': return AppLocalizationsJa();
-    case 'pl': return AppLocalizationsPl();
-    case 'ru': return AppLocalizationsRu();
-    case 'zh': return AppLocalizationsZh();
+    case 'de':
+      return AppLocalizationsDe();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
+    case 'fi':
+      return AppLocalizationsFi();
+    case 'fr':
+      return AppLocalizationsFr();
+    case 'it':
+      return AppLocalizationsIt();
+    case 'ja':
+      return AppLocalizationsJa();
+    case 'pl':
+      return AppLocalizationsPl();
+    case 'pt':
+      return AppLocalizationsPt();
+    case 'ru':
+      return AppLocalizationsRu();
+    case 'sk':
+      return AppLocalizationsSk();
+    case 'zh':
+      return AppLocalizationsZh();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
+    'that was used.',
   );
 }

@@ -4,7 +4,6 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:ndk_flutter/widgets/login/login_controller.dart';
-import 'package:nip07_event_signer/nip07_event_signer.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -17,8 +16,9 @@ class NLogin extends StatefulWidget {
   final bool enableNsecLogin;
   final bool enableNip07Login;
   final bool enableBunkerLogin;
-  final bool enableAmberLogin;
+  final bool enableSignerAppLogin;
   final bool enablePubkeyLogin;
+  final Nip46ClientMetadata? clientMetadata;
   final NostrConnect? nostrConnect;
   final String? nsecLabelText;
   final String getStartedUrl;
@@ -36,8 +36,9 @@ class NLogin extends StatefulWidget {
     this.enableNsecLogin = true,
     this.enableNip07Login = true,
     this.enableBunkerLogin = true,
-    this.enableAmberLogin = true,
+    this.enableSignerAppLogin = true,
     this.enablePubkeyLogin = true,
+    this.clientMetadata,
     this.nostrConnect,
     this.nsecLabelText,
     this.getStartedUrl = 'https://nstart.me/',
@@ -58,6 +59,7 @@ class _NLoginState extends State<NLogin> {
     controller = LoginController(
       ndkFlutter: widget.ndkFlutter,
       onLoggedIn: widget.onLoggedIn,
+      clientMetadata: widget.clientMetadata,
       nostrConnect: widget.nostrConnect,
     );
     controller.addListener(_updateUI);
@@ -250,14 +252,13 @@ class _NLoginState extends State<NLogin> {
       ),
     );
 
-    final amberView = Padding(
+    final signerAppView = Padding(
       padding: EdgeInsetsGeometry.only(bottom: bottomPadding),
-      child: FilledButton.icon(
-        onPressed: controller.isWaitingForAmber
+      child: FilledButton(
+        onPressed: controller.isWaitingForExternalSigner
             ? null
-            : controller.loginWithAmber,
-        label: Text(AppLocalizations.of(context)!.loginWithAmber),
-        icon: Icon(Icons.diamond),
+            : controller.loginWithExternalSigner,
+        child: Text(AppLocalizations.of(context)!.loginWithSignerApp),
       ),
     );
 
@@ -272,7 +273,7 @@ class _NLoginState extends State<NLogin> {
         if (widget.enableNip07Login && kIsWeb) nip07View,
         if (widget.enableBunkerLogin || widget.enableNostrConnectLogin)
           bunkerView,
-        if (widget.enableAmberLogin && isAndroid) amberView,
+        if (widget.enableSignerAppLogin && isAndroid) signerAppView,
         if (widget.enableAccountCreation) createAccountView,
       ],
     );

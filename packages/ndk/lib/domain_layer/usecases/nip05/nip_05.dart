@@ -1,13 +1,15 @@
 import '../../../config/nip_05_defaults.dart';
 import '../../entities/nip_05.dart';
+import '../../entities/nip_05_resolve_result.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/nip_05_repo.dart';
 
 /// usecase to handle Nip05 operations (verify and fetch)
 class Nip05Usecase {
-  // Static map to keep track of in-flight requests
-  static final Map<String, Future<Nip05>> _inFlightRequests = {};
-  static final Map<String, Future<Nip05?>> _inFlightFetches = {};
+  // Keep request deduplication local to this use case/NDK instance. Different
+  // instances may use different repositories and caches for the same NIP-05.
+  final Map<(String, String), Future<Nip05>> _inFlightRequests = {};
+  final Map<String, Future<Nip05ResolveResult>> _inFlightResolves = {};
 
   final CacheManager _database;
   final Nip05Repository _nip05Repository;
@@ -18,8 +20,8 @@ class Nip05Usecase {
   Nip05Usecase({
     required CacheManager database,
     required Nip05Repository nip05Repository,
-  })  : _database = database,
-        _nip05Repository = nip05Repository;
+  }) : _database = database,
+       _nip05Repository = nip05Repository;
 
   /// checks the nip05 object for validity
   /// it checks the cache first, if not found it fetches from the network
@@ -33,9 +35,14 @@ class Nip05Usecase {
       throw Exception("nip05 or pubkey empty");
     }
 
+    final identifier = Nip05.canonicalIdentifier(nip05);
+    if (identifier == null) {
+      return Nip05(pubKey: pubkey, nip05: nip05, valid: false);
+    }
+
     final databaseResult = await _database.loadNip05(pubKey: pubkey);
 
-    if (databaseResult != null) {
+    if (databaseResult != null && databaseResult.nip05 == identifier) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       int lastCheck = databaseResult.networkFetchTime ?? 0;
       if (now - lastCheck < NIP_05_VALID_DURATION.inSeconds) {
@@ -43,22 +50,27 @@ class Nip05Usecase {
       }
     }
 
+    final inFlightKey = (identifier, pubkey);
+
     // Check if there's an in-flight request for this nip05
-    if (_inFlightRequests.containsKey(nip05)) {
+    if (_inFlightRequests.containsKey(inFlightKey)) {
       // Wait for the existing request to complete
-      return await _inFlightRequests[nip05]!;
+      return await _inFlightRequests[inFlightKey]!;
     }
 
     // Create a new request and add it to the in-flight map
-    final request =
-        _performCheck(nip05, pubkey, Nip05(pubKey: pubkey, nip05: nip05));
-    _inFlightRequests[nip05] = request;
+    final request = _performCheck(
+      identifier,
+      pubkey,
+      Nip05(pubKey: pubkey, nip05: identifier),
+    );
+    _inFlightRequests[inFlightKey] = request;
 
     try {
       return await request;
     } finally {
       // Remove the request from the in-flight map once it's completed
-      _inFlightRequests.remove(nip05);
+      _inFlightRequests.remove(inFlightKey);
     }
   }
 
@@ -82,51 +94,64 @@ class Nip05Usecase {
     return result;
   }
 
-  /// resolves NIP-05 data without requiring a pubkey for validation
-  /// returns the [Nip05] object with pubkey and relays
+  /// Resolves NIP-05 data without requiring a pubkey for validation.
   ///
   /// [nip05] the nip05 identifier (e.g. "username@example.com")
-  /// returns the [Nip05] object or null if not found
-  Future<Nip05?> resolve(String nip05) async {
+  /// returns a [Nip05ResolveResult] — one of [Nip05Found], [Nip05NotFound],
+  /// or [Nip05ResolveError]. Throws if [nip05] is empty.
+  Future<Nip05ResolveResult> resolve(String nip05) async {
     if (nip05.isEmpty) {
       throw Exception("nip05 empty");
     }
 
+    final identifier = Nip05.canonicalIdentifier(nip05);
+    if (identifier == null) {
+      return const Nip05NotFound();
+    }
+
     // Check cache first
-    final databaseResult = await _database.loadNip05(identifier: nip05);
-    if (databaseResult != null) {
+    final databaseResult = await _database.loadNip05(identifier: identifier);
+    // check() also caches failed verifications, which must not resolve
+    if (databaseResult != null && databaseResult.valid) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       int lastCheck = databaseResult.networkFetchTime ?? 0;
       if (now - lastCheck < NIP_05_VALID_DURATION.inSeconds) {
-        return databaseResult;
+        return Nip05Found(databaseResult);
       }
     }
 
     // Check if there's an in-flight fetch for this nip05
-    if (_inFlightFetches.containsKey(nip05)) {
-      return await _inFlightFetches[nip05]!;
+    if (_inFlightResolves.containsKey(identifier)) {
+      return await _inFlightResolves[identifier]!;
     }
 
     // Create a new fetch and add it to the in-flight map
-    final fetch = _performFetch(nip05);
-    _inFlightFetches[nip05] = fetch;
+    final fetch = _performResolve(identifier);
+    _inFlightResolves[identifier] = fetch;
 
     try {
       return await fetch;
     } finally {
-      _inFlightFetches.remove(nip05);
+      _inFlightResolves.remove(identifier);
     }
   }
 
-  Future<Nip05?> _performFetch(String nip05) async {
+  Future<Nip05ResolveResult> _performResolve(String nip05) async {
     try {
       final result = await _nip05Repository.fetchNip05(nip05);
-      if (result != null) {
-        await _database.saveNip05(result);
+      if (result == null) {
+        return const Nip05NotFound();
       }
-      return result;
+      await _database.saveNip05(result);
+      return Nip05Found(result);
+    } on FormatException catch (e) {
+      return Nip05ResolveInvalidResponse(e);
+    } on TypeError catch (e) {
+      return Nip05ResolveInvalidResponse(Exception(e.toString()));
     } catch (e) {
-      return null;
+      return Nip05ResolveNetworkError(
+        e is Exception ? e : Exception(e.toString()),
+      );
     }
   }
 }

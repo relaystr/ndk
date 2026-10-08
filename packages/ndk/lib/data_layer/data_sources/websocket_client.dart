@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:web_socket_client/web_socket_client.dart';
+import '../../src/web_socket_client/web_socket_client.dart';
 
 // coverage:ignore-start
 class WebsocketDSClient {
@@ -45,4 +45,5 @@ class WebsocketDSClient {
     return state is Disconnected ? state.reason : null;
   }
 }
+
 // coverage:ignore-end

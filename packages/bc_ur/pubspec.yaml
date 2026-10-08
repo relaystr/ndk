@@ -7,13 +7,13 @@ environment:
   sdk: '>3.0.0'
 
 dependencies:
-  cbor: ^6.3.7
-  ndk: ^0.7.1-dev.3
+  cbor: ^6.5.1
+  ndk: '>0.7.1'
 
 dev_dependencies:
   test: ^1.16.0
   lints: ^4.0.0
 
-dependency_overrides: 
+dependency_overrides:
   ndk:
     path: ../ndk

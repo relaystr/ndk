@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:ndk/entities.dart';
 import 'package:objectbox/objectbox.dart';
 
@@ -72,10 +73,7 @@ class DbRelaySet {
     final Map<String, List<Map<String, String>>> encoded = {};
     relaysMap.forEach((url, mappings) {
       encoded[url] = mappings
-          .map((m) => {
-                'pubKey': m.pubKey,
-                'rwMarker': m.rwMarker.name,
-              })
+          .map((m) => {'pubKey': m.pubKey, 'rwMarker': m.rwMarker.name})
           .toList();
     });
     return json.encode(encoded);

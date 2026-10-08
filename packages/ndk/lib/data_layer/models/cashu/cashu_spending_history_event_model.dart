@@ -25,8 +25,9 @@ class CashuSpendingHistoryEventModel extends CashuSpendingHistoryEvent {
     }
     final jsonContent = jsonDecode(decryptedContent);
 
-    final extractedContent =
-        CashuSpendingHistoryEventContent.fromJson(jsonContent);
+    final extractedContent = CashuSpendingHistoryEventContent.fromJson(
+      jsonContent,
+    );
 
     return CashuSpendingHistoryEventModel(
       amount: extractedContent.amount,

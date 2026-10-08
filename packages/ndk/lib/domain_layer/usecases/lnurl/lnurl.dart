@@ -8,9 +8,7 @@ class Lnurl {
   final LnurlTransport _transport;
 
   ///
-  Lnurl({
-    required LnurlTransport transport,
-  }) : _transport = transport;
+  Lnurl({required LnurlTransport transport}) : _transport = transport;
 
   /// transform a lud16 of format name@domain.com to https://domain.com/.well-known/lnurlp/name
   static String? getLud16LinkFromLud16(String lud16) {
@@ -44,11 +42,12 @@ class Lnurl {
   }
 
   /// fetch invoice from callback
-  Future<InvoiceResponse?> fetchInvoice(
-      {required LnurlResponse lnurlResponse,
-      required int amountSats,
-      ZapRequest? zapRequest,
-      String? comment}) async {
+  Future<InvoiceResponse?> fetchInvoice({
+    required LnurlResponse lnurlResponse,
+    required int amountSats,
+    ZapRequest? zapRequest,
+    String? comment,
+  }) async {
     var callback = lnurlResponse.callback!;
     if (callback.contains("?")) {
       callback += "&";
@@ -74,8 +73,9 @@ class Lnurl {
         zapRequest != null &&
         zapRequest.sig != null &&
         zapRequest.sig!.isNotEmpty) {
-      final zapRequstString =
-          Nip01EventModel.fromEntity(zapRequest).toJsonString();
+      final zapRequstString = Nip01EventModel.fromEntity(
+        zapRequest,
+      ).toJsonString();
       final eventStr = Uri.encodeQueryComponent(zapRequstString);
       callback += "&nostr=$eventStr";
     }
@@ -86,9 +86,10 @@ class Lnurl {
       var response = await _transport.fetchInvoice(callback);
       String invoice = response!["pr"];
       return InvoiceResponse(
-          invoice: invoice,
-          amountSats: amountSats,
-          nostrPubkey: lnurlResponse.nostrPubkey);
+        invoice: invoice,
+        amountSats: amountSats,
+        nostrPubkey: lnurlResponse.nostrPubkey,
+      );
     } catch (e) {
       Logger.log.d(() => e);
     }

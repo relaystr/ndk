@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/l10n/app_localizations_context.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
+
+const _clientMetadata = Nip46ClientMetadata(name: 'NDK sample app');
 
 Future<void> showNLoginPopup({
   required BuildContext context,
@@ -26,12 +29,23 @@ Future<void> showNLoginPopup({
         ),
         content: SizedBox(
           width: 420,
-          child: NLogin(
-            ndkFlutter: ndkFlutter,
-            onLoggedIn: () {
-              Navigator.of(dialogContext).pop();
-              onLoggedIn();
-            },
+          child: SingleChildScrollView(
+            child: NLogin(
+              ndkFlutter: ndkFlutter,
+              clientMetadata: _clientMetadata,
+              nostrConnect: NostrConnect(
+                clientMetadata: _clientMetadata,
+                relays: [
+                  "wss://relay.damus.io",
+                  "wss://nos.lol",
+                  "wss://relay.nmail.li",
+                ],
+              ),
+              onLoggedIn: () {
+                Navigator.of(dialogContext).pop();
+                onLoggedIn();
+              },
+            ),
           ),
         ),
       );

@@ -1,14 +1,43 @@
 import 'package:ndk/data_layer/repositories/nostr_transport/websocket_client_nostr_transport.dart';
-import 'package:web_socket_client/web_socket_client.dart';
+import '../../../src/web_socket_client/web_socket_client.dart';
 
 import '../../../domain_layer/repositories/nostr_transport.dart';
 import '../../../shared/helpers/relay_helper.dart';
 import '../../data_sources/websocket_client.dart';
 
 class WebSocketClientNostrTransportFactory implements NostrTransportFactory {
+  WebSocketClientNostrTransportFactory({
+    this.compressionEnabled = true,
+    this.pingInterval = const Duration(seconds: 10),
+    this.reconnectMaximumStep = 4,
+  }) {
+    if (pingInterval != null && pingInterval! <= Duration.zero) {
+      throw ArgumentError.value(
+        pingInterval,
+        'pingInterval',
+        'must be positive',
+      );
+    }
+    if (reconnectMaximumStep <= 0) {
+      throw ArgumentError.value(
+        reconnectMaximumStep,
+        'reconnectMaximumStep',
+        'must be positive',
+      );
+    }
+  }
+
+  final Duration? pingInterval;
+  final int reconnectMaximumStep;
+
+  final bool compressionEnabled;
+
   @override
-  NostrTransport call(String url,
-      {Function? onReconnect, Function(int?, Object?, String?)? onDisconnect}) {
+  NostrTransport call(
+    String url, {
+    Function? onReconnect,
+    Function(int?, Object?, String?)? onDisconnect,
+  }) {
     final myUrl = cleanRelayUrl(url);
 
     if (myUrl == null) {
@@ -16,15 +45,23 @@ class WebSocketClientNostrTransportFactory implements NostrTransportFactory {
     }
 
     final backoff = BinaryExponentialBackoff(
-        initial: Duration(milliseconds: 500), maximumStep: 4);
-    final client = WebSocket(Uri.parse(myUrl),
-        backoff: backoff,
-        timeout: Duration(seconds: 3600),
-        pingInterval: Duration(seconds: 10),
-        binaryType: 'arraybuffer');
+      initial: Duration(milliseconds: 500),
+      maximumStep: reconnectMaximumStep,
+    );
+    final client = WebSocket(
+      Uri.parse(myUrl),
+      backoff: backoff,
+      timeout: Duration(seconds: 3600),
+      pingInterval: pingInterval,
+      binaryType: 'arraybuffer',
+      compressionEnabled: compressionEnabled,
+    );
 
     final WebsocketDSClient myDataSource = WebsocketDSClient(client, myUrl);
-    return WebSocketClientNostrTransport(myDataSource,
-        onReconnect: onReconnect, onDisconnect: onDisconnect);
+    return WebSocketClientNostrTransport(
+      myDataSource,
+      onReconnect: onReconnect,
+      onDisconnect: onDisconnect,
+    );
   }
 }

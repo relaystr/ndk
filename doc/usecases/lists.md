@@ -28,6 +28,19 @@ We distinguish between **lists** and **sets**:
 
 Both can have public and private (encrypted) elements.
 
+## Current behavior
+
+For public list/set content:
+
+- reads use the latest visible event for the relevant list or set
+- cached results are reused on later reads
+
+For private list/set content:
+
+- the original event content stays encrypted
+- decrypted private tags can be loaded through NDK's decrypted payload cache
+- repeated reads can reuse cached plaintext instead of decrypting again
+
 ### Lists Methods
 
 #### getSingleNip51List

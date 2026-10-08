@@ -2,7 +2,6 @@
 
 import 'dart:io';
 
-import 'package:ndk/domain_layer/usecases/nwc/responses/get_budget_response.dart';
 import 'package:ndk/ndk.dart';
 
 void main() async {
@@ -21,8 +20,9 @@ void main() async {
   print("Used budget: ${response.userBudgetSats} sats");
   print("Total budget: ${response.totalBudgetSats} sats");
   if (response.renewsAt != null) {
-    final renewsAtDate =
-        DateTime.fromMillisecondsSinceEpoch(response.renewsAt! * 1000);
+    final renewsAtDate = DateTime.fromMillisecondsSinceEpoch(
+      response.renewsAt! * 1000,
+    );
     final formattedDate =
         "${renewsAtDate.year}-${renewsAtDate.month.toString().padLeft(2, '0')}-${renewsAtDate.day.toString().padLeft(2, '0')} "
         "${renewsAtDate.hour.toString().padLeft(2, '0')}:${renewsAtDate.minute.toString().padLeft(2, '0')}:${renewsAtDate.second.toString().padLeft(2, '0')}";

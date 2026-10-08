@@ -44,7 +44,7 @@ class ListTransactionsRequest extends NwcRequest {
         if (offset != null) 'offset': offset,
         'unpaid': unpaid,
         if (type != null) 'type': type!.name,
-      }
+      },
     };
   }
 }

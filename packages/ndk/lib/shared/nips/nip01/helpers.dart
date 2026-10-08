@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:bech32/bech32.dart';
@@ -15,21 +14,18 @@ class Helpers {
 
   /// return a random string of given length
   static String getRandomString(int length) {
-    return String.fromCharCodes(Iterable.generate(
-        length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
+    return String.fromCharCodes(
+      Iterable.generate(
+        length,
+        (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length)),
+      ),
+    );
   }
 
-  /// return a secure random string of given length
-  static String getSecureRandomString(int length) {
+  /// returns [bytes] secure random bytes as a hex string (2 chars per byte)
+  static String getSecureRandomHex(int bytes) {
     final random = Random.secure();
-    final values = List<int>.generate(length, (i) => random.nextInt(256));
-    return base64UrlEncode(values);
-  }
-
-  /// return a secure random hex string of given length
-  static String getSecureRandomHex(int length) {
-    final random = Random.secure();
-    final values = List<int>.generate(length, (i) => random.nextInt(256));
+    final values = List<int>.generate(bytes, (i) => random.nextInt(256));
     return convert.hex.encode(values);
   }
 
@@ -91,7 +87,11 @@ class Helpers {
   /// If pad is true, and there are remaining bits after the conversion, then the remaining bits are left-shifted and added to the result
   /// [return] - the converted data
   static List<int> _convertBits(
-      List<int> data, int fromBits, int toBits, bool pad) {
+    List<int> data,
+    int fromBits,
+    int toBits,
+    bool pad,
+  ) {
     int acc = 0;
     int bits = 0;
     List<int> result = [];

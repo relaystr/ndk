@@ -6,10 +6,8 @@ class LookupInvoiceRequest extends NwcRequest {
   final String? paymentHash;
   final String? invoice;
 
-  const LookupInvoiceRequest({
-    this.paymentHash,
-    this.invoice,
-  }) : super(method: NwcMethod.LOOKUP_INVOICE);
+  const LookupInvoiceRequest({this.paymentHash, this.invoice})
+    : super(method: NwcMethod.LOOKUP_INVOICE);
 
   @override
   Map<String, dynamic> toMap() {
@@ -18,7 +16,7 @@ class LookupInvoiceRequest extends NwcRequest {
       'params': {
         if (paymentHash != null) 'payment_hash': paymentHash,
         if (invoice != null) 'invoice': invoice,
-      }
+      },
     };
   }
 }

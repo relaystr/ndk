@@ -3,7 +3,7 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'ndk_method_channel.dart';
 
 abstract class NdkPlatform extends PlatformInterface {
-  /// Constructs a AmberflutterPlatform.
+  /// Constructs a NdkPlatform.
   NdkPlatform() : super(token: _token);
 
   static final Object _token = Object();

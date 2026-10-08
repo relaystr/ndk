@@ -6,23 +6,24 @@ import '../../repositories/cache_manager.dart';
 class FetchedRanges {
   final CacheManager _cacheManager;
 
-  FetchedRanges({
-    required CacheManager cacheManager,
-  }) : _cacheManager = cacheManager;
+  FetchedRanges({required CacheManager cacheManager})
+    : _cacheManager = cacheManager;
 
   /// Get fetched ranges for a filter across all relays
   Future<Map<String, RelayFetchedRanges>> getForFilter(Filter filter) async {
     final filterHash = await FilterFingerprint.generateAsync(filter);
-    final records =
-        await _cacheManager.loadFilterFetchedRangeRecords(filterHash);
+    final records = await _cacheManager.loadFilterFetchedRangeRecords(
+      filterHash,
+    );
 
     return _buildFetchedRangesMap(filter, records);
   }
 
   /// Get all fetched ranges for a relay (all filters)
   Future<List<RelayFetchedRanges>> getForRelay(String relayUrl) async {
-    final records =
-        await _cacheManager.loadFilterFetchedRangeRecordsByRelayUrl(relayUrl);
+    final records = await _cacheManager.loadFilterFetchedRangeRecordsByRelayUrl(
+      relayUrl,
+    );
 
     // Group by filterHash
     final grouped = <String, List<FilterFetchedRangeRecord>>{};
@@ -35,14 +36,17 @@ class FetchedRanges {
     // The filterHash is preserved but the filter details are not available
     final result = <RelayFetchedRanges>[];
     for (final entry in grouped.entries) {
-      final relayRecords =
-          entry.value.where((r) => r.relayUrl == relayUrl).toList();
+      final relayRecords = entry.value
+          .where((r) => r.relayUrl == relayUrl)
+          .toList();
       if (relayRecords.isNotEmpty) {
-        result.add(_buildRelayFetchedRanges(
-          relayUrl,
-          Filter(), // Empty filter - we only have the hash
-          relayRecords,
-        ));
+        result.add(
+          _buildRelayFetchedRanges(
+            relayUrl,
+            Filter(), // Empty filter - we only have the hash
+            relayRecords,
+          ),
+        );
       }
     }
 
@@ -88,11 +92,7 @@ class FetchedRanges {
       if (fetchedRanges == null || fetchedRanges.ranges.isEmpty) {
         // No cached ranges - entire range is a gap
         gaps = [
-          FetchedRangesGap(
-            relayUrl: relayUrl,
-            since: since,
-            until: until,
-          )
+          FetchedRangesGap(relayUrl: relayUrl, since: since, until: until),
         ];
       } else {
         // Find gaps in existing ranges
@@ -128,10 +128,7 @@ class FetchedRanges {
 
     // Convert to TimeRanges for merging
     final ranges = existingRecords
-        .map((r) => TimeRange(
-              since: r.rangeStart,
-              until: r.rangeEnd,
-            ))
+        .map((r) => TimeRange(since: r.rangeStart, until: r.rangeEnd))
         .toList();
 
     // Add the new range
@@ -142,7 +139,9 @@ class FetchedRanges {
 
     // Delete old records for this filter/relay and save merged ones
     await _cacheManager.removeFilterFetchedRangeRecordsByFilterAndRelay(
-        filterHash, relayUrl);
+      filterHash,
+      relayUrl,
+    );
 
     final newRecords = mergedRanges.map((range) {
       return FilterFetchedRangeRecord(
@@ -190,8 +189,11 @@ class FetchedRanges {
     // Build RelayFetchedRanges for each relay
     final result = <String, RelayFetchedRanges>{};
     for (final entry in grouped.entries) {
-      result[entry.key] =
-          _buildRelayFetchedRanges(entry.key, filter, entry.value);
+      result[entry.key] = _buildRelayFetchedRanges(
+        entry.key,
+        filter,
+        entry.value,
+      );
     }
 
     return result;
@@ -203,13 +205,11 @@ class FetchedRanges {
     Filter filter,
     List<FilterFetchedRangeRecord> records,
   ) {
-    final ranges = records
-        .map((r) => TimeRange(
-              since: r.rangeStart,
-              until: r.rangeEnd,
-            ))
-        .toList()
-      ..sort((a, b) => a.since.compareTo(b.since));
+    final ranges =
+        records
+            .map((r) => TimeRange(since: r.rangeStart, until: r.rangeEnd))
+            .toList()
+          ..sort((a, b) => a.since.compareTo(b.since));
 
     return RelayFetchedRanges(
       relayUrl: relayUrl,

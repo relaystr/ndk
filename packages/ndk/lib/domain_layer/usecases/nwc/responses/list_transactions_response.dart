@@ -1,9 +1,11 @@
 // ignore_for_file: camel_case_types
 
 import 'package:equatable/equatable.dart';
+
 import '../consts/transaction_type.dart';
 import '../nwc_notification.dart';
 import 'nwc_response.dart';
+
 import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_method.dart';
 
 /// Represents the result of a 'list_transactions' response.
@@ -11,8 +13,10 @@ class ListTransactionsResponse extends NwcResponse {
   /// A list of transaction results.
   final List<TransactionResult> transactions;
 
-  ListTransactionsResponse(
-      {required this.transactions, required super.resultType});
+  ListTransactionsResponse({
+    required this.transactions,
+    required super.resultType,
+  });
 
   factory ListTransactionsResponse.deserialize(Map<String, dynamic> input) {
     if (!input.containsKey('result')) {
@@ -27,8 +31,9 @@ class ListTransactionsResponse extends NwcResponse {
         .toList();
 
     return ListTransactionsResponse(
-        transactions: transactions,
-        resultType: NwcMethod.LIST_TRANSACTIONS.name);
+      transactions: transactions,
+      resultType: NwcMethod.LIST_TRANSACTIONS.name,
+    );
   }
 }
 
@@ -142,17 +147,17 @@ class TransactionResult extends Equatable {
 
   @override
   List<Object?> get props => [
-        type,
-        invoice,
-        description,
-        descriptionHash,
-        preimage,
-        paymentHash,
-        amount,
-        feesPaid,
-        createdAt,
-        expiresAt,
-        settledAt,
-        metadata,
-      ];
+    type,
+    invoice,
+    description,
+    descriptionHash,
+    preimage,
+    paymentHash,
+    amount,
+    feesPaid,
+    createdAt,
+    expiresAt,
+    settledAt,
+    metadata,
+  ];
 }

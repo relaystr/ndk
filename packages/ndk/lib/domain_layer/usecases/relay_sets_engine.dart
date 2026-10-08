@@ -6,6 +6,7 @@ import 'dart:math';
 import '../../config/bootstrap_relays.dart';
 import '../../config/broadcast_defaults.dart';
 import '../../shared/logger/logger.dart';
+import '../../shared/nips/nip01/event_kind_classification.dart';
 import '../../shared/nips/nip01/client_msg.dart';
 import '../../shared/nips/nip01/helpers.dart';
 import '../../shared/helpers/relay_helper.dart';
@@ -16,6 +17,8 @@ import '../entities/filter.dart';
 import '../entities/global_state.dart';
 import '../entities/ndk_request.dart';
 import '../entities/nip_01_event.dart';
+import '../entities/auth_policy.dart';
+import '../entities/relay_connection_key.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_set.dart';
 import '../entities/request_response.dart';
@@ -43,9 +46,9 @@ class RelaySetsEngine implements NetworkEngine {
     required CacheManager cacheManager,
     required List<String>? bootstrapRelays,
     GlobalState? globalState,
-  })  : _cacheManager = cacheManager,
-        _relayManager = relayManager,
-        _bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS {
+  }) : _cacheManager = cacheManager,
+       _relayManager = relayManager,
+       _bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS {
     _globalState = globalState ?? GlobalState();
   }
 
@@ -53,37 +56,68 @@ class RelaySetsEngine implements NetworkEngine {
 
   Future<bool> doRelayRequest(String id, RelayRequestState request) async {
     if (_globalState.blockedRelays.contains(request.url)) {
-      Logger.log.w(() =>
-          "COULD NOT SEND REQUEST TO ${request.url} since relay is blocked");
+      Logger.log.w(
+        () => "COULD NOT SEND REQUEST TO ${request.url} since relay is blocked",
+      );
       return false;
     }
 
-    final connected = await _relayManager.reconnectRelay(request.url,
+    // a connection that is still opening is not one that is gone, and
+    // _checkNetworkClose cannot tell them apart on its own
+    final state = _globalState.inFlightRequests[id];
+    if (state != null) {
+      _relayManager.beginPendingConnection(state);
+    }
+    final bool connected;
+    try {
+      connected = await _relayManager.reconnectConnection(
+        request.key,
         connectionSource:
-            ConnectionSource.explicit // TODO improve this connection source
-        );
+            ConnectionSource.explicit, // TODO improve this connection source
+        force: false,
+        as: state?.request.auth?.account,
+        pausing: state,
+      );
+    } finally {
+      if (state != null) {
+        _relayManager.endPendingConnection(state);
+      }
+    }
+    // a timeout or a closeSubscription may have ended the request while the
+    // connection was opening: nothing tracks it anymore, so nothing would ever
+    // CLOSE what we would send here
+    if (state != null && !_relayManager.isStillInFlight(state)) {
+      return false;
+    }
     if (connected) {
-      RelayConnectivity? relay = _globalState.relays[request.url];
-      if (relay != null) {
-        relay.stats.activeRequests++;
-        try {
-          _relayManager.send(
-              relay,
-              ClientMsg(
-                ClientMsgType.kReq,
-                id: id,
-                filters: request.filters,
-              ));
-        } catch (e) {
-          Logger.log
-              .e(() => "COULD NOT SEND REQUEST TO ${request.url}:", error: e);
-          return false;
-        }
+      RelayConnectivity? relay = _globalState.relays[request.key];
+      if (relay == null) {
+        // the connection was closed between opening it and looking it up
+        Logger.log.w(
+          () =>
+              "COULD NOT SEND REQUEST TO ${request.url}, ${request.key} "
+              "is gone",
+        );
+        return false;
+      }
+      try {
+        await _relayManager.sendOrThrow(
+          relay,
+          ClientMsg(ClientMsgType.kReq, id: id, filters: request.filters),
+        );
+      } catch (e) {
+        Logger.log.e(
+          () => "COULD NOT SEND REQUEST TO ${request.url}:",
+          error: e,
+        );
+        return false;
       }
       return true;
     } else {
-      Logger.log.e(() =>
-          "COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
+      Logger.log.e(
+        () =>
+            "COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open",
+      );
       return false;
     }
   }
@@ -96,41 +130,99 @@ class RelaySetsEngine implements NetworkEngine {
   /// 3) if connected was successfull send the event
   /// 4) otherwise call failBroadcast in order to publish a RelayBroadcastResponse
   ///   for that specific relay with an error message
-  Future<void> doRelayBroadcast(String relayUrl, Nip01Event nostrEvent) async {
+  Future<void> doRelayBroadcast(
+    String relayUrl,
+    Nip01Event nostrEvent, {
+    AuthPolicy? auth,
+  }) async {
     _relayManager.registerRelayBroadcast(
       eventToPublish: nostrEvent,
       relayUrl: relayUrl,
     );
-    bool connected = false;
+
+    RelayConnectivity? relayConnectivity;
     Object? error;
     try {
-      connected = await _relayManager.reconnectRelay(relayUrl,
-          connectionSource: ConnectionSource.broadcastSpecific);
+      relayConnectivity = await _relayManager.connectionForBroadcast(
+        relayUrl,
+        auth,
+        connectTimeout: 1,
+        pausing: _globalState.inFlightBroadcasts[nostrEvent.id],
+      );
     } catch (e) {
       Logger.log.w(
-          () => "Error during reconnectRelay for $relayUrl in doRelayBroadcast",
-          error: e);
+        () => "Error during quick connect for $relayUrl in doRelayBroadcast",
+        error: e,
+      );
       error = e;
     }
 
-    if (connected) {
-      final relayConnectivity = _relayManager.getRelayConnectivity(relayUrl);
-      if (relayConnectivity != null) {
-        _relayManager.send(
-            relayConnectivity,
-            ClientMsg(
-              ClientMsgType.kEvent,
-              event: nostrEvent,
-            ));
+    if (relayConnectivity != null) {
+      // checked once the connection is there: a newer version may have been
+      // persisted while it was opening, and that one supersedes this send
+      if (await _shouldSkipObsoleteReplaceableBroadcast(nostrEvent)) {
+        Logger.log.d(
+          () =>
+              'skip obsolete specific-relay broadcast ${nostrEvent.id} for $relayUrl',
+        );
+        _relayManager.failBroadcast(
+          nostrEvent.id,
+          relayUrl,
+          'obsolete replaceable event skipped',
+        );
         return;
       }
+
+      await _relayManager.sendOrThrow(
+        relayConnectivity,
+        ClientMsg(ClientMsgType.kEvent, event: nostrEvent),
+      );
+      return;
+    }
+    if (auth is AuthPolicyRequire) {
+      _relayManager.failBroadcast(
+        nostrEvent.id,
+        relayUrl,
+        "no connection bound to ${auth.account.pubkey} could be opened",
+      );
+      return;
     }
     _relayManager.failBroadcast(
-        nostrEvent.id, relayUrl, "Could not connect to relay $relayUrl $error");
+      nostrEvent.id,
+      relayUrl,
+      "Could not connect to relay $relayUrl $error",
+    );
   }
 
-  Future<void> doNostrRequestWithRelaySet(RequestState state,
-      {bool splitRequestsByPubKeyMappings = true}) async {
+  Future<bool> _shouldSkipObsoleteReplaceableBroadcast(Nip01Event event) async {
+    if (!EventKindClassification.isReplaceableKind(event.kind)) {
+      return false;
+    }
+
+    final dTag = event.getDtag();
+    final visibleEvents = await _cacheManager.loadEvents(
+      pubKeys: [event.pubKey],
+      kinds: [event.kind],
+      tags:
+          EventKindClassification.isAddressableKind(event.kind) && dTag != null
+          ? {
+              'd': [dTag],
+            }
+          : null,
+      limit: 1,
+    );
+
+    if (visibleEvents.isEmpty) {
+      return false;
+    }
+
+    return visibleEvents.single.id != event.id;
+  }
+
+  Future<void> doNostrRequestWithRelaySet(
+    RequestState state, {
+    bool splitRequestsByPubKeyMappings = true,
+  }) async {
     if (state.unresolvedFilters.isEmpty || state.request.relaySet == null) {
       return;
     }
@@ -139,40 +231,46 @@ class RelaySetsEngine implements NetworkEngine {
       if (splitRequestsByPubKeyMappings) {
         relaySet.splitIntoRequests(filter, state);
         print(
-            "request for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds} made requests to ${state.requests.length} relays");
+          "request for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds} made requests to ${state.requests.length} relays",
+        );
 
         if (state.requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
           print(
-              "making fallback requests to ${_bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}");
+            "making fallback requests to ${_bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}",
+          );
           for (final url in _bootstrapRelays) {
-            state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
+            state.addRequestForRelay(url, RelaySet.sliceFilterAuthors(filter));
           }
         }
       } else {
         for (final url in relaySet.urls) {
-          state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
+          state.addRequestForRelay(url, RelaySet.sliceFilterAuthors(filter));
         }
       }
     }
     _globalState.inFlightRequests[state.id] = state;
 
-    // Late auth for subscriptions with authenticateAs
-    if (state.request.authenticateAs != null &&
-        state.request.authenticateAs!.isNotEmpty) {
-      for (final relayUrl in state.requests.keys) {
-        _relayManager.authenticateIfNeeded(
-            relayUrl, state.request.authenticateAs!);
-      }
-    }
+    state.closeIfNoRelays();
 
-    for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
-      doRelayRequest(state.id, entry.value);
+    for (MapEntry<RelayConnectionKey, RelayRequestState> entry
+        in state.requests.entries.toList()) {
+      doRelayRequest(state.id, entry.value).then((sent) {
+        if (!sent) {
+          state.requests.remove(entry.key);
+          if (state.requests.isEmpty) {
+            state.networkController.close();
+          }
+        }
+      });
     }
   }
 
   @override
   Future<void> handleRequest(RequestState state) async {
-    await _relayManager.seedRelaysConnected;
+    if (state.request.explicitRelays == null ||
+        state.request.explicitRelays!.isEmpty) {
+      await _relayManager.seedRelaysConnected;
+    }
 
     if (state.request.relaySet != null) {
       return await doNostrRequestWithRelaySet(state);
@@ -194,23 +292,17 @@ class RelaySetsEngine implements NetworkEngine {
       for (final filter in state.request.filters) {
         filters.addAll(RelaySet.sliceFilterAuthors(filter));
       }
-      state.addRequest(url, filters);
+      state.addRequestForRelay(url, filters);
     }
     _globalState.inFlightRequests[state.id] = state;
 
-    // Late auth for subscriptions with authenticateAs
-    if (state.request.authenticateAs != null &&
-        state.request.authenticateAs!.isNotEmpty) {
-      for (final relayUrl in state.requests.keys) {
-        _relayManager.authenticateIfNeeded(
-            relayUrl, state.request.authenticateAs!);
-      }
-    }
+    state.closeIfNoRelays();
 
-    for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
+    for (MapEntry<RelayConnectionKey, RelayRequestState> entry
+        in state.requests.entries) {
       doRelayRequest(state.id, entry.value).then((sent) {
         if (!sent) {
-          state.requests.remove(entry.value.url);
+          state.removeRequest(entry.key);
           if (state.requests.isEmpty) {
             state.networkController.close();
           }
@@ -227,29 +319,28 @@ class RelaySetsEngine implements NetworkEngine {
     Duration timeout = kDefaultStreamIdleTimeout,
     bool closeOnEOSE = true,
   }) async {
-    String id = Helpers.getRandomString(10);
-    RequestState state = RequestState(closeOnEOSE
-        ? NdkRequest.query(
-            id,
-            name: name,
-            filters: [filter],
-            timeoutDuration: timeout,
-          )
-        : NdkRequest.subscription(
-            id,
-            name: name,
-            filters: [],
-          ));
+    String id = Helpers.getSecureRandomHex(16);
+    RequestState state = RequestState(
+      closeOnEOSE
+          ? NdkRequest.query(
+              id,
+              name: name,
+              filters: [filter],
+              timeoutDuration: timeout,
+            )
+          : NdkRequest.subscription(id, name: name, filters: []),
+    );
 
-    for (var url in urls) {
-      state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
+    for (final url in urls) {
+      state.addRequestForRelay(url, RelaySet.sliceFilterAuthors(filter));
     }
     _globalState.inFlightRequests[state.id] = state;
 
-    for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
+    for (MapEntry<RelayConnectionKey, RelayRequestState> entry
+        in state.requests.entries) {
       doRelayRequest(state.id, entry.value).then((sent) {
         if (!sent) {
-          state.requests.remove(entry.value.url);
+          state.removeRequest(entry.key);
           // start fix
           if (state.requests.isEmpty) {
             state.networkController.close();
@@ -259,7 +350,13 @@ class RelaySetsEngine implements NetworkEngine {
       });
     }
 
-    return NdkResponse(state.id, state.stream);
+    return NdkResponse(
+      state.id,
+      state.stream,
+      relayOutcomes: () => state.relayOutcomes,
+      relayOutcomesStream: () => state.relayOutcomesStream,
+      relayOutcomesDone: state.controller.done.then((_) => state.relayOutcomes),
+    );
   }
 
   @override
@@ -289,9 +386,17 @@ class RelaySetsEngine implements NetworkEngine {
       // =====================================================================================
       if (specificRelays != null) {
         if (specificRelays.isNotEmpty) {
-          await Future.wait(specificRelays.map((relayUrl) =>
-              // broadcast async
-              doRelayBroadcast(relayUrl, workingEvent)));
+          await Future.wait(
+            specificRelays.map(
+              (relayUrl) =>
+                  // broadcast async
+                  doRelayBroadcast(
+                    relayUrl,
+                    workingEvent,
+                    auth: broadcastState.auth,
+                  ),
+            ),
+          );
         }
       } else {
         // =====================================================================================
@@ -303,20 +408,33 @@ class RelaySetsEngine implements NetworkEngine {
           cacheManager: _cacheManager,
         ));
         // make a copy of the keys since connectRelay may mutate the underlying map
-        List<String> writeRelaysUrls =
-            _relayManager.globalState.relays.keys.toList();
+        // several connections can share a url, and broadcasting twice to the
+        // same relay would duplicate the event
+        List<String> writeRelaysUrls = _relayManager.globalState.relays.keys
+            .map((key) => key.url)
+            .toSet()
+            .toList();
         if (nip65List.isNotEmpty) {
           writeRelaysUrls = nip65List.first.relays.entries
               .where((element) => element.value.isWrite)
               .map((e) => e.key)
               .toList();
         } else {
-          Logger.log.w(() =>
-              "could not find user relay list from nip65, using default bootstrap relays");
+          Logger.log.w(
+            () =>
+                "could not find user relay list from nip65, using default bootstrap relays",
+          );
         }
 
-        await Future.wait(writeRelaysUrls
-            .map((relayUrl) => doRelayBroadcast(relayUrl, workingEvent)));
+        await Future.wait(
+          writeRelaysUrls.map(
+            (relayUrl) => doRelayBroadcast(
+              relayUrl,
+              workingEvent,
+              auth: broadcastState.auth,
+            ),
+          ),
+        );
 
         // =====================================================================================
         // other inbox
@@ -339,14 +457,23 @@ class RelaySetsEngine implements NetworkEngine {
             // cut list of at a certain threshold
             final maxList = completeList.sublist(
               0,
-              min(completeList.length,
-                  BroadcastDefaults.MAX_INBOX_RELAYS_TO_BROADCAST),
+              min(
+                completeList.length,
+                BroadcastDefaults.MAX_INBOX_RELAYS_TO_BROADCAST,
+              ),
             );
             myWriteRelayUrlsOthers.addAll(maxList);
           }
 
-          await Future.wait(myWriteRelayUrlsOthers
-              .map((relayUrl) => doRelayBroadcast(relayUrl, workingEvent)));
+          await Future.wait(
+            myWriteRelayUrlsOthers.map(
+              (relayUrl) => doRelayBroadcast(
+                relayUrl,
+                workingEvent,
+                auth: broadcastState.auth,
+              ),
+            ),
+          );
         }
       }
       broadcastState.closeIfNoRelays();
@@ -356,8 +483,12 @@ class RelaySetsEngine implements NetworkEngine {
 
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
-      broadcastDoneStream: broadcastState.stateUpdates
-          .map((state) => state.broadcasts.values.toList()),
+      broadcastDoneStream: broadcastState.stateUpdates.map(
+        (state) => state.broadcasts.values.toList(),
+      ),
+      broadcastDoneFuture: broadcastState.publishDoneFuture.then(
+        (state) => state.broadcasts.values.toList(),
+      ),
     );
   }
 }

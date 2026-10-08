@@ -6,20 +6,26 @@ import 'package:test/test.dart';
 import '../mocks/mock_relay.dart';
 
 void main() {
+  final eventSignerFactory = Bip340EventSignerFactory();
+
   group('Nip46EventSigner with MockRelay', () {
     late Nip46EventSigner signer;
     late BunkerConnection connection;
     late Ndk ndk;
     late MockRelay mockRelay;
+    var signerInitialized = false;
+    var ndkInitialized = false;
+    var relayInitialized = false;
 
     setUp(() async {
+      signerInitialized = false;
+      ndkInitialized = false;
+      relayInitialized = false;
+
       // Start the mock relay with NIP-46 support
-      mockRelay = MockRelay(
-        name: 'nip46-test-relay',
-        signEvents: true,
-        explicitPort: 4046, // Use a specific port for NIP-46 tests
-      );
+      mockRelay = MockRelay(name: 'nip46-test-relay', signEvents: true);
       await mockRelay.startServer();
+      relayInitialized = true;
 
       ndk = Ndk(
         NdkConfig(
@@ -29,6 +35,8 @@ void main() {
           logLevel: Logger.logLevels.trace,
         ),
       );
+      ndkInitialized = true;
+      await ndk.relays.seedRelaysConnected;
 
       connection = BunkerConnection(
         privateKey:
@@ -39,15 +47,24 @@ void main() {
       );
 
       signer = Nip46EventSigner(
-          connection: connection,
-          requests: ndk.requests,
-          broadcast: ndk.broadcast);
+        connection: connection,
+        requests: ndk.requests,
+        broadcast: ndk.broadcast,
+        eventSignerFactory: eventSignerFactory,
+      );
+      signerInitialized = true;
     });
 
     tearDown(() async {
-      signer.dispose();
-      await ndk.destroy();
-      await mockRelay.stopServer();
+      if (signerInitialized) {
+        signer.dispose();
+      }
+      if (ndkInitialized) {
+        await ndk.destroy();
+      }
+      if (relayInitialized) {
+        await mockRelay.stopServer();
+      }
     });
 
     test('canSign should return true', () {
@@ -69,6 +86,32 @@ void main() {
       expect(signedEvent.sig, isNotNull);
     });
 
+    test('sign should use event body returned by remote signer', () async {
+      mockRelay.signEventCreatedAtOffsetSeconds = 11;
+      mockRelay.signEventContentOverride = 'mutated by remote signer';
+
+      final event = Nip01Event(
+        pubKey: MockRelay.remoteSignerPublicKey,
+        kind: 1,
+        tags: [
+          ['t', 'test'],
+        ],
+        content: 'requested content',
+        createdAt: 1234567890,
+      );
+
+      final signedEvent = await signer.sign(event);
+
+      // Remote signer is allowed to modify the event before signing.
+      expect(signedEvent.content, equals('mutated by remote signer'));
+      expect(signedEvent.createdAt, equals(event.createdAt + 11));
+      expect(Nip01Utils.isIdValid(signedEvent), isTrue);
+      expect(
+        await Bip340EventVerifier(useIsolate: false).verify(signedEvent),
+        isTrue,
+      );
+    });
+
     test('getPublicKey should throw when not cached', () {
       expect(() => signer.getPublicKey(), throwsException);
     });
@@ -85,7 +128,8 @@ void main() {
 
     test('login with bunker URL should connect successfully', () async {
       // Create bunker URL with mock relay's remote signer
-      final bunkerUrl = 'bunker://${MockRelay.remoteSignerPublicKey}'
+      final bunkerUrl =
+          'bunker://${MockRelay.remoteSignerPublicKey}'
           '?relay=${mockRelay.url}'
           '&secret=test-secret-123';
 
@@ -93,6 +137,7 @@ void main() {
       final bunkers = Bunkers(
         requests: ndk.requests,
         broadcast: ndk.broadcast,
+        eventSignerFactory: eventSignerFactory,
       );
 
       final bunkerConnection = await bunkers.connectWithBunkerUrl(
@@ -104,8 +149,10 @@ void main() {
       );
 
       expect(bunkerConnection, isNotNull);
-      expect(bunkerConnection!.remotePubkey,
-          equals(MockRelay.remoteSignerPublicKey));
+      expect(
+        bunkerConnection!.remotePubkey,
+        equals(MockRelay.remoteSignerPublicKey),
+      );
       expect(bunkerConnection.relays, contains(mockRelay.url));
 
       // Create a signer with the connection and test signing
@@ -113,6 +160,7 @@ void main() {
         connection: bunkerConnection,
         requests: ndk.requests,
         broadcast: ndk.broadcast,
+        eventSignerFactory: eventSignerFactory,
       );
 
       final testEvent = Nip01Event(
@@ -132,7 +180,8 @@ void main() {
 
     test('loginWithBunkerUrl should set up account correctly', () async {
       // Create bunker URL with mock relay's remote signer
-      final bunkerUrl = 'bunker://${MockRelay.remoteSignerPublicKey}'
+      final bunkerUrl =
+          'bunker://${MockRelay.remoteSignerPublicKey}'
           '?relay=${mockRelay.url}'
           '&secret=bunker-url-test-secret';
 
@@ -140,9 +189,10 @@ void main() {
       final bunkers = Bunkers(
         requests: ndk.requests,
         broadcast: ndk.broadcast,
+        eventSignerFactory: eventSignerFactory,
       );
 
-      final accounts = Accounts();
+      final accounts = Accounts(eventSignerFactory);
 
       // Login with the bunker URL
       final connection = await accounts.loginWithBunkerUrl(
@@ -193,9 +243,10 @@ void main() {
       final bunkers = Bunkers(
         requests: ndk.requests,
         broadcast: ndk.broadcast,
+        eventSignerFactory: eventSignerFactory,
       );
 
-      final accounts = Accounts();
+      final accounts = Accounts(eventSignerFactory);
 
       // Login with the bunker connection
       await accounts.loginWithBunkerConnection(
@@ -354,5 +405,45 @@ void main() {
       final response = await signer.ping();
       expect(response, equals('pong'));
     });
+  });
+
+  test('response is not held back by a slow transport relay', () async {
+    final fastRelay = MockRelay(name: 'nip46-fast-relay', signEvents: true);
+    final slowRelay = MockRelay(name: 'nip46-slow-relay');
+    await fastRelay.startServer();
+    await slowRelay.startServer(delayResponse: const Duration(seconds: 2));
+
+    final ndk = Ndk(
+      NdkConfig(
+        cache: MemCacheManager(),
+        eventVerifier: Bip340EventVerifier(),
+        bootstrapRelays: [fastRelay.url, slowRelay.url],
+      ),
+    );
+    await ndk.relays.seedRelaysConnected;
+
+    final signer = Nip46EventSigner(
+      connection: BunkerConnection(
+        privateKey:
+            "7a8317f947fff0526749e9fe53f79def8eb0afd378c01058f37140cc8732fecc",
+        remotePubkey: MockRelay.remoteSignerPublicKey,
+        relays: [fastRelay.url, slowRelay.url],
+      ),
+      requests: ndk.requests,
+      broadcast: ndk.broadcast,
+      eventSignerFactory: eventSignerFactory,
+    );
+
+    final stopwatch = Stopwatch()..start();
+    final response = await signer.ping();
+    stopwatch.stop();
+
+    expect(response, equals('pong'));
+    expect(stopwatch.elapsed, lessThan(const Duration(seconds: 1)));
+
+    signer.dispose();
+    await ndk.destroy();
+    await fastRelay.stopServer();
+    await slowRelay.stopServer();
   });
 }

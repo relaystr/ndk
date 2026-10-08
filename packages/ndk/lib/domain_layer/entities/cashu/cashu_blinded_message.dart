@@ -22,11 +22,7 @@ class CashuBlindedMessage {
   }
 
   Map<String, Object> toJson() {
-    return {
-      'id': id,
-      'amount': amount,
-      'B_': blindedMessage,
-    };
+    return {'id': id, 'amount': amount, 'B_': blindedMessage};
   }
 
   @override

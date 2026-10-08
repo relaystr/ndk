@@ -47,7 +47,9 @@ class NwcNotification {
   });
 
   factory NwcNotification.fromMap(
-      String notificationType, Map<String, dynamic> map) {
+    String notificationType,
+    Map<String, dynamic> map,
+  ) {
     return NwcNotification(
       notificationType: notificationType,
       type: map['type'] as String,

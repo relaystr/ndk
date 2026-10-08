@@ -28,7 +28,13 @@ class Nip01Event {
   /// has signature been validated?
   final bool? validSig;
 
-  /// Relay that an event was received from
+  /// Relay hints attached to the event object.
+  ///
+  /// Deprecated: use cache provenance APIs such as
+  /// `CacheManager.addEventSource(s)` / `loadEventSources()` instead.
+  @Deprecated(
+    'Use CacheManager provenance methods instead of Nip01Event.sources.',
+  )
   final List<String> sources;
 
   /// Creates a new Nostr event.
@@ -54,13 +60,15 @@ class Nip01Event {
     this.createdAt = (createdAt == 0)
         ? DateTime.now().millisecondsSinceEpoch ~/ 1000
         : createdAt;
-    this.id = id ??
+    this.id =
+        id ??
         Nip01Utils.calculateEventIdSync(
-            pubKey: pubKey,
-            createdAt: createdAt,
-            kind: kind,
-            tags: tags,
-            content: content);
+          pubKey: pubKey,
+          createdAt: createdAt,
+          kind: kind,
+          tags: tags,
+          content: content,
+        );
   }
 
   Nip01Event copyWith({
@@ -75,15 +83,16 @@ class Nip01Event {
     List<String>? sources,
   }) {
     return Nip01Event(
-        id: id ?? this.id,
-        pubKey: pubKey ?? this.pubKey,
-        createdAt: createdAt ?? this.createdAt,
-        kind: kind ?? this.kind,
-        tags: tags ?? this.tags,
-        content: content ?? this.content,
-        sig: sig ?? this.sig,
-        validSig: validSig ?? this.validSig,
-        sources: sources ?? this.sources);
+      id: id ?? this.id,
+      pubKey: pubKey ?? this.pubKey,
+      createdAt: createdAt ?? this.createdAt,
+      kind: kind ?? this.kind,
+      tags: tags ?? this.tags,
+      content: content ?? this.content,
+      sig: sig ?? this.sig,
+      validSig: validSig ?? this.validSig,
+      sources: sources ?? this.sources,
+    );
   }
 
   // Individual events with the same "id" are equivalent

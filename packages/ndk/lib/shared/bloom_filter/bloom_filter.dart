@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:convert' show base64Decode, base64Encode, utf8;
+
 import 'package:xxh3/xxh3.dart';
 
 /// generic bloom filter with xxh3
@@ -15,7 +16,8 @@ class BloomFilter {
   }) {
     if (falsePositiveProbability <= 0 || falsePositiveProbability >= 1) {
       throw ArgumentError(
-          "False positive probability must be in range (0, 1).");
+        "False positive probability must be in range (0, 1).",
+      );
     }
     if (numItems <= 0) {
       throw ArgumentError("Number of items must be positive.");

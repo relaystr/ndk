@@ -15,6 +15,7 @@ void main() {
   late MockBlossomServer server;
   late MockBlossomServer server2;
   late Files client;
+  late Account loggedAccount;
 
   setUp(() async {
     server = MockBlossomServer(port: 3010);
@@ -31,9 +32,12 @@ void main() {
         engine: NdkEngine.JIT,
       ),
     );
-    ndk.accounts
-        .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+    ndk.accounts.loginPrivateKey(
+      pubkey: key1.publicKey,
+      privkey: key1.privateKey!,
+    );
 
+    loggedAccount = ndk.accounts.getLoggedAccount()!;
     client = ndk.files;
   });
 
@@ -95,10 +99,7 @@ void main() {
       // download
       final getResponse = client.download(
         url: 'http://localhost:3010/$sha256',
-        serverUrls: [
-          'https://localhost:3011',
-          'http://localhost:3010',
-        ],
+        serverUrls: ['https://localhost:3011', 'http://localhost:3010'],
       );
       expect(getResponse, throwsA(isA<Exception>()));
     });
@@ -125,15 +126,14 @@ void main() {
       // check
       final response = client.checkUrl(
         url: 'http://localhost:3010/${uploadResponse.first.descriptor!.sha256}',
-        serverUrls: [
-          'https://localhost:3011',
-          'http://localhost:3010',
-        ],
+        serverUrls: ['https://localhost:3011', 'http://localhost:3010'],
       );
       expect(
-          response,
-          completion(
-              'http://localhost:3010/${uploadResponse.first.descriptor!.sha256}'));
+        response,
+        completion(
+          'http://localhost:3010/${uploadResponse.first.descriptor!.sha256}',
+        ),
+      );
     });
   });
 
@@ -214,7 +214,8 @@ void main() {
       // Create a test file with binary content
       final uploadFile = File('${tempDir.path}/test_binary_upload.bin');
       final testData = Uint8List.fromList(
-          List.generate(2048, (i) => i % 256)); // 2KB of test data
+        List.generate(2048, (i) => i % 256),
+      ); // 2KB of test data
       await uploadFile.writeAsBytes(testData);
 
       // Upload the file
@@ -263,7 +264,7 @@ void main() {
         url: 'http://localhost:3010/$sha256',
         outputPath: downloadFile.path,
         serverUrls: ['http://localhost:3010'],
-        useAuth: true,
+        auth: AuthPolicy.require(loggedAccount),
       );
 
       expect(await downloadFile.exists(), true);
@@ -280,10 +281,7 @@ void main() {
       List<BlobUploadResult> uploadResults = const [];
       await for (final progress in client.uploadFromFile(
         filePath: testFile.path,
-        serverUrls: [
-          'http://localhost:3010',
-          'http://localhost:3011',
-        ],
+        serverUrls: ['http://localhost:3010', 'http://localhost:3011'],
         strategy: UploadStrategy.mirrorAfterSuccess,
       )) {
         if (progress.completedUploads.isNotEmpty) {
@@ -327,10 +325,7 @@ void main() {
       await client.downloadToFile(
         url: 'http://localhost:3010/$sha256',
         outputPath: downloadFile.path,
-        serverUrls: [
-          'http://dead.example.com',
-          'http://localhost:3010',
-        ],
+        serverUrls: ['http://dead.example.com', 'http://localhost:3010'],
       );
 
       expect(await downloadFile.exists(), true);

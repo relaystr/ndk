@@ -1,12 +1,45 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:crypto/crypto.dart';
 import 'package:ndk/shared/logger/logger.dart';
 
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
 import 'package:shelf_router/shelf_router.dart';
+
+/// One request the server received, so a test can assert on what was sent
+/// rather than only on what came back.
+class MockBlossomRequest {
+  final String method;
+  final String path;
+  final bool hasAuth;
+
+  /// id of the decoded kind 24242 event, null when no readable one was sent
+  final String? authEventId;
+
+  /// value of the auth event's `t` tag
+  final String? authType;
+  final String? authPubkey;
+
+  /// value of the auth event's `expiration` tag, as a unix timestamp
+  final int? authExpiration;
+
+  MockBlossomRequest({
+    required this.method,
+    required this.path,
+    required this.hasAuth,
+    this.authEventId,
+    this.authType,
+    this.authPubkey,
+    this.authExpiration,
+  });
+
+  @override
+  String toString() =>
+      'MockBlossomRequest($method $path, auth: $hasAuth, type: $authType)';
+}
 
 class MockBlossomServer {
   // In-memory storage for blobs
@@ -15,6 +48,29 @@ class MockBlossomServer {
   final int uploadStatusCode;
   final int mirrorStatusCode;
   final int deleteStatusCode;
+
+  /// demand an authorization on GET and HEAD too, which a public blossom
+  /// server does not. Mutable so a test can seed a blob and only then start
+  /// refusing.
+  bool requireAuthForReads;
+
+  /// status a refusal answers with. BUD-01 says 401, some servers say 403
+  final int authRefusalStatus;
+
+  /// advertise `accept-ranges` so [getBlobStream] takes its chunked path
+  /// instead of falling back to a whole-blob download
+  final bool supportRangeRequests;
+
+  /// how long each response is held back, to make concurrent requests really
+  /// overlap
+  final Duration? responseDelay;
+
+  /// every request the server received, oldest first
+  final List<MockBlossomRequest> requests = [];
+
+  /// every kind 1984 event `/report` received, oldest first
+  final List<Map<String, dynamic>> reports = [];
+
   HttpServer? _server;
 
   /// report kind
@@ -25,35 +81,150 @@ class MockBlossomServer {
     this.uploadStatusCode = 200,
     this.mirrorStatusCode = 200,
     this.deleteStatusCode = 200,
+    this.requireAuthForReads = false,
+    this.authRefusalStatus = 403,
+    this.supportRangeRequests = false,
+    this.responseDelay,
   });
+
+  /// forget every recorded request
+  void clearRequests() => requests.clear();
+
+  /// how many recorded requests match, any null narrowing being ignored
+  int countRequests({String? method, String? path, bool? hasAuth}) => requests
+      .where((r) => method == null || r.method == method)
+      .where((r) => path == null || r.path == path)
+      .where((r) => hasAuth == null || r.hasAuth == hasAuth)
+      .length;
+
+  /// distinct auth events the client signed, which tells a test whether one
+  /// operation signed once or once per server
+  Set<String> get signedEventIds =>
+      requests.map((r) => r.authEventId).nonNulls.toSet();
+
+  Map<String, dynamic>? _decodeAuthEvent(String? header) {
+    if (header == null) return null;
+    try {
+      return json.decode(utf8.decode(base64Decode(header.split(' ')[1])));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? _tagValue(Map<String, dynamic>? event, String name) {
+    if (event == null) return null;
+    final tags = List<List<dynamic>>.from(event['tags']);
+    for (final tag in tags) {
+      if (tag.length >= 2 && tag[0] == name) return tag[1] as String;
+    }
+    return null;
+  }
+
+  Middleware _recordRequests() =>
+      (innerHandler) => (request) async {
+        final header = request.headers['authorization'];
+        final event = _decodeAuthEvent(header);
+        requests.add(
+          MockBlossomRequest(
+            method: request.method,
+            path: '/${request.url.path}',
+            hasAuth: header != null,
+            authEventId: event?['id'] as String?,
+            authType: _tagValue(event, 't'),
+            authPubkey: event?['pubkey'] as String?,
+            authExpiration: int.tryParse(_tagValue(event, 'expiration') ?? ''),
+          ),
+        );
+        if (responseDelay != null) {
+          await Future.delayed(responseDelay!);
+        }
+        return innerHandler(request);
+      };
+
+  /// null when the read may proceed, a refusal otherwise
+  Response? _refuseRead(Request request) {
+    if (!requireAuthForReads) return null;
+    final authHeader = request.headers['authorization'];
+    if (authHeader == null) {
+      return Response(authRefusalStatus, body: 'Missing authorization');
+    }
+    final event = _decodeAuthEvent(authHeader);
+    if (event == null || !_verifyAuthEvent(event, 'get')) {
+      return Response(authRefusalStatus, body: 'Invalid authorization event');
+    }
+    return null;
+  }
 
   Router _createRouter() {
     final router = Router();
 
     // GET /<sha256> - Get Blob
     router.get('/<sha256>', (Request request, String sha256) {
+      final refusal = _refuseRead(request);
+      if (refusal != null) return refusal;
+
       if (!_blobs.containsKey(sha256)) {
         return Response.notFound('Blob not found');
       }
-      return Response.ok(_blobs[sha256]!.data,
-          headers: {'Content-Type': _blobs[sha256]!.contentType});
+
+      final entry = _blobs[sha256]!;
+      final range = supportRangeRequests ? request.headers['range'] : null;
+      if (range != null) {
+        final match = RegExp(r'bytes=(\d+)-(\d*)').firstMatch(range);
+        if (match != null) {
+          final start = int.parse(match.group(1)!);
+          final end = match.group(2)!.isEmpty
+              ? entry.data.length - 1
+              : int.parse(match.group(2)!);
+          final slice = entry.data.sublist(start, end + 1);
+          return Response(
+            206,
+            body: slice,
+            headers: {
+              'Content-Type': entry.contentType,
+              'Content-Length': slice.length.toString(),
+              'Content-Range': 'bytes $start-$end/${entry.data.length}',
+              'Accept-Ranges': 'bytes',
+            },
+          );
+        }
+      }
+
+      // shelf_router answers HEAD with the GET handler, so this is also what a
+      // range probe reads
+      return Response.ok(
+        entry.data,
+        headers: {
+          'Content-Type': entry.contentType,
+          if (supportRangeRequests) 'Accept-Ranges': 'bytes',
+        },
+      );
     });
 
     // GET /static/test.txt - Static test file endpoint
     router.get('/static/test.txt', (Request request) {
-      return Response.ok('Static file content for testing',
-          headers: {'Content-Type': 'text/plain'});
+      return Response.ok(
+        'Static file content for testing',
+        headers: {'Content-Type': 'text/plain'},
+      );
     });
 
     // HEAD /<sha256> - Has Blob
     router.head('/<sha256>', (Request request, String sha256) {
+      final refusal = _refuseRead(request);
+      if (refusal != null) return refusal;
+
       if (!_blobs.containsKey(sha256)) {
         return Response.notFound('Blob not found');
       }
-      return Response(200, headers: {
-        'Content-Length': _blobs[sha256]!.data.length.toString(),
-        'Content-Type': _blobs[sha256]!.contentType,
-      });
+      return Response(
+        200,
+        headers: {
+          'Content-Length': _blobs[sha256]!.data.length.toString(),
+          'Content-Type': _blobs[sha256]!.contentType,
+          if (supportRangeRequests) 'Accept-Ranges': 'bytes',
+        },
+      );
     });
 
     // PUT /upload - Upload Blob
@@ -66,8 +237,9 @@ class MockBlossomServer {
       }
 
       try {
-        final authEvent =
-            json.decode(utf8.decode(base64Decode(authHeader.split(' ')[1])));
+        final authEvent = json.decode(
+          utf8.decode(base64Decode(authHeader.split(' ')[1])),
+        );
         if (!_verifyAuthEvent(authEvent, 'upload')) {
           return Response.forbidden('Invalid authorization event');
         }
@@ -113,8 +285,9 @@ class MockBlossomServer {
       }
 
       try {
-        final authEvent =
-            json.decode(utf8.decode(base64Decode(authHeader.split(' ')[1])));
+        final authEvent = json.decode(
+          utf8.decode(base64Decode(authHeader.split(' ')[1])),
+        );
         if (!_verifyAuthEvent(authEvent, 'media')) {
           return Response.forbidden('Invalid authorization event');
         }
@@ -158,8 +331,9 @@ class MockBlossomServer {
       }
 
       try {
-        final authEvent =
-            json.decode(utf8.decode(base64Decode(authHeader.split(' ')[1])));
+        final authEvent = json.decode(
+          utf8.decode(base64Decode(authHeader.split(' ')[1])),
+        );
         if (!_verifyAuthEvent(authEvent, 'list')) {
           return Response.forbidden('Invalid authorization event');
         }
@@ -179,14 +353,15 @@ class MockBlossomServer {
             if (until != null && timestamp > until) return false;
             return true;
           })
-          .map((entry) => {
-                'url': 'http://localhost:$port/${entry.key}',
-                'sha256': entry.key,
-                'size': entry.value.data.length,
-                'type': entry.value.contentType,
-                'uploaded':
-                    entry.value.uploadedAt.millisecondsSinceEpoch ~/ 1000,
-              })
+          .map(
+            (entry) => {
+              'url': 'http://localhost:$port/${entry.key}',
+              'sha256': entry.key,
+              'size': entry.value.data.length,
+              'type': entry.value.contentType,
+              'uploaded': entry.value.uploadedAt.millisecondsSinceEpoch ~/ 1000,
+            },
+          )
           .toList();
 
       return Response.ok(
@@ -203,8 +378,9 @@ class MockBlossomServer {
       }
 
       try {
-        final authEvent =
-            json.decode(utf8.decode(base64Decode(authHeader.split(' ')[1])));
+        final authEvent = json.decode(
+          utf8.decode(base64Decode(authHeader.split(' ')[1])),
+        );
 
         if (!_verifyAuthEvent(authEvent, 'delete')) {
           return Response.forbidden('Invalid authorization event');
@@ -230,8 +406,9 @@ class MockBlossomServer {
       }
 
       try {
-        final authEvent =
-            json.decode(utf8.decode(base64Decode(authHeader.split(' ')[1])));
+        final authEvent = json.decode(
+          utf8.decode(base64Decode(authHeader.split(' ')[1])),
+        );
         if (!_verifyAuthEvent(authEvent, 'upload')) {
           return Response.forbidden('Invalid authorization event');
         }
@@ -246,7 +423,8 @@ class MockBlossomServer {
         requestData = json.decode(body);
         if (!requestData.containsKey('url')) {
           return Response.badRequest(
-              body: 'Request body must contain a "url" field');
+            body: 'Request body must contain a "url" field',
+          );
         }
       } catch (e) {
         return Response.badRequest(body: 'Invalid JSON body');
@@ -263,8 +441,8 @@ class MockBlossomServer {
           await response.drain();
           httpClient.close();
           return Response.internalServerError(
-              body:
-                  'Failed to download from source URL: ${response.statusCode}');
+            body: 'Failed to download from source URL: ${response.statusCode}',
+          );
         }
 
         // Read the response data
@@ -278,7 +456,8 @@ class MockBlossomServer {
         // Store the blob
         _blobs[computedSha256] = _BlobEntry(
           data: data,
-          contentType: response.headers.contentType?.toString() ??
+          contentType:
+              response.headers.contentType?.toString() ??
               'application/octet-stream',
           uploader: 'test_pubkey',
           uploadedAt: DateTime.now(),
@@ -299,7 +478,8 @@ class MockBlossomServer {
         );
       } catch (e) {
         return Response.internalServerError(
-            body: 'Failed to mirror blob: ${e.toString()}');
+          body: 'Failed to mirror blob: ${e.toString()}',
+        );
       }
     });
 
@@ -314,8 +494,11 @@ class MockBlossomServer {
       if (requestData['kind'] != kReport) {
         return Response.badRequest(body: 'Invalid kind');
       }
-      return Response.ok('{"status": "ok"}',
-          headers: {'Content-Type': 'application/json'});
+      reports.add(requestData);
+      return Response.ok(
+        '{"status": "ok"}',
+        headers: {'Content-Type': 'application/json'},
+      );
     });
 
     return router;
@@ -324,6 +507,7 @@ class MockBlossomServer {
   Future<void> start() async {
     final handler = Pipeline()
         .addMiddleware(logRequests())
+        .addMiddleware(_recordRequests())
         .addHandler(_createRouter().call);
 
     _server = await serve(handler, 'localhost', port);
@@ -345,8 +529,9 @@ class MockBlossomServer {
     if (event['kind'] != 24242) return false;
 
     final tags = List<List<dynamic>>.from(event['tags']);
-    final hasTypeTag =
-        tags.any((tag) => tag.length >= 2 && tag[0] == 't' && tag[1] == type);
+    final hasTypeTag = tags.any(
+      (tag) => tag.length >= 2 && tag[0] == 't' && tag[1] == type,
+    );
 
     return hasTypeTag;
   }

@@ -1,0 +1,359 @@
+import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/nips/nip01/event_eviction_planner.dart';
+import 'package:ndk/shared/nips/nip09/deletion.dart';
+import 'package:test/test.dart';
+
+void main() {
+  // NIP-09 deletions can target addressable/replaceable events by coordinate
+  // (`a` tag = `kind:pubkey:d-tag`) instead of by event id (`e` tag). These
+  // tests exercise that path, which is currently unhandled.
+  const author =
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+  const addressableKind = 30023; // long-form content, addressable
+  const dTag = 'my-article';
+  const coordinate = '$addressableKind:$author:$dTag';
+
+  Nip01Event addressableEvent({required int createdAt, String content = 'v'}) {
+    return Nip01Event(
+      pubKey: author,
+      kind: addressableKind,
+      tags: const [
+        ['d', dTag],
+      ],
+      content: content,
+      createdAt: createdAt,
+    );
+  }
+
+  Nip01Event coordinateDeletion({required int createdAt}) {
+    return Nip01Event(
+      pubKey: author,
+      kind: Deletion.kKind,
+      tags: const [
+        ['a', coordinate],
+        ['k', '$addressableKind'],
+      ],
+      content: 'delete by coordinate',
+      createdAt: createdAt,
+    );
+  }
+
+  group('EventEvictionPlanner addressable (a-tag) deletion', () {
+    test('sweeps an addressable event deleted by coordinate', () {
+      final target = addressableEvent(createdAt: 1700000000);
+      final deletion = coordinateDeletion(createdAt: 1700000001);
+
+      final plan = EventEvictionPlanner.plan(
+        rawEvents: [target, deletion],
+        lockedEventIds: const {},
+        deliveredEventIds: const {},
+        policy: const EvictionPolicy(),
+        now: 1700000100,
+      );
+
+      expect(
+        plan.eventIdsToRemove,
+        contains(target.id),
+        reason: 'addressable event deleted via `a` tag should be removed',
+      );
+      expect(plan.removedDeleted, 1);
+    });
+
+    test('keeps a newer addressable version published after the deletion', () {
+      // NIP-09: a coordinate deletion only removes matches with
+      // created_at <= the deletion. A later re-publish must survive.
+      final deletion = coordinateDeletion(createdAt: 1700000001);
+      final newerVersion = addressableEvent(
+        createdAt: 1700000002,
+        content: 'republished',
+      );
+
+      final plan = EventEvictionPlanner.plan(
+        rawEvents: [deletion, newerVersion],
+        lockedEventIds: const {},
+        deliveredEventIds: const {},
+        policy: const EvictionPolicy(),
+        now: 1700000100,
+      );
+
+      expect(
+        plan.eventIdsToRemove,
+        isNot(contains(newerVersion.id)),
+        reason: 'a version newer than the deletion must not be swept',
+      );
+    });
+
+    test(
+      'state-record path sweeps an addressable event deleted by coordinate',
+      () {
+        final target = addressableEvent(createdAt: 1700000000);
+        final deletion = coordinateDeletion(createdAt: 1700000001);
+        final stateRecords = EventCacheStateRecord.buildForEvents([
+          target,
+          deletion,
+        ], now: 1700000100);
+
+        final plan = EventEvictionPlanner.planFromStateRecords(
+          stateRecords: stateRecords,
+          lockedEventIds: const {},
+          deliveredEventIds: const {},
+          policy: const EvictionPolicy(),
+          now: 1700000100,
+        );
+
+        expect(plan.eventIdsToRemove, contains(target.id));
+        expect(plan.removedDeleted, 1);
+      },
+    );
+  });
+
+  group('addressable (a-tag) deletion is case sensitive on the d-tag', () {
+    // NIP-01 only mandates lowercase hex for the pubkey. A d-tag is an
+    // arbitrary string, so relays match the coordinate byte for byte.
+    const mixedCaseDtag = 'Article-A';
+
+    Nip01Event article() {
+      return Nip01Event(
+        pubKey: author,
+        kind: addressableKind,
+        tags: const [
+          ['d', mixedCaseDtag],
+        ],
+        content: 'v1',
+        createdAt: 1700000000,
+      );
+    }
+
+    Nip01Event deletionOf(String dTag) {
+      return Nip01Event(
+        pubKey: author,
+        kind: Deletion.kKind,
+        tags: [
+          ['a', '$addressableKind:$author:$dTag'],
+        ],
+        content: 'delete by coordinate',
+        createdAt: 1700000001,
+      );
+    }
+
+    test('a mixed case coordinate deletes its own event', () {
+      final target = article();
+      final records = EventCacheStateRecord.buildForEvents([
+        target,
+        deletionOf(mixedCaseDtag),
+      ], now: 1700000100);
+
+      expect(
+        records.firstWhere((record) => record.eventId == target.id).isDeleted,
+        isTrue,
+      );
+    });
+
+    test('a lowercased coordinate deletes nothing', () {
+      final target = article();
+      final records = EventCacheStateRecord.buildForEvents([
+        target,
+        deletionOf(mixedCaseDtag.toLowerCase()),
+      ], now: 1700000100);
+
+      expect(
+        records.firstWhere((record) => record.eventId == target.id).isDeleted,
+        isFalse,
+      );
+    });
+
+    test('eviction sweeps a mixed case coordinate deletion', () {
+      final target = article();
+
+      final plan = EventEvictionPlanner.plan(
+        rawEvents: [target, deletionOf(mixedCaseDtag)],
+        lockedEventIds: const {},
+        deliveredEventIds: const {},
+        policy: const EvictionPolicy(),
+        now: 1700000100,
+      );
+
+      expect(plan.eventIdsToRemove, contains(target.id));
+      expect(plan.removedDeleted, 1);
+    });
+
+    test('cache reads hide a mixed case coordinate deletion', () async {
+      final cache = MemCacheManager();
+      final target = article();
+
+      await cache.saveEvents([target, deletionOf(mixedCaseDtag)]);
+
+      expect(await cache.loadEvents(ids: [target.id]), isEmpty);
+    });
+  });
+
+  group('addressable (a-tag) deletion keeps d-tag whitespace', () {
+    // NIP-01 replaces on an exact kind/pubkey/d-tag combination, so `article `
+    // and `article` are two different addressable events.
+    Nip01Event article(String dTag) {
+      return Nip01Event(
+        pubKey: author,
+        kind: addressableKind,
+        tags: [
+          ['d', dTag],
+        ],
+        content: 'v1',
+        createdAt: 1700000000,
+      );
+    }
+
+    Nip01Event deletionOf(String dTag) {
+      return Nip01Event(
+        pubKey: author,
+        kind: Deletion.kKind,
+        tags: [
+          ['a', '$addressableKind:$author:$dTag'],
+        ],
+        content: 'delete by coordinate',
+        createdAt: 1700000001,
+      );
+    }
+
+    bool isDeleted(Nip01Event target, Nip01Event deletion) {
+      final records = EventCacheStateRecord.buildForEvents([
+        target,
+        deletion,
+      ], now: 1700000100);
+      return records
+          .firstWhere((record) => record.eventId == target.id)
+          .isDeleted;
+    }
+
+    test('a padded coordinate deletes its own event', () {
+      expect(isDeleted(article('article '), deletionOf('article ')), isTrue);
+    });
+
+    test('a trimmed coordinate deletes nothing', () {
+      expect(isDeleted(article('article '), deletionOf('article')), isFalse);
+    });
+
+    test('a padded coordinate spares the unpadded event', () {
+      expect(isDeleted(article('article'), deletionOf('article ')), isFalse);
+    });
+
+    test('cache reads hide a padded coordinate deletion', () async {
+      final cache = MemCacheManager();
+      final target = article('article ');
+
+      await cache.saveEvents([target, deletionOf('article ')]);
+
+      expect(await cache.loadEvents(ids: [target.id]), isEmpty);
+    });
+  });
+
+  group('addressable (a-tag) deletion is byte exact on the pubkey', () {
+    test('an uppercased pubkey coordinate deletes nothing', () {
+      // NIP-01 mandates lowercase hex, so a relay never matches this either.
+      final target = addressableEvent(createdAt: 1700000000);
+      final deletion = Nip01Event(
+        pubKey: author,
+        kind: Deletion.kKind,
+        tags: [
+          ['a', '$addressableKind:${author.toUpperCase()}:$dTag'],
+        ],
+        content: 'delete by coordinate',
+        createdAt: 1700000001,
+      );
+
+      final records = EventCacheStateRecord.buildForEvents([
+        target,
+        deletion,
+      ], now: 1700000100);
+
+      expect(
+        records.firstWhere((record) => record.eventId == target.id).isDeleted,
+        isFalse,
+      );
+    });
+  });
+
+  group('MemCacheManager addressable (a-tag) deletion visibility', () {
+    test('hides an addressable event deleted by coordinate', () async {
+      final cache = MemCacheManager();
+      final target = addressableEvent(createdAt: 1700000000);
+      final deletion = coordinateDeletion(createdAt: 1700000001);
+
+      await cache.saveEvent(target);
+      await cache.saveEvent(deletion);
+
+      final visible = await cache.loadEvents(ids: [target.id]);
+
+      expect(
+        visible.map((e) => e.id),
+        isNot(contains(target.id)),
+        reason:
+            'addressable event tombstoned via `a` tag should not be visible',
+      );
+    });
+
+    test(
+      'hides a replaceable event deleted by either a tag spelling',
+      () async {
+        for (final coordinate in ['0:$author', '0:$author:']) {
+          final cache = MemCacheManager();
+          final metadata = Nip01Event(
+            pubKey: author,
+            kind: Metadata.kKind,
+            tags: const [],
+            content: '{"name":"gone"}',
+            createdAt: 1700000000,
+          );
+          final deletion = Nip01Event(
+            pubKey: author,
+            kind: Deletion.kKind,
+            tags: [
+              ['a', coordinate],
+            ],
+            content: 'delete metadata',
+            createdAt: 1700000001,
+          );
+
+          await cache.saveEvents([metadata, deletion]);
+
+          expect(
+            await cache.loadEvents(ids: [metadata.id]),
+            isEmpty,
+            reason: 'deletion written as `$coordinate` should tombstone kind 0',
+          );
+        }
+      },
+    );
+
+    test(
+      'eviction uses derived state to sweep obsolete replaceable versions',
+      () async {
+        final cache = MemCacheManager();
+        final oldVersion = addressableEvent(
+          createdAt: 1700000000,
+          content: 'old version',
+        );
+        final newVersion = addressableEvent(
+          createdAt: 1700000001,
+          content: 'new version',
+        );
+
+        await cache.saveEvents([oldVersion, newVersion]);
+
+        final result = await cache.evict(
+          const EvictionPolicy(sweepSuperseded: true),
+        );
+
+        expect(result.removedSuperseded, 1);
+        final remaining = await cache.loadEvents(
+          pubKeys: [author],
+          kinds: [addressableKind],
+        );
+        expect(remaining.map((event) => event.id), contains(newVersion.id));
+        expect(
+          remaining.map((event) => event.id),
+          isNot(contains(oldVersion.id)),
+        );
+      },
+    );
+  });
+}

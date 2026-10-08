@@ -20,9 +20,7 @@ final headers = {'Content-Type': 'application/json'};
 class CashuRepoImpl implements CashuRepo {
   final HttpRequestDS client;
 
-  CashuRepoImpl({
-    required this.client,
-  });
+  CashuRepoImpl({required this.client});
   @override
   Future<List<CashuBlindedSignature>> swap({
     required String mintUrl,
@@ -39,11 +37,7 @@ class CashuRepoImpl implements CashuRepo {
     };
 
     final response = await client
-        .post(
-          url: Uri.parse(url),
-          body: jsonEncode(body),
-          headers: headers,
-        )
+        .post(url: Uri.parse(url), body: jsonEncode(body), headers: headers)
         .timeout(
           CashuConfig.NETWORK_TIMEOUT,
           onTimeout: () => throw Exception(
@@ -80,10 +74,7 @@ class CashuRepoImpl implements CashuRepo {
     final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'keysets');
 
     final response = await client
-        .get(
-          url: Uri.parse(url),
-          headers: headers,
-        )
+        .get(url: Uri.parse(url), headers: headers)
         .timeout(
           CashuConfig.NETWORK_TIMEOUT,
           onTimeout: () => throw Exception(
@@ -103,10 +94,12 @@ class CashuRepoImpl implements CashuRepo {
     }
     final List<dynamic> keysetsUnparsed = responseBody['keysets'];
     return keysetsUnparsed
-        .map((e) => CahsuKeysetResponse.fromServerMap(
-              map: e as Map<String, dynamic>,
-              mintUrl: mintUrl,
-            ))
+        .map(
+          (e) => CahsuKeysetResponse.fromServerMap(
+            map: e as Map<String, dynamic>,
+            mintUrl: mintUrl,
+          ),
+        )
         .toList();
   }
 
@@ -125,10 +118,7 @@ class CashuRepoImpl implements CashuRepo {
     }
 
     final response = await client
-        .get(
-          url: Uri.parse(url),
-          headers: headers,
-        )
+        .get(url: Uri.parse(url), headers: headers)
         .timeout(
           CashuConfig.NETWORK_TIMEOUT,
           onTimeout: () => throw Exception(
@@ -146,10 +136,12 @@ class CashuRepoImpl implements CashuRepo {
     }
     final List<dynamic> keysUnparsed = responseBody['keysets'];
     return keysUnparsed
-        .map((e) => CahsuKeysResponse.fromServerMap(
-              map: e as Map<String, dynamic>,
-              mintUrl: mintUrl,
-            ))
+        .map(
+          (e) => CahsuKeysResponse.fromServerMap(
+            map: e as Map<String, dynamic>,
+            mintUrl: mintUrl,
+          ),
+        )
         .toList();
   }
 
@@ -160,11 +152,13 @@ class CashuRepoImpl implements CashuRepo {
     required String unit,
     required String method,
     String description = '',
+    required CashuKeypair quoteKey,
+    required int quoteKeyCounter,
   }) async {
-    CashuKeypair quoteKey = CashuKeypair.generateCashuKeyPair();
-
-    final url =
-        CashuTools.composeUrl(mintUrl: mintUrl, path: 'mint/quote/$method');
+    final url = CashuTools.composeUrl(
+      mintUrl: mintUrl,
+      path: 'mint/quote/$method',
+    );
 
     final body = {
       'amount': amount,
@@ -194,6 +188,7 @@ class CashuRepoImpl implements CashuRepo {
       map: responseBody,
       mintUrl: mintUrl,
       quoteKey: quoteKey,
+      quoteKeyCounter: quoteKeyCounter,
     );
   }
 
@@ -204,12 +199,11 @@ class CashuRepoImpl implements CashuRepo {
     required String method,
   }) async {
     final url = CashuTools.composeUrl(
-        mintUrl: mintUrl, path: 'mint/quote/$method/$quoteID');
-
-    final response = await client.get(
-      url: Uri.parse(url),
-      headers: headers,
+      mintUrl: mintUrl,
+      path: 'mint/quote/$method/$quoteID',
     );
+
+    final response = await client.get(url: Uri.parse(url), headers: headers);
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -222,8 +216,41 @@ class CashuRepoImpl implements CashuRepo {
       throw Exception('Invalid response format: $responseBody');
     }
 
-    return CashuQuoteState.fromValue(
-      responseBody['state'] as String,
+    return CashuQuoteState.fromValue(responseBody['state'] as String);
+  }
+
+  @override
+  Future<CashuQuote> getMintQuoteByQuoteId({
+    required String mintUrl,
+    required String quoteID,
+    required String method,
+  }) async {
+    final url = CashuTools.composeUrl(
+      mintUrl: mintUrl,
+      path: 'mint/quote/$method/$quoteID',
+    );
+
+    final response = await client.get(url: Uri.parse(url), headers: headers);
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error getting mint quote: ${response.statusCode}, ${response.body}',
+      );
+    }
+
+    final responseBody = jsonDecode(response.body);
+    if (responseBody is! Map<String, dynamic>) {
+      throw Exception('Invalid response format: $responseBody');
+    }
+
+    return CashuQuote.fromServerMap(
+      map: responseBody,
+      mintUrl: mintUrl,
+      quoteKey: CashuKeypair(
+        privateKey: '',
+        publicKey: (responseBody['pubkey'] as String?) ?? '',
+      ),
+      quoteKeyCounter: -1,
     );
   }
 
@@ -250,11 +277,7 @@ class CashuRepoImpl implements CashuRepo {
     final body = {
       'quote': quote,
       'outputs': blindedMessagesOutputs.map((e) {
-        return {
-          'id': e.id,
-          'amount': e.amount,
-          'B_': e.blindedMessage,
-        };
+        return {'id': e.id, 'amount': e.amount, 'B_': e.blindedMessage};
       }).toList(),
       "signature": quoteSignature,
     };
@@ -294,20 +317,15 @@ class CashuRepoImpl implements CashuRepo {
     required String unit,
     required String method,
   }) async {
-    final url =
-        CashuTools.composeUrl(mintUrl: mintUrl, path: 'melt/quote/$method');
+    final url = CashuTools.composeUrl(
+      mintUrl: mintUrl,
+      path: 'melt/quote/$method',
+    );
 
-    final body = {
-      'request': request,
-      'unit': unit,
-    };
+    final body = {'request': request, 'unit': unit};
 
     final response = await client
-        .post(
-          url: Uri.parse(url),
-          body: jsonEncode(body),
-          headers: headers,
-        )
+        .post(url: Uri.parse(url), body: jsonEncode(body), headers: headers)
         .timeout(
           CashuConfig.NETWORK_TIMEOUT,
           onTimeout: () => throw Exception(
@@ -335,12 +353,11 @@ class CashuRepoImpl implements CashuRepo {
     required String method,
   }) async {
     final url = CashuTools.composeUrl(
-        mintUrl: mintUrl, path: 'melt/quote/$method/$quoteID');
-
-    final response = await client.get(
-      url: Uri.parse(url),
-      headers: headers,
+      mintUrl: mintUrl,
+      path: 'melt/quote/$method/$quoteID',
     );
+
+    final response = await client.get(url: Uri.parse(url), headers: headers);
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -353,10 +370,7 @@ class CashuRepoImpl implements CashuRepo {
       throw Exception('Invalid response format: $responseBody');
     }
 
-    return CashuQuoteMelt.fromServerMap(
-      json: responseBody,
-      mintUrl: mintUrl,
-    );
+    return CashuQuoteMelt.fromServerMap(json: responseBody, mintUrl: mintUrl);
   }
 
   @override
@@ -370,16 +384,12 @@ class CashuRepoImpl implements CashuRepo {
     final body = {
       'quote': quoteId,
       'inputs': proofs.map((e) => e.toJson()).toList(),
-      'outputs': outputs.map((e) => e.toJson()).toList()
+      'outputs': outputs.map((e) => e.toJson()).toList(),
     };
     final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'melt/$method');
 
     final response = await client
-        .post(
-          url: Uri.parse(url),
-          body: jsonEncode(body),
-          headers: headers,
-        )
+        .post(url: Uri.parse(url), body: jsonEncode(body), headers: headers)
         .timeout(
           CashuConfig.NETWORK_TIMEOUT,
           onTimeout: () => throw Exception(
@@ -407,12 +417,7 @@ class CashuRepoImpl implements CashuRepo {
   Future<CashuMintInfo> getMintInfo({required String mintUrl}) {
     final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'info');
 
-    return client
-        .get(
-      url: Uri.parse(url),
-      headers: headers,
-    )
-        .then((response) {
+    return client.get(url: Uri.parse(url), headers: headers).then((response) {
       if (response.statusCode != 200) {
         throw Exception(
           'Error fetching mint info: ${response.statusCode}, ${response.body}',
@@ -433,15 +438,9 @@ class CashuRepoImpl implements CashuRepo {
   }) async {
     final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'checkstate');
 
-    final body = {
-      'Ys': proofPubkeys,
-    };
+    final body = {'Ys': proofPubkeys};
     final response = await client
-        .post(
-          url: Uri.parse(url),
-          body: jsonEncode(body),
-          headers: headers,
-        )
+        .post(url: Uri.parse(url), body: jsonEncode(body), headers: headers)
         .timeout(
           CashuConfig.NETWORK_TIMEOUT,
           onTimeout: () => throw Exception(
@@ -463,9 +462,10 @@ class CashuRepoImpl implements CashuRepo {
     }
 
     return statesUnparsed
-        .map((e) => CashuTokenStateResponse.fromServerMap(
-              e as Map<String, dynamic>,
-            ))
+        .map(
+          (e) =>
+              CashuTokenStateResponse.fromServerMap(e as Map<String, dynamic>),
+        )
         .toList();
   }
 
@@ -476,9 +476,7 @@ class CashuRepoImpl implements CashuRepo {
   }) async {
     final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'restore');
 
-    final body = {
-      'outputs': outputs.map((e) => e.toJson()).toList(),
-    };
+    final body = {'outputs': outputs.map((e) => e.toJson()).toList()};
 
     final response = await client.post(
       url: Uri.parse(url),

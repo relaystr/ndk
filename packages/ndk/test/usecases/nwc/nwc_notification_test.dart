@@ -19,8 +19,10 @@ void main() {
         'metadata': {'key': 'value'},
       };
 
-      final notification =
-          NwcNotification.fromMap(NwcNotification.kPaymentReceived, map);
+      final notification = NwcNotification.fromMap(
+        NwcNotification.kPaymentReceived,
+        map,
+      );
 
       expect(notification.notificationType, equals('payment_received'));
       expect(notification.type, equals('incoming'));
@@ -66,8 +68,10 @@ void main() {
         'settled_at': 1633040400,
       };
 
-      final notification =
-          NwcNotification.fromMap(NwcNotification.kPaymentSent, map);
+      final notification = NwcNotification.fromMap(
+        NwcNotification.kPaymentSent,
+        map,
+      );
 
       expect(notification.metadata, isNull);
     });

@@ -52,4 +52,5 @@ class LogLevels {
   /// [LogLevel] off - log nothing
   LogLevel get off => LogLevel.off;
 }
+
 // coverage:ignore-end

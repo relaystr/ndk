@@ -53,10 +53,7 @@ class CashuMintInfo {
   }
 
   /// [mintUrl] is used when json['urls'] is not present \
-  factory CashuMintInfo.fromJson(
-    Map<String, dynamic> json, {
-    String? mintUrl,
-  }) {
+  factory CashuMintInfo.fromJson(Map<String, dynamic> json, {String? mintUrl}) {
     final nutsJson = (json['nuts'] as Map?) ?? {};
     final parsedNuts = <int, CashuMintNut>{};
     nutsJson.forEach((k, v) {
@@ -65,16 +62,20 @@ class CashuMintInfo {
         try {
           if (v is List) {
             // skip  (non-spec compliant)
-            Logger.log.w(() =>
-                'Warning: Skipping nut $key - received List instead of Map (non-spec compliant)');
+            Logger.log.w(
+              () =>
+                  'Warning: Skipping nut $key - received List instead of Map (non-spec compliant)',
+            );
             return;
           }
 
-          parsedNuts[key] =
-              CashuMintNut.fromJson((v ?? {}) as Map<String, dynamic>);
+          parsedNuts[key] = CashuMintNut.fromJson(
+            (v ?? {}) as Map<String, dynamic>,
+          );
         } catch (e) {
-          Logger.log
-              .w(() => 'Warning: Skipping nut $key due to parsing error: $e');
+          Logger.log.w(
+            () => 'Warning: Skipping nut $key due to parsing error: $e',
+          );
         }
       }
     });
@@ -122,10 +123,7 @@ class CashuMintContact {
   final String method;
   final String info;
 
-  CashuMintContact({
-    required this.method,
-    required this.info,
-  });
+  CashuMintContact({required this.method, required this.info});
 
   factory CashuMintContact.fromJson(Map<String, dynamic> json) {
     return CashuMintContact(
@@ -134,10 +132,7 @@ class CashuMintContact {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'method': method,
-        'info': info,
-      };
+  Map<String, dynamic> toJson() => {'method': method, 'info': info};
 }
 
 class CashuMintNut {
@@ -167,7 +162,8 @@ class CashuMintNut {
     if (methodsJson is List) {
       parsedMethods = methodsJson
           .map(
-              (e) => CashuMintPaymentMethod.fromJson(e as Map<String, dynamic>))
+            (e) => CashuMintPaymentMethod.fromJson(e as Map<String, dynamic>),
+          )
           .toList();
     }
 
@@ -179,7 +175,8 @@ class CashuMintNut {
     } else if (supportedJson is List) {
       supportedList = supportedJson
           .map(
-              (e) => CashuMintPaymentMethod.fromJson(e as Map<String, dynamic>))
+            (e) => CashuMintPaymentMethod.fromJson(e as Map<String, dynamic>),
+          )
           .toList();
     }
 
@@ -187,8 +184,9 @@ class CashuMintNut {
     final ce = json['cached_endpoints'];
     if (ce is List) {
       endpoints = ce
-          .map((e) =>
-              CashuMintCachedEndpoint.fromJson(e as Map<String, dynamic>))
+          .map(
+            (e) => CashuMintCachedEndpoint.fromJson(e as Map<String, dynamic>),
+          )
           .toList();
     }
 
@@ -248,8 +246,9 @@ class CashuMintPaymentMethod {
       maxAmount: (json['max_amount'] is num)
           ? (json['max_amount'] as num).toInt()
           : null,
-      description:
-          json['description'] is bool ? json['description'] as bool : null,
+      description: json['description'] is bool
+          ? json['description'] as bool
+          : null,
       commands: (json['commands'] is List)
           ? (json['commands'] as List).map((e) => e.toString()).toList()
           : null,
@@ -284,8 +283,5 @@ class CashuMintCachedEndpoint {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'method': method,
-        'path': path,
-      };
+  Map<String, dynamic> toJson() => {'method': method, 'path': path};
 }

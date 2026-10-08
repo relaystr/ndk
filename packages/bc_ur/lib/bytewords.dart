@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+
 import 'package:ur/utils.dart';
 import 'package:collection/collection.dart';
 
@@ -7,11 +8,7 @@ const String BYTEWORDS =
 
 List<int>? _wordArray;
 
-enum Style {
-  standard,
-  uri,
-  minimal,
-}
+enum Style { standard, uri, minimal }
 
 int decodeWord(String word, int wordLen) {
   if (word.length != wordLen) {
@@ -130,8 +127,6 @@ String encodeStyle(Style style, Uint8List bytes) {
       return encodeWithSeparator(bytes, '-');
     case Style.minimal:
       return encodeMinimal(bytes);
-    default:
-      throw ArgumentError('Invalid Bytewords style.');
   }
 }
 
@@ -143,7 +138,5 @@ Uint8List decodeStyle(Style style, String str) {
       return decode(str, '-', 4);
     case Style.minimal:
       return decode(str, '', 2);
-    default:
-      throw ArgumentError('Invalid Bytewords style.');
   }
 }

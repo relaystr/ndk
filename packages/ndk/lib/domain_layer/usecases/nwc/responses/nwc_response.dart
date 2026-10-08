@@ -11,9 +11,7 @@ class NwcResponse {
   /// The type of the result.
   final String resultType;
 
-  NwcResponse({
-    required this.resultType,
-  });
+  NwcResponse({required this.resultType});
 
   void deserializeError(Map<String, dynamic> input) {
     if (input.containsKey('error') && input['error'] != null) {

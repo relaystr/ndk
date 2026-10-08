@@ -1,22 +1,32 @@
 import 'dart:convert';
+import 'dart:math';
 
 import '../../../data_layer/models/nip_01_event_model.dart';
-import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
+import '../../entities/event_cache_records.dart';
 import '../../entities/gift_wrap_unwrap_result.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
 import '../../repositories/event_verifier.dart';
 import '../accounts/accounts.dart';
-import '../../../shared/nips/nip01/bip340.dart';
+import '../decrypted_event_payloads/decrypted_event_payloads.dart';
 
 class GiftWrap {
   static const int kSealEventKind = 13;
   static const int kGiftWrapEventkind = 1059;
+  static const int _createdAtRandomizationWindowSeconds = 172800;
+  static final Random _random = Random.secure();
 
   final Accounts accounts;
   final EventVerifier eventVerifier;
+  final LocalEventSignerFactory eventSignerFactory;
+  final DecryptedEventPayloads decryptedEventPayloads;
 
-  GiftWrap({required this.accounts, required this.eventVerifier});
+  GiftWrap({
+    required this.accounts,
+    required this.eventVerifier,
+    required this.eventSignerFactory,
+    required this.decryptedEventPayloads,
+  });
 
   /// Returns the signer to use for signing operations.
   /// Uses [customSigner] if provided, otherwise falls back to logged-in account's signer.
@@ -41,15 +51,20 @@ class GiftWrap {
     required String recipientPubkey,
     EventSigner? customSigner,
   }) async {
+    final sealCreatedAt = _randomCreatedAtBefore(rumor.createdAt);
+
     final sealedRumor = await sealRumor(
       rumor: rumor,
       recipientPubkey: recipientPubkey,
       customSigner: customSigner,
+      createdAt: sealCreatedAt,
     );
 
     final giftWrap = await wrapEvent(
       recipientPublicKey: recipientPubkey,
       sealEvent: sealedRumor,
+      eventSignerFactory: eventSignerFactory,
+      randomizeCreatedAtBefore: rumor.createdAt,
     );
     return giftWrap;
   }
@@ -81,6 +96,52 @@ class GiftWrap {
     return rumor;
   }
 
+  /// Attempts to unwrap a gift wrap using only cached decrypted payloads.
+  ///
+  /// Returns `null` when either the wrapped seal payload or the sealed rumor
+  /// payload is not available in the decrypted payload sidecar cache.
+  Future<Nip01Event?> tryFromGiftWrapFromCache({
+    required Nip01Event giftWrap,
+    EventSigner? customSigner,
+    bool verifySignature = true,
+  }) async {
+    if (giftWrap.kind != kGiftWrapEventkind) {
+      throw Exception("Event is not a gift wrap (kind:1059)");
+    }
+
+    final signer = _getSigner(customSigner: customSigner);
+    final viewerPubKey = signer.getPublicKey();
+
+    final cachedSealJson = await decryptedEventPayloads.loadCachedPlaintext(
+      eventId: giftWrap.id,
+      viewerPubKey: viewerPubKey,
+    );
+    if (cachedSealJson == null) {
+      return null;
+    }
+
+    final Map<String, dynamic> sealJson = jsonDecode(cachedSealJson);
+    final sealEvent = Nip01EventModel.fromJson(sealJson);
+
+    if (verifySignature) {
+      final isValid = await eventVerifier.verify(sealEvent);
+      if (!isValid) {
+        throw Exception("Seal event signature is invalid");
+      }
+    }
+
+    final cachedRumorJson = await decryptedEventPayloads.loadCachedPlaintext(
+      eventId: sealEvent.id,
+      viewerPubKey: viewerPubKey,
+    );
+    if (cachedRumorJson == null) {
+      return null;
+    }
+
+    final Map<String, dynamic> rumorJson = jsonDecode(cachedRumorJson);
+    return Nip01EventModel.fromJson(rumorJson);
+  }
+
   /// Unwraps a gift-wrapped event with signature verification information
   ///
   /// This method returns a [GiftWrapUnwrapResult] containing the seal, rumor,
@@ -99,6 +160,8 @@ class GiftWrap {
       throw Exception("Event is not a gift wrap (kind:1059)");
     }
 
+    final isGiftWrapSignatureValid = await eventVerifier.verify(giftWrap);
+
     final sealEvent = await unwrapEvent(
       wrappedEvent: giftWrap,
       customSigner: customSigner,
@@ -115,7 +178,9 @@ class GiftWrap {
     );
 
     return GiftWrapUnwrapResult(
+      isGiftWrapSignatureValid: isGiftWrapSignatureValid,
       isSealSignatureValid: isSealSignatureValid,
+      giftWrap: giftWrap,
       seal: sealEvent,
       rumor: rumor,
     );
@@ -153,6 +218,7 @@ class GiftWrap {
     required Nip01Event rumor,
     required String recipientPubkey,
     EventSigner? customSigner,
+    int? createdAt,
   }) async {
     final signer = _getSigner(customSigner: customSigner);
 
@@ -170,6 +236,7 @@ class GiftWrap {
       kind: kSealEventKind,
       tags: [],
       content: encryptedContent,
+      createdAt: createdAt ?? _randomCreatedAtBefore(rumor.createdAt),
     );
 
     // Sign the seal event (required by NIP-59)
@@ -201,10 +268,14 @@ class GiftWrap {
 
     final signer = _getSigner(customSigner: customSigner);
 
-    // Now decrypt the seal to get the rumor
-    final decryptedRumorJson = await signer.decryptNip44(
-      ciphertext: sealedEvent.content,
-      senderPubKey: sealedEvent.pubKey,
+    final decryptedRumorJson = await decryptedEventPayloads.loadOrDecrypt(
+      event: sealedEvent,
+      viewerPubKey: signer.getPublicKey(),
+      scheme: DecryptedPayloadScheme.nip44,
+      decrypt: () => signer.decryptNip44(
+        ciphertext: sealedEvent.content,
+        senderPubKey: sealedEvent.pubKey,
+      ),
     );
 
     if (decryptedRumorJson == null) {
@@ -221,18 +292,20 @@ class GiftWrap {
   /// wraps a sealed msg \
   /// [recipientPublicKey] the reciever of the rumor \
   /// [sealEvent] not wrapped event \
+  /// [eventSignerFactory] factory to create event signers \
+  /// [createdAt] exact created_at timestamp to use for the gift wrap \
+  /// [randomizeCreatedAtBefore] randomizes created_at in the 2 days before this timestamp \
   /// [returns] giftWrapEvent
   static Future<Nip01Event> wrapEvent({
     required String recipientPublicKey,
     required Nip01Event sealEvent,
     List<List<String>>? additionalTags,
+    required LocalEventSignerFactory eventSignerFactory,
+    int? createdAt,
+    int? randomizeCreatedAtBefore,
   }) async {
     // Generate a random one-time-use keypair
-    final ephemeralKeys = Bip340.generatePrivateKey();
-    final ephemeralSigner = Bip340EventSigner(
-      privateKey: ephemeralKeys.privateKey,
-      publicKey: ephemeralKeys.publicKey,
-    );
+    final ephemeralSigner = eventSignerFactory.createWithNewKeyPair();
 
     final encryptedSeal = await ephemeralSigner.encryptNip44(
       plaintext: Nip01EventModel.fromEntity(sealEvent).toJsonString(),
@@ -244,7 +317,7 @@ class GiftWrap {
     }
 
     final tags = <List<String>>[
-      ['p', recipientPublicKey]
+      ['p', recipientPublicKey],
     ];
 
     // Add any additional tags if provided
@@ -252,21 +325,22 @@ class GiftWrap {
       tags.addAll(additionalTags);
     }
 
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final giftWrapCreatedAt =
+        createdAt ??
+        (randomizeCreatedAtBefore != null
+            ? _randomCreatedAtBefore(randomizeCreatedAtBefore)
+            : sealEvent.createdAt);
 
     // Create the gift wrap event with ephemeral keys
     final giftWrapEvent = Nip01Event(
       kind: kGiftWrapEventkind,
       content: encryptedSeal,
       tags: tags,
-      createdAt: now,
-      pubKey: ephemeralKeys.publicKey,
+      createdAt: giftWrapCreatedAt,
+      pubKey: ephemeralSigner.getPublicKey(),
     );
 
-    // Sign with ephemeral key
-    final signature = Bip340.sign(giftWrapEvent.id, ephemeralKeys.privateKey!);
-
-    final gWEventSigned = giftWrapEvent.copyWith(sig: signature);
+    final gWEventSigned = await ephemeralSigner.sign(giftWrapEvent);
 
     return gWEventSigned;
   }
@@ -280,9 +354,14 @@ class GiftWrap {
   }) async {
     final signer = _getSigner(customSigner: customSigner);
 
-    final decryptedEventJson = await signer.decryptNip44(
-      ciphertext: wrappedEvent.content,
-      senderPubKey: wrappedEvent.pubKey,
+    final decryptedEventJson = await decryptedEventPayloads.loadOrDecrypt(
+      event: wrappedEvent,
+      viewerPubKey: signer.getPublicKey(),
+      scheme: DecryptedPayloadScheme.giftWrap,
+      decrypt: () => signer.decryptNip44(
+        ciphertext: wrappedEvent.content,
+        senderPubKey: wrappedEvent.pubKey,
+      ),
     );
 
     if (decryptedEventJson == null) {
@@ -293,5 +372,11 @@ class GiftWrap {
     final Map<String, dynamic> sealJson = jsonDecode(decryptedEventJson);
     final event = Nip01EventModel.fromJson(sealJson);
     return event;
+  }
+
+  static int _randomCreatedAtBefore(int referenceCreatedAt) {
+    return referenceCreatedAt -
+        _random.nextInt(_createdAtRandomizationWindowSeconds) -
+        1;
   }
 }

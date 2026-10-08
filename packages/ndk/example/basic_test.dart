@@ -26,7 +26,7 @@ void main() async {
         Filter(
           // Query for fiatjaf npub180cvv07tjdrrgpa0j7j7tmnyl2yr6yr7l8j4s3evf6u64th6gkwsyjh6w6
           authors: [
-            '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d'
+            '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d',
           ],
           // Query for text note events (kind 1)
           kinds: [Nip01Event.kTextNodeKind],
@@ -45,7 +45,10 @@ void main() async {
       eventCount++;
     }
 
-    expect(eventCount, greaterThan(0),
-        reason: 'No events were emitted from the stream');
+    expect(
+      eventCount,
+      greaterThan(0),
+      reason: 'No events were emitted from the stream',
+    );
   });
 }

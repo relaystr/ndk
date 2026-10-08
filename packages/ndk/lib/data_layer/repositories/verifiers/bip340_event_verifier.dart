@@ -19,8 +19,9 @@ class Bip340EventVerifier implements EventVerifier {
     }
     if (!Nip01Utils.isIdValid(event)) return false;
     return useIsolate
-        ? await IsolateManager.instance.runInComputeIsolate<Nip01Event, bool>(
-            (event) {
+        ? await IsolateManager.instance.runInComputeIsolate<Nip01Event, bool>((
+            event,
+          ) {
             return bip340.verify(event.pubKey, event.id, event.sig!);
           }, event)
         : bip340.verify(event.pubKey, event.id, event.sig!);

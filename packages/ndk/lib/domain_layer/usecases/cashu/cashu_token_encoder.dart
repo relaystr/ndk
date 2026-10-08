@@ -8,9 +8,7 @@ import '../../entities/cashu/cashu_token.dart';
 class CashuTokenEncoder {
   static final v4Prefix = 'cashuB';
 
-  static String encodeTokenV4({
-    required CashuToken token,
-  }) {
+  static String encodeTokenV4({required CashuToken token}) {
     final json = token.toV4Json();
     final myCbor = CborValue(json);
     final base64String = base64.encode(cbor.encode(myCbor));

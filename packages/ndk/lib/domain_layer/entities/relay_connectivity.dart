@@ -3,11 +3,15 @@ import 'dart:async';
 import '../../shared/logger/logger.dart';
 import '../repositories/nostr_transport.dart';
 import 'relay.dart';
+import 'relay_connection_key.dart';
 import 'relay_info.dart';
 import 'relay_stats.dart';
 
 /// Represents the connectivity of a relay.
 class RelayConnectivity<T> {
+  /// identifies this connection: the relay and the identity bound to it
+  final RelayConnectionKey key;
+
   /// relay data including connection state
   final Relay relay;
 
@@ -29,20 +33,33 @@ class RelayConnectivity<T> {
     Function? onError,
     void Function()? onDone,
   }) {
-    _streamSubscription =
-        relayTransport!.listen(onData, onDone: onDone, onError: onError);
+    _streamSubscription = relayTransport!.listen(
+      onData,
+      onDone: onDone,
+      onError: onError,
+    );
   }
 
   /// cancels stream subscription and closes relay transport
   Future<void> close() async {
-    if (_streamSubscription != null) {
-      await _streamSubscription!.cancel();
+    final streamSubscription = _streamSubscription;
+    final transport = relayTransport;
+
+    _streamSubscription = null;
+    relayTransport = null;
+    // the socket carried them, they die with it
+    stats.openRequestIds.clear();
+
+    if (streamSubscription != null) {
+      await streamSubscription.cancel();
     }
-    if (relayTransport != null) {
-      await relayTransport!.close().timeout(const Duration(seconds: 3),
-          onTimeout: () {
-        Logger.log.w(() => "timeout while trying to close socket $url");
-      });
+    if (transport != null) {
+      await transport.close().timeout(
+        const Duration(seconds: 3),
+        onTimeout: () {
+          Logger.log.w(() => "timeout while trying to close socket $url");
+        },
+      );
     }
   }
 
@@ -50,7 +67,7 @@ class RelayConnectivity<T> {
   final T? specificEngineData;
 
   /// relay url/identifier
-  String get url => relay.url;
+  String get url => key.url;
 
   /// current connection state if connection is open
   bool get isConnected => relayTransport != null && relayTransport!.isOpen();
@@ -58,6 +75,7 @@ class RelayConnectivity<T> {
   /// Creates a new relay connectivity.
   /// relayTransport == null => relay is not connected and is not in connecting state
   RelayConnectivity({
+    required this.key,
     required this.relay,
     this.relayInfo,
     this.relayTransport,

@@ -23,11 +23,12 @@ void main() async {
 
     Nip01Event textNote(KeyPair key2) {
       return Nip01Event(
-          kind: Nip01Event.kTextNodeKind,
-          pubKey: key2.publicKey,
-          content: "some note from key ${keyNames[key2]}",
-          tags: [],
-          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
+        kind: Nip01Event.kTextNodeKind,
+        pubKey: key2.publicKey,
+        content: "some note from key ${keyNames[key2]}",
+        tags: [],
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
     }
 
     Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
@@ -43,30 +44,32 @@ void main() async {
     final myRelayUrls = [relay1.url, relay2.url, relay3.url, relay4.url];
 
     final myFilters = [
+      Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]),
       Filter(
         kinds: [Nip01Event.kTextNodeKind],
-        authors: [key1.publicKey],
+        authors: [key1.publicKey, key2.publicKey],
       ),
       Filter(
-          kinds: [Nip01Event.kTextNodeKind],
-          authors: [key1.publicKey, key2.publicKey]),
+        kinds: [Nip01Event.kTextNodeKind],
+        authors: [key4.publicKey, key3.publicKey],
+      ),
       Filter(
-          kinds: [Nip01Event.kTextNodeKind],
-          authors: [key4.publicKey, key3.publicKey]),
+        kinds: [Nip01Event.kTextNodeKind],
+        authors: [key4.publicKey, key2.publicKey],
+      ),
       Filter(
-          kinds: [Nip01Event.kTextNodeKind],
-          authors: [key4.publicKey, key2.publicKey]),
+        kinds: [Nip01Event.kTextNodeKind],
+        authors: [key1.publicKey, key2.publicKey, key3.publicKey],
+      ),
       Filter(
-          kinds: [Nip01Event.kTextNodeKind],
-          authors: [key1.publicKey, key2.publicKey, key3.publicKey]),
-      Filter(kinds: [
-        Nip01Event.kTextNodeKind
-      ], authors: [
-        key1.publicKey,
-        key2.publicKey,
-        key3.publicKey,
-        key4.publicKey
-      ]),
+        kinds: [Nip01Event.kTextNodeKind],
+        authors: [
+          key1.publicKey,
+          key2.publicKey,
+          key3.publicKey,
+          key4.publicKey,
+        ],
+      ),
     ];
 
     setUp(() async {
@@ -83,28 +86,33 @@ void main() async {
       await relay4.stopServer();
     });
 
-    test('Lists Engine', timeout: const Timeout(Duration(seconds: 3)),
-        () async {
-      final ndkLists = Ndk(
-        NdkConfig(
-          eventVerifier: MockEventVerifier(),
-          cache: MemCacheManager(),
-          engine: NdkEngine.RELAY_SETS,
-          bootstrapRelays: myRelayUrls,
-        ),
-      );
-      ndkLists.accounts
-          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+    test(
+      'Lists Engine',
+      timeout: const Timeout(Duration(seconds: 3)),
+      () async {
+        final ndkLists = Ndk(
+          NdkConfig(
+            eventVerifier: MockEventVerifier(),
+            cache: MemCacheManager(),
+            engine: NdkEngine.RELAY_SETS,
+            bootstrapRelays: myRelayUrls,
+          ),
+        );
+        ndkLists.accounts.loginPrivateKey(
+          pubkey: key1.publicKey,
+          privkey: key1.privateKey!,
+        );
 
-      await testNdk(
-        myNdk: ndkLists,
-        coverage: 1,
-        myFilters: myFilters,
-        key1TextNotes: key1TextNotes,
-        key2TextNotes: key2TextNotes,
-        key3TextNotes: key3TextNotes,
-        key4TextNotes: key4TextNotes,
-      );
-    });
+        await testNdk(
+          myNdk: ndkLists,
+          coverage: 1,
+          myFilters: myFilters,
+          key1TextNotes: key1TextNotes,
+          key2TextNotes: key2TextNotes,
+          key3TextNotes: key3TextNotes,
+          key4TextNotes: key4TextNotes,
+        );
+      },
+    );
   });
 }

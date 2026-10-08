@@ -1,55 +1,80 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:rxdart/rxdart.dart';
 
-import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../entities/account.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
 import '../bunkers/bunkers.dart';
 import '../bunkers/models/bunker_connection.dart';
+import '../../entities/nip46_client_metadata.dart';
 import '../bunkers/models/nostr_connect.dart';
 
 /// A usecase that handles accounts
 class Accounts {
-  /// pubKey -> Account
-  final Map<String, Account> accounts = {};
+  /// Factory for creating EventSigner instances
+  final LocalEventSignerFactory eventSignerFactory;
+
+  final Map<String, Account> _accounts = {};
   String? _loggedPubkey;
+
+  static const _accountsEquality = MapEquality<String, Account>();
 
   /// Stream controller for authentication state changes
   final _stateController = BehaviorSubject<Account?>();
+
+  /// Stream controller for the known accounts
+  final _accountsController = BehaviorSubject<Map<String, Account>>.seeded(
+    UnmodifiableMapView(<String, Account>{}),
+  );
+
+  /// Creates a new Accounts instance with the given event signer factory
+  Accounts(this.eventSignerFactory);
+
+  /// pubKey -> Account, read-only view, listen to [accountsStream] for changes
+  /// Same instance until the accounts actually change, so every mutation of
+  /// [_accounts] has to go through [_notifyAccountsChange]
+  Map<String, Account> get accounts => _accountsController.value;
 
   /// Stream of authentication state changes
   /// Emits the current Account when logged in, or null when logged out
   Stream<Account?> get authStateChanges => _stateController.stream;
 
+  /// Stream of the known accounts, pubKey -> Account
+  /// Emits the current accounts on subscription, then an unmodifiable snapshot
+  /// every time an account is added, replaced or removed
+  Stream<Map<String, Account>> get accountsStream => _accountsController.stream;
+
   /// adds a new Account and sets the logged pubkey
   void loginPrivateKey({required String pubkey, required String privkey}) {
-    if (accounts.containsKey(pubkey)) {
+    if (_accounts.containsKey(pubkey)) {
       throw Exception("Cannot login, pubkey already logged in");
     }
     addAccount(
-        pubkey: pubkey,
-        type: AccountType.privateKey,
-        signer: Bip340EventSigner(privateKey: privkey, publicKey: pubkey));
+      pubkey: pubkey,
+      type: AccountType.privateKey,
+      signer: eventSignerFactory.create(privateKey: privkey, publicKey: pubkey),
+    );
     _loggedPubkey = pubkey;
     _notifyAuthStateChange();
   }
 
   /// do we have the account for this pubkey?
   bool hasAccount(String pubkey) {
-    return accounts.containsKey(pubkey);
+    return _accounts.containsKey(pubkey);
   }
 
   /// adds a new read-only Account and sets the logged pubkey
   void loginPublicKey({required String pubkey}) {
-    if (accounts.containsKey(pubkey)) {
+    if (_accounts.containsKey(pubkey)) {
       throw Exception("Cannot login, pubkey already logged in");
     }
     addAccount(
-        pubkey: pubkey,
-        type: AccountType.publicKey,
-        signer: Bip340EventSigner(privateKey: null, publicKey: pubkey));
+      pubkey: pubkey,
+      type: AccountType.publicKey,
+      signer: eventSignerFactory.create(privateKey: null, publicKey: pubkey),
+    );
     _loggedPubkey = pubkey;
     _notifyAuthStateChange();
   }
@@ -57,11 +82,14 @@ class Accounts {
   /// adds a new read-only Account and sets the logged pubkey
   void loginExternalSigner({required EventSigner signer}) {
     final pubkey = signer.getPublicKey();
-    if (accounts.containsKey(pubkey)) {
+    if (_accounts.containsKey(pubkey)) {
       throw Exception("Cannot login, pubkey already logged in");
     }
     addAccount(
-        pubkey: pubkey, type: AccountType.externalSigner, signer: signer);
+      pubkey: pubkey,
+      type: AccountType.externalSigner,
+      signer: signer,
+    );
     _loggedPubkey = pubkey;
     _notifyAuthStateChange();
   }
@@ -70,10 +98,12 @@ class Accounts {
     required String bunkerUrl,
     required Bunkers bunkers,
     Function(String)? authCallback,
+    Nip46ClientMetadata? clientMetadata,
   }) async {
     BunkerConnection? connection = await bunkers.connectWithBunkerUrl(
       bunkerUrl,
       authCallback: authCallback,
+      clientMetadata: clientMetadata,
     );
     if (connection != null) {
       await loginWithBunkerConnection(
@@ -116,15 +146,16 @@ class Accounts {
 
   void logout() {
     if (_loggedPubkey != null) {
-      accounts.remove(_loggedPubkey);
+      _accounts.remove(_loggedPubkey);
       _loggedPubkey = null;
+      _notifyAccountsChange();
       _notifyAuthStateChange();
     }
   }
 
   /// set logged account
   void switchAccount({required String pubkey}) {
-    if (pubkey.isNotEmpty && accounts.containsKey(pubkey)) {
+    if (pubkey.isNotEmpty && _accounts.containsKey(pubkey)) {
       _loggedPubkey = pubkey;
       _notifyAuthStateChange();
     } else {
@@ -133,25 +164,26 @@ class Accounts {
   }
 
   /// adds an Account
-  void addAccount(
-      {required String pubkey,
-      required AccountType type,
-      required EventSigner signer}) {
-    accounts[pubkey] = Account(type: type, pubkey: pubkey, signer: signer);
-  }
-
-  // /// clears the logged pubkey
-  void _clearLoggedPubkey() {
-    _loggedPubkey = null;
-    _notifyAuthStateChange();
+  void addAccount({
+    required String pubkey,
+    required AccountType type,
+    required EventSigner signer,
+  }) {
+    _accounts[pubkey] = Account(type: type, pubkey: pubkey, signer: signer);
+    _notifyAccountsChange();
   }
 
   /// removes an Account
   void removeAccount({required String pubkey}) {
-    if (_loggedPubkey == pubkey) {
-      _clearLoggedPubkey();
+    final wasLoggedIn = _loggedPubkey == pubkey;
+    if (wasLoggedIn) {
+      _loggedPubkey = null;
     }
-    accounts.remove(pubkey);
+    _accounts.remove(pubkey);
+    _notifyAccountsChange();
+    if (wasLoggedIn) {
+      _notifyAuthStateChange();
+    }
   }
 
   /// low-level method, should not be used directly in most cases, use broadcast instead which calls signing on the signer
@@ -165,7 +197,7 @@ class Accounts {
 
   /// returns currently logged in account
   Account? getLoggedAccount() {
-    return _loggedPubkey != null ? accounts[_loggedPubkey] : null;
+    return _loggedPubkey != null ? _accounts[_loggedPubkey] : null;
   }
 
   /// is currently logged in account able to sign events
@@ -192,8 +224,17 @@ class Accounts {
     _stateController.add(getLoggedAccount());
   }
 
+  /// Notifies listeners of accounts changes, no-op if nothing actually changed
+  void _notifyAccountsChange() {
+    if (_accountsEquality.equals(_accountsController.value, _accounts)) {
+      return;
+    }
+    _accountsController.add(UnmodifiableMapView(Map.of(_accounts)));
+  }
+
   /// Dispose of resources
   Future<void> dispose() async {
     await _stateController.close();
+    await _accountsController.close();
   }
 }

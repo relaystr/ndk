@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import '../../../shared/logger/logger.dart';
 import '../../entities/event_filter.dart';
 import '../../entities/nip_01_event.dart';
@@ -24,10 +25,10 @@ class StreamResponseCleaner {
     required List<Stream<Nip01Event>> inputStreams,
     required StreamController<Nip01Event> outController,
     required List<EventFilter> eventOutFilters,
-  })  : _trackingSet = trackingSet,
-        _outController = outController,
-        _inputStreams = inputStreams,
-        _eventOutFilters = eventOutFilters;
+  }) : _trackingSet = trackingSet,
+       _outController = outController,
+       _inputStreams = inputStreams,
+       _eventOutFilters = eventOutFilters;
 
   void call() {
     for (final stream in _inputStreams) {
@@ -36,31 +37,35 @@ class StreamResponseCleaner {
   }
 
   void _addStreamListener(Stream<Nip01Event> stream) {
-    stream.listen((event) {
-      // check if event id is in the set
-      if (_trackingSet.contains(event.id)) {
-        return;
-      }
-
-      if (_outController.isClosed) {
-        return;
-      }
-
-      _trackingSet.add(event.id);
-
-      // check against filters
-      for (final filter in _eventOutFilters) {
-        if (!filter.filter(event)) {
+    stream.listen(
+      (event) {
+        // check if event id is in the set
+        if (_trackingSet.contains(event.id)) {
           return;
         }
-      }
-      _outController.add(event);
-      Logger.log.t(() => "added event ${event.content}");
-    }, onDone: () async {
-      _canClose();
-    }, onError: (error) {
-      Logger.log.e(() => "⛔ $error ");
-    });
+
+        if (_outController.isClosed) {
+          return;
+        }
+
+        _trackingSet.add(event.id);
+
+        // check against filters
+        for (final filter in _eventOutFilters) {
+          if (!filter.filter(event)) {
+            return;
+          }
+        }
+        _outController.add(event);
+        Logger.log.t(() => "added event ${event.content}");
+      },
+      onDone: () async {
+        _canClose();
+      },
+      onError: (error) {
+        Logger.log.e(() => "⛔ $error ");
+      },
+    );
   }
 
   /// used to wait on all streams

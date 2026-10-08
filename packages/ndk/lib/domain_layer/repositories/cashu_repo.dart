@@ -16,9 +16,7 @@ abstract class CashuRepo {
     required List<CashuBlindedMessage> outputs,
   });
 
-  Future<List<CahsuKeysetResponse>> getKeysets({
-    required String mintUrl,
-  });
+  Future<List<CahsuKeysetResponse>> getKeysets({required String mintUrl});
 
   Future<List<CahsuKeysResponse>> getKeys({
     required String mintUrl,
@@ -31,9 +29,22 @@ abstract class CashuRepo {
     required String unit,
     required String method,
     String description = '',
+    required CashuKeypair quoteKey,
+    required int quoteKeyCounter,
   });
 
   Future<CashuQuoteState> checkMintQuoteState({
+    required String mintUrl,
+    required String quoteID,
+    required String method,
+  });
+
+  /// Fetches a single mint quote by id (NUT-20 GET quote).
+  ///
+  /// The returned quote's `quoteKey.publicKey` is the pubkey the mint locked
+  /// the quote to (empty when the mint does not lock quotes). The private key
+  /// and counter are unknown and are left blank (`-1`).
+  Future<CashuQuote> getMintQuoteByQuoteId({
     required String mintUrl,
     required String quoteID,
     required String method,
@@ -82,9 +93,7 @@ abstract class CashuRepo {
     required String method,
   });
 
-  Future<CashuMintInfo> getMintInfo({
-    required String mintUrl,
-  });
+  Future<CashuMintInfo> getMintInfo({required String mintUrl});
 
   Future<List<CashuTokenStateResponse>> checkTokenState({
     required List<String> proofPubkeys,

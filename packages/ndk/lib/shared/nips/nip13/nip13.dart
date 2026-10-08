@@ -1,4 +1,5 @@
 import 'dart:math';
+
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../isolates/isolate_manager.dart';
 
@@ -46,13 +47,13 @@ class Nip13 {
   }) async {
     return await IsolateManager.instance
         .runInComputeIsolate<_MiningParams, Nip01Event>(
-      _mineEventInIsolate,
-      _MiningParams(
-        event: event,
-        targetDifficulty: targetDifficulty,
-        maxIterations: maxIterations ?? 1000000,
-      ),
-    );
+          _mineEventInIsolate,
+          _MiningParams(
+            event: event,
+            targetDifficulty: targetDifficulty,
+            maxIterations: maxIterations ?? 1000000,
+          ),
+        );
   }
 
   static Nip01Event _mineEventInIsolate(_MiningParams params) {
@@ -67,8 +68,11 @@ class Nip13 {
       nonce = random.nextInt(0x100000000);
 
       final updatedTags = List<List<String>>.from(tags);
-      updatedTags
-          .add(['nonce', nonce.toString(), params.targetDifficulty.toString()]);
+      updatedTags.add([
+        'nonce',
+        nonce.toString(),
+        params.targetDifficulty.toString(),
+      ]);
 
       final minedEvent = Nip01Event(
         pubKey: params.event.pubKey,
@@ -86,7 +90,8 @@ class Nip13 {
     }
 
     throw Exception(
-        'Failed to mine event with difficulty ${params.targetDifficulty} after ${params.maxIterations} iterations');
+      'Failed to mine event with difficulty ${params.targetDifficulty} after ${params.maxIterations} iterations',
+    );
   }
 
   static int? getTargetDifficultyFromEvent(Nip01Event event) {

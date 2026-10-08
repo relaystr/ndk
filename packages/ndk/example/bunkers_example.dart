@@ -7,9 +7,10 @@ Future<void> main() async {
 
   try {
     await ndk.accounts.loginWithBunkerUrl(
-        bunkerUrl:
-            "bunker://a1fe3664f7a2b24db97e5b63869e8011c947f9abd8c03f98befafd27c38467d2?relay=wss://relay.nsec.app&secret=devsecret123",
-        bunkers: ndk.bunkers);
+      bunkerUrl:
+          "bunker://a1fe3664f7a2b24db97e5b63869e8011c947f9abd8c03f98befafd27c38467d2?relay=wss://relay.nsec.app&secret=devsecret123",
+      bunkers: ndk.bunkers,
+    );
 
     log('Successfully logged in with bunker!');
     log('Logged in as: ${ndk.accounts.getPublicKey()}');

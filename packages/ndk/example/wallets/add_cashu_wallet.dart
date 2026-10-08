@@ -30,12 +30,10 @@ Future<void> main() async {
       id: 'wallet_${DateTime.now().microsecondsSinceEpoch}',
       name: walletName,
       type: WalletType.CASHU,
-      supportedUnits:
-          mintInfo.supportedUnits.isEmpty ? {'sat'} : mintInfo.supportedUnits,
-      metadata: {
-        'mintUrl': mintUrl,
-        'mintInfo': mintInfo.toJson(),
-      },
+      supportedUnits: mintInfo.supportedUnits.isEmpty
+          ? {'sat'}
+          : mintInfo.supportedUnits,
+      metadata: {'mintUrl': mintUrl, 'mintInfo': mintInfo.toJson()},
     );
 
     await ndk.wallets.addWallet(wallet);

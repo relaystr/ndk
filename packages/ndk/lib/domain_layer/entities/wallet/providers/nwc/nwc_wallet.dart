@@ -10,15 +10,27 @@ import 'package:rxdart/rxdart.dart';
 /// Manages connection to a remote wallet via NWC protocol
 class NwcWallet extends Wallet {
   static const String kPermissionsMetadataKey = 'permissions';
+  static const String kProviderIdMetadataKey = 'providerId';
+  static const String kRequireAuthenticatedResponseMetadataKey =
+      'requireAuthenticatedResponse';
 
   final String nwcUrl;
   final Set<String> cachedPermissions;
+  final String? providerId;
   NwcConnection? connection;
+
+  /// Remaining NWC budget in sats, cached after the last `get_budget` call.
+  /// null = wallet doesn't support get_budget, or not yet fetched.
+  int? cachedRemainingBudgetSats;
+
   BehaviorSubject<List<WalletBalance>>? balanceSubject;
   BehaviorSubject<List<WalletTransaction>>? transactionsSubject;
   BehaviorSubject<List<WalletTransaction>>? pendingTransactionsSubject;
 
   bool isConnected() => connection != null;
+
+  bool get requireAuthenticatedResponse =>
+      metadata[kRequireAuthenticatedResponseMetadataKey] == true;
 
   NwcWallet({
     required super.id,
@@ -26,16 +38,18 @@ class NwcWallet extends Wallet {
     super.type = WalletType.NWC,
     required super.supportedUnits,
     required this.nwcUrl,
+    this.providerId,
     Set<String> cachedPermissions = const {},
     Map<String, dynamic>? metadata,
-  })  : cachedPermissions = Set.unmodifiable(cachedPermissions),
-        super(
-          metadata: Map.unmodifiable({
-            ...(metadata ?? const {}),
-            'nwcUrl': nwcUrl,
-            kPermissionsMetadataKey: cachedPermissions.toList(),
-          }),
-        );
+  }) : cachedPermissions = Set.unmodifiable(cachedPermissions),
+       super(
+         metadata: Map.unmodifiable({
+           ...(metadata ?? const {}),
+           'nwcUrl': nwcUrl,
+           kProviderIdMetadataKey: ?providerId,
+           kPermissionsMetadataKey: cachedPermissions.toList(),
+         }),
+       );
 
   @override
   Map<String, dynamic> toMetadata() => metadata;
@@ -58,6 +72,7 @@ class NwcWallet extends Wallet {
       name: name,
       supportedUnits: supportedUnits,
       nwcUrl: nwcUrl,
+      providerId: metadata[kProviderIdMetadataKey] as String?,
       cachedPermissions: _parsePermissions(metadata[kPermissionsMetadataKey]),
       metadata: metadata,
     );
@@ -69,10 +84,12 @@ class NwcWallet extends Wallet {
       name: name,
       supportedUnits: supportedUnits,
       nwcUrl: nwcUrl,
+      providerId: providerId,
       cachedPermissions: permissions,
       metadata: metadata,
     );
     wallet.connection = connection;
+    wallet.cachedRemainingBudgetSats = cachedRemainingBudgetSats;
     wallet.balanceSubject = balanceSubject;
     wallet.transactionsSubject = transactionsSubject;
     wallet.pendingTransactionsSubject = pendingTransactionsSubject;
@@ -88,16 +105,50 @@ class NwcWallet extends Wallet {
     return {};
   }
 
-  Set<String> get _effectivePermissions =>
+  /// Permissions advertised by the live connection, falling back to the
+  /// persisted capability snapshot while the connection initializes.
+  Set<String> get effectivePermissions =>
       connection?.permissions.isNotEmpty == true
-          ? connection!.permissions
-          : cachedPermissions;
+      ? connection!.permissions
+      : cachedPermissions;
+
+  bool supportsMethod(NwcMethod method) =>
+      effectivePermissions.contains(method.name);
 
   @override
   bool get canReceive =>
-      _effectivePermissions.contains(NwcMethod.MAKE_INVOICE.name);
+      supportsMethod(NwcMethod.MAKE_INVOICE) ||
+      supportsMethod(NwcMethod.RECEIVE);
 
   @override
   bool get canSend =>
-      _effectivePermissions.contains(NwcMethod.PAY_INVOICE.name);
+      supportsMethod(NwcMethod.PAY_INVOICE) || supportsMethod(NwcMethod.PAY);
+
+  @override
+  Set<WalletPaymentProtocol> get sendPaymentProtocols => {
+    if (supportsMethod(NwcMethod.PAY_INVOICE) || supportsMethod(NwcMethod.PAY))
+      WalletPaymentProtocol.bolt11,
+    if (supportsMethod(NwcMethod.PAY)) WalletPaymentProtocol.bolt12,
+  };
+
+  @override
+  Set<WalletPaymentProtocol> get receivePaymentProtocols => {
+    if (supportsMethod(NwcMethod.MAKE_INVOICE) ||
+        supportsMethod(NwcMethod.RECEIVE))
+      WalletPaymentProtocol.bolt11,
+    if (supportsMethod(NwcMethod.RECEIVE)) WalletPaymentProtocol.bolt12,
+  };
+
+  @override
+  bool get supportsBip321Pay => supportsMethod(NwcMethod.PAY);
+
+  @override
+  bool get supportsBip321Receive => supportsMethod(NwcMethod.RECEIVE);
+
+  @override
+  bool get supportsBolt11InvoicePay => supportsMethod(NwcMethod.PAY_INVOICE);
+
+  @override
+  bool get supportsBolt11InvoiceReceive =>
+      supportsMethod(NwcMethod.MAKE_INVOICE);
 }

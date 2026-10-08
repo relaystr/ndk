@@ -7,7 +7,9 @@ import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/cashu/cashu.dart';
+import '../domain_layer/usecases/cache_eviction/cache_eviction_scheduler.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
+import '../domain_layer/usecases/decrypted_event_payloads/decrypted_event_payloads.dart';
 import '../domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/blossom_user_server_list.dart';
@@ -17,12 +19,15 @@ import '../domain_layer/usecases/gift_wrap/gift_wrap.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/nip_05.dart';
+import '../domain_layer/usecases/dms/dms.dart';
+import '../domain_layer/usecases/nip77/nip77.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/search/search.dart';
+import '../domain_layer/usecases/software/software.dart';
 import '../domain_layer/usecases/ta/trusted_assertions.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 import '../domain_layer/usecases/wallets/wallets.dart';
@@ -33,42 +38,43 @@ import 'ndk_config.dart';
 /// Main entry point for the NDK (Nostr Development Kit) library.
 ///
 /// This file contains the primary class [Ndk] which provides access to various
-/// Nostr-related functionalities/usecases and manages the global state of the application.
+/// Nostr-related functionalities/usecases and manages the state of this NDK instance.
 class Ndk {
   /// Configuration for the NDK instance
   final NdkConfig config;
 
-  /// Global state shared across the application
-  static final GlobalState _globalState = GlobalState();
+  /// Request, broadcast, and relay state owned by this NDK instance.
+  final GlobalState _globalState;
 
   /// Internal initialization object for setting up repositories and usecases
-  final Initialization _initialization;
+  late final Initialization _initialization;
 
   /// Creates a new instance of [Ndk] with the given [config]
-  Ndk(this.config)
-      : _initialization = Initialization(
-          ndkConfig: config,
-          globalState: _globalState,
-        );
+  Ndk(this.config) : _globalState = GlobalState() {
+    _initialization = Initialization(
+      ndkConfig: config,
+      globalState: _globalState,
+    );
+  }
 
   /// Creates a new instance of [Ndk] with default configuration
   Ndk.defaultConfig()
-      : this(
-          NdkConfig(
-            cache: MemCacheManager(),
-            eventVerifier: Bip340EventVerifier(),
-          ),
-        );
+    : this(
+        NdkConfig(
+          cache: MemCacheManager(),
+          eventVerifier: Bip340EventVerifier(),
+        ),
+      );
 
   /// Creates a new instance of [Ndk] with default configuration and empty bootstrap relays
   Ndk.emptyBootstrapRelaysConfig()
-      : this(
-          NdkConfig(
-            cache: MemCacheManager(),
-            eventVerifier: Bip340EventVerifier(),
-            bootstrapRelays: [],
-          ),
-        );
+    : this(
+        NdkConfig(
+          cache: MemCacheManager(),
+          eventVerifier: Bip340EventVerifier(),
+          bootstrapRelays: [],
+        ),
+      );
 
   /// Provides access to low-level Nostr requests.
   ///
@@ -134,17 +140,42 @@ class Ndk {
   /// low level usecase, recommended for advanced users
   GiftWrap get giftWrap => _initialization.giftWrap;
 
+  /// Direct messages usecase.
+  ///
+  /// App-facing alias for NIP-17 private direct messages.
+  Dms get dms => _initialization.dms;
+
   /// Use case for managing relay connectivity \
   /// get notified about relay connectivity changes \
   /// and update NDK about your application connectivity \
   /// for faster reconnects
   Connectivy get connectivity => _initialization.connectivity;
 
+  /// Background cache eviction scheduler, when enabled in config.
+  CacheEvictionScheduler? get cacheEvictionScheduler =>
+      _initialization.cacheEvictionScheduler;
+
+  /// Read-through cache for decrypted event payloads.
+  ///
+  /// Lets callers cache plaintext sidecars keyed by `(eventId, viewerPubKey)`
+  /// so remote signers do not need to decrypt the same event repeatedly.
+  DecryptedEventPayloads get decryptedEventPayloads =>
+      _initialization.decryptedEventPayloads;
+
   ProofOfWork get proofOfWork => _initialization.proofOfWork;
 
   /// Nostr Wallet connect
   @experimental // needs more docs & tests
   Nwc get nwc => _initialization.nwc;
+
+  /// Suspends wallet notifications and balance polling, and closes idle relay
+  /// connections when the application enters background. Active requests keep
+  /// their connections.
+  Future<void> setBackgrounded(bool backgrounded) async {
+    wallets.setBackgrounded(backgrounded);
+    await nwc.setBackgrounded(backgrounded);
+    if (backgrounded) await relays.closeIdleConnections();
+  }
 
   /// Zaps
   @experimental // needs more docs & tests
@@ -153,6 +184,9 @@ class Ndk {
   /// Search
   @experimental
   Search get search => _initialization.search;
+
+  /// NIP-82 software application, release, and asset discovery.
+  Software get software => _initialization.software;
 
   /// Cashu Wallet
   @experimental // in development
@@ -166,6 +200,11 @@ class Ndk {
   /// Track which time ranges have been fetched from which relays for each filter
   @experimental
   FetchedRanges get fetchedRanges => _initialization.fetchedRanges;
+
+  /// NIP-77 Negentropy sync
+  /// Efficient set reconciliation for syncing events between client and relay
+  @experimental
+  Nip77 get nip77 => _initialization.nip77;
 
   /// Trusted Assertions (NIP-85)
   ///
@@ -182,7 +221,11 @@ class Ndk {
 
   /// Close all transports on relay manager
   Future<void> destroy() async {
+    _initialization.requests.clearVerifiedEventCache();
+
     final allFutures = [
+      _initialization.dispose(),
+      Future(() => _initialization.closeAllNip77Negotiations()),
       nwc.disconnectAll(),
       _initialization.requests.closeAllSubscription(),
       _initialization.relayManager.closeAllTransports(),
@@ -192,5 +235,6 @@ class Ndk {
     ];
 
     await Future.wait(allFutures);
+    _initialization.requests.clearVerifiedEventCache();
   }
 }

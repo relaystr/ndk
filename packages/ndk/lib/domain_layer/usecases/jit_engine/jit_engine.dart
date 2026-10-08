@@ -53,9 +53,7 @@ class JitEngine with Logger implements NetworkEngine {
   /// the relay jit manager will try to find the right relay and use it
   /// if no relay is found the request will be blasted to all connected relays (on start seed Relays)
   @override
-  void handleRequest(
-    RequestState requestState,
-  ) async {
+  void handleRequest(RequestState requestState) async {
     await relayManagerLight.seedRelaysConnected;
 
     final ndkRequest = requestState.request;
@@ -70,9 +68,10 @@ class JitEngine with Logger implements NetworkEngine {
 
       if (requestState.request.explicitRelays != null &&
           requestState.request.explicitRelays!.isNotEmpty) {
-        final cleanedExplicitRelays =
-            cleanRelayUrls(requestState.request.explicitRelays!.toList());
-        RelayJitRequestSpecificStrategy.handleRequest(
+        final cleanedExplicitRelays = cleanRelayUrls(
+          requestState.request.explicitRelays!.toList(),
+        );
+        await RelayJitRequestSpecificStrategy.handleRequest(
           relayManager: relayManagerLight,
           requestState: requestState,
           filter: filter,
@@ -83,13 +82,13 @@ class JitEngine with Logger implements NetworkEngine {
       }
 
       if ((filter.authors != null && filter.authors!.isNotEmpty)) {
-        RelayJitPubkeyStrategy.handleRequest(
+        await RelayJitPubkeyStrategy.handleRequest(
           globalState: globalState,
           relayManager: relayManagerLight,
           requestState: requestState,
           cacheManager: cache,
           filter: filter,
-          connectedRelays: relayManagerLight.connectedRelays
+          connectedRelays: relayManagerLight.connectedAnonymousRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
           bootstrapRelays: bootstrapRelays,
@@ -103,13 +102,13 @@ class JitEngine with Logger implements NetworkEngine {
       }
 
       if (filter.pTags?.isNotEmpty != null && filter.pTags!.isNotEmpty) {
-        RelayJitPubkeyStrategy.handleRequest(
+        await RelayJitPubkeyStrategy.handleRequest(
           relayManager: relayManagerLight,
           globalState: globalState,
           requestState: requestState,
           cacheManager: cache,
           filter: filter,
-          connectedRelays: relayManagerLight.connectedRelays
+          connectedRelays: relayManagerLight.connectedAnonymousRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
           bootstrapRelays: bootstrapRelays,
@@ -123,8 +122,9 @@ class JitEngine with Logger implements NetworkEngine {
       }
 
       if (filter.search != null) {
-        Logger.log.w(() =>
-            "search filter not implemented yet, using blast all strategy");
+        Logger.log.w(
+          () => "search filter not implemented yet, using blast all strategy",
+        );
       }
 
       // if (filter.ids != null) {
@@ -136,7 +136,7 @@ class JitEngine with Logger implements NetworkEngine {
         relayManager: relayManagerLight,
         requestState: requestState,
         filter: filter,
-        connectedRelays: relayManagerLight.connectedRelays
+        connectedRelays: relayManagerLight.connectedAnonymousRelays
             .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
             .toList(),
         bootstrapRelays: bootstrapRelays,
@@ -144,14 +144,7 @@ class JitEngine with Logger implements NetworkEngine {
       );
     }
 
-    // Late auth for subscriptions with authenticateAs
-    if (ndkRequest.authenticateAs != null &&
-        ndkRequest.authenticateAs!.isNotEmpty) {
-      for (final relayUrl in requestState.requests.keys) {
-        relayManagerLight.authenticateIfNeeded(
-            relayUrl, ndkRequest.authenticateAs!);
-      }
-    }
+    requestState.closeIfNoRelays();
   }
 
   /// broadcasts given event using inbox/outbox (gossip) if explicit relays are given they are used instead
@@ -186,10 +179,9 @@ class JitEngine with Logger implements NetworkEngine {
         await RelayJitBroadcastSpecificRelaysStrategy.broadcast(
           specificRelays: cleanedSpecificRelays,
           relayManager: relayManagerLight,
+          cacheManager: cache,
           eventToPublish: workingNostrEvent,
-          connectedRelays: relayManagerLight.connectedRelays
-              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-              .toList(),
+          auth: broadcastState.auth,
         );
         broadcastState.closeIfNoRelays();
         return;
@@ -198,12 +190,10 @@ class JitEngine with Logger implements NetworkEngine {
       // default publish to own outbox
       await RelayJitBroadcastOutboxStrategy.broadcast(
         eventToPublish: workingNostrEvent,
-        connectedRelays: relayManagerLight.connectedRelays
-            .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-            .toList(),
         cacheManager: cache,
         relayManager: relayManagerLight,
         bootstrapRelays: bootstrapRelays,
+        auth: broadcastState.auth,
       );
 
       // check if we need to publish to others inboxes
@@ -211,12 +201,10 @@ class JitEngine with Logger implements NetworkEngine {
           workingNostrEvent.kind != ContactList.kKind) {
         await RelayJitBroadcastOtherReadStrategy.broadcast(
           eventToPublish: workingNostrEvent,
-          connectedRelays: relayManagerLight.connectedRelays
-              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-              .toList(),
           cacheManager: cache,
           relayManager: relayManagerLight,
           pubkeysOfInbox: workingNostrEvent.pTags,
+          auth: broadcastState.auth,
         );
       }
       broadcastState.closeIfNoRelays();
@@ -225,8 +213,12 @@ class JitEngine with Logger implements NetworkEngine {
     asyncStuff();
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
-      broadcastDoneStream: broadcastState.stateUpdates
-          .map((state) => state.broadcasts.values.toList()),
+      broadcastDoneStream: broadcastState.stateUpdates.map(
+        (state) => state.broadcasts.values.toList(),
+      ),
+      broadcastDoneFuture: broadcastState.publishDoneFuture.then(
+        (state) => state.broadcasts.values.toList(),
+      ),
     );
   }
 

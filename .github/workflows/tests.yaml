@@ -1,6 +1,12 @@
 name: tests
 on: [push, workflow_dispatch]
 jobs:
+  release-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash .github/scripts/tests/release-pr-title-test.sh
+
   tests:
     runs-on: ubuntu-latest
     defaults:
@@ -9,6 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+        with:
+          # Pin to the Dart version bundled with Flutter stable (3.47.5).
+          # Unpinned "latest" breaks analyze/test whenever a new Dart
+          # stable changes diagnostics or formatter output.
+          sdk: 3.13.4
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -19,26 +30,30 @@ jobs:
       - run: dart pub get
       - run: dart format --output=none .
       - run: dart analyze --no-fatal-warnings
-      - run: dart test --coverage="coverage"
-      - run: dart test ./example
+      - run: dart test --coverage="coverage" -j 1
+      - run: dart test ./example -j 2
       - run: dart pub global activate coverage
       - run: $HOME/.pub-cache/bin/format_coverage --ignore-files **/*.g.dart --lcov --check-ignore --in=coverage --out=coverage.lcov --report-on=lib
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v7
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           files: coverage.lcov
+          fail_ci_if_error: true   # fails only on upload errors, not coverage drops
           verbose: true # optional (default = false)
 
   nip07-tests:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./packages/nip07_event_signer
+        working-directory: ./packages/ndk_flutter
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
+        with:
+          # Pin to the Dart version bundled with Flutter stable (3.47.5).
+          sdk: 3.13.4
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -48,4 +63,4 @@ jobs:
           architecture: x64 # optional, x64 or arm
       - run: dart pub get
       - run: dart analyze --no-fatal-warnings
-      - run: dart test -p chrome
+      - run: flutter test --platform chrome --concurrency=2

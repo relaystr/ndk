@@ -14,7 +14,8 @@ void main() async {
   final connection = await ndk.nwc.connect(nwcUri);
 
   print(
-      "waiting for ${connection.isLegacyNotifications() ? "legacy " : ""}notifications");
+    "waiting for ${connection.isLegacyNotifications() ? "legacy " : ""}notifications",
+  );
   await for (final notification in connection.notificationStream.stream) {
     print('notification ${notification.type} amount: ${notification.amount}');
   }

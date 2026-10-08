@@ -3,6 +3,2279 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-10-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.10.1`](#ndk---v0101)
+ - [`ndk_flutter` - `v0.10.1`](#ndk_flutter---v0101)
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.2.0`](#ndk_drift---v020)
+ - [`ndk_objectbox` - `v0.3.0`](#ndk_objectbox---v030)
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `ndk` - `v0.10.1`
+ - `ndk_drift` - `v0.2.0`
+ - `ndk_flutter` - `v0.10.1`
+ - `ndk_objectbox` - `v0.3.0`
+
+---
+
+#### `ndk` - `v0.10.1`
+
+#### `ndk_flutter` - `v0.10.1`
+
+#### `ndk_drift` - `v0.2.0`
+
+#### `ndk_objectbox` - `v0.3.0`
+
+
+## 2026-10-01
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.1-dev.1`](#ndk---v0101-dev1)
+ - [`ndk_objectbox` - `v0.3.0-dev.1`](#ndk_objectbox---v030-dev1)
+ - [`ndk_drift` - `v0.2.0-dev.1`](#ndk_drift---v020-dev1)
+ - [`ndk_flutter` - `v0.10.1-dev.1`](#ndk_flutter---v0101-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.3.0-dev.1`
+ - `ndk_drift` - `v0.2.0-dev.1`
+ - `ndk_flutter` - `v0.10.1-dev.1`
+
+---
+
+#### `ndk` - `v0.10.1-dev.1`
+
+ - **FIX**: parse the BUD-08 nip94 field as a tag array.
+
+
+## 2026-10-01
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk_drift` - `v0.2.0-dev.0`](#ndk_drift---v020-dev0)
+ - [`ndk_objectbox` - `v0.3.0-dev.0`](#ndk_objectbox---v030-dev0)
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0-dev.0+1`](#ndk---v0100-dev01)
+ - [`ndk_flutter` - `v0.10.0-dev.0+1`](#ndk_flutter---v0100-dev01)
+
+---
+
+#### `ndk_drift` - `v0.2.0-dev.0`
+
+ - **REFACTOR**: rename RelayAuth to AuthPolicy.
+ - **PERF**: index the drift events table by pub_key, kind and created_at.
+ - **FIX**(release): use unpublished Drift version.
+ - **FIX**: attach a broadcast auth policy to the relay target, not the event.
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FEAT**: let a broadcast say which identity it may be attributed to.
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
+#### `ndk_objectbox` - `v0.3.0-dev.0`
+
+ - **FIX**: reduce background polling and cache work.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
+#### `ndk` - `v0.10.0-dev.0+1`
+
+ - **REFACTOR**: inject RelayInfo HTTP fetch via RelayInfoRepo and HttpRequestDS.
+ - **FIX**: bump the rust toolchain to 1.98.1 for macOS 27.
+ - **FIX**: persist background delivery retry results.
+ - **FIX**: stop reconnecting for stale RPC delivery.
+ - **FIX**: abort stalled relay HTTP requests.
+ - **FIX**: close transports before replacement.
+ - **FIX**: release idle wallet and abandoned sockets.
+
+#### `ndk_flutter` - `v0.10.0-dev.0+1`
+
+ - **FIX**: allow flutter_secure_storage 11.
+
+
+## 2026-09-30
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk_drift` - `v0.1.1`](#ndk_drift---v011)
+ - [`ndk_objectbox` - `v0.2.12`](#ndk_objectbox---v0212)
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0`](#ndk---v0100)
+ - [`ndk_flutter` - `v0.10.0`](#ndk_flutter---v0100)
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `ndk` - `v0.10.0`
+ - `ndk_drift` - `v0.1.1`
+ - `ndk_flutter` - `v0.10.0`
+ - `ndk_objectbox` - `v0.2.12`
+
+---
+
+#### `ndk_drift` - `v0.1.1`
+
+#### `ndk_objectbox` - `v0.2.12`
+
+#### `ndk` - `v0.10.0`
+
+#### `ndk_flutter` - `v0.10.0`
+
+
+## 2026-09-28
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0-dev.9`](#ndk---v0100-dev9)
+ - [`ndk_objectbox` - `v0.2.12-dev.18`](#ndk_objectbox---v0212-dev18)
+ - [`ndk_drift` - `v0.1.1-dev.22`](#ndk_drift---v011-dev22)
+ - [`ndk_flutter` - `v0.10.0-dev.10`](#ndk_flutter---v0100-dev10)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.18`
+ - `ndk_drift` - `v0.1.1-dev.22`
+ - `ndk_flutter` - `v0.10.0-dev.10`
+
+---
+
+#### `ndk` - `v0.10.0-dev.9`
+
+ - **FIX**: don't hold NIP-46 responses until the slowest relay acks.
+
+
+## 2026-09-27
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.21`](#ndk_drift---v011-dev21)
+
+---
+
+#### `ndk_drift` - `v0.1.1-dev.21`
+
+ - **PERF**: index the drift events table by pub_key, kind and created_at.
+
+
+## 2026-09-26
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0-dev.8`](#ndk---v0100-dev8)
+ - [`ndk_flutter` - `v0.10.0-dev.9`](#ndk_flutter---v0100-dev9)
+ - [`ndk_objectbox` - `v0.2.12-dev.17`](#ndk_objectbox---v0212-dev17)
+ - [`ndk_drift` - `v0.1.1-dev.20`](#ndk_drift---v011-dev20)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_drift` - `v0.1.1-dev.20`
+
+---
+
+#### `ndk` - `v0.10.0-dev.8`
+
+ - **FIX**: reduce background polling and cache work.
+ - **FIX**(nwc): expose hold settle deadline.
+ - **FIX**: seedStore.write() first.
+ - **FIX**: carry seed language.
+ - **FIX**: normalize and await cashu seed phrase save.
+
+#### `ndk_flutter` - `v0.10.0-dev.9`
+
+ - **FIX**: seedStore.write() first.
+ - **FIX**: normalize and await cashu seed phrase save.
+ - **FEAT**: set cashu seed.
+ - **FEAT**: restore quote ui.
+
+#### `ndk_objectbox` - `v0.2.12-dev.17`
+
+ - **FIX**: reduce background polling and cache work.
+
+
+## 2026-09-25
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.10.0-dev.7`](#ndk---v0100-dev7)
+
+Packages with other changes:
+
+ - [`ndk_objectbox` - `v0.2.12-dev.16`](#ndk_objectbox---v0212-dev16)
+ - [`ndk_drift` - `v0.1.1-dev.19`](#ndk_drift---v011-dev19)
+ - [`ndk_flutter` - `v0.10.0-dev.8`](#ndk_flutter---v0100-dev8)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.16`
+ - `ndk_drift` - `v0.1.1-dev.19`
+ - `ndk_flutter` - `v0.10.0-dev.8`
+
+---
+
+#### `ndk` - `v0.10.0-dev.7`
+
+ - **REFACTOR**: let the blossom repository authorise on refusal.
+ - **REFACTOR**: surface the http status code on every request failure.
+ - **FIX**: stay anonymous with each blossom server until it refuses.
+ - **FIX**: use hex secret in nostrconnect URI.
+ - **FIX**: keep an anonymous blossom report anonymous.
+ - **FIX**: carry the blossom authorization through every request it makes.
+ - **FEAT**: pass an auth policy through the files facade.
+ - **FEAT**: let a blossom operation say which identity it may reveal.
+ - **FEAT**: add the blossom authorization, the repository half of a policy.
+ - **BREAKING** **FEAT**: drop blossom useAuth and customSigner in favour of auth.
+
+
+## 2026-09-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0-dev.6`](#ndk---v0100-dev6)
+ - [`ndk_drift` - `v0.1.1-dev.18`](#ndk_drift---v011-dev18)
+ - [`ndk_objectbox` - `v0.2.12-dev.15`](#ndk_objectbox---v0212-dev15)
+ - [`ndk_flutter` - `v0.10.0-dev.7`](#ndk_flutter---v0100-dev7)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.15`
+ - `ndk_flutter` - `v0.10.0-dev.7`
+
+---
+
+#### `ndk` - `v0.10.0-dev.6`
+
+ - **REFACTOR**: rename RelayAuth to AuthPolicy.
+ - **FIX**: match nip05 check cache and dedup on both identifier and pubkey.
+ - **FIX**: key nip05 cache by canonical identifier and skip failed checks in resolve.
+ - **FIX**: abort nip05 requests after a 5s timeout.
+ - **FIX**: ignore nip05 redirects and normalize identifier parsing.
+ - **FIX**: stop resolving unknown names to the _ root entry.
+ - **FEAT**: add retryDelivery opt-out to broadcast.
+
+#### `ndk_drift` - `v0.1.1-dev.18`
+
+ - **REFACTOR**: rename RelayAuth to AuthPolicy.
+
+
+## 2026-09-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0-dev.5`](#ndk---v0100-dev5)
+ - [`ndk_drift` - `v0.1.1-dev.17`](#ndk_drift---v011-dev17)
+ - [`ndk_objectbox` - `v0.2.12-dev.14`](#ndk_objectbox---v0212-dev14)
+ - [`ndk_flutter` - `v0.10.0-dev.6`](#ndk_flutter---v0100-dev6)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.14`
+ - `ndk_flutter` - `v0.10.0-dev.6`
+
+---
+
+#### `ndk` - `v0.10.0-dev.5`
+
+ - **PERF**: cache master key for cashu quote.
+ - **FIX**: guard cashu quote op (on autostart).
+ - **FIX**: backfill method, usedKeysets if missing.
+ - **FIX**: scanUpperBound.
+ - **FIX**: updatePendingQuotes to return all refreshed transactions.
+ - **FIX**: global quote counter.
+ - **FIX**: forward the connect timeout to a broadcast's bound connection.
+ - **FIX**(test): keep the connection's identity set with each received event.
+ - **FIX**: stop waking a relay for a delivery parked on a missing identity.
+ - **FIX**: attach a broadcast auth policy to the relay target, not the event.
+ - **FIX**: stop opening an anonymous connection for a required broadcast.
+ - **FIX**: release a broadcast auth policy once its delivery settled.
+ - **FEAT**: ensureMintCounterSafety.
+ - **FEAT**: streamable recoverAndCompleteQuote().
+ - **FEAT**: recoverAndCompleteQuote() api.
+ - **FEAT**: auto resume pending transactions.
+ - **FEAT**: determenistic cashu quote key.
+ - **FEAT**: let a broadcast say which identity it may be attributed to.
+
+#### `ndk_drift` - `v0.1.1-dev.17`
+
+ - **FIX**: attach a broadcast auth policy to the relay target, not the event.
+ - **FEAT**: let a broadcast say which identity it may be attributed to.
+
+
+## 2026-09-16
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.10.0-dev.4`](#ndk---v0100-dev4)
+ - [`ndk_flutter` - `v0.10.0-dev.5`](#ndk_flutter---v0100-dev5)
+ - [`ndk_objectbox` - `v0.2.12-dev.13`](#ndk_objectbox---v0212-dev13)
+ - [`ndk_drift` - `v0.1.1-dev.16`](#ndk_drift---v011-dev16)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.13`
+ - `ndk_drift` - `v0.1.1-dev.16`
+
+---
+
+#### `ndk` - `v0.10.0-dev.4`
+
+ - **FIX**: address app update review feedback.
+ - **FEAT**(updates): add NIP-82 release support.
+
+#### `ndk_flutter` - `v0.10.0-dev.5`
+
+ - **FIX**(l10n): translate wallet flows.
+ - **FIX**(ndk_flutter): adapt release details modal.
+ - **FIX**(ndk_flutter): unify release summary row.
+ - **FIX**: address app update review feedback.
+ - **FIX**(flutter): keep wallet delete dialog safe.
+ - **FEAT**(flutter): add download update badge.
+ - **FEAT**(updates): add NIP-82 release support.
+
+
+## 2026-09-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.10.0-dev.4`](#ndk_flutter---v0100-dev4)
+
+---
+
+#### `ndk_flutter` - `v0.10.0-dev.4`
+
+ - **FIX**(flutter): support file_picker 12.
+
+
+## 2026-09-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.10.0-dev.3`](#ndk---v0100-dev3)
+- [`ndk_drift` - `v0.1.1-dev.15`](#ndk_drift---v011-dev15)
+ - [`ndk_objectbox` - `v0.2.12-dev.12`](#ndk_objectbox---v0212-dev12)
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.10.0-dev.3`](#ndk_flutter---v0100-dev3)
+
+---
+
+#### `ndk` - `v0.10.0-dev.3`
+
+ - **PERF**(cache): batch visibility context reads.
+ - **PERF**: improve rust verifier memory usage.
+ - **FIX**(metadata): cache the metadata event that was broadcast.
+ - **FIX**(cache): compare conflict coordinates byte for byte.
+ - **FIX**(cache): keep d-tag whitespace when matching deletion coordinates.
+ - **FIX**: address Rust verifier review feedback.
+ - **FIX**(cache): keep d-tag case when matching deletion coordinates.
+ - **FIX**(cache): stop a limited read from dropping visible events.
+ - **FIX**: missing amount in bip321.
+ - **FIX**: add tbs.
+ - **FIX**: not add lnurl wallet if invalid.
+ - **FEAT**(wallets): add LNbits provider.
+ - **FEAT**: packed event verification in rust.
+ - **FEAT**(nwc): add optional maxFeeMsat to pay (NWC-321 max_fee).
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
+#### `ndk_drift` - `v0.1.1-dev.15`
+
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
+#### `ndk_objectbox` - `v0.2.12-dev.12`
+
+ - **BREAKING** **FEAT**(cache): add loadHiddenEvents.
+
+#### `ndk_flutter` - `v0.10.0-dev.3`
+
+ - **FEAT**(wallets): add LNbits provider.
+
+
+## 2026-09-11
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.11`](#ndk_drift---v011-dev11)
+ - [`ndk_objectbox` - `v0.2.12-dev.11`](#ndk_objectbox---v0212-dev11)
+
+---
+
+#### `ndk_drift` - `v0.1.1-dev.11`
+
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+
+#### `ndk_objectbox` - `v0.2.12-dev.11`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-09-10
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.10.0-dev.2`](#ndk---v0100-dev2)
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.10`](#ndk_drift---v011-dev10)
+ - [`ndk_objectbox` - `v0.2.12-dev.10`](#ndk_objectbox---v0212-dev10)
+ - [`ndk_flutter` - `v0.9.0-dev.8`](#ndk_flutter---v090-dev8)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.9.0-dev.8`
+
+---
+
+#### `ndk` - `v0.10.0-dev.2`
+
+ - **FIX**: end a reconciliation whose signer refuses to answer the challenge.
+ - **FIX**: stop spending the reconciliation budget on waiting for a signer.
+ - **FIX**: raise an impossible reconciliation from the call, not from its future.
+ - **FEAT**: let a negentropy reconciliation say which identity it may use.
+ - **BREAKING** **FEAT**(accounts): add accountsStream.
+
+#### `ndk_drift` - `v0.1.1-dev.10`
+
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+
+#### `ndk_objectbox` - `v0.2.12-dev.10`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-09-09
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.10.0-dev.1`](#ndk---v0100-dev1)
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.9`](#ndk_drift---v011-dev9)
+ - [`ndk_objectbox` - `v0.2.12-dev.9`](#ndk_objectbox---v0212-dev9)
+ - [`ndk_flutter` - `v0.9.0-dev.7`](#ndk_flutter---v090-dev7)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.9.0-dev.7`
+
+---
+
+#### `ndk` - `v0.10.0-dev.1`
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: prerelease.
+ - **FIX**: final over var.
+ - **FIX**(requests): end a query that reached no relay.
+ - **FIX**: do not resurrect a jit request that already ended.
+ - **FIX**: do not send a relay set request closed while connecting.
+ - **FIX**: keep a request open while its auth retry connects.
+ - **FIX**(cli): avoid wallet startup network work.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**: keep a jit request open while its other relays are still connecting.
+ - **FIX**: do not send a jit request that was closed while its connection opened.
+ - **FIX**: authenticate as an account that was handed over, not only a registered one.
+ - **FIX**: answer an impossible request without waiting for its timeout.
+ - **FIX**: tell two requests apart by the identity they authenticate as.
+ - **FIX**: paginate each relay of a relay set on its own.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: send a required request only on its bound connection in the jit engine.
+ - **FEAT**: send a required request only on its bound connection.
+ - **FEAT**: add RelayAuth, the identity a request may be attributed to.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+ - **DOCS**(release): add 0.9.3 notes.
+ - **DOCS**(cli): condense wallet command help.
+ - **DOCS**(ndk): finalize 0.9.2 changelog.
+ - **BREAKING** **FIX**: stop authenticating to relays that never asked.
+ - **BREAKING** **FEAT**: let a request say which identity it may authenticate as.
+
+#### `ndk_drift` - `v0.1.1-dev.9`
+
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+
+#### `ndk_objectbox` - `v0.2.12-dev.9`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-09-09
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.9.4-dev.2`](#ndk---v094-dev2)
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.8`](#ndk_drift---v011-dev8)
+ - [`ndk_objectbox` - `v0.2.12-dev.8`](#ndk_objectbox---v0212-dev8)
+ - [`ndk_flutter` - `v0.9.0-dev.6`](#ndk_flutter---v090-dev6)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.9.0-dev.6`
+
+---
+
+#### `ndk` - `v0.9.4-dev.2`
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: final over var.
+ - **FIX**(requests): end a query that reached no relay.
+ - **FIX**: do not resurrect a jit request that already ended.
+ - **FIX**: do not send a relay set request closed while connecting.
+ - **FIX**: keep a request open while its auth retry connects.
+ - **FIX**(cli): avoid wallet startup network work.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**: keep a jit request open while its other relays are still connecting.
+ - **FIX**: do not send a jit request that was closed while its connection opened.
+ - **FIX**: authenticate as an account that was handed over, not only a registered one.
+ - **FIX**: answer an impossible request without waiting for its timeout.
+ - **FIX**: tell two requests apart by the identity they authenticate as.
+ - **FIX**: paginate each relay of a relay set on its own.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: send a required request only on its bound connection in the jit engine.
+ - **FEAT**: send a required request only on its bound connection.
+ - **FEAT**: add RelayAuth, the identity a request may be attributed to.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+ - **DOCS**(release): add 0.9.3 notes.
+ - **DOCS**(cli): condense wallet command help.
+ - **DOCS**(ndk): finalize 0.9.2 changelog.
+ - **BREAKING** **FIX**: stop authenticating to relays that never asked.
+ - **BREAKING** **FEAT**: let a request say which identity it may authenticate as.
+
+#### `ndk_drift` - `v0.1.1-dev.8`
+
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+
+#### `ndk_objectbox` - `v0.2.12-dev.8`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-09-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.9.4-dev.1`](#ndk---v094-dev1)
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.7`](#ndk_drift---v011-dev7)
+ - [`ndk_objectbox` - `v0.2.12-dev.7`](#ndk_objectbox---v0212-dev7)
+ - [`ndk_flutter` - `v0.9.0-dev.5`](#ndk_flutter---v090-dev5)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.9.0-dev.5`
+
+---
+
+#### `ndk` - `v0.9.4-dev.1`
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: final over var.
+ - **FIX**: do not resurrect a jit request that already ended.
+ - **FIX**: do not send a relay set request closed while connecting.
+ - **FIX**: keep a request open while its auth retry connects.
+ - **FIX**(cli): avoid wallet startup network work.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**: keep a jit request open while its other relays are still connecting.
+ - **FIX**: do not send a jit request that was closed while its connection opened.
+ - **FIX**: authenticate as an account that was handed over, not only a registered one.
+ - **FIX**: answer an impossible request without waiting for its timeout.
+ - **FIX**: tell two requests apart by the identity they authenticate as.
+ - **FIX**: paginate each relay of a relay set on its own.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: send a required request only on its bound connection in the jit engine.
+ - **FEAT**: send a required request only on its bound connection.
+ - **FEAT**: add RelayAuth, the identity a request may be attributed to.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+ - **DOCS**(release): add 0.9.3 notes.
+ - **DOCS**(cli): condense wallet command help.
+ - **DOCS**(ndk): finalize 0.9.2 changelog.
+ - **BREAKING** **FIX**: stop authenticating to relays that never asked.
+ - **BREAKING** **FEAT**: let a request say which identity it may authenticate as.
+
+#### `ndk_drift` - `v0.1.1-dev.7`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_objectbox` - `v0.2.12-dev.7`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-09-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.9.4-dev.0`](#ndk---v094-dev0)
+ - [`ndk_drift` - `v0.1.1-dev.6`](#ndk_drift---v011-dev6)
+ - [`ndk_objectbox` - `v0.2.12-dev.6`](#ndk_objectbox---v0212-dev6)
+ - [`ndk_flutter` - `v0.9.0-dev.4`](#ndk_flutter---v090-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.9.0-dev.4`
+
+---
+
+#### `ndk` - `v0.9.4-dev.0`
+
+ - **REFACTOR**: drop notSent.
+ - **REFACTOR**: name the relay request status a status.
+ - **PERF**: stop rebuilding the relay outcomes for nobody.
+ - **FIX**: give the outcome stream fallback its initial snapshot.
+ - **FIX**: report a dead socket, and stream a page while it runs.
+ - **FIX**: preserve JIT fallback on cache errors.
+ - **FIX**: surface broadcast retry send errors.
+ - **FIX**: harden relay auth retries.
+ - **FIX**(auth): serialize broadcast authentication.
+ - **FIX**: multiple instances with dedicated GlobalState.
+ - **FEAT**: stream the relay outcomes of a request.
+ - **FEAT**: expose the outcome of a request on each relay.
+
+#### `ndk_drift` - `v0.1.1-dev.6`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**(drift): bump drift_flutter to ^0.3.0.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_objectbox` - `v0.2.12-dev.6`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-09-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.9.1-dev.3`](#ndk---v091-dev3)
+ - [`ndk_drift` - `v0.1.1-dev.5`](#ndk_drift---v011-dev5)
+ - [`ndk_objectbox` - `v0.2.12-dev.5`](#ndk_objectbox---v0212-dev5)
+ - [`ndk_flutter` - `v0.9.0-dev.3`](#ndk_flutter---v090-dev3)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.9.0-dev.3`
+
+---
+
+#### `ndk` - `v0.9.1-dev.3`
+
+ - **FIX**(release): isolate version generation.
+ - **FIX**: hash a request independently of the order of its filter lists.
+ - **FIX**: clean relay url.
+ - **FIX**: more dms.
+ - **FIX**: kind not allowed is a permanet failure.
+ - **FIX**: track only the oldest event timestamp per relay for fetched ranges.
+ - **FIX**: record fetched ranges from network events only.
+ - **FEAT**(nwc): add optional maxFeeMsat to pay_invoice (NIP-47 max_fee).
+
+#### `ndk_drift` - `v0.1.1-dev.5`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_objectbox` - `v0.2.12-dev.5`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-09-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.9.1-dev.2`](#ndk---v091-dev2)
+ - [`ndk_drift` - `v0.1.1-dev.4`](#ndk_drift---v011-dev4)
+ - [`ndk_objectbox` - `v0.2.12-dev.4`](#ndk_objectbox---v0212-dev4)
+ - [`ndk_flutter` - `v0.9.0-dev.2`](#ndk_flutter---v090-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.9.0-dev.2`
+
+---
+
+#### `ndk` - `v0.9.1-dev.2`
+
+ - **FIX**(release): isolate version generation.
+ - **FIX**: hash a request independently of the order of its filter lists.
+ - **FIX**: clean relay url.
+ - **FIX**: more dms.
+ - **FIX**: kind not allowed is a permanet failure.
+ - **FIX**: track only the oldest event timestamp per relay for fetched ranges.
+ - **FIX**: record fetched ranges from network events only.
+ - **FEAT**(nwc): add optional maxFeeMsat to pay_invoice (NIP-47 max_fee).
+
+#### `ndk_drift` - `v0.1.1-dev.4`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_objectbox` - `v0.2.12-dev.4`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-08-29
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.3`](#ndk_drift---v011-dev3)
+ - [`ndk_objectbox` - `v0.2.12-dev.3`](#ndk_objectbox---v0212-dev3)
+
+---
+
+#### `ndk_drift` - `v0.1.1-dev.3`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_objectbox` - `v0.2.12-dev.3`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-08-29
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.2`](#ndk_drift---v011-dev2)
+ - [`ndk_objectbox` - `v0.2.12-dev.2`](#ndk_objectbox---v0212-dev2)
+
+---
+
+#### `ndk_drift` - `v0.1.1-dev.2`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_objectbox` - `v0.2.12-dev.2`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-08-29
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.9.1-dev.1`](#ndk---v091-dev1)
+ - [`ndk_objectbox` - `v0.2.12-dev.1`](#ndk_objectbox---v0212-dev1)
+ - [`ndk_drift` - `v0.1.1-dev.1`](#ndk_drift---v011-dev1)
+ - [`ndk_flutter` - `v0.9.0-dev.1`](#ndk_flutter---v090-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.1`
+ - `ndk_drift` - `v0.1.1-dev.1`
+ - `ndk_flutter` - `v0.9.0-dev.1`
+
+---
+
+#### `ndk` - `v0.9.1-dev.1`
+
+ - **FEAT**: publishDmRelays.
+ - **FEAT**: allow explicit dm relay discovery.
+ - **FEAT**: add explicit legacy nip04 dms.
+
+
+## 2026-08-29
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.9.1-dev.0`](#ndk---v091-dev0)
+ - [`ndk_objectbox` - `v0.2.12-dev.0+2`](#ndk_objectbox---v0212-dev02)
+ - [`ndk_drift` - `v0.1.1-dev.0+2`](#ndk_drift---v011-dev02)
+ - [`ndk_flutter` - `v0.9.0-dev.0+1`](#ndk_flutter---v090-dev01)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.0+2`
+ - `ndk_drift` - `v0.1.1-dev.0+2`
+ - `ndk_flutter` - `v0.9.0-dev.0+1`
+
+---
+
+#### `ndk` - `v0.9.1-dev.0`
+
+ - **FEAT**: publishDmRelays.
+ - **FEAT**: nip17 file message.
+
+
+## 2026-08-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.9.0`](#ndk---v090)
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.9.0`](#ndk_flutter---v090)
+ - [`ndk_drift` - `v0.1.1+1`](#ndk_drift---v0111)
+ - [`ndk_objectbox` - `v0.2.12+1`](#ndk_objectbox---v02121)
+
+---
+
+#### `ndk` - `v0.9.0`
+
+ - **REFACTOR**: key request state by connection instead of relay url.
+ - **REFACTOR**: key the connect path by connection instead of relay url.
+ - **REFACTOR**: key relay connections by RelayConnectionKey.
+ - **REFACTOR**: drop the CacheWrite usecase in favor of CacheManager.
+ - **FIX**: recompute event id when building a NIP-51 set event.
+ - **FIX**: mem cache for event verification.
+ - **FIX**: index relay connectivity by list, not by url.
+ - **FIX**: unblock dart analyze on Dart 3.13.
+ - **FIX**: test lacl first test cacheWrite.
+ - **FIX**: encode negentropy messages per protocol v1.
+ - **FIX**: count the requests open on a connection by id.
+ - **FIX**: drop authentication state on a transient disconnect.
+ - **FIX**: keep a request alive while its authentication reconnects.
+ - **FIX**: route socket errors through the same disconnect handler as onDone.
+ - **FIX**: replay a query whose socket died before its EOSE.
+ - **FIX**: replay a request whose authentication died with its socket.
+ - **FIX**: account active requests where they are sent.
+ - **FIX**: scope authentication state to a transport generation.
+ - **FIX**: forget connections that have no transport left.
+ - **FIX**: do not send REQ for a request that was closed.
+ - **FIX**: engines pick relays, so they must see one connection per relay.
+ - **FIX**: replay subscriptions on their own connection only.
+ - **FIX**: send CLOSE on the connection the subscription was sent on.
+ - **FIX**: include target relays and request lifetime in the request dedup key.
+ - **FEAT**: add post-quantum hybrid encryption for direct messages (ML-KEM-1024).
+ - **FEAT**: bind each connection to at most one identity.
+ - **FEAT**: add RelayConnectionKey to identify a relay connection.
+ - **BREAKING** **FIX**: replace GPL-3.0-only crystals-dilithium with fips204 (ML-DSA).
+ - **BREAKING** **FEAT**: stream relay connections as a list instead of a url keyed map.
+
+#### `ndk_flutter` - `v0.9.0`
+
+ - **FIX**: use the event returned by NIP-07 and NIP-55 signers.
+
+#### `ndk_drift` - `v0.1.1+1`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+
+#### `ndk_objectbox` - `v0.2.12+1`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-08-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.9.0`](#ndk---v090)
+
+Packages with other changes:
+
+ - There are no other changes in this release.
+
+---
+
+#### `ndk` - `v0.9.0`
+
+ - **REFACTOR**: key request state by connection instead of relay url.
+ - **REFACTOR**: key the connect path by connection instead of relay url.
+ - **REFACTOR**: key relay connections by RelayConnectionKey.
+ - **REFACTOR**: drop the CacheWrite usecase in favor of CacheManager.
+ - **FIX**: recompute event id when building a NIP-51 set event.
+ - **FIX**: mem cache for event verification.
+ - **FIX**: index relay connectivity by list, not by url.
+ - **FIX**: unblock dart analyze on Dart 3.13.
+ - **FIX**: test lacl first test cacheWrite.
+ - **FIX**: encode negentropy messages per protocol v1.
+ - **FIX**: count the requests open on a connection by id.
+ - **FIX**: drop authentication state on a transient disconnect.
+ - **FIX**: keep a request alive while its authentication reconnects.
+ - **FIX**: route socket errors through the same disconnect handler as onDone.
+ - **FIX**: replay a query whose socket died before its EOSE.
+ - **FIX**: replay a request whose authentication died with its socket.
+ - **FIX**: account active requests where they are sent.
+ - **FIX**: scope authentication state to a transport generation.
+ - **FIX**: forget connections that have no transport left.
+ - **FIX**: do not send REQ for a request that was closed.
+ - **FIX**: engines pick relays, so they must see one connection per relay.
+ - **FIX**: replay subscriptions on their own connection only.
+ - **FIX**: send CLOSE on the connection the subscription was sent on.
+ - **FIX**: include target relays and request lifetime in the request dedup key.
+ - **FEAT**: add post-quantum hybrid encryption for direct messages (ML-KEM-1024).
+ - **FEAT**: bind each connection to at most one identity.
+ - **FEAT**: add RelayConnectionKey to identify a relay connection.
+ - **BREAKING** **FIX**: replace GPL-3.0-only crystals-dilithium with fips204 (ML-DSA).
+ - **BREAKING** **FEAT**: stream relay connections as a list instead of a url keyed map.
+
+
+## 2026-08-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.8.4`](#ndk---v084)
+ - [`ndk_drift` - `v0.1.1`](#ndk_drift---v011)
+ - [`ndk_flutter` - `v0.8.4`](#ndk_flutter---v084)
+ - [`ndk_objectbox` - `v0.2.12`](#ndk_objectbox---v0212)
+
+Packages with other changes:
+
+ - There are no other changes in this release.
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `ndk` - `v0.8.4`
+ - `ndk_drift` - `v0.1.1`
+ - `ndk_flutter` - `v0.8.4`
+ - `ndk_objectbox` - `v0.2.12`
+
+---
+
+#### `ndk` - `v0.8.4`
+
+#### `ndk_drift` - `v0.1.1`
+
+#### `ndk_flutter` - `v0.8.4`
+
+#### `ndk_objectbox` - `v0.2.12`
+
+
+## 2026-08-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.8.4-dev.12`](#ndk---v084-dev12)
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.8.4-dev.15`](#ndk_flutter---v084-dev15)
+ - [`ndk_objectbox` - `v0.2.12-dev.12`](#ndk_objectbox---v0212-dev12)
+ - [`ndk_drift` - `v0.1.1-dev.14`](#ndk_drift---v011-dev14)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.12`
+ - `ndk_drift` - `v0.1.1-dev.14`
+
+---
+
+#### `ndk` - `v0.8.4-dev.12`
+
+ - **REFACTOR**: key request state by connection instead of relay url.
+ - **REFACTOR**: key the connect path by connection instead of relay url.
+ - **REFACTOR**: key relay connections by RelayConnectionKey.
+ - **REFACTOR**: drop the CacheWrite usecase in favor of CacheManager.
+ - **FIX**: recompute event id when building a NIP-51 set event.
+ - **FIX**: mem cache for event verification.
+ - **FIX**: index relay connectivity by list, not by url.
+ - **FIX**: unblock dart analyze on Dart 3.13.
+ - **FIX**: test lacl first test cacheWrite.
+ - **FIX**: encode negentropy messages per protocol v1.
+ - **FIX**: count the requests open on a connection by id.
+ - **FIX**: drop authentication state on a transient disconnect.
+ - **FIX**: keep a request alive while its authentication reconnects.
+ - **FIX**: route socket errors through the same disconnect handler as onDone.
+ - **FIX**: replay a query whose socket died before its EOSE.
+ - **FIX**: replay a request whose authentication died with its socket.
+ - **FIX**: account active requests where they are sent.
+ - **FIX**: scope authentication state to a transport generation.
+ - **FIX**: forget connections that have no transport left.
+ - **FIX**: do not send REQ for a request that was closed.
+ - **FIX**: engines pick relays, so they must see one connection per relay.
+ - **FIX**: replay subscriptions on their own connection only.
+ - **FIX**: send CLOSE on the connection the subscription was sent on.
+ - **FIX**: include target relays and request lifetime in the request dedup key.
+ - **FEAT**: add post-quantum hybrid encryption for direct messages (ML-KEM-1024).
+ - **FEAT**: bind each connection to at most one identity.
+ - **FEAT**: add RelayConnectionKey to identify a relay connection.
+ - **BREAKING** **FIX**: replace GPL-3.0-only crystals-dilithium with fips204 (ML-DSA).
+ - **BREAKING** **FEAT**: stream relay connections as a list instead of a url keyed map.
+
+#### `ndk_flutter` - `v0.8.4-dev.15`
+
+ - **FIX**: use the event returned by NIP-07 and NIP-55 signers.
+
+
+## 2026-07-24
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.11`](#ndk---v084-dev11)
+ - [`ndk_bip32_keys` - `v0.1.0-dev.0+1`](#ndk_bip32_keys---v010-dev01)
+ - [`ndk_drift` - `v0.1.1-dev.13`](#ndk_drift---v011-dev13)
+ - [`ndk_flutter` - `v0.8.4-dev.14`](#ndk_flutter---v084-dev14)
+ - [`ndk_objectbox` - `v0.2.12-dev.11`](#ndk_objectbox---v0212-dev11)
+
+---
+
+#### `ndk` - `v0.8.4-dev.11`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+ - **FEAT**: add local-first interactive signer retry flow.
+ - **FEAT**: local first.
+ - **FEAT**: local first.
+ - **FEAT**: local first.
+
+#### `ndk_bip32_keys` - `v0.1.0-dev.0+1`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+
+#### `ndk_drift` - `v0.1.1-dev.13`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: sweep stale delivery records during eviction.
+ - **FIX**: sweep/hide NIP-09 coordinate (a-tag) deletions across cache backends.
+
+#### `ndk_flutter` - `v0.8.4-dev.14`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FEAT**: add local-first interactive signer retry flow.
+
+#### `ndk_objectbox` - `v0.2.12-dev.11`
+
+ - **FIX**: dart format with standalone SDK 3.12.2 (match CI).
+ - **FIX**: dart format all packages (CI format check).
+ - **FIX**: dart format (match CI environment without pub get).
+ - **FIX**: sweep stale delivery records during eviction.
+
+
+## 2026-07-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.10`](#ndk---v084-dev10)
+ - [`ndk_objectbox` - `v0.2.12-dev.10`](#ndk_objectbox---v0212-dev10)
+ - [`ndk_drift` - `v0.1.1-dev.12`](#ndk_drift---v011-dev12)
+ - [`ndk_flutter` - `v0.8.4-dev.13`](#ndk_flutter---v084-dev13)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.10`
+ - `ndk_drift` - `v0.1.1-dev.12`
+ - `ndk_flutter` - `v0.8.4-dev.13`
+
+---
+
+#### `ndk` - `v0.8.4-dev.10`
+
+ - **FIX**: complete cache-served queries without waiting for timeout.
+
+
+## 2026-07-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.9`](#ndk---v084-dev9)
+ - [`ndk_flutter` - `v0.8.4-dev.12`](#ndk_flutter---v084-dev12)
+ - [`ndk_objectbox` - `v0.2.12-dev.9`](#ndk_objectbox---v0212-dev9)
+ - [`ndk_drift` - `v0.1.1-dev.11`](#ndk_drift---v011-dev11)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.9`
+ - `ndk_drift` - `v0.1.1-dev.11`
+
+---
+
+#### `ndk` - `v0.8.4-dev.9`
+
+ - **REFACTOR**(signers): remove id parameter from EventSigner nip04 methods.
+
+#### `ndk_flutter` - `v0.8.4-dev.12`
+
+ - **REFACTOR**(signers): remove id parameter from EventSigner nip04 methods.
+ - **FIX**(ndk_flutter): use unique NIP-55 ids for signing requests.
+ - **FIX**(ndk_flutter): correlate NIP-55 encryption requests.
+ - **FIX**(ndk_flutter): handle batched NIP-55 signer results.
+
+
+## 2026-07-01
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.8`](#ndk---v084-dev8)
+ - [`ndk_flutter` - `v0.8.4-dev.11`](#ndk_flutter---v084-dev11)
+ - [`ndk_objectbox` - `v0.2.12-dev.8`](#ndk_objectbox---v0212-dev8)
+ - [`ndk_drift` - `v0.1.1-dev.10`](#ndk_drift---v011-dev10)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.8`
+ - `ndk_drift` - `v0.1.1-dev.10`
+
+---
+
+#### `ndk` - `v0.8.4-dev.8`
+
+ - **FIX**(test): apply tag filters in mock relay.
+
+#### `ndk_flutter` - `v0.8.4-dev.11`
+
+ - **REFACTOR**: make NWC QR scanning host-provided.
+
+
+## 2026-06-24
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.7`](#ndk---v084-dev7)
+ - [`ndk_drift` - `v0.1.1-dev.9`](#ndk_drift---v011-dev9)
+ - [`ndk_flutter` - `v0.8.4-dev.10`](#ndk_flutter---v084-dev10)
+ - [`ndk_objectbox` - `v0.2.12-dev.7`](#ndk_objectbox---v0212-dev7)
+ - [`nip07_event_signer` - `v1.1.0-dev.7`](#nip07_event_signer---v110-dev7)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.7`
+ - `nip07_event_signer` - `v1.1.0-dev.7`
+
+---
+
+#### `ndk` - `v0.8.4-dev.7`
+
+ - **FIX**: randomize NIP-59 gift wrap timestamps.
+
+#### `ndk_drift` - `v0.1.1-dev.9`
+
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.4-dev.10`
+
+ - **FIX**: dynamic sdk constraints.
+
+
+## 2026-06-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.6`](#ndk---v084-dev6)
+ - [`ndk_flutter` - `v0.8.4-dev.9`](#ndk_flutter---v084-dev9)
+ - [`ndk_objectbox` - `v0.2.12-dev.6`](#ndk_objectbox---v0212-dev6)
+ - [`nip07_event_signer` - `v1.1.0-dev.6`](#nip07_event_signer---v110-dev6)
+ - [`ndk_drift` - `v0.1.1-dev.8`](#ndk_drift---v011-dev8)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.6`
+ - `nip07_event_signer` - `v1.1.0-dev.6`
+ - `ndk_drift` - `v0.1.1-dev.8`
+
+---
+
+#### `ndk` - `v0.8.4-dev.6`
+
+ - **REFACTOR**: centralized json serialisation for WalletTransaction.
+ - **FIX**: update transactions after state import.
+ - **FIX**: import mutating before validating.
+ - **FIX**: add missing methods to cashu cache decorator.
+ - **FIX**: remove direct cache access in cashu import/export.
+ - **FEAT**: add FlutterSecuredStorage Cashu Seed Store impl.
+
+#### `ndk_flutter` - `v0.8.4-dev.9`
+
+ - **REFACTOR**: centralized json serialisation for WalletTransaction.
+ - **FIX**: scope backup key to seed key.
+ - **FIX**: better lnurl messages.
+ - **FEAT**: add FlutterSecuredStorage Cashu Seed Store impl.
+
+
+## 2026-06-18
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.8.4-dev.8`](#ndk_flutter---v084-dev8)
+
+---
+
+#### `ndk_flutter` - `v0.8.4-dev.8`
+
+ - **FIX**(ndk_flutter): require Flutter 1.20 for pub.dev publish.
+
+
+## 2026-06-17
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.5`](#ndk---v084-dev5)
+ - [`ndk_drift` - `v0.1.1-dev.7`](#ndk_drift---v011-dev7)
+ - [`ndk_flutter` - `v0.8.4-dev.7`](#ndk_flutter---v084-dev7)
+ - [`ndk_objectbox` - `v0.2.12-dev.5`](#ndk_objectbox---v0212-dev5)
+ - [`nip07_event_signer` - `v1.1.0-dev.5`](#nip07_event_signer---v110-dev5)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.5`
+ - `nip07_event_signer` - `v1.1.0-dev.5`
+
+---
+
+#### `ndk` - `v0.8.4-dev.5`
+
+ - **FIX**: fallback to logged account for broadcast auth.
+ - **FIX**: broadcast mock relay events to live subscriptions.
+
+#### `ndk_drift` - `v0.1.1-dev.7`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.4-dev.7`
+
+ - **FIX**(ndk_flutter): require pretty_qr_code 3.6.0.
+
+
+## 2026-06-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.6`](#ndk_drift---v011-dev6)
+ - [`ndk_flutter` - `v0.8.4-dev.6`](#ndk_flutter---v084-dev6)
+
+---
+
+#### `ndk_drift` - `v0.1.1-dev.6`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.4-dev.6`
+
+ - **FIX**(ndk_flutter): correct logic for external signer installation check.
+ - **FIX**(ndk_flutter): detect NIP-55 signers generically.
+ - **FIX**: reset state on fail.
+ - **FEAT**: vendor NIP-55 external signer, drop dead amberflutter dep.
+
+
+## 2026-06-12
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.4`](#ndk---v084-dev4)
+ - [`ndk_drift` - `v0.1.1-dev.5`](#ndk_drift---v011-dev5)
+ - [`ndk_flutter` - `v0.8.4-dev.5`](#ndk_flutter---v084-dev5)
+ - [`ndk_objectbox` - `v0.2.12-dev.4`](#ndk_objectbox---v0212-dev4)
+ - [`nip07_event_signer` - `v1.1.0-dev.4`](#nip07_event_signer---v110-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.4`
+ - `nip07_event_signer` - `v1.1.0-dev.4`
+
+---
+
+#### `ndk` - `v0.8.4-dev.4`
+
+ - **FIX**: add cashu preflight checks to wallet init.
+ - **FIX**: typo, return type.
+ - **FIX**: add missing timeout to wallets.sendaa.
+ - **FEAT**: cashu preflight checks.
+
+#### `ndk_drift` - `v0.1.1-dev.5`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.4-dev.5`
+
+ - **FIX**: ecash wallet adding navigation bug.
+ - **FEAT**: use StringColor for avatar and banner colors.
+ - **FEAT**: add StringColor deterministic color utility.
+
+
+## 2026-06-12
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.3`](#ndk---v084-dev3)
+ - [`ndk_drift` - `v0.1.1-dev.4`](#ndk_drift---v011-dev4)
+ - [`ndk_flutter` - `v0.8.4-dev.4`](#ndk_flutter---v084-dev4)
+ - [`ndk_objectbox` - `v0.2.12-dev.3`](#ndk_objectbox---v0212-dev3)
+ - [`nip07_event_signer` - `v1.1.0-dev.3`](#nip07_event_signer---v110-dev3)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.3`
+ - `nip07_event_signer` - `v1.1.0-dev.3`
+
+---
+
+#### `ndk` - `v0.8.4-dev.3`
+
+ - **FIX**: add cashu preflight checks to wallet init.
+ - **FIX**: typo, return type.
+ - **FIX**: add missing timeout to wallets.sendaa.
+ - **FEAT**: cashu preflight checks.
+
+#### `ndk_drift` - `v0.1.1-dev.4`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.4-dev.4`
+
+ - **FIX**: ecash wallet adding navigation bug.
+ - **FEAT**: use StringColor for avatar and banner colors.
+ - **FEAT**: add StringColor deterministic color utility.
+
+
+## 2026-06-06
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.3`](#ndk_drift---v011-dev3)
+ - [`ndk_flutter` - `v0.8.4-dev.3`](#ndk_flutter---v084-dev3)
+
+---
+
+#### `ndk_drift` - `v0.1.1-dev.3`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.4-dev.3`
+
+ - **FEAT**: add Portuguese and Brazilian Portuguese translations.
+ - **FEAT**: add localization configuration for Flutter.
+ - **FEAT**: add Finnish (fi) and Portuguese (pt) locales.
+
+
+## 2026-06-05
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.8.4-dev.2`](#ndk---v084-dev2)
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.2`](#ndk_drift---v011-dev2)
+ - [`ndk_objectbox` - `v0.2.12-dev.2`](#ndk_objectbox---v0212-dev2)
+ - [`nip07_event_signer` - `v1.1.0-dev.2`](#nip07_event_signer---v110-dev2)
+ - [`ndk_flutter` - `v0.8.4-dev.2`](#ndk_flutter---v084-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.2`
+ - `nip07_event_signer` - `v1.1.0-dev.2`
+ - `ndk_flutter` - `v0.8.4-dev.2`
+
+---
+
+#### `ndk` - `v0.8.4-dev.2`
+
+ - **FIX**: resolve 404 responses as not found.
+ - **FEAT**: errors as exception.
+ - **BREAKING** **FEAT**(nip05): split Nip05ResolveError into typed subtypes.
+ - **BREAKING** **FEAT**(nip05): return Nip05ResolveResult from resolve().
+
+#### `ndk_drift` - `v0.1.1-dev.2`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+
+## 2026-05-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.1`](#ndk---v084-dev1)
+ - [`ndk_drift` - `v0.1.1-dev.1`](#ndk_drift---v011-dev1)
+ - [`ndk_flutter` - `v0.8.4-dev.1`](#ndk_flutter---v084-dev1)
+ - [`ndk_objectbox` - `v0.2.12-dev.1`](#ndk_objectbox---v0212-dev1)
+ - [`nip07_event_signer` - `v1.1.0-dev.1`](#nip07_event_signer---v110-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.1`
+ - `nip07_event_signer` - `v1.1.0-dev.1`
+
+---
+
+#### `ndk` - `v0.8.4-dev.1`
+
+ - **FEAT**(ndk): allow precomputed sha256 for blossom uploads.
+
+#### `ndk_drift` - `v0.1.1-dev.1`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.4-dev.1`
+
+ - **FIX**(ndk_flutter): prevent QR code overflow in nostr connect dialog.
+
+
+## 2026-05-18
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.0`](#ndk---v084-dev0)
+ - [`ndk_flutter` - `v0.8.4-dev.0`](#ndk_flutter---v084-dev0)
+ - [`nip07_event_signer` - `v1.1.0-dev.0`](#nip07_event_signer---v110-dev0)
+ - [`ndk_objectbox` - `v0.2.12-dev.0+1`](#ndk_objectbox---v0212-dev01)
+ - [`ndk_drift` - `v0.1.1-dev.0+1`](#ndk_drift---v011-dev01)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.0+1`
+ - `ndk_drift` - `v0.1.1-dev.0+1`
+
+---
+
+#### `ndk` - `v0.8.4-dev.0`
+
+ - **REFACTOR**: rename ConcurrencyLimitedSignerMixin to ConcurrencyLimiterMixin.
+ - **FIX**: skip remote call when a queued request is cancelled.
+ - **FEAT**: implement ConcurrencyLimitedSignerMixin for managing concurrent requests in signers.
+
+#### `ndk_flutter` - `v0.8.4-dev.0`
+
+ - **REFACTOR**: rename ConcurrencyLimitedSignerMixin to ConcurrencyLimiterMixin.
+ - **FIX**: skip remote call when a queued request is cancelled.
+ - **FEAT**: implement ConcurrencyLimitedSignerMixin for managing concurrent requests in signers.
+
+#### `nip07_event_signer` - `v1.1.0-dev.0`
+
+ - **REFACTOR**: rename ConcurrencyLimitedSignerMixin to ConcurrencyLimiterMixin.
+ - **FIX**: skip remote call when a queued request is cancelled.
+ - **FEAT**: implement ConcurrencyLimitedSignerMixin for managing concurrent requests in signers.
+
+
+## 2026-05-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.3`](#ndk---v083)
+
+---
+
+#### `ndk` - `v0.8.3`
+
+ - sync versions
+
+
+## 2026-05-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.3-dev.0`](#ndk---v083-dev0)
+
+---
+
+#### `ndk` - `v0.8.3-dev.0`
+
+
+## 2026-05-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.8.2-dev.0+1`](#ndk_flutter---v082-dev01)
+ - [`ndk_objectbox` - `v0.2.11-dev.0+1`](#ndk_objectbox---v0211-dev01)
+
+---
+
+#### `ndk_flutter` - `v0.8.2-dev.0+1`
+
+ - **REFACTOR**: remove unnecessary comments in saveAccountsState method.
+ - **FIX**: support WebEventSigner in saveAccountsState on web.
+
+#### `ndk_objectbox` - `v0.2.11-dev.0+1`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete pubspec.lock.
+ - **FIX**: objextbox delete transactions.
+
+
+## 2026-05-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.8.2`](#ndk---v082)
+ - [`ndk_drift` - `v0.1.1`](#ndk_drift---v011)
+ - [`ndk_flutter` - `v0.8.2`](#ndk_flutter---v082)
+ - [`ndk_objectbox` - `v0.2.11`](#ndk_objectbox---v0211)
+
+Packages with other changes:
+
+ - [`nip07_event_signer` - `v1.0.10`](#nip07_event_signer---v1010)
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `ndk` - `v0.8.2`
+ - `ndk_drift` - `v0.1.1`
+ - `ndk_flutter` - `v0.8.2`
+ - `ndk_objectbox` - `v0.2.11`
+ - `nip07_event_signer` - `v1.0.10`
+
+---
+
+#### `ndk` - `v0.8.2`
+
+#### `ndk_drift` - `v0.1.1`
+
+#### `ndk_flutter` - `v0.8.2`
+
+#### `ndk_objectbox` - `v0.2.11`
+
+#### `nip07_event_signer` - `v1.0.10`
+
+
+## 2026-05-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.2-dev.9`](#ndk---v082-dev9)
+ - [`ndk_drift` - `v0.1.1-dev.9`](#ndk_drift---v011-dev9)
+ - [`ndk_flutter` - `v0.8.2-dev.9`](#ndk_flutter---v082-dev9)
+ - [`ndk_objectbox` - `v0.2.11-dev.9`](#ndk_objectbox---v0211-dev9)
+ - [`nip07_event_signer` - `v1.0.10-dev.9`](#nip07_event_signer---v1010-dev9)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `nip07_event_signer` - `v1.0.10-dev.9`
+
+---
+
+#### `ndk` - `v0.8.2-dev.9`
+
+ - **REFACTOR**: rename Negentropy to NegentropyEncoder.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: move NIP-77 cleanup into async allFutures in destroy().
+ - **FIX**: delete transactions.
+ - **FIX**: delete proofs.
+ - **FIX**: privatize Nip77Internal.
+ - **FIX**: timeout completion guards.
+ - **FIX**: improve NOTICE detection for NIP-77 errors.
+ - **FIX**: reject truncated varint in NIP-77 decoder.
+ - **FIX**: use full filter for local cache in NIP-77 reconciliation.
+ - **FIX**: verify relay origin on NEG-MSG and NEG-ERR.
+ - **FIX**: close NIP-77 sessions in Ndk.destroy().
+ - **FIX**: no-op test.
+ - **FEAT**: nip77.
+
+#### `ndk_drift` - `v0.1.1-dev.9`
+
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.2-dev.9`
+
+ - **REFACTOR**: merge ndk_event_signer_web and web_event_signer_web.
+ - **REFACTOR**(signers,verifiers): rename to NdkEventSigner/Verifier and add factory.
+ - **REFACTOR**(signers): rename platform stub to native and clarify conditional export.
+ - **FIX**: use constant-time MAC comparison in NIP-44.
+ - **FIX**(web): fix WebEventSigner stub and JS crypto, add tests.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+ - **FEAT**: add PlatformEventSigner for automatic platform selection.
+ - **FEAT**: add web crypto benchmark.
+ - **FEAT**: add WebEventSigner for fast web crypto.
+
+#### `ndk_objectbox` - `v0.2.11-dev.9`
+
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: objextbox delete transactions.
+
+
+## 2026-05-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.2-dev.8`](#ndk---v082-dev8)
+ - [`ndk_drift` - `v0.1.1-dev.8`](#ndk_drift---v011-dev8)
+ - [`ndk_flutter` - `v0.8.2-dev.8`](#ndk_flutter---v082-dev8)
+ - [`ndk_objectbox` - `v0.2.11-dev.8`](#ndk_objectbox---v0211-dev8)
+ - [`nip07_event_signer` - `v1.0.10-dev.8`](#nip07_event_signer---v1010-dev8)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `nip07_event_signer` - `v1.0.10-dev.8`
+
+---
+
+#### `ndk` - `v0.8.2-dev.8`
+
+ - **REVERT**: seperate cache manger package.
+ - **REFACTOR**: use LocalEventSignerFactory for creating signers, keypairs.
+ - **REFACTOR**: event signer factory.
+ - **FIX**(test): avoid same-second collision in broadcast metadata test.
+ - **FIX**(test): apply NIP-01 replacement in MockRelay.
+ - **FIX**: use ephemeralSigner obj when available.
+ - **FIX**: use factory signer.
+ - **FIX**: return the complete signed event from remote signer.
+ - **FIX**: parse public tags on private list.
+ - **FIX**: update tearDown to cleanUp in cache manager test suite documentation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: remove test suite dependency from ndk (cycle).
+ - **FIX**: repeated listen breaks stream connection.
+ - **FEAT**: add getDmRelays for NIP-17 DM relay list (kind 10050).
+ - **FEAT**: add writeUrls getter to UserRelayList.
+ - **FEAT**: enhance Sembast support with platform-specific implementations and error handling.
+ - **FEAT**: add GiftWrapUnwrapResult for enhanced gift wrap unwrapping with signature verification.
+ - **FEAT**: implement conditional imports.
+ - **FEAT**: add web support to SembastCacheManager.
+
+#### `ndk_drift` - `v0.1.1-dev.8`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: circular dependency embed test suite.
+
+#### `ndk_flutter` - `v0.8.2-dev.8`
+
+ - **REFACTOR**: PlatformEventVerifier via conditional imports.
+ - **FIX**: use factory signer.
+ - **FEAT**(ndk_flutter): add PlatformEventVerifier.
+ - **FEAT**: implement NipAvatar utility to standardize initial generation and color selection for profiles and banners.
+
+#### `ndk_objectbox` - `v0.2.11-dev.8`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: circular dependency embed test suite.
+
+
+## 2026-05-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.2-dev.7`](#ndk---v082-dev7)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.14`](#ndk_cache_manager_test_suite---v101-dev14)
+ - [`ndk_drift` - `v0.1.1-dev.7`](#ndk_drift---v011-dev7)
+ - [`ndk_flutter` - `v0.8.2-dev.7`](#ndk_flutter---v082-dev7)
+ - [`ndk_objectbox` - `v0.2.11-dev.7`](#ndk_objectbox---v0211-dev7)
+ - [`nip07_event_signer` - `v1.0.10-dev.7`](#nip07_event_signer---v1010-dev7)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `nip07_event_signer` - `v1.0.10-dev.7`
+
+---
+
+#### `ndk` - `v0.8.2-dev.7`
+
+ - **REVERT**: seperate cache manger package.
+ - **REFACTOR**: use LocalEventSignerFactory for creating signers, keypairs.
+ - **REFACTOR**: event signer factory.
+ - **FIX**(test): avoid same-second collision in broadcast metadata test.
+ - **FIX**(test): apply NIP-01 replacement in MockRelay.
+ - **FIX**: use ephemeralSigner obj when available.
+ - **FIX**: use factory signer.
+ - **FIX**: return the complete signed event from remote signer.
+ - **FIX**: parse public tags on private list.
+ - **FIX**: update tearDown to cleanUp in cache manager test suite documentation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: remove test suite dependency from ndk (cycle).
+ - **FIX**: repeated listen breaks stream connection.
+ - **FEAT**: add getDmRelays for NIP-17 DM relay list (kind 10050).
+ - **FEAT**: add writeUrls getter to UserRelayList.
+ - **FEAT**: enhance Sembast support with platform-specific implementations and error handling.
+ - **FEAT**: add GiftWrapUnwrapResult for enhanced gift wrap unwrapping with signature verification.
+ - **FEAT**: implement conditional imports.
+ - **FEAT**: add web support to SembastCacheManager.
+
+#### `ndk_cache_manager_test_suite` - `v1.0.1-dev.14`
+
+ - **REVERT**: seperate cache manger package.
+ - **REFACTOR**: rename removeWallet.
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: delete pubspec.lock.
+ - **FIX**: merge assertions events.
+ - **FIX**: add changes to pub.dev changelog.
+ - **FIX**: separate wallets storage operations from cache manager.
+ - **FIX**: tests.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: override ndk dependency.
+ - **FIX**: test remove # for tag.
+ - **FEAT**: cashu remove mint info.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+
+#### `ndk_drift` - `v0.1.1-dev.7`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: circular dependency embed test suite.
+
+#### `ndk_flutter` - `v0.8.2-dev.7`
+
+ - **REFACTOR**: PlatformEventVerifier via conditional imports.
+ - **FIX**: use factory signer.
+ - **FEAT**(ndk_flutter): add PlatformEventVerifier.
+ - **FEAT**: implement NipAvatar utility to standardize initial generation and color selection for profiles and banners.
+
+#### `ndk_objectbox` - `v0.2.11-dev.7`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: circular dependency embed test suite.
+
+
 ## 2026-04-29
 
 ### Changes

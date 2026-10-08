@@ -1,11 +1,14 @@
 import 'package:ndk/shared/helpers/url_normalizer.dart';
 
 final RegExp relayUrlRegex = RegExp(
-    r'^(wss?:\/\/)([a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?)*|[0-9]{1,3}(?:\.[0-9]{1,3}){3}):?([0-9]{1,5})?(\/[^\s]*)?$');
+  r'^(wss?:\/\/)([a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?)*|[0-9]{1,3}(?:\.[0-9]{1,3}){3}):?([0-9]{1,5})?(\/[^\s]*)?$',
+);
 
 /// Matches extra slashes after protocol (e.g., wss:/// or wss:////)
-final RegExp _extraSlashesRegex =
-    RegExp(r'^(wss?:)\/{3,}', caseSensitive: false);
+final RegExp _extraSlashesRegex = RegExp(
+  r'^(wss?:)\/{3,}',
+  caseSensitive: false,
+);
 
 /// Normalizes a relay URL according to RFC 3986.
 ///
@@ -31,7 +34,9 @@ String? cleanRelayUrl(String adr) {
 
   // Remove extra slashes after protocol (e.g., wss:/// -> wss://)
   adr = adr.replaceFirstMapped(
-      _extraSlashesRegex, (match) => '${match.group(1)}//');
+    _extraSlashesRegex,
+    (match) => '${match.group(1)}//',
+  );
 
   // Parse using Dart's Uri class for RFC 3986 compliance
   Uri uri;

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart';
-import 'package:nip07_event_signer/nip07_event_signer.dart';
 
 class NSwitchAccount extends StatefulWidget {
   final NdkFlutter ndkFlutter;

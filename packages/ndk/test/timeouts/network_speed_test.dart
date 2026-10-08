@@ -56,19 +56,17 @@ void main() {
       final stopwatch = Stopwatch()..start();
 
       final response = ndk.requests.query(
-          filters: [
-            Filter(
-              authors: [key1.publicKey],
-              kinds: [Nip01Event.kTextNodeKind],
-            )
-          ],
-          timeout: Duration(milliseconds: timoutMiliseconds),
-          timeoutCallback: () {
-            timeoutTriggered = true;
-          },
-          timeoutCallbackUserFacing: () {
-            timeoutUserTriggered = true;
-          });
+        filters: [
+          Filter(authors: [key1.publicKey], kinds: [Nip01Event.kTextNodeKind]),
+        ],
+        timeout: Duration(milliseconds: timoutMiliseconds),
+        timeoutCallback: () {
+          timeoutTriggered = true;
+        },
+        timeoutCallbackUserFacing: () {
+          timeoutUserTriggered = true;
+        },
+      );
 
       // wait for completion
       final responseData = await response.future;
@@ -85,7 +83,8 @@ void main() {
 
       // ignore: avoid_print
       print(
-          'low level - network faster then timeout Query took: ${stopwatch.elapsedMilliseconds}ms');
+        'low level - network faster then timeout Query took: ${stopwatch.elapsedMilliseconds}ms',
+      );
     });
 
     test('query - one dead seed relay', () async {
@@ -96,7 +95,7 @@ void main() {
         bootstrapRelays: [
           relay1.url,
           relay2.url,
-          'wss://dead-relay.example.com'
+          'wss://dead-relay.example.com',
         ],
         logLevel: Logger.logLevels.all,
       );
@@ -109,19 +108,17 @@ void main() {
       final stopwatch = Stopwatch()..start();
 
       final response = ndk.requests.query(
-          filters: [
-            Filter(
-              authors: [key1.publicKey],
-              kinds: [Nip01Event.kTextNodeKind],
-            )
-          ],
-          timeout: Duration(milliseconds: timoutMiliseconds),
-          timeoutCallback: () {
-            timeoutTriggered = true;
-          },
-          timeoutCallbackUserFacing: () {
-            timeoutUserTriggered = true;
-          });
+        filters: [
+          Filter(authors: [key1.publicKey], kinds: [Nip01Event.kTextNodeKind]),
+        ],
+        timeout: Duration(milliseconds: timoutMiliseconds),
+        timeoutCallback: () {
+          timeoutTriggered = true;
+        },
+        timeoutCallbackUserFacing: () {
+          timeoutUserTriggered = true;
+        },
+      );
 
       // wait for completion
       final responseData = await response.future;
@@ -159,9 +156,7 @@ void main() {
 
     Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
 
-    Map<KeyPair, Nip65> nip65s = {
-      key1: nip65ForKey1,
-    };
+    Map<KeyPair, Nip65> nip65s = {key1: nip65ForKey1};
 
     const timoutMiliseconds = 5000;
 
@@ -195,8 +190,9 @@ void main() {
       // Start the stopwatch
       final stopwatch = Stopwatch()..start();
 
-      final response =
-          ndk.userRelayLists.getSingleUserRelayList(key1.publicKey);
+      final response = ndk.userRelayLists.getSingleUserRelayList(
+        key1.publicKey,
+      );
 
       // wait for completion
       await response;
@@ -211,7 +207,8 @@ void main() {
 
       // ignore: avoid_print
       print(
-          'high level - network faster then timeout Query took: ${stopwatch.elapsedMilliseconds}ms');
+        'high level - network faster then timeout Query took: ${stopwatch.elapsedMilliseconds}ms',
+      );
     });
 
     test('query - nip65 - no data', () async {
@@ -229,8 +226,9 @@ void main() {
       // Start the stopwatch
       final stopwatch = Stopwatch()..start();
 
-      final response =
-          ndk.userRelayLists.getSingleUserRelayList("notExistingPubkey");
+      final response = ndk.userRelayLists.getSingleUserRelayList(
+        "notExistingPubkey",
+      );
 
       // wait for completion
       await response;
@@ -289,20 +287,20 @@ void main() {
       // Start the stopwatch
       final stopwatch = Stopwatch()..start();
 
-      final response1 =
-          ndk.userRelayLists.getSingleUserRelayList(key1.publicKey);
+      final response1 = ndk.userRelayLists.getSingleUserRelayList(
+        key1.publicKey,
+      );
 
       // wait for completion
       final response1Data = await response1;
 
       expect(response1Data, isNotNull);
 
-      final response2 = ndk.requests.query(filters: [
-        Filter(
-          authors: [key1.publicKey],
-          kinds: [Nip01Event.kTextNodeKind],
-        )
-      ]);
+      final response2 = ndk.requests.query(
+        filters: [
+          Filter(authors: [key1.publicKey], kinds: [Nip01Event.kTextNodeKind]),
+        ],
+      );
 
       final responseData = await response2.future;
       expect(responseData, isNotEmpty);
@@ -327,10 +325,12 @@ void main() {
       ),
     );
 
-    final events = await ndk.requests.query(
-      filter: Filter(kinds: [1]),
-      explicitRelays: ['ws://127.0.0.1:59999'],
-    ).future;
+    final events = await ndk.requests
+        .query(
+          filter: Filter(kinds: [1]),
+          explicitRelays: ['ws://127.0.0.1:59999'],
+        )
+        .future;
 
     expect(events, isEmpty);
   });

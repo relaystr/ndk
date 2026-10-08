@@ -12,9 +12,17 @@ class MockFailingSigner implements EventSigner {
   MockFailingSigner({required String publicKey}) : _publicKey = publicKey;
 
   @override
+  bool get requiresInteractiveSigning => true;
+
+  @override
+  bool get requiresSignerNetwork => false;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls => const <String>[];
+
+  @override
   Future<Nip01Event> sign(Nip01Event event) async {
     throw SignerRequestRejectedException(
-      requestId: 'mock-request-id',
       originalMessage: 'User rejected the signing request',
     );
   }
@@ -23,17 +31,15 @@ class MockFailingSigner implements EventSigner {
   String getPublicKey() => _publicKey;
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> decrypt(String msg, String destPubKey) async {
     throw SignerRequestRejectedException(
-      requestId: id,
       originalMessage: 'User rejected the decrypt request',
     );
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> encrypt(String msg, String destPubKey) async {
     throw SignerRequestRejectedException(
-      requestId: id,
       originalMessage: 'User rejected the encrypt request',
     );
   }

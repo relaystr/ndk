@@ -47,10 +47,12 @@ class CahsuKeyset {
       active: json['active'] as bool,
       inputFeePPK: json['inputFeePPK'] as int,
       mintKeyPairs: (json['mintKeyPairs'] as List<dynamic>)
-          .map((e) => CahsuMintKeyPair(
-                amount: e['amount'] as int,
-                pubkey: e['pubkey'] as String,
-              ))
+          .map(
+            (e) => CahsuMintKeyPair(
+              amount: e['amount'] as int,
+              pubkey: e['pubkey'] as String,
+            ),
+          )
           .toSet(),
     );
   }
@@ -74,10 +76,7 @@ class CahsuMintKeyPair {
   final int amount;
   final String pubkey;
 
-  CahsuMintKeyPair({
-    required this.amount,
-    required this.pubkey,
-  });
+  CahsuMintKeyPair({required this.amount, required this.pubkey});
 }
 
 class CahsuKeysetResponse {
@@ -135,10 +134,7 @@ class CahsuKeysResponse {
       /// => skipped
       final amount = int.tryParse(entry.key);
       if (amount != null) {
-        mintKeyPairs.add(CahsuMintKeyPair(
-          amount: amount,
-          pubkey: entry.value,
-        ));
+        mintKeyPairs.add(CahsuMintKeyPair(amount: amount, pubkey: entry.value));
       }
     }
 

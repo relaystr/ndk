@@ -10,6 +10,8 @@ class NwcMethod {
   static const NwcMethod GET_INFO = NwcMethod('get_info');
   static const NwcMethod GET_BALANCE = NwcMethod('get_balance');
   static const NwcMethod GET_BUDGET = NwcMethod('get_budget');
+  static const NwcMethod PAY = NwcMethod('pay');
+  static const NwcMethod RECEIVE = NwcMethod('receive');
   static const NwcMethod PAY_INVOICE = NwcMethod('pay_invoice');
   static const NwcMethod MULTI_PAY_INVOICE = NwcMethod('multi_pay_invoice');
   static const NwcMethod PAY_KEYSEND = NwcMethod('pay_keysend');
@@ -25,6 +27,8 @@ class NwcMethod {
 
   // Registry to store all methods by their plaintext
   static final Map<String, NwcMethod> _methodsRegistry = {
+    PAY.name: PAY,
+    RECEIVE.name: RECEIVE,
     PAY_INVOICE.name: PAY_INVOICE,
     MULTI_PAY_INVOICE.name: MULTI_PAY_INVOICE,
     PAY_KEYSEND.name: PAY_KEYSEND,

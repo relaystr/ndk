@@ -24,15 +24,13 @@ void main() async {
       final completer = Completer<void>();
       final ndk = Ndk(
         NdkConfig(
-            eventVerifier: Bip340EventVerifier(),
-            cache: MemCacheManager(),
-            bootstrapRelays: relays),
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: relays,
+        ),
       );
 
-      ndk.accounts.loginPrivateKey(
-        privkey: myPrivKey,
-        pubkey: myPubkey,
-      );
+      ndk.accounts.loginPrivateKey(privkey: myPrivKey, pubkey: myPubkey);
 
       final subscription = ndk.requests.subscription(
         filters: [
@@ -42,8 +40,9 @@ void main() async {
 
       subscription.stream.listen((giftWrap) async {
         try {
-          final messageEvent =
-              await ndk.giftWrap.fromGiftWrap(giftWrap: giftWrap);
+          final messageEvent = await ndk.giftWrap.fromGiftWrap(
+            giftWrap: giftWrap,
+          );
           log(messageEvent.content);
 
           expect(messageEvent.content.length, greaterThan(1));

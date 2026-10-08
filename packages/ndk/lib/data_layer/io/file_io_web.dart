@@ -21,8 +21,10 @@ class FileIOWeb implements FileIO {
   final Map<String, File> _fileCache = {};
 
   @override
-  Stream<Uint8List> readFileAsStream(String filePath,
-      {int chunkSize = 8192}) async* {
+  Stream<Uint8List> readFileAsStream(
+    String filePath, {
+    int chunkSize = 8192,
+  }) async* {
     final file = await _getFile(filePath);
     if (file == null) {
       throw Exception('No file selected or file not found');
@@ -32,8 +34,9 @@ class FileIOWeb implements FileIO {
     final int totalSize = file.size;
 
     while (offset < totalSize) {
-      final int end =
-          (offset + chunkSize < totalSize) ? offset + chunkSize : totalSize;
+      final int end = (offset + chunkSize < totalSize)
+          ? offset + chunkSize
+          : totalSize;
 
       // Read chunk as blob slice
       final blob = file.slice(offset, end);
@@ -52,7 +55,9 @@ class FileIOWeb implements FileIO {
 
   @override
   Future<void> writeFileStream(
-      String filePath, Stream<Uint8List> dataStream) async {
+    String filePath,
+    Stream<Uint8List> dataStream,
+  ) async {
     // Collect all chunks into a single Uint8List for download
     final chunks = <Uint8List>[];
     await for (final chunk in dataStream) {
@@ -136,10 +141,9 @@ class FileIOWeb implements FileIO {
 
   /// Use File System Access API
   Future<List<JSObject>> _showOpenFilePicker() async {
-    final options = {
-      'multiple': false,
-      'excludeAcceptAllOption': false,
-    }.jsify() as JSObject;
+    final options =
+        {'multiple': false, 'excludeAcceptAllOption': false}.jsify()
+            as JSObject;
 
     final windowObj = window as JSObject;
     final showOpenFilePicker = windowObj['showOpenFilePicker'] as JSFunction;
@@ -174,15 +178,16 @@ class FileIOWeb implements FileIO {
 
     final completer = Completer<File?>();
     input.addEventListener(
-        'change',
-        (Event event) {
-          final files = input.files;
-          if (files != null && files.length > 0) {
-            completer.complete(files.item(0));
-          } else {
-            completer.complete(null);
-          }
-        }.toJS);
+      'change',
+      (Event event) {
+        final files = input.files;
+        if (files != null && files.length > 0) {
+          completer.complete(files.item(0));
+        } else {
+          completer.complete(null);
+        }
+      }.toJS,
+    );
 
     return completer.future;
   }
@@ -194,17 +199,19 @@ class FileIOWeb implements FileIO {
 
     final completer = Completer<Uint8List>();
     reader.addEventListener(
-        'load',
-        (Event event) {
-          final result = reader.result as JSArrayBuffer;
-          completer.complete(result.toDart.asUint8List());
-        }.toJS);
+      'load',
+      (Event event) {
+        final result = reader.result as JSArrayBuffer;
+        completer.complete(result.toDart.asUint8List());
+      }.toJS,
+    );
 
     reader.addEventListener(
-        'error',
-        (Event event) {
-          completer.completeError(Exception('Failed to read blob'));
-        }.toJS);
+      'error',
+      (Event event) {
+        completer.completeError(Exception('Failed to read blob'));
+      }.toJS,
+    );
 
     return completer.future;
   }

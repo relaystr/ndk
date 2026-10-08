@@ -5,17 +5,14 @@ import 'nwc_request.dart';
 class MultiPayInvoiceRequest extends NwcRequest {
   final List<MultiPayInvoiceRequestInvoicesElement> invoices;
 
-  const MultiPayInvoiceRequest({
-    required this.invoices,
-  }) : super(method: NwcMethod.MULTI_PAY_INVOICE);
+  const MultiPayInvoiceRequest({required this.invoices})
+    : super(method: NwcMethod.MULTI_PAY_INVOICE);
 
   @override
   Map<String, dynamic> toMap() {
     return {
       ...super.toMap(),
-      'params': {
-        'invoices': invoices.map((e) => e.toMap()).toList(),
-      }
+      'params': {'invoices': invoices.map((e) => e.toMap()).toList()},
     };
   }
 }
@@ -31,10 +28,7 @@ class MultiPayInvoiceRequestInvoicesElement {
 
   Map<String, dynamic> toMap() {
     return {
-      'params': {
-        'invoice': invoice,
-        'amount': amountSat * 1000,
-      }
+      'params': {'invoice': invoice, 'amount': amountSat * 1000},
     };
   }
 }

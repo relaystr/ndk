@@ -16,10 +16,8 @@ class NdkLogger {
   final List<LogOutput> _outputs;
 
   /// Constructor
-  NdkLogger({
-    required this.level,
-    List<LogOutput>? outputs,
-  }) : _outputs = outputs ?? [];
+  NdkLogger({required this.level, List<LogOutput>? outputs})
+    : _outputs = outputs ?? [];
 
   /// Add an output to the logger
   void addOutput(LogOutput output) {

@@ -6,5 +6,5 @@ enum UploadStrategy {
   allSimultaneous,
 
   /// Upload to first successful server only
-  firstSuccess
+  firstSuccess,
 }

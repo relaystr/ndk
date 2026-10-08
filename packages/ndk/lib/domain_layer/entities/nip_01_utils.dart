@@ -73,8 +73,9 @@ class Nip01Utils {
         pubKey: pubKey,
         createdAt: createdAt,
         kind: kind,
-        tags:
-            List<List<String>>.from(tags.map((tag) => List<String>.from(tag))),
+        tags: List<List<String>>.from(
+          tags.map((tag) => List<String>.from(tag)),
+        ),
         content: content,
         sig: null,
         validSig: null,
@@ -91,18 +92,19 @@ class Nip01Utils {
     required List<dynamic> tags,
     required String content,
   }) async {
-    final id =
-        await IsolateManager.instance.runInComputeIsolate<Nip01Event, String>(
-      calculateId,
-      Nip01Event(
-        pubKey: publicKey,
-        createdAt: createdAt,
-        kind: kind,
-        tags:
-            List<List<String>>.from(tags.map((tag) => List<String>.from(tag))),
-        content: content,
-      ),
-    );
+    final id = await IsolateManager.instance
+        .runInComputeIsolate<Nip01Event, String>(
+          calculateId,
+          Nip01Event(
+            pubKey: publicKey,
+            createdAt: createdAt,
+            kind: kind,
+            tags: List<List<String>>.from(
+              tags.map((tag) => List<String>.from(tag)),
+            ),
+            content: content,
+          ),
+        );
     return id;
   }
 
@@ -114,7 +116,7 @@ class Nip01Utils {
       model.createdAt,
       model.kind,
       model.tags,
-      model.content
+      model.content,
     ]);
     final bytes = utf8.encode(jsonData);
     final digest = sha256.convert(bytes);
@@ -129,10 +131,7 @@ class Nip01Utils {
   }) {
     String id = calculateId(event);
 
-    final signature = Bip340.sign(
-      id,
-      privateKey,
-    );
+    final signature = Bip340.sign(id, privateKey);
     return event.copyWith(sig: signature, validSig: true);
   }
 }

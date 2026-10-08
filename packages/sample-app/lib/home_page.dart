@@ -18,6 +18,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   StreamSubscription<Account?>? _authSub;
+  VoidCallback? _dmListener;
 
   @override
   void initState() {
@@ -25,11 +26,20 @@ class _HomePageState extends State<HomePage> {
     _authSub = ndk.accounts.authStateChanges.listen((_) {
       if (mounted) setState(() {});
     });
+    _dmListener = () {
+      if (mounted) {
+        setState(() {});
+      }
+    };
+    dmLiveState.addListener(_dmListener!);
   }
 
   @override
   void dispose() {
     _authSub?.cancel();
+    if (_dmListener != null) {
+      dmLiveState.removeListener(_dmListener!);
+    }
     super.dispose();
   }
 
@@ -43,11 +53,18 @@ class _HomePageState extends State<HomePage> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(l10n.appBarTitle),
-            const SizedBox(width: 8),
-            Text(
-              'v$packageVersion',
-              style: Theme.of(context).textTheme.bodyMedium,
+            Flexible(
+              child: Text(
+                l10n.appBarTitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const Text(' · '),
+            NAppVersion(
+              controller: appUpdater,
+              fallbackVersion: packageVersion,
+              style: Theme.of(context).appBarTheme.titleTextStyle,
             ),
           ],
         ),
@@ -71,9 +88,22 @@ class _HomePageState extends State<HomePage> {
                       ),
                     )
                   : NPicture(ndkFlutter: ndkFlutter, circleAvatarRadius: 14);
+              final unreadDmCount =
+                  loggedPubkey == null ? 0 : dmLiveState.unreadCount;
               return IconButton(
                 tooltip: l10n.profileTooltip,
                 onPressed: () {
+                  final unreadTargetPubKey = dmLiveState.latestUnreadPeerPubKey;
+                  final unreadPeerCount = dmLiveState.unreadPeerCount;
+                  if (loggedPubkey != null && unreadDmCount > 0) {
+                    if (unreadPeerCount == 1 && unreadTargetPubKey != null) {
+                      dmLiveState.clearUnreadForPeer(unreadTargetPubKey);
+                      context.push('/dm/conversation/$unreadTargetPubKey');
+                      return;
+                    }
+                    context.push('/dm');
+                    return;
+                  }
                   if (loggedPubkey != null) {
                     context.push('/profile');
                     return;
@@ -84,7 +114,46 @@ class _HomePageState extends State<HomePage> {
                     onLoggedIn: () {},
                   );
                 },
-                icon: profileIcon,
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    profileIcon,
+                    if (unreadDmCount > 0)
+                      Positioned(
+                        right: -2,
+                        top: -2,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.error,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.surface,
+                              width: 1,
+                            ),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 16,
+                            minHeight: 16,
+                          ),
+                          child: Text(
+                            unreadDmCount > 99 ? '99+' : '$unreadDmCount',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.onError,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               );
             },
           ),
@@ -165,6 +234,32 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 8),
           _NavCard(
+            icon: Icons.people_alt_outlined,
+            title: 'Follows',
+            onTap: () => context.push('/follows'),
+          ),
+          const SizedBox(height: 8),
+          _NavCard(
+            icon: Icons.forum,
+            title: 'DM',
+            trailing: loggedPubkey != null && dmLiveState.unreadCount > 0
+                ? _UnreadBadge(count: dmLiveState.unreadCount)
+                : null,
+            onTap: () {
+              final unreadTargetPubKey = dmLiveState.latestUnreadPeerPubKey;
+              final unreadPeerCount = dmLiveState.unreadPeerCount;
+              if (loggedPubkey != null && dmLiveState.unreadCount > 0) {
+                if (unreadPeerCount == 1 && unreadTargetPubKey != null) {
+                  dmLiveState.clearUnreadForPeer(unreadTargetPubKey);
+                  context.push('/dm/conversation/$unreadTargetPubKey');
+                  return;
+                }
+              }
+              context.push('/dm');
+            },
+          ),
+          const SizedBox(height: 8),
+          _NavCard(
             icon: Icons.security,
             title: 'Quantum Secure',
             onTap: () => context.push('/quantum'),
@@ -179,11 +274,13 @@ class _NavCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final VoidCallback onTap;
+  final Widget? trailing;
 
   const _NavCard({
     required this.icon,
     required this.title,
     required this.onTap,
+    this.trailing,
   });
 
   @override
@@ -193,8 +290,32 @@ class _NavCard extends StatelessWidget {
       child: ListTile(
         leading: Icon(icon),
         title: Text(title),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: trailing ?? const Icon(Icons.chevron_right),
         onTap: onTap,
+      ),
+    );
+  }
+}
+
+class _UnreadBadge extends StatelessWidget {
+  final int count;
+
+  const _UnreadBadge({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.error,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        count > 99 ? '99+' : '$count',
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: Theme.of(context).colorScheme.onError,
+              fontWeight: FontWeight.w700,
+            ),
       ),
     );
   }

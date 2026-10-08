@@ -76,8 +76,9 @@ void main() {
 
       // check that the notCoveredPubkeys are the ones that have no data
       for (var i = 10; i < 20; i++) {
-        bool foundInNotCovered = result.notCoveredPubkeys
-            .any((cp) => cp.pubkey == searchingPubkeys[i].pubkey);
+        bool foundInNotCovered = result.notCoveredPubkeys.any(
+          (cp) => cp.pubkey == searchingPubkeys[i].pubkey,
+        );
         expect(foundInNotCovered, true);
       }
     });
@@ -86,7 +87,8 @@ void main() {
 
 final _random = Random();
 String getRandomString(int length) => String.fromCharCodes(
-    Iterable.generate(length, (_) => _random.nextInt(26) + 97));
+  Iterable.generate(length, (_) => _random.nextInt(26) + 97),
+);
 
 String getRandomReadWrite() {
   final options = ['read', 'write', 'readwrite'];
@@ -98,12 +100,12 @@ List<List<String>> getRandomTags() {
     [
       'r',
       'wss://relay-${getRandomString(3)}.${getRandomReadWrite()}',
-      getRandomReadWrite()
+      getRandomReadWrite(),
     ],
     [
       'r',
       'wss://relay-${getRandomString(3)}.${getRandomReadWrite()}',
-      getRandomReadWrite()
+      getRandomReadWrite(),
     ],
     ['r', 'wss://relay-${getRandomString(3)}.${getRandomReadWrite()}'],
   ];

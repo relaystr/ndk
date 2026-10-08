@@ -1,12 +1,20 @@
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:ndk/data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/nip_01_utils.dart';
+import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/domain_layer/entities/nip_51_list.dart';
 import 'package:test/test.dart';
 
 void main() {
+  EventSigner eventSignerFactory({
+    String? privateKey,
+    required String publicKey,
+  }) => Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
+
   group('Nip51 Relay Sets', () {
     test('fromEvent public', () async {
       final event = Nip01Event(
@@ -22,8 +30,10 @@ void main() {
         ],
       );
       final nip51RelaySet = await Nip51Set.fromEvent(event, null);
-      expect(['wss://example.com', 'wss://example.org'],
-          nip51RelaySet!.publicRelays);
+      expect([
+        'wss://example.com',
+        'wss://example.org',
+      ], nip51RelaySet!.publicRelays);
 
       Nip01Event toEvent = await nip51RelaySet.toEvent(null);
       event.tags.removeLast();
@@ -35,22 +45,82 @@ void main() {
     });
     test('fromEvent private', () async {
       KeyPair key1 = Bip340.generatePrivateKey();
-      Bip340EventSigner signer = Bip340EventSigner(
+      EventSigner signer = eventSignerFactory(
         privateKey: key1.privateKey,
         publicKey: key1.publicKey,
       );
 
       Nip51Set relaySet = Nip51Set(
-          pubKey: key1.publicKey,
-          kind: Nip51List.kRelaySet,
-          name: "test",
-          createdAt: Helpers.now,
-          elements: []);
+        pubKey: key1.publicKey,
+        kind: Nip51List.kRelaySet,
+        name: "test",
+        createdAt: Helpers.now,
+        elements: [],
+      );
       relaySet.privateRelays = ['wss://example.com', 'wss://example.org'];
       Nip01Event event = await relaySet.toEvent(signer);
       Nip51Set? from = await Nip51Set.fromEvent(event, signer);
 
       expect(relaySet.privateRelays, from!.privateRelays);
+    });
+
+    test('toEvent id matches the payload', () async {
+      KeyPair key1 = Bip340.generatePrivateKey();
+      EventSigner signer = eventSignerFactory(
+        privateKey: key1.privateKey,
+        publicKey: key1.publicKey,
+      );
+
+      Nip51Set relaySet = Nip51Set(
+        pubKey: key1.publicKey,
+        kind: Nip51List.kRelaySet,
+        name: "test",
+        createdAt: Helpers.now,
+        elements: [],
+      );
+      relaySet.addRelay('wss://example.com', false);
+
+      Nip01Event event = await relaySet.toEvent(signer);
+
+      expect(
+        event.id,
+        Nip01Utils.calculateEventIdSync(
+          pubKey: event.pubKey,
+          createdAt: event.createdAt,
+          kind: event.kind,
+          tags: event.tags,
+          content: event.content,
+        ),
+      );
+      expect(Nip01Utils.isIdValid(event), isTrue);
+    });
+
+    test('toEvent with metadata produces a verifiable event', () async {
+      KeyPair key1 = Bip340.generatePrivateKey();
+      EventSigner signer = eventSignerFactory(
+        privateKey: key1.privateKey,
+        publicKey: key1.publicKey,
+      );
+
+      Nip51Set relaySet = Nip51Set(
+        pubKey: key1.publicKey,
+        kind: Nip51List.kRelaySet,
+        name: "test",
+        title: "My Set Title",
+        description: "This is a description",
+        image: "https://example.com/image.png",
+        createdAt: Helpers.now,
+        elements: [],
+      );
+      relaySet.addRelay('wss://example.com', false);
+      relaySet.addRelay('wss://example.org', true);
+
+      Nip01Event event = await signer.sign(await relaySet.toEvent(signer));
+
+      expect(
+        await Bip340EventVerifier(useIsolate: false).verify(event),
+        isTrue,
+      );
     });
   });
   group('Nip51 Relay Lists', () {
@@ -67,8 +137,10 @@ void main() {
         ],
       );
       final nip51RelayList = await Nip51List.fromEvent(event, null);
-      expect(['wss://example.com', 'wss://example.org'],
-          nip51RelayList.publicRelays);
+      expect([
+        'wss://example.com',
+        'wss://example.org',
+      ], nip51RelayList.publicRelays);
 
       Nip01Event toEvent = await nip51RelayList.toEvent(null);
       event.tags.removeLast();
@@ -80,16 +152,17 @@ void main() {
     });
     test('fromEvent private', () async {
       KeyPair key1 = Bip340.generatePrivateKey();
-      Bip340EventSigner signer = Bip340EventSigner(
+      EventSigner signer = eventSignerFactory(
         privateKey: key1.privateKey,
         publicKey: key1.publicKey,
       );
 
       Nip51List relayList = Nip51List(
-          pubKey: key1.publicKey,
-          kind: Nip51List.kSearchRelays,
-          createdAt: Helpers.now,
-          elements: []);
+        pubKey: key1.publicKey,
+        kind: Nip51List.kSearchRelays,
+        createdAt: Helpers.now,
+        elements: [],
+      );
       relayList.privateRelays = ['wss://example.com', 'wss://example.org'];
       Nip01Event event = await relayList.toEvent(signer);
       Nip51List? from = await Nip51List.fromEvent(event, signer);
@@ -99,7 +172,7 @@ void main() {
 
     test('toEvent, fromEvent set metadata', () async {
       KeyPair key1 = Bip340.generatePrivateKey();
-      Bip340EventSigner signer = Bip340EventSigner(
+      EventSigner signer = eventSignerFactory(
         privateKey: key1.privateKey,
         publicKey: key1.publicKey,
       );

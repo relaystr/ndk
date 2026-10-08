@@ -17,7 +17,7 @@ Future<sembast.Database> openDatabase({
       databasePath,
       'databasePath',
       'databasePath is required on native platforms. '
-      'Provide a valid directory path for database storage.',
+          'Provide a valid directory path for database storage.',
     );
   }
 

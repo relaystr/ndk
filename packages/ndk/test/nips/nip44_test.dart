@@ -1,9 +1,12 @@
 import 'dart:convert';
+
 import 'package:ndk/shared/nips/nip44/nip44.dart';
 import 'package:ndk/shared/nips/nip44/utils.dart';
 import 'package:test/test.dart';
 import 'package:elliptic/elliptic.dart' as elliptic;
+
 import 'dart:typed_data';
+
 import 'package:crypto/crypto.dart';
 
 Uint8List hexToBytes(String hex) {
@@ -26,24 +29,31 @@ String bytesToHex(Uint8List bytes) {
   return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
 }
 
-void assertConversationKeyGeneration(String privKeyHex, String pubKeyHex,
-    String expectedConversationKeyHex) async {
+void assertConversationKeyGeneration(
+  String privKeyHex,
+  String pubKeyHex,
+  String expectedConversationKeyHex,
+) async {
   final sharedSecret = Nip44.computeSharedSecret(privKeyHex, pubKeyHex);
   final conversationKey = Nip44.deriveConversationKey(sharedSecret);
 
   final expectedConversationKey = hexToBytes(expectedConversationKeyHex);
 
-  expect(conversationKey, equals(expectedConversationKey),
-      reason: 'Conversation key does not match expected value');
+  expect(
+    conversationKey,
+    equals(expectedConversationKey),
+    reason: 'Conversation key does not match expected value',
+  );
 }
 
 Future<void> assertCryptPriv(
-    String sk1Hex,
-    String sk2Hex,
-    String expectedConversationKeyHex,
-    String nonceHex,
-    String plaintext,
-    String expectedCiphertext) async {
+  String sk1Hex,
+  String sk2Hex,
+  String expectedConversationKeyHex,
+  String nonceHex,
+  String plaintext,
+  String expectedCiphertext,
+) async {
   // Compute public keys from private keys
   final ec = elliptic.getS256();
   final sk1 = elliptic.PrivateKey.fromHex(ec, sk1Hex);
@@ -62,8 +72,11 @@ Future<void> assertCryptPriv(
     customNonce: nonce,
   );
 
-  expect(encryptedMessage, equals(expectedCiphertext),
-      reason: 'Encrypted message does not match expected value');
+  expect(
+    encryptedMessage,
+    equals(expectedCiphertext),
+    reason: 'Encrypted message does not match expected value',
+  );
 
   final decryptedMessage = await Nip44.decryptMessage(
     encryptedMessage,
@@ -71,8 +84,11 @@ Future<void> assertCryptPriv(
     pk1Hex,
   );
 
-  expect(decryptedMessage, equals(plaintext),
-      reason: 'Decrypted message does not match plaintext');
+  expect(
+    decryptedMessage,
+    equals(plaintext),
+    reason: 'Decrypted message does not match plaintext',
+  );
 }
 
 Future<String> decryptMessageWithConversationKey(
@@ -96,8 +112,11 @@ Future<String> decryptMessageWithConversationKey(
 
   verifyMac(hmacKey, nonce, ciphertext, mac);
 
-  final paddedPlaintext =
-      await decryptChaCha20(chachaKey, chachaNonce, ciphertext);
+  final paddedPlaintext = await decryptChaCha20(
+    chachaKey,
+    chachaNonce,
+    ciphertext,
+  );
 
   final plaintextBytes = unpad(paddedPlaintext);
 
@@ -115,16 +134,16 @@ Future<void> assertDecryptFail(
 
   try {
     // Attempt to decrypt the message using the conversation key
-    await decryptMessageWithConversationKey(
-      ciphertext,
-      conversationKey,
-    );
+    await decryptMessageWithConversationKey(ciphertext, conversationKey);
     // If no exception is thrown, the test should fail
     fail('Expected decryption to fail, but it succeeded');
   } catch (e) {
     // Check that the error message contains the expected substring
-    expect(e.toString(), contains(expectedErrorMessage),
-        reason: 'Error message does not contain expected text');
+    expect(
+      e.toString(),
+      contains(expectedErrorMessage),
+      reason: 'Error message does not contain expected text',
+    );
   }
 }
 
@@ -142,8 +161,11 @@ Future<void> assertConversationKeyFail(
     fail('Expected conversation key generation to fail, but it succeeded');
   } catch (e) {
     // Check that the error message contains the expected substring
-    expect(e.toString(), contains(expectedErrorMessage),
-        reason: 'Error message does not contain expected text');
+    expect(
+      e.toString(),
+      contains(expectedErrorMessage),
+      reason: 'Error message does not contain expected text',
+    );
   }
 }
 
@@ -165,8 +187,11 @@ Future<String> encryptMessageWithConversationKey(
   final paddedPlaintext = pad(utf8.encode(plaintext));
 
   // Step 4: Encrypt
-  final ciphertext =
-      await encryptChaCha20(chachaKey, chachaNonce, paddedPlaintext);
+  final ciphertext = await encryptChaCha20(
+    chachaKey,
+    chachaNonce,
+    paddedPlaintext,
+  );
 
   // Step 5: Calculate MAC
   final mac = calculateMac(hmacKey, nonce, ciphertext);
@@ -193,12 +218,16 @@ Future<void> assertCryptLong(
   // Compute SHA256 hash of plaintext
   final plaintextBytes = utf8.encode(plaintext);
   final actualPlaintextSha256 = sha256.convert(plaintextBytes).bytes;
-  final actualPlaintextSha256Hex =
-      bytesToHex(Uint8List.fromList(actualPlaintextSha256));
+  final actualPlaintextSha256Hex = bytesToHex(
+    Uint8List.fromList(actualPlaintextSha256),
+  );
 
   // Compare plaintext hash
-  expect(actualPlaintextSha256Hex, equals(expectedPlaintextSha256Hex),
-      reason: 'Plaintext SHA256 hash does not match expected value');
+  expect(
+    actualPlaintextSha256Hex,
+    equals(expectedPlaintextSha256Hex),
+    reason: 'Plaintext SHA256 hash does not match expected value',
+  );
 
   // Encrypt plaintext
   final encryptedMessage = await encryptMessageWithConversationKey(
@@ -210,12 +239,16 @@ Future<void> assertCryptLong(
   // Compute SHA256 hash of payload
   final payloadBytes = utf8.encode(encryptedMessage);
   final actualPayloadSha256 = sha256.convert(payloadBytes).bytes;
-  final actualPayloadSha256Hex =
-      bytesToHex(Uint8List.fromList(actualPayloadSha256));
+  final actualPayloadSha256Hex = bytesToHex(
+    Uint8List.fromList(actualPayloadSha256),
+  );
 
   // Compare payload hash
-  expect(actualPayloadSha256Hex, equals(expectedPayloadSha256Hex),
-      reason: 'Payload SHA256 hash does not match expected value');
+  expect(
+    actualPayloadSha256Hex,
+    equals(expectedPayloadSha256Hex),
+    reason: 'Payload SHA256 hash does not match expected value',
+  );
 }
 
 void assertMessageKeyGeneration(
@@ -237,12 +270,21 @@ void assertMessageKeyGeneration(
   final expectedChachaNonce = hexToBytes(expectedChachaNonceHex);
   final expectedHmacKey = hexToBytes(expectedHmacKeyHex);
 
-  expect(chachaKey, equals(expectedChachaKey),
-      reason: 'ChaCha20 key does not match expected value');
-  expect(chachaNonce, equals(expectedChachaNonce),
-      reason: 'ChaCha20 nonce does not match expected value');
-  expect(hmacKey, equals(expectedHmacKey),
-      reason: 'HMAC key does not match expected value');
+  expect(
+    chachaKey,
+    equals(expectedChachaKey),
+    reason: 'ChaCha20 key does not match expected value',
+  );
+  expect(
+    chachaNonce,
+    equals(expectedChachaNonce),
+    reason: 'ChaCha20 nonce does not match expected value',
+  );
+  expect(
+    hmacKey,
+    equals(expectedHmacKey),
+    reason: 'HMAC key does not match expected value',
+  );
 }
 
 Uint8List generateConversationKey(String privKeyHex, String pubKeyHex) {
@@ -252,12 +294,18 @@ Uint8List generateConversationKey(String privKeyHex, String pubKeyHex) {
 }
 
 void assertConversationKeyGenerationPub(
-    String privKeyHex, String pubKeyHex, String expectedConversationKeyHex) {
+  String privKeyHex,
+  String pubKeyHex,
+  String expectedConversationKeyHex,
+) {
   final expectedConversationKey = hexToBytes(expectedConversationKeyHex);
   //final pk = '02$pubKeyHex';
   final actualConversationKey = generateConversationKey(privKeyHex, pubKeyHex);
-  expect(actualConversationKey, equals(expectedConversationKey),
-      reason: 'Conversation key does not match expected value');
+  expect(
+    actualConversationKey,
+    equals(expectedConversationKey),
+    reason: 'Conversation key does not match expected value',
+  );
 }
 
 void main() {
@@ -420,7 +468,7 @@ void main() {
     await assertConversationKeyFail(
       'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
       '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-      'SchnorrException: point is not on curve',
+      'public key is not on this curve',
     );
   });
 
@@ -429,7 +477,7 @@ void main() {
     await assertConversationKeyFail(
       '0000000000000000000000000000000000000000000000000000000000000000',
       '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-      'SchnorrException: point is not on curve',
+      'public key is not on this curve',
     );
   });
 
@@ -447,7 +495,7 @@ void main() {
     await assertConversationKeyFail(
       'fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141',
       '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-      'SchnorrException: point is not on curve',
+      'public key is not on this curve',
     );
   });
 
@@ -456,7 +504,7 @@ void main() {
     await assertConversationKeyFail(
       '0000000000000000000000000000000000000000000000000000000000000002',
       '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-      'SchnorrException: point is not on curve',
+      'public key is not on this curve',
     );
   });
 
@@ -465,7 +513,7 @@ void main() {
     await assertConversationKeyFail(
       '0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20',
       '0000000000000000000000000000000000000000000000000000000000000000',
-      'SchnorrException: point is not on curve',
+      'public key is not on this curve',
     );
   });
 
@@ -474,7 +522,7 @@ void main() {
     await assertConversationKeyFail(
       '0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20',
       'eb1f7200aecaa86682376fb1c13cd12b732221e774f553b0a0857f88fa20f86d',
-      'SchnorrException: point is not on curve',
+      'public key is not on this curve',
     );
   });
 
@@ -483,7 +531,7 @@ void main() {
     await assertConversationKeyFail(
       '0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20',
       '709858a4c121e4a84eb59c0ded0261093c71e8ca29efeef21a6161c447bcaf9f',
-      'SchnorrException: point is not on curve',
+      'public key is not on this curve',
     );
   });
 

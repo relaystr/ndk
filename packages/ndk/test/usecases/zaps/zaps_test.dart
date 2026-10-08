@@ -6,6 +6,7 @@ import 'package:mockito/mockito.dart';
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/lnurl_http_impl.dart';
 import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
 import 'package:ndk/domain_layer/usecases/zaps/zap_request.dart';
 import 'package:ndk/domain_layer/usecases/zaps/zaps.dart';
@@ -19,6 +20,11 @@ import '../lnurl/lnurl_test.mocks.dart';
 // Mock classes
 @GenerateMocks([http.Client])
 void main() {
+  EventSigner eventSignerFactory({
+    String? privateKey,
+    required String publicKey,
+  }) => Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
+
   group('Zaps', () {
     KeyPair key = Bip340.generatePrivateKey();
 
@@ -32,26 +38,32 @@ void main() {
       final link = 'https://domain.com/.well-known/lnurlp/name';
 
       // Mock the client.get method
-      when(client.get(Uri.parse(link), headers: {"Accept": "application/json"}))
-          .thenAnswer((_) async => http.Response(jsonEncode(response), 200));
+      when(
+        client.get(Uri.parse(link), headers: {"Accept": "application/json"}),
+      ).thenAnswer((_) async => http.Response(jsonEncode(response), 200));
 
-      when(client.get(
-              argThat(
-                TypeMatcher<Uri>().having((uri) => uri.toString(), 'uri',
-                    startsWith('https://domain.com/callback')),
-              ),
-              headers: {"Accept": "application/json"}))
-          .thenAnswer((_) async => http.Response(
-              jsonEncode({
-                "status": "OK",
-                "successAction": {
-                  "tag": "message",
-                  "message": "Payment Received!"
-                },
-                "routes": [],
-                "pr": "lnbc1000...."
-              }),
-              200));
+      when(
+        client.get(
+          argThat(
+            TypeMatcher<Uri>().having(
+              (uri) => uri.toString(),
+              'uri',
+              startsWith('https://domain.com/callback'),
+            ),
+          ),
+          headers: {"Accept": "application/json"},
+        ),
+      ).thenAnswer(
+        (_) async => http.Response(
+          jsonEncode({
+            "status": "OK",
+            "successAction": {"tag": "message", "message": "Payment Received!"},
+            "routes": [],
+            "pr": "lnbc1000....",
+          }),
+          200,
+        ),
+      );
       final amount = 1000;
 
       final ndk = Ndk.defaultConfig();
@@ -61,13 +73,16 @@ void main() {
       // Logger.setLogLevel(Logger.logLevels.trace);
 
       ZapRequest zapRequest = await zaps.createZapRequest(
-          amountSats: amount,
-          eventId: 'eventId',
-          comment: 'comment',
-          signer: Bip340EventSigner(
-              privateKey: key.privateKey, publicKey: key.publicKey),
-          pubKey: 'pubKey',
-          relays: ['relay1', 'relay2']);
+        amountSats: amount,
+        eventId: 'eventId',
+        comment: 'comment',
+        signer: eventSignerFactory(
+          privateKey: key.privateKey,
+          publicKey: key.publicKey,
+        ),
+        pubKey: 'pubKey',
+        relays: ['relay1', 'relay2'],
+      );
 
       var invoiceResponse = await zaps.fetchInvoice(
         lud16Link: link,
@@ -99,21 +114,24 @@ void main() {
         amountSats: amount,
         eventId: eventId,
         comment: comment,
-        signer: Bip340EventSigner(
-            privateKey: key.privateKey, publicKey: key.publicKey),
+        signer: eventSignerFactory(
+          privateKey: key.privateKey,
+          publicKey: key.publicKey,
+        ),
         pubKey: pubKey,
         relays: relays,
       );
 
       expect(zapRequest, isNotNull);
       expect(
-          zapRequest.tags,
-          containsAll([
-            ['amount', (amount * 1000).toString()],
-            ['e', eventId],
-            ['p', pubKey],
-            ['relays', ...relays]
-          ]));
+        zapRequest.tags,
+        containsAll([
+          ['amount', (amount * 1000).toString()],
+          ['e', eventId],
+          ['p', pubKey],
+          ['relays', ...relays],
+        ]),
+      );
       expect(zapRequest.content, comment);
       expect(zapRequest.sig, isNotNull);
     });
@@ -126,8 +144,10 @@ void main() {
           amountSats: -1000,
           eventId: 'eventId',
           comment: 'comment',
-          signer: Bip340EventSigner(
-              privateKey: key.privateKey, publicKey: key.publicKey),
+          signer: eventSignerFactory(
+            privateKey: key.privateKey,
+            publicKey: key.publicKey,
+          ),
           pubKey: 'pubKey',
           relays: ['relay1', 'relay2'],
         ),
@@ -142,8 +162,10 @@ void main() {
         amountSats: 1000,
         eventId: 'eventId',
         comment: 'comment',
-        signer: Bip340EventSigner(
-            privateKey: key.privateKey, publicKey: key.publicKey),
+        signer: eventSignerFactory(
+          privateKey: key.privateKey,
+          publicKey: key.publicKey,
+        ),
         pubKey: 'pubKey',
         relays: [],
       );
