@@ -703,15 +703,33 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   @override
   Future<void> saveEvent(Nip01Event event) async {
     await dbRdy;
-    final eventBox = _objectBox.store.box<DbNip01Event>();
-    final existingEvent = eventBox
-        .query(DbNip01Event_.nostrId.equals(event.id))
-        .build()
-        .findFirst();
-    if (existingEvent != null) {
-      eventBox.remove(existingEvent.dbId);
+    await _objectBox.store.runInTransactionAsync(
+      TxMode.write,
+      _replaceEventByNostrId,
+      DbNip01Event.fromNdk(event),
+    );
+  }
+
+  /// Replaces an already stored event with the same [DbNip01Event.nostrId].
+  ///
+  /// Runs in a worker isolate via [Store.runInTransactionAsync] so lookup,
+  /// removal, and insert are atomic without blocking the calling isolate.
+  /// `PutMode.put` only upserts by `dbId`, and [DbNip01Event.fromNdk] always
+  /// produces `dbId == 0`, so a plain put would insert a duplicate row.
+  static void _replaceEventByNostrId(Store store, DbNip01Event dbEvent) {
+    final eventBox = store.box<DbNip01Event>();
+    final query = eventBox
+        .query(DbNip01Event_.nostrId.equals(dbEvent.nostrId))
+        .build();
+    try {
+      final existing = query.findFirst();
+      if (existing != null) {
+        eventBox.remove(existing.dbId);
+      }
+      eventBox.put(dbEvent);
+    } finally {
+      query.close();
     }
-    eventBox.put(DbNip01Event.fromNdk(event));
   }
 
   @override
@@ -738,7 +756,9 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   Future<void> saveEvents(List<Nip01Event> events) async {
     await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
-    eventBox.putMany(events.map((e) => DbNip01Event.fromNdk(e)).toList());
+    await eventBox.putManyAsync(
+      events.map((e) => DbNip01Event.fromNdk(e)).toList(),
+    );
   }
 
   @override
@@ -1234,7 +1254,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
         nip05.networkFetchTime! < existing[0].networkFetchTime!) {
       return;
     }
-    box.put(DbNip05.fromNdk(nip05));
+    await box.putAsync(DbNip05.fromNdk(nip05));
   }
 
   @override
@@ -1254,7 +1274,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     if (existing != null) {
       box.remove(existing.dbId);
     }
-    box.put(DbRelaySet.fromNdk(relaySet));
+    await box.putAsync(DbRelaySet.fromNdk(relaySet));
   }
 
   @override
@@ -1269,16 +1289,18 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     if (existingUserRelayList != null) {
       userRelayListBox.remove(existingUserRelayList.dbId);
     }
-    userRelayListBox.put(DbUserRelayList.fromNdk(userRelayList));
+    await userRelayListBox.putAsync(DbUserRelayList.fromNdk(userRelayList));
   }
 
   @override
   Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists) async {
-    final wait = <Future>[];
+    await dbRdy;
+    // Serialize saves: [saveUserRelayList] queries for an existing list by
+    // pubKey before putting, so concurrent saves for the same pubKey could
+    // both miss the lookup and insert duplicate rows.
     for (final userRelayList in userRelayLists) {
-      wait.add(saveUserRelayList(userRelayList));
+      await saveUserRelayList(userRelayList);
     }
-    await Future.wait(wait);
   }
 
   // Search by name, nip05
@@ -1333,7 +1355,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   ) async {
     await dbRdy;
     final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
-    box.put(DbFilterFetchedRangeRecord.fromNdk(record));
+    await box.putAsync(DbFilterFetchedRangeRecord.fromNdk(record));
   }
 
   @override
@@ -1342,7 +1364,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   ) async {
     await dbRdy;
     final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
-    box.putMany(
+    await box.putManyAsync(
       records.map((r) => DbFilterFetchedRangeRecord.fromNdk(r)).toList(),
     );
   }
@@ -1440,7 +1462,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   Future<void> removeAllFilterFetchedRangeRecords() async {
     await dbRdy;
     final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
-    box.removeAll();
+    await box.removeAll();
   }
 
   @override
@@ -1541,7 +1563,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> saveKeyset(CahsuKeyset keyset) async {
-    _objectBox.store.box<DbWalletCahsuKeyset>().put(
+    await _objectBox.store.box<DbWalletCahsuKeyset>().putAsync(
       DbWalletCahsuKeyset.fromNdk(keyset),
     );
     return Future.value();
