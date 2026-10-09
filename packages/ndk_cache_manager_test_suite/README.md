@@ -58,7 +58,8 @@ ndk_cache_manager_test_suite     ← depends on ndk + test (regular deps)
   ↑ (dev_dependency only)
 ├── objectbox                    ← runs shared suite
 ├── drift                        ← runs shared suite
-└── ndk                          ← runs shared suite (sembast, mem)
+├── sembast                      ← runs shared suite
+└── ndk                          ← runs shared suite (mem)
 ```
 
 

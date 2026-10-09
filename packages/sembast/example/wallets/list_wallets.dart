@@ -1,8 +1,6 @@
 // ignore_for_file: avoid_print
 
-import 'dart:io';
-
-import 'package:ndk/data_layer/repositories/wallets/sembast_wallets_repo.dart';
+import 'package:ndk_sembast/ndk_sembast.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import 'package:ndk/ndk.dart';
 
@@ -20,20 +18,20 @@ Future<void> main() async {
   );
 
   try {
-    final amountSats = int.parse(Platform.environment['AMOUNT_SATS'] ?? '1000');
     final wallets = await ndk.wallets.getWallets();
+
     if (wallets.isEmpty) {
-      throw StateError('No wallets stored yet.');
+      print('No wallets stored yet.');
+      return;
     }
-    final walletId = Platform.environment['WALLET_ID'] ?? wallets.first.id;
 
-    final invoice = await ndk.wallets.receive(
-      walletId: walletId,
-      amountSats: amountSats,
-    );
-
-    print('Invoice for $amountSats sats:');
-    print(invoice);
+    print('Wallets (${wallets.length}):');
+    for (final wallet in wallets) {
+      print(
+        '- id=${wallet.id} name=${wallet.name} '
+        'type=${wallet.type.value} units=${wallet.supportedUnits.join(',')}',
+      );
+    }
   } finally {
     await ndk.destroy();
   }

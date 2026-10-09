@@ -15,7 +15,6 @@ import 'package:ndk_demo/router.dart';
 import 'package:ndk_drift/ndk_drift.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart' as ndk_flutter;
 import 'package:ndk_flutter/ndk_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'dm_live_state.dart';
 import 'l10n/generated/sample_app_localizations.dart';
@@ -48,11 +47,7 @@ Future<void> main() async {
     // not on android or no signer app installed
   }
 
-  final cacheManager = kIsWeb
-      ? await DriftCacheManager.create()
-      : await SembastCacheManager.create(
-          databasePath: (await getApplicationDocumentsDirectory()).path,
-        );
+  final cacheManager = await DriftCacheManager.create();
 
   // The default data protection keychain needs an entitlement ad-hoc signing can't grant.
   const secureStorage = FlutterSecureStorage(

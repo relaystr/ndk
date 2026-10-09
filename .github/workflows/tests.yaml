@@ -43,6 +43,27 @@ jobs:
           fail_ci_if_error: true   # fails only on upload errors, not coverage drops
           verbose: true # optional (default = false)
 
+  cli-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/cli
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          # Pin to the Dart version bundled with Flutter stable (3.47.5).
+          sdk: 3.13.4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
+          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+          architecture: x64 # optional, x64 or arm64
+      - run: dart pub get
+      - run: dart test
+
   nip07-tests:
     runs-on: ubuntu-latest
     defaults:

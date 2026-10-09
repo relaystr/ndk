@@ -1,4 +1,4 @@
-import 'package:ndk/src/cli/native_library_errors.dart';
+import 'package:ndk_cli/src/native_library_errors.dart';
 import 'package:test/test.dart';
 
 void main() {

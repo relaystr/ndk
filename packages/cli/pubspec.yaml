@@ -1,0 +1,23 @@
+name: ndk_cli
+description: Command line interface for NDK (Nostr Development Kit).
+version: 0.1.0
+homepage: https://github.com/relaystr/ndk
+repository: https://github.com/relaystr/ndk
+publish_to: none
+
+executables:
+  ndk: ndk
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+
+resolution: workspace
+
+dependencies:
+  ndk: ^0.10.1
+  ndk_sembast: ^0.1.0
+  path: ^1.9.1
+
+dev_dependencies:
+  lints: ^6.1.0
+  test: any

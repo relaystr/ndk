@@ -25,9 +25,17 @@ Core package of the NDK. Go here for instructions on how to use the NDK. 📜
 
 ObjectBox database implementation.
 
+### [🔗 Sembast](./packages/sembast/)
+
+Sembast cache manager and wallets repository, in pure Dart.
+
 ### [🔗 Ndk Flutter](./packages/ndk_flutter/)
 
 Flutter widgets and utilities that require Flutter as a dependency, including the NIP-07 browser-extension signer.
+
+### [🔗 CLI](./packages/cli/)
+
+The `ndk` command line interface.
 
 ### [🔗 sample app](./packages/sample-app/)
 

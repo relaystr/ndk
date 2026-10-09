@@ -12,8 +12,9 @@ workspace:
   - packages/ndk
   - packages/ndk_cache_manager_test_suite
   - packages/objectbox
-  # - packages/sembast_cache_manager
+  - packages/sembast
   - packages/drift
+  - packages/cli
   - packages/ndk_flutter
 
 melos:
