@@ -10,7 +10,6 @@ import 'package:ndk/domain_layer/usecases/jit_engine/jit_engine.dart';
 import 'package:ndk/domain_layer/usecases/jit_engine/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 
 import '../../../entities/global_state.dart';
-import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/relay_connection_key.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../../entities/request_state.dart';
@@ -43,8 +42,7 @@ class RelayJitPubkeyStrategy with Logger {
 
     // specific filter (only one for this request)
     required Filter filter,
-    required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-    connectedRelays,
+    required List<RelayConnectivity> connectedRelays,
     required List<String> bootstrapRelays,
 
     /// used to get the nip65 data if its necessary to look for not covered pubkeys
@@ -156,8 +154,7 @@ class RelayJitPubkeyStrategy with Logger {
     required GlobalState globalState,
     required Filter filter,
     required List<CoveragePubkey> coveragePubkeys,
-    required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-    connectedRelays,
+    required List<RelayConnectivity> connectedRelays,
     required CacheManager cacheManager,
     required int desiredCoverage,
     required ReadWriteMarker direction,
@@ -244,13 +241,12 @@ class RelayJitPubkeyStrategy with Logger {
 
         final myRelayConnectivity = globalState
             .relays[RelayConnectionKey.anonymous(relayCandidate.relayUrl)];
-        if (myRelayConnectivity
-            is! RelayConnectivity<JitEngineRelayConnectivityData>) {
+        if (myRelayConnectivity == null) {
           markCandidateUnavailable(relayCandidate);
           return;
         }
 
-        myRelayConnectivity.specificEngineData!.addPubkeysToAssignedPubkeys(
+        myRelayConnectivity.specificEngineData.jit.addPubkeysToAssignedPubkeys(
           relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
           direction,
         );
@@ -320,7 +316,7 @@ void _removeFullyCoveredPubkeys(List<CoveragePubkey> coveragePubkeys) {
 /// connection. The request may need a bound one instead, see
 /// [RelayManager.connectionForRequest].
 Future<void> _sendRequestToSocket(
-  RelayConnectivity<JitEngineRelayConnectivityData> connectedRelay,
+  RelayConnectivity connectedRelay,
   RequestState requestState,
   List<Filter> filters,
   RelayManager relayManager,

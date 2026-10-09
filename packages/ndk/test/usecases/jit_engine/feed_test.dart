@@ -127,7 +127,7 @@ void main() async {
 
       for (final relay in ndk.relays.globalState.relays.values) {
         log(
-          "Relay: ${relay.url} - ${relay.specificEngineData.assignedPubkeys.length} pubkeys",
+          "Relay: ${relay.url} - ${relay.specificEngineData.jit.assignedPubkeys.length} pubkeys",
         );
       }
 

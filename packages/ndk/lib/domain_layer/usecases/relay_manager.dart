@@ -29,12 +29,11 @@ import '../entities/tuple.dart';
 import '../repositories/nostr_transport.dart';
 import '../repositories/relay_info_repo.dart';
 import 'accounts/accounts.dart';
-import 'engines/network_engine.dart';
 import 'nip42/auth_event.dart';
 
 ///  relay manager, responsible for lifecycle of relays, sending messages, \
 ///  and help with tracking of requests
-class RelayManager<T> {
+class RelayManager {
   final Completer<void> _seedRelaysCompleter = Completer<void>();
   final Map<String, Set<Completer<void>>> _requestSentWaiters = {};
 
@@ -106,9 +105,6 @@ class RelayManager<T> {
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
 
-  /// factory for creating additional data for the engine
-  final EngineAdditionalDataFactory? engineAdditionalDataFactory;
-
   /// Are reconnects allowed when a connection drops?
   bool allowReconnectRelays = true;
 
@@ -127,7 +123,6 @@ class RelayManager<T> {
     required this.globalState,
     required this.nostrTransportFactory,
     Accounts? accounts,
-    this.engineAdditionalDataFactory,
     List<String>? bootstrapRelays,
     allowReconnect = true,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
@@ -299,10 +294,9 @@ class RelayManager<T> {
 
     try {
       if (relayConnectivity == null) {
-        relayConnectivity = RelayConnectivity<T>(
+        relayConnectivity = RelayConnectivity(
           key: connectionKey,
           relay: Relay(url: url, connectionSource: connectionSource),
-          specificEngineData: engineAdditionalDataFactory?.call(),
         );
         globalState.relays[connectionKey] = relayConnectivity;
       }

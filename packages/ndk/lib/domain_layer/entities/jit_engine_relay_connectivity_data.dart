@@ -1,4 +1,3 @@
-import '../usecases/engines/network_engine.dart';
 import 'read_write_marker.dart';
 
 /// additional data for the JIT engine
@@ -26,14 +25,4 @@ class RelayJitAssignedPubkey {
 
   /// Creates a new relay jit assigned pubkey
   RelayJitAssignedPubkey(this.pubkey, this.direction);
-}
-
-/// Factory for creating additional data for the engine
-class JitEngineRelayConnectivityDataFactory
-    implements EngineAdditionalDataFactory<JitEngineRelayConnectivityData> {
-  @override
-  JitEngineRelayConnectivityData call() {
-    // create a new instance of the data
-    return JitEngineRelayConnectivityData();
-  }
 }
