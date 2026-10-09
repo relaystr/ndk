@@ -44,10 +44,12 @@ SqlWhere eventFilter({
   int? until,
   String? search,
 }) {
+  final hasTagValues = tags?.values.any((v) => v.isNotEmpty) ?? false;
   final where = SqlWhere()
     ..addIn('e.id', ids)
     ..addIn('e.pub_key', pubKeys)
-    ..addIn('e.kind', kinds);
+    // `+` lets a tag value, far more selective than a kind, drive the query.
+    ..addIn(hasTagValues ? '+e.kind' : 'e.kind', kinds);
   if (since != null) where.add('e.created_at >= ?', [since]);
   if (until != null) where.add('e.created_at <= ?', [until]);
   if (search != null && search.isNotEmpty) {

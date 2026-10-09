@@ -6,6 +6,7 @@ import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_cache_manager_test_suite/ndk_cache_manager_test_suite.dart';
 import 'package:ndk_sqlite3/ndk_sqlite3.dart';
+import 'package:ndk_sqlite3/src/sql.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
@@ -78,6 +79,28 @@ void main() {
     );
     await cacheManager.saveEvent(event);
     expect((await cacheManager.loadEvent(event.id))?.content, 'waited');
+  });
+
+  test('a tag filter drives the query over a single kind', () async {
+    final db = sqlite3.openInMemory();
+    final cacheManager = SqliteCacheManager(db);
+    addTearDown(cacheManager.close);
+
+    final where = eventFilter(
+      kinds: [7],
+      tags: {
+        '#e': ['note'],
+      },
+    );
+    final plan = db.select(
+      'EXPLAIN QUERY PLAN SELECT e.id FROM events e WHERE $where '
+      'ORDER BY e.created_at DESC, e.id LIMIT 50',
+      where.args,
+    );
+    expect(
+      plan.map((row) => row['detail'] as String),
+      everyElement(isNot(contains('events_kind_created_at'))),
+    );
   });
 
   test('persists and restores a BOLT12 wallet', () async {
