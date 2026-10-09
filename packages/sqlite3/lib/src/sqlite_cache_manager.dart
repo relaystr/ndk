@@ -52,6 +52,8 @@ class SqliteCacheManager extends WalletsRepo implements CacheManager {
   /// Opens the database file at [path], creating it when missing.
   factory SqliteCacheManager.open(String path) {
     final db = sqlite3.open(path);
+    // Before journal_mode: switching to WAL takes a lock too.
+    db.execute('PRAGMA busy_timeout = 5000');
     db.execute('PRAGMA journal_mode = WAL');
     db.execute('PRAGMA synchronous = NORMAL');
     return SqliteCacheManager(db);

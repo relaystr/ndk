@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:math';
 
 import 'package:ndk/entities.dart';
@@ -9,6 +10,16 @@ import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
 SqliteCacheManager _inMemory() => SqliteCacheManager(sqlite3.openInMemory());
+
+void _holdWriteLock((String, SendPort) args) {
+  final (path, locked) = args;
+  final db = sqlite3.open(path);
+  db.execute('BEGIN IMMEDIATE');
+  locked.send(null);
+  sleep(const Duration(milliseconds: 300));
+  db.execute('COMMIT');
+  db.close();
+}
 
 void main() {
   runCacheManagerTestSuite(
@@ -45,6 +56,28 @@ void main() {
     expect(loaded.single.id, event.id);
     expect(second.getDefaultWalletIdForSending(), 'wallet-1');
     await second.close();
+  });
+
+  test('waits for a write lock held by another connection', () async {
+    final directory = await Directory.systemTemp.createTemp('ndk_sqlite3');
+    addTearDown(() => directory.delete(recursive: true));
+    final path = '${directory.path}/cache.db';
+    final cacheManager = SqliteCacheManager.open(path);
+    addTearDown(cacheManager.close);
+
+    final locked = ReceivePort();
+    await Isolate.spawn(_holdWriteLock, (path, locked.sendPort));
+    await locked.first;
+
+    final event = Nip01Event(
+      pubKey: 'busy_author',
+      kind: 1,
+      tags: [],
+      content: 'waited',
+      createdAt: 1000,
+    );
+    await cacheManager.saveEvent(event);
+    expect((await cacheManager.loadEvent(event.id))?.content, 'waited');
   });
 
   test('persists and restores a BOLT12 wallet', () async {
