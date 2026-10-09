@@ -255,8 +255,9 @@ void main() async {
         'objectbox_save_event_dedup_test',
       );
 
+      DbObjectBox? cacheManager;
       try {
-        final cacheManager = DbObjectBox(directory: tempDir.path);
+        cacheManager = DbObjectBox(directory: tempDir.path);
         await cacheManager.dbRdy;
 
         final event = Nip01Event(
@@ -276,9 +277,10 @@ void main() async {
         final byPubKey = await cacheManager.loadEvents(pubKeys: [event.pubKey]);
         expect(byPubKey, hasLength(1));
         expect(byPubKey.single.content, equals('repeated save'));
-
-        await cacheManager.close();
       } finally {
+        try {
+          await cacheManager?.close();
+        } catch (_) {}
         try {
           await tempDir.delete(recursive: true);
         } catch (_) {}
