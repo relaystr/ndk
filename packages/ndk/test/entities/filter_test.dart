@@ -60,6 +60,24 @@ void main() {
       expect(filter.tags!.keys, ['p']);
     });
 
+    test('tags getter is read-only so direct writes cannot bypass keys', () {
+      var filter = Filter(pTags: ['ptag1']);
+
+      expect(() => filter.tags!['#e'] = ['etag1'], throwsUnsupportedError);
+      expect(() => filter.tags!['e'] = ['etag1'], throwsUnsupportedError);
+      expect(filter.getTag('e'), isNull);
+    });
+
+    test('setTag, getTag and toMap stay consistent for #-prefixed keys', () {
+      var filter = Filter();
+
+      filter.setTag('#p', ['ptag1']);
+
+      expect(filter.getTag('p'), ['ptag1']);
+      expect(filter.getTag('#p'), ['ptag1']);
+      expect(filter.toMap()['#p'], ['ptag1']);
+    });
+
     test('fromMap initializes correctly', () {
       var map = {
         'ids': ['id1', 'id2'],

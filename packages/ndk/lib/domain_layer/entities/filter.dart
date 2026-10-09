@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 /// Represents a filter for querying Nostr events.
 ///
 /// This class encapsulates various criteria that can be used to filter
@@ -45,13 +47,18 @@ class Filter {
 
   Map<String, List<String>>? _tags;
 
-  /// Tag filters, keyed by the bare tag name ('p', 'e', 'd', ...), value is a
-  /// list of tag values.
+  /// Read-only view of the tag filters, keyed by the bare tag name ('p', 'e',
+  /// 'd', ...), value is a list of tag values.
   ///
   /// The NIP-01 '#' prefix is a wire-format detail only: [toMap] and [toJson]
   /// add it when a filter is serialized for a relay, everything else, cache
   /// reads above all, sees bare keys.
-  Map<String, List<String>>? get tags => _tags;
+  ///
+  /// The returned map cannot be modified directly, so callers cannot bypass
+  /// key normalization. Mutate through [setTag] or the [tags] setter instead;
+  /// both accept '#'-prefixed keys such as '#p' and store them bare.
+  Map<String, List<String>>? get tags =>
+      _tags == null ? null : UnmodifiableMapView(_tags!);
 
   set tags(Map<String, List<String>>? value) {
     _tags = value == null
@@ -196,14 +203,13 @@ class Filter {
   // set an arbitrary tag
   void setTag(String tagName, List<String> values) {
     if (tagName.length > 2) return;
-    tags ??= {};
-    tags![_bareTagKey(tagName)] = values;
+    (_tags ??= {})[_bareTagKey(tagName)] = values;
   }
 
   // get an arbitrary tag
   List<String>? getTag(String tagName) {
-    if (tags == null || tagName.length > 2) return null;
-    return tags![_bareTagKey(tagName)];
+    if (_tags == null || tagName.length > 2) return null;
+    return _tags![_bareTagKey(tagName)];
   }
 
   /// Tag key without the NIP-01 '#', the form [tags] stores.
