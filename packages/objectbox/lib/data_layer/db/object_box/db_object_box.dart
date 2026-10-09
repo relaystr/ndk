@@ -703,8 +703,33 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   @override
   Future<void> saveEvent(Nip01Event event) async {
     await dbRdy;
-    final eventBox = _objectBox.store.box<DbNip01Event>();
-    await eventBox.putAsync(DbNip01Event.fromNdk(event), mode: PutMode.put);
+    await _objectBox.store.runInTransactionAsync(
+      TxMode.write,
+      _replaceEventByNostrId,
+      DbNip01Event.fromNdk(event),
+    );
+  }
+
+  /// Replaces an already stored event with the same [DbNip01Event.nostrId].
+  ///
+  /// Runs in a worker isolate via [Store.runInTransactionAsync] so lookup,
+  /// removal, and insert are atomic without blocking the calling isolate.
+  /// `PutMode.put` only upserts by `dbId`, and [DbNip01Event.fromNdk] always
+  /// produces `dbId == 0`, so a plain put would insert a duplicate row.
+  static void _replaceEventByNostrId(Store store, DbNip01Event dbEvent) {
+    final eventBox = store.box<DbNip01Event>();
+    final query = eventBox
+        .query(DbNip01Event_.nostrId.equals(dbEvent.nostrId))
+        .build();
+    try {
+      final existing = query.findFirst();
+      if (existing != null) {
+        eventBox.remove(existing.dbId);
+      }
+      eventBox.put(dbEvent);
+    } finally {
+      query.close();
+    }
   }
 
   @override
@@ -1270,11 +1295,12 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   @override
   Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists) async {
     await dbRdy;
-    final wait = <Future>[];
+    // Serialize saves: [saveUserRelayList] queries for an existing list by
+    // pubKey before putting, so concurrent saves for the same pubKey could
+    // both miss the lookup and insert duplicate rows.
     for (final userRelayList in userRelayLists) {
-      wait.add(saveUserRelayList(userRelayList));
+      await saveUserRelayList(userRelayList);
     }
-    await Future.wait(wait);
   }
 
   // Search by name, nip05
