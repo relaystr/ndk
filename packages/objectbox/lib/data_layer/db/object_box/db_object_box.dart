@@ -590,7 +590,8 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
 
     if (tags != null && tags.isNotEmpty) {
       for (final entry in tags.entries) {
-        final key = entry.key.trim().toLowerCase();
+        // Tag keys are case-sensitive (NIP-22 'A' vs 'a')
+        final key = entry.key.trim();
         final values = entry.value
             .map((v) => v.trim().toLowerCase())
             .where((v) => v.isNotEmpty)
@@ -1143,7 +1144,8 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     Set<int>? matchingEventIds;
 
     for (final entry in tags.entries) {
-      final key = entry.key.trim().toLowerCase();
+      // Tag keys are case-sensitive (NIP-22 'A' vs 'a')
+      final key = entry.key.trim();
       final values = entry.value
           .map((v) => v.trim().toLowerCase())
           .where((v) => v.isNotEmpty)
