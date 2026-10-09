@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791546707775,
+  "lastUpdate": 1791550986860,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2012,6 +2012,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 800886,
             "range": "776578-863224",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ca802d6b981c93381fa7a4f5ca32c578207e85fb",
+          "message": "Merge pull request #899 from relaystr/fix/lettered-nip-identifiers\n\nfix(connectivity)!: support lettered NIP identifiers in RelayInfo",
+          "timestamp": "2026-10-09T15:01:10+02:00",
+          "tree_id": "4d9ca223fce43e2e94f3e546a24fe77de7a58f2f",
+          "url": "https://github.com/relaystr/ndk/commit/ca802d6b981c93381fa7a4f5ca32c578207e85fb"
+        },
+        "date": 1791550984177,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 45433.8,
+            "range": "45301-51198",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1640906,
+            "range": "1630124-1655506",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
