@@ -8,4 +8,5 @@ class Hrps {
   static const String kNevent = "nevent";
   static const String kNrelay = "nrelay";
   static const String kNaddr = "naddr";
+  static const String kNcryptsec = "ncryptsec";
 }
