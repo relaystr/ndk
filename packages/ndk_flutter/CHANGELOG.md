@@ -1,3 +1,10 @@
+## 0.10.3-dev.0
+
+ - **REFACTOR**(web): share the NostrCrypto null check between signer and factory.
+ - **PERF**(web): derive public keys with @noble/curves in NdkEventSignerFactory.
+ - **FIX**: clear toasts.
+ - **FEAT**: add NIP-46 switch_relays to Nip46EventSigner.
+
 ## 0.10.1
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.

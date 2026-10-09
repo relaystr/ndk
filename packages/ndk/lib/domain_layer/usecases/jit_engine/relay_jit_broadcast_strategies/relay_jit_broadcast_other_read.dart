@@ -72,6 +72,8 @@ class RelayJitBroadcastOtherReadStrategy {
           relayUrl,
           auth,
           connectionSource: ConnectionSource.broadcastOther,
+          pausing:
+              relayManager.globalState.inFlightBroadcasts[eventToPublish.id],
         );
         if (relay == null) {
           relayManager.failBroadcast(

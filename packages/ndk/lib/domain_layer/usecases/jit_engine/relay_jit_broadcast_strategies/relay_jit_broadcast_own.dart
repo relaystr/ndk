@@ -66,6 +66,8 @@ class RelayJitBroadcastOutboxStrategy {
           relayUrl,
           auth,
           connectionSource: ConnectionSource.broadcastOwn,
+          pausing:
+              relayManager.globalState.inFlightBroadcasts[eventToPublish.id],
         );
         if (relay == null) {
           relayManager.failBroadcast(

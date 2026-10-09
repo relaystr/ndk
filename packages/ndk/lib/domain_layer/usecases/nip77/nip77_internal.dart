@@ -89,7 +89,7 @@ class _Nip77Internal {
 
       // Check if relay supports NIP-77
       if (connectivity.relayInfo != null &&
-          !connectivity.relayInfo!.supportsNip(77)) {
+          !connectivity.relayInfo!.supportsNip('77')) {
         state.completeWithError(Nip77NotSupportedException(cleanUrl));
         _globalState.inFlightNegotiations.remove(subscriptionId);
         return;
@@ -123,6 +123,7 @@ class _Nip77Internal {
       state.connectionKey,
       connectionSource: ConnectionSource.explicit,
       as: state.auth?.account,
+      pausing: state,
     );
     if (!connected) {
       return null;

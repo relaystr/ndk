@@ -379,6 +379,9 @@ class SampleAppLocalizationsDe extends SampleAppLocalizations {
   String get pendingMethodConnect => 'Verbinden';
 
   @override
+  String get pendingMethodSwitchRelays => 'Relays wechseln';
+
+  @override
   String pendingSecondsAgo(int count) {
     return 'vor ${count}s';
   }

@@ -5,7 +5,7 @@ description: Workspace configuration for the NDK melos monorepo.
 environment:
   sdk: '>=3.6.0 <4.0.0'
 dev_dependencies:
-  melos: ^7.5.0
+  melos: ^7.8.1
 
 
 workspace:

@@ -22,11 +22,12 @@ void main() async {
       ),
     );
 
-    Ndk ndkFor(MockRelay relay) => Ndk(
+    Ndk ndkFor(MockRelay relay, {AuthHandler? authHandler}) => Ndk(
       NdkConfig(
         eventVerifier: Bip340EventVerifier(),
         cache: MemCacheManager(),
         bootstrapRelays: [relay.url],
+        authHandler: authHandler,
       ),
     );
 
@@ -158,8 +159,35 @@ void main() async {
       await relay.stopServer();
     });
 
-    test('without auth it authenticates as the logged account', () async {
-      final relay = await negentropyRelay(port: portBase + 4);
+    test(
+      'without auth it authenticates as the logged account once asked',
+      () async {
+        final relay = await negentropyRelay(port: portBase + 4);
+        final ndk = ndkFor(relay, authHandler: (_, _) async => true);
+
+        ndk.accounts.loginPrivateKey(
+          pubkey: key1.publicKey,
+          privkey: key1.privateKey!,
+        );
+        await Future.delayed(Duration(seconds: 1));
+
+        final response = ndk.nip77.reconcile(
+          relayUrl: relay.url,
+          filter: notesOf(key1),
+          timeout: Duration(seconds: 10),
+        );
+
+        final result = await response.future;
+        expect(result.needIds, contains('a' * 64));
+        expect(relay.connectionsAuthenticatedAs(key1.publicKey), 1);
+
+        await ndk.destroy();
+        await relay.stopServer();
+      },
+    );
+
+    test('without auth or handler it reveals nobody', () async {
+      final relay = await negentropyRelay(port: portBase + 10);
       final ndk = ndkFor(relay);
 
       ndk.accounts.loginPrivateKey(
@@ -174,9 +202,11 @@ void main() async {
         timeout: Duration(seconds: 10),
       );
 
-      final result = await response.future;
-      expect(result.needIds, contains('a' * 64));
-      expect(relay.connectionsAuthenticatedAs(key1.publicKey), 1);
+      await expectLater(
+        response.future,
+        throwsA(isA<Nip77AuthRequiredException>()),
+      );
+      expect(relay.connectionsAuthenticatedAs(key1.publicKey), 0);
 
       await ndk.destroy();
       await relay.stopServer();
