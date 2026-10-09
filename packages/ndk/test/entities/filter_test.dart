@@ -35,7 +35,7 @@ void main() {
       expect(filter.mTags, ['mtag1']);
     });
 
-    test('Constructor initializes tags correctly', () {
+    test('Constructor stores tag keys without the NIP-01 prefix', () {
       var filter = Filter(
         tags: {
           '#e': ['etag1', 'etag2'],
@@ -44,8 +44,38 @@ void main() {
       );
 
       expect(filter.tags, isNotNull);
-      expect(filter.tags!['#e'], ['etag1', 'etag2']);
-      expect(filter.tags!['#p'], ['ptag1']);
+      expect(filter.tags!['e'], ['etag1', 'etag2']);
+      expect(filter.tags!['p'], ['ptag1']);
+      expect(filter.tags!.keys.every((key) => !key.startsWith('#')), isTrue);
+    });
+
+    test('tags setter stores tag keys without the NIP-01 prefix', () {
+      var filter = Filter();
+
+      filter.tags = {
+        '#p': ['ptag1'],
+      };
+
+      expect(filter.tags!['p'], ['ptag1']);
+      expect(filter.tags!.keys, ['p']);
+    });
+
+    test('tags getter is read-only so direct writes cannot bypass keys', () {
+      var filter = Filter(pTags: ['ptag1']);
+
+      expect(() => filter.tags!['#e'] = ['etag1'], throwsUnsupportedError);
+      expect(() => filter.tags!['e'] = ['etag1'], throwsUnsupportedError);
+      expect(filter.getTag('e'), isNull);
+    });
+
+    test('setTag, getTag and toMap stay consistent for #-prefixed keys', () {
+      var filter = Filter();
+
+      filter.setTag('#p', ['ptag1']);
+
+      expect(filter.getTag('p'), ['ptag1']);
+      expect(filter.getTag('#p'), ['ptag1']);
+      expect(filter.toMap()['#p'], ['ptag1']);
     });
 
     test('fromMap initializes correctly', () {
@@ -80,6 +110,7 @@ void main() {
       expect(filter.aTags, ['atag1']);
       expect(filter.dTags, ['dtag1']);
       expect(filter.mTags, ['mtag1']);
+      expect(filter.tags!.keys.every((key) => !key.startsWith('#')), isTrue);
     });
 
     test('toMap converts correctly', () {

@@ -206,6 +206,46 @@ void _runEventTests(
     expect(loadedEvents.first.pTags.contains('target_pubkey_ptag'), isTrue);
   });
 
+  test('loadEvents tag keys are case-sensitive', () async {
+    final cacheManager = getCacheManager();
+    await cacheManager.removeAllEvents();
+
+    // NIP-22: 'A' points to the root scope, 'a' to the parent item.
+    final rootTagged = Nip01Event(
+      pubKey: 'pubkey_root_tagged',
+      kind: 1111,
+      tags: [
+        ['A', 'shared_address'],
+      ],
+      content: 'root comment',
+      createdAt: 1234567890,
+    );
+    final parentTagged = Nip01Event(
+      pubKey: 'pubkey_parent_tagged',
+      kind: 1111,
+      tags: [
+        ['a', 'shared_address'],
+      ],
+      content: 'reply',
+      createdAt: 1234567891,
+    );
+    await cacheManager.saveEvents([rootTagged, parentTagged]);
+
+    final upperLoaded = await cacheManager.loadEvents(
+      tags: {
+        'A': ['shared_address'],
+      },
+    );
+    final lowerLoaded = await cacheManager.loadEvents(
+      tags: {
+        'a': ['shared_address'],
+      },
+    );
+
+    expect(upperLoaded.map((e) => e.id), [rootTagged.id]);
+    expect(lowerLoaded.map((e) => e.id), [parentTagged.id]);
+  });
+
   test('loadEvents with time range filters', () async {
     final cacheManager = getCacheManager();
     await cacheManager.removeAllEvents();
