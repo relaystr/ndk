@@ -139,8 +139,7 @@ class _Nip77PageState extends State<Nip77Page> {
       var fetched = 0;
       for (final ids in _chunks(needIds, 250)) {
         final events = await ndk.requests
-            .query(filter: Filter(ids: ids), explicitRelays: [relayUrl])
-            .future;
+            .query(filter: Filter(ids: ids), explicitRelays: [relayUrl]).future;
         fetched += events.length;
       }
       status = 'Fetched $fetched of ${needIds.length} events into the cache';
