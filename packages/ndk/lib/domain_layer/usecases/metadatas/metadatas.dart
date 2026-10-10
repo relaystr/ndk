@@ -12,6 +12,7 @@ import '../../repositories/event_signer.dart';
 import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
+import '../user_relay_lists/user_relay_lists.dart';
 
 /// nostr metadata usecase
 class Metadatas {
@@ -19,6 +20,7 @@ class Metadatas {
   final CacheManager _cacheManager;
   final Broadcast _broadcast;
   final Accounts _accounts;
+  final UserRelayLists _userRelayLists;
 
   /// create a new instance of Metadatas
   Metadatas({
@@ -26,10 +28,12 @@ class Metadatas {
     required CacheManager cacheManager,
     required Broadcast broadcast,
     required Accounts accounts,
+    required UserRelayLists userRelayLists,
   }) : _cacheManager = cacheManager,
        _requests = requests,
        _accounts = accounts,
-       _broadcast = broadcast;
+       _broadcast = broadcast,
+       _userRelayLists = userRelayLists;
 
   void _checkSigner() {
     if (!_accounts.canSign) {
@@ -52,6 +56,7 @@ class Metadatas {
         ? await _cacheManager.loadMetadata(pubKey)
         : null;
     if (metadata == null || forceRefresh) {
+      final writeRelays = await _authorWriteRelays(pubKey);
       Metadata? loadedMetadata;
       try {
         await for (final event
@@ -60,6 +65,7 @@ class Metadatas {
                   name: 'metadata',
                   cacheRead: !forceRefresh,
                   timeout: idleTimeout,
+                  explicitRelays: writeRelays,
                   filters: [
                     Filter(
                       kinds: [Metadata.kKind],
@@ -90,6 +96,24 @@ class Metadatas {
       }
     }
     return metadata;
+  }
+
+  /// NIP-65 outbox: metadata is expected on the author's write relays
+  Future<List<String>?> _authorWriteRelays(String pubKey) async {
+    try {
+      final relayList = await _userRelayLists.getSingleUserRelayList(pubKey);
+      final writeRelays = relayList?.relays.entries
+          .where((entry) => entry.value.isWrite)
+          .map((entry) => entry.key)
+          .toList();
+      if (writeRelays == null || writeRelays.isEmpty) {
+        return null;
+      }
+      return writeRelays;
+    } catch (e) {
+      Logger.log.w(() => "could not load relay list for $pubKey", error: e);
+      return null;
+    }
   }
 
   // TODO try to use generic query with cacheRead/Write mechanism
