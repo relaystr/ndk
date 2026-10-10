@@ -65,12 +65,46 @@ class BlobUploadResult {
   final BlobDescriptor? descriptor;
   final String? error;
 
+  /// HTTP status the server answered with, such as 413 for a blob over its
+  /// size limit. Null when no answer came back, see [error].
+  final int? statusCode;
+
+  /// the server's `X-Reason` header, to show the user but never to branch on
+  /// [BUD-01]
+  final String? reason;
+
   BlobUploadResult({
     required this.serverUrl,
     required this.success,
     this.descriptor,
     this.error,
+    this.statusCode,
+    this.reason,
   });
+}
+
+/// A server's answer to whether it would accept an upload, before the blob is
+/// sent [BUD-06]
+class BlobUploadCheck {
+  final String serverUrl;
+
+  /// HTTP status the server answered with, such as 413 for a blob over its
+  /// size limit. Null when no answer came back, see [error].
+  final int? statusCode;
+
+  /// the server's `X-Reason` header, to show the user but never to branch on
+  final String? reason;
+  final String? error;
+
+  BlobUploadCheck({
+    required this.serverUrl,
+    this.statusCode,
+    this.reason,
+    this.error,
+  });
+
+  bool get accepted =>
+      statusCode != null && statusCode! >= 200 && statusCode! < 300;
 }
 
 /// Result of a blob delete
