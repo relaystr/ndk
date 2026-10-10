@@ -1,4 +1,5 @@
 import '../../entities/relay_connectivity.dart';
+import '../../entities/relay_info.dart';
 import '../relay_manager.dart';
 
 /// get connectivity status \
@@ -12,6 +13,11 @@ class Connectivy {
   /// a relay can hold several, so group by [RelayConnectivity.url] if needed
   Stream<List<RelayConnectivity>> get relayConnectivityChanges =>
       _relayManager.relayConnectivityChanges;
+
+  /// NIP-11 info of the relay at [url], fetched once and then cached \
+  /// returns null when the relay does not provide it
+  Future<RelayInfo?> getRelayInfo(String url) =>
+      _relayManager.getRelayInfo(url);
 
   /// forces all relays to reconnect \
   /// use this for faster reconnects based on your application/os connectivity \

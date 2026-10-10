@@ -12,6 +12,8 @@ icon: rss
 /// value: relay connectivity
 ndkInstance.connectivity.relayConnectivityChanges;
 
+/// NIP-11 info of a relay, fetched on first call and then cached
+await ndkInstance.connectivity.getRelayInfo(relayConnectivity.url);
 
 /// forces all relays to reconnect \
 /// use this for faster reconnects based on your application/os connectivity \
