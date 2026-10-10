@@ -5,11 +5,12 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../shared/nips/nip77/negentropy.dart';
 import 'filter.dart';
+import 'auth_handler.dart';
 import 'auth_policy.dart';
 import 'relay_connection_key.dart';
 
 /// State of a NIP-77 negentropy reconciliation session
-class Nip77State {
+class Nip77State implements TimeoutPausable {
   /// Unique subscription ID for this session
   final String subscriptionId;
 
@@ -79,41 +80,45 @@ class Nip77State {
 
   Timer? _timeoutTimer;
   DateTime? _timeoutStartedAt;
+  Duration? _timeoutLeftAtStart;
   Duration? _remainingTimeout;
+  int _timeoutPauses = 0;
   void Function()? _onTimeout;
-
-  /// how long the reconciliation itself may take. A paused timeout resumes
-  /// with what is left of it, not with a fresh one
-  Duration? _timeoutDuration;
 
   /// Starts the session timeout, [onTimeout] firing at most once.
   void startTimeout(Duration duration, void Function() onTimeout) {
-    _timeoutDuration = duration;
     _onTimeout = onTimeout;
     _startTimeout(duration);
   }
 
   void _startTimeout(Duration duration) {
     _timeoutStartedAt = DateTime.now();
+    _timeoutLeftAtStart = duration;
     _timeoutTimer = Timer(duration, () => _onTimeout?.call());
   }
 
   /// Pauses the timeout for a wait that is not the relay's to answer, the way
   /// a request pauses before signing. Call it before an authentication.
+  @override
   void pauseTimeout() {
-    if (_timeoutTimer == null || _timeoutDuration == null) return;
+    _timeoutPauses++;
+    final timer = _timeoutTimer;
+    if (_timeoutPauses > 1 || timer == null || !timer.isActive) return;
 
     final elapsed = DateTime.now().difference(_timeoutStartedAt!);
-    final remaining = _timeoutDuration! - elapsed;
+    final remaining = _timeoutLeftAtStart! - elapsed;
     _remainingTimeout = remaining.isNegative ? Duration.zero : remaining;
-    _timeoutTimer!.cancel();
+    timer.cancel();
     _timeoutTimer = null;
   }
 
   /// Resumes a paused timeout with the time it had left.
+  @override
   void resumeTimeout() {
+    if (_timeoutPauses == 0) return;
+    _timeoutPauses--;
     final remaining = _remainingTimeout;
-    if (remaining == null) return;
+    if (_timeoutPauses > 0 || remaining == null) return;
     _remainingTimeout = null;
     _startTimeout(remaining);
   }

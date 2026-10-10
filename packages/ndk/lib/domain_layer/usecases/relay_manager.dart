@@ -12,6 +12,7 @@ import '../../shared/isolates/isolate_manager.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/client_msg.dart';
 import '../entities/account.dart';
+import '../entities/auth_handler.dart';
 import '../entities/broadcast_state.dart';
 import '../entities/connection_source.dart';
 import '../entities/filter.dart';
@@ -85,6 +86,12 @@ class RelayManager<T> {
   /// how long to wait for a NIP-42 challenge once authentication was asked for
   final Duration authChallengeTimeout;
 
+  /// asked before a connection bound to an identity is opened, see [AuthHandler]
+  final AuthHandler? authHandler;
+
+  /// in flight [authHandler] questions, so concurrent openings ask once
+  final Map<RelayConnectionKey, Future<bool>> _consents = {};
+
   /// Handler for NIP-77 NEG-MSG messages
   void Function(String subscriptionId, RelayConnectionKey key, String payload)?
   onNegMsg;
@@ -126,6 +133,7 @@ class RelayManager<T> {
     allowReconnect = true,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
     this.authChallengeTimeout = RequestDefaults.DEFAULT_AUTH_CHALLENGE_TIMEOUT,
+    this.authHandler,
     RelayInfoRepo? relayInfoRepo,
   }) : _accounts = accounts,
        _relayInfoRepo = relayInfoRepo {
@@ -415,6 +423,7 @@ class RelayManager<T> {
     required ConnectionSource connectionSource,
     bool force = false,
     Account? as,
+    TimeoutPausable? pausing,
   }) async {
     final inFlightConnect = _connectReadyCompleters[key];
     if (inFlightConnect != null) {
@@ -461,6 +470,7 @@ class RelayManager<T> {
               key.url,
               account,
               connectionSource: connectionSource,
+              pausing: pausing,
             ) !=
             null;
       }
@@ -1080,17 +1090,27 @@ class RelayManager<T> {
   /// which identity this socket may ever assume, not that it is already
   /// authenticated: relays are free to send their challenge whenever they want,
   /// and some only send it once a request needs it.
+  ///
+  /// A new binding is first put to [authHandler], with [pausing] paused while
+  /// it decides. A connection that already exists was agreed to when it was
+  /// first opened, so reconnecting it does not ask again.
   Future<RelayConnectivity?> openConnectionAs(
     String url,
     Account account, {
     ConnectionSource connectionSource = ConnectionSource.explicit,
     int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT,
+    TimeoutPausable? pausing,
   }) async {
     if (!account.signer.canSign()) {
       Logger.log.w(() => "Cannot bind a connection to ${account.pubkey}");
       return null;
     }
     final key = RelayConnectionKey.authenticated(url, account.pubkey);
+    if (globalState.relays[key] == null &&
+        !await _consent(key, pausing: pausing)) {
+      Logger.log.d(() => "Not allowed to open $key");
+      return null;
+    }
     _boundAccounts[key] = account;
 
     if (isConnectionOpen(key)) {
@@ -1109,6 +1129,45 @@ class RelayManager<T> {
       return null;
     }
     return connectivity;
+  }
+
+  Future<bool> _consent(
+    RelayConnectionKey key, {
+    TimeoutPausable? pausing,
+  }) async {
+    final handler = authHandler;
+    if (handler == null) {
+      return true;
+    }
+    var asking = _consents[key];
+    if (asking == null) {
+      final question = _ask(handler, key);
+      _consents[key] = asking = question;
+      question.whenComplete(() {
+        if (identical(_consents[key], question)) {
+          _consents.remove(key);
+        }
+      });
+    }
+    pausing?.pauseTimeout();
+    try {
+      return await asking;
+    } finally {
+      pausing?.resumeTimeout();
+    }
+  }
+
+  Future<bool> _ask(AuthHandler handler, RelayConnectionKey key) async {
+    try {
+      return await handler(key.url, key.pubkey!);
+    } catch (error, stackTrace) {
+      Logger.log.w(
+        () => "AuthHandler failed for $key",
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
   }
 
   /// The connection [state] must go out on towards the relay an engine picked.
@@ -1137,6 +1196,7 @@ class RelayManager<T> {
       picked.url,
       auth.account,
       connectionSource: connectionSource,
+      pausing: state,
     );
   }
 
@@ -1152,6 +1212,7 @@ class RelayManager<T> {
     AuthPolicy? auth, {
     ConnectionSource connectionSource = ConnectionSource.broadcastSpecific,
     int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT,
+    TimeoutPausable? pausing,
   }) async {
     if (auth is AuthPolicyRequire) {
       if (!auth.account.signer.canSign()) {
@@ -1165,6 +1226,7 @@ class RelayManager<T> {
         auth.account,
         connectionSource: connectionSource,
         connectTimeout: connectTimeout,
+        pausing: pausing,
       );
     }
 
@@ -1643,11 +1705,15 @@ class RelayManager<T> {
       case AuthPolicyRequire(:final account):
         return account.signer.canSign() ? account : null;
       case null:
-        // a request that says nothing still authenticates as the logged
-        // account, so the relay decides when that identity is revealed
-        final logged = _accounts?.getLoggedAccount();
-        return logged != null && logged.signer.canSign() ? logged : null;
+        // a request that says nothing reveals nothing unless an AuthHandler is
+        // there to agree to it
+        return authHandler == null ? null : _loggedSigner();
     }
+  }
+
+  Account? _loggedSigner() {
+    final logged = _accounts?.getLoggedAccount();
+    return logged != null && logged.signer.canSign() ? logged : null;
   }
 
   /// Account a broadcast authenticates as, null when it must stay
@@ -1655,19 +1721,21 @@ class RelayManager<T> {
   ///
   /// A caller that named an identity gets that one, with no heuristic. Only a
   /// broadcast that said nothing prefers the event author, because gift wraps
-  /// and other ephemeral-author events have no matching account and the logged
-  /// one is the historical fallback.
+  /// and other ephemeral-author events have no matching account, and only once
+  /// an [AuthHandler] is there to agree to it.
   Account? _accountForBroadcast(BroadcastState state, Nip01Event event) {
     if (state.auth != null) {
       return accountForAuth(state.auth);
+    }
+    if (authHandler == null) {
+      return null;
     }
 
     final author = _accounts?.accounts[event.pubKey];
     if (author != null && author.signer.canSign()) {
       return author;
     }
-    final logged = _accounts?.getLoggedAccount();
-    return logged != null && logged.signer.canSign() ? logged : null;
+    return _loggedSigner();
   }
 
   /// Handles OK auth-required for broadcasts by moving the retry onto an
@@ -1702,15 +1770,11 @@ class RelayManager<T> {
         () =>
             "Cannot satisfy auth-required for broadcast $eventId on ${relayConnectivity.url}",
       );
-      // a broadcast that named a policy gets an answer rather than a timeout;
-      // one that said nothing keeps waiting, as it always has
-      if (broadcastState.auth != null) {
-        failBroadcast(
-          eventId,
-          relayConnectivity.url,
-          'auth-required: this broadcast may not reveal an identity',
-        );
-      }
+      failBroadcast(
+        eventId,
+        relayConnectivity.url,
+        'auth-required: this broadcast may not reveal an identity',
+      );
       return;
     }
     final account = resolved;
@@ -1726,6 +1790,7 @@ class RelayManager<T> {
           relayConnectivity.url,
           account,
           connectionSource: relayConnectivity.relay.connectionSource,
+          pausing: broadcastState,
         );
         if (!identical(
           globalState.inFlightBroadcasts[eventId],

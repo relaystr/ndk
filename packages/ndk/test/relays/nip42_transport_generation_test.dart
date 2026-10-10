@@ -36,6 +36,7 @@ void main() {
 
       final ndk = Ndk(
         NdkConfig(
+          authHandler: (_, _) async => true,
           eventVerifier: Bip340EventVerifier(),
           cache: MemCacheManager(),
           bootstrapRelays: [relay.url],

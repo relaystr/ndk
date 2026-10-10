@@ -329,10 +329,10 @@ void main() {
       },
     );
 
-    test('without auth still signs as the logged-in account', () async {
+    test('without auth or handler signs with a throwaway key', () async {
       await report();
 
-      expect(server.reports.single['pubkey'], loggedIn.pubkey);
+      expect(server.reports.single['pubkey'], isNot(loggedIn.pubkey));
     });
   });
 }

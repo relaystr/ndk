@@ -22,7 +22,7 @@ class RequestDefaults {
   /// query timeout
   static const Duration DEFAULT_QUERY_TIMEOUT = Duration(seconds: 10);
 
-  /// default User-Agent header value used for websocket connections
+  /// NDK's User-Agent, opt in via NdkConfig.userAgent
   static const String DEFAULT_USER_AGENT = "dart-NDK/$packageVersion";
 
   /// default timeout for AUTH callbacks (how long to wait for AUTH OK)
