@@ -264,6 +264,12 @@ class _HomePageState extends State<HomePage> {
             title: 'Quantum Secure',
             onTap: () => context.push('/quantum'),
           ),
+          const SizedBox(height: 8),
+          _NavCard(
+            icon: Icons.sync,
+            title: 'NIP-77 Sync',
+            onTap: () => context.push('/nip77'),
+          ),
         ],
       ),
     );
