@@ -96,7 +96,7 @@ class Nip51List {
   List<String> get publicRelays =>
       relays.where((element) => !element.private).map((e) => e.value).toList();
   List<String> get privateRelays =>
-      relays.where((element) => !element.private).map((e) => e.value).toList();
+      relays.where((element) => element.private).map((e) => e.value).toList();
 
   set privateRelays(List<String> list) {
     elements.removeWhere((element) => element.tag == kRelay && element.private);
