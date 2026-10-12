@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791837500676,
+  "lastUpdate": 1791838651311,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2088,6 +2088,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1707470,
             "range": "1692750-1763862",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6164ca1e75f3f6af6b7d00a757d026d8a111bbc9",
+          "message": "Merge pull request #903 from relaystr/fix/drift-objectbox-prerelease-versions\n\nchore(release): bump ndk_drift and ndk_objectbox above their stable v…",
+          "timestamp": "2026-10-12T22:55:45+02:00",
+          "tree_id": "8ed2c04d67a1d7342691487a9954159d6a97d5ee",
+          "url": "https://github.com/relaystr/ndk/commit/6164ca1e75f3f6af6b7d00a757d026d8a111bbc9"
+        },
+        "date": 1791838649028,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 28443.2,
+            "range": "28042-29733",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 846654,
+            "range": "829748-860610",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
