@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791550986860,
+  "lastUpdate": 1791837500676,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2050,6 +2050,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1640906,
             "range": "1630124-1655506",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "63fa0f415370ff8ae5396206e46096f9fdcf8e5b",
+          "message": "Merge pull request #900 from relaystr/release-37933912332\n\nchore(prerelease): publish ndk_drift 0.2.0-dev.1, ndk 0.11.0-dev.1, ndk_flutter 0.10.3-dev.1, ndk_objectbox 0.3.0-dev.1",
+          "timestamp": "2026-10-12T22:36:31+02:00",
+          "tree_id": "bf38a6c00ab02bb22ad9f506602cb9b04a0923cd",
+          "url": "https://github.com/relaystr/ndk/commit/63fa0f415370ff8ae5396206e46096f9fdcf8e5b"
+        },
+        "date": 1791837498413,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46124.8,
+            "range": "46030-49028",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1707470,
+            "range": "1692750-1763862",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
