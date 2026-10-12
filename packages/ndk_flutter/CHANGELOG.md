@@ -1,3 +1,7 @@
+## 0.10.3-dev.1
+
+ - Update a dependency to the latest release.
+
 ## 0.10.3-dev.0
 
  - **REFACTOR**(web): share the NostrCrypto null check between signer and factory.
