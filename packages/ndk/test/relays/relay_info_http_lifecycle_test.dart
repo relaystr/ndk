@@ -108,7 +108,7 @@ void main() {
       httpDS: HttpRequestDS(client),
     ).getRelayInfo('wss://127.0.0.1:${server.port}');
     expect(info?.name, 'Test relay ⚡');
-    expect(info?.supportsNip(11), isTrue);
+    expect(info?.supportsNip('11'), isTrue);
     expect(client.aborted, isFalse);
   });
 

@@ -2060,7 +2060,7 @@ class RelayManager<T> {
   }
 
   /// does relay support given nip
-  bool doesRelaySupportNip(String url, int nip) {
+  bool doesRelaySupportNip(String url, String nip) {
     RelayConnectivity? connectivity =
         globalState.relays[RelayConnectionKey.anonymous(url)];
     return connectivity != null &&

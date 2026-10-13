@@ -1,3 +1,19 @@
+## 0.11.0-dev.1
+
+> Note: This release has breaking changes.
+
+ - **BREAKING** **FIX**(connectivity): support lettered NIP identifiers in RelayInfo.
+
+## 0.11.0-dev.0
+
+> Note: This release has breaking changes.
+
+ - **FIX**: leave the app's websocket user agent untouched by default.
+ - **FIX**: trim d-tags in the visibility context read.
+ - **FIX**: clear the paused request timeout when the request is closed.
+ - **FEAT**: add NIP-46 switch_relays to Nip46EventSigner.
+ - **BREAKING** **FEAT**: add AuthHandler to consent before an identity authenticates.
+
 ## 0.10.1
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
