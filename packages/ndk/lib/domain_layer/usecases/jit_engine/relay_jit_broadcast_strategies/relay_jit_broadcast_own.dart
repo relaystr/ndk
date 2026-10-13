@@ -2,7 +2,7 @@ import '../../../../shared/logger/logger.dart';
 import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../entities/connection_source.dart';
 import '../../../entities/nip_01_event.dart';
-import '../../../entities/auth_policy.dart';
+import '../../../entities/broadcast_state.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../../repositories/cache_manager.dart';
 import '../../relay_manager.dart';
@@ -16,7 +16,7 @@ class RelayJitBroadcastOutboxStrategy {
     required CacheManager cacheManager,
     required RelayManager relayManager,
     required List<String> bootstrapRelays,
-    AuthPolicy? auth,
+    required BroadcastState broadcastState,
   }) async {
     final nip65Data = await UserRelayLists.getUserRelayListCacheLatestSingle(
       pubkey: eventToPublish.pubKey,
@@ -57,6 +57,7 @@ class RelayJitBroadcastOutboxStrategy {
     Future<void> sendToUrl(String relayUrl) async {
       // register relay broadcast
       relayManager.registerRelayBroadcast(
+        broadcastState: broadcastState,
         eventToPublish: eventToPublish,
         relayUrl: relayUrl,
       );
@@ -64,14 +65,13 @@ class RelayJitBroadcastOutboxStrategy {
       try {
         final relay = await relayManager.connectionForBroadcast(
           relayUrl,
-          auth,
+          broadcastState.auth,
           connectionSource: ConnectionSource.broadcastOwn,
-          pausing:
-              relayManager.globalState.inFlightBroadcasts[eventToPublish.id],
+          pausing: broadcastState,
         );
         if (relay == null) {
           relayManager.failBroadcast(
-            eventToPublish.id,
+            broadcastState,
             relayUrl,
             "no connection could carry this broadcast",
           );
@@ -80,7 +80,7 @@ class RelayJitBroadcastOutboxStrategy {
         sendToRelay(relay: relay);
       } catch (e) {
         relayManager.failBroadcast(
-          eventToPublish.id,
+          broadcastState,
           relayUrl,
           "broadcast error: $e",
         );

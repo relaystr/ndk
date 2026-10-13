@@ -77,12 +77,14 @@ class BroadcastSender {
       timeout: myTimeout,
       auth: auth,
     );
-    _globalState.inFlightBroadcasts[nostrEvent.id] = broadcastState;
+    _globalState.inFlightBroadcasts
+        .putIfAbsent(nostrEvent.id, () => [])
+        .add(broadcastState);
     void cleanupInFlightBroadcastState() {
-      if (identical(
-        _globalState.inFlightBroadcasts[nostrEvent.id],
-        broadcastState,
-      )) {
+      final states = _globalState.inFlightBroadcasts[nostrEvent.id];
+      if (states == null) return;
+      states.remove(broadcastState);
+      if (states.isEmpty) {
         _globalState.inFlightBroadcasts.remove(nostrEvent.id);
       }
     }

@@ -2,7 +2,7 @@ import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../repositories/cache_manager.dart';
 import '../../../entities/nip_01_event.dart';
-import '../../../entities/auth_policy.dart';
+import '../../../entities/broadcast_state.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../relay_manager.dart';
 
@@ -14,7 +14,7 @@ class RelayJitBroadcastSpecificRelaysStrategy {
     required CacheManager cacheManager,
     required RelayManager relayManager,
     required List<String> specificRelays,
-    AuthPolicy? auth,
+    required BroadcastState broadcastState,
   }) async {
     // Deduplicate relay URLs
     final uniqueRelayUrls = specificRelays.toSet().toList();
@@ -32,6 +32,7 @@ class RelayJitBroadcastSpecificRelaysStrategy {
     Future<void> sendToUrl(String relayUrl) async {
       // register relay broadcast
       relayManager.registerRelayBroadcast(
+        broadcastState: broadcastState,
         eventToPublish: eventToPublish,
         relayUrl: relayUrl,
       );
@@ -39,14 +40,13 @@ class RelayJitBroadcastSpecificRelaysStrategy {
       try {
         final relay = await relayManager.connectionForBroadcast(
           relayUrl,
-          auth,
+          broadcastState.auth,
           connectTimeout: 1,
-          pausing:
-              relayManager.globalState.inFlightBroadcasts[eventToPublish.id],
+          pausing: broadcastState,
         );
         if (relay == null) {
           relayManager.failBroadcast(
-            eventToPublish.id,
+            broadcastState,
             relayUrl,
             "no connection could carry this broadcast",
           );
@@ -60,7 +60,7 @@ class RelayJitBroadcastSpecificRelaysStrategy {
           event: eventToPublish,
         )) {
           relayManager.failBroadcast(
-            eventToPublish.id,
+            broadcastState,
             relayUrl,
             "obsolete replaceable event skipped",
           );
@@ -70,7 +70,7 @@ class RelayJitBroadcastSpecificRelaysStrategy {
         sendToRelay(relay: relay);
       } catch (e) {
         relayManager.failBroadcast(
-          eventToPublish.id,
+          broadcastState,
           relayUrl,
           "broadcast error: $e",
         );
