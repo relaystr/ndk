@@ -14,11 +14,7 @@ This example demonstrates how to use the SembastCacheManager with the NDK (Nostr
 ## Running the example
 
 ```bash
-# Navigate to the example directory
-cd example
-
-# Run the example
-dart run main.dart
+dart run example/sembast_cache_manager_example.dart
 ```
 
 ## Sample Output
@@ -80,7 +76,7 @@ To use this cache manager with NDK:
 
 ```dart
 import 'package:ndk/ndk.dart';
-import 'package:sembast_cache_manager/sembast_cache_manager.dart';
+import 'package:ndk_sembast/ndk_sembast.dart';
 
 // Create your cache manager
 final cacheManager = SembastCacheManager(database);

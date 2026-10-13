@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:ndk/data_layer/repositories/wallets/sembast_wallets_repo.dart';
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk_sembast/ndk_sembast.dart';
 
 import 'cli_accounts_store.dart';
 import 'cli_command.dart';
