@@ -17,7 +17,9 @@ Uint8List scrypt(
     throw ArgumentError.value(n, 'n', 'must be a power of 2 greater than 1');
   }
   final blockWords = 32 * r;
-  final b = _bytesToWords(_pbkdf2(password, salt, 128 * r * p));
+  final initial = _pbkdf2(password, salt, 128 * r * p);
+  final b = _bytesToWords(initial);
+  initial.fillRange(0, initial.length, 0);
   final v = Uint32List(blockWords * n);
   final x = Uint32List(blockWords);
   final y = Uint32List(blockWords);
@@ -40,7 +42,13 @@ Uint8List scrypt(
     b.setRange(offset, offset + blockWords, x);
   }
 
-  return _pbkdf2(password, _wordsToBytes(b), dkLen);
+  final mixed = _wordsToBytes(b);
+  for (final words in [b, v, x, y, t]) {
+    words.fillRange(0, words.length, 0);
+  }
+  final key = _pbkdf2(password, mixed, dkLen);
+  mixed.fillRange(0, mixed.length, 0);
+  return key;
 }
 
 void _blockMix(Uint32List b, Uint32List y, Uint32List t, int r) {
@@ -126,24 +134,25 @@ void _salsa20_8(Uint32List b) {
 Uint8List _pbkdf2(List<int> password, List<int> salt, int length) {
   final hmac = Hmac(sha256, password);
   final out = Uint8List(length);
+  final message = Uint8List(salt.length + 4)..setAll(0, salt);
+  final counter = ByteData.sublistView(message, salt.length);
   for (var i = 1, offset = 0; offset < length; i++, offset += 32) {
-    final block = hmac.convert([
-      ...salt,
-      (i >> 24) & 0xff,
-      (i >> 16) & 0xff,
-      (i >> 8) & 0xff,
-      i & 0xff,
-    ]).bytes;
+    counter.setUint32(0, i);
+    final block = hmac.convert(message).bytes;
     out.setRange(offset, min(offset + 32, length), block);
+    block.fillRange(0, block.length, 0);
   }
+  message.fillRange(0, message.length, 0);
   return out;
 }
 
 Uint32List _bytesToWords(Uint8List bytes) {
   final data = ByteData.sublistView(bytes);
-  return Uint32List.fromList([
-    for (var i = 0; i < bytes.length; i += 4) data.getUint32(i, Endian.little),
-  ]);
+  final words = Uint32List(bytes.length ~/ 4);
+  for (var i = 0; i < words.length; i++) {
+    words[i] = data.getUint32(i * 4, Endian.little);
+  }
+  return words;
 }
 
 Uint8List _wordsToBytes(Uint32List words) {

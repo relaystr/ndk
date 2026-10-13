@@ -58,13 +58,22 @@ class Nip49 {
     final nonce = secureRandomBytes(24);
     final associatedData = [keySecurity.value];
 
-    final symmetricKey = await _deriveKey(password, salt, logN);
-    final secretBox = await Xchacha20.poly1305Aead().encrypt(
-      privateKeyBytes,
-      secretKey: SecretKey(symmetricKey),
-      nonce: nonce,
-      aad: associatedData,
+    final symmetricKey = SecretKeyData(
+      await _deriveKey(password, salt, logN),
+      overwriteWhenDestroyed: true,
     );
+    final SecretBox secretBox;
+    try {
+      secretBox = await Xchacha20.poly1305Aead().encrypt(
+        privateKeyBytes,
+        secretKey: symmetricKey,
+        nonce: nonce,
+        aad: associatedData,
+      );
+    } finally {
+      symmetricKey.destroy();
+      privateKeyBytes.fillRange(0, privateKeyBytes.length, 0);
+    }
 
     final payload = [
       _version,
@@ -102,13 +111,22 @@ class Nip49 {
     final cipherText = payload.sublist(43, 75);
     final mac = payload.sublist(75);
 
-    final symmetricKey = await _deriveKey(password, salt, logN);
-    final privateKey = await Xchacha20.poly1305Aead().decrypt(
-      SecretBox(cipherText, nonce: nonce, mac: Mac(mac)),
-      secretKey: SecretKey(symmetricKey),
-      aad: associatedData,
+    final symmetricKey = SecretKeyData(
+      await _deriveKey(password, salt, logN),
+      overwriteWhenDestroyed: true,
     );
-    return hex.encode(privateKey);
+    try {
+      final privateKey = await Xchacha20.poly1305Aead().decrypt(
+        SecretBox(cipherText, nonce: nonce, mac: Mac(mac)),
+        secretKey: symmetricKey,
+        aad: associatedData,
+      );
+      final privateKeyHex = hex.encode(privateKey);
+      privateKey.fillRange(0, privateKey.length, 0);
+      return privateKeyHex;
+    } finally {
+      symmetricKey.destroy();
+    }
   }
 
   static Future<Uint8List> _deriveKey(
@@ -126,13 +144,18 @@ class Nip49 {
   static Uint8List _scrypt(
     ({String password, Uint8List salt, int logN}) params,
   ) {
-    return scrypt(
-      utf8.encode(unorm.nfkc(params.password)),
-      params.salt,
-      n: 1 << params.logN,
-      r: 8,
-      p: 1,
-      dkLen: 32,
-    );
+    final password = utf8.encode(unorm.nfkc(params.password));
+    try {
+      return scrypt(
+        password,
+        params.salt,
+        n: 1 << params.logN,
+        r: 8,
+        p: 1,
+        dkLen: 32,
+      );
+    } finally {
+      password.fillRange(0, password.length, 0);
+    }
   }
 }
