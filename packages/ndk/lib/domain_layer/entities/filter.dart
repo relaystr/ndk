@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 /// Represents a filter for querying Nostr events.
 ///
 /// This class encapsulates various criteria that can be used to filter
@@ -43,16 +45,36 @@ class Filter {
   /// Maximum number of events to return.
   int? limit;
 
-  /// Map to store tags \
-  /// Key is the tag name (# prefixed), value is a list of tag values
-  Map<String, List<String>>? tags;
+  Map<String, List<String>>? _tags;
+
+  /// Read-only view of the tag filters, keyed by the bare tag name ('p', 'e',
+  /// 'd', ...), value is a list of tag values.
+  ///
+  /// The NIP-01 '#' prefix is a wire-format detail only: [toMap] and [toJson]
+  /// add it when a filter is serialized for a relay, everything else, cache
+  /// reads above all, sees bare keys.
+  ///
+  /// The returned map cannot be modified directly, so callers cannot bypass
+  /// key normalization. Mutate through [setTag] or the [tags] setter instead;
+  /// both accept '#'-prefixed keys such as '#p' and store them bare.
+  Map<String, List<String>>? get tags =>
+      _tags == null ? null : UnmodifiableMapView(_tags!);
+
+  set tags(Map<String, List<String>>? value) {
+    _tags = value == null
+        ? null
+        : {
+            for (final entry in value.entries)
+              _bareTagKey(entry.key): entry.value,
+          };
+  }
 
   Filter({
     this.ids,
     this.authors,
     this.kinds,
     this.search,
-    this.tags,
+    Map<String, List<String>>? tags,
     List<String>? eTags,
     List<String>? pTags,
     List<String>? tTags,
@@ -63,6 +85,7 @@ class Filter {
     this.until,
     this.limit,
   }) {
+    this.tags = tags;
     if (eTags != null) setTag("e", eTags);
     if (pTags != null) setTag("p", pTags);
     if (tTags != null) setTag("t", tTags);
@@ -80,14 +103,15 @@ class Filter {
     until = map['until'];
     limit = map['limit'];
 
-    // Handle arbitrary tags
-    tags = {};
+    // Handle arbitrary tags: relays serialize them '#'-prefixed, we store
+    // them bare.
+    final tagFilters = <String, List<String>>{};
     map.forEach((key, value) {
       if (key.startsWith('#') && key.length == 2) {
-        tags![key] = List<String>.from(value);
+        tagFilters[key.substring(1)] = List<String>.from(value);
       }
     });
-    if (tags!.isEmpty) tags = null;
+    tags = tagFilters.isEmpty ? null : tagFilters;
   }
 
   Map<String, dynamic> toMap() {
@@ -101,9 +125,11 @@ class Filter {
       "limit": limit,
     };
 
-    // Add arbitrary tags to the map
+    // Add arbitrary tags to the map, NIP-01 wants them '#'-prefixed
     if (tags != null) {
-      body.addAll(tags!);
+      body.addAll({
+        for (final entry in tags!.entries) _wireTagKey(entry.key): entry.value,
+      });
     }
 
     // remove null values
@@ -177,13 +203,20 @@ class Filter {
   // set an arbitrary tag
   void setTag(String tagName, List<String> values) {
     if (tagName.length > 2) return;
-    tags ??= {};
-    tags![tagName.startsWith('#') ? tagName : '#$tagName'] = values;
+    (_tags ??= {})[_bareTagKey(tagName)] = values;
   }
 
   // get an arbitrary tag
   List<String>? getTag(String tagName) {
-    if (tags == null || tagName.length > 2) return null;
-    return tags![tagName.startsWith('#') ? tagName : '#$tagName'];
+    if (_tags == null || tagName.length > 2) return null;
+    return _tags![_bareTagKey(tagName)];
   }
+
+  /// Tag key without the NIP-01 '#', the form [tags] stores.
+  static String _bareTagKey(String tagName) =>
+      tagName.startsWith('#') ? tagName.substring(1) : tagName;
+
+  /// Tag key as NIP-01 serializes it, '#' prefixed.
+  static String _wireTagKey(String tagName) =>
+      tagName.startsWith('#') ? tagName : '#$tagName';
 }
