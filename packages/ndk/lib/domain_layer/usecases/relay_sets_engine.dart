@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'dart:core';
 import 'dart:math';
 
@@ -8,20 +6,17 @@ import '../../config/broadcast_defaults.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/event_kind_classification.dart';
 import '../../shared/nips/nip01/client_msg.dart';
-import '../../shared/nips/nip01/helpers.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../entities/broadcast_response.dart';
 import '../entities/broadcast_state.dart';
 import '../entities/connection_source.dart';
 import '../entities/filter.dart';
 import '../entities/global_state.dart';
-import '../entities/ndk_request.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/auth_policy.dart';
 import '../entities/relay_connection_key.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_set.dart';
-import '../entities/request_response.dart';
 import '../entities/request_state.dart';
 import '../repositories/cache_manager.dart';
 import '../repositories/event_signer.dart';
@@ -30,8 +25,6 @@ import 'relay_manager.dart';
 import 'user_relay_lists/user_relay_lists.dart';
 
 class RelaySetsEngine implements NetworkEngine {
-  static const Duration kDefaultStreamIdleTimeout = Duration(seconds: 5);
-
   late GlobalState _globalState;
 
   final RelayManager _relayManager;
@@ -72,8 +65,7 @@ class RelaySetsEngine implements NetworkEngine {
     try {
       connected = await _relayManager.reconnectConnection(
         request.key,
-        connectionSource:
-            ConnectionSource.explicit, // TODO improve this connection source
+        connectionSource: ConnectionSource.relaySet,
         force: false,
         as: state?.request.auth?.account,
         pausing: state,
@@ -230,13 +222,18 @@ class RelaySetsEngine implements NetworkEngine {
     for (final filter in state.unresolvedFilters) {
       if (splitRequestsByPubKeyMappings) {
         relaySet.splitIntoRequests(filter, state);
-        print(
-          "request for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds} made requests to ${state.requests.length} relays",
+        Logger.log.d(
+          () =>
+              "request for ${filter.authors?.length ?? 0} authors with kinds: "
+              "${filter.kinds} made requests to ${state.requests.length} relays",
         );
 
         if (state.requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
-          print(
-            "making fallback requests to ${_bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}",
+          Logger.log.d(
+            () =>
+                "making fallback requests to ${_bootstrapRelays.length} bootstrap "
+                "relays for ${filter.authors?.length ?? 0} authors with kinds: "
+                "${filter.kinds}",
           );
           for (final url in _bootstrapRelays) {
             state.addRequestForRelay(url, RelaySet.sliceFilterAuthors(filter));
@@ -309,54 +306,6 @@ class RelaySetsEngine implements NetworkEngine {
         }
       });
     }
-  }
-
-  //! dead code
-  Future<NdkResponse> requestRelays(
-    String name,
-    Iterable<String> urls,
-    Filter filter, {
-    Duration timeout = kDefaultStreamIdleTimeout,
-    bool closeOnEOSE = true,
-  }) async {
-    String id = Helpers.getSecureRandomHex(16);
-    RequestState state = RequestState(
-      closeOnEOSE
-          ? NdkRequest.query(
-              id,
-              name: name,
-              filters: [filter],
-              timeoutDuration: timeout,
-            )
-          : NdkRequest.subscription(id, name: name, filters: []),
-    );
-
-    for (final url in urls) {
-      state.addRequestForRelay(url, RelaySet.sliceFilterAuthors(filter));
-    }
-    _globalState.inFlightRequests[state.id] = state;
-
-    for (MapEntry<RelayConnectionKey, RelayRequestState> entry
-        in state.requests.entries) {
-      doRelayRequest(state.id, entry.value).then((sent) {
-        if (!sent) {
-          state.removeRequest(entry.key);
-          // start fix
-          if (state.requests.isEmpty) {
-            state.networkController.close();
-          }
-          // end fix
-        }
-      });
-    }
-
-    return NdkResponse(
-      state.id,
-      state.stream,
-      relayOutcomes: () => state.relayOutcomes,
-      relayOutcomesStream: () => state.relayOutcomesStream,
-      relayOutcomesDone: state.controller.done.then((_) => state.relayOutcomes),
-    );
   }
 
   @override
