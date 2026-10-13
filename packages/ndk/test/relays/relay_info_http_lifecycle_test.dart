@@ -7,6 +7,7 @@ import 'package:http/io_client.dart';
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/relay_info_http_impl.dart';
 import 'package:ndk/domain_layer/entities/relay_info.dart';
+import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 
 /// Keep production HTTPS mapping while routing test requests to local HTTP.
@@ -144,5 +145,30 @@ void main() {
     );
     expect(info?.name, 'Legacy relay');
     expect(client.closed, isTrue);
+  });
+
+  test('destroying Ndk settles an unawaited relay info fetch', () async {
+    final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+    final peers = <Socket>[];
+    server.listen(peers.add);
+    final client = _LoopbackClient();
+    addTearDown(() async {
+      client.close();
+      for (final peer in peers) {
+        peer.destroy();
+      }
+      await server.close();
+    });
+    final ndk = http.runWithClient(
+      Ndk.emptyBootstrapRelaysConfig,
+      () => client,
+    );
+
+    final info = ndk.relays.getRelayInfo('wss://127.0.0.1:${server.port}');
+    await ndk.destroy();
+
+    // the relay never answers, so only destroy can settle the fetch before
+    // the 5s repo timeout
+    expect(await info.timeout(const Duration(seconds: 1)), isNull);
   });
 }

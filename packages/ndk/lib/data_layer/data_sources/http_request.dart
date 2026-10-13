@@ -49,6 +49,9 @@ class HttpRequestDS {
   /// create new instance of HttpRequestDS
   HttpRequestDS(this._client);
 
+  /// closes the underlying client, aborting requests still in flight
+  void close() => _client.close();
+
   /// make a get request to the given url
   Future<Map<String, dynamic>> jsonRequest(
     String url, {
