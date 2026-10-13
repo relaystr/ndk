@@ -105,6 +105,67 @@ void main() {
       expect(uploadResponse.first.descriptor!.size, equals(testData.length));
     });
 
+    test('Upload over the size limit reports 413 and the reason', () async {
+      final limitedServer = MockBlossomServer(
+        port: statusServerPort,
+        maxUploadSize: 8,
+      );
+      await limitedServer.start();
+      addTearDown(limitedServer.stop);
+
+      final uploadResponse = await client.uploadBlob(
+        data: Uint8List.fromList(utf8.encode('more than eight bytes')),
+        serverUrls: ['http://localhost:$statusServerPort'],
+      );
+
+      expect(uploadResponse.single.success, false);
+      expect(uploadResponse.single.statusCode, 413);
+      expect(uploadResponse.single.reason, contains('Max allowed size'));
+    });
+
+    test('checkUpload answers without sending the blob', () async {
+      final limitedServer = MockBlossomServer(
+        port: statusServerPort,
+        maxUploadSize: 8,
+      );
+      await limitedServer.start();
+      addTearDown(limitedServer.stop);
+      final serverUrls = ['http://localhost:$statusServerPort'];
+
+      final tooLarge = await client.checkUpload(
+        sha256: 'a' * 64,
+        contentLength: 9,
+        serverUrls: serverUrls,
+      );
+      final fits = await client.checkUpload(
+        sha256: 'a' * 64,
+        contentLength: 8,
+        serverUrls: serverUrls,
+      );
+
+      expect(tooLarge.single.accepted, false);
+      expect(tooLarge.single.statusCode, 413);
+      expect(tooLarge.single.reason, contains('Max allowed size'));
+      expect(fits.single.accepted, true);
+      expect(limitedServer.countRequests(method: 'PUT'), 0);
+      expect(
+        limitedServer.requests.map((r) => r.authType),
+        everyElement('upload'),
+      );
+    });
+
+    test('checkUpload with media optimisation asks /media', () async {
+      await client.checkUpload(
+        sha256: 'a' * 64,
+        contentLength: 8,
+        serverUrls: ['http://localhost:${server.port}'],
+        serverMediaOptimisation: true,
+      );
+
+      expect(server.requests.single.path, '/media');
+      expect(server.requests.single.authType, 'media');
+    });
+
     test('Upload and check blob', () async {
       final testData = Uint8List.fromList(utf8.encode('Hello, Blossom!'));
 
