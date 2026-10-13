@@ -247,4 +247,44 @@ void main() async {
       } catch (_) {}
     }
   });
+
+  test(
+    'repeated saveEvent replaces the event instead of duplicating it',
+    () async {
+      final tempDir = await Directory.systemTemp.createTemp(
+        'objectbox_save_event_dedup_test',
+      );
+
+      DbObjectBox? cacheManager;
+      try {
+        cacheManager = DbObjectBox(directory: tempDir.path);
+        await cacheManager.dbRdy;
+
+        final event = Nip01Event(
+          pubKey: 'dedup_pubkey',
+          kind: 1,
+          tags: const [],
+          content: 'repeated save',
+          createdAt: 13,
+        );
+
+        await cacheManager.saveEvent(event);
+        await cacheManager.saveEvent(event);
+
+        final byId = await cacheManager.loadEvents(ids: [event.id]);
+        expect(byId, hasLength(1));
+
+        final byPubKey = await cacheManager.loadEvents(pubKeys: [event.pubKey]);
+        expect(byPubKey, hasLength(1));
+        expect(byPubKey.single.content, equals('repeated save'));
+      } finally {
+        try {
+          await cacheManager?.close();
+        } catch (_) {}
+        try {
+          await tempDir.delete(recursive: true);
+        } catch (_) {}
+      }
+    },
+  );
 }
