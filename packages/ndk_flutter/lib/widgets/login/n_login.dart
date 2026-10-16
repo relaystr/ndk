@@ -262,7 +262,8 @@ class _NLoginState extends State<NLogin> {
       ),
     );
 
-    final isAndroid = defaultTargetPlatform == TargetPlatform.android;
+    final isAndroid =
+        !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
