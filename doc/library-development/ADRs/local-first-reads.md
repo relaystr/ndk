@@ -6,7 +6,7 @@ Title: Local-first reads - return format for reads that render without waiting o
 
 proposed
 
-Updated on 2026-08-17
+Updated on 2026-10-18
 
 ## contributors
 
@@ -62,7 +62,7 @@ for every read and the origin disambiguates `null`:
 | emission | meaning |
 | --- | --- |
 | `(value, cache)` | local value, not confirmed |
-| `(null, cache)` | nothing local yet, still loading |
+| `(null, cache)` | nothing local, not confirmed |
 | `(value, relays)` | confirmed value |
 | `(null, relays)` | confirmed: nothing exists |
 
@@ -82,18 +82,16 @@ listener attached late still receives the latest value.
 `NdkValue` may later carry `createdAt`, `receivedAt` and `hasPendingWrites`. Only metadata that
 makes sense for every read belongs there, anything specific to one read belongs in `T`.
 
-Two cases are reported as stream errors, never as `null`, since `(null, relays)` is what an
-app acts on to create the missing data:
+A relay that does not answer before the timeout is left out of the read: absence is concluded
+from the relays that answered.
 
-- the value exists but cannot be read, for instance it cannot be decrypted
-- no relay was reachable, so absence cannot be concluded
+An expected outcome is never a stream error, since a `BehaviorSubject` replays only the last
+event and an error would hide the value from a late listener. When a read cannot confirm,
+because no relay answered or the relay value cannot be read (for instance it cannot be
+decrypted), it concludes on its last `cache` emission. Only `(null, relays)` lets an app
+conclude that nothing exists.
 
-`future` completes with the last emission, so it fails with the same errors, and it still carries
-a `cache` origin when the timeout hits before any relay answered.
-
-That error channel stays narrow: a `BehaviorSubject` replays only the last value or the last
-error, so a non-fatal error would hide a good value from a late listener. One unreachable relay
-is not an error while another answers, and an unreadable cache is not terminal.
+Unexpected failures, such as a cache exception, are still stream errors.
 
 ## First use: private relay list (NIP-37 kind 10013)
 
@@ -111,25 +109,20 @@ An empty list and no list are different answers:
 | `([], relays)` | the event exists and holds no relay |
 | `(null, relays)` | no kind 10013 event exists |
 
-
-
 ## Consequences
-Is a breaking change as the query API changes. 
+Is a breaking change as the query API changes.
 Could be mitigated with the help of https://github.com/flutter/flutter/blob/master/docs/contributing/Data-driven-Fixes.md (preferred)
-or https://pub.dev/packages/codemod 
+or https://pub.dev/packages/codemod
 Especially important for external projects depending on NDK
-
-
 
 ## Alternative proposals
 
-Instead of 
+Instead of
 ```dart
 enum DataOrigin { cache, relays }
-``` 
+```
 use a `Metadata` obj allowing for more flexibility when adding more metadata in the future.
 Depending on the use case, we could also include specialized metadata, e.g., for cache access counts or P2P transmission statistics.
 Because richer metadata will be slower due to DB access, we should keep the default minimal.
-
 
 ## Final Notes
