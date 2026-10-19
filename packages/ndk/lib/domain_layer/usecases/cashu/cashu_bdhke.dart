@@ -18,6 +18,11 @@ import 'cashu_tools.dart';
 typedef BlindMessageResult = (String blindedMessageHex, BigInt r);
 
 class CashuBdhke {
+  static final BigInt _secp256k1N = BigInt.parse(
+    'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141',
+    radix: 16,
+  );
+
   static Future<List<CashuBlindedMessageItem>> createBlindedMsgForAmounts({
     required String keysetId,
     required List<int> amounts,
@@ -78,11 +83,16 @@ class CashuBdhke {
     return items;
   }
 
+  /// Blinds [secret] for Cashu's blind-signature protocol.
+  ///
+  /// Hashes the secret to a curve point and adds [r] times the secp256k1
+  /// generator. If [r] is omitted, a secure random scalar is generated.
+  /// Returns the blinded point as hex together with the factor [r], which is
+  /// required to unblind the mint's signature.
   static BlindMessageResult blindMessage(String secret, {BigInt? r}) {
     final Y = CashuTools.hashToCurve(secret);
 
-    Random random = Random.secure();
-    r ??= BigInt.from(random.nextInt(1000000)) + BigInt.one;
+    r ??= _randomBlindingFactor();
 
     // Use fast multiplication (10-20x faster!)
     final rG = CashuTools.fastGMultiply(r);
@@ -94,6 +104,23 @@ class CashuBdhke {
 
     final String blindedMessageHex = CashuTools.ecPointToHex(blindedMessage);
     return (blindedMessageHex, r);
+  }
+
+  /// Generates a uniform secp256k1 scalar in the range `1..n-1`.
+  ///
+  /// Samples 256-bit candidates from a secure random source and rejects zero
+  /// or candidates greater than or equal to the secp256k1 curve order.
+  static BigInt _randomBlindingFactor() {
+    final random = Random.secure();
+    while (true) {
+      var candidate = BigInt.zero;
+      for (var i = 0; i < 32; i++) {
+        candidate = (candidate << 8) | BigInt.from(random.nextInt(256));
+      }
+      if (candidate > BigInt.zero && candidate < _secp256k1N) {
+        return candidate;
+      }
+    }
   }
 
   static ECPoint? unblindingSignature({
