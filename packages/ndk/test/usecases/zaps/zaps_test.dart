@@ -6,6 +6,8 @@ import 'package:mockito/mockito.dart';
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/lnurl_http_impl.dart';
 import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/nip_01_utils.dart';
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
 import 'package:ndk/domain_layer/usecases/zaps/zap_request.dart';
@@ -134,6 +136,35 @@ void main() {
       );
       expect(zapRequest.content, comment);
       expect(zapRequest.sig, isNotNull);
+    });
+
+    test('zapRequest.nip01Event preserves createdAt and recomputes the id', () {
+      const createdAt = 123456789;
+      final original = Nip01Event(
+        pubKey: 'pubKey',
+        kind: ZapRequest.kZapRequestKind,
+        tags: [
+          ['relays', 'relay1'],
+          ['amount', '1000000'],
+          ['p', 'pubKey'],
+        ],
+        content: 'comment',
+        createdAt: createdAt,
+      );
+
+      final wrapped = ZapRequest.nip01Event(event: original);
+
+      expect(wrapped.createdAt, createdAt);
+      expect(
+        wrapped.id,
+        Nip01Utils.calculateEventIdSync(
+          pubKey: original.pubKey,
+          createdAt: original.createdAt,
+          kind: ZapRequest.kZapRequestKind,
+          tags: original.tags,
+          content: original.content,
+        ),
+      );
     });
 
     test('zapRequest throws error for negative amount', () async {
