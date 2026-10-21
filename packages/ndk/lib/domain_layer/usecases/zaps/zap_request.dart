@@ -1,5 +1,4 @@
 import '../../entities/nip_01_event.dart';
-import '../../entities/nip_01_utils.dart';
 
 /// Zap Request
 class ZapRequest extends Nip01Event {
@@ -14,20 +13,12 @@ class ZapRequest extends Nip01Event {
         pubKey: event.pubKey,
         tags: event.tags,
         content: event.content,
+        createdAt: event.createdAt,
         id: event.id,
         sig: event.sig,
         kind: kZapRequestKind,
         validSig: event.validSig,
       );
-
-  /// Zap Request
-  ZapRequest._({
-    required super.pubKey,
-    required super.tags,
-    required super.content,
-    required super.id,
-    super.sig,
-  }) : super(kind: kZapRequestKind, validSig: null);
 
   /// creates a zap request \
   /// [pubKey] the pubkey of the zap requester \
@@ -35,26 +26,10 @@ class ZapRequest extends Nip01Event {
   /// [content] the content of the zap request \
   /// [sig] the signature of the zap request (optional) \
   /// returns the zap request \
-  factory ZapRequest({
-    required String pubKey,
-    required List<List<String>> tags,
-    required String content,
-    String? sig,
-  }) {
-    final calculatedId = Nip01Utils.calculateEventIdSync(
-      pubKey: pubKey,
-      createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      kind: kZapRequestKind,
-      tags: tags,
-      content: content,
-    );
-
-    return ZapRequest._(
-      pubKey: pubKey,
-      tags: tags,
-      content: content,
-      id: calculatedId,
-      sig: sig,
-    );
-  }
+  ZapRequest({
+    required super.pubKey,
+    required super.tags,
+    required super.content,
+    super.sig,
+  }) : super(kind: kZapRequestKind, validSig: null);
 }
