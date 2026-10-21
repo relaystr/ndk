@@ -6,7 +6,6 @@ import 'package:mockito/mockito.dart';
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/lnurl_http_impl.dart';
 import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/nip_01_utils.dart';
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
@@ -17,6 +16,7 @@ import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
 
+import '../../mocks/mock_slow_signer.dart';
 import '../lnurl/lnurl_test.mocks.dart';
 
 // Mock classes
@@ -138,34 +138,33 @@ void main() {
       expect(zapRequest.sig, isNotNull);
     });
 
-    test('zapRequest.nip01Event preserves createdAt and recomputes the id', () {
-      const createdAt = 123456789;
-      final original = Nip01Event(
-        pubKey: 'pubKey',
-        kind: ZapRequest.kZapRequestKind,
-        tags: [
-          ['relays', 'relay1'],
-          ['amount', '1000000'],
-          ['p', 'pubKey'],
-        ],
-        content: 'comment',
-        createdAt: createdAt,
-      );
+    test(
+      'zapRequest from a slow signer has a valid id and signature',
+      () async {
+        Ndk ndk = Ndk.defaultConfig();
 
-      final wrapped = ZapRequest.nip01Event(event: original);
+        ZapRequest zapRequest = await ndk.zaps.createZapRequest(
+          amountSats: 1000,
+          eventId: 'eventId',
+          comment: 'comment',
+          signer: MockSlowSigner(
+            innerSigner: eventSignerFactory(
+              privateKey: key.privateKey,
+              publicKey: key.publicKey,
+            ),
+            delay: const Duration(milliseconds: 1100),
+          ),
+          pubKey: 'pubKey',
+          relays: ['relay1'],
+        );
 
-      expect(wrapped.createdAt, createdAt);
-      expect(
-        wrapped.id,
-        Nip01Utils.calculateEventIdSync(
-          pubKey: original.pubKey,
-          createdAt: original.createdAt,
-          kind: ZapRequest.kZapRequestKind,
-          tags: original.tags,
-          content: original.content,
-        ),
-      );
-    });
+        expect(Nip01Utils.isIdValid(zapRequest), isTrue);
+        expect(
+          Bip340.verify(zapRequest.id, zapRequest.sig!, zapRequest.pubKey),
+          isTrue,
+        );
+      },
+    );
 
     test('zapRequest throws error for negative amount', () async {
       Ndk ndk = Ndk.defaultConfig();

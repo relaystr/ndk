@@ -77,9 +77,7 @@ class MakeInvoiceResponse extends NwcResponse {
           ? result['payment_hash'] as String
           : '',
       amountMsat: result['amount'] as int,
-      feesPaid: result.containsKey('fees_paid')
-          ? result['fees_paid'] as int
-          : 0,
+      feesPaid: (result['fees_paid'] as int?) ?? 0,
       createdAt: result['created_at'] as int,
       expiresAt: result['expires_at'] as int?,
       settledAt: result['settled_at'] as int?, // optional
