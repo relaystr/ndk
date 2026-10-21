@@ -341,6 +341,59 @@ void main() {
       expect(broadcast.broadcastedEvents, isEmpty);
     });
 
+    group('a target that cannot be sent', () {
+      const relayUrl = 'wss://relay.example';
+
+      Future<void> addTarget(Nip01Event pending) async {
+        await cacheManager.saveEvent(pending);
+        await cacheManager.saveEventDeliveryRecord(
+          EventDeliveryRecord(
+            eventId: pending.id,
+            createdAt: pending.createdAt,
+            updatedAt: pending.createdAt,
+          ),
+        );
+        await cacheManager.saveRelayDeliveryTarget(
+          RelayDeliveryTarget(
+            eventId: pending.id,
+            relayUrl: relayUrl,
+            reason: RelayDeliveryReason.explicit,
+          ),
+        );
+      }
+
+      // ids sort before event-1, so these targets are flushed first
+      Nip01Event note({required String id, String? sig}) => Nip01Event(
+        id: id,
+        pubKey: 'pubkey',
+        createdAt: 1700000000,
+        kind: Nip01Event.kTextNodeKind,
+        tags: const [],
+        content: 'note',
+        sig: sig,
+      );
+
+      test('is skipped while nobody is logged in to sign it', () async {
+        await addTarget(note(id: 'event-0-unsigned'));
+        await addTarget(event);
+
+        await pendingDelivery.flushForRelay(relayUrl);
+
+        expect(broadcast.broadcastedEvents, [event]);
+      });
+
+      test('does not abort the pass when its retry fails', () async {
+        final failing = note(id: 'event-0-failing', sig: 'sig');
+        broadcast.throwingEventIds.add(failing.id);
+        await addTarget(failing);
+        await addTarget(event);
+
+        await pendingDelivery.flushForRelay(relayUrl);
+
+        expect(broadcast.broadcastedEvents, [failing, event]);
+      });
+    });
+
     test(
       'persists a permanent result across relay URL spelling variants',
       () async {
@@ -1313,6 +1366,7 @@ class RecordingBroadcastSender extends BroadcastSender {
   final List<Nip01Event> broadcastedEvents = [];
   final List<AuthPolicy?> broadcastedAuth = [];
   final Set<String> inFlightEventIds = {};
+  final Set<String> throwingEventIds = {};
   List<RelayBroadcastResponse> responses = const [];
 
   @override
@@ -1341,6 +1395,9 @@ class RecordingBroadcastSender extends BroadcastSender {
   }) {
     broadcastedEvents.add(nostrEvent);
     broadcastedAuth.add(auth);
+    if (throwingEventIds.contains(nostrEvent.id)) {
+      throw StateError('broadcast of ${nostrEvent.id} failed');
+    }
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
       broadcastDoneStream: Stream.value(responses),
