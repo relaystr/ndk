@@ -1,3 +1,7 @@
+## Unreleased
+
+- Create and reopen Nostr identities with platform passkeys.
+
 ## 0.10.3-dev.1
 
  - Update a dependency to the latest release.

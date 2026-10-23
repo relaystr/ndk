@@ -62,7 +62,6 @@ export 'domain_layer/entities/hidden_event.dart';
 export 'domain_layer/entities/nip_17_conversation.dart';
 export 'domain_layer/entities/nip_17_message.dart';
 export 'domain_layer/entities/nip_17_file_message.dart';
-export '';
 
 export 'domain_layer/entities/account.dart';
 
@@ -172,3 +171,9 @@ export 'shared/event_filters/tag_count_event_filter.dart';
  */
 
 export 'shared/nips/nip19/nip19.dart';
+
+export 'domain_layer/repositories/passkey_provider.dart';
+export 'domain_layer/entities/passkey_account.dart';
+
+export 'domain_layer/usecases/passkeys/passkeys.dart'
+    show PasskeyRecordResolver, PasskeyRecordWriter, PasskeyCredentialInventory;

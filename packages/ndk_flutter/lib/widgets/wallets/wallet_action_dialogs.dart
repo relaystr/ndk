@@ -300,8 +300,6 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                 dialogTitle: l10n.saveBackupToFile,
                 fileName:
                     'cashu-backup-${DateTime.now().toUtc().toIso8601String().replaceAll(':', '-')}.json',
-                type: FileType.custom,
-                allowedExtensions: const ['json'],
                 bytes: Uint8List.fromList(utf8.encode(json)),
               );
               if (path != null) displaySuccess(l10n.backupSavedToFile);
