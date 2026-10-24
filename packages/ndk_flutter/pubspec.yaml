@@ -35,6 +35,9 @@ dependencies:
   http: ">=1.0.0 <2.0.0"
   intl: ^0.20.3
   ndk: ^0.11.0-dev.1
+  passkeys_platform_interface: ^2.10.0
+  passkeys_android: ^2.14.1
+  passkeys_darwin: ^0.4.5
   pretty_qr_code: ">=3.6.0 <4.0.0"
   url_launcher: ">=6.0.0 <7.0.0"
   web: ">=1.0.0 <2.0.0"

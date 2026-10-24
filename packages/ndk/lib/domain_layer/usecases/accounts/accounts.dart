@@ -4,6 +4,9 @@ import 'package:collection/collection.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../entities/account.dart';
+import '../../entities/passkey_account.dart';
+import '../../repositories/passkey_provider.dart';
+import '../passkeys/passkeys.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
 import '../bunkers/bunkers.dart';
@@ -18,6 +21,8 @@ class Accounts {
 
   final Map<String, Account> _accounts = {};
   String? _loggedPubkey;
+  int _passkeyGeneration = 0;
+  bool _disposed = false;
 
   static const _accountsEquality = MapEquality<String, Account>();
 
@@ -58,6 +63,98 @@ class Accounts {
     );
     _loggedPubkey = pubkey;
     _notifyAuthStateChange();
+  }
+
+  /// Creates a discoverable passkey and logs in with its PRF-derived Nostr key.
+  /// Store only the returned public metadata; the signer holds the key in memory.
+  Future<PasskeyAccount> createPasskey({
+    required PasskeyProvider provider,
+    required String rpId,
+    required String rpName,
+    required String userName,
+    int parameterSet = 1,
+  }) async {
+    final generation = _beginPasskey();
+    final result = await Passkeys(eventSignerFactory, provider).create(
+      rpId: rpId,
+      rpName: rpName,
+      userName: userName,
+      parameterSet: parameterSet,
+    );
+    return _completePasskey(result, generation);
+  }
+
+  /// Reopens an existing or synced passkey without ever creating a replacement.
+  /// Omit [account] for discovery, or supply it to enforce the expected identity.
+  Future<PasskeyAccount> loginWithPasskey({
+    required PasskeyProvider provider,
+    required String rpId,
+    PasskeyAccount? account,
+    PasskeyRecordResolver? resolveRecords,
+    void Function(int candidateIndex, String reason)? onRecordFailure,
+  }) async {
+    final generation = _beginPasskey();
+    final result = await Passkeys(eventSignerFactory, provider).reopen(
+      rpId: rpId,
+      account: account,
+      resolveRecords: resolveRecords,
+      onRecordFailure: onRecordFailure,
+    );
+    return _completePasskey(result, generation);
+  }
+
+  /// Protects an existing key and saves its encrypted record before login.
+  Future<PasskeyAccount> createStoredPasskey({
+    required PasskeyProvider provider,
+    required String rpId,
+    required String rpName,
+    required String userName,
+    required String privateKey,
+    required bool hasVerifiedRecoveryCopy,
+    required PasskeyRecordWriter saveRecord,
+    required PasskeyCredentialInventory existingCredentialIds,
+  }) async {
+    final generation = _beginPasskey();
+    final result = await Passkeys(eventSignerFactory, provider).createStored(
+      rpId: rpId,
+      rpName: rpName,
+      userName: userName,
+      privateKey: privateKey,
+      hasVerifiedRecoveryCopy: hasVerifiedRecoveryCopy,
+      saveRecord: saveRecord,
+      existingCredentialIds: existingCredentialIds,
+    );
+    return _completePasskey(result, generation, preserveExisting: true);
+  }
+
+  int _beginPasskey() {
+    if (_disposed) throw StateError('Accounts is disposed');
+    return ++_passkeyGeneration;
+  }
+
+  Future<PasskeyAccount> _completePasskey(
+    ({PasskeyAccount account, EventSigner signer}) result,
+    int generation, {
+    bool preserveExisting = false,
+  }) async {
+    var preserved = false;
+    try {
+      if (_disposed || generation != _passkeyGeneration) {
+        throw StateError('Passkey operation was superseded');
+      }
+      preserved =
+          preserveExisting && _accounts.containsKey(result.account.pubkey);
+      if (!preserved) {
+        loginExternalSigner(signer: result.signer);
+      }
+    } catch (_) {
+      await result.signer.dispose();
+      rethrow;
+    }
+    if (preserved) {
+      await result.signer.dispose();
+    }
+    return result.account;
   }
 
   /// do we have the account for this pubkey?
@@ -145,6 +242,7 @@ class Accounts {
   }
 
   void logout() {
+    _passkeyGeneration++;
     if (_loggedPubkey != null) {
       _accounts.remove(_loggedPubkey);
       _loggedPubkey = null;
@@ -221,6 +319,7 @@ class Accounts {
 
   /// Notifies listeners of auth state changes
   void _notifyAuthStateChange() {
+    _passkeyGeneration++;
     _stateController.add(getLoggedAccount());
   }
 
@@ -229,11 +328,15 @@ class Accounts {
     if (_accountsEquality.equals(_accountsController.value, _accounts)) {
       return;
     }
+    _passkeyGeneration++;
     _accountsController.add(UnmodifiableMapView(Map.of(_accounts)));
   }
 
   /// Dispose of resources
   Future<void> dispose() async {
+    if (_disposed) return;
+    _disposed = true;
+    _passkeyGeneration++;
     await _stateController.close();
     await _accountsController.close();
   }
