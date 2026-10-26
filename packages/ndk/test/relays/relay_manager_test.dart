@@ -37,6 +37,25 @@ void main() async {
       await relay1.stopServer();
     });
 
+    test('a failed connect says why it failed', () async {
+      // never started, so nothing listens on its port
+      final unreachable = MockRelay(name: "unreachable");
+      addTearDown(unreachable.stopServer);
+
+      RelayManager manager = RelayManager(
+        globalState: GlobalState(),
+        bootstrapRelays: [],
+        nostrTransportFactory: webSocketNostrTransportFactory,
+      );
+      final result = await manager.connectRelay(
+        dirtyUrl: unreachable.url,
+        connectionSource: ConnectionSource.explicit,
+      );
+
+      expect(result.first, isFalse);
+      expect(result.second, contains('SocketException'));
+    });
+
     test('wasLastConnectTryLongerThanSeconds', () async {
       MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 5044);
       await relay1.startServer();

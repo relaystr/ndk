@@ -296,6 +296,10 @@ class RelayManager<T> {
         transport != null &&
         identical(globalState.relays[connectionKey], relayConnectivity) &&
         identical(relayConnectivity?.relayTransport, transport);
+    // the transport retries a failed connect on its own and only reports why
+    // through onDisconnect, so this is what tells a refusal from a timeout
+    Object? transportError;
+    Object? failure;
 
     try {
       if (relayConnectivity == null) {
@@ -334,6 +338,7 @@ class RelayManager<T> {
         },
         onDisconnect: (code, error, reason) {
           if (!ownsTransport()) return;
+          transportError = error ?? transportError;
           relayConnectivity!.stats.connectionErrors++;
           // the transport reconnects under us and keeps its message stream
           // open, so this is the only notice we get that the socket the relay
@@ -376,7 +381,8 @@ class RelayManager<T> {
       updateRelayConnectivity();
       return Tuple(true, "");
     } catch (e) {
-      Logger.log.e(() => "!! could not connect to $url -> $e");
+      failure = transportError ?? e;
+      Logger.log.e(() => "!! could not connect to $url -> $failure");
       try {
         if (transport == null ||
             identical(relayConnectivity!.relayTransport, transport)) {
@@ -400,7 +406,7 @@ class RelayManager<T> {
       _connectReadyCompleters.remove(connectionKey);
     }
     updateRelayConnectivity();
-    return Tuple(false, "could not connect to $url");
+    return Tuple(false, "could not connect to $url: $failure");
   }
 
   /// Reconnects the anonymous connection to a relay, if it is closed.
