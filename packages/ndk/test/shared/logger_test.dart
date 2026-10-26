@@ -95,6 +95,35 @@ void main() {
       Logger.setLogLevel(LogLevel.warning);
     });
 
+    test(
+      'NdkConfig.logLevel applies to what Ndk logs while it starts',
+      () async {
+        final testOutputs = <LogEvent>[];
+        final testOutput = _TestLogOutput(testOutputs);
+
+        Logger.log.addOutput(testOutput);
+        Logger.setLogLevel(LogLevel.warning);
+
+        // no cashu seed phrase, which Cashu warns about as it is built
+        final ndk = Ndk(
+          NdkConfig(
+            eventVerifier: Bip340EventVerifier(),
+            cache: MemCacheManager(),
+            bootstrapRelays: [],
+            logLevel: LogLevel.off,
+          ),
+        );
+        await ndk.destroy();
+
+        Logger.log.removeOutput(testOutput);
+
+        // Reset to default
+        Logger.setLogLevel(LogLevel.warning);
+
+        expect(testOutputs.map((e) => e.message), isEmpty);
+      },
+    );
+
     test('Custom NdkLogger instance works independently', () {
       final testOutputs = <LogEvent>[];
       final testOutput = _TestLogOutput(testOutputs);
