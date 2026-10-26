@@ -68,6 +68,16 @@ class RelayRequestState {
     onOutcomeChanged?.call();
   }
 
+  bool _notSent = false;
+
+  /// set when the request could not be sent on this connection
+  bool get notSent => _notSent;
+
+  String? _notSentReason;
+
+  /// what kept the request from being sent, see [markNotSent]
+  String? get notSentReason => _notSentReason;
+
   bool _retryingAuth = false;
 
   /// set while this connection authenticates to satisfy the request: the relay
@@ -96,18 +106,29 @@ class RelayRequestState {
     onOutcomeChanged?.call();
   }
 
+  /// The request could not be sent on this connection, because of [reason].
+  void markNotSent(String reason) {
+    if (_notSent && _notSentReason == reason) return;
+    _notSent = true;
+    _notSentReason = reason;
+    onOutcomeChanged?.call();
+  }
+
   /// The request is on its way to the relay again, so whatever ended it the
   /// last time no longer holds.
   void markSent() {
     if (!_receivedClosed &&
         _closedMessage == null &&
         !_connectionGone &&
+        !_notSent &&
         !_retryingAuth) {
       return;
     }
     _receivedClosed = false;
     _closedMessage = null;
     _connectionGone = false;
+    _notSent = false;
+    _notSentReason = null;
     _retryingAuth = false;
     onOutcomeChanged?.call();
   }
@@ -252,12 +273,15 @@ class RequestState implements TimeoutPausable {
     _startTimeout(remaining);
   }
 
-  /// checks if all requests finished (received EOSE or CLOSED)
+  /// checks if all requests finished (received EOSE or CLOSED, or could not be
+  /// sent)
   bool get didAllRequestsFinish =>
       pendingConnections == 0 &&
       requests.values.every(
         (element) =>
-            (element.receivedEOSE || element.receivedClosed) &&
+            (element.receivedEOSE ||
+                element.receivedClosed ||
+                element.notSent) &&
             !element.retryingAuth,
       );
 
@@ -358,6 +382,12 @@ class RequestState implements TimeoutPausable {
       return RelayRequestOutcome(
         RelayRequestStatus.closed,
         message: request.closedMessage,
+      );
+    }
+    if (request.notSent) {
+      return RelayRequestOutcome(
+        RelayRequestStatus.notSent,
+        message: request.notSentReason,
       );
     }
     if (request.connectionGone) {

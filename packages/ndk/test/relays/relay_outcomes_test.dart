@@ -150,6 +150,34 @@ void collapseTests() {
       });
     });
 
+    test('a request that could not be sent reports notSent and why', () {
+      final state = buildState();
+      final key = RelayConnectionKey.anonymous(url);
+      state.addRequest(key, [filter]);
+      state.requests[key]!.markNotSent("could not connect");
+
+      expect(state.relayOutcomes, {
+        url: RelayRequestOutcome(
+          RelayRequestStatus.notSent,
+          message: "could not connect",
+        ),
+      });
+      expect(state.didAllRequestsFinish, isTrue);
+    });
+
+    test('a request sent after all is no longer notSent', () {
+      final state = buildState();
+      final key = RelayConnectionKey.anonymous(url);
+      state.addRequest(key, [filter]);
+      state.requests[key]!.markNotSent("could not connect");
+
+      state.requests[key]!.markSent();
+
+      expect(state.relayOutcomes, {
+        url: RelayRequestOutcome(RelayRequestStatus.pending),
+      });
+    });
+
     test('a connection sent again after it went away is pending once more', () {
       final state = buildState();
       final key = RelayConnectionKey.anonymous(url);
@@ -383,6 +411,75 @@ void relayOutcomesTests(NdkEngine engine) {
         relay1.url: RelayRequestOutcome(RelayRequestStatus.timedOut),
       });
     });
+
+    test(
+      'a relay no connection reaches reports notSent, and the others end the request',
+      () async {
+        relay1 = MockRelay(name: "relay 1", signEvents: false);
+        await relay1.startServer(textNotes: {key1: textNote(key1)});
+        // never started, so nothing listens on its port
+        final unreachable = MockRelay(name: "unreachable", signEvents: false);
+        ndk = buildNdk();
+
+        var timedOut = false;
+        final response = ndk.requests.query(
+          filter: Filter(
+            kinds: [Nip01Event.kTextNodeKind],
+            authors: [key1.publicKey],
+          ),
+          explicitRelays: [relay1.url, unreachable.url],
+          cacheRead: false,
+          timeout: Duration(seconds: 30),
+          timeoutCallback: () => timedOut = true,
+        );
+        final events = await response.future;
+
+        expect(events, hasLength(1));
+        expect(timedOut, isFalse);
+        expect(await response.relayOutcomesDone, {
+          relay1.url: RelayRequestOutcome(RelayRequestStatus.eose),
+          unreachable.url: RelayRequestOutcome(
+            RelayRequestStatus.notSent,
+            message: "could not connect",
+          ),
+        });
+
+        await unreachable.stopServer();
+      },
+    );
+
+    test(
+      'a request none of its relays can be sent to ends without its timeout',
+      () async {
+        relay1 = MockRelay(name: "relay 1", signEvents: false);
+        await relay1.startServer(textNotes: {key1: textNote(key1)});
+        final unreachable = MockRelay(name: "unreachable", signEvents: false);
+        ndk = buildNdk();
+
+        var timedOut = false;
+        final response = ndk.requests.query(
+          filter: Filter(
+            kinds: [Nip01Event.kTextNodeKind],
+            authors: [key1.publicKey],
+          ),
+          explicitRelays: [unreachable.url],
+          cacheRead: false,
+          timeout: Duration(seconds: 30),
+          timeoutCallback: () => timedOut = true,
+        );
+
+        expect(await response.future, isEmpty);
+        expect(timedOut, isFalse);
+        expect(await response.relayOutcomesDone, {
+          unreachable.url: RelayRequestOutcome(
+            RelayRequestStatus.notSent,
+            message: "could not connect",
+          ),
+        });
+
+        await unreachable.stopServer();
+      },
+    );
 
     test(
       'a paginated query streams a relay while its page is running',
