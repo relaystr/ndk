@@ -43,6 +43,22 @@ jobs:
           fail_ci_if_error: true   # fails only on upload errors, not coverage drops
           verbose: true # optional (default = false)
 
+  concord-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/concord
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          # Keep in step with the ndk tests job (Dart bundled with Flutter stable).
+          sdk: 3.13.4
+      - run: dart pub get
+      - run: dart format --output=none .
+      - run: dart analyze --fatal-infos --fatal-warnings
+      - run: dart test -j 1
+
   nip07-tests:
     runs-on: ubuntu-latest
     defaults:

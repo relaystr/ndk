@@ -42,6 +42,10 @@ jobs:
             pub_get_directory: ./packages/bc_ur
             pub_get_command: dart pub get
             analyze_command: dart analyze --fatal-infos --fatal-warnings .
+          - package: ./packages/concord
+            pub_get_directory: .
+            pub_get_command: dart pub get
+            analyze_command: dart analyze --fatal-infos --fatal-warnings .
           - package: ./packages/sample-app
             pub_get_directory: ./packages/sample-app
             pub_get_command: flutter pub get
