@@ -77,7 +77,8 @@ class RelayManager<T> {
 
   /// Tracks relay connect attempts that are still finishing setup so callers
   /// can wait for "socket open + listener attached", not just raw socket open.
-  final Map<RelayConnectionKey, Completer<bool>> _connectReadyCompleters = {};
+  final Map<RelayConnectionKey, Completer<Tuple<bool, String>>>
+  _connectReadyCompleters = {};
 
   /// timeout for AUTH callbacks (how long to wait for AUTH OK)
   final Duration authCallbackTimeout;
@@ -276,26 +277,25 @@ class RelayManager<T> {
       Logger.log.t(() => "relay is already connecting: $connectionKey");
       final inFlightConnect = _connectReadyCompleters[connectionKey];
       if (inFlightConnect != null) {
-        final connected = await inFlightConnect.future;
+        final result = await inFlightConnect.future;
         updateRelayConnectivity();
-        return Tuple(
-          connected,
-          connected
-              ? "relay finished connecting"
-              : "relay failed while connecting",
-        );
+        return result;
       }
       updateRelayConnectivity();
       return Tuple(false, "relay is still connecting");
     }
     RelayConnectivity? relayConnectivity = globalState.relays[connectionKey];
-    final connectCompleter = Completer<bool>();
+    final connectCompleter = Completer<Tuple<bool, String>>();
     _connectReadyCompleters[connectionKey] = connectCompleter;
     NostrTransport? transport;
     bool ownsTransport() =>
         transport != null &&
         identical(globalState.relays[connectionKey], relayConnectivity) &&
         identical(relayConnectivity?.relayTransport, transport);
+    // the transport retries a failed connect on its own and only reports why
+    // through onDisconnect, so this is what tells a refusal from a timeout
+    Object? transportError;
+    Object? failure;
 
     try {
       if (relayConnectivity == null) {
@@ -334,6 +334,7 @@ class RelayManager<T> {
         },
         onDisconnect: (code, error, reason) {
           if (!ownsTransport()) return;
+          transportError = error ?? transportError;
           relayConnectivity!.stats.connectionErrors++;
           // the transport reconnects under us and keeps its message stream
           // open, so this is the only notice we get that the socket the relay
@@ -367,16 +368,18 @@ class RelayManager<T> {
       getRelayInfo(url).then((info) {
         relayConnectivity!.relayInfo = info;
       });
+      final connected = Tuple(true, "");
       if (!connectCompleter.isCompleted) {
-        connectCompleter.complete(true);
+        connectCompleter.complete(connected);
       }
       if (identical(_connectReadyCompleters[connectionKey], connectCompleter)) {
         _connectReadyCompleters.remove(connectionKey);
       }
       updateRelayConnectivity();
-      return Tuple(true, "");
+      return connected;
     } catch (e) {
-      Logger.log.e(() => "!! could not connect to $url -> $e");
+      failure = transportError ?? e;
+      Logger.log.e(() => "!! could not connect to $url -> $failure");
       try {
         if (transport == null ||
             identical(relayConnectivity!.relayTransport, transport)) {
@@ -393,14 +396,15 @@ class RelayManager<T> {
       failedConnectivity.relay.failedToConnect();
       failedConnectivity.stats.connectionErrors++;
     }
+    final failed = Tuple(false, "could not connect to $url: $failure");
     if (!connectCompleter.isCompleted) {
-      connectCompleter.complete(false);
+      connectCompleter.complete(failed);
     }
     if (identical(_connectReadyCompleters[connectionKey], connectCompleter)) {
       _connectReadyCompleters.remove(connectionKey);
     }
     updateRelayConnectivity();
-    return Tuple(false, "could not connect to $url");
+    return failed;
   }
 
   /// Reconnects the anonymous connection to a relay, if it is closed.
@@ -429,7 +433,7 @@ class RelayManager<T> {
   }) async {
     final inFlightConnect = _connectReadyCompleters[key];
     if (inFlightConnect != null) {
-      final connected = await inFlightConnect.future;
+      final connected = (await inFlightConnect.future).first;
       updateRelayConnectivity();
       return connected;
     }
