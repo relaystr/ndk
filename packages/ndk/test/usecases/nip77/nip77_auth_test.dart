@@ -63,7 +63,7 @@ void main() async {
         relayUrl: relay.url,
         filter: notesOf(key1),
         auth: AuthPolicy.require(signableAccount(key1)),
-        timeout: Duration(seconds: 10),
+        openTimeout: Duration(seconds: 10),
       );
 
       final result = await response.future;
@@ -93,7 +93,7 @@ void main() async {
         relayUrl: relay.url,
         filter: notesOf(key1),
         auth: AuthPolicy.allow(signableAccount(key1)),
-        timeout: Duration(seconds: 10),
+        openTimeout: Duration(seconds: 10),
       );
 
       final result = await response.future;
@@ -121,7 +121,7 @@ void main() async {
         relayUrl: relay.url,
         filter: notesOf(key1),
         auth: AuthPolicy.allow(signableAccount(key1)),
-        timeout: Duration(seconds: 10),
+        openTimeout: Duration(seconds: 10),
       );
 
       final result = await response.future;
@@ -146,7 +146,7 @@ void main() async {
         relayUrl: relay.url,
         filter: notesOf(key1),
         auth: const AuthPolicy.never(),
-        timeout: Duration(seconds: 10),
+        openTimeout: Duration(seconds: 10),
       );
 
       await expectLater(
@@ -174,7 +174,7 @@ void main() async {
         final response = ndk.nip77.reconcile(
           relayUrl: relay.url,
           filter: notesOf(key1),
-          timeout: Duration(seconds: 10),
+          openTimeout: Duration(seconds: 10),
         );
 
         final result = await response.future;
@@ -199,7 +199,7 @@ void main() async {
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
-        timeout: Duration(seconds: 10),
+        openTimeout: Duration(seconds: 10),
       );
 
       await expectLater(
@@ -230,7 +230,7 @@ void main() async {
           relayUrl: relay.url,
           filter: notesOf(key1),
           auth: AuthPolicy.require(watchOnly),
-          timeout: Duration(seconds: 10),
+          openTimeout: Duration(seconds: 10),
         ),
         throwsA(isA<Nip77AuthUnavailableException>()),
       );
@@ -260,7 +260,7 @@ void main() async {
           relayUrl: relay.url,
           filter: notesOf(key1),
           auth: const AuthPolicy.never(),
-          timeout: Duration(seconds: 10),
+          openTimeout: Duration(seconds: 10),
         );
 
         final result = await response.future;
@@ -289,13 +289,13 @@ void main() async {
         ),
       );
 
-      // the signature alone outlasts the timeout, so this only reconciles if
-      // waiting on the signer does not count against it
+      // the signature alone outlasts the open timeout, so this only reconciles
+      // if waiting on the signer does not count against it
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
         filter: notesOf(key1),
         auth: AuthPolicy.require(slow),
-        timeout: Duration(seconds: 2),
+        openTimeout: Duration(seconds: 2),
       );
 
       final result = await response.future;
@@ -318,7 +318,7 @@ void main() async {
         ),
       );
 
-      // the timeout is paused while the signer holds the request, so a rejection
+      // no timeout runs while the signer holds the request, so a rejection
       // that never came back would leave this session without any clock
       final response = ndk.nip77.reconcile(
         relayUrl: relay.url,
@@ -330,7 +330,7 @@ void main() async {
             signer: refusing,
           ),
         ),
-        timeout: Duration(seconds: 10),
+        openTimeout: Duration(seconds: 10),
       );
 
       await expectLater(
@@ -367,7 +367,7 @@ void main() async {
               signer: refusing,
             ),
           ),
-          timeout: Duration(seconds: 10),
+          openTimeout: Duration(seconds: 10),
         );
 
         await expectLater(
