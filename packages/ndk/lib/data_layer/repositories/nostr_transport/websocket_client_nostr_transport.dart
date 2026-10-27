@@ -41,7 +41,7 @@ class WebSocketClientNostrTransport implements NostrTransport {
           completer = Completer();
           ready = completer.future;
           if (onDisconnect != null) {
-            onDisconnect.call(state.code, state.code, state.reason);
+            onDisconnect.call(state.code, state.error, state.reason);
           }
           break;
         case Connecting():

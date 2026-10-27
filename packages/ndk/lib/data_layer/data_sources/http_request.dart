@@ -12,10 +12,14 @@ class HttpRequestException implements Exception {
   final String body;
   final String url;
 
+  /// response headers, names in lowercase
+  final Map<String, String> headers;
+
   const HttpRequestException({
     required this.statusCode,
     required this.body,
     required this.url,
+    this.headers = const {},
   });
 
   @override
@@ -96,6 +100,7 @@ class HttpRequestDS {
         statusCode: response.statusCode,
         body: response.body,
         url: url,
+        headers: response.headers,
       );
     }
     // JSON is UTF-8 (RFC 8259); `body` would fall back to latin1 for media
@@ -119,6 +124,7 @@ class HttpRequestDS {
         statusCode: response.statusCode,
         body: response.body,
         url: url.toString(),
+        headers: response.headers,
       );
     }
 
@@ -183,6 +189,7 @@ class HttpRequestDS {
             statusCode: response.statusCode,
             body: response.body,
             url: url.toString(),
+            headers: response.headers,
           );
           progressSubject.addError(error);
           await progressSubject.close();
@@ -226,6 +233,7 @@ class HttpRequestDS {
         statusCode: response.statusCode,
         body: response.body,
         url: url.toString(),
+        headers: response.headers,
       );
     }
 
@@ -240,6 +248,7 @@ class HttpRequestDS {
         statusCode: response.statusCode,
         body: response.body,
         url: url.toString(),
+        headers: response.headers,
       );
     }
 
@@ -254,6 +263,7 @@ class HttpRequestDS {
         statusCode: response.statusCode,
         body: response.body,
         url: url.toString(),
+        headers: response.headers,
       );
     }
 
@@ -278,6 +288,7 @@ class HttpRequestDS {
         statusCode: streamedResponse.statusCode,
         body: '',
         url: url.toString(),
+        headers: streamedResponse.headers,
       );
     }
 
@@ -292,6 +303,7 @@ class HttpRequestDS {
         statusCode: response.statusCode,
         body: response.body,
         url: url.toString(),
+        headers: response.headers,
       );
     }
 

@@ -1,3 +1,9 @@
+## 0.11.0-dev.1
+
+> Note: This release has breaking changes.
+
+ - **BREAKING** **FIX**(connectivity): support lettered NIP identifiers in RelayInfo.
+
 ## 0.11.0-dev.0
 
 > Note: This release has breaking changes.
