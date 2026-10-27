@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793105734455,
+  "lastUpdate": 1793109125425,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2316,6 +2316,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1930666,
             "range": "1879630-1955232",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4d93cdbb4d1d8c52b43e53b5c63e552b4c638c32",
+          "message": "Merge pull request #915 from relaystr/fix/transport-disconnect-error\n\nfix(transport): report why a connection failed instead of a timeout",
+          "timestamp": "2026-10-27T14:50:18+01:00",
+          "tree_id": "5c332d1cfddb0576ed8ba42272d420529d44a495",
+          "url": "https://github.com/relaystr/ndk/commit/4d93cdbb4d1d8c52b43e53b5c63e552b4c638c32"
+        },
+        "date": 1793109123169,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 51924,
+            "range": "51663-56936",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1796768,
+            "range": "1790614-1818896",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
