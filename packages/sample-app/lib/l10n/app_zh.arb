@@ -103,6 +103,7 @@
   "pendingMethodNip44Decrypt": "NIP-44 解密",
   "pendingMethodPing": "Ping",
   "pendingMethodConnect": "连接",
+  "pendingMethodSwitchRelays": "切换中继",
   "pendingSecondsAgo": "{count}秒前",
   "pendingMinutesAgo": "{count}分钟前",
   "pendingHoursAgo": "{count}小时前",

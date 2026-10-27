@@ -61,4 +61,45 @@ void main() {
       expect(state.didAllRequestsFinish, isTrue);
     });
   });
+
+  group('RequestState timeout pauses', () {
+    RequestState withTimeout(Duration timeout) => RequestState(
+      NdkRequest.query(
+        'a-query',
+        filters: [
+          Filter(kinds: [Nip01Event.kTextNodeKind]),
+        ],
+        timeoutDuration: timeout,
+      ),
+    );
+
+    test('the timer waits for every pause to resume', () async {
+      final state = withTimeout(const Duration(milliseconds: 300));
+      state.pauseTimeout();
+      state.pauseTimeout();
+
+      state.resumeTimeout();
+      await Future.delayed(const Duration(milliseconds: 500));
+      expect(state.timedOut, isFalse);
+
+      state.resumeTimeout();
+      await Future.delayed(const Duration(milliseconds: 500));
+      expect(state.timedOut, isTrue);
+    });
+
+    test('a second pause keeps what the first one left', () async {
+      final state = withTimeout(const Duration(milliseconds: 600));
+      await Future.delayed(const Duration(milliseconds: 400));
+      state.pauseTimeout();
+      state.resumeTimeout();
+      await Future.delayed(const Duration(milliseconds: 100));
+      state.pauseTimeout();
+      await Future.delayed(const Duration(milliseconds: 700));
+      expect(state.timedOut, isFalse);
+
+      state.resumeTimeout();
+      await Future.delayed(const Duration(milliseconds: 250));
+      expect(state.timedOut, isTrue);
+    });
+  });
 }

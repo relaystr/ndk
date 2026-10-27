@@ -203,5 +203,26 @@ void main() {
         expect(auth.resolvedFor(_second), same(event));
       },
     );
+
+    test('only a server consent agrees to gets the signature', () async {
+      final event = _authEvent('get');
+      final asked = <String>[];
+      final auth = BlossomAuthorization.onRefusal(
+        () async => event,
+        consent: (serverUrl) async {
+          asked.add(serverUrl);
+          return serverUrl == _second;
+        },
+      );
+
+      expect(await auth.onRefusal(_first), isNull);
+      expect(await auth.onRefusal(_first), isNull);
+      expect(await auth.onRefusal(_second), same(event));
+      expect(auth.resolvedFor(_first), isNull);
+      expect(asked, [
+        _first,
+        _second,
+      ], reason: 'one operation asks once per server');
+    });
   });
 }

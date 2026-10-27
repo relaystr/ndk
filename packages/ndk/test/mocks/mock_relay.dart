@@ -116,6 +116,7 @@ class MockRelay {
   int? maxEventsPerRequest;
   int signEventCreatedAtOffsetSeconds;
   String? signEventContentOverride;
+  List<String>? switchRelaysResult;
   List<dynamic>? lastConnectParams;
   int rejectFirstEventPublishes;
   String rejectEventMessage;
@@ -253,6 +254,7 @@ class MockRelay {
     this.maxEventsPerRequest,
     this.signEventCreatedAtOffsetSeconds = 0,
     this.signEventContentOverride,
+    this.switchRelaysResult,
     this.rejectFirstEventPublishes = 0,
     this.rejectEventMessage = 'rate-limited: retry later',
     this.closeRequestsMessage,
@@ -1194,6 +1196,10 @@ class MockRelay {
 
         case 'ping':
           return {'result': 'pong'};
+
+        case 'switch_relays':
+          final relays = switchRelaysResult;
+          return {'result': relays == null ? null : jsonEncode(relays)};
 
         case 'get_relays':
           // Return the relay URL where this signer is available

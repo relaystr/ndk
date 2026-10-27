@@ -90,10 +90,9 @@ connection, and a relay never sees two of your identities on the same socket.
 
 ### The default
 
-Without `auth`, a request that meets `auth-required` authenticates as the
-currently logged-in account. The relay therefore decides when your identity is
-revealed. Pass `auth` explicitly whenever that matters. This default is
-expected to change.
+Without `auth`, a request reveals no identity. With an [`AuthHandler`](/concepts/nip42-auth.md#authhandler), a request
+that meets `auth-required` authenticates as the logged-in account where the
+handler agrees.
 
 ### Migrating from `authenticateAs`
 

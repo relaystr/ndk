@@ -5,11 +5,12 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../shared/nips/nip77/negentropy.dart';
 import 'filter.dart';
+import 'auth_handler.dart';
 import 'auth_policy.dart';
 import 'relay_connection_key.dart';
 
 /// State of a NIP-77 negentropy reconciliation session
-class Nip77State {
+class Nip77State implements TimeoutPausable {
   /// Unique subscription ID for this session
   final String subscriptionId;
 
@@ -86,13 +87,50 @@ class Nip77State {
   bool get isCompleted => _isCompleted;
 
   Timer? _timeoutTimer;
+  DateTime? _timeoutStartedAt;
+  Duration? _timeoutLeftAtStart;
+  Duration? _remainingTimeout;
+  int _timeoutPauses = 0;
+  void Function()? _onTimeout;
 
   /// Gives the relay [duration] to answer what was just sent, replacing the
   /// previous deadline. There is no overall one, so a session that keeps
   /// getting answers never times out.
   void startTimeout(Duration duration, void Function() onTimeout) {
-    _timeoutTimer?.cancel();
-    _timeoutTimer = Timer(duration, onTimeout);
+    cancelTimeout();
+    _onTimeout = onTimeout;
+    _startTimeout(duration);
+  }
+
+  void _startTimeout(Duration duration) {
+    _timeoutStartedAt = DateTime.now();
+    _timeoutLeftAtStart = duration;
+    _timeoutTimer = Timer(duration, () => _onTimeout?.call());
+  }
+
+  /// Pauses the timeout while an [AuthHandler] decides on the connection.
+  @override
+  void pauseTimeout() {
+    _timeoutPauses++;
+    final timer = _timeoutTimer;
+    if (_timeoutPauses > 1 || timer == null || !timer.isActive) return;
+
+    final elapsed = DateTime.now().difference(_timeoutStartedAt!);
+    final remaining = _timeoutLeftAtStart! - elapsed;
+    _remainingTimeout = remaining.isNegative ? Duration.zero : remaining;
+    timer.cancel();
+    _timeoutTimer = null;
+  }
+
+  /// Resumes a paused timeout with the time it had left.
+  @override
+  void resumeTimeout() {
+    if (_timeoutPauses == 0) return;
+    _timeoutPauses--;
+    final remaining = _remainingTimeout;
+    if (_timeoutPauses > 0 || remaining == null) return;
+    _remainingTimeout = null;
+    _startTimeout(remaining);
   }
 
   /// Stops the clock for a wait that is not the relay's to answer, such as an
@@ -100,6 +138,7 @@ class Nip77State {
   void cancelTimeout() {
     _timeoutTimer?.cancel();
     _timeoutTimer = null;
+    _remainingTimeout = null;
   }
 
   /// Process an incoming NEG-MSG from relay

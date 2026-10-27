@@ -375,6 +375,9 @@ class SampleAppLocalizationsEn extends SampleAppLocalizations {
   String get pendingMethodConnect => 'Connect';
 
   @override
+  String get pendingMethodSwitchRelays => 'Switch Relays';
+
+  @override
   String pendingSecondsAgo(int count) {
     return '${count}s ago';
   }

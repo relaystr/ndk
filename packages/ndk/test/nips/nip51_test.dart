@@ -170,6 +170,20 @@ void main() {
       expect(relayList.privateRelays, from.privateRelays);
     });
 
+    test('privateRelays and publicRelays are kept apart', () {
+      final relayList = Nip51List(
+        pubKey: 'pubkeyUser1',
+        kind: Nip51List.kSearchRelays,
+        createdAt: Helpers.now,
+        elements: [],
+      );
+      relayList.publicRelays = ['wss://public.example'];
+      relayList.privateRelays = ['wss://private.example'];
+
+      expect(relayList.publicRelays, ['wss://public.example']);
+      expect(relayList.privateRelays, ['wss://private.example']);
+    });
+
     test('toEvent, fromEvent set metadata', () async {
       KeyPair key1 = Bip340.generatePrivateKey();
       EventSigner signer = eventSignerFactory(

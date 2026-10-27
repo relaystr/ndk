@@ -47,9 +47,9 @@ round trip, and for an upload a body sent twice, so prefer `require` when the
 server is known to ask. If `require` names an account that cannot sign, nothing
 is sent and the call throws `BlossomAuthUnavailableException`.
 
-Without `auth`, reads stay anonymous and everything else authorises as the
-logged-in account, or as a throwaway key when none is. This default is expected
-to change.
+Without `auth`, reads stay anonymous and everything else authorises as a
+throwaway key. With an [`AuthHandler`](/concepts/nip42-auth.md#authhandler), it authorises as the logged-in account
+instead, and only reaches the servers the handler agrees to.
 
 `useAuth` and `customSigner` were removed in favour of `auth`:
 
@@ -92,6 +92,22 @@ Stream<BlobUploadProgress> uploadBlobFromFile({
   AuthPolicy? auth,
   String? pubkeyToFetchUserServerList,
   String? precomputedSha256,
+})
+```
+
+#### checkUpload
+
+Asks each server whether it would take the upload before any byte is sent (BUD-06). Branch on `statusCode` (413 means too large) and show `reason` to the user. BUD-06 is optional: a server without it answers something like 404, which says nothing about the upload. A refused upload reports the same `statusCode` and `reason` in its `BlobUploadResult`.
+
+```dart
+Future<List<BlobUploadCheck>> checkUpload({
+  required String sha256,
+  required int contentLength,
+  String? contentType,
+  List<String>? serverUrls,
+  bool serverMediaOptimisation = false,
+  AuthPolicy? auth,
+  String? pubkeyToFetchUserServerList,
 })
 ```
 

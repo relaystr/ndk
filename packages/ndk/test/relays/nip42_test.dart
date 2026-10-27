@@ -53,6 +53,7 @@ void nip42Tests(NdkEngine engine) {
 
       final ndk = Ndk(
         NdkConfig(
+          authHandler: (_, _) async => true,
           eventVerifier: Bip340EventVerifier(),
           cache: MemCacheManager(),
           // logLevel: Logger.logLevels.trace,
@@ -488,49 +489,53 @@ void nip42Tests(NdkEngine engine) {
       },
     );
 
-    test('fallback to logged account when no auth is specified', () async {
-      MockRelay relay1 = MockRelay(
-        name: "relay 1",
-        explicitPort: portBase + 4,
-        requireAuthForRequests: true,
-        signEvents: false,
-      );
+    test(
+      'without auth, the logged account authenticates where the handler agrees',
+      () async {
+        MockRelay relay1 = MockRelay(
+          name: "relay 1",
+          explicitPort: portBase + 4,
+          requireAuthForRequests: true,
+          signEvents: false,
+        );
 
-      final note1 = textNote(key1, "note from key1");
-      await relay1.startServer(textNotes: {key1: note1});
+        final note1 = textNote(key1, "note from key1");
+        await relay1.startServer(textNotes: {key1: note1});
 
-      final ndk = Ndk(
-        NdkConfig(
-          eventVerifier: Bip340EventVerifier(),
-          cache: MemCacheManager(),
-          bootstrapRelays: [relay1.url],
-          engine: engine,
-        ),
-      );
+        final ndk = Ndk(
+          NdkConfig(
+            authHandler: (_, _) async => true,
+            eventVerifier: Bip340EventVerifier(),
+            cache: MemCacheManager(),
+            bootstrapRelays: [relay1.url],
+            engine: engine,
+          ),
+        );
 
-      // Login with key1 (sets as logged account)
-      ndk.accounts.loginPrivateKey(
-        pubkey: key1.publicKey,
-        privkey: key1.privateKey!,
-      );
+        // Login with key1 (sets as logged account)
+        ndk.accounts.loginPrivateKey(
+          pubkey: key1.publicKey,
+          privkey: key1.privateKey!,
+        );
 
-      await Future.delayed(Duration(seconds: 1));
+        await Future.delayed(Duration(seconds: 1));
 
-      // Query without auth, should fallback to the logged account
-      final response = ndk.requests.query(
-        filter: Filter(
-          kinds: [Nip01Event.kTextNodeKind],
-          authors: [key1.publicKey],
-        ),
-      );
+        // Query without auth, the handler agrees to the logged account
+        final response = ndk.requests.query(
+          filter: Filter(
+            kinds: [Nip01Event.kTextNodeKind],
+            authors: [key1.publicKey],
+          ),
+        );
 
-      List<Nip01Event> events = await response.future;
-      expect(events, isNotEmpty);
-      expect(events.first.content, equals("note from key1"));
+        List<Nip01Event> events = await response.future;
+        expect(events, isNotEmpty);
+        expect(events.first.content, equals("note from key1"));
 
-      await ndk.destroy();
-      await relay1.stopServer();
-    });
+        await ndk.destroy();
+        await relay1.stopServer();
+      },
+    );
 
     test(
       'auth-required opens a second connection instead of promoting',
@@ -547,6 +552,7 @@ void nip42Tests(NdkEngine engine) {
 
         final ndk = Ndk(
           NdkConfig(
+            authHandler: (_, _) async => true,
             eventVerifier: Bip340EventVerifier(),
             cache: MemCacheManager(),
             bootstrapRelays: [relay1.url],
@@ -603,6 +609,7 @@ void nip42Tests(NdkEngine engine) {
 
       final ndk = Ndk(
         NdkConfig(
+          authHandler: (_, _) async => true,
           eventVerifier: Bip340EventVerifier(),
           cache: MemCacheManager(),
           bootstrapRelays: [relay1.url],

@@ -39,4 +39,22 @@ void main() {
       equals(candidates.map((event) => event.pubKey).toSet()),
     );
   });
+
+  test('a padded d-tag still finds the newer version of its event', () async {
+    final cache = MemCacheManager();
+    Nip01Event article(int createdAt) => Nip01Event(
+      pubKey: 'author',
+      kind: 30023,
+      tags: const [
+        ['d', 'article '],
+      ],
+      content: 'version $createdAt',
+      createdAt: createdAt,
+    );
+    final older = article(100);
+    await cache.saveEvents([older, article(200)]);
+
+    // the context read filters on the raw 'article ', tag values are trimmed
+    expect(await cache.loadEvents(ids: [older.id]), isEmpty);
+  });
 }

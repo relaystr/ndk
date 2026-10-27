@@ -21,6 +21,7 @@ on:
           - ndk
           - ndk_drift
           - ndk_objectbox
+          - ndk_sqlite3
           - ndk_flutter
       exact_version:
         description: "Version such as 0.9.2 (required only when release mode is exact)"

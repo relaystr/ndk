@@ -131,8 +131,11 @@ class Initialization {
     required GlobalState globalState,
   }) : _globalState = globalState,
        _ndkConfig = ndkConfig {
-    // Configure global WebSocket User-Agent on dart:io platforms
-    configureDefaultUserAgent(ndkConfig.userAgent);
+    // first, so what the use cases log while they are built respects it
+    Logger.setLogLevel(_ndkConfig.logLevel);
+
+    final userAgent = ndkConfig.userAgent;
+    if (userAgent != null) configureDefaultUserAgent(userAgent);
 
     _webSocketNostrTransportFactory = WebSocketClientNostrTransportFactory(
       compressionEnabled: ndkConfig.webSocketCompression,
@@ -150,6 +153,7 @@ class Initialization {
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           authCallbackTimeout: _ndkConfig.authCallbackTimeout,
+          authHandler: _ndkConfig.authHandler,
           relayInfoRepo: RelayInfoHttpRepoImpl(httpDS: _httpRequestDS),
         );
 
@@ -168,6 +172,7 @@ class Initialization {
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
           authCallbackTimeout: _ndkConfig.authCallbackTimeout,
+          authHandler: _ndkConfig.authHandler,
           relayInfoRepo: RelayInfoHttpRepoImpl(httpDS: _httpRequestDS),
         );
 
@@ -349,6 +354,7 @@ class Initialization {
       accounts: accounts,
       blossomUserServerList: blossomUserServerList,
       eventSignerFactory: _ndkConfig.eventSignerFactory,
+      authHandler: _ndkConfig.authHandler,
     );
 
     files = Files(blossom: blossom);
@@ -418,9 +424,6 @@ class Initialization {
         runOnStartup: _ndkConfig.runCacheEvictionOnStartup,
       )..start();
     }
-
-    /// set the user configured log level
-    Logger.setLogLevel(_ndkConfig.logLevel);
   }
 
   /// Close all active NIP-77 negotiations

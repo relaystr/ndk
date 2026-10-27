@@ -4,6 +4,7 @@ import '../config/broadcast_defaults.dart';
 import '../config/logger_defaults.dart';
 import '../config/request_defaults.dart';
 import '../data_layer/repositories/signers/bip340_event_signer.dart';
+import '../domain_layer/entities/auth_handler.dart';
 import '../domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import '../domain_layer/entities/cache_eviction.dart';
 import '../domain_layer/entities/event_filter.dart';
@@ -76,8 +77,11 @@ class NdkConfig {
   /// log level
   LogLevel logLevel;
 
-  /// User agent string for Http requests and websockets.
-  String userAgent;
+  /// User agent for websockets on dart:io, set globally on `WebSocket.userAgent`.
+  ///
+  /// Null (default) leaves the app's user agent untouched. Pass
+  /// [RequestDefaults.DEFAULT_USER_AGENT] to identify as NDK.
+  String? userAgent;
 
   /// Whether native WebSocket connections negotiate per-message compression.
   ///
@@ -115,6 +119,11 @@ class NdkConfig {
   /// Timeout for AUTH callbacks (how long to wait for AUTH OK response).
   /// Defaults to 30 seconds.
   Duration authCallbackTimeout;
+
+  /// Asked before an identity authenticates on a relay or a Blossom server.
+  /// Without it, a request that does not pass `auth` reveals no identity.
+  /// `(_, _) async => true` authenticates as the logged account wherever asked.
+  AuthHandler? authHandler;
 
   /// Interval for retrying pending broadcast deliveries while relays remain connected.
   Duration pendingDeliveryRetryInterval;
@@ -179,7 +188,7 @@ class NdkConfig {
         BroadcastDefaults.CONSIDER_DONE_PERCENT,
     this.defaultBroadcastSaveToCache = BroadcastDefaults.SAVE_TO_CACHE,
     this.logLevel = defaultLogLevel,
-    this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
+    this.userAgent,
     this.webSocketCompression = true,
     this.webSocketPingInterval = const Duration(seconds: 10),
     this.webSocketReconnectMaximumStep = 4,
@@ -189,6 +198,7 @@ class NdkConfig {
     // ignore: deprecated_member_use_from_same_package
     this.eagerAuth = false,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
+    this.authHandler,
     this.pendingDeliveryRetryInterval = const Duration(seconds: 15),
     this.pendingDeliveryRetriesEnabled = true,
     this.defaultTrustedProviders = DEFAULT_NIP85_PROVIDERS,

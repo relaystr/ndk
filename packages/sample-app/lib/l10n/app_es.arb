@@ -103,6 +103,7 @@
   "pendingMethodNip44Decrypt": "Descifrar NIP-44",
   "pendingMethodPing": "Ping",
   "pendingMethodConnect": "Conectar",
+  "pendingMethodSwitchRelays": "Cambiar relés",
   "pendingSecondsAgo": "hace {count}s",
   "pendingMinutesAgo": "hace {count}m",
   "pendingHoursAgo": "hace {count}h",

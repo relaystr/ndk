@@ -48,10 +48,9 @@ final myBroadcast = ndk.broadcast.broadcast(
 | `AuthPolicy.allow(a)` | anonymous, moves to one bound to `a` once the relay refuses | who you are, but only after that relay asked |
 | `AuthPolicy.require(a)` | bound to `a` from the start | who you are, as soon as it sends a challenge |
 
-Without `auth`, a refused event authenticates as its author when a registered
-account matches, and as the currently logged-in account otherwise. The relay
-therefore decides when your identity is revealed. Pass `auth` explicitly
-whenever that matters.
+Without `auth`, a broadcast reveals no identity. With an [`AuthHandler`](/concepts/nip42-auth.md#authhandler), a refused
+event authenticates as its author when a registered account matches, as the
+logged-in account otherwise, where the handler agrees.
 
 The account does not have to be one NDK knows: `allow` and `require` take the
 `Account` itself, so an identity you built on the spot works.

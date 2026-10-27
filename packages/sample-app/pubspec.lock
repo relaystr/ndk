@@ -237,18 +237,18 @@ packages:
     dependency: transitive
     description:
       name: elliptic
-      sha256: "67931d408faa353bdebac9f7a1df0c3f6f828f4e8439cdf084573cd1601a2f4b"
+      sha256: "03a7c29e3b7c952cf4612fec0496188e9ae686bd00195f784568aefc24894d99"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.12"
+    version: "0.4.0"
   equatable:
     dependency: transitive
     description:
       name: equatable
-      sha256: "3e0141505477fd8ad55d6eb4e7776d3fe8430be8e497ccb1521370c3f21a3e2b"
+      sha256: ea36e500cbf0ec18361deabca755434f73e42fe53c5130021c7e2d6b5ebe1702
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.8"
+    version: "3.0.0"
   fake_async:
     dependency: transitive
     description:
@@ -930,14 +930,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
-  pausable_timer:
-    dependency: transitive
-    description:
-      name: pausable_timer
-      sha256: "6ef1a95441ec3439de6fb63f39a011b67e693198e7dae14e20675c3c00e86074"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.0+3"
   petitparser:
     dependency: transitive
     description:
@@ -1231,14 +1223,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.12"
-  toastification:
-    dependency: transitive
-    description:
-      name: toastification
-      sha256: "66c96678e3dece8ba24de3ea31634bd65a80aaecb8105f9bafe946e5f0d7590a"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.2.0"
   toml:
     dependency: transitive
     description:

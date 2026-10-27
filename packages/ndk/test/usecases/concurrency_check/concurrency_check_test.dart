@@ -128,6 +128,7 @@ void main() async {
       () async {
         final ndk = Ndk(
           NdkConfig(
+            authHandler: (_, _) async => true,
             eventVerifier: MockEventVerifier(),
             cache: MemCacheManager(),
             bootstrapRelays: [relay.url],

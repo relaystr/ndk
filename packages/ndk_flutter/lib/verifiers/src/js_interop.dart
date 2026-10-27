@@ -16,6 +16,7 @@ extension type NostrCrypto._(JSObject _) implements JSObject {
     JSString privateKeyHex,
     JSString messageHashHex,
   );
+  external JSString getPublicKey(JSString privateKeyHex);
   external JSPromise<JSString> nip04Encrypt(
     JSString privateKeyHex,
     JSString publicKeyHex,
