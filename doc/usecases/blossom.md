@@ -95,6 +95,22 @@ Stream<BlobUploadProgress> uploadBlobFromFile({
 })
 ```
 
+#### checkUpload
+
+Asks each server whether it would take the upload before any byte is sent (BUD-06). Branch on `statusCode` (413 means too large) and show `reason` to the user. BUD-06 is optional: a server without it answers something like 404, which says nothing about the upload. A refused upload reports the same `statusCode` and `reason` in its `BlobUploadResult`.
+
+```dart
+Future<List<BlobUploadCheck>> checkUpload({
+  required String sha256,
+  required int contentLength,
+  String? contentType,
+  List<String>? serverUrls,
+  bool serverMediaOptimisation = false,
+  AuthPolicy? auth,
+  String? pubkeyToFetchUserServerList,
+})
+```
+
 #### getBlob
 
 Download the blob and use fallback if the blob is not found or the server is offline.
