@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793109125425,
+  "lastUpdate": 1793113053237,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2354,6 +2354,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1796768,
             "range": "1790614-1818896",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a58d925684d09745992a093edcb833ba6af93b53",
+          "message": "Merge pull request #888 from relaystr/fix/nip77-idle-timeout\n\nfix(nip77)!: replace the overall deadline with open and idle timeouts",
+          "timestamp": "2026-10-27T15:55:43+01:00",
+          "tree_id": "01f236b480265fa4e128845174f71a1ec3b55282",
+          "url": "https://github.com/relaystr/ndk/commit/a58d925684d09745992a093edcb833ba6af93b53"
+        },
+        "date": 1793113050899,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46408,
+            "range": "46194-49491",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1712518,
+            "range": "1706166-1734732",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
