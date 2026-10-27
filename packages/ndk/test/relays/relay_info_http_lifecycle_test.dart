@@ -165,7 +165,9 @@ void main() {
       () => client,
     );
 
-    final info = ndk.relays.getRelayInfo('wss://127.0.0.1:${server.port}');
+    final info = ndk.connectivity.getRelayInfo(
+      'wss://127.0.0.1:${server.port}',
+    );
     await ndk.destroy();
 
     // the relay never answers, so only destroy can settle the fetch before
