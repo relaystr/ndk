@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791838651311,
+  "lastUpdate": 1793102595508,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2126,6 +2126,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 846654,
             "range": "829748-860610",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "01565234eef1788ba8efcb852d6bf47e8a9c9320",
+          "message": "Merge pull request #882 from relaystr/feat/ndk-sqlite3\n\nfeat(sqlite3): add ndk_sqlite3, a pure Dart SQLite cache manager",
+          "timestamp": "2026-10-27T13:01:03+01:00",
+          "tree_id": "fc04cc0c268d0402dcf33d13ce66faf853e32ed5",
+          "url": "https://github.com/relaystr/ndk/commit/01565234eef1788ba8efcb852d6bf47e8a9c9320"
+        },
+        "date": 1793102592513,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 27271,
+            "range": "26818-29648",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 836928,
+            "range": "800846-1151122",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
