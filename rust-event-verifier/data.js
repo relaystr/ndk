@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793104997280,
+  "lastUpdate": 1793105734455,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2278,6 +2278,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1732622,
             "range": "1715070-1753014",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e8dd0c28e879bde335f225d1fd8c287f8ef7bb8d",
+          "message": "Merge pull request #914 from relaystr/fix/nip65-merge-repeated-relays\n\nfix(nip65): merge the markers of a relay listed more than once",
+          "timestamp": "2026-10-27T13:53:29+01:00",
+          "tree_id": "f7eb7fd3aa49371f4811a648fbb6be254203cf34",
+          "url": "https://github.com/relaystr/ndk/commit/e8dd0c28e879bde335f225d1fd8c287f8ef7bb8d"
+        },
+        "date": 1793105731590,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 40426.4,
+            "range": "40248-43727",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1930666,
+            "range": "1879630-1955232",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
