@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:ndk/data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
 import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
@@ -37,23 +38,28 @@ void main() async {
       await relay1.stopServer();
     });
 
-    test('a failed connect says why it failed', () async {
-      // never started, so nothing listens on its port
-      final unreachable = MockRelay(name: "unreachable");
-      addTearDown(unreachable.stopServer);
+    test('every caller of a failed connect learns why it failed', () async {
+      final closed = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+      final port = closed.port;
+      await closed.close();
 
       RelayManager manager = RelayManager(
         globalState: GlobalState(),
         bootstrapRelays: [],
         nostrTransportFactory: webSocketNostrTransportFactory,
       );
-      final result = await manager.connectRelay(
-        dirtyUrl: unreachable.url,
-        connectionSource: ConnectionSource.explicit,
-      );
+      final results = await Future.wait([
+        for (var i = 0; i < 2; i++)
+          manager.connectRelay(
+            dirtyUrl: 'ws://127.0.0.1:$port',
+            connectionSource: ConnectionSource.explicit,
+          ),
+      ]);
 
-      expect(result.first, isFalse);
-      expect(result.second, contains('SocketException'));
+      for (final result in results) {
+        expect(result.first, isFalse);
+        expect(result.second, contains('SocketException'));
+      }
     });
 
     test('wasLastConnectTryLongerThanSeconds', () async {
