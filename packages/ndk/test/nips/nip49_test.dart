@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bech32/bech32.dart';
 import 'package:convert/convert.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:ndk/ndk.dart';
@@ -47,6 +48,31 @@ void main() {
   test('rejects a string that is not an ncryptsec', () {
     expect(
       Nip49.decrypt(Nip19.encodePrivateKey(privateKey), 'password'),
+      throwsA(isA<FormatException>()),
+    );
+  });
+
+  test('rejects a logN above maxLogN', () async {
+    final ncryptsec = await Nip49.encrypt(privateKey, 'password', logN: 9);
+
+    expect(
+      Nip49.decrypt(ncryptsec, 'password', maxLogN: 8),
+      throwsA(isA<RangeError>()),
+    );
+  });
+
+  test('rejects an unknown key security byte', () async {
+    final ncryptsec = await Nip49.encrypt(privateKey, 'password', logN: 8);
+    final decoded = Bech32Decoder().convert(ncryptsec, ncryptsec.length);
+    final payload = Nip19Utils.convertBits(decoded.data, 5, 8, false)
+      ..[42] = 0x03;
+    final tampered = Bech32Encoder().convert(
+      Bech32(decoded.hrp, Nip19Utils.convertBits(payload, 8, 5, true)),
+      ncryptsec.length,
+    );
+
+    expect(
+      Nip49.decrypt(tampered, 'password'),
       throwsA(isA<FormatException>()),
     );
   });

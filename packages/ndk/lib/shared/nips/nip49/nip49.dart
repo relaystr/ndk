@@ -30,6 +30,8 @@ enum Nip49KeySecurity {
 
 /// NIP-49 private key encryption (`ncryptsec`).
 /// https://github.com/nostr-protocol/nips/blob/master/49.md
+///
+/// On web, scrypt runs on the main thread and blocks the UI while it runs.
 class Nip49 {
   static const int defaultLogN = 16;
 
@@ -92,14 +94,24 @@ class Nip49 {
   /// Decrypts an `ncryptsec` string with [password] and returns the hex
   /// private key.
   ///
+  /// A payload whose logN is above [maxLogN] is rejected with a [RangeError]
+  /// before any scrypt work. Lower it on memory-constrained devices: logN 20
+  /// allocates 1 GiB.
+  ///
   /// Throws [SecretBoxAuthenticationError] when the password is wrong.
-  static Future<String> decrypt(String ncryptsec, String password) async {
+  static Future<String> decrypt(
+    String ncryptsec,
+    String password, {
+    int maxLogN = Nip49.maxLogN,
+  }) async {
     final decoded = Bech32Decoder().convert(ncryptsec, ncryptsec.length);
     if (decoded.hrp != Hrps.kNcryptsec) {
       throw FormatException('Not an ${Hrps.kNcryptsec}', ncryptsec);
     }
     final payload = Nip19Utils.convertBits(decoded.data, 5, 8, false);
-    if (payload.length != _payloadLength || payload[0] != _version) {
+    if (payload.length != _payloadLength ||
+        payload[0] != _version ||
+        !Nip49KeySecurity.values.any((s) => s.value == payload[42])) {
       throw FormatException('Unsupported ${Hrps.kNcryptsec}', ncryptsec);
     }
 
