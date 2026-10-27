@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793102595508,
+  "lastUpdate": 1793104168003,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2164,6 +2164,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 836928,
             "range": "800846-1151122",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bd95d5f82f48fab0577e676db836541b82b60e7d",
+          "message": "Merge pull request #905 from relaystr/fix/hide-signer-app-login-on-web\n\nfix(ndk_flutter): hide signer app login button on web",
+          "timestamp": "2026-10-27T13:27:22+01:00",
+          "tree_id": "4316221acb1d2f19fad453014e99f6f3f0251465",
+          "url": "https://github.com/relaystr/ndk/commit/bd95d5f82f48fab0577e676db836541b82b60e7d"
+        },
+        "date": 1793104165269,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46446.8,
+            "range": "46305-48932",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1720692,
+            "range": "1702268-1790964",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
