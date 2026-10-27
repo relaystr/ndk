@@ -1905,6 +1905,7 @@ class RelayManager<T> {
           !element.retryingAuth &&
           (element.receivedEOSE ||
               element.receivedClosed ||
+              element.notSent ||
               myNotConnectedRelays.contains(element.key)),
     );
 

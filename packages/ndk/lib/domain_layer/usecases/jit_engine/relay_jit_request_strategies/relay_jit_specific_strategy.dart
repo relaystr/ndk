@@ -25,9 +25,8 @@ class RelayJitRequestSpecificStrategy {
     // filter relays we need to connect to first
     final List<Future<Tuple<bool, String>>> connectFutures = [];
     for (final sRelay in specificRelays) {
-      final isConnected = relayManager.isRelayConnected(sRelay);
-      final tryingToConnect = relayManager.isRelayConnecting(sRelay);
-      if (isConnected || tryingToConnect) continue;
+      // one still connecting is not skipped: connectRelay waits for it
+      if (relayManager.isRelayConnected(sRelay)) continue;
       connectFutures.add(
         relayManager.connectRelay(
           dirtyUrl: sRelay,
@@ -57,7 +56,8 @@ class RelayJitRequestSpecificStrategy {
 
   /// Reports [url] as a relay the request could not be sent to, on the
   /// connection the request's auth policy would have used. One no connection
-  /// can satisfy is skipped, as [RequestState.addRequestForRelay] does.
+  /// can satisfy is skipped, as [RequestState.addRequestForRelay] does, and
+  /// one an earlier filter already reached keeps its outcome.
   static void _fail(
     String url,
     RequestState requestState,
@@ -65,7 +65,7 @@ class RelayJitRequestSpecificStrategy {
     RelayManager relayManager,
   ) {
     final key = RelayConnectionKey.forAuth(url, requestState.request.auth);
-    if (key == null) return;
+    if (key == null || requestState.requests.containsKey(key)) return;
     relayManager.failRelayRequest(requestState, key, [
       filter,
     ], "could not connect");
@@ -97,6 +97,8 @@ class RelayJitRequestSpecificStrategy {
         connectionKey: target.key,
         filters: [filter],
       );
+      // an earlier filter may have left this entry notSent
+      requestState.requests[target.key]!.markSent();
       relayManager.send(
         target,
         ClientMsg(ClientMsgType.kReq, id: requestState.id, filters: [filter]),

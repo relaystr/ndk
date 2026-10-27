@@ -56,6 +56,20 @@ class JitEngine with Logger implements NetworkEngine {
   void handleRequest(RequestState requestState) async {
     await relayManagerLight.seedRelaysConnected;
 
+    // explicit relays get every filter: one none of them took must not end the
+    // request before the next ones are sent. Other strategies let it end early
+    final holdOpen = requestState.request.explicitRelays?.isNotEmpty ?? false;
+    if (holdOpen) relayManagerLight.beginPendingConnection(requestState);
+    try {
+      await _handleFilters(requestState);
+    } finally {
+      if (holdOpen) relayManagerLight.endPendingConnection(requestState);
+    }
+
+    requestState.closeIfNoRelays();
+  }
+
+  Future<void> _handleFilters(RequestState requestState) async {
     final ndkRequest = requestState.request;
 
     //clean ignore relays
@@ -143,8 +157,6 @@ class JitEngine with Logger implements NetworkEngine {
         closeOnEOSE: ndkRequest.closeOnEOSE,
       );
     }
-
-    requestState.closeIfNoRelays();
   }
 
   /// broadcasts given event using inbox/outbox (gossip) if explicit relays are given they are used instead
