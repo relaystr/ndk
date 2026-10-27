@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793104518905,
+  "lastUpdate": 1793104997280,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2240,6 +2240,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 820442,
             "range": "808840-839142",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1dd5a3b9ed20faa9ee1601f5968a97637c69b042",
+          "message": "Merge pull request #912 from relaystr/fix/apply-log-level-first\n\nfix: apply NdkConfig.logLevel before the use cases are built",
+          "timestamp": "2026-10-27T13:41:35+01:00",
+          "tree_id": "0ed12f26beed6d8a0ebee314c2dad2d532ee01ec",
+          "url": "https://github.com/relaystr/ndk/commit/1dd5a3b9ed20faa9ee1601f5968a97637c69b042"
+        },
+        "date": 1793104995092,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 45763.6,
+            "range": "45611-49933",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1732622,
+            "range": "1715070-1753014",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
