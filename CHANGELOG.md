@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-10-27
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.10.3-dev.2`](#ndk_flutter---v0103-dev2)
+ - [`ndk_sqlite3` - `v0.1.1-dev.0`](#ndk_sqlite3---v011-dev0)
+
+---
+
+#### `ndk_flutter` - `v0.10.3-dev.2`
+
+ - **FIX**(ndk_flutter): hide signer app login button on web.
+
+#### `ndk_sqlite3` - `v0.1.1-dev.0`
+
+ - **REFACTOR**(sqlite3): move schema into a migrations folder.
+ - **PERF**(sqlite3): let tag filters drive single-kind queries.
+ - **FIX**(sqlite3): wait for locks held by other connections.
+ - **FEAT**(sqlite3): add ndk_sqlite3, a pure Dart SQLite cache manager.
+
+
 ## 2026-10-09
 
 ### Changes
