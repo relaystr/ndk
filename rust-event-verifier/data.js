@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793104168003,
+  "lastUpdate": 1793104518905,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2202,6 +2202,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1720692,
             "range": "1702268-1790964",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ae9635eedc647464ff86fea42f7635a84fddda34",
+          "message": "Merge pull request #904 from relaystr/fix/concurrent-same-event-broadcast\n\nfix: concurrent same event broadcast",
+          "timestamp": "2026-10-27T13:32:05+01:00",
+          "tree_id": "c218d64ec4d5abc586f83e50b488a7ba15e7000a",
+          "url": "https://github.com/relaystr/ndk/commit/ae9635eedc647464ff86fea42f7635a84fddda34"
+        },
+        "date": 1793104516738,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 27957.4,
+            "range": "27460-29307",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 820442,
+            "range": "808840-839142",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
