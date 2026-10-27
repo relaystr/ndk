@@ -132,10 +132,12 @@ class RelaySetsEngine implements NetworkEngine {
   ///   for that specific relay with an error message
   Future<void> doRelayBroadcast(
     String relayUrl,
-    Nip01Event nostrEvent, {
-    AuthPolicy? auth,
-  }) async {
+    Nip01Event nostrEvent,
+    BroadcastState broadcastState,
+  ) async {
+    final auth = broadcastState.auth;
     _relayManager.registerRelayBroadcast(
+      broadcastState: broadcastState,
       eventToPublish: nostrEvent,
       relayUrl: relayUrl,
     );
@@ -147,7 +149,7 @@ class RelaySetsEngine implements NetworkEngine {
         relayUrl,
         auth,
         connectTimeout: 1,
-        pausing: _globalState.inFlightBroadcasts[nostrEvent.id],
+        pausing: broadcastState,
       );
     } catch (e) {
       Logger.log.w(
@@ -166,7 +168,7 @@ class RelaySetsEngine implements NetworkEngine {
               'skip obsolete specific-relay broadcast ${nostrEvent.id} for $relayUrl',
         );
         _relayManager.failBroadcast(
-          nostrEvent.id,
+          broadcastState,
           relayUrl,
           'obsolete replaceable event skipped',
         );
@@ -181,14 +183,14 @@ class RelaySetsEngine implements NetworkEngine {
     }
     if (auth is AuthPolicyRequire) {
       _relayManager.failBroadcast(
-        nostrEvent.id,
+        broadcastState,
         relayUrl,
         "no connection bound to ${auth.account.pubkey} could be opened",
       );
       return;
     }
     _relayManager.failBroadcast(
-      nostrEvent.id,
+      broadcastState,
       relayUrl,
       "Could not connect to relay $relayUrl $error",
     );
@@ -390,11 +392,7 @@ class RelaySetsEngine implements NetworkEngine {
             specificRelays.map(
               (relayUrl) =>
                   // broadcast async
-                  doRelayBroadcast(
-                    relayUrl,
-                    workingEvent,
-                    auth: broadcastState.auth,
-                  ),
+                  doRelayBroadcast(relayUrl, workingEvent, broadcastState),
             ),
           );
         }
@@ -428,11 +426,8 @@ class RelaySetsEngine implements NetworkEngine {
 
         await Future.wait(
           writeRelaysUrls.map(
-            (relayUrl) => doRelayBroadcast(
-              relayUrl,
-              workingEvent,
-              auth: broadcastState.auth,
-            ),
+            (relayUrl) =>
+                doRelayBroadcast(relayUrl, workingEvent, broadcastState),
           ),
         );
 
@@ -467,11 +462,8 @@ class RelaySetsEngine implements NetworkEngine {
 
           await Future.wait(
             myWriteRelayUrlsOthers.map(
-              (relayUrl) => doRelayBroadcast(
-                relayUrl,
-                workingEvent,
-                auth: broadcastState.auth,
-              ),
+              (relayUrl) =>
+                  doRelayBroadcast(relayUrl, workingEvent, broadcastState),
             ),
           );
         }

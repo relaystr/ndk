@@ -24,6 +24,17 @@ abstract class BlossomRepository {
     bool mediaOptimisation = false,
   });
 
+  /// Asks each server whether it would accept the upload, without sending the
+  /// blob [BUD-06]. With [mediaOptimisation] it asks `/media` [BUD-05].
+  Future<List<BlobUploadCheck>> checkUpload({
+    required String sha256,
+    required int contentLength,
+    required List<String> serverUrls,
+    required BlossomAuthorization authorization,
+    String? contentType,
+    bool mediaOptimisation = false,
+  });
+
   /// Uploads a blob from a file path using the specified strategy
   /// Reads the file in chunks to minimize memory usage
   /// For web: prompts user to select a file via File System Access API

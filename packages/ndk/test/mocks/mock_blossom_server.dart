@@ -65,6 +65,9 @@ class MockBlossomServer {
   /// overlap
   final Duration? responseDelay;
 
+  /// largest blob `/upload` takes, in bytes, null for no limit
+  final int? maxUploadSize;
+
   /// every request the server received, oldest first
   final List<MockBlossomRequest> requests = [];
 
@@ -85,6 +88,7 @@ class MockBlossomServer {
     this.authRefusalStatus = 403,
     this.supportRangeRequests = false,
     this.responseDelay,
+    this.maxUploadSize,
   });
 
   /// forget every recorded request
@@ -155,8 +159,29 @@ class MockBlossomServer {
     return null;
   }
 
+  /// null when [size] fits [maxUploadSize], a 413 saying why otherwise
+  Response? _refuseSize(int size) {
+    final max = maxUploadSize;
+    if (max == null || size <= max) return null;
+    return Response(
+      413,
+      headers: {'X-Reason': 'File too large. Max allowed size is $max bytes.'},
+    );
+  }
+
+  /// HEAD /upload and HEAD /media, BUD-06
+  Response _checkUpload(Request request) {
+    final size = int.tryParse(request.headers['x-content-length'] ?? '');
+    if (size == null) return Response(411);
+    return _refuseSize(size) ?? Response.ok(null);
+  }
+
   Router _createRouter() {
     final router = Router();
+
+    // before GET /<sha256>, whose implicit HEAD route would match /upload
+    router.head('/upload', _checkUpload);
+    router.head('/media', _checkUpload);
 
     // GET /<sha256> - Get Blob
     router.get('/<sha256>', (Request request, String sha256) {
@@ -250,6 +275,9 @@ class MockBlossomServer {
       // Read the request body
       final bytes = await request.read().expand((chunk) => chunk).toList();
       final data = Uint8List.fromList(bytes);
+
+      final tooLarge = _refuseSize(data.length);
+      if (tooLarge != null) return tooLarge;
 
       final sha256 = _computeSha256(data);
       final contentType =

@@ -38,7 +38,7 @@ class Nip65 {
 
       final url = cleanUrl;
       if (name != "r") continue;
-      ReadWriteMarker? marker = ReadWriteMarker.readWrite;
+      ReadWriteMarker marker = ReadWriteMarker.readWrite;
       if (length > 2) {
         var operType = tag[2];
         switch (operType) {
@@ -50,7 +50,14 @@ class Nip65 {
             break;
         }
       }
-      relays[url] = marker;
+      // a relay listed once per direction is read and write, in either order
+      final listed = relays[url];
+      relays[url] = listed == null
+          ? marker
+          : ReadWriteMarker.from(
+              read: listed.isRead || marker.isRead,
+              write: listed.isWrite || marker.isWrite,
+            );
     }
   }
 

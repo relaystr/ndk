@@ -131,6 +131,9 @@ class Initialization {
     required GlobalState globalState,
   }) : _globalState = globalState,
        _ndkConfig = ndkConfig {
+    // first, so what the use cases log while they are built respects it
+    Logger.setLogLevel(_ndkConfig.logLevel);
+
     final userAgent = ndkConfig.userAgent;
     if (userAgent != null) configureDefaultUserAgent(userAgent);
 
@@ -421,9 +424,6 @@ class Initialization {
         runOnStartup: _ndkConfig.runCacheEvictionOnStartup,
       )..start();
     }
-
-    /// set the user configured log level
-    Logger.setLogLevel(_ndkConfig.logLevel);
   }
 
   /// Close all active NIP-77 negotiations
