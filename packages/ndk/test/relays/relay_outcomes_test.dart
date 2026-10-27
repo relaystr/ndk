@@ -268,10 +268,9 @@ void notSentEndTests() {
         final note = textNote(key2);
         await seed.startServer();
         await flaky.startServer(textNotes: {key2: note});
-        final manager = buildManager(
-          [seed.url],
-          factory: _FailFirstConnectFactory({flaky.url}, nothingListens.url),
-        );
+        final manager = buildManager([
+          seed.url,
+        ], factory: _FailFirstConnectFactory({flaky.url}, nothingListens.url));
         addTearDown(() async {
           await manager.closeAllTransports();
           await seed.stopServer();
@@ -313,10 +312,9 @@ void notSentEndTests() {
           textNotes: {key2: flakyNote},
           delayResponse: Duration(seconds: 2),
         );
-        final manager = buildManager(
-          [fast.url],
-          factory: _FailFirstConnectFactory({flaky.url}, nothingListens.url),
-        );
+        final manager = buildManager([
+          fast.url,
+        ], factory: _FailFirstConnectFactory({flaky.url}, nothingListens.url));
         addTearDown(() async {
           await manager.closeAllTransports();
           await fast.stopServer();
@@ -340,53 +338,56 @@ void notSentEndTests() {
       },
     );
 
-    test('a relay still connecting is waited for, not reported notSent', () async {
-      final connected = MockRelay(name: "connected", signEvents: false);
-      final connecting = MockRelay(name: "connecting", signEvents: false);
-      final connectedNote = textNote(key1);
-      final connectingNote = textNote(key2);
-      await connected.startServer(textNotes: {key1: connectedNote});
-      await connecting.startServer(
-        textNotes: {key2: connectingNote},
-        delayConnection: Duration(seconds: 1),
-      );
-      final manager = buildManager([connected.url]);
-      Future<void>? opening;
-      addTearDown(() async {
-        // MockRelay fails a handshake it still holds once its server stops
-        await opening;
-        await manager.closeAllTransports();
-        await connected.stopServer();
-        await connecting.stopServer();
-      });
-      await manager.seedRelaysConnected;
+    test(
+      'a relay still connecting is waited for, not reported notSent',
+      () async {
+        final connected = MockRelay(name: "connected", signEvents: false);
+        final connecting = MockRelay(name: "connecting", signEvents: false);
+        final connectedNote = textNote(key1);
+        final connectingNote = textNote(key2);
+        await connected.startServer(textNotes: {key1: connectedNote});
+        await connecting.startServer(
+          textNotes: {key2: connectingNote},
+          delayConnection: Duration(seconds: 1),
+        );
+        final manager = buildManager([connected.url]);
+        Future<void>? opening;
+        addTearDown(() async {
+          // MockRelay fails a handshake it still holds once its server stops
+          await opening;
+          await manager.closeAllTransports();
+          await connected.stopServer();
+          await connecting.stopServer();
+        });
+        await manager.seedRelaysConnected;
 
-      // another request is already opening it
-      opening = manager.connectRelay(
-        dirtyUrl: connecting.url,
-        connectionSource: ndk_entities.ConnectionSource.explicit,
-      );
-      final state = trackQuery(
-        manager,
-        "connecting-test",
-        [
-          Filter(
-            kinds: [Nip01Event.kTextNodeKind],
-            authors: [key1.publicKey, key2.publicKey],
-          ),
-        ],
-        explicitRelays: [connected.url, connecting.url],
-      );
-      final events = state.networkController.stream.toList();
-      buildEngine(manager, [connected.url]).handleRequest(state);
-      final received = await events;
+        // another request is already opening it
+        opening = manager.connectRelay(
+          dirtyUrl: connecting.url,
+          connectionSource: ndk_entities.ConnectionSource.explicit,
+        );
+        final state = trackQuery(
+          manager,
+          "connecting-test",
+          [
+            Filter(
+              kinds: [Nip01Event.kTextNodeKind],
+              authors: [key1.publicKey, key2.publicKey],
+            ),
+          ],
+          explicitRelays: [connected.url, connecting.url],
+        );
+        final events = state.networkController.stream.toList();
+        buildEngine(manager, [connected.url]).handleRequest(state);
+        final received = await events;
 
-      expect(state.relayOutcomes, {
-        connected.url: RelayRequestOutcome(RelayRequestStatus.eose),
-        connecting.url: RelayRequestOutcome(RelayRequestStatus.eose),
-      });
-      expect(received.map((e) => e.id), contains(connectingNote.id));
-    });
+        expect(state.relayOutcomes, {
+          connected.url: RelayRequestOutcome(RelayRequestStatus.eose),
+          connecting.url: RelayRequestOutcome(RelayRequestStatus.eose),
+        });
+        expect(received.map((e) => e.id), contains(connectingNote.id));
+      },
+    );
 
     test(
       'a relay that got an earlier filter is not reported notSent when a later one cannot reach it',
@@ -434,7 +435,8 @@ void notSentEndTests() {
 
         await lost.stopServer();
         await _waitUntil(
-          () => !manager.isConnectionOpen(RelayConnectionKey.anonymous(lost.url)),
+          () =>
+              !manager.isConnectionOpen(RelayConnectionKey.anonymous(lost.url)),
           reason: 'the relay never went away',
         );
 
