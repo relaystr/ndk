@@ -435,7 +435,7 @@ class Initialization {
     await cacheEvictionScheduler?.stop();
     await pendingBroadcastDelivery.stop();
     await _relayConnectivitySubscription?.cancel();
-    _httpRequestDS.close();
+    _httpRequestDS.abortPending();
   }
 
   void _handleRelayConnectivityUpdate(List<RelayConnectivity> connections) {

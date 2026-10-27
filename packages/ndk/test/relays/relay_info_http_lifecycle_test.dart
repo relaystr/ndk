@@ -147,7 +147,8 @@ void main() {
     expect(client.closed, isTrue);
   });
 
-  test('destroying Ndk settles an unawaited relay info fetch', () async {
+  test('destroying Ndk aborts an unawaited relay info fetch and keeps the '
+      'shared client open', () async {
     final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
     final peers = <Socket>[];
     server.listen(peers.add);
@@ -170,5 +171,7 @@ void main() {
     // the relay never answers, so only destroy can settle the fetch before
     // the 5s repo timeout
     expect(await info.timeout(const Duration(seconds: 1)), isNull);
+    expect(client.aborted, isTrue);
+    expect(client.closed, isFalse);
   });
 }
