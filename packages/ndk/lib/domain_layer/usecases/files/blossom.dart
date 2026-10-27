@@ -221,6 +221,34 @@ class Blossom {
     ),
   );
 
+  /// Uploads, and the checks before them, authorise the same way: an `upload`
+  /// event naming the blob, or a `media` one for [BUD-05].
+  Future<_BlossomAuthPlan> _uploadAuthPlan({
+    required AuthPolicy? auth,
+    required String sha256,
+    required bool media,
+    required List<String>? serverUrls,
+    required String? pubkeyToFetchUserServerList,
+  }) {
+    final authType = media ? "media" : "upload";
+    return _planAuth(
+      auth: auth,
+      authorisesByDefault: true,
+      operation: authType,
+      buildEvent: (pubkey) => _blossomAuthEvent(
+        content: authType,
+        pubkey: pubkey,
+        type: authType,
+        blobSha256: sha256,
+      ),
+      resolveServers: () => _resolveWriteServers(
+        serverUrls: serverUrls,
+        explicitPubkey: pubkeyToFetchUserServerList,
+        listOwner: auth?.account?.pubkey,
+      ),
+    );
+  }
+
   /// The servers a write talks to: an explicit list, else an explicit pubkey's
   /// kind 10063 list, else the identity the policy names, else the logged-in
   /// account's.
@@ -283,6 +311,39 @@ class Blossom {
     );
   }
 
+  /// Asks each server whether it would accept this upload, before any byte of
+  /// the blob is sent [BUD-06]. Servers and authorization resolve as in
+  /// [uploadBlob], so the answer is about the identity the upload will use.
+  ///
+  /// Only a hint: BUD-06 is optional, so a server without it answers something
+  /// like 404, and an accepted check does not promise the upload.
+  Future<List<BlobUploadCheck>> checkUpload({
+    required String sha256,
+    required int contentLength,
+    String? contentType,
+    List<String>? serverUrls,
+    bool serverMediaOptimisation = false,
+    AuthPolicy? auth,
+    String? pubkeyToFetchUserServerList,
+  }) async {
+    final plan = await _uploadAuthPlan(
+      auth: auth,
+      sha256: sha256,
+      media: serverMediaOptimisation,
+      serverUrls: serverUrls,
+      pubkeyToFetchUserServerList: pubkeyToFetchUserServerList,
+    );
+
+    return _blossomImpl.checkUpload(
+      sha256: sha256,
+      contentLength: contentLength,
+      serverUrls: plan.servers,
+      authorization: plan.authorization,
+      contentType: contentType,
+      mediaOptimisation: serverMediaOptimisation,
+    );
+  }
+
   /// upload a blob to the server
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
   /// if the pukey has no UserServerList (kind: 10063), throws an error \
@@ -310,23 +371,12 @@ class Blossom {
     /// sha256 of the data
     final dataSha256 = precomputedSha256 ?? sha256.convert(data).toString();
 
-    final authType = serverMediaOptimisation ? "media" : "upload";
-
-    final plan = await _planAuth(
+    final plan = await _uploadAuthPlan(
       auth: auth,
-      authorisesByDefault: true,
-      operation: authType,
-      buildEvent: (pubkey) => _blossomAuthEvent(
-        content: authType,
-        pubkey: pubkey,
-        type: authType,
-        blobSha256: dataSha256,
-      ),
-      resolveServers: () => _resolveWriteServers(
-        serverUrls: serverUrls,
-        explicitPubkey: pubkeyToFetchUserServerList,
-        listOwner: auth?.account?.pubkey,
-      ),
+      sha256: dataSha256,
+      media: serverMediaOptimisation,
+      serverUrls: serverUrls,
+      pubkeyToFetchUserServerList: pubkeyToFetchUserServerList,
     );
 
     final stream = _blossomImpl.uploadBlob(
@@ -392,23 +442,12 @@ class Blossom {
       }
     }
 
-    final authType = serverMediaOptimisation ? "media" : "upload";
-
-    final plan = await _planAuth(
+    final plan = await _uploadAuthPlan(
       auth: auth,
-      authorisesByDefault: true,
-      operation: authType,
-      buildEvent: (pubkey) => _blossomAuthEvent(
-        content: authType,
-        pubkey: pubkey,
-        type: authType,
-        blobSha256: fileHash,
-      ),
-      resolveServers: () => _resolveWriteServers(
-        serverUrls: serverUrls,
-        explicitPubkey: pubkeyToFetchUserServerList,
-        listOwner: auth?.account?.pubkey,
-      ),
+      sha256: fileHash,
+      media: serverMediaOptimisation,
+      serverUrls: serverUrls,
+      pubkeyToFetchUserServerList: pubkeyToFetchUserServerList,
     );
 
     yield* _blossomImpl.uploadBlobFromFile(

@@ -15,7 +15,9 @@ class GlobalState {
 
   /// hold state information for a broadcast
   /// key: event Id
-  final Map<String, BroadcastState> inFlightBroadcasts = {};
+  /// value: one state per broadcast call, the same event can be in flight
+  /// several times at once
+  final Map<String, List<BroadcastState>> inFlightBroadcasts = {};
 
   /// touched relays by ndk - connected, connecting, disconnected
   /// key: relay url and identity bound to the connection

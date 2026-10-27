@@ -38,7 +38,7 @@ void main() {
       expect(data['description'], info.description);
       expect(data['pubkey'], info.pubKey);
       expect(data['contact'], info.contact);
-      expect(data['supported_nips'], info.nips);
+      expect(info.nips, ['1', '50']);
       expect(data['icon'], info.icon);
       expect(data['software'], info.software);
       expect(data['version'], info.version);

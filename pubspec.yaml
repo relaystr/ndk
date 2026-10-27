@@ -15,6 +15,7 @@ workspace:
   - packages/sembast
   - packages/drift
   - packages/cli
+  - packages/sqlite3
   - packages/ndk_flutter
 
 melos:

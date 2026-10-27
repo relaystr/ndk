@@ -20,7 +20,7 @@ void main() {
       expect(relayInfo.description, equals("Test relay"));
       expect(relayInfo.pubKey, equals("abc123"));
       expect(relayInfo.contact, equals("contact@test.com"));
-      expect(relayInfo.nips, equals([1, 2, 3]));
+      expect(relayInfo.nips, equals(['1', '2', '3']));
       expect(relayInfo.software, equals("relay-software"));
       expect(relayInfo.version, equals("1.0.0"));
       expect(relayInfo.icon, equals("https://example.com/icon.png"));
@@ -39,6 +39,20 @@ void main() {
       final relayInfo = RelayInfo.fromJson(json, "https://example.com");
 
       expect(relayInfo.icon, equals("https://example.com/favicon.ico"));
+    });
+
+    test('supportsNip matches numbered and lettered NIPs', () {
+      final relayInfo = RelayInfo.fromJson({
+        "supported_nips": [1, "11", "7D", "ee"],
+      }, "https://example.com");
+
+      expect(relayInfo.supportsNip('1'), isTrue);
+      expect(relayInfo.supportsNip('01'), isTrue);
+      expect(relayInfo.supportsNip('11'), isTrue);
+      expect(relayInfo.supportsNip('7d'), isTrue);
+      expect(relayInfo.supportsNip('EE'), isTrue);
+      expect(relayInfo.supportsNip('C7'), isFalse);
+      expect(relayInfo.supportsNip('10'), isFalse);
     });
   });
 }

@@ -3,6 +3,78 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-10-09
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.11.0-dev.1`](#ndk---v0110-dev1)
+
+Packages with other changes:
+
+ - [`ndk_objectbox` - `v0.3.1-dev.0`](#ndk_objectbox---v031-dev0)
+ - [`ndk_drift` - `v0.2.1-dev.0`](#ndk_drift---v021-dev0)
+ - [`ndk_flutter` - `v0.10.3-dev.1`](#ndk_flutter---v0103-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.3.1-dev.0`
+ - `ndk_drift` - `v0.2.1-dev.0`
+ - `ndk_flutter` - `v0.10.3-dev.1`
+
+---
+
+#### `ndk` - `v0.11.0-dev.1`
+
+ - **BREAKING** **FIX**(connectivity): support lettered NIP identifiers in RelayInfo.
+
+
+## 2026-10-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.11.0-dev.0`](#ndk---v0110-dev0)
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.10.3-dev.0`](#ndk_flutter---v0103-dev0)
+ - [`ndk_objectbox` - `v0.3.0-dev.0+1`](#ndk_objectbox---v030-dev01)
+ - [`ndk_drift` - `v0.2.0-dev.0+1`](#ndk_drift---v020-dev01)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.3.0-dev.0+1`
+ - `ndk_drift` - `v0.2.0-dev.0+1`
+
+---
+
+#### `ndk` - `v0.11.0-dev.0`
+
+ - **FIX**: leave the app's websocket user agent untouched by default.
+ - **FIX**: trim d-tags in the visibility context read.
+ - **FIX**: clear the paused request timeout when the request is closed.
+ - **FEAT**: add NIP-46 switch_relays to Nip46EventSigner.
+ - **BREAKING** **FEAT**: add AuthHandler to consent before an identity authenticates.
+
+#### `ndk_flutter` - `v0.10.3-dev.0`
+
+ - **REFACTOR**(web): share the NostrCrypto null check between signer and factory.
+ - **PERF**(web): derive public keys with @noble/curves in NdkEventSignerFactory.
+ - **FIX**: clear toasts.
+ - **FEAT**: add NIP-46 switch_relays to Nip46EventSigner.
+
+
 ## 2026-10-02
 
 ### Changes

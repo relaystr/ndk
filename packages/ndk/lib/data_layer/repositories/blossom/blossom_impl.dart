@@ -21,6 +21,22 @@ bool _isSuccessStatus(int statusCode) => statusCode >= 200 && statusCode < 300;
 String _authHeader(Nip01Event event) =>
     "Nostr ${Nip01EventModel.fromEntity(event).toBase64()}";
 
+int? _statusCode(Object error) =>
+    error is HttpRequestException ? error.statusCode : null;
+
+/// the human readable explanation a server may give with an error [BUD-01]
+String? _reason(Object error) =>
+    error is HttpRequestException ? error.headers['x-reason'] : null;
+
+BlobUploadResult _uploadFailure(String serverUrl, Object error) =>
+    BlobUploadResult(
+      serverUrl: serverUrl,
+      success: false,
+      error: error.toString(),
+      statusCode: _statusCode(error),
+      reason: _reason(error),
+    );
+
 /// Whether a server refused for want of an identity, which is an invitation to
 /// try again with one. BUD-01 says 401 and some servers say 403, but a 403 on
 /// a request that already carried an authorization refuses that identity
@@ -184,27 +200,18 @@ class BlossomRepositoryImpl implements BlossomRepository {
               descriptor: BlobDescriptor.fromJson(
                 jsonDecode(progress.response!.body),
               ),
+              statusCode: progress.response!.statusCode,
             );
             results.add(result);
             successfulUpload = result;
             break;
           } else if (progress.isComplete && progress.error != null) {
-            final result = BlobUploadResult(
-              serverUrl: serverUrl,
-              success: false,
-              error: progress.error.toString(),
-            );
-            results.add(result);
+            results.add(_uploadFailure(serverUrl, progress.error!));
           }
         }
       } catch (e) {
         // Handle network exceptions (e.g., host lookup failures)
-        final result = BlobUploadResult(
-          serverUrl: serverUrl,
-          success: false,
-          error: e.toString(),
-        );
-        results.add(result);
+        results.add(_uploadFailure(serverUrl, e));
       }
 
       if (successfulUpload != null) break;
@@ -320,6 +327,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
               descriptor: BlobDescriptor.fromJson(
                 jsonDecode(progress.response!.body),
               ),
+              statusCode: progress.response!.statusCode,
             );
             results.add(result);
             progressSubject.add(
@@ -333,12 +341,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
               ),
             );
           } else if (progress.isComplete && progress.error != null) {
-            final result = BlobUploadResult(
-              serverUrl: serverUrl,
-              success: false,
-              error: progress.error.toString(),
-            );
-            results.add(result);
+            results.add(_uploadFailure(serverUrl, progress.error!));
             progressSubject.add(
               BlobUploadProgress(
                 currentServer: serverUrl,
@@ -353,12 +356,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
         }
       } catch (e) {
         // Handle network exceptions (e.g., host lookup failures)
-        final result = BlobUploadResult(
-          serverUrl: serverUrl,
-          success: false,
-          error: e.toString(),
-        );
-        results.add(result);
+        results.add(_uploadFailure(serverUrl, e));
         progressSubject.add(
           BlobUploadProgress(
             currentServer: serverUrl,
@@ -428,6 +426,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
               descriptor: BlobDescriptor.fromJson(
                 jsonDecode(progress.response!.body),
               ),
+              statusCode: progress.response!.statusCode,
             );
             results.add(result);
 
@@ -442,20 +441,12 @@ class BlossomRepositoryImpl implements BlossomRepository {
             );
             return;
           } else if (progress.isComplete && progress.error != null) {
-            results.add(
-              BlobUploadResult(
-                serverUrl: url,
-                success: false,
-                error: progress.error.toString(),
-              ),
-            );
+            results.add(_uploadFailure(url, progress.error!));
           }
         }
       } catch (e) {
         // Handle network exceptions (e.g., host lookup failures)
-        results.add(
-          BlobUploadResult(serverUrl: url, success: false, error: e.toString()),
-        );
+        results.add(_uploadFailure(url, e));
       }
     }
 
@@ -515,6 +506,64 @@ class BlossomRepositoryImpl implements BlossomRepository {
     }
   }
 
+  @override
+  Future<List<BlobUploadCheck>> checkUpload({
+    required String sha256,
+    required int contentLength,
+    required List<String> serverUrls,
+    required BlossomAuthorization authorization,
+    String? contentType,
+    bool mediaOptimisation = false,
+  }) => Future.wait(
+    serverUrls.map(
+      (serverUrl) => _checkUploadOnServer(
+        serverUrl: serverUrl,
+        sha256: sha256,
+        contentLength: contentLength,
+        authorization: authorization,
+        contentType: contentType,
+        mediaOptimisation: mediaOptimisation,
+      ),
+    ),
+  );
+
+  Future<BlobUploadCheck> _checkUploadOnServer({
+    required String serverUrl,
+    required String sha256,
+    required int contentLength,
+    required BlossomAuthorization authorization,
+    String? contentType,
+    bool mediaOptimisation = false,
+  }) async {
+    final endpoint = mediaOptimisation ? 'media' : 'upload';
+    try {
+      final response = await _withAuthRetry(
+        authorization,
+        serverUrl,
+        (authEvent) => client.head(
+          url: Uri.parse('$serverUrl/$endpoint'),
+          headers: {
+            'X-SHA-256': sha256,
+            'X-Content-Length': '$contentLength',
+            'X-Content-Type': ?contentType,
+            if (authEvent != null) 'Authorization': _authHeader(authEvent),
+          },
+        ),
+      );
+      return BlobUploadCheck(
+        serverUrl: serverUrl,
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return BlobUploadCheck(
+        serverUrl: serverUrl,
+        statusCode: _statusCode(e),
+        reason: _reason(e),
+        error: e.toString(),
+      );
+    }
+  }
+
   /// Mirror a file from one server to another, based on the file URL
   @override
   Future<BlobUploadResult> mirrorToServer({
@@ -553,13 +602,10 @@ class BlossomRepositoryImpl implements BlossomRepository {
         serverUrl: serverUrl,
         success: true,
         descriptor: BlobDescriptor.fromJson(jsonDecode(response.body)),
+        statusCode: response.statusCode,
       );
     } catch (e) {
-      return BlobUploadResult(
-        serverUrl: serverUrl,
-        success: false,
-        error: e.toString(),
-      );
+      return _uploadFailure(serverUrl, e);
     }
   }
 

@@ -4,7 +4,7 @@ import '../../../../config/broadcast_defaults.dart';
 import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../entities/connection_source.dart';
 import '../../../entities/nip_01_event.dart';
-import '../../../entities/auth_policy.dart';
+import '../../../entities/broadcast_state.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../../repositories/cache_manager.dart';
 import '../../relay_manager.dart';
@@ -20,7 +20,7 @@ class RelayJitBroadcastOtherReadStrategy {
     required CacheManager cacheManager,
     required RelayManager relayManager,
     required List<String> pubkeysOfInbox,
-    AuthPolicy? auth,
+    required BroadcastState broadcastState,
   }) async {
     final nip65Data = await UserRelayLists.getUserRelayListCacheLatest(
       pubkeys: pubkeysOfInbox,
@@ -63,6 +63,7 @@ class RelayJitBroadcastOtherReadStrategy {
     Future<void> sendToUrl(String relayUrl) async {
       // register relay broadcast
       relayManager.registerRelayBroadcast(
+        broadcastState: broadcastState,
         eventToPublish: eventToPublish,
         relayUrl: relayUrl,
       );
@@ -70,14 +71,13 @@ class RelayJitBroadcastOtherReadStrategy {
       try {
         final relay = await relayManager.connectionForBroadcast(
           relayUrl,
-          auth,
+          broadcastState.auth,
           connectionSource: ConnectionSource.broadcastOther,
-          pausing:
-              relayManager.globalState.inFlightBroadcasts[eventToPublish.id],
+          pausing: broadcastState,
         );
         if (relay == null) {
           relayManager.failBroadcast(
-            eventToPublish.id,
+            broadcastState,
             relayUrl,
             "no connection could carry this broadcast",
           );
@@ -86,7 +86,7 @@ class RelayJitBroadcastOtherReadStrategy {
         sendToRelay(relay: relay);
       } catch (e) {
         relayManager.failBroadcast(
-          eventToPublish.id,
+          broadcastState,
           relayUrl,
           "broadcast error: $e",
         );
