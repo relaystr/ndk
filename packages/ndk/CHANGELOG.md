@@ -1,3 +1,11 @@
+## 0.11.0-dev.2
+
+> Note: This release has breaking changes.
+
+ - **FIX**(lists): return private relays from Nip51List.privateRelays.
+ - **FEAT**(blossom): report upload refusals and add BUD-06 checkUpload.
+ - **BREAKING** **FIX**(broadcast): keep concurrent broadcasts of the same event apart.
+
 ## 0.11.0-dev.1
 
 > Note: This release has breaking changes.
