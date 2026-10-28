@@ -75,6 +75,14 @@ void main() {
     verify(mockWebsocketDS.isOpen()).called(1);
   });
 
+  test('isConnecting should return WebsocketDS isConnecting result', () {
+    when(mockWebsocketDS.isConnecting()).thenReturn(true);
+
+    expect(transport.isConnecting(), isTrue);
+
+    verify(mockWebsocketDS.isConnecting()).called(1);
+  });
+
   test('closeCode should return WebsocketDS closeCode', () {
     when(mockWebsocketDS.closeCode()).thenReturn(1000);
 
