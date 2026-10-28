@@ -70,11 +70,16 @@ reconciliation. Rather than fall back to the anonymous one, which is what
 
 ### Relay doesn't support NIP-77
 
+A relay that ignores `NEG-OPEN` only fails with `Nip77TimeoutException` once
+`timeout` runs out (30 s by default). Pass a shorter `timeout` if that wait is
+too long:
+
 ```dart
 try {
   final response = ndk.nip77.reconcile(
     relayUrl: 'wss://relay.example.com',
     filter: filter,
+    timeout: const Duration(seconds: 10),
   );
   await response.future;
 } on Nip77NotSupportedException catch (e) {

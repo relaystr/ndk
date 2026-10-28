@@ -49,9 +49,19 @@ class UploadProgress {
 /// Data source for making http requests
 class HttpRequestDS {
   final http.Client _client;
+  final Set<void Function()> _pendingAborts = {};
 
   /// create new instance of HttpRequestDS
   HttpRequestDS(this._client);
+
+  /// aborts the [jsonRequest] calls still in flight that set a timeout or
+  /// disable redirects. The client stays open: the app may share it through
+  /// `http.runWithClient`
+  void abortPending() {
+    for (final abort in _pendingAborts) {
+      abort();
+    }
+  }
 
   /// make a get request to the given url
   Future<Map<String, dynamic>> jsonRequest(
@@ -66,16 +76,22 @@ class HttpRequestDS {
     if (followRedirects && timeout == null) {
       response = await _client.get(uri, headers: headers);
     } else {
-      final abort = Completer<void>();
-      final timer = timeout == null ? null : Timer(timeout, abort.complete);
+      final trigger = Completer<void>();
+      void abort() {
+        if (!trigger.isCompleted) trigger.complete();
+      }
+
+      final timer = timeout == null ? null : Timer(timeout, abort);
+      _pendingAborts.add(abort);
       final request =
-          http.AbortableRequest('GET', uri, abortTrigger: abort.future)
+          http.AbortableRequest('GET', uri, abortTrigger: trigger.future)
             ..headers.addAll(headers)
             ..followRedirects = followRedirects;
       try {
         response = await http.Response.fromStream(await _client.send(request));
       } finally {
         timer?.cancel();
+        _pendingAborts.remove(abort);
       }
     }
 

@@ -69,7 +69,6 @@ class _Nip77Internal {
     required Nip77State state,
     List<String>? localIds,
   }) async {
-    final cleanUrl = state.connectionKey.url;
     try {
       final connectivity = await _openConnection(state);
       if (state.isCompleted) {
@@ -79,14 +78,6 @@ class _Nip77Internal {
         state.completeWithError(
           Exception('Failed to connect to relay: ${state.connectionKey}'),
         );
-        _globalState.inFlightNegotiations.remove(subscriptionId);
-        return;
-      }
-
-      // Check if relay supports NIP-77
-      if (connectivity.relayInfo != null &&
-          !connectivity.relayInfo!.supportsNip('77')) {
-        state.completeWithError(Nip77NotSupportedException(cleanUrl));
         _globalState.inFlightNegotiations.remove(subscriptionId);
         return;
       }
