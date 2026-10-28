@@ -103,6 +103,7 @@ void main() {
         ndk = await _createNdk(
           tempDir.path,
           bootstrapRelays: [relayOnline.url, relayOffline.url],
+          pendingDeliveryRetryInterval: const Duration(seconds: 1),
         );
 
         await relayOnline.startServer();
