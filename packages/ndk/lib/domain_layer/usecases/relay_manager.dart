@@ -866,7 +866,8 @@ class RelayManager<T> {
       if (request == null ||
           request.retryingAuth ||
           request.receivedEOSE ||
-          request.receivedClosed) {
+          request.receivedClosed ||
+          request.notSent) {
         continue;
       }
       request.connectionGone = true;
@@ -1554,6 +1555,22 @@ class RelayManager<T> {
     _checkNetworkClose(state);
   }
 
+  /// Gives up on sending [state] on [key] because of [reason], tracking the
+  /// request there first if it is not yet. The relay keeps its place in the
+  /// outcomes as notSent and stops holding the request open, so a request none
+  /// of its relays could carry ends right away.
+  void failRelayRequest(
+    RequestState state,
+    RelayConnectionKey key,
+    List<Filter> filters,
+    String reason,
+  ) {
+    if (!isStillInFlight(state)) return;
+    state.addRequest(key, filters);
+    state.requests[key]!.markNotSent(reason);
+    _checkNetworkClose(state);
+  }
+
   /// Handles CLOSED auth-required.
   ///
   /// A connection is bound to at most one identity, and that binding never
@@ -1892,13 +1909,16 @@ class RelayManager<T> {
           !element.retryingAuth &&
           (element.receivedEOSE ||
               element.receivedClosed ||
+              element.notSent ||
               myNotConnectedRelays.contains(element.key)),
     );
 
     if (didAllRelaysFinish) {
       for (final key in myNotConnectedRelays) {
         final request = state.requests[key]!;
-        if (!request.receivedEOSE && !request.receivedClosed) {
+        if (!request.receivedEOSE &&
+            !request.receivedClosed &&
+            !request.notSent) {
           request.connectionGone = true;
         }
       }
