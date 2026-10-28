@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793185068344,
+  "lastUpdate": 1793192046120,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2544,6 +2544,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1639946,
             "range": "1632276-1654172",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "de6f0db4552c938389b1f9a693f075fb5ef5a26d",
+          "message": "Merge pull request #929 from relaystr/release-40675788301\n\nchore(prerelease): publish ndk_drift 0.2.1-dev.1, ndk 0.11.0-dev.2, ndk_flutter 0.10.3-dev.2, ndk_objectbox 0.3.1-dev.1, ndk_sqlite3 0.1.1-dev.0",
+          "timestamp": "2026-10-28T13:52:24+01:00",
+          "tree_id": "a9a14d736a346a220245a85163ed6e06454d2dc1",
+          "url": "https://github.com/relaystr/ndk/commit/de6f0db4552c938389b1f9a693f075fb5ef5a26d"
+        },
+        "date": 1793192043496,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 27127.2,
+            "range": "26701-34767",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 793146,
+            "range": "753168-816788",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
