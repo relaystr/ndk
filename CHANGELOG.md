@@ -3,6 +3,67 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-10-28
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.11.0-dev.2`](#ndk---v0110-dev2)
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.10.3-dev.2`](#ndk_flutter---v0103-dev2)
+ - [`ndk_objectbox` - `v0.3.1-dev.1`](#ndk_objectbox---v031-dev1)
+ - [`ndk_sqlite3` - `v0.1.1-dev.0`](#ndk_sqlite3---v011-dev0)
+ - [`ndk_drift` - `v0.2.1-dev.1`](#ndk_drift---v021-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_drift` - `v0.2.1-dev.1`
+
+---
+
+#### `ndk` - `v0.11.0-dev.2`
+
+ - **FIX**(nip49): bound decrypt logN and reject unknown key security bytes.
+ - **FIX**(relay-manager): give callers that join an in-flight connect its failure reason.
+ - **FIX**: abort pending HTTP requests on destroy instead of closing the shared client.
+ - **FIX**(transport): report why a connection failed instead of a timeout.
+ - **FIX**(nip65): merge the markers of a relay listed more than once.
+ - **FIX**: apply NdkConfig.logLevel before the use cases are built.
+ - **FIX**(nip49): zero the derived key and scrypt buffers after use.
+ - **FIX**(lists): return private relays from Nip51List.privateRelays.
+ - **FIX**: objectbox unmutiable tag keys.
+ - **FIX**: store filter tags bare.
+ - **FIX**: close the HTTP client when Ndk is destroyed.
+ - **FEAT**(blossom): report upload refusals and add BUD-06 checkUpload.
+ - **FEAT**(connectivity): cache relay info and expose getRelayInfo.
+ - **FEAT**: add NIP-49 private key encryption and sample app page.
+ - **BREAKING** **REFACTOR**: fetch relay NIP-11 info only on demand.
+ - **BREAKING** **FIX**(broadcast): keep concurrent broadcasts of the same event apart.
+ - **BREAKING** **FIX**(nip77): replace the overall deadline with open and idle timeouts.
+
+#### `ndk_flutter` - `v0.10.3-dev.2`
+
+ - **FIX**(ndk_flutter): hide signer app login button on web.
+
+#### `ndk_objectbox` - `v0.3.1-dev.1`
+
+ - **FIX**: objectbox case sensitive keys.
+
+#### `ndk_sqlite3` - `v0.1.1-dev.0`
+
+ - **REFACTOR**(sqlite3): move schema into a migrations folder.
+ - **PERF**(sqlite3): let tag filters drive single-kind queries.
+ - **FIX**(sqlite3): wait for locks held by other connections.
+ - **FEAT**(sqlite3): add ndk_sqlite3, a pure Dart SQLite cache manager.
+
+
 ## 2026-10-09
 
 ### Changes
