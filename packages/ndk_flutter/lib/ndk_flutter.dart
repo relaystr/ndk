@@ -12,3 +12,4 @@ export 'signers/ndk_event_signer.dart';
 export 'signers/nip07_event_signer.dart';
 export 'utils/nostr_kinds.dart';
 export 'utils/string_color.dart';
+export 'data_layer/data_sources/passkey_provider.dart';

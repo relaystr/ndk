@@ -1,3 +1,7 @@
+## Unreleased
+
+- Create and reopen Nostr identities with platform passkeys.
+
 ## 0.11.0-dev.1
 
 > Note: This release has breaking changes.

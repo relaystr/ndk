@@ -72,6 +72,31 @@ if (relays != null) {
 }
 ```
 
+### Passkeys
+
+`ndk_flutter` provides `PlatformPasskeyProvider` for WebAuthn PRF. The key formats below follow the [passkey-held keys proposal](https://github.com/nostr-protocol/nips/pull/2519), which is a draft, not an adopted NIP. No Nostr WoT service or account is required.
+
+:::code source="../../packages/ndk_flutter/example/passkey_account_example.dart" language="dart" title="" :::
+
+| Use case | API / format |
+|---|---|
+| New identity | `createPasskey`, tagged derived parameter `01` by default |
+| LaWallet derivation | `createPasskey(parameterSet: 2)`, tagged derived parameter `02` |
+| Keep an existing identity | `createStoredPasskey`, encrypted type `01` key record |
+| Recover a tagged credential | `loginWithPasskey`; stored keys also require `resolveRecords` |
+| Existing untagged LaWallet account | Explicit `PasskeyAccount` with `mode: 'derived'`, `parameterSet: 2`, original RP, credential ID and expected public key |
+| Existing Nosskey direct account | Explicit original metadata with `mode: 'legacyNosskeyDirect'`; never inferred from an unknown credential |
+
+Store public metadata with `PasskeyAccount.toJson()` and restore it with `fromJson()`. Passing it as `account` enforces the original identity. Without metadata, login classifies the returned handle and accepts supported tagged formats only. Unknown credentials, unknown parameter sets and legacy stored handles are rejected without guessing another identity. Nosskey wrapped records, keytr legacy records and the optional vault companion are not decoded by this integration; use an explicit compatible reader and the existing `loginExternalSigner` API, or connect through a supported signer integration (NIP-46 where offered).
+
+For stored keys, supply `existingCredentialIds` to collect valid signed kind `31778` records for the author and locally known credential IDs before registration, and `saveRecord` to persist the encrypted bytes. Creation requires `hasVerifiedRecoveryCopy: true`: the host must first verify independent recovery of every key and vault item it intends to preserve, because registration can replace a same-handle credential. Login's `resolveRecords` supplies user-selected files or validated relay records; the API documents the required signature, author, tag and encoding checks. Use `onRecordFailure` to report rejected candidates. Persistence must succeed before the account is installed. The adapters do not manage `largeBlob` or automatically publish records.
+
+Passkeys require PRF support and user verification. Use HTTPS in browsers and configure the RP domain's [native app associations](https://pub.dev/packages/passkeys#setup). Native Apple PRF requires iOS 18+/macOS 15+; Android and browser support depends on the credential provider. A platform passkey or compatible security key may be selected. Related-origin authorization remains the host's responsibility; format compatibility does not grant access to another RP.
+
+!!!warning Recovery
+Use the original RP and credential. Synchronization belongs to the passkey provider and is not guaranteed; a stored account also needs its encrypted record. Cancellation or failed recovery never creates a replacement identity. Signing keys remain in the session and should not be persisted as private-key accounts.
+!!!
+
 ### Reacting to changes
 
 ```dart watch the logged in account
