@@ -1,7 +1,6 @@
 ```dart
 import 'package:ndk/ndk.dart';
 import 'package:nip01/nip01.dart';
-import 'package:nip49/nip49.dart';
 final cacheManager = MemCacheManager();
 cacheManager.searchMetadatas("query", 10);
 final ndk = Ndk(NdkConfig(eventVerifier: RustEventVerifier(), cache: cacheManager));
