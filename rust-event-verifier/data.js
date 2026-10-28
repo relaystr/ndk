@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793182971007,
+  "lastUpdate": 1793184622530,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2468,6 +2468,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 803648,
             "range": "787952-832912",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "58687994+1-leo@users.noreply.github.com",
+            "name": "Leo",
+            "username": "1-leo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b4c5f64b05430b29fa044a432f5f78f8af85f25c",
+          "message": "Merge pull request #908 from relaystr/fix/broadcast-signer-before-inflight\n\nfix(broadcast): verify signer before marking event in flight",
+          "timestamp": "2026-10-28T11:47:22+01:00",
+          "tree_id": "2df40212169d98b3a20deba15760a42eabe11959",
+          "url": "https://github.com/relaystr/ndk/commit/b4c5f64b05430b29fa044a432f5f78f8af85f25c"
+        },
+        "date": 1793184620343,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 39225.8,
+            "range": "39080-41587",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1400224,
+            "range": "1397496-1407164",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
