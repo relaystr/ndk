@@ -923,8 +923,8 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
         .into(_db.nip05s)
         .insertOnConflictUpdate(
           Nip05sCompanion.insert(
-            pubKey: nip05.pubKey,
-            nip05: nip05.nip05,
+            pubKey: Value(nip05.pubKey),
+            nip05: nip05.identifier,
             valid: nip05.valid,
             networkFetchTime: Value(nip05.networkFetchTime),
             relaysJson: jsonEncode(nip05.relays ?? []),
@@ -940,8 +940,8 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
         nip05s
             .map(
               (nip05) => Nip05sCompanion.insert(
-                pubKey: nip05.pubKey,
-                nip05: nip05.nip05,
+                pubKey: Value(nip05.pubKey),
+                nip05: nip05.identifier,
                 valid: nip05.valid,
                 networkFetchTime: Value(nip05.networkFetchTime),
                 relaysJson: jsonEncode(nip05.relays ?? []),
@@ -953,37 +953,29 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   }
 
   @override
-  Future<Nip05?> loadNip05({String? pubKey, String? identifier}) async {
-    if (pubKey != null) {
-      final row = await (_db.select(
-        _db.nip05s,
-      )..where((t) => t.pubKey.equals(pubKey))).getSingleOrNull();
-      if (row == null) return null;
-      return _nip05FromRow(row);
-    }
-    if (identifier != null) {
-      final row = await (_db.select(
-        _db.nip05s,
-      )..where((t) => t.nip05.equals(identifier))).getSingleOrNull();
-      if (row == null) return null;
-      return _nip05FromRow(row);
-    }
-    return null;
+  Future<Nip05?> loadNip05(String identifier) async {
+    final row = await (_db.select(
+      _db.nip05s,
+    )..where((t) => t.nip05.equals(identifier))).getSingleOrNull();
+    if (row == null) return null;
+    return _nip05FromRow(row);
   }
 
   @override
-  Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
+  Future<List<Nip05?>> loadNip05s(List<String> identifiers) async {
     final rows = await (_db.select(
       _db.nip05s,
-    )..where((t) => t.pubKey.isIn(pubKeys))).get();
+    )..where((t) => t.nip05.isIn(identifiers))).get();
 
-    final map = {for (var row in rows) row.pubKey: _nip05FromRow(row)};
-    return pubKeys.map((pk) => map[pk]).toList();
+    final map = {for (var row in rows) row.nip05: _nip05FromRow(row)};
+    return identifiers.map((identifier) => map[identifier]).toList();
   }
 
   @override
-  Future<void> removeNip05(String pubKey) async {
-    await (_db.delete(_db.nip05s)..where((t) => t.pubKey.equals(pubKey))).go();
+  Future<void> removeNip05(String identifier) async {
+    await (_db.delete(
+      _db.nip05s,
+    )..where((t) => t.nip05.equals(identifier))).go();
   }
 
   @override
@@ -994,7 +986,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Nip05 _nip05FromRow(DbNip05 row) {
     return Nip05(
       pubKey: row.pubKey,
-      nip05: row.nip05,
+      identifier: row.nip05,
       valid: row.valid,
       networkFetchTime: row.networkFetchTime,
       relays: (jsonDecode(row.relaysJson) as List)

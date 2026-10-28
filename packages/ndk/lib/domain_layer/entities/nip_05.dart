@@ -1,20 +1,21 @@
 /// domain identifier entity
 class Nip05 {
-  String pubKey;
-  String nip05;
+  /// null when [identifier] does not exist
+  String? pubKey;
+  String identifier;
 
   bool valid;
   int? networkFetchTime;
   List<String>? relays;
 
   /// creates a new [Nip05] instance
-  /// [nip05] the nip05 identifier
+  /// [identifier] the nip05 identifier
   /// [valid] whether the nip05 is valid
   /// [networkFetchTime] the last time the nip05 was checked
   /// [relays] the relays associated with the nip05
   Nip05({
     required this.pubKey,
-    required this.nip05,
+    required this.identifier,
     this.valid = false,
     this.networkFetchTime,
     this.relays = const [],
@@ -35,14 +36,14 @@ class Nip05 {
 
   Nip05 copyWith({
     String? pubKey,
-    String? nip05,
+    String? identifier,
     bool? valid,
     int? networkFetchTime,
     List<String>? relays,
   }) {
     return Nip05(
       pubKey: pubKey ?? this.pubKey,
-      nip05: nip05 ?? this.nip05,
+      identifier: identifier ?? this.identifier,
       valid: valid ?? this.valid,
       networkFetchTime: networkFetchTime ?? this.networkFetchTime,
       relays: relays ?? this.relays,

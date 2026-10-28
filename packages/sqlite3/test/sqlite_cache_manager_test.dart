@@ -6,6 +6,7 @@ import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_cache_manager_test_suite/ndk_cache_manager_test_suite.dart';
 import 'package:ndk_sqlite3/ndk_sqlite3.dart';
+import 'package:ndk_sqlite3/src/migrations/v1.dart';
 import 'package:ndk_sqlite3/src/sql.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
@@ -159,6 +160,26 @@ void main() {
     );
 
     expect(restored?.toJson(), original.toJson());
+    await cacheManager.close();
+  });
+
+  test('v1 -> v2 rebuilds nip05s keyed by identifier', () async {
+    final db = sqlite3.openInMemory()
+      ..execute(v1)
+      ..execute("INSERT INTO nip05s VALUES ('pubkey', 'alice@a.com', '{}')")
+      ..userVersion = 1;
+    final cacheManager = SqliteCacheManager(db);
+
+    expect(await cacheManager.loadNip05('alice@a.com'), isNull);
+
+    for (final identifier in ['alice@a.com', 'alice@b.com']) {
+      await cacheManager.saveNip05(
+        Nip05(pubKey: 'pubkey', identifier: identifier, valid: true),
+      );
+    }
+
+    expect((await cacheManager.loadNip05('alice@a.com'))?.pubKey, 'pubkey');
+    expect((await cacheManager.loadNip05('alice@b.com'))?.pubKey, 'pubkey');
     await cacheManager.close();
   });
 

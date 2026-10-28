@@ -453,37 +453,45 @@ void main() {
       test('saveNip05 and loadNip05', () async {
         final nip05 = Nip05(
           pubKey: 'test_pubkey',
-          nip05: 'test@example.com',
+          identifier: 'test@example.com',
           valid: true,
           relays: ['wss://relay1.com', 'wss://relay2.com'],
         );
 
         await cacheManager.saveNip05(nip05);
-        final loaded = await cacheManager.loadNip05(pubKey: 'test_pubkey');
+        final loaded = await cacheManager.loadNip05('test@example.com');
 
         expect(loaded, isNotNull);
         expect(loaded!.pubKey, equals(nip05.pubKey));
-        expect(loaded.nip05, equals(nip05.nip05));
+        expect(loaded.identifier, equals(nip05.identifier));
         expect(loaded.valid, equals(nip05.valid));
         expect(loaded.relays, equals(nip05.relays));
       });
 
       test('loadNip05s batch operation', () async {
         final nip05s = [
-          Nip05(pubKey: 'pubkey1', nip05: 'user1@example.com', valid: true),
-          Nip05(pubKey: 'pubkey2', nip05: 'user2@example.com', valid: false),
+          Nip05(
+            pubKey: 'pubkey1',
+            identifier: 'user1@example.com',
+            valid: true,
+          ),
+          Nip05(
+            pubKey: 'pubkey2',
+            identifier: 'user2@example.com',
+            valid: false,
+          ),
         ];
 
         await cacheManager.saveNip05s(nip05s);
         final loaded = await cacheManager.loadNip05s([
-          'pubkey1',
-          'pubkey2',
-          'nonexistent',
+          'user1@example.com',
+          'user2@example.com',
+          'nonexistent@example.com',
         ]);
 
         expect(loaded.length, equals(3));
-        expect(loaded[0]?.nip05, equals('user1@example.com'));
-        expect(loaded[1]?.nip05, equals('user2@example.com'));
+        expect(loaded[0]?.identifier, equals('user1@example.com'));
+        expect(loaded[1]?.identifier, equals('user2@example.com'));
         expect(loaded[2], isNull);
       });
     });
@@ -600,7 +608,7 @@ void main() {
         );
         final nip05 = Nip05(
           pubKey: 'test_pubkey',
-          nip05: 'test@example.com',
+          identifier: 'test@example.com',
           valid: true,
         );
         final userRelayList = UserRelayList(
@@ -633,8 +641,8 @@ void main() {
         await cacheManager.removeContactList('test_pubkey');
         expect(await cacheManager.loadContactList('test_pubkey'), isNull);
 
-        await cacheManager.removeNip05('test_pubkey');
-        expect(await cacheManager.loadNip05(pubKey: 'test_pubkey'), isNull);
+        await cacheManager.removeNip05('test@example.com');
+        expect(await cacheManager.loadNip05('test@example.com'), isNull);
 
         await cacheManager.removeUserRelayList('test_pubkey');
         expect(await cacheManager.loadUserRelayList('test_pubkey'), isNull);
@@ -656,7 +664,7 @@ void main() {
 
         await cacheManager.saveNip05(nip05);
         await cacheManager.removeAllNip05s();
-        expect(await cacheManager.loadNip05(pubKey: 'test_pubkey'), isNull);
+        expect(await cacheManager.loadNip05('test@example.com'), isNull);
 
         await cacheManager.saveUserRelayList(userRelayList);
         await cacheManager.removeAllUserRelayLists();

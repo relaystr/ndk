@@ -18,42 +18,6 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
   });
 
   @override
-  Future<Nip05?> requestNip05(String nip05, String pubkey) async {
-    final identifier = _parseIdentifier(nip05);
-    if (identifier == null) {
-      return null;
-    }
-
-    // NIP-05: fetchers MUST ignore HTTP redirects
-    final json = await httpDS.jsonRequest(
-      identifier.url,
-      followRedirects: false,
-      timeout: timeout,
-    );
-
-    Map names = json["names"];
-
-    Map relays = json["relays"] ?? {};
-
-    List<String> pRelays = [];
-    if (relays[pubkey] != null) {
-      pRelays = List<String>.from(relays[pubkey]);
-    }
-
-    bool valid = names[identifier.name] == pubkey;
-
-    final result = Nip05Model(
-      pubKey: pubkey,
-      nip05: nip05,
-      valid: valid,
-      networkFetchTime: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      relays: pRelays,
-    );
-
-    return result;
-  }
-
-  @override
   Future<Nip05?> fetchNip05(String nip05) async {
     final identifier = _parseIdentifier(nip05);
     if (identifier == null) {
@@ -90,7 +54,7 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
 
     return Nip05Model(
       pubKey: pubkey,
-      nip05: nip05,
+      identifier: nip05,
       valid: true,
       networkFetchTime: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       relays: pRelays,

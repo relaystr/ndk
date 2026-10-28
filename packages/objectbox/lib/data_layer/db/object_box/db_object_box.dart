@@ -755,21 +755,11 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   }
 
   @override
-  Future<Nip05?> loadNip05({String? pubKey, String? identifier}) async {
+  Future<Nip05?> loadNip05(String identifier) async {
     await dbRdy;
     final box = _objectBox.store.box<DbNip05>();
-
-    Condition<DbNip05>? condition;
-    if (pubKey != null) {
-      condition = DbNip05_.pubKey.equals(pubKey);
-    } else if (identifier != null) {
-      condition = DbNip05_.nip05.equals(identifier);
-    } else {
-      return null;
-    }
-
     final existing = box
-        .query(condition)
+        .query(DbNip05_.nip05.equals(identifier))
         .order(DbNip05_.networkFetchTime, flags: Order.descending)
         .build()
         .findFirst();
@@ -780,11 +770,11 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   }
 
   @override
-  Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
+  Future<List<Nip05?>> loadNip05s(List<String> identifiers) async {
     await dbRdy;
     final box = _objectBox.store.box<DbNip05>();
     final existing = box
-        .query(DbNip05_.pubKey.oneOf(pubKeys))
+        .query(DbNip05_.nip05.oneOf(identifiers))
         .order(DbNip05_.networkFetchTime, flags: Order.descending)
         .build()
         .find();
@@ -792,14 +782,14 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     // Create a map for quick lookup
     final nip05Map = <String, Nip05>{};
     for (final dbNip05 in existing) {
-      // Only keep the first (most recent) entry per pubKey
-      if (!nip05Map.containsKey(dbNip05.pubKey)) {
-        nip05Map[dbNip05.pubKey] = dbNip05.toNdk();
+      // Only keep the first (most recent) entry per identifier
+      if (!nip05Map.containsKey(dbNip05.nip05)) {
+        nip05Map[dbNip05.nip05] = dbNip05.toNdk();
       }
     }
 
     // Return list in the same order as input, with null for not found
-    return pubKeys.map((pubKey) => nip05Map[pubKey]).toList();
+    return identifiers.map((identifier) => nip05Map[identifier]).toList();
   }
 
   @override
@@ -1187,10 +1177,13 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   }
 
   @override
-  Future<void> removeNip05(String pubKey) async {
+  Future<void> removeNip05(String identifier) async {
     await dbRdy;
     final box = _objectBox.store.box<DbNip05>();
-    final existing = box.query(DbNip05_.pubKey.equals(pubKey)).build().find();
+    final existing = box
+        .query(DbNip05_.nip05.equals(identifier))
+        .build()
+        .find();
     if (existing.isNotEmpty) {
       box.removeMany(existing.map((e) => e.dbId).toList());
     }
@@ -1224,19 +1217,10 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   Future<void> saveNip05(Nip05 nip05) async {
     await dbRdy;
     final box = _objectBox.store.box<DbNip05>();
-    final existing = box
-        .query(DbNip05_.pubKey.equals(nip05.pubKey))
-        .order(DbNip05_.networkFetchTime, flags: Order.descending)
-        .build()
-        .find();
-    if (existing.length > 1) {
-      box.removeMany(existing.map((e) => e.dbId).toList());
-    }
-    if (existing.isNotEmpty &&
-        nip05.networkFetchTime! < existing[0].networkFetchTime!) {
-      return;
-    }
-    box.put(DbNip05.fromNdk(nip05));
+    _objectBox.store.runInTransaction(TxMode.write, () {
+      box.query(DbNip05_.nip05.equals(nip05.identifier)).build().remove();
+      box.put(DbNip05.fromNdk(nip05));
+    });
   }
 
   @override

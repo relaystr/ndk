@@ -3,6 +3,7 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i7;
 import 'package:ndk/domain_layer/entities/contact_list.dart' as _i14;
@@ -835,23 +836,12 @@ class MockNip05 extends _i1.Mock implements _i5.Nip05 {
   }
 
   @override
-  String get pubKey =>
+  String get identifier =>
       (super.noSuchMethod(
-            Invocation.getter(#pubKey),
+            Invocation.getter(#identifier),
             returnValue: _i7.dummyValue<String>(
               this,
-              Invocation.getter(#pubKey),
-            ),
-          )
-          as String);
-
-  @override
-  String get nip05 =>
-      (super.noSuchMethod(
-            Invocation.getter(#nip05),
-            returnValue: _i7.dummyValue<String>(
-              this,
-              Invocation.getter(#nip05),
+              Invocation.getter(#identifier),
             ),
           )
           as String);
@@ -868,8 +858,8 @@ class MockNip05 extends _i1.Mock implements _i5.Nip05 {
   );
 
   @override
-  set nip05(String? value) => super.noSuchMethod(
-    Invocation.setter(#nip05, value),
+  set identifier(String? value) => super.noSuchMethod(
+    Invocation.setter(#identifier, value),
     returnValueForMissingStub: null,
   );
 
@@ -894,7 +884,7 @@ class MockNip05 extends _i1.Mock implements _i5.Nip05 {
   @override
   _i5.Nip05 copyWith({
     String? pubKey,
-    String? nip05,
+    String? identifier,
     bool? valid,
     int? networkFetchTime,
     List<String>? relays,
@@ -902,7 +892,7 @@ class MockNip05 extends _i1.Mock implements _i5.Nip05 {
       (super.noSuchMethod(
             Invocation.method(#copyWith, [], {
               #pubKey: pubKey,
-              #nip05: nip05,
+              #identifier: identifier,
               #valid: valid,
               #networkFetchTime: networkFetchTime,
               #relays: relays,
@@ -911,7 +901,7 @@ class MockNip05 extends _i1.Mock implements _i5.Nip05 {
               this,
               Invocation.method(#copyWith, [], {
                 #pubKey: pubKey,
-                #nip05: nip05,
+                #identifier: identifier,
                 #valid: valid,
                 #networkFetchTime: networkFetchTime,
                 #relays: relays,

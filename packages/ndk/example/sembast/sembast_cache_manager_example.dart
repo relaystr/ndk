@@ -67,7 +67,7 @@ Future<void> main() async {
     // Create sample NIP-05 verification
     final nip05 = Nip05(
       pubKey: 'npub1abc123def456ghi789jkl012mno345pqr678stu901vwx234yz567890',
-      nip05: 'alice@example.com',
+      identifier: 'alice@example.com',
       valid: true,
       relays: ['wss://relay1.example.com', 'wss://relay2.example.com'],
     );
@@ -106,9 +106,9 @@ Future<void> main() async {
       '✅ Contact list loaded: ${loadedContactList?.contacts.length} contacts',
     );
 
-    final loadedNip05 = await cacheManager.loadNip05(pubKey: nip05.pubKey);
+    final loadedNip05 = await cacheManager.loadNip05(nip05.identifier);
     print(
-      '✅ NIP-05 loaded: ${loadedNip05?.nip05} (valid: ${loadedNip05?.valid})\n',
+      '✅ NIP-05 loaded: ${loadedNip05?.identifier} (valid: ${loadedNip05?.valid})\n',
     );
 
     // 7. Demonstrate search functionality

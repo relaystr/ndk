@@ -26,7 +26,7 @@ void _runClearAllTests(CacheManager Function() getCacheManager) {
 
     final nip05 = Nip05(
       pubKey: 'clearall_nip05_pubkey',
-      nip05: 'test@example.com',
+      identifier: 'test@example.com',
       valid: true,
     );
     await cacheManager.saveNip05(nip05);
@@ -80,10 +80,7 @@ void _runClearAllTests(CacheManager Function() getCacheManager) {
       await cacheManager.loadContactList('clearall_contact_pubkey'),
       isNotNull,
     );
-    expect(
-      await cacheManager.loadNip05(pubKey: 'clearall_nip05_pubkey'),
-      isNotNull,
-    );
+    expect(await cacheManager.loadNip05('test@example.com'), isNotNull);
     expect(
       await cacheManager.loadUserRelayList('clearall_relay_pubkey'),
       isNotNull,
@@ -116,10 +113,7 @@ void _runClearAllTests(CacheManager Function() getCacheManager) {
       await cacheManager.loadContactList('clearall_contact_pubkey'),
       isNull,
     );
-    expect(
-      await cacheManager.loadNip05(pubKey: 'clearall_nip05_pubkey'),
-      isNull,
-    );
+    expect(await cacheManager.loadNip05('test@example.com'), isNull);
     expect(
       await cacheManager.loadUserRelayList('clearall_relay_pubkey'),
       isNull,
