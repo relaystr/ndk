@@ -72,6 +72,10 @@ class BroadcastSender {
       throw BroadcastAuthUnavailableException(auth.account.pubkey);
     }
 
+    final signer = nostrEvent.sig == null
+        ? _checkSinger(customSigner: customSigner)
+        : null;
+
     final broadcastState = BroadcastState(
       considerDonePercent: myConsiderDonePercent,
       timeout: myTimeout,
@@ -97,10 +101,6 @@ class BroadcastSender {
     if (mySaveToCache) {
       _cacheManager.saveEvent(nostrEvent);
     }
-
-    final signer = nostrEvent.sig == null
-        ? _checkSinger(customSigner: customSigner)
-        : null;
 
     final cleanedSpecificRelays = specificRelays != null
         ? cleanRelayUrls(specificRelays.toList())
