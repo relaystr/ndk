@@ -14,8 +14,3 @@ abstract class NetworkEngine {
     Iterable<String>? specificRelays,
   });
 }
-
-/// Factory for creating additional data for the engine
-abstract class EngineAdditionalDataFactory<T> {
-  T call();
-}

@@ -33,7 +33,7 @@ final ndk = Ndk(
 | ----- | ---- | ------- | ----- |
 | `eventVerifier` | `EventVerifier` | **required** | `Bip340EventVerifier` or `RustEventVerifier` |
 | `cache` | `CacheManager` | **required** | `MemCacheManager` or `SembastCacheManager` |
-| `engine` | `NdkEngine` | `RELAY_SETS` | `RELAY_SETS` (inbox/outbox) or `JIT` |
+| `engine` | `NdkEngine` | `COMBINED` | `COMBINED`, `RELAY_SETS` (inbox/outbox) or `JIT` |
 | `bootstrapRelays` | `List<String>` | DEFAULT_BOOTSTRAP_RELAYS | Connect on start |
 | `ignoreRelays` | `List<String>` | `[]` | Skip for inbox/outbox |
 | `eventSignerFactory` | `LocalEventSignerFactory` | `Bip340EventSignerFactory()` | Key signing |
@@ -48,7 +48,11 @@ final ndk = Ndk(
 ## Engine modes
 
 ```dart
-// RELAY_SETS (default) — inbox/outbox model, uses nip65 relay lists
+// COMBINED (default) — a request naming a relaySet goes to RELAY_SETS,
+// everything else to JIT. All modes share one connection pool.
+NdkEngine.COMBINED
+
+// RELAY_SETS — inbox/outbox model, uses nip65 relay lists
 NdkEngine.RELAY_SETS
 
 // JIT — Just-In-Time relay discovery

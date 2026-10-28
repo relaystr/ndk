@@ -15,10 +15,21 @@ void main() async {
   }
 }
 
+/// Whether [engine] resolves relays itself for a request that named no relay
+/// set, instead of taking them from the request.
+///
+/// [NdkEngine.JIT] always does. [NdkEngine.COMBINED] does too for every
+/// request without a relay set, so it behaves like [NdkEngine.JIT] whenever the
+/// request at hand is one of those. [NdkEngine.RELAY_SETS] never does.
+bool jitServesRelaylessRequests(NdkEngine engine) =>
+    engine != NdkEngine.RELAY_SETS;
+
 /// The AUTH re-route lives under the engines, so both must reach an
 /// authenticated connection the same way.
+///
+/// Each engine gets its own block of ports, so the groups never collide.
 void nip42Tests(NdkEngine engine) {
-  final portBase = 3900 + engine.index * 30;
+  final portBase = 3900 + engine.index * 40;
 
   group('NIP-42 [${engine.name}]', () {
     KeyPair key1 = Bip340.generatePrivateKey();
@@ -935,8 +946,13 @@ void nip42Tests(NdkEngine engine) {
         reason: 'the request must open the connection bound to its account',
       );
       // the jit engine discovers relays on anonymous connections and only then
-      // routes the request onto the bound one, so it pays for a second socket
-      expect(relay1.connectedClientCount, engine == NdkEngine.JIT ? 2 : 1);
+      // routes the request onto the bound one, so it pays for a second socket.
+      // this request names explicit relays and no relay set, so COMBINED hands
+      // it to the jit engine as well.
+      expect(
+        relay1.connectedClientCount,
+        jitServesRelaylessRequests(engine) ? 2 : 1,
+      );
       expect(relay1.receivedAuths, 0);
 
       await ndk.destroy();
@@ -1048,6 +1064,8 @@ void nip42Tests(NdkEngine engine) {
 
         await ndk.destroy();
       },
+      // the request names a relay set. COMBINED routes that to the relay sets
+      // engine, which honours it, so only the jit-only mode skips.
       skip: engine == NdkEngine.JIT
           ? 'the jit engine ignores relaySet and picks its relays itself'
           : null,
