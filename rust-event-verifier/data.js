@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793113053237,
+  "lastUpdate": 1793180409276,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2392,6 +2392,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1712518,
             "range": "1706166-1734732",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "dea92aa0e7cd24663144e8c81f4552dab82b88ae",
+          "message": "Merge pull request #887 from relaystr/refactor/relay-info-on-demand\n\nRefactor/relay info on demand",
+          "timestamp": "2026-10-28T10:38:25+01:00",
+          "tree_id": "1959d23cf280238a87a37eaf744fbba097cdfc88",
+          "url": "https://github.com/relaystr/ndk/commit/dea92aa0e7cd24663144e8c81f4552dab82b88ae"
+        },
+        "date": 1793180407304,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46595,
+            "range": "46360-52473",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1641586,
+            "range": "1630382-1665978",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
