@@ -62,6 +62,32 @@ void main() async {
       }
     });
 
+    test('a refused connect fails without waiting for the timeout', () async {
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(() => server.close(force: true));
+      server.listen((request) {
+        request.response
+          ..statusCode = HttpStatus.badRequest
+          ..close();
+      });
+
+      RelayManager manager = RelayManager(
+        globalState: GlobalState(),
+        bootstrapRelays: [],
+        nostrTransportFactory: webSocketNostrTransportFactory,
+      );
+      final stopwatch = Stopwatch()..start();
+      final result = await manager.connectRelay(
+        dirtyUrl: 'ws://127.0.0.1:${server.port}',
+        connectionSource: ConnectionSource.explicit,
+      );
+      stopwatch.stop();
+
+      expect(result.first, isFalse);
+      expect(result.second, contains('400'));
+      expect(stopwatch.elapsedMilliseconds, lessThan(1000));
+    });
+
     test('wasLastConnectTryLongerThanSeconds', () async {
       MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 5044);
       await relay1.startServer();
