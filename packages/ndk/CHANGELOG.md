@@ -1,3 +1,20 @@
+## 0.11.0-dev.2
+
+> Note: This release has breaking changes.
+
+ - **FIX**(relay-manager): give callers that join an in-flight connect its failure reason.
+ - **FIX**: abort pending HTTP requests on destroy instead of closing the shared client.
+ - **FIX**(transport): report why a connection failed instead of a timeout.
+ - **FIX**(nip65): merge the markers of a relay listed more than once.
+ - **FIX**: apply NdkConfig.logLevel before the use cases are built.
+ - **FIX**(lists): return private relays from Nip51List.privateRelays.
+ - **FIX**: close the HTTP client when Ndk is destroyed.
+ - **FEAT**(blossom): report upload refusals and add BUD-06 checkUpload.
+ - **FEAT**(connectivity): cache relay info and expose getRelayInfo.
+ - **BREAKING** **REFACTOR**: fetch relay NIP-11 info only on demand.
+ - **BREAKING** **FIX**(broadcast): keep concurrent broadcasts of the same event apart.
+ - **BREAKING** **FIX**(nip77): replace the overall deadline with open and idle timeouts.
+
 ## 0.11.0-dev.1
 
 > Note: This release has breaking changes.
