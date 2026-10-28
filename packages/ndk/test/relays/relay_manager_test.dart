@@ -62,25 +62,28 @@ void main() async {
       }
     });
 
-    test('a refused connection fails on the plain websocket transport', () async {
-      final closed = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
-      final port = closed.port;
-      await closed.close();
+    test(
+      'a refused connection fails on the plain websocket transport',
+      () async {
+        final closed = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+        final port = closed.port;
+        await closed.close();
 
-      RelayManager manager = RelayManager(
-        globalState: GlobalState(),
-        bootstrapRelays: [],
-        nostrTransportFactory: WebSocketNostrTransportFactory(),
-      );
+        RelayManager manager = RelayManager(
+          globalState: GlobalState(),
+          bootstrapRelays: [],
+          nostrTransportFactory: WebSocketNostrTransportFactory(),
+        );
 
-      final result = await manager.connectRelay(
-        dirtyUrl: 'ws://127.0.0.1:$port',
-        connectionSource: ConnectionSource.explicit,
-      );
+        final result = await manager.connectRelay(
+          dirtyUrl: 'ws://127.0.0.1:$port',
+          connectionSource: ConnectionSource.explicit,
+        );
 
-      expect(result.first, isFalse);
-      expect(manager.isRelayConnected('ws://127.0.0.1:$port'), isFalse);
-    });
+        expect(result.first, isFalse);
+        expect(manager.isRelayConnected('ws://127.0.0.1:$port'), isFalse);
+      },
+    );
 
     test('wasLastConnectTryLongerThanSeconds', () async {
       MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 5044);
