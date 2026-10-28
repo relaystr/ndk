@@ -29,7 +29,7 @@ class _NoTransport implements NostrTransportFactory {
 
 void main() {
   const url = 'wss://relay.example';
-  final info = RelayInfo.fromJson({'name': 'Example'}, 'https://relay.example');
+  final info = RelayInfo.fromJson({'name': 'Example'});
   late _Repo repo;
   late RelayManager manager;
 
