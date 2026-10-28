@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793180409276,
+  "lastUpdate": 1793182971007,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2430,6 +2430,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1641586,
             "range": "1630382-1665978",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "58687994+1-leo@users.noreply.github.com",
+            "name": "Leo",
+            "username": "1-leo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3c7c0f288569ded141e5c7ab04c628507b56ac95",
+          "message": "Merge pull request #896 from relaystr/feat/nip49\n\nfeat: add NIP-49 private key encryption and sample app page",
+          "timestamp": "2026-10-28T11:20:31+01:00",
+          "tree_id": "bdac3b5b566fecc2a8b495c9e876f808830b0c5a",
+          "url": "https://github.com/relaystr/ndk/commit/3c7c0f288569ded141e5c7ab04c628507b56ac95"
+        },
+        "date": 1793182968413,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 28824.4,
+            "range": "28179-30253",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 803648,
+            "range": "787952-832912",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
