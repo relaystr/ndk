@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793184622530,
+  "lastUpdate": 1793185068344,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2506,6 +2506,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1400224,
             "range": "1397496-1407164",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "58687994+1-leo@users.noreply.github.com",
+            "name": "Leo",
+            "username": "1-leo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "828d42ead6c67920c6b017ca7a90938fbd13441c",
+          "message": "Merge pull request #913 from relaystr/fix/ndk-flutter-file-picker-deprecation\n\nfix(ndk_flutter): drop saveFile params deprecated by file_picker",
+          "timestamp": "2026-10-28T11:54:20+01:00",
+          "tree_id": "f3ba87780450dd24c8d8aa857e92f0ca56792433",
+          "url": "https://github.com/relaystr/ndk/commit/828d42ead6c67920c6b017ca7a90938fbd13441c"
+        },
+        "date": 1793185065880,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46757.6,
+            "range": "46645-49844",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1639946,
+            "range": "1632276-1654172",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
