@@ -9,8 +9,22 @@ class WebsocketDS {
   /// the websocket channel
   final WebSocketChannel webSocketChannel;
 
+  bool _ready = false;
+  bool _readySettled = false;
+  bool _ended = false;
+
   /// create new instance of WebsocketDS
-  WebsocketDS(this.webSocketChannel);
+  WebsocketDS(this.webSocketChannel) {
+    webSocketChannel.ready.then(
+      (_) {
+        _ready = true;
+        _readySettled = true;
+      },
+      onError: (_) {
+        _readySettled = true;
+      },
+    );
+  }
 
   /// listen to the websocket channel
   StreamSubscription<dynamic> listen(
@@ -20,7 +34,10 @@ class WebsocketDS {
   }) {
     return webSocketChannel.stream.listen(
       onData,
-      onDone: onDone,
+      onDone: () {
+        _ended = true;
+        onDone?.call();
+      },
       onError: onError,
     );
   }
@@ -37,12 +54,19 @@ class WebsocketDS {
 
   /// close the websocket
   Future<void> close() {
+    // a local close never ends the channel's stream
+    _ended = true;
     return webSocketChannel.sink.close();
   }
 
   /// check if the websocket is open
   bool isOpen() {
-    return webSocketChannel.closeCode == null;
+    return _ready && !_ended;
+  }
+
+  /// check if the websocket is still connecting
+  bool isConnecting() {
+    return !_readySettled && !_ended;
   }
 
   /// get the close code
