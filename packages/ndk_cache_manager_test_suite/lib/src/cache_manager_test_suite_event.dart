@@ -327,6 +327,97 @@ void _runEventTests(
     expect(loadedEvents.first.kind, equals(1));
   });
 
+  test('loadEventIdsWithCreatedAt returns matching events', () async {
+    final cacheManager = getCacheManager();
+    await cacheManager.removeAllEvents();
+
+    Nip01Event note(int kind, String p, int createdAt) => Nip01Event(
+      pubKey: 'pubkey_event_ids',
+      kind: kind,
+      tags: [
+        ['p', p],
+      ],
+      content: 'note $createdAt',
+      createdAt: createdAt,
+    );
+    final older = note(1, 'target', 1000);
+    final newer = note(1, 'target', 2000);
+    await cacheManager.saveEvents([
+      older,
+      newer,
+      note(1, 'other', 3000),
+      note(2, 'target', 4000),
+    ]);
+
+    final filter = Filter(kinds: [1], pTags: ['target']);
+    expect(
+      await cacheManager.loadEventIdsWithCreatedAt(filter),
+      unorderedEquals([
+        (id: older.id, createdAt: 1000),
+        (id: newer.id, createdAt: 2000),
+      ]),
+    );
+
+    filter.limit = 1;
+    expect(await cacheManager.loadEventIdsWithCreatedAt(filter), [
+      (id: newer.id, createdAt: 2000),
+    ]);
+  });
+
+  test('loadEventIdsWithCreatedAt hides what loadEvents hides', () async {
+    final cacheManager = getCacheManager();
+    await cacheManager.removeAllEvents();
+
+    const pubKey = 'author_event_ids';
+    await cacheManager.saveEvents([
+      Nip01Event(
+        id: 'superseded',
+        pubKey: pubKey,
+        kind: 30023,
+        tags: const [
+          ['d', 'article'],
+        ],
+        content: 'version 1',
+        createdAt: 1000,
+      ),
+      Nip01Event(
+        id: 'current',
+        pubKey: pubKey,
+        kind: 30023,
+        tags: const [
+          ['d', 'article'],
+        ],
+        content: 'version 2',
+        createdAt: 2000,
+      ),
+      Nip01Event(
+        id: 'deleted',
+        pubKey: pubKey,
+        kind: 1,
+        tags: const [],
+        content: 'deleted note',
+        createdAt: 1500,
+      ),
+      Nip01Event(
+        id: 'deletion',
+        pubKey: pubKey,
+        kind: 5,
+        tags: const [
+          ['e', 'deleted'],
+        ],
+        content: '',
+        createdAt: 2500,
+      ),
+    ]);
+
+    expect(
+      await cacheManager.loadEventIdsWithCreatedAt(
+        Filter(authors: [pubKey], kinds: [1, 30023]),
+      ),
+      [(id: 'current', createdAt: 2000)],
+    );
+  });
+
   test('removeEvent', () async {
     final cacheManager = getCacheManager();
     final event = Nip01Event(

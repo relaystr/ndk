@@ -4,6 +4,7 @@ import '../entities/cashu/cashu_proof.dart';
 import '../entities/cache_eviction.dart';
 import '../entities/contact_list.dart';
 import '../entities/event_cache_records.dart';
+import '../entities/filter.dart';
 import '../entities/filter_fetched_ranges.dart';
 import '../entities/hidden_event.dart';
 import '../entities/metadata.dart';
@@ -154,6 +155,15 @@ abstract class CacheManager {
     String? search,
     int? limit,
   });
+
+  /// The `(id, createdAt)` of the events [loadEvents] returns for [filter],
+  /// same visibility rules and limit.
+  ///
+  /// NIP-77 builds its local set from these two fields alone, so a backend
+  /// that can should skip reading content, tags and signatures.
+  Future<List<({String id, int createdAt})>> loadEventIdsWithCreatedAt(
+    Filter filter,
+  );
 
   /// Loads the events [loadEvents] hides, newest first.
   ///
