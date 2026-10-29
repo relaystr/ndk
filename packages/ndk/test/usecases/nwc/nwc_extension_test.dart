@@ -13,13 +13,17 @@ void main() {
       );
       expect(NwcExtension.fromIdentifier('06'), NwcExtension.metadata);
       expect(NwcExtension.fromIdentifier('07'), NwcExtension.deepLinks);
+      expect(NwcExtension.fromIdentifier('09'), NwcExtension.lookupPayment);
+      expect(NwcExtension.fromIdentifier('12'), NwcExtension.bolt12);
       expect(NwcExtension.fromIdentifier('321'), NwcExtension.bip321);
     });
 
     test('parses space-separated values and ignores unknown extensions', () {
-      expect(NwcExtension.fromIdentifiers(['02  03\t321', '999']), {
+      expect(NwcExtension.fromIdentifiers(['02  03\t09 12 321', '999']), {
         NwcExtension.notifications,
         NwcExtension.holdInvoices,
+        NwcExtension.lookupPayment,
+        NwcExtension.bolt12,
         NwcExtension.bip321,
       });
       expect(NwcExtension.fromIdentifier('999'), isNull);
@@ -34,15 +38,19 @@ void main() {
           'alias': 'wallet',
           'network': 'mainnet',
           'methods': ['pay_invoice'],
-          'extensions': ['02', '05', 'unknown'],
+          'extensions': ['02', '05', '09', '12', 'unknown'],
         },
       });
 
       expect(response.extensions, {
         NwcExtension.notifications,
         NwcExtension.transactionHistory,
+        NwcExtension.lookupPayment,
+        NwcExtension.bolt12,
       });
       expect(response.supportsExtension(NwcExtension.notifications), isTrue);
+      expect(response.supportsExtension(NwcExtension.lookupPayment), isTrue);
+      expect(response.supportsExtension(NwcExtension.bolt12), isTrue);
       expect(response.supportsExtension(NwcExtension.holdInvoices), isFalse);
     });
 
@@ -66,10 +74,12 @@ void main() {
       eventSignerFactory: const Bip340EventSignerFactory(),
     );
 
-    connection.addSupportedExtensions(['02 04']);
+    connection.addSupportedExtensions(['02 04 09 12']);
 
     expect(connection.supportsExtension(NwcExtension.notifications), isTrue);
     expect(connection.supportsExtension(NwcExtension.keysend), isTrue);
+    expect(connection.supportsExtension(NwcExtension.lookupPayment), isTrue);
+    expect(connection.supportsExtension(NwcExtension.bolt12), isTrue);
     expect(connection.supportsExtension(NwcExtension.holdInvoices), isFalse);
   });
 }

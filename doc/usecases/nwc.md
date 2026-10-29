@@ -16,4 +16,9 @@ icon: plug
 
 You need a `nostr+walletconnect://...` uri from your NWC wallet service provider.
 
+`NwcConnection.supportedExtensions` lists recognized extension identifiers from
+the wallet's info event. It includes `NwcExtension.lookupPayment` (`09`) and
+`NwcExtension.bolt12` (`12`) when the wallet advertises them. Unknown identifiers
+are ignored.
+
 see https://github.com/getAlby/awesome-nwc for more info how to get a wallet supporting NWC
