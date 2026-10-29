@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793273371030,
+  "lastUpdate": 1793304555329,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2620,6 +2620,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1687888,
             "range": "1682320-1698572",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "frnandu",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8bf70bbc9cf1aa6cc195d9b707f449fca9bacfed",
+          "message": "Merge pull request #939 from frnandu/fix/nwc-09-12-extensions\n\nfix(nwc): recognize lookup payment and BOLT12 extensions",
+          "timestamp": "2026-10-29T21:07:20+01:00",
+          "tree_id": "c0e0114efc7721226eb9fd08a7ee77b229b0e827",
+          "url": "https://github.com/relaystr/ndk/commit/8bf70bbc9cf1aa6cc195d9b707f449fca9bacfed"
+        },
+        "date": 1793304552691,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46060.2,
+            "range": "45810-49074",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1614104,
+            "range": "1601090-1630260",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
