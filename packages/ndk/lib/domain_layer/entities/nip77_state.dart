@@ -24,6 +24,12 @@ class Nip77State implements TimeoutPausable {
   /// Which identity this session may be attributed to (NIP-42)
   final AuthPolicy? auth;
 
+  /// how long the relay may take to answer a NEG-OPEN
+  final Duration openTimeout;
+
+  /// how long the relay may stay silent between two rounds
+  final Duration idleTimeout;
+
   /// whether the negotiation already moved from the anonymous connection to a
   /// bound one
   bool movedToBoundConnection = false;
@@ -63,6 +69,8 @@ class Nip77State implements TimeoutPausable {
     required this.connectionKey,
     required this.filter,
     required this.localItems,
+    required this.openTimeout,
+    required this.idleTimeout,
     this.auth,
   });
 
@@ -85,8 +93,11 @@ class Nip77State implements TimeoutPausable {
   int _timeoutPauses = 0;
   void Function()? _onTimeout;
 
-  /// Starts the session timeout, [onTimeout] firing at most once.
+  /// Gives the relay [duration] to answer what was just sent, replacing the
+  /// previous deadline. There is no overall one, so a session that keeps
+  /// getting answers never times out.
   void startTimeout(Duration duration, void Function() onTimeout) {
+    cancelTimeout();
     _onTimeout = onTimeout;
     _startTimeout(duration);
   }
@@ -97,8 +108,7 @@ class Nip77State implements TimeoutPausable {
     _timeoutTimer = Timer(duration, () => _onTimeout?.call());
   }
 
-  /// Pauses the timeout for a wait that is not the relay's to answer, the way
-  /// a request pauses before signing. Call it before an authentication.
+  /// Pauses the timeout while an [AuthHandler] decides on the connection.
   @override
   void pauseTimeout() {
     _timeoutPauses++;
@@ -123,7 +133,9 @@ class Nip77State implements TimeoutPausable {
     _startTimeout(remaining);
   }
 
-  void _cancelTimeout() {
+  /// Stops the clock for a wait that is not the relay's to answer, such as an
+  /// authentication before the NEG-OPEN is sent again.
+  void cancelTimeout() {
     _timeoutTimer?.cancel();
     _timeoutTimer = null;
     _remainingTimeout = null;
@@ -164,7 +176,7 @@ class Nip77State implements TimeoutPausable {
   void complete() {
     if (_isCompleted) return;
     _isCompleted = true;
-    _cancelTimeout();
+    cancelTimeout();
     _needController.close();
     _haveController.close();
     _completer.complete(
@@ -179,7 +191,7 @@ class Nip77State implements TimeoutPausable {
   void completeWithError(Object error) {
     if (_isCompleted) return;
     _isCompleted = true;
-    _cancelTimeout();
+    cancelTimeout();
     this.error = error.toString();
     _needController.close();
     _haveController.close();
@@ -190,7 +202,7 @@ class Nip77State implements TimeoutPausable {
   void close() {
     if (_isCompleted) return;
     _isCompleted = true;
-    _cancelTimeout();
+    cancelTimeout();
     _needController.close();
     _haveController.close();
     if (!_completer.isCompleted) {

@@ -62,16 +62,27 @@ class Nip77AuthRequiredException implements Exception {
       'reconciliation may not authenticate as: $message';
 }
 
-/// Exception thrown when NIP-77 reconciliation times out
+/// Exception thrown when a relay stops answering a NIP-77 reconciliation
 class Nip77TimeoutException implements Exception {
   final String relayUrl;
+
+  /// how long the relay stayed silent
   final Duration timeout;
 
-  Nip77TimeoutException(this.relayUrl, this.timeout);
+  /// whether the relay never answered the NEG-OPEN, rather than going quiet
+  /// between two rounds
+  final bool openUnanswered;
+
+  Nip77TimeoutException(
+    this.relayUrl,
+    this.timeout, {
+    required this.openUnanswered,
+  });
 
   @override
-  String toString() =>
-      'Nip77TimeoutException: Reconciliation with $relayUrl timed out after ${timeout.inSeconds}s';
+  String toString() => openUnanswered
+      ? 'Nip77TimeoutException: $relayUrl did not answer NEG-OPEN within ${timeout.inSeconds}s'
+      : 'Nip77TimeoutException: $relayUrl went silent for ${timeout.inSeconds}s between two rounds';
 }
 
 /// Response from a NIP-77 reconciliation request
@@ -110,8 +121,11 @@ class Nip77 {
          cacheManager: cacheManager,
        );
 
-  /// Default timeout for reconciliation
-  static const Duration defaultTimeout = Duration(seconds: 30);
+  /// How long a relay may take to answer NEG-OPEN by default
+  static const Duration defaultOpenTimeout = Duration(seconds: 30);
+
+  /// How long a relay may stay silent between two rounds by default
+  static const Duration defaultIdleTimeout = Duration(seconds: 15);
 
   /// Process incoming NEG-MSG from a relay
   void processNegMsg(
@@ -155,7 +169,11 @@ class Nip77 {
   ///
   /// [relayUrl] - The relay to reconcile with
   /// [filter] - Filter to determine which events to sync
-  /// [timeout] - How long to wait before timing out (default: 30s)
+  /// [openTimeout] - How long the relay may take to answer NEG-OPEN
+  ///                 (default: 30s)
+  /// [idleTimeout] - How long the relay may stay silent between two rounds
+  ///                 (default: 15s). There is no overall deadline, so a
+  ///                 reconciliation that keeps progressing is never cut.
   /// [localIds] - Optional pre-computed list of local event IDs to use.
   ///              If not provided, will query the cache using the filter.
   /// [auth] - which identity this reconciliation may be attributed to, see
@@ -169,20 +187,22 @@ class Nip77 {
   /// anything is sent, if [auth] requires an identity that cannot sign.
   ///
   /// The returned future fails with [Nip77NotSupportedException] if the relay
-  /// doesn't support NIP-77, [Nip77TimeoutException] if reconciliation times
-  /// out, and [Nip77AuthRequiredException] if the relay asks for an identity
-  /// [auth] rules out.
+  /// doesn't support NIP-77, [Nip77TimeoutException] if the relay stops
+  /// answering, and [Nip77AuthRequiredException] if the relay asks for an
+  /// identity [auth] rules out.
   Nip77Response reconcile({
     required String relayUrl,
     required Filter filter,
-    Duration timeout = defaultTimeout,
+    Duration openTimeout = defaultOpenTimeout,
+    Duration idleTimeout = defaultIdleTimeout,
     List<String>? localIds,
     AuthPolicy? auth,
   }) {
     return _internal.reconcile(
       relayUrl: relayUrl,
       filter: filter,
-      timeout: timeout,
+      openTimeout: openTimeout,
+      idleTimeout: idleTimeout,
       localIds: localIds,
       auth: auth,
     );

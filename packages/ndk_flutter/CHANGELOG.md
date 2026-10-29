@@ -1,3 +1,8 @@
+## 0.10.3-dev.2
+
+ - **FIX**(ndk_flutter): drop saveFile params deprecated by file_picker.
+ - **FIX**(ndk_flutter): hide signer app login button on web.
+
 ## 0.10.3-dev.1
 
  - Update a dependency to the latest release.

@@ -435,7 +435,7 @@ void nip77AuthHandlerTests() {
             .reconcile(
               relayUrl: relay.url,
               filter: _notesOf(key),
-              timeout: const Duration(seconds: 1),
+              openTimeout: const Duration(seconds: 1),
               auth: AuthPolicy.require(_signable(key)),
             )
             .future;

@@ -64,7 +64,7 @@ class Nip01Event {
         id ??
         Nip01Utils.calculateEventIdSync(
           pubKey: pubKey,
-          createdAt: createdAt,
+          createdAt: this.createdAt,
           kind: kind,
           tags: tags,
           content: content,

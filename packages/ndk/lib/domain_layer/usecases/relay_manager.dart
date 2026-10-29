@@ -47,6 +47,7 @@ class RelayManager<T> {
   /// signer for nip-42 AUTH challenges from relays
   final Accounts? _accounts;
   final RelayInfoRepo? _relayInfoRepo;
+  final Map<String, Future<RelayInfo?>> _relayInfoCache = {};
 
   /// stores the last AUTH challenge per connection for late authentication;
   /// each socket gets its own challenge, so this cannot be keyed by relay
@@ -365,9 +366,6 @@ class RelayManager<T> {
       Logger.log.i(() => "connected to relay: $url");
       relayConnectivity.relay.succeededToConnect();
       relayConnectivity.stats.connections++;
-      getRelayInfo(url).then((info) {
-        relayConnectivity!.relayInfo = info;
-      });
       final connected = Tuple(true, "");
       if (!connectCompleter.isCompleted) {
         connectCompleter.complete(connected);
@@ -868,7 +866,8 @@ class RelayManager<T> {
       if (request == null ||
           request.retryingAuth ||
           request.receivedEOSE ||
-          request.receivedClosed) {
+          request.receivedClosed ||
+          request.notSent) {
         continue;
       }
       request.connectionGone = true;
@@ -1556,6 +1555,22 @@ class RelayManager<T> {
     _checkNetworkClose(state);
   }
 
+  /// Gives up on sending [state] on [key] because of [reason], tracking the
+  /// request there first if it is not yet. The relay keeps its place in the
+  /// outcomes as notSent and stops holding the request open, so a request none
+  /// of its relays could carry ends right away.
+  void failRelayRequest(
+    RequestState state,
+    RelayConnectionKey key,
+    List<Filter> filters,
+    String reason,
+  ) {
+    if (!isStillInFlight(state)) return;
+    state.addRequest(key, filters);
+    state.requests[key]!.markNotSent(reason);
+    _checkNetworkClose(state);
+  }
+
   /// Handles CLOSED auth-required.
   ///
   /// A connection is bound to at most one identity, and that binding never
@@ -1894,13 +1909,16 @@ class RelayManager<T> {
           !element.retryingAuth &&
           (element.receivedEOSE ||
               element.receivedClosed ||
+              element.notSent ||
               myNotConnectedRelays.contains(element.key)),
     );
 
     if (didAllRelaysFinish) {
       for (final key in myNotConnectedRelays) {
         final request = state.requests[key]!;
-        if (!request.receivedEOSE && !request.receivedClosed) {
+        if (!request.receivedEOSE &&
+            !request.receivedClosed &&
+            !request.notSent) {
           request.connectionGone = true;
         }
       }
@@ -2060,23 +2078,23 @@ class RelayManager<T> {
     }
   }
 
-  /// fetches relay info; returns null when no [RelayInfoRepo] is configured
+  /// fetches relay info once per relay for the lifetime of this manager;
+  /// concurrent calls share the request and failures are not cached. Returns
+  /// null when no [RelayInfoRepo] is configured
   Future<RelayInfo?> getRelayInfo(String url) async {
     final repo = _relayInfoRepo;
-    if (repo != null &&
-        globalState.relays[RelayConnectionKey.anonymous(url)] != null) {
-      return await repo.getRelayInfo(url);
+    if (repo == null) return null;
+    final key = cleanRelayUrl(url) ?? url;
+    final pending = _relayInfoCache[key];
+    if (pending != null) return pending;
+    final fetch = _relayInfoCache[key] = repo.getRelayInfo(key);
+    RelayInfo? info;
+    try {
+      info = await fetch;
+      return info;
+    } finally {
+      if (info == null) _relayInfoCache.remove(key);
     }
-    return null;
-  }
-
-  /// does relay support given nip
-  bool doesRelaySupportNip(String url, String nip) {
-    RelayConnectivity? connectivity =
-        globalState.relays[RelayConnectionKey.anonymous(url)];
-    return connectivity != null &&
-        connectivity.relayInfo != null &&
-        connectivity.relayInfo!.supportsNip(nip);
   }
 
   /// return [RelayConnectivity] by url

@@ -1,3 +1,7 @@
+## 0.3.1-dev.1
+
+ - **FIX**: objectbox case sensitive keys.
+
 ## 0.3.1-dev.0
 
  - Update a dependency to the latest release.

@@ -266,6 +266,12 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 8),
           _NavCard(
+            icon: Icons.enhanced_encryption,
+            title: 'NIP-49',
+            onTap: () => context.push('/nip49'),
+          ),
+          const SizedBox(height: 8),
+          _NavCard(
             icon: Icons.sync,
             title: 'NIP-77 Sync',
             onTap: () => context.push('/nip77'),

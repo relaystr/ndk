@@ -70,8 +70,7 @@ class ReqCliCommand extends CliCommand {
       limit: parseResult.limit,
     );
     if (parseResult.extraTags.isNotEmpty) {
-      filter.tags ??= {};
-      filter.tags!.addAll(parseResult.extraTags);
+      filter.tags = {...?filter.tags, ...parseResult.extraTags};
     }
 
     if (parseResult.stream) {

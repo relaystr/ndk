@@ -530,13 +530,31 @@ class PendingBroadcastDelivery {
           continue;
         }
 
-        final responses = await _sender
-            .broadcast(
-              nostrEvent: event,
-              specificRelays: [relayUrl],
-              auth: auth.policy,
-            )
-            .broadcastDoneFuture;
+        if (event.sig == null && _accounts.isNotLoggedIn) {
+          Logger.log.d(
+            () => 'skip pending delivery ${event.id} for $relayUrl: no signer',
+          );
+          continue;
+        }
+
+        final List<RelayBroadcastResponse> responses;
+        try {
+          responses = await _sender
+              .broadcast(
+                nostrEvent: event,
+                specificRelays: [relayUrl],
+                auth: auth.policy,
+              )
+              .broadcastDoneFuture;
+        } catch (error, stackTrace) {
+          // one failing target must not abort the pass for the others
+          Logger.log.w(
+            () => 'retry of pending delivery ${event.id} to $relayUrl failed',
+            error: error,
+            stackTrace: stackTrace,
+          );
+          continue;
+        }
         // Retries bypass Broadcast's initial-send persistence wrapper. Apply
         // the same acknowledgement and backoff bookkeeping before retrying.
         await persistSpecificRelayBroadcastResult(event, responses);

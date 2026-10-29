@@ -12,6 +12,8 @@ icon: rss
 /// value: relay connectivity
 ndkInstance.connectivity.relayConnectivityChanges;
 
+/// NIP-11 info of a relay, fetched on first call and then cached
+await ndkInstance.connectivity.getRelayInfo(relayConnectivity.url);
 
 /// forces all relays to reconnect \
 /// use this for faster reconnects based on your application/os connectivity \
@@ -48,3 +50,17 @@ The reconnect interval might be too long when the app is in the background and t
 You can instantly reconnect using the `tryReconnect()` method, as shown in the example above.
 
 `relayConnectivityChanges` can be used to display connectivity status in the UI. 
+
+### Migrating from `RelayConnectivity.relayInfo`
+
+`RelayConnectivity.relayInfo` and `ndk.relays.doesRelaySupportNip` are removed, so `relayConnectivityChanges` no longer carries NIP-11 info. NDK used to fetch it for every relay it connected to, whether the app read it or not. Ask for it where you need it:
+
+```dart
+// before
+final info = relayConnectivity.relayInfo;
+final supportsSearch = ndk.relays.doesRelaySupportNip(url, '50');
+
+// after
+final info = await ndk.connectivity.getRelayInfo(relayConnectivity.url);
+final supportsSearch = info?.supportsNip('50') ?? false;
+```

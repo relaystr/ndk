@@ -21,6 +21,21 @@ final result = await response.future;
 print('Sync complete: ${result.needIds.length} events to fetch, ${result.haveIds.length} events to broadcast');
 ```
 
+## Timeouts
+
+```dart
+final response = ndk.nip77.reconcile(
+  relayUrl: 'wss://relay.example.com',
+  filter: filter,
+  openTimeout: Duration(seconds: 30), // first answer to NEG-OPEN
+  idleTimeout: Duration(seconds: 15), // silence between two rounds
+);
+```
+
+There is no overall deadline: a large sync runs for as long as the relay keeps
+answering. When one of the two runs out, the future fails with
+`Nip77TimeoutException`, whose `openUnanswered` tells which.
+
 ## Relay authentication (NIP-42)
 
 Some relays only reconcile with a client that authenticated, the same way they
@@ -55,11 +70,16 @@ reconciliation. Rather than fall back to the anonymous one, which is what
 
 ### Relay doesn't support NIP-77
 
+A relay that ignores `NEG-OPEN` only fails with `Nip77TimeoutException` once
+`timeout` runs out (30 s by default). Pass a shorter `timeout` if that wait is
+too long:
+
 ```dart
 try {
   final response = ndk.nip77.reconcile(
     relayUrl: 'wss://relay.example.com',
     filter: filter,
+    timeout: const Duration(seconds: 10),
   );
   await response.future;
 } on Nip77NotSupportedException catch (e) {
