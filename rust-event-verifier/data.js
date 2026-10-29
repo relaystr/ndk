@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793192046120,
+  "lastUpdate": 1793273371030,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2582,6 +2582,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 793146,
             "range": "753168-816788",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "572f35ef30f1c86d04070fd340468a563e90b762",
+          "message": "Merge pull request #898 from relaystr/refactor/extract-sembast\n\nrefactor!: move Sembast out of ndk into ndk_sembast",
+          "timestamp": "2026-10-29T12:27:22+01:00",
+          "tree_id": "654f1f62fa75b891b65070574845368fc584901f",
+          "url": "https://github.com/relaystr/ndk/commit/572f35ef30f1c86d04070fd340468a563e90b762"
+        },
+        "date": 1793273368599,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 45573,
+            "range": "45446-49685",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1687888,
+            "range": "1682320-1698572",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
