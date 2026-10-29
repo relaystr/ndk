@@ -13,7 +13,7 @@ Available databases:
 
 - `MemCacheManager`
 - [`DbObjectBox`](https://pub.dev/packages/ndk_objectbox)
-- [`SembastCacheManager`](https://pub.dev/packages/sembast_cache_manager)
+- [`SembastCacheManager`](https://pub.dev/packages/ndk_sembast)
 - [`DriftCacheManager`](https://pub.dev/packages/ndk_drift)
 - [`SqliteCacheManager`](https://pub.dev/packages/ndk_sqlite3)
 
@@ -181,7 +181,7 @@ import 'package:ndk_objectbox/ndk_objectbox.dart';
 import 'dart:io';
 
 import 'package:ndk/ndk.dart';
-import 'package:sembast_cache_manager/sembast_cache_manager.dart';
+import 'package:ndk_sembast/ndk_sembast.dart';
 
 ...
 

@@ -21,6 +21,7 @@ on:
           - ndk
           - ndk_drift
           - ndk_objectbox
+          - ndk_sembast
           - ndk_sqlite3
           - ndk_flutter
       exact_version:
