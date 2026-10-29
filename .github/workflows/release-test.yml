@@ -43,7 +43,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ./packages/ndk
+        working-directory: ./packages/cli
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -107,7 +107,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: packages/ndk/build/ndk-cli-${{ matrix.platform_name }}.tar.gz
+          asset_path: packages/cli/build/ndk-cli-${{ matrix.platform_name }}.tar.gz
           asset_name: ndk-cli-${{ matrix.platform_name }}.tar.gz
           asset_content_type: ${{ matrix.content_type }}
 
@@ -118,7 +118,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: packages/ndk/build/ndk-cli-linux-x64.deb
+          asset_path: packages/cli/build/ndk-cli-linux-x64.deb
           asset_name: ndk-cli-linux-x64.deb
           asset_content_type: application/vnd.debian.binary-package
 

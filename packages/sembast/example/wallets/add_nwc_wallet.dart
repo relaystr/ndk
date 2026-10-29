@@ -2,19 +2,22 @@
 
 import 'dart:io';
 
-import 'package:ndk/data_layer/repositories/wallets/sembast_wallets_repo.dart';
+import 'package:ndk_sembast/ndk_sembast.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_user_seedphrase.dart';
-import 'package:ndk/domain_layer/entities/wallet/wallet_type.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/domain_layer/entities/wallet/wallet_type.dart';
 
 Future<void> main() async {
-  final mintUrl = Platform.environment['MINT_URL']!;
-  final walletName = Platform.environment['WALLET_NAME'] ?? 'My Cashu Wallet';
+  final nwcUri = Platform.environment['NWC_URI']!;
+  final walletName = Platform.environment['WALLET_NAME'] ?? 'My NWC Wallet';
 
+  final examplesDir = Directory.current.absolute;
+  final dbPath = '${examplesDir.path}/wallets_db.db';
+  final walletsRepo = await SembastWalletsRepo.create(filename: dbPath);
   final ndk = Ndk(
     NdkConfig(
       cache: MemCacheManager(),
-      walletsRepo: await SembastWalletsRepo.create(filename: "wallets_db.db"),
+      walletsRepo: walletsRepo,
       eventVerifier: Bip340EventVerifier(),
       bootstrapRelays: const [],
       cashuUserSeedphrase: CashuUserSeedphrase(
@@ -24,16 +27,14 @@ Future<void> main() async {
   );
 
   try {
-    final mintInfo = await ndk.cashu.getMintInfoNetwork(mintUrl: mintUrl);
+    NostrWalletConnectUri.parseConnectionUri(nwcUri);
 
     final wallet = ndk.wallets.createWallet(
       id: 'wallet_${DateTime.now().microsecondsSinceEpoch}',
       name: walletName,
-      type: WalletType.CASHU,
-      supportedUnits: mintInfo.supportedUnits.isEmpty
-          ? {'sat'}
-          : mintInfo.supportedUnits,
-      metadata: {'mintUrl': mintUrl, 'mintInfo': mintInfo.toJson()},
+      type: WalletType.NWC,
+      supportedUnits: {'sat'},
+      metadata: {'nwcUrl': nwcUri},
     );
 
     await ndk.wallets.addWallet(wallet);

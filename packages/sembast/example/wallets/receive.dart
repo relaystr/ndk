@@ -2,7 +2,7 @@
 
 import 'dart:io';
 
-import 'package:ndk/data_layer/repositories/wallets/sembast_wallets_repo.dart';
+import 'package:ndk_sembast/ndk_sembast.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import 'package:ndk/ndk.dart';
 
@@ -20,32 +20,20 @@ Future<void> main() async {
   );
 
   try {
+    final amountSats = int.parse(Platform.environment['AMOUNT_SATS'] ?? '1000');
     final wallets = await ndk.wallets.getWallets();
     if (wallets.isEmpty) {
-      print('No wallets stored yet.');
-      return;
+      throw StateError('No wallets stored yet.');
     }
-
     final walletId = Platform.environment['WALLET_ID'] ?? wallets.first.id;
-    final wallet = wallets.firstWhere(
-      (wallet) => wallet.id == walletId,
-      orElse: () => throw StateError('Wallet not found: $walletId'),
+
+    final invoice = await ndk.wallets.receive(
+      walletId: walletId,
+      amountSats: amountSats,
     );
 
-    final balances = await ndk.wallets
-        .getBalancesStream(wallet.id)
-        .first
-        .timeout(const Duration(seconds: 12));
-
-    if (balances.isEmpty) {
-      print('No balances reported for ${wallet.name} (${wallet.id}).');
-      return;
-    }
-
-    print('Balances for ${wallet.name} (${wallet.id}):');
-    for (final balance in balances) {
-      print('- ${balance.amount} ${balance.unit}');
-    }
+    print('Invoice for $amountSats sats:');
+    print(invoice);
   } finally {
     await ndk.destroy();
   }

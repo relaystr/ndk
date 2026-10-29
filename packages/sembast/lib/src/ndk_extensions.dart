@@ -12,6 +12,7 @@ extension Nip01EventExtension on Nip01Event {
       'content': content,
       'sig': sig,
       'validSig': validSig,
+      // ignore: deprecated_member_use
       'sources': sources,
     };
   }
