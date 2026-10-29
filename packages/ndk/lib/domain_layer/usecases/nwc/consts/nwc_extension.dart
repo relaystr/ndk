@@ -9,6 +9,8 @@ enum NwcExtension {
   transactionHistory('05'),
   metadata('06'),
   deepLinks('07'),
+  lookupPayment('09'),
+  bolt12('12'),
   bip321('321');
 
   /// Identifier advertised by NWC wallet services.
