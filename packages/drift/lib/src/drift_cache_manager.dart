@@ -13,7 +13,6 @@ import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/domain_layer/entities/wallet/wallet_factory.dart';
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/event_eviction_planner.dart';
 import 'package:ndk/shared/nips/nip01/event_kind_classification.dart';
 import 'package:ndk/shared/nips/nip01/event_visibility_resolver.dart';
 
@@ -260,8 +259,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   @override
   Future<void> removeEvent(String id) async {
     final removedEvent = await loadEvent(id);
-    await (_db.delete(_db.events)..where((t) => t.id.equals(id))).go();
-    await _removeEventSidecarsByIds([id]);
+    await _removeEventsWhere(SqlWhere()..add('e.id = ?', [id]));
     if (removedEvent != null) {
       await _syncUserRelayListProjectionForEvent(removedEvent);
     }
@@ -269,12 +267,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> removeAllEventsByPubKey(String pubKey) async {
-    final rows = await (_db.select(
-      _db.events,
-    )..where((t) => t.pubKey.equals(pubKey))).get();
-    final eventIds = rows.map((row) => row.id).toList();
-    await (_db.delete(_db.events)..where((t) => t.pubKey.equals(pubKey))).go();
-    await _removeEventSidecarsByIds(eventIds);
+    await _removeEventsWhere(SqlWhere()..add('e.pub_key = ?', [pubKey]));
     await _syncUserRelayListProjection(pubKey);
   }
 
@@ -295,92 +288,188 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<EvictionResult> evict(EvictionPolicy policy) async {
-    final rawRows = await _db.select(_db.events).get();
-    final rawEvents = rawRows.map(_eventFromRow).toList();
-    final deliveryRecords = await loadEventDeliveryRecords();
-    final relayTargets = await loadRelayDeliveryTargets();
-    final activeDeliveryEventIds = deliveryRecords
-        .where((record) => record.status != EventDeliveryStatus.delivered)
-        .map((record) => record.eventId)
-        .toSet();
-    final lockedEventIds = <String>{
-      ...activeDeliveryEventIds,
-      ...relayTargets
-          .where((target) => target.state != RelayDeliveryState.acked)
-          .map((target) => target.eventId),
-    };
-    final deliveredEventIds = deliveryRecords
-        .where((record) => record.status == EventDeliveryStatus.delivered)
-        .map((record) => record.eventId)
-        .toSet();
-    final plan = EventEvictionPlanner.plan(
-      rawEvents: rawEvents,
-      lockedEventIds: lockedEventIds,
-      deliveredEventIds: deliveredEventIds,
-      policy: policy,
-    );
+    final now = Nip01Event.secondsSinceEpoch();
+    return _db.transaction(() async {
+      await _db.customStatement(
+        'CREATE TEMP TABLE IF NOT EXISTS evict_plan '
+        '(id TEXT NOT NULL PRIMARY KEY, category TEXT NOT NULL)',
+      );
+      await _db.customStatement('DELETE FROM temp.evict_plan');
 
-    // Sweep leftover delivery records whose event was kept (or never stored).
-    // A terminally failed record swept here unpins its event for the next run.
-    final remainingDeliveryRecords = deliveryRecords
-        .where((record) => !plan.eventIdsToRemove.contains(record.eventId))
-        .toList();
-    final deliverySweep = EventEvictionPlanner.planDeliverySweep(
-      deliveryRecords: remainingDeliveryRecords,
-      policy: policy,
-    );
-
-    if (plan.eventIdsToRemove.isEmpty &&
-        deliverySweep.deliveryEventIdsToRemove.isEmpty) {
-      return plan.toResult();
-    }
-
-    final idsToRemove = plan.eventIdsToRemove.toList();
-    await _db.transaction(() async {
-      if (idsToRemove.isNotEmpty) {
-        await (_db.delete(
-          _db.events,
-        )..where((t) => t.id.isIn(idsToRemove))).go();
-        await _removeEventSidecarsByIds(idsToRemove);
-      }
-      if (deliverySweep.deliveryEventIdsToRemove.isNotEmpty) {
-        await _removeDeliveryRecordsByIds(
-          deliverySweep.deliveryEventIdsToRemove,
+      // Categories are planned in EventEvictionPlanner order, INSERT OR IGNORE
+      // keeps the first one an event gets.
+      Future<void> plan(
+        String category,
+        String select, [
+        List<Object> args = const [],
+      ]) {
+        return _db.customUpdate(
+          'INSERT OR IGNORE INTO temp.evict_plan (id, category) '
+          'SELECT id, ? FROM ($select)',
+          variables: [category, ...args].map(Variable.new).toList(),
         );
       }
-    });
 
-    return plan.toResult().copyWith(
-      removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
-      removedTerminalFailedDeliveries:
-          deliverySweep.removedTerminalFailedDeliveries,
-    );
+      await plan(
+        'locked',
+        'SELECT e.id FROM events e WHERE e.id IN ('
+            'SELECT event_id FROM event_delivery_records_table '
+            'WHERE status != ? UNION '
+            'SELECT event_id FROM relay_delivery_targets_table WHERE state != ?)',
+        [EventDeliveryStatus.delivered.name, RelayDeliveryState.acked.name],
+      );
+      if (policy.sweepExpired) {
+        await plan(
+          'expired',
+          'SELECT e.id FROM events e WHERE ${expiredSql('e', now)}',
+        );
+      }
+      if (policy.sweepDeleted) {
+        await plan(
+          'deleted',
+          'SELECT e.id FROM deletion_targets x JOIN events e '
+              'ON e.id = x.event_id AND e.pub_key = x.pub_key WHERE e.kind != 5 '
+              'UNION SELECT e.id FROM deletion_targets x JOIN events e '
+              'ON e.conflict_key = x.conflict_key AND e.pub_key = x.pub_key '
+              'AND e.created_at <= x.created_at WHERE e.kind != 5',
+        );
+      }
+      if (policy.sweepSuperseded) {
+        await plan(
+          'superseded',
+          'SELECT e.id FROM events e WHERE e.conflict_key IS NOT NULL '
+              'AND NOT ${currentSql('e', now)}',
+        );
+      }
+      if (policy.sweepDeliveredEphemeral) {
+        await plan(
+          'ephemeral',
+          'SELECT e.id FROM events e WHERE e.kind BETWEEN 20000 AND 29999 '
+              'AND e.id IN (SELECT event_id FROM event_delivery_records_table '
+              'WHERE status = ?)',
+          [EventDeliveryStatus.delivered.name],
+        );
+      }
+
+      const unplanned = 'e.id NOT IN (SELECT id FROM temp.evict_plan)';
+      const protectedSql =
+          '(e.id IN $jsonArray OR e.pub_key IN $jsonArray '
+          'OR e.kind IN $jsonArray OR (e.kind BETWEEN 30000 AND 39999 '
+          'AND e.conflict_key IN $jsonArray))';
+      final protectedArgs = [
+        jsonEncode(policy.protectedEventIds.toList()),
+        jsonEncode(policy.protectedPubKeys.toList()),
+        jsonEncode(policy.protectedKinds.toList()),
+        jsonEncode(policy.protectedCoordinates.toList()),
+      ];
+      final keptProtected = await _db
+          .customSelect(
+            'SELECT count(*) AS n FROM events e WHERE $unplanned '
+            'AND $protectedSql AND ${currentSql('e', now)}',
+            variables: protectedArgs.map(Variable.new).toList(),
+          )
+          .getSingle()
+          .then((row) => row.read<int>('n'));
+      for (final MapEntry(key: kind, value: cap) in policy.kindCaps.entries) {
+        if (cap < 0) continue;
+        await plan(
+          'cap',
+          'SELECT e.id FROM events e WHERE e.kind = ? AND $unplanned '
+              'AND NOT $protectedSql AND ${currentSql('e', now)} '
+              'ORDER BY e.created_at DESC, e.id LIMIT -1 OFFSET ?',
+          [kind, ...protectedArgs, cap],
+        );
+      }
+
+      final countRows = await _db
+          .customSelect(
+            'SELECT category, count(*) AS n FROM temp.evict_plan '
+            'GROUP BY category',
+          )
+          .get();
+      final counts = {
+        for (final row in countRows)
+          row.read<String>('category'): row.read<int>('n'),
+      };
+      await _removeEventsWhere(
+        SqlWhere()..add(
+          'e.id IN (SELECT id FROM temp.evict_plan WHERE category != ?)',
+          ['locked'],
+        ),
+      );
+      await _db.customStatement('DELETE FROM temp.evict_plan');
+
+      // Runs after the events are gone, so it only sees the delivery records
+      // of kept events, as EventEvictionPlanner.planDeliverySweep expects.
+      var removedCompletedDeliveries = 0;
+      if (policy.sweepCompletedDeliveries) {
+        removedCompletedDeliveries = await _removeDeliveryRecordsWhere(
+          SqlWhere()..add(
+            'status = ? AND ? - COALESCE(completed_at, updated_at) >= ?',
+            [
+              EventDeliveryStatus.delivered.name,
+              now,
+              policy.completedDeliveryRetention.inSeconds,
+            ],
+          ),
+        );
+      }
+      var removedTerminalFailedDeliveries = 0;
+      if (policy.sweepTerminalFailedDeliveries) {
+        removedTerminalFailedDeliveries = await _removeDeliveryRecordsWhere(
+          SqlWhere()..add('status = ? AND ? - updated_at >= ?', [
+            EventDeliveryStatus.failed.name,
+            now,
+            policy.terminalFailedDeliveryRetention.inSeconds,
+          ]),
+        );
+      }
+
+      final removedExpired = counts['expired'] ?? 0;
+      final removedDeleted = counts['deleted'] ?? 0;
+      final removedSuperseded = counts['superseded'] ?? 0;
+      final removedDeliveredEphemeral = counts['ephemeral'] ?? 0;
+      final removedByKindCap = counts['cap'] ?? 0;
+      return EvictionResult(
+        removedEvents:
+            removedExpired +
+            removedDeleted +
+            removedSuperseded +
+            removedDeliveredEphemeral +
+            removedByKindCap,
+        removedExpired: removedExpired,
+        removedDeleted: removedDeleted,
+        removedSuperseded: removedSuperseded,
+        removedDeliveredEphemeral: removedDeliveredEphemeral,
+        removedByKindCap: removedByKindCap,
+        keptDueToDeliveryState: counts['locked'] ?? 0,
+        keptProtected: keptProtected,
+        removedCompletedDeliveries: removedCompletedDeliveries,
+        removedTerminalFailedDeliveries: removedTerminalFailedDeliveries,
+      );
+    });
   }
 
-  /// Removes only the delivery record, relay delivery targets and delivery
-  /// snapshot for [eventIds]. Unlike [_removeEventSidecarsByIds] this leaves the
-  /// event, its provenance sources and decrypted payload sidecars intact, so it
-  /// is safe to call for events that are being kept in cache.
-  Future<void> _removeDeliveryRecordsByIds(Iterable<String> eventIds) async {
-    final ids = eventIds.toSet().toList();
-    if (ids.isEmpty) return;
-
-    await (_db.delete(
-      _db.eventDeliveryRecordsTable,
-    )..where((t) => t.eventId.isIn(ids))).go();
-    await (_db.delete(
+  /// Removes the delivery records matching [where] with their relay targets
+  /// and snapshots, returning how many records went. The events stay.
+  Future<int> _removeDeliveryRecordsWhere(SqlWhere where) async {
+    final ids =
+        'SELECT event_id FROM event_delivery_records_table WHERE $where';
+    await _deleteWhere(
       _db.relayDeliveryTargetsTable,
-    )..where((t) => t.eventId.isIn(ids))).go();
-    await (_db.delete(_db.keyValues)..where((kv) {
-          final conditions = ids
-              .map((id) => kv.key.equals(_eventDeliverySnapshotKey(id)))
-              .toList();
-          if (conditions.length == 1) {
-            return conditions.first;
-          }
-          return conditions.reduce((a, b) => a | b);
-        }))
-        .go();
+      'event_id IN ($ids)',
+      where.variables,
+    );
+    await _deleteWhere(
+      _db.keyValues,
+      'key IN (SELECT ? || event_id FROM ($ids))',
+      [Variable(_eventDeliverySnapshotKeyPrefix), ...where.variables],
+    );
+    return _deleteWhere(
+      _db.eventDeliveryRecordsTable,
+      '$where',
+      where.variables,
+    );
   }
 
   @override
@@ -402,48 +491,60 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     );
     if (where.isEmpty) return;
 
-    final rows = await _selectRows('e.id, e.pub_key', where);
-    if (rows.isEmpty) return;
-    await _db.customUpdate(
-      'DELETE FROM events WHERE id IN (SELECT e.id FROM events e WHERE $where)',
-      variables: where.variables,
-      updates: {_db.events},
-      updateKind: UpdateKind.delete,
-    );
-    await _removeEventSidecarsByIds(rows.map((row) => row.read<String>('id')));
+    final authors = await _db
+        .customSelect(
+          'SELECT DISTINCT e.pub_key FROM events e WHERE $where',
+          variables: where.variables,
+        )
+        .get();
+    if (authors.isEmpty) return;
+    await _removeEventsWhere(where);
     await _syncUserRelayListProjections(
-      rows.map((row) => row.read<String>('pub_key')),
+      authors.map((row) => row.read<String>('pub_key')),
     );
   }
 
-  Future<void> _removeEventSidecarsByIds(Iterable<String> eventIds) async {
-    final ids = eventIds.toSet().toList();
-    if (ids.isEmpty) return;
+  /// Removes the events matching [where] (table aliased `e`) with their
+  /// sidecars.
+  Future<void> _removeEventsWhere(SqlWhere where) async {
+    final ids = 'SELECT e.id FROM events e WHERE $where';
+    final payloadIdStart = _decryptedPayloadKeyPrefix.length + 1;
+    await _db.transaction(() async {
+      for (final table in <TableInfo>[
+        _db.eventSourcesTable,
+        _db.eventDeliveryRecordsTable,
+        _db.relayDeliveryTargetsTable,
+      ]) {
+        await _deleteWhere(table, 'event_id IN ($ids)', where.variables);
+      }
+      await _deleteWhere(
+        _db.keyValues,
+        'key IN (SELECT ? || e.id FROM events e WHERE $where)',
+        [Variable(_eventDeliverySnapshotKeyPrefix), ...where.variables],
+      );
+      // decrypted payload keys are `<prefix><event id>|<viewer pubkey>`
+      await _deleteWhere(
+        _db.keyValues,
+        'substr(key, 1, ${payloadIdStart - 1}) = ? '
+        "AND substr(key, $payloadIdStart, "
+        "instr(substr(key, $payloadIdStart), '|') - 1) IN ($ids)",
+        [Variable(_decryptedPayloadKeyPrefix), ...where.variables],
+      );
+      await _deleteWhere(_db.events, 'id IN ($ids)', where.variables);
+    });
+  }
 
-    await (_db.delete(
-      _db.eventSourcesTable,
-    )..where((t) => t.eventId.isIn(ids))).go();
-    await (_db.delete(
-      _db.eventDeliveryRecordsTable,
-    )..where((t) => t.eventId.isIn(ids))).go();
-    await (_db.delete(
-      _db.relayDeliveryTargetsTable,
-    )..where((t) => t.eventId.isIn(ids))).go();
-    await (_db.delete(_db.keyValues)..where((kv) {
-          final conditions = ids
-              .expand(
-                (id) => [
-                  kv.key.like('$_decryptedPayloadKeyPrefix$id|%'),
-                  kv.key.equals(_eventDeliverySnapshotKey(id)),
-                ],
-              )
-              .toList();
-          if (conditions.length == 1) {
-            return conditions.first;
-          }
-          return conditions.reduce((a, b) => a | b);
-        }))
-        .go();
+  Future<int> _deleteWhere(
+    TableInfo table,
+    String where,
+    List<Variable> variables,
+  ) {
+    return _db.customUpdate(
+      'DELETE FROM ${table.actualTableName} WHERE $where',
+      variables: variables,
+      updates: {table},
+      updateKind: UpdateKind.delete,
+    );
   }
 
   Nip01Event _eventFromRow(DbEvent row) {
