@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793304555329,
+  "lastUpdate": 1793372252519,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2658,6 +2658,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1614104,
             "range": "1601090-1630260",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a693f613ef57e011c6bc6e192784d80839ec1fdd",
+          "message": "Merge pull request #938 from relaystr/fix/sqlite3-ndk-extensions\n\nfix(sqlite3): use a local copy of the storage extensions moved out of ndk",
+          "timestamp": "2026-10-30T15:55:44+01:00",
+          "tree_id": "290fc03eb5b575b5350a233e6cfda21c25e01246",
+          "url": "https://github.com/relaystr/ndk/commit/a693f613ef57e011c6bc6e192784d80839ec1fdd"
+        },
+        "date": 1793372250398,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 47066.6,
+            "range": "46566-52085",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1676706,
+            "range": "1659138-1717346",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
