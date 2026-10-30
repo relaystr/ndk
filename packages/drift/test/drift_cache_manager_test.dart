@@ -87,6 +87,113 @@ void main() {
     await cacheManager.close();
   });
 
+  test('removing a deletion shows its target again', () async {
+    final db = NdkCacheDatabase.forTesting(NativeDatabase.memory());
+    final cacheManager = DriftCacheManager(db);
+    final note = Nip01Event(pubKey: 'a' * 64, kind: 1, tags: [], content: '');
+    final deletion = Nip01Event(
+      pubKey: note.pubKey,
+      kind: 5,
+      tags: [
+        ['e', note.id],
+      ],
+      content: '',
+    );
+
+    await cacheManager.saveEvents([note, deletion]);
+    await cacheManager.removeEvent(deletion.id);
+
+    expect((await cacheManager.loadEvents()).map((e) => e.id), [note.id]);
+
+    await cacheManager.close();
+  });
+
+  test('overwriting an event replaces its indexed tags', () async {
+    final db = NdkCacheDatabase.forTesting(NativeDatabase.memory());
+    final cacheManager = DriftCacheManager(db);
+    Nip01Event note(String topic) => Nip01Event(
+      id: 'note',
+      pubKey: 'a' * 64,
+      kind: 1,
+      tags: [
+        ['t', topic],
+      ],
+      content: '',
+    );
+
+    await cacheManager.saveEvent(note('old'));
+    await cacheManager.saveEvent(note('new'));
+
+    expect(
+      await cacheManager.loadEvents(
+        tags: {
+          't': ['old'],
+        },
+      ),
+      isEmpty,
+    );
+    expect(
+      (await cacheManager.loadEvents(
+        tags: {
+          't': ['new'],
+        },
+      )).map((e) => e.id),
+      ['note'],
+    );
+
+    await cacheManager.close();
+  });
+
+  test('evict removes more events than SQLite expression limits', () async {
+    final db = NdkCacheDatabase.forTesting(NativeDatabase.memory());
+    final cacheManager = DriftCacheManager(db);
+    await cacheManager.saveEvents([
+      for (var i = 0; i < 2000; i++)
+        Nip01Event(
+          pubKey: 'a' * 64,
+          kind: 1,
+          tags: [],
+          content: '$i',
+          createdAt: 1000 + i,
+        ),
+    ]);
+
+    final result = await cacheManager.evict(
+      const EvictionPolicy(kindCaps: {1: 0}),
+    );
+
+    expect(result.removedByKindCap, 2000);
+    expect(await cacheManager.loadEvents(), isEmpty);
+
+    await cacheManager.close();
+  });
+
+  test('evict removes the delivery snapshots it sweeps', () async {
+    final db = NdkCacheDatabase.forTesting(NativeDatabase.memory());
+    final cacheManager = DriftCacheManager(db);
+    final capped = Nip01Event(pubKey: 'a' * 64, kind: 1, tags: [], content: '');
+    EventDeliveryRecord delivered(String eventId, int completedAt) =>
+        EventDeliveryRecord(
+          eventId: eventId,
+          status: EventDeliveryStatus.delivered,
+          createdAt: 1,
+          updatedAt: completedAt,
+          completedAt: completedAt,
+          serializedEventJson: '{}',
+        );
+
+    await cacheManager.saveEvent(capped);
+    await cacheManager.saveEventDeliveryRecords([
+      delivered(capped.id, Nip01Event.secondsSinceEpoch()),
+      delivered('aged', 1),
+    ]);
+    await cacheManager.evict(const EvictionPolicy(kindCaps: {1: 0}));
+
+    expect(await db.select(db.keyValues).get(), isEmpty);
+
+    await cacheManager.close();
+  });
+
   runCacheManagerTestSuite(
     name: 'DriftCacheManager',
     createCacheManager: () async {
