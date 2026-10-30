@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793372792118,
+  "lastUpdate": 1793374402245,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2772,6 +2772,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 943194,
             "range": "871094-985038",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "14b630908e2cd696f88efaa6288b44f7f0bbe467",
+          "message": "Merge pull request #941 from relaystr/fix/sqlite3-nip05-identifier\n\nfix(sqlite3): use Nip05.identifier in the local storage extensions",
+          "timestamp": "2026-10-30T16:31:19+01:00",
+          "tree_id": "3207c92e1bee4b50a43afd63ca069bd345c93e97",
+          "url": "https://github.com/relaystr/ndk/commit/14b630908e2cd696f88efaa6288b44f7f0bbe467"
+        },
+        "date": 1793374399386,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 50740.4,
+            "range": "50565-53928",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1823130,
+            "range": "1817708-1839500",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
