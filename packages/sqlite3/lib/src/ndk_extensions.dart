@@ -5,7 +5,7 @@ extension Nip05Extension on Nip05 {
   Map<String, Object?> toJsonForStorage() {
     return {
       'pubKey': pubKey,
-      'nip05': nip05,
+      'nip05': identifier,
       'valid': valid,
       'networkFetchTime': networkFetchTime,
       'relays': relays,
@@ -14,8 +14,8 @@ extension Nip05Extension on Nip05 {
 
   static Nip05 fromJsonStorage(Map<String, Object?> json) {
     return Nip05(
-      pubKey: json['pubKey'] as String,
-      nip05: json['nip05'] as String,
+      pubKey: json['pubKey'] as String?,
+      identifier: json['nip05'] as String,
       valid: json['valid'] as bool? ?? false,
       networkFetchTime: json['networkFetchTime'] as int?,
       relays: json['relays'] != null
