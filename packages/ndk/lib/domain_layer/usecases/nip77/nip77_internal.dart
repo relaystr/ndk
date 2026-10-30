@@ -188,23 +188,11 @@ class _Nip77Internal {
   }
 
   Future<List<neg.NegentropyItem>> _buildItemsFromFilter(Filter filter) async {
-    final events = await _cacheManager.loadEvents(
-      ids: filter.ids,
-      pubKeys: filter.authors,
-      kinds: filter.kinds,
-      tags: filter.tags,
-      since: filter.since,
-      until: filter.until,
-      search: filter.search,
-      limit: filter.limit,
-    );
-
-    return events
-        .map(
-          (e) =>
-              neg.NegentropyItem.fromHex(timestamp: e.createdAt, idHex: e.id),
-        )
-        .toList();
+    final events = await _cacheManager.loadEventIdsWithCreatedAt(filter);
+    return [
+      for (final e in events)
+        neg.NegentropyItem.fromHex(timestamp: e.createdAt, idHex: e.id),
+    ];
   }
 
   /// The session [subscriptionId] belongs to, when the message really came

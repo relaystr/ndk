@@ -6,6 +6,7 @@ import '../../../domain_layer/entities/cashu/cashu_proof.dart';
 import '../../../domain_layer/entities/cache_eviction.dart';
 import '../../../domain_layer/entities/contact_list.dart';
 import '../../../domain_layer/entities/event_cache_records.dart';
+import '../../../domain_layer/entities/filter.dart';
 import '../../../domain_layer/entities/filter_fetched_ranges.dart';
 import '../../../domain_layer/entities/hidden_event.dart';
 import '../../../domain_layer/entities/metadata.dart';
@@ -596,6 +597,23 @@ class MemCacheManager implements CacheManager {
       limit: limit,
       applyVisibilityRules: true,
     );
+  }
+
+  @override
+  Future<List<({String id, int createdAt})>> loadEventIdsWithCreatedAt(
+    Filter filter,
+  ) async {
+    final events = await loadEvents(
+      ids: filter.ids,
+      pubKeys: filter.authors,
+      kinds: filter.kinds,
+      tags: filter.tags,
+      since: filter.since,
+      until: filter.until,
+      search: filter.search,
+      limit: filter.limit,
+    );
+    return [for (final e in events) (id: e.id, createdAt: e.createdAt)];
   }
 
   @override

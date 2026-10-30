@@ -163,6 +163,23 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   }
 
   @override
+  Future<List<({String id, int createdAt})>> loadEventIdsWithCreatedAt(
+    Filter filter,
+  ) async {
+    final events = await loadEvents(
+      ids: filter.ids,
+      pubKeys: filter.authors,
+      kinds: filter.kinds,
+      tags: filter.tags,
+      since: filter.since,
+      until: filter.until,
+      search: filter.search,
+      limit: filter.limit,
+    );
+    return [for (final e in events) (id: e.id, createdAt: e.createdAt)];
+  }
+
+  @override
   Future<List<HiddenEvent>> loadHiddenEvents({
     List<String>? ids,
     List<String>? pubKeys,

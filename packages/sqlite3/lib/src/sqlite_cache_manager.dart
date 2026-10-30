@@ -117,6 +117,29 @@ class SqliteCacheManager extends WalletsRepo implements CacheManager {
   }
 
   @override
+  Future<List<({String id, int createdAt})>> loadEventIdsWithCreatedAt(
+    Filter filter,
+  ) async {
+    final where = eventFilter(
+      ids: filter.ids,
+      pubKeys: filter.authors,
+      kinds: filter.kinds,
+      tags: filter.tags,
+      since: filter.since,
+      until: filter.until,
+      search: filter.search,
+    )..add(visibleSql('e', _now()));
+    return [
+      for (final row in _selectRows(
+        'e.id, e.created_at',
+        where,
+        limit: filter.limit,
+      ))
+        (id: row['id'] as String, createdAt: row['created_at'] as int),
+    ];
+  }
+
+  @override
   Future<List<HiddenEvent>> loadHiddenEvents({
     List<String>? ids,
     List<String>? pubKeys,
@@ -533,15 +556,24 @@ class SqliteCacheManager extends WalletsRepo implements CacheManager {
   }
 
   List<Nip01Event> _selectEvents(SqlWhere where, {int? limit}) {
+    return _selectRows(
+      eventColumns,
+      where,
+      limit: limit,
+    ).map(_eventFromRow).toList();
+  }
+
+  /// [columns] of the events matching [where], newest first.
+  ResultSet _selectRows(String columns, SqlWhere where, {int? limit}) {
     final args = [...where.args];
     var sql =
-        'SELECT $eventColumns FROM events e WHERE $where '
+        'SELECT $columns FROM events e WHERE $where '
         'ORDER BY e.created_at DESC, e.id';
     if (limit != null && limit > 0) {
       sql += ' LIMIT ?';
       args.add(limit);
     }
-    return _db.select(sql, args).map(_eventFromRow).toList();
+    return _db.select(sql, args);
   }
 
   /// The latest visible event of [kind] per author in [pubKeys].
