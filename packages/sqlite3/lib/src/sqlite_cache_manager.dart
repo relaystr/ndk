@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:ndk/data_layer/repositories/cache_manager/ndk_extensions.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_keyset.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_mint_info.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_proof.dart';
@@ -15,6 +14,7 @@ import 'package:ndk/shared/nips/nip01/event_visibility_resolver.dart';
 import 'package:ndk/shared/nips/nip09/deletion.dart';
 import 'package:sqlite3/sqlite3.dart';
 
+import 'ndk_extensions.dart';
 import 'schema.dart';
 import 'sql.dart';
 
