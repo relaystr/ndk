@@ -3,6 +3,62 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-10-30
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.11.0-dev.3`](#ndk---v0110-dev3)
+ - [`ndk_drift` - `v0.2.1-dev.2`](#ndk_drift---v021-dev2)
+ - [`ndk_objectbox` - `v0.3.1-dev.2`](#ndk_objectbox---v031-dev2)
+ - [`ndk_sembast` - `v0.2.0-dev.0`](#ndk_sembast---v020-dev0)
+ - [`ndk_sqlite3` - `v0.1.1-dev.1`](#ndk_sqlite3---v011-dev1)
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.10.3-dev.3`](#ndk_flutter---v0103-dev3)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.10.3-dev.3`
+
+---
+
+#### `ndk` - `v0.11.0-dev.3`
+
+ - **REFACTOR**: move the CLI into a new ndk_cli package.
+ - **FIX**(nwc): recognize lookup payment and BOLT12 extensions.
+ - **FEAT**: add CacheManager.loadEventIdsWithCreatedAt for the NIP-77 local set (fixes #885).
+ - **BREAKING** **REFACTOR**: move Sembast out of ndk into ndk_sembast.
+ - **BREAKING** **FEAT**(nip05): key the NIP-05 cache by identifier and persist not found (fixes #838, fixes #936).
+
+#### `ndk_drift` - `v0.2.1-dev.2`
+
+ - **FEAT**: add CacheManager.loadEventIdsWithCreatedAt for the NIP-77 local set (fixes #885).
+ - **BREAKING** **FEAT**(nip05): key the NIP-05 cache by identifier and persist not found (fixes #838, fixes #936).
+
+#### `ndk_objectbox` - `v0.3.1-dev.2`
+
+ - **FEAT**: add CacheManager.loadEventIdsWithCreatedAt for the NIP-77 local set (fixes #885).
+ - **BREAKING** **FEAT**(nip05): key the NIP-05 cache by identifier and persist not found (fixes #838, fixes #936).
+
+#### `ndk_sembast` - `v0.2.0-dev.0`
+
+ - **BREAKING** **REFACTOR**: move Sembast out of ndk into ndk_sembast.
+
+#### `ndk_sqlite3` - `v0.1.1-dev.1`
+
+ - **FIX**(sqlite3): use Nip05.identifier in the local storage extensions.
+ - **FIX**(sqlite3): use a local copy of the storage extensions moved out of ndk.
+ - **FEAT**: add CacheManager.loadEventIdsWithCreatedAt for the NIP-77 local set (fixes #885).
+ - **BREAKING** **FEAT**(nip05): key the NIP-05 cache by identifier and persist not found (fixes #838, fixes #936).
+
+
 ## 2026-10-28
 
 ### Changes
