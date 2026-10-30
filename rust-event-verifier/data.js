@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793372252519,
+  "lastUpdate": 1793372678958,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2696,6 +2696,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1676706,
             "range": "1659138-1717346",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5d800f7092d6698f3358eeea4734a562dc602082",
+          "message": "Merge pull request #937 from relaystr/feat/nip05-cache-by-identifier\n\nfeat(nip05)!: key the NIP-05 cache by identifier and persist not found",
+          "timestamp": "2026-10-30T16:02:32+01:00",
+          "tree_id": "95a0300385a2bd3d52d0f906b7e5ac8606284f84",
+          "url": "https://github.com/relaystr/ndk/commit/5d800f7092d6698f3358eeea4734a562dc602082"
+        },
+        "date": 1793372676261,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46589,
+            "range": "46463-51042",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1606816,
+            "range": "1602518-1617728",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
