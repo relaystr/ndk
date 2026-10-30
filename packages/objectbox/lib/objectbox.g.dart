@@ -1072,7 +1072,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
         object.dbId = id;
       },
       objectToFB: (DbNip05 object, fb.Builder fbb) {
-        final pubKeyOffset = fbb.writeString(object.pubKey);
+        final pubKeyOffset = object.pubKey == null
+            ? null
+            : fbb.writeString(object.pubKey!);
         final nip05Offset = fbb.writeString(object.nip05);
         final relaysOffset = fbb.writeList(
           object.relays.map(fbb.writeString).toList(growable: false),
@@ -1092,7 +1094,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final rootOffset = buffer.derefObject(0);
         final pubKeyParam = const fb.StringReader(
           asciiOptimization: true,
-        ).vTableGet(buffer, rootOffset, 6, '');
+        ).vTableGetNullable(buffer, rootOffset, 6);
         final nip05Param = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 8, '');

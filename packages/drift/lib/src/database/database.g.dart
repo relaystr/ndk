@@ -1453,9 +1453,9 @@ class $Nip05sTable extends Nip05s with TableInfo<$Nip05sTable, DbNip05> {
   late final GeneratedColumn<String> pubKey = GeneratedColumn<String>(
     'pub_key',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _nip05Meta = const VerificationMeta('nip05');
   @override
@@ -1525,8 +1525,6 @@ class $Nip05sTable extends Nip05s with TableInfo<$Nip05sTable, DbNip05> {
         _pubKeyMeta,
         pubKey.isAcceptableOrUnknown(data['pub_key']!, _pubKeyMeta),
       );
-    } else if (isInserting) {
-      context.missing(_pubKeyMeta);
     }
     if (data.containsKey('nip05')) {
       context.handle(
@@ -1565,7 +1563,7 @@ class $Nip05sTable extends Nip05s with TableInfo<$Nip05sTable, DbNip05> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {pubKey};
+  Set<GeneratedColumn> get $primaryKey => {nip05};
   @override
   DbNip05 map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -1573,7 +1571,7 @@ class $Nip05sTable extends Nip05s with TableInfo<$Nip05sTable, DbNip05> {
       pubKey: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}pub_key'],
-      )!,
+      ),
       nip05: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}nip05'],
@@ -1600,13 +1598,13 @@ class $Nip05sTable extends Nip05s with TableInfo<$Nip05sTable, DbNip05> {
 }
 
 class DbNip05 extends DataClass implements Insertable<DbNip05> {
-  final String pubKey;
+  final String? pubKey;
   final String nip05;
   final bool valid;
   final int? networkFetchTime;
   final String relaysJson;
   const DbNip05({
-    required this.pubKey,
+    this.pubKey,
     required this.nip05,
     required this.valid,
     this.networkFetchTime,
@@ -1615,7 +1613,9 @@ class DbNip05 extends DataClass implements Insertable<DbNip05> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['pub_key'] = Variable<String>(pubKey);
+    if (!nullToAbsent || pubKey != null) {
+      map['pub_key'] = Variable<String>(pubKey);
+    }
     map['nip05'] = Variable<String>(nip05);
     map['valid'] = Variable<bool>(valid);
     if (!nullToAbsent || networkFetchTime != null) {
@@ -1627,7 +1627,9 @@ class DbNip05 extends DataClass implements Insertable<DbNip05> {
 
   Nip05sCompanion toCompanion(bool nullToAbsent) {
     return Nip05sCompanion(
-      pubKey: Value(pubKey),
+      pubKey: pubKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pubKey),
       nip05: Value(nip05),
       valid: Value(valid),
       networkFetchTime: networkFetchTime == null && nullToAbsent
@@ -1643,7 +1645,7 @@ class DbNip05 extends DataClass implements Insertable<DbNip05> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DbNip05(
-      pubKey: serializer.fromJson<String>(json['pubKey']),
+      pubKey: serializer.fromJson<String?>(json['pubKey']),
       nip05: serializer.fromJson<String>(json['nip05']),
       valid: serializer.fromJson<bool>(json['valid']),
       networkFetchTime: serializer.fromJson<int?>(json['networkFetchTime']),
@@ -1654,7 +1656,7 @@ class DbNip05 extends DataClass implements Insertable<DbNip05> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'pubKey': serializer.toJson<String>(pubKey),
+      'pubKey': serializer.toJson<String?>(pubKey),
       'nip05': serializer.toJson<String>(nip05),
       'valid': serializer.toJson<bool>(valid),
       'networkFetchTime': serializer.toJson<int?>(networkFetchTime),
@@ -1663,13 +1665,13 @@ class DbNip05 extends DataClass implements Insertable<DbNip05> {
   }
 
   DbNip05 copyWith({
-    String? pubKey,
+    Value<String?> pubKey = const Value.absent(),
     String? nip05,
     bool? valid,
     Value<int?> networkFetchTime = const Value.absent(),
     String? relaysJson,
   }) => DbNip05(
-    pubKey: pubKey ?? this.pubKey,
+    pubKey: pubKey.present ? pubKey.value : this.pubKey,
     nip05: nip05 ?? this.nip05,
     valid: valid ?? this.valid,
     networkFetchTime: networkFetchTime.present
@@ -1718,7 +1720,7 @@ class DbNip05 extends DataClass implements Insertable<DbNip05> {
 }
 
 class Nip05sCompanion extends UpdateCompanion<DbNip05> {
-  final Value<String> pubKey;
+  final Value<String?> pubKey;
   final Value<String> nip05;
   final Value<bool> valid;
   final Value<int?> networkFetchTime;
@@ -1733,14 +1735,13 @@ class Nip05sCompanion extends UpdateCompanion<DbNip05> {
     this.rowid = const Value.absent(),
   });
   Nip05sCompanion.insert({
-    required String pubKey,
+    this.pubKey = const Value.absent(),
     required String nip05,
     required bool valid,
     this.networkFetchTime = const Value.absent(),
     required String relaysJson,
     this.rowid = const Value.absent(),
-  }) : pubKey = Value(pubKey),
-       nip05 = Value(nip05),
+  }) : nip05 = Value(nip05),
        valid = Value(valid),
        relaysJson = Value(relaysJson);
   static Insertable<DbNip05> custom({
@@ -1762,7 +1763,7 @@ class Nip05sCompanion extends UpdateCompanion<DbNip05> {
   }
 
   Nip05sCompanion copyWith({
-    Value<String>? pubKey,
+    Value<String?>? pubKey,
     Value<String>? nip05,
     Value<bool>? valid,
     Value<int?>? networkFetchTime,
@@ -7569,7 +7570,7 @@ typedef $$RelaySetsTableProcessedTableManager =
     >;
 typedef $$Nip05sTableCreateCompanionBuilder =
     Nip05sCompanion Function({
-      required String pubKey,
+      Value<String?> pubKey,
       required String nip05,
       required bool valid,
       Value<int?> networkFetchTime,
@@ -7578,7 +7579,7 @@ typedef $$Nip05sTableCreateCompanionBuilder =
     });
 typedef $$Nip05sTableUpdateCompanionBuilder =
     Nip05sCompanion Function({
-      Value<String> pubKey,
+      Value<String?> pubKey,
       Value<String> nip05,
       Value<bool> valid,
       Value<int?> networkFetchTime,
@@ -7713,7 +7714,7 @@ class $$Nip05sTableTableManager
               $$Nip05sTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<String> pubKey = const Value.absent(),
+                Value<String?> pubKey = const Value.absent(),
                 Value<String> nip05 = const Value.absent(),
                 Value<bool> valid = const Value.absent(),
                 Value<int?> networkFetchTime = const Value.absent(),
@@ -7729,7 +7730,7 @@ class $$Nip05sTableTableManager
               ),
           createCompanionCallback:
               ({
-                required String pubKey,
+                Value<String?> pubKey = const Value.absent(),
                 required String nip05,
                 required bool valid,
                 Value<int?> networkFetchTime = const Value.absent(),

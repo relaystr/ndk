@@ -817,35 +817,28 @@ class SqliteCacheManager extends WalletsRepo implements CacheManager {
   }
 
   @override
-  Future<Nip05?> loadNip05({String? pubKey, String? identifier}) async {
-    final ResultSet rows;
-    if (pubKey != null) {
-      rows = _db.select('SELECT data FROM nip05s WHERE pub_key = ?', [pubKey]);
-    } else if (identifier != null) {
-      rows = _db.select('SELECT data FROM nip05s WHERE nip05 = ? LIMIT 1', [
-        identifier,
-      ]);
-    } else {
-      return null;
-    }
+  Future<Nip05?> loadNip05(String identifier) async {
+    final rows = _db.select('SELECT data FROM nip05s WHERE nip05 = ?', [
+      identifier,
+    ]);
     return rows.isEmpty ? null : _nip05FromData(rows.first['data'] as String);
   }
 
   @override
-  Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
-    final byPubKey = {
+  Future<List<Nip05?>> loadNip05s(List<String> identifiers) async {
+    final byIdentifier = {
       for (final row in _db.select(
-        'SELECT pub_key, data FROM nip05s WHERE pub_key IN $jsonArray',
-        [jsonEncode(pubKeys)],
+        'SELECT nip05, data FROM nip05s WHERE nip05 IN $jsonArray',
+        [jsonEncode(identifiers)],
       ))
-        row['pub_key'] as String: _nip05FromData(row['data'] as String),
+        row['nip05'] as String: _nip05FromData(row['data'] as String),
     };
-    return [for (final pubKey in pubKeys) byPubKey[pubKey]];
+    return [for (final identifier in identifiers) byIdentifier[identifier]];
   }
 
   @override
-  Future<void> removeNip05(String pubKey) async {
-    _db.execute('DELETE FROM nip05s WHERE pub_key = ?', [pubKey]);
+  Future<void> removeNip05(String identifier) async {
+    _db.execute('DELETE FROM nip05s WHERE nip05 = ?', [identifier]);
   }
 
   @override
@@ -854,13 +847,10 @@ class SqliteCacheManager extends WalletsRepo implements CacheManager {
   }
 
   void _writeNip05s(List<Nip05> nip05s) {
-    _executeBatch(
-      'INSERT OR REPLACE INTO nip05s (pub_key, nip05, data) VALUES (?, ?, ?)',
-      [
-        for (final nip05 in nip05s)
-          [nip05.pubKey, nip05.nip05, jsonEncode(nip05.toJsonForStorage())],
-      ],
-    );
+    _executeBatch('INSERT OR REPLACE INTO nip05s (nip05, data) VALUES (?, ?)', [
+      for (final nip05 in nip05s)
+        [nip05.identifier, jsonEncode(nip05.toJsonForStorage())],
+    ]);
   }
 
   Nip05 _nip05FromData(String data) {

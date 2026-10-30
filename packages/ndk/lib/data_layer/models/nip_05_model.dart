@@ -5,7 +5,7 @@ class Nip05Model extends Nip05 {
   /// creates a new [Nip05Model] instance
   Nip05Model({
     required super.pubKey,
-    required super.nip05,
+    required super.identifier,
     super.valid,
     super.networkFetchTime,
     super.relays,

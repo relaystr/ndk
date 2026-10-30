@@ -7,7 +7,7 @@ class DbNip05 {
   int dbId = 0;
 
   @Property()
-  late String pubKey;
+  String? pubKey;
 
   @Property()
   late String nip05;
@@ -32,7 +32,7 @@ class DbNip05 {
   ndk_entities.Nip05 toNdk() {
     final ndkNip05 = ndk_entities.Nip05(
       pubKey: pubKey,
-      nip05: nip05,
+      identifier: nip05,
       valid: valid,
       networkFetchTime: networkFetchTime,
       relays: relays,
@@ -44,7 +44,7 @@ class DbNip05 {
   factory DbNip05.fromNdk(ndk_entities.Nip05 ndkNip05) {
     final dbNip05 = DbNip05(
       pubKey: ndkNip05.pubKey,
-      nip05: ndkNip05.nip05,
+      nip05: ndkNip05.identifier,
       valid: ndkNip05.valid,
       networkFetchTime: ndkNip05.networkFetchTime,
       relays: ndkNip05.relays ?? [],

@@ -41,7 +41,7 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
   NdkCacheDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration {
@@ -90,6 +90,11 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
         if (from < 8) {
           await m.createIndex(eventsPubKeyKindCreatedAt);
           await m.createIndex(eventsKindCreatedAt);
+        }
+        // keyed by identifier since #936, the cached rows are dropped
+        if (from < 9) {
+          await m.deleteTable('nip05s');
+          await m.createTable(nip05s);
         }
       },
     );

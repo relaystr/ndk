@@ -8,7 +8,6 @@ import '../../repositories/nip_05_repo.dart';
 class Nip05Usecase {
   // Keep request deduplication local to this use case/NDK instance. Different
   // instances may use different repositories and caches for the same NIP-05.
-  final Map<(String, String), Future<Nip05>> _inFlightRequests = {};
   final Map<String, Future<Nip05ResolveResult>> _inFlightResolves = {};
 
   final CacheManager _database;
@@ -35,63 +34,15 @@ class Nip05Usecase {
       throw Exception("nip05 or pubkey empty");
     }
 
-    final identifier = Nip05.canonicalIdentifier(nip05);
-    if (identifier == null) {
-      return Nip05(pubKey: pubkey, nip05: nip05, valid: false);
+    final result = await resolve(nip05);
+    if (result case Nip05Found(:final data) when data.pubKey == pubkey) {
+      return data;
     }
-
-    final databaseResult = await _database.loadNip05(pubKey: pubkey);
-
-    if (databaseResult != null && databaseResult.nip05 == identifier) {
-      int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      int lastCheck = databaseResult.networkFetchTime ?? 0;
-      if (now - lastCheck < NIP_05_VALID_DURATION.inSeconds) {
-        return databaseResult;
-      }
-    }
-
-    final inFlightKey = (identifier, pubkey);
-
-    // Check if there's an in-flight request for this nip05
-    if (_inFlightRequests.containsKey(inFlightKey)) {
-      // Wait for the existing request to complete
-      return await _inFlightRequests[inFlightKey]!;
-    }
-
-    // Create a new request and add it to the in-flight map
-    final request = _performCheck(
-      identifier,
-      pubkey,
-      Nip05(pubKey: pubkey, nip05: identifier),
+    return Nip05(
+      pubKey: pubkey,
+      identifier: Nip05.canonicalIdentifier(nip05) ?? nip05,
+      valid: false,
     );
-    _inFlightRequests[inFlightKey] = request;
-
-    try {
-      return await request;
-    } finally {
-      // Remove the request from the in-flight map once it's completed
-      _inFlightRequests.remove(inFlightKey);
-    }
-  }
-
-  Future<Nip05> _performCheck(String nip05, String pubkey, Nip05 result) async {
-    Nip05? networkResult;
-    try {
-      networkResult = await _nip05Repository.requestNip05(nip05, pubkey);
-    } catch (e) {
-      networkResult = null;
-    }
-
-    if (networkResult != null) {
-      result.valid = networkResult.valid;
-      result.relays = networkResult.relays;
-    }
-
-    /// needs to be outside the if statement to update the networkFetchTime even on 404
-    result.networkFetchTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-    await _database.saveNip05(result);
-    return result;
   }
 
   /// Resolves NIP-05 data without requiring a pubkey for validation.
@@ -99,6 +50,7 @@ class Nip05Usecase {
   /// [nip05] the nip05 identifier (e.g. "username@example.com")
   /// returns a [Nip05ResolveResult] — one of [Nip05Found], [Nip05NotFound],
   /// or [Nip05ResolveError]. Throws if [nip05] is empty.
+  /// A [Nip05NotFound] is remembered for [NIP_05_NOT_FOUND_DURATION].
   Future<Nip05ResolveResult> resolve(String nip05) async {
     if (nip05.isEmpty) {
       throw Exception("nip05 empty");
@@ -110,12 +62,18 @@ class Nip05Usecase {
     }
 
     // Check cache first
-    final databaseResult = await _database.loadNip05(identifier: identifier);
-    // check() also caches failed verifications, which must not resolve
-    if (databaseResult != null && databaseResult.valid) {
+    final databaseResult = await _database.loadNip05(identifier);
+    if (databaseResult != null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      int lastCheck = databaseResult.networkFetchTime ?? 0;
-      if (now - lastCheck < NIP_05_VALID_DURATION.inSeconds) {
+      int age = now - (databaseResult.networkFetchTime ?? 0);
+      if (databaseResult.pubKey == null &&
+          age < NIP_05_NOT_FOUND_DURATION.inSeconds) {
+        return const Nip05NotFound();
+      }
+      // before #936, check() also cached failed verifications
+      if (databaseResult.pubKey != null &&
+          databaseResult.valid &&
+          age < NIP_05_VALID_DURATION.inSeconds) {
         return Nip05Found(databaseResult);
       }
     }
@@ -140,6 +98,13 @@ class Nip05Usecase {
     try {
       final result = await _nip05Repository.fetchNip05(nip05);
       if (result == null) {
+        await _database.saveNip05(
+          Nip05(
+            pubKey: null,
+            identifier: nip05,
+            networkFetchTime: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          ),
+        );
         return const Nip05NotFound();
       }
       await _database.saveNip05(result);

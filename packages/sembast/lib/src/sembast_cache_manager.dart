@@ -655,26 +655,15 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
-  Future<Nip05?> loadNip05({String? pubKey, String? identifier}) async {
-    if (pubKey != null) {
-      final data = await _nip05Store.record(pubKey).get(_database);
-      if (data == null) return null;
-      return Nip05Extension.fromJsonStorage(data);
-    }
-    if (identifier != null) {
-      final finder = sembast.Finder(
-        filter: sembast.Filter.equals('nip05', identifier),
-      );
-      final record = await _nip05Store.findFirst(_database, finder: finder);
-      if (record == null) return null;
-      return Nip05Extension.fromJsonStorage(record.value);
-    }
-    return null;
+  Future<Nip05?> loadNip05(String identifier) async {
+    final data = await _nip05Store.record(identifier).get(_database);
+    if (data == null) return null;
+    return Nip05Extension.fromJsonStorage(data);
   }
 
   @override
-  Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
-    final snapshots = await _nip05Store.records(pubKeys).get(_database);
+  Future<List<Nip05?>> loadNip05s(List<String> identifiers) async {
+    final snapshots = await _nip05Store.records(identifiers).get(_database);
     return snapshots.map((data) {
       if (data == null) return null;
       return Nip05Extension.fromJsonStorage(data);
@@ -910,8 +899,8 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
-  Future<void> removeNip05(String pubKey) async {
-    await _nip05Store.record(pubKey).delete(_database);
+  Future<void> removeNip05(String identifier) async {
+    await _nip05Store.record(identifier).delete(_database);
   }
 
   @override
@@ -992,13 +981,13 @@ class SembastCacheManager extends CacheManager {
   @override
   Future<void> saveNip05(Nip05 nip05) async {
     await _nip05Store
-        .record(nip05.pubKey)
+        .record(nip05.identifier)
         .put(_database, nip05.toJsonForStorage());
   }
 
   @override
   Future<void> saveNip05s(List<Nip05> nip05s) async {
-    final keys = nip05s.map((n) => n.pubKey).toList();
+    final keys = nip05s.map((n) => n.identifier).toList();
     final values = nip05s.map((n) => n.toJsonForStorage()).toList();
     await _nip05Store.records(keys).put(_database, values);
   }

@@ -29,11 +29,8 @@ class MemCacheManager implements CacheManager {
   /// In memory storage
   Map<String, RelaySet> relaySets = {};
 
-  /// In memory storage indexed by pubKey
-  Map<String, Nip05> nip05s = {};
-
   /// In memory storage indexed by nip05 identifier
-  Map<String, Nip05> nip05sByIdentifier = {};
+  Map<String, Nip05> nip05s = {};
 
   /// In memory storage
   Map<String, Nip01Event> events = {};
@@ -112,51 +109,34 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> saveNip05(Nip05 nip05) async {
-    nip05s[nip05.pubKey] = nip05;
-    nip05sByIdentifier[nip05.nip05] = nip05;
+    nip05s[nip05.identifier] = nip05;
   }
 
   @override
-  Future<Nip05?> loadNip05({String? pubKey, String? identifier}) async {
-    if (pubKey != null) {
-      return nip05s[pubKey];
-    }
-    if (identifier != null) {
-      return nip05sByIdentifier[identifier];
-    }
-    return null;
+  Future<Nip05?> loadNip05(String identifier) async {
+    return nip05s[identifier];
   }
 
   @override
-  Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
-    List<Nip05?> result = [];
-    for (String pubKey in pubKeys) {
-      result.add(nip05s[pubKey]);
-    }
-    return result;
+  Future<List<Nip05?>> loadNip05s(List<String> identifiers) async {
+    return [for (final identifier in identifiers) nip05s[identifier]];
   }
 
   @override
   Future<void> saveNip05s(List<Nip05> nip05s) async {
     for (var nip05 in nip05s) {
-      this.nip05s[nip05.pubKey] = nip05;
-      nip05sByIdentifier[nip05.nip05] = nip05;
+      this.nip05s[nip05.identifier] = nip05;
     }
   }
 
   @override
   Future<void> removeAllNip05s() async {
     nip05s.clear();
-    nip05sByIdentifier.clear();
   }
 
   @override
-  Future<void> removeNip05(String pubKey) async {
-    final nip05 = nip05s[pubKey];
-    if (nip05 != null) {
-      nip05sByIdentifier.remove(nip05.nip05);
-    }
-    nip05s.remove(pubKey);
+  Future<void> removeNip05(String identifier) async {
+    nip05s.remove(identifier);
   }
 
   /// **************************************************************************
@@ -1095,7 +1075,6 @@ class MemCacheManager implements CacheManager {
     cashuKeysets.clear();
     cashuProofs.clear();
     cashuMintInfos.clear();
-    nip05sByIdentifier.clear();
     filterFetchedRangeRecords.clear();
   }
 

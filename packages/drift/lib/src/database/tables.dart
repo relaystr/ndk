@@ -54,14 +54,14 @@ class RelaySets extends Table {
 /// Table for storing NIP-05 verification data
 @DataClassName('DbNip05')
 class Nip05s extends Table {
-  TextColumn get pubKey => text()();
+  TextColumn get pubKey => text().nullable()();
   TextColumn get nip05 => text()();
   BoolColumn get valid => boolean()();
   IntColumn get networkFetchTime => integer().nullable()();
   TextColumn get relaysJson => text()(); // JSON encoded relays
 
   @override
-  Set<Column> get primaryKey => {pubKey};
+  Set<Column> get primaryKey => {nip05};
 }
 
 /// Table for storing filter fetched range records
