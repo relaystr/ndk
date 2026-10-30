@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793372678958,
+  "lastUpdate": 1793372792118,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2734,6 +2734,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1606816,
             "range": "1602518-1617728",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9aecf19bad4a5b15f8b6028363fcc561c02ffb2a",
+          "message": "Merge pull request #933 from relaystr/feat/nip77-load-event-ids-with-created-at\n\nfeat: add CacheManager.loadEventIdsWithCreatedAt for the NIP-77 local set (fixes #885)",
+          "timestamp": "2026-10-30T16:03:58+01:00",
+          "tree_id": "4b4a63c8d3bc6f867242bebac438efa2d1590b32",
+          "url": "https://github.com/relaystr/ndk/commit/9aecf19bad4a5b15f8b6028363fcc561c02ffb2a"
+        },
+        "date": 1793372789705,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 31119,
+            "range": "30355-33567",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 943194,
+            "range": "871094-985038",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
