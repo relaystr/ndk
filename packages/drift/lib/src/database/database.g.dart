@@ -102,6 +102,28 @@ class $EventsTable extends Events with TableInfo<$EventsTable, DbEvent> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _conflictKeyMeta = const VerificationMeta(
+    'conflictKey',
+  );
+  @override
+  late final GeneratedColumn<String> conflictKey = GeneratedColumn<String>(
+    'conflict_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _expirationMeta = const VerificationMeta(
+    'expiration',
+  );
+  @override
+  late final GeneratedColumn<int> expiration = GeneratedColumn<int>(
+    'expiration',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -113,6 +135,8 @@ class $EventsTable extends Events with TableInfo<$EventsTable, DbEvent> {
     validSig,
     tagsJson,
     sourcesJson,
+    conflictKey,
+    expiration,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -194,6 +218,21 @@ class $EventsTable extends Events with TableInfo<$EventsTable, DbEvent> {
     } else if (isInserting) {
       context.missing(_sourcesJsonMeta);
     }
+    if (data.containsKey('conflict_key')) {
+      context.handle(
+        _conflictKeyMeta,
+        conflictKey.isAcceptableOrUnknown(
+          data['conflict_key']!,
+          _conflictKeyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('expiration')) {
+      context.handle(
+        _expirationMeta,
+        expiration.isAcceptableOrUnknown(data['expiration']!, _expirationMeta),
+      );
+    }
     return context;
   }
 
@@ -239,6 +278,14 @@ class $EventsTable extends Events with TableInfo<$EventsTable, DbEvent> {
         DriftSqlType.string,
         data['${effectivePrefix}sources_json'],
       )!,
+      conflictKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}conflict_key'],
+      ),
+      expiration: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}expiration'],
+      ),
     );
   }
 
@@ -258,6 +305,8 @@ class DbEvent extends DataClass implements Insertable<DbEvent> {
   final bool? validSig;
   final String tagsJson;
   final String sourcesJson;
+  final String? conflictKey;
+  final int? expiration;
   const DbEvent({
     required this.id,
     required this.pubKey,
@@ -268,6 +317,8 @@ class DbEvent extends DataClass implements Insertable<DbEvent> {
     this.validSig,
     required this.tagsJson,
     required this.sourcesJson,
+    this.conflictKey,
+    this.expiration,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -285,6 +336,12 @@ class DbEvent extends DataClass implements Insertable<DbEvent> {
     }
     map['tags_json'] = Variable<String>(tagsJson);
     map['sources_json'] = Variable<String>(sourcesJson);
+    if (!nullToAbsent || conflictKey != null) {
+      map['conflict_key'] = Variable<String>(conflictKey);
+    }
+    if (!nullToAbsent || expiration != null) {
+      map['expiration'] = Variable<int>(expiration);
+    }
     return map;
   }
 
@@ -301,6 +358,12 @@ class DbEvent extends DataClass implements Insertable<DbEvent> {
           : Value(validSig),
       tagsJson: Value(tagsJson),
       sourcesJson: Value(sourcesJson),
+      conflictKey: conflictKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(conflictKey),
+      expiration: expiration == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expiration),
     );
   }
 
@@ -319,6 +382,8 @@ class DbEvent extends DataClass implements Insertable<DbEvent> {
       validSig: serializer.fromJson<bool?>(json['validSig']),
       tagsJson: serializer.fromJson<String>(json['tagsJson']),
       sourcesJson: serializer.fromJson<String>(json['sourcesJson']),
+      conflictKey: serializer.fromJson<String?>(json['conflictKey']),
+      expiration: serializer.fromJson<int?>(json['expiration']),
     );
   }
   @override
@@ -334,6 +399,8 @@ class DbEvent extends DataClass implements Insertable<DbEvent> {
       'validSig': serializer.toJson<bool?>(validSig),
       'tagsJson': serializer.toJson<String>(tagsJson),
       'sourcesJson': serializer.toJson<String>(sourcesJson),
+      'conflictKey': serializer.toJson<String?>(conflictKey),
+      'expiration': serializer.toJson<int?>(expiration),
     };
   }
 
@@ -347,6 +414,8 @@ class DbEvent extends DataClass implements Insertable<DbEvent> {
     Value<bool?> validSig = const Value.absent(),
     String? tagsJson,
     String? sourcesJson,
+    Value<String?> conflictKey = const Value.absent(),
+    Value<int?> expiration = const Value.absent(),
   }) => DbEvent(
     id: id ?? this.id,
     pubKey: pubKey ?? this.pubKey,
@@ -357,6 +426,8 @@ class DbEvent extends DataClass implements Insertable<DbEvent> {
     validSig: validSig.present ? validSig.value : this.validSig,
     tagsJson: tagsJson ?? this.tagsJson,
     sourcesJson: sourcesJson ?? this.sourcesJson,
+    conflictKey: conflictKey.present ? conflictKey.value : this.conflictKey,
+    expiration: expiration.present ? expiration.value : this.expiration,
   );
   DbEvent copyWithCompanion(EventsCompanion data) {
     return DbEvent(
@@ -371,6 +442,12 @@ class DbEvent extends DataClass implements Insertable<DbEvent> {
       sourcesJson: data.sourcesJson.present
           ? data.sourcesJson.value
           : this.sourcesJson,
+      conflictKey: data.conflictKey.present
+          ? data.conflictKey.value
+          : this.conflictKey,
+      expiration: data.expiration.present
+          ? data.expiration.value
+          : this.expiration,
     );
   }
 
@@ -385,7 +462,9 @@ class DbEvent extends DataClass implements Insertable<DbEvent> {
           ..write('sig: $sig, ')
           ..write('validSig: $validSig, ')
           ..write('tagsJson: $tagsJson, ')
-          ..write('sourcesJson: $sourcesJson')
+          ..write('sourcesJson: $sourcesJson, ')
+          ..write('conflictKey: $conflictKey, ')
+          ..write('expiration: $expiration')
           ..write(')'))
         .toString();
   }
@@ -401,6 +480,8 @@ class DbEvent extends DataClass implements Insertable<DbEvent> {
     validSig,
     tagsJson,
     sourcesJson,
+    conflictKey,
+    expiration,
   );
   @override
   bool operator ==(Object other) =>
@@ -414,7 +495,9 @@ class DbEvent extends DataClass implements Insertable<DbEvent> {
           other.sig == this.sig &&
           other.validSig == this.validSig &&
           other.tagsJson == this.tagsJson &&
-          other.sourcesJson == this.sourcesJson);
+          other.sourcesJson == this.sourcesJson &&
+          other.conflictKey == this.conflictKey &&
+          other.expiration == this.expiration);
 }
 
 class EventsCompanion extends UpdateCompanion<DbEvent> {
@@ -427,6 +510,8 @@ class EventsCompanion extends UpdateCompanion<DbEvent> {
   final Value<bool?> validSig;
   final Value<String> tagsJson;
   final Value<String> sourcesJson;
+  final Value<String?> conflictKey;
+  final Value<int?> expiration;
   final Value<int> rowid;
   const EventsCompanion({
     this.id = const Value.absent(),
@@ -438,6 +523,8 @@ class EventsCompanion extends UpdateCompanion<DbEvent> {
     this.validSig = const Value.absent(),
     this.tagsJson = const Value.absent(),
     this.sourcesJson = const Value.absent(),
+    this.conflictKey = const Value.absent(),
+    this.expiration = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   EventsCompanion.insert({
@@ -450,6 +537,8 @@ class EventsCompanion extends UpdateCompanion<DbEvent> {
     this.validSig = const Value.absent(),
     required String tagsJson,
     required String sourcesJson,
+    this.conflictKey = const Value.absent(),
+    this.expiration = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        pubKey = Value(pubKey),
@@ -468,6 +557,8 @@ class EventsCompanion extends UpdateCompanion<DbEvent> {
     Expression<bool>? validSig,
     Expression<String>? tagsJson,
     Expression<String>? sourcesJson,
+    Expression<String>? conflictKey,
+    Expression<int>? expiration,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -480,6 +571,8 @@ class EventsCompanion extends UpdateCompanion<DbEvent> {
       if (validSig != null) 'valid_sig': validSig,
       if (tagsJson != null) 'tags_json': tagsJson,
       if (sourcesJson != null) 'sources_json': sourcesJson,
+      if (conflictKey != null) 'conflict_key': conflictKey,
+      if (expiration != null) 'expiration': expiration,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -494,6 +587,8 @@ class EventsCompanion extends UpdateCompanion<DbEvent> {
     Value<bool?>? validSig,
     Value<String>? tagsJson,
     Value<String>? sourcesJson,
+    Value<String?>? conflictKey,
+    Value<int?>? expiration,
     Value<int>? rowid,
   }) {
     return EventsCompanion(
@@ -506,6 +601,8 @@ class EventsCompanion extends UpdateCompanion<DbEvent> {
       validSig: validSig ?? this.validSig,
       tagsJson: tagsJson ?? this.tagsJson,
       sourcesJson: sourcesJson ?? this.sourcesJson,
+      conflictKey: conflictKey ?? this.conflictKey,
+      expiration: expiration ?? this.expiration,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -540,6 +637,12 @@ class EventsCompanion extends UpdateCompanion<DbEvent> {
     if (sourcesJson.present) {
       map['sources_json'] = Variable<String>(sourcesJson.value);
     }
+    if (conflictKey.present) {
+      map['conflict_key'] = Variable<String>(conflictKey.value);
+    }
+    if (expiration.present) {
+      map['expiration'] = Variable<int>(expiration.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -558,6 +661,652 @@ class EventsCompanion extends UpdateCompanion<DbEvent> {
           ..write('validSig: $validSig, ')
           ..write('tagsJson: $tagsJson, ')
           ..write('sourcesJson: $sourcesJson, ')
+          ..write('conflictKey: $conflictKey, ')
+          ..write('expiration: $expiration, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $EventTagsTable extends EventTags
+    with TableInfo<$EventTagsTable, DbEventTag> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EventTagsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _eventIdMeta = const VerificationMeta(
+    'eventId',
+  );
+  @override
+  late final GeneratedColumn<String> eventId = GeneratedColumn<String>(
+    'event_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES events (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [eventId, name, value];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'event_tags';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DbEventTag> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('event_id')) {
+      context.handle(
+        _eventIdMeta,
+        eventId.isAcceptableOrUnknown(data['event_id']!, _eventIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_eventIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => const {};
+  @override
+  DbEventTag map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DbEventTag(
+      eventId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}event_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value'],
+      ),
+    );
+  }
+
+  @override
+  $EventTagsTable createAlias(String alias) {
+    return $EventTagsTable(attachedDatabase, alias);
+  }
+}
+
+class DbEventTag extends DataClass implements Insertable<DbEventTag> {
+  final String eventId;
+  final String name;
+  final String? value;
+  const DbEventTag({required this.eventId, required this.name, this.value});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['event_id'] = Variable<String>(eventId);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || value != null) {
+      map['value'] = Variable<String>(value);
+    }
+    return map;
+  }
+
+  EventTagsCompanion toCompanion(bool nullToAbsent) {
+    return EventTagsCompanion(
+      eventId: Value(eventId),
+      name: Value(name),
+      value: value == null && nullToAbsent
+          ? const Value.absent()
+          : Value(value),
+    );
+  }
+
+  factory DbEventTag.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DbEventTag(
+      eventId: serializer.fromJson<String>(json['eventId']),
+      name: serializer.fromJson<String>(json['name']),
+      value: serializer.fromJson<String?>(json['value']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'eventId': serializer.toJson<String>(eventId),
+      'name': serializer.toJson<String>(name),
+      'value': serializer.toJson<String?>(value),
+    };
+  }
+
+  DbEventTag copyWith({
+    String? eventId,
+    String? name,
+    Value<String?> value = const Value.absent(),
+  }) => DbEventTag(
+    eventId: eventId ?? this.eventId,
+    name: name ?? this.name,
+    value: value.present ? value.value : this.value,
+  );
+  DbEventTag copyWithCompanion(EventTagsCompanion data) {
+    return DbEventTag(
+      eventId: data.eventId.present ? data.eventId.value : this.eventId,
+      name: data.name.present ? data.name.value : this.name,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DbEventTag(')
+          ..write('eventId: $eventId, ')
+          ..write('name: $name, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(eventId, name, value);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DbEventTag &&
+          other.eventId == this.eventId &&
+          other.name == this.name &&
+          other.value == this.value);
+}
+
+class EventTagsCompanion extends UpdateCompanion<DbEventTag> {
+  final Value<String> eventId;
+  final Value<String> name;
+  final Value<String?> value;
+  final Value<int> rowid;
+  const EventTagsCompanion({
+    this.eventId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  EventTagsCompanion.insert({
+    required String eventId,
+    required String name,
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : eventId = Value(eventId),
+       name = Value(name);
+  static Insertable<DbEventTag> custom({
+    Expression<String>? eventId,
+    Expression<String>? name,
+    Expression<String>? value,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (eventId != null) 'event_id': eventId,
+      if (name != null) 'name': name,
+      if (value != null) 'value': value,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  EventTagsCompanion copyWith({
+    Value<String>? eventId,
+    Value<String>? name,
+    Value<String?>? value,
+    Value<int>? rowid,
+  }) {
+    return EventTagsCompanion(
+      eventId: eventId ?? this.eventId,
+      name: name ?? this.name,
+      value: value ?? this.value,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (eventId.present) {
+      map['event_id'] = Variable<String>(eventId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EventTagsCompanion(')
+          ..write('eventId: $eventId, ')
+          ..write('name: $name, ')
+          ..write('value: $value, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DeletionTargetsTable extends DeletionTargets
+    with TableInfo<$DeletionTargetsTable, DbDeletionTarget> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DeletionTargetsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _deletionIdMeta = const VerificationMeta(
+    'deletionId',
+  );
+  @override
+  late final GeneratedColumn<String> deletionId = GeneratedColumn<String>(
+    'deletion_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES events (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _pubKeyMeta = const VerificationMeta('pubKey');
+  @override
+  late final GeneratedColumn<String> pubKey = GeneratedColumn<String>(
+    'pub_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _eventIdMeta = const VerificationMeta(
+    'eventId',
+  );
+  @override
+  late final GeneratedColumn<String> eventId = GeneratedColumn<String>(
+    'event_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _conflictKeyMeta = const VerificationMeta(
+    'conflictKey',
+  );
+  @override
+  late final GeneratedColumn<String> conflictKey = GeneratedColumn<String>(
+    'conflict_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    deletionId,
+    pubKey,
+    createdAt,
+    eventId,
+    conflictKey,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'deletion_targets';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DbDeletionTarget> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('deletion_id')) {
+      context.handle(
+        _deletionIdMeta,
+        deletionId.isAcceptableOrUnknown(data['deletion_id']!, _deletionIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_deletionIdMeta);
+    }
+    if (data.containsKey('pub_key')) {
+      context.handle(
+        _pubKeyMeta,
+        pubKey.isAcceptableOrUnknown(data['pub_key']!, _pubKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pubKeyMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('event_id')) {
+      context.handle(
+        _eventIdMeta,
+        eventId.isAcceptableOrUnknown(data['event_id']!, _eventIdMeta),
+      );
+    }
+    if (data.containsKey('conflict_key')) {
+      context.handle(
+        _conflictKeyMeta,
+        conflictKey.isAcceptableOrUnknown(
+          data['conflict_key']!,
+          _conflictKeyMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => const {};
+  @override
+  DbDeletionTarget map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DbDeletionTarget(
+      deletionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}deletion_id'],
+      )!,
+      pubKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pub_key'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}created_at'],
+      )!,
+      eventId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}event_id'],
+      ),
+      conflictKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}conflict_key'],
+      ),
+    );
+  }
+
+  @override
+  $DeletionTargetsTable createAlias(String alias) {
+    return $DeletionTargetsTable(attachedDatabase, alias);
+  }
+}
+
+class DbDeletionTarget extends DataClass
+    implements Insertable<DbDeletionTarget> {
+  final String deletionId;
+  final String pubKey;
+  final int createdAt;
+  final String? eventId;
+  final String? conflictKey;
+  const DbDeletionTarget({
+    required this.deletionId,
+    required this.pubKey,
+    required this.createdAt,
+    this.eventId,
+    this.conflictKey,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['deletion_id'] = Variable<String>(deletionId);
+    map['pub_key'] = Variable<String>(pubKey);
+    map['created_at'] = Variable<int>(createdAt);
+    if (!nullToAbsent || eventId != null) {
+      map['event_id'] = Variable<String>(eventId);
+    }
+    if (!nullToAbsent || conflictKey != null) {
+      map['conflict_key'] = Variable<String>(conflictKey);
+    }
+    return map;
+  }
+
+  DeletionTargetsCompanion toCompanion(bool nullToAbsent) {
+    return DeletionTargetsCompanion(
+      deletionId: Value(deletionId),
+      pubKey: Value(pubKey),
+      createdAt: Value(createdAt),
+      eventId: eventId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(eventId),
+      conflictKey: conflictKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(conflictKey),
+    );
+  }
+
+  factory DbDeletionTarget.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DbDeletionTarget(
+      deletionId: serializer.fromJson<String>(json['deletionId']),
+      pubKey: serializer.fromJson<String>(json['pubKey']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
+      eventId: serializer.fromJson<String?>(json['eventId']),
+      conflictKey: serializer.fromJson<String?>(json['conflictKey']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'deletionId': serializer.toJson<String>(deletionId),
+      'pubKey': serializer.toJson<String>(pubKey),
+      'createdAt': serializer.toJson<int>(createdAt),
+      'eventId': serializer.toJson<String?>(eventId),
+      'conflictKey': serializer.toJson<String?>(conflictKey),
+    };
+  }
+
+  DbDeletionTarget copyWith({
+    String? deletionId,
+    String? pubKey,
+    int? createdAt,
+    Value<String?> eventId = const Value.absent(),
+    Value<String?> conflictKey = const Value.absent(),
+  }) => DbDeletionTarget(
+    deletionId: deletionId ?? this.deletionId,
+    pubKey: pubKey ?? this.pubKey,
+    createdAt: createdAt ?? this.createdAt,
+    eventId: eventId.present ? eventId.value : this.eventId,
+    conflictKey: conflictKey.present ? conflictKey.value : this.conflictKey,
+  );
+  DbDeletionTarget copyWithCompanion(DeletionTargetsCompanion data) {
+    return DbDeletionTarget(
+      deletionId: data.deletionId.present
+          ? data.deletionId.value
+          : this.deletionId,
+      pubKey: data.pubKey.present ? data.pubKey.value : this.pubKey,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      eventId: data.eventId.present ? data.eventId.value : this.eventId,
+      conflictKey: data.conflictKey.present
+          ? data.conflictKey.value
+          : this.conflictKey,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DbDeletionTarget(')
+          ..write('deletionId: $deletionId, ')
+          ..write('pubKey: $pubKey, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('eventId: $eventId, ')
+          ..write('conflictKey: $conflictKey')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(deletionId, pubKey, createdAt, eventId, conflictKey);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DbDeletionTarget &&
+          other.deletionId == this.deletionId &&
+          other.pubKey == this.pubKey &&
+          other.createdAt == this.createdAt &&
+          other.eventId == this.eventId &&
+          other.conflictKey == this.conflictKey);
+}
+
+class DeletionTargetsCompanion extends UpdateCompanion<DbDeletionTarget> {
+  final Value<String> deletionId;
+  final Value<String> pubKey;
+  final Value<int> createdAt;
+  final Value<String?> eventId;
+  final Value<String?> conflictKey;
+  final Value<int> rowid;
+  const DeletionTargetsCompanion({
+    this.deletionId = const Value.absent(),
+    this.pubKey = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.eventId = const Value.absent(),
+    this.conflictKey = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DeletionTargetsCompanion.insert({
+    required String deletionId,
+    required String pubKey,
+    required int createdAt,
+    this.eventId = const Value.absent(),
+    this.conflictKey = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : deletionId = Value(deletionId),
+       pubKey = Value(pubKey),
+       createdAt = Value(createdAt);
+  static Insertable<DbDeletionTarget> custom({
+    Expression<String>? deletionId,
+    Expression<String>? pubKey,
+    Expression<int>? createdAt,
+    Expression<String>? eventId,
+    Expression<String>? conflictKey,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (deletionId != null) 'deletion_id': deletionId,
+      if (pubKey != null) 'pub_key': pubKey,
+      if (createdAt != null) 'created_at': createdAt,
+      if (eventId != null) 'event_id': eventId,
+      if (conflictKey != null) 'conflict_key': conflictKey,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DeletionTargetsCompanion copyWith({
+    Value<String>? deletionId,
+    Value<String>? pubKey,
+    Value<int>? createdAt,
+    Value<String?>? eventId,
+    Value<String?>? conflictKey,
+    Value<int>? rowid,
+  }) {
+    return DeletionTargetsCompanion(
+      deletionId: deletionId ?? this.deletionId,
+      pubKey: pubKey ?? this.pubKey,
+      createdAt: createdAt ?? this.createdAt,
+      eventId: eventId ?? this.eventId,
+      conflictKey: conflictKey ?? this.conflictKey,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (deletionId.present) {
+      map['deletion_id'] = Variable<String>(deletionId.value);
+    }
+    if (pubKey.present) {
+      map['pub_key'] = Variable<String>(pubKey.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(createdAt.value);
+    }
+    if (eventId.present) {
+      map['event_id'] = Variable<String>(eventId.value);
+    }
+    if (conflictKey.present) {
+      map['conflict_key'] = Variable<String>(conflictKey.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DeletionTargetsCompanion(')
+          ..write('deletionId: $deletionId, ')
+          ..write('pubKey: $pubKey, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('eventId: $eventId, ')
+          ..write('conflictKey: $conflictKey, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -6783,6 +7532,10 @@ abstract class _$NdkCacheDatabase extends GeneratedDatabase {
   _$NdkCacheDatabase(QueryExecutor e) : super(e);
   $NdkCacheDatabaseManager get managers => $NdkCacheDatabaseManager(this);
   late final $EventsTable events = $EventsTable(this);
+  late final $EventTagsTable eventTags = $EventTagsTable(this);
+  late final $DeletionTargetsTable deletionTargets = $DeletionTargetsTable(
+    this,
+  );
   late final $UserRelayListsTable userRelayLists = $UserRelayListsTable(this);
   late final $RelaySetsTable relaySets = $RelaySetsTable(this);
   late final $Nip05sTable nip05s = $Nip05sTable(this);
@@ -6811,12 +7564,46 @@ abstract class _$NdkCacheDatabase extends GeneratedDatabase {
     'events_kind_created_at',
     'CREATE INDEX events_kind_created_at ON events (kind, created_at)',
   );
+  late final Index eventsCreatedAt = Index(
+    'events_created_at',
+    'CREATE INDEX events_created_at ON events (created_at)',
+  );
+  late final Index eventsConflictKey = Index(
+    'events_conflict_key',
+    'CREATE INDEX events_conflict_key ON events (conflict_key, created_at) WHERE conflict_key IS NOT NULL',
+  );
+  late final Index eventsExpiration = Index(
+    'events_expiration',
+    'CREATE INDEX events_expiration ON events (expiration) WHERE expiration IS NOT NULL',
+  );
+  late final Index eventTagsNameValue = Index(
+    'event_tags_name_value',
+    'CREATE INDEX event_tags_name_value ON event_tags (name, value, event_id)',
+  );
+  late final Index eventTagsEventId = Index(
+    'event_tags_event_id',
+    'CREATE INDEX event_tags_event_id ON event_tags (event_id)',
+  );
+  late final Index deletionTargetsEventId = Index(
+    'deletion_targets_event_id',
+    'CREATE INDEX deletion_targets_event_id ON deletion_targets (event_id, pub_key) WHERE event_id IS NOT NULL',
+  );
+  late final Index deletionTargetsConflictKey = Index(
+    'deletion_targets_conflict_key',
+    'CREATE INDEX deletion_targets_conflict_key ON deletion_targets (conflict_key, pub_key, created_at) WHERE conflict_key IS NOT NULL',
+  );
+  late final Index deletionTargetsDeletionId = Index(
+    'deletion_targets_deletion_id',
+    'CREATE INDEX deletion_targets_deletion_id ON deletion_targets (deletion_id)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     events,
+    eventTags,
+    deletionTargets,
     userRelayLists,
     relaySets,
     nip05s,
@@ -6833,7 +7620,32 @@ abstract class _$NdkCacheDatabase extends GeneratedDatabase {
     walletTransactions,
     eventsPubKeyKindCreatedAt,
     eventsKindCreatedAt,
+    eventsCreatedAt,
+    eventsConflictKey,
+    eventsExpiration,
+    eventTagsNameValue,
+    eventTagsEventId,
+    deletionTargetsEventId,
+    deletionTargetsConflictKey,
+    deletionTargetsDeletionId,
   ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'events',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('event_tags', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'events',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('deletion_targets', kind: UpdateKind.delete)],
+    ),
+  ]);
 }
 
 typedef $$EventsTableCreateCompanionBuilder =
@@ -6847,6 +7659,8 @@ typedef $$EventsTableCreateCompanionBuilder =
       Value<bool?> validSig,
       required String tagsJson,
       required String sourcesJson,
+      Value<String?> conflictKey,
+      Value<int?> expiration,
       Value<int> rowid,
     });
 typedef $$EventsTableUpdateCompanionBuilder =
@@ -6860,8 +7674,54 @@ typedef $$EventsTableUpdateCompanionBuilder =
       Value<bool?> validSig,
       Value<String> tagsJson,
       Value<String> sourcesJson,
+      Value<String?> conflictKey,
+      Value<int?> expiration,
       Value<int> rowid,
     });
+
+final class $$EventsTableReferences
+    extends BaseReferences<_$NdkCacheDatabase, $EventsTable, DbEvent> {
+  $$EventsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$EventTagsTable, List<DbEventTag>>
+  _eventTagsRefsTable(_$NdkCacheDatabase db) => MultiTypedResultKey.fromTable(
+    db.eventTags,
+    aliasName: 'events__id__event_tags__event_id',
+  );
+
+  $$EventTagsTableProcessedTableManager get eventTagsRefs {
+    final manager = $$EventTagsTableTableManager(
+      $_db,
+      $_db.eventTags,
+    ).filter((f) => f.eventId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_eventTagsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$DeletionTargetsTable, List<DbDeletionTarget>>
+  _deletionTargetsRefsTable(_$NdkCacheDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.deletionTargets,
+        aliasName: 'events__id__deletion_targets__deletion_id',
+      );
+
+  $$DeletionTargetsTableProcessedTableManager get deletionTargetsRefs {
+    final manager = $$DeletionTargetsTableTableManager(
+      $_db,
+      $_db.deletionTargets,
+    ).filter((f) => f.deletionId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _deletionTargetsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
 
 class $$EventsTableFilterComposer
     extends Composer<_$NdkCacheDatabase, $EventsTable> {
@@ -6916,6 +7776,66 @@ class $$EventsTableFilterComposer
     column: $table.sourcesJson,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnFilters<String> get conflictKey => $composableBuilder(
+    column: $table.conflictKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get expiration => $composableBuilder(
+    column: $table.expiration,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> eventTagsRefs(
+    Expression<bool> Function($$EventTagsTableFilterComposer f) f,
+  ) {
+    final $$EventTagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.eventTags,
+      getReferencedColumn: (t) => t.eventId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventTagsTableFilterComposer(
+            $db: $db,
+            $table: $db.eventTags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> deletionTargetsRefs(
+    Expression<bool> Function($$DeletionTargetsTableFilterComposer f) f,
+  ) {
+    final $$DeletionTargetsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.deletionTargets,
+      getReferencedColumn: (t) => t.deletionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DeletionTargetsTableFilterComposer(
+            $db: $db,
+            $table: $db.deletionTargets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$EventsTableOrderingComposer
@@ -6971,6 +7891,16 @@ class $$EventsTableOrderingComposer
     column: $table.sourcesJson,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get conflictKey => $composableBuilder(
+    column: $table.conflictKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get expiration => $composableBuilder(
+    column: $table.expiration,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$EventsTableAnnotationComposer
@@ -7010,6 +7940,66 @@ class $$EventsTableAnnotationComposer
     column: $table.sourcesJson,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get conflictKey => $composableBuilder(
+    column: $table.conflictKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get expiration => $composableBuilder(
+    column: $table.expiration,
+    builder: (column) => column,
+  );
+
+  Expression<T> eventTagsRefs<T extends Object>(
+    Expression<T> Function($$EventTagsTableAnnotationComposer a) f,
+  ) {
+    final $$EventTagsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.eventTags,
+      getReferencedColumn: (t) => t.eventId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventTagsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.eventTags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> deletionTargetsRefs<T extends Object>(
+    Expression<T> Function($$DeletionTargetsTableAnnotationComposer a) f,
+  ) {
+    final $$DeletionTargetsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.deletionTargets,
+      getReferencedColumn: (t) => t.deletionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DeletionTargetsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.deletionTargets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$EventsTableTableManager
@@ -7023,9 +8013,9 @@ class $$EventsTableTableManager
           $$EventsTableAnnotationComposer,
           $$EventsTableCreateCompanionBuilder,
           $$EventsTableUpdateCompanionBuilder,
-          (DbEvent, BaseReferences<_$NdkCacheDatabase, $EventsTable, DbEvent>),
+          (DbEvent, $$EventsTableReferences),
           DbEvent,
-          PrefetchHooks Function()
+          PrefetchHooks Function({bool eventTagsRefs, bool deletionTargetsRefs})
         > {
   $$EventsTableTableManager(_$NdkCacheDatabase db, $EventsTable table)
     : super(
@@ -7049,6 +8039,8 @@ class $$EventsTableTableManager
                 Value<bool?> validSig = const Value.absent(),
                 Value<String> tagsJson = const Value.absent(),
                 Value<String> sourcesJson = const Value.absent(),
+                Value<String?> conflictKey = const Value.absent(),
+                Value<int?> expiration = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => EventsCompanion(
                 id: id,
@@ -7060,6 +8052,8 @@ class $$EventsTableTableManager
                 validSig: validSig,
                 tagsJson: tagsJson,
                 sourcesJson: sourcesJson,
+                conflictKey: conflictKey,
+                expiration: expiration,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -7073,6 +8067,8 @@ class $$EventsTableTableManager
                 Value<bool?> validSig = const Value.absent(),
                 required String tagsJson,
                 required String sourcesJson,
+                Value<String?> conflictKey = const Value.absent(),
+                Value<int?> expiration = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => EventsCompanion.insert(
                 id: id,
@@ -7084,12 +8080,73 @@ class $$EventsTableTableManager
                 validSig: validSig,
                 tagsJson: tagsJson,
                 sourcesJson: sourcesJson,
+                conflictKey: conflictKey,
+                expiration: expiration,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) =>
+                    (e.readTable(table), $$EventsTableReferences(db, table, e)),
+              )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback:
+              ({eventTagsRefs = false, deletionTargetsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (eventTagsRefs) db.eventTags,
+                    if (deletionTargetsRefs) db.deletionTargets,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (eventTagsRefs)
+                        await $_getPrefetchedData<
+                          DbEvent,
+                          $EventsTable,
+                          DbEventTag
+                        >(
+                          currentTable: table,
+                          referencedTable: $$EventsTableReferences
+                              ._eventTagsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$EventsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).eventTagsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.eventId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (deletionTargetsRefs)
+                        await $_getPrefetchedData<
+                          DbEvent,
+                          $EventsTable,
+                          DbDeletionTarget
+                        >(
+                          currentTable: table,
+                          referencedTable: $$EventsTableReferences
+                              ._deletionTargetsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$EventsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).deletionTargetsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.deletionId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
         ),
       );
 }
@@ -7104,9 +8161,620 @@ typedef $$EventsTableProcessedTableManager =
       $$EventsTableAnnotationComposer,
       $$EventsTableCreateCompanionBuilder,
       $$EventsTableUpdateCompanionBuilder,
-      (DbEvent, BaseReferences<_$NdkCacheDatabase, $EventsTable, DbEvent>),
+      (DbEvent, $$EventsTableReferences),
       DbEvent,
-      PrefetchHooks Function()
+      PrefetchHooks Function({bool eventTagsRefs, bool deletionTargetsRefs})
+    >;
+typedef $$EventTagsTableCreateCompanionBuilder =
+    EventTagsCompanion Function({
+      required String eventId,
+      required String name,
+      Value<String?> value,
+      Value<int> rowid,
+    });
+typedef $$EventTagsTableUpdateCompanionBuilder =
+    EventTagsCompanion Function({
+      Value<String> eventId,
+      Value<String> name,
+      Value<String?> value,
+      Value<int> rowid,
+    });
+
+final class $$EventTagsTableReferences
+    extends BaseReferences<_$NdkCacheDatabase, $EventTagsTable, DbEventTag> {
+  $$EventTagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $EventsTable _eventIdTable(_$NdkCacheDatabase db) =>
+      db.events.createAlias('event_tags__event_id__events__id');
+
+  $$EventsTableProcessedTableManager get eventId {
+    final $_column = $_itemColumn<String>('event_id')!;
+
+    final manager = $$EventsTableTableManager(
+      $_db,
+      $_db.events,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_eventIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$EventTagsTableFilterComposer
+    extends Composer<_$NdkCacheDatabase, $EventTagsTable> {
+  $$EventTagsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$EventsTableFilterComposer get eventId {
+    final $$EventsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.eventId,
+      referencedTable: $db.events,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventsTableFilterComposer(
+            $db: $db,
+            $table: $db.events,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EventTagsTableOrderingComposer
+    extends Composer<_$NdkCacheDatabase, $EventTagsTable> {
+  $$EventTagsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$EventsTableOrderingComposer get eventId {
+    final $$EventsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.eventId,
+      referencedTable: $db.events,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventsTableOrderingComposer(
+            $db: $db,
+            $table: $db.events,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EventTagsTableAnnotationComposer
+    extends Composer<_$NdkCacheDatabase, $EventTagsTable> {
+  $$EventTagsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+
+  $$EventsTableAnnotationComposer get eventId {
+    final $$EventsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.eventId,
+      referencedTable: $db.events,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.events,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EventTagsTableTableManager
+    extends
+        RootTableManager<
+          _$NdkCacheDatabase,
+          $EventTagsTable,
+          DbEventTag,
+          $$EventTagsTableFilterComposer,
+          $$EventTagsTableOrderingComposer,
+          $$EventTagsTableAnnotationComposer,
+          $$EventTagsTableCreateCompanionBuilder,
+          $$EventTagsTableUpdateCompanionBuilder,
+          (DbEventTag, $$EventTagsTableReferences),
+          DbEventTag,
+          PrefetchHooks Function({bool eventId})
+        > {
+  $$EventTagsTableTableManager(_$NdkCacheDatabase db, $EventTagsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EventTagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EventTagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EventTagsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> eventId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> value = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EventTagsCompanion(
+                eventId: eventId,
+                name: name,
+                value: value,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String eventId,
+                required String name,
+                Value<String?> value = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EventTagsCompanion.insert(
+                eventId: eventId,
+                name: name,
+                value: value,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$EventTagsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({eventId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (eventId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.eventId,
+                                referencedTable: $$EventTagsTableReferences
+                                    ._eventIdTable(db),
+                                referencedColumn: $$EventTagsTableReferences
+                                    ._eventIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$EventTagsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$NdkCacheDatabase,
+      $EventTagsTable,
+      DbEventTag,
+      $$EventTagsTableFilterComposer,
+      $$EventTagsTableOrderingComposer,
+      $$EventTagsTableAnnotationComposer,
+      $$EventTagsTableCreateCompanionBuilder,
+      $$EventTagsTableUpdateCompanionBuilder,
+      (DbEventTag, $$EventTagsTableReferences),
+      DbEventTag,
+      PrefetchHooks Function({bool eventId})
+    >;
+typedef $$DeletionTargetsTableCreateCompanionBuilder =
+    DeletionTargetsCompanion Function({
+      required String deletionId,
+      required String pubKey,
+      required int createdAt,
+      Value<String?> eventId,
+      Value<String?> conflictKey,
+      Value<int> rowid,
+    });
+typedef $$DeletionTargetsTableUpdateCompanionBuilder =
+    DeletionTargetsCompanion Function({
+      Value<String> deletionId,
+      Value<String> pubKey,
+      Value<int> createdAt,
+      Value<String?> eventId,
+      Value<String?> conflictKey,
+      Value<int> rowid,
+    });
+
+final class $$DeletionTargetsTableReferences
+    extends
+        BaseReferences<
+          _$NdkCacheDatabase,
+          $DeletionTargetsTable,
+          DbDeletionTarget
+        > {
+  $$DeletionTargetsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $EventsTable _deletionIdTable(_$NdkCacheDatabase db) =>
+      db.events.createAlias('deletion_targets__deletion_id__events__id');
+
+  $$EventsTableProcessedTableManager get deletionId {
+    final $_column = $_itemColumn<String>('deletion_id')!;
+
+    final manager = $$EventsTableTableManager(
+      $_db,
+      $_db.events,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_deletionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$DeletionTargetsTableFilterComposer
+    extends Composer<_$NdkCacheDatabase, $DeletionTargetsTable> {
+  $$DeletionTargetsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get pubKey => $composableBuilder(
+    column: $table.pubKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get eventId => $composableBuilder(
+    column: $table.eventId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get conflictKey => $composableBuilder(
+    column: $table.conflictKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$EventsTableFilterComposer get deletionId {
+    final $$EventsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.deletionId,
+      referencedTable: $db.events,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventsTableFilterComposer(
+            $db: $db,
+            $table: $db.events,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DeletionTargetsTableOrderingComposer
+    extends Composer<_$NdkCacheDatabase, $DeletionTargetsTable> {
+  $$DeletionTargetsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get pubKey => $composableBuilder(
+    column: $table.pubKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get eventId => $composableBuilder(
+    column: $table.eventId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get conflictKey => $composableBuilder(
+    column: $table.conflictKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$EventsTableOrderingComposer get deletionId {
+    final $$EventsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.deletionId,
+      referencedTable: $db.events,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventsTableOrderingComposer(
+            $db: $db,
+            $table: $db.events,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DeletionTargetsTableAnnotationComposer
+    extends Composer<_$NdkCacheDatabase, $DeletionTargetsTable> {
+  $$DeletionTargetsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get pubKey =>
+      $composableBuilder(column: $table.pubKey, builder: (column) => column);
+
+  GeneratedColumn<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get eventId =>
+      $composableBuilder(column: $table.eventId, builder: (column) => column);
+
+  GeneratedColumn<String> get conflictKey => $composableBuilder(
+    column: $table.conflictKey,
+    builder: (column) => column,
+  );
+
+  $$EventsTableAnnotationComposer get deletionId {
+    final $$EventsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.deletionId,
+      referencedTable: $db.events,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.events,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DeletionTargetsTableTableManager
+    extends
+        RootTableManager<
+          _$NdkCacheDatabase,
+          $DeletionTargetsTable,
+          DbDeletionTarget,
+          $$DeletionTargetsTableFilterComposer,
+          $$DeletionTargetsTableOrderingComposer,
+          $$DeletionTargetsTableAnnotationComposer,
+          $$DeletionTargetsTableCreateCompanionBuilder,
+          $$DeletionTargetsTableUpdateCompanionBuilder,
+          (DbDeletionTarget, $$DeletionTargetsTableReferences),
+          DbDeletionTarget,
+          PrefetchHooks Function({bool deletionId})
+        > {
+  $$DeletionTargetsTableTableManager(
+    _$NdkCacheDatabase db,
+    $DeletionTargetsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DeletionTargetsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DeletionTargetsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DeletionTargetsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> deletionId = const Value.absent(),
+                Value<String> pubKey = const Value.absent(),
+                Value<int> createdAt = const Value.absent(),
+                Value<String?> eventId = const Value.absent(),
+                Value<String?> conflictKey = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DeletionTargetsCompanion(
+                deletionId: deletionId,
+                pubKey: pubKey,
+                createdAt: createdAt,
+                eventId: eventId,
+                conflictKey: conflictKey,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String deletionId,
+                required String pubKey,
+                required int createdAt,
+                Value<String?> eventId = const Value.absent(),
+                Value<String?> conflictKey = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DeletionTargetsCompanion.insert(
+                deletionId: deletionId,
+                pubKey: pubKey,
+                createdAt: createdAt,
+                eventId: eventId,
+                conflictKey: conflictKey,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$DeletionTargetsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({deletionId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (deletionId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.deletionId,
+                                referencedTable:
+                                    $$DeletionTargetsTableReferences
+                                        ._deletionIdTable(db),
+                                referencedColumn:
+                                    $$DeletionTargetsTableReferences
+                                        ._deletionIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$DeletionTargetsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$NdkCacheDatabase,
+      $DeletionTargetsTable,
+      DbDeletionTarget,
+      $$DeletionTargetsTableFilterComposer,
+      $$DeletionTargetsTableOrderingComposer,
+      $$DeletionTargetsTableAnnotationComposer,
+      $$DeletionTargetsTableCreateCompanionBuilder,
+      $$DeletionTargetsTableUpdateCompanionBuilder,
+      (DbDeletionTarget, $$DeletionTargetsTableReferences),
+      DbDeletionTarget,
+      PrefetchHooks Function({bool deletionId})
     >;
 typedef $$UserRelayListsTableCreateCompanionBuilder =
     UserRelayListsCompanion Function({
@@ -10447,6 +12115,10 @@ class $NdkCacheDatabaseManager {
   $NdkCacheDatabaseManager(this._db);
   $$EventsTableTableManager get events =>
       $$EventsTableTableManager(_db, _db.events);
+  $$EventTagsTableTableManager get eventTags =>
+      $$EventTagsTableTableManager(_db, _db.eventTags);
+  $$DeletionTargetsTableTableManager get deletionTargets =>
+      $$DeletionTargetsTableTableManager(_db, _db.deletionTargets);
   $$UserRelayListsTableTableManager get userRelayLists =>
       $$UserRelayListsTableTableManager(_db, _db.userRelayLists);
   $$RelaySetsTableTableManager get relaySets =>
