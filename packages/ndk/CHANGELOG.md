@@ -1,3 +1,11 @@
+## 0.11.0-dev.3
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: move the CLI into a new ndk_cli package.
+ - **FIX**(nwc): recognize lookup payment and BOLT12 extensions.
+ - **BREAKING** **REFACTOR**: move Sembast out of ndk into ndk_sembast.
+
 ## 0.11.0-dev.2
 
 > Note: This release has breaking changes.
