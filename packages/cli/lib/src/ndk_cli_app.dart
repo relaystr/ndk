@@ -1,8 +1,7 @@
 import 'dart:io';
 
-import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk_sembast/ndk_sembast.dart';
+import 'package:ndk_sqlite3/ndk_sqlite3.dart';
 
 import 'cli_accounts_store.dart';
 import 'cli_command.dart';
@@ -52,9 +51,8 @@ class NdkCliApp {
       return 2;
     }
 
-    final walletsRepo = await _createWalletsRepo();
-    final cache = await _createCache();
-    final ndk = _createNdk(walletsRepo, cache, globalOptions.logLevel);
+    final cache = SqliteCacheManager.open(_databaseFileName);
+    final ndk = _createNdk(cache, globalOptions.logLevel);
     try {
       final accountsStore = await CliAccountsStore.load();
       if (command.restoreAccountsOnStartup &&
@@ -64,7 +62,7 @@ class NdkCliApp {
       return await command.run(
         globalOptions.commandArgs.sublist(1),
         ndk,
-        walletsRepo,
+        cache,
         accountsStore,
       );
     } finally {
@@ -77,7 +75,6 @@ class NdkCliApp {
         // ignore
       }
       await cache.close();
-      await walletsRepo.close();
     }
   }
 
@@ -114,29 +111,16 @@ class NdkCliApp {
     return null;
   }
 
-  Future<SembastWalletsRepo> _createWalletsRepo() {
-    return SembastWalletsRepo.create(filename: 'wallets_db.db');
-  }
+  // Holds the cache and the wallets, so cashu proofs, keysets and mint infos
+  // survive across CLI invocations.
+  static const _databaseFileName = 'ndk.db';
 
-  Future<SembastCacheManager> _createCache() {
-    // Persist proofs/keysets/mint infos next to wallets_db.db so cashu
-    // operations work across CLI invocations.
-    return SembastCacheManager.create(
-      databasePath: '.',
-      databaseName: 'ndk_cache',
-    );
-  }
-
-  Ndk _createNdk(
-    WalletsRepo walletsRepo,
-    SembastCacheManager cache,
-    LogLevel logLevel,
-  ) {
+  Ndk _createNdk(SqliteCacheManager cache, LogLevel logLevel) {
     Logger.setLogLevel(logLevel);
     return Ndk(
       NdkConfig(
         cache: cache,
-        walletsRepo: walletsRepo,
+        walletsRepo: cache,
         eventVerifier: _CliEventVerifier(),
         bootstrapRelays: const [],
         logLevel: logLevel,

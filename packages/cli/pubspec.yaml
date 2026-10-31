@@ -9,13 +9,13 @@ executables:
   ndk: ndk
 
 environment:
-  sdk: ">=3.9.0 <4.0.0"
+  sdk: ">=3.10.0 <4.0.0"
 
 resolution: workspace
 
 dependencies:
   ndk: ^0.11.0-dev.1
-  ndk_sembast: ^0.1.0
+  ndk_sqlite3: ^0.1.1-dev.0
   path: ^1.9.1
 
 dev_dependencies:
