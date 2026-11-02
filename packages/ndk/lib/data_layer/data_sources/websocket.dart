@@ -9,7 +9,11 @@ class WebsocketDS {
   /// the websocket channel
   final WebSocketChannel webSocketChannel;
 
+  /// true once [WebSocketChannel.ready] completed successfully (handshake done)
   bool _ready = false;
+
+  /// true once [WebSocketChannel.ready] completed at all, successfully or
+  /// with an error; false means the handshake is still in flight
   bool _readySettled = false;
   bool _ended = false;
 
