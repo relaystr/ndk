@@ -397,6 +397,11 @@ class Nwc {
     }
   }
 
+  /// Reply budget when a request passes no `timeout`. Remote wallets
+  /// commonly need several seconds (relay round trips plus a node call),
+  /// so a short default turns slow-but-successful replies into timeouts.
+  static const Duration kDefaultRequestTimeout = Duration(seconds: 10);
+
   Future<T> _executeRequest<T extends NwcResponse>(
     NwcConnection connection,
     NwcRequest request, {
@@ -461,7 +466,7 @@ class Nwc {
           },
         );
       }
-      final budget = timeout ?? const Duration(seconds: 5);
+      final budget = timeout ?? kDefaultRequestTimeout;
       await _waitForRequestSent?.call(
         (dedicatedResponse ?? connection.subscription!).requestId,
         budget,
