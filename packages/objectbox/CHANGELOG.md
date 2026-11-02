@@ -1,3 +1,10 @@
+## 0.3.1-dev.2
+
+> Note: This release has breaking changes.
+
+ - **FEAT**: add CacheManager.loadEventIdsWithCreatedAt for the NIP-77 local set (fixes #885).
+ - **BREAKING** **FEAT**(nip05): key the NIP-05 cache by identifier and persist not found (fixes #838, fixes #936).
+
 ## 0.3.1-dev.1
 
  - **FIX**: objectbox case sensitive keys.
