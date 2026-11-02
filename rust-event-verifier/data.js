@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793374402245,
+  "lastUpdate": 1793612772122,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2810,6 +2810,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1823130,
             "range": "1817708-1839500",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "frnandu@atomicmail.io",
+            "name": "frnandu",
+            "username": "frnandu"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0e2bd86ac36896b30f0a715599caad34490862cf",
+          "message": "Merge pull request #945 from relaystr/fix/nwc-notification-optional-preimage\n\nfix(nwc): optional preimage/fees_paid in notifications, 10s default request timeout",
+          "timestamp": "2026-11-02T10:43:35+01:00",
+          "tree_id": "298c11e0bcbfd1d4399d1a0a095601a5b5684a82",
+          "url": "https://github.com/relaystr/ndk/commit/0e2bd86ac36896b30f0a715599caad34490862cf"
+        },
+        "date": 1793612769362,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 39838.4,
+            "range": "39677-44582",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1393444,
+            "range": "1388594-1406586",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
