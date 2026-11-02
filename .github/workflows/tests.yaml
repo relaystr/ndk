@@ -4,7 +4,7 @@ jobs:
   release-pr-title:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: bash .github/scripts/tests/release-pr-title-test.sh
 
   tests:
@@ -13,7 +13,7 @@ jobs:
       run:
         working-directory: ./packages/ndk
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dart-lang/setup-dart@v1
         with:
           # Pin to the Dart version bundled with Flutter stable (3.47.5).
@@ -49,7 +49,7 @@ jobs:
       run:
         working-directory: ./packages/cli
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dart-lang/setup-dart@v1
         with:
           # Pin to the Dart version bundled with Flutter stable (3.47.5).
@@ -70,7 +70,7 @@ jobs:
       run:
         working-directory: ./packages/ndk_flutter
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dart-lang/setup-dart@v1
         with:
           # Pin to the Dart version bundled with Flutter stable (3.47.5).

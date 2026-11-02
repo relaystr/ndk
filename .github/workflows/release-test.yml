@@ -46,7 +46,7 @@ jobs:
         working-directory: ./packages/cli
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install Rosetta
         if: matrix.target == 'macos_x64' && runner.arch == 'ARM64'
@@ -130,7 +130,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
