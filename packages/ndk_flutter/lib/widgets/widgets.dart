@@ -24,3 +24,4 @@ export 'wallets/n_wallet_input_dialog.dart';
 export 'wallets/cashu_quote_recovery.dart';
 export 'wallets/cashu_restore.dart';
 export 'wallets/cashu_seed_phrase.dart';
+export 'qr_code_view.dart';
