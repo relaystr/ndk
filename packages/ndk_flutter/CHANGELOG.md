@@ -1,3 +1,7 @@
+## 0.10.3-dev.3
+
+ - Update a dependency to the latest release.
+
 ## 0.10.3-dev.2
 
  - **FIX**(ndk_flutter): drop saveFile params deprecated by file_picker.
