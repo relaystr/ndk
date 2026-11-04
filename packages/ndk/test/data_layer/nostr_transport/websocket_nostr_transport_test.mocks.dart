@@ -118,4 +118,13 @@ class MockWebsocketDS extends _i1.Mock implements _i4.WebsocketDS {
             returnValueForMissingStub: false,
           )
           as bool);
+
+  @override
+  bool isConnecting() =>
+      (super.noSuchMethod(
+            Invocation.method(#isConnecting, []),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
 }
