@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793782261209,
+  "lastUpdate": 1793805721415,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2924,6 +2924,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1800846,
             "range": "1798118-1813766",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "58687994+1-leo@users.noreply.github.com",
+            "name": "Leo",
+            "username": "1-leo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d3906bc14dc40c9629cfe539d073c51409a258b0",
+          "message": "Merge pull request #951 from relaystr/docs/speed-to-production\n\ndocs: speed to production",
+          "timestamp": "2026-11-04T16:20:01+01:00",
+          "tree_id": "bd1153af83bd13ab200008748264fcde43741e2b",
+          "url": "https://github.com/relaystr/ndk/commit/d3906bc14dc40c9629cfe539d073c51409a258b0"
+        },
+        "date": 1793805719169,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 45679.6,
+            "range": "45507-48681",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1707314,
+            "range": "1695284-1719006",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
