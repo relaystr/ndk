@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793781564134,
+  "lastUpdate": 1793782261209,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2886,6 +2886,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1605584,
             "range": "1589670-1659744",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "58687994+1-leo@users.noreply.github.com",
+            "name": "Leo",
+            "username": "1-leo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c9d9b941527b0905c7db1893a0197aef75c52fe9",
+          "message": "Merge pull request #947 from relaystr/ci/update-checkout\n\nci: update actions checkout  to v7",
+          "timestamp": "2026-11-04T09:49:08+01:00",
+          "tree_id": "419c8b2d50c9b3f07bd80d0219aff5788e722ada",
+          "url": "https://github.com/relaystr/ndk/commit/c9d9b941527b0905c7db1893a0197aef75c52fe9"
+        },
+        "date": 1793782258889,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 51607.2,
+            "range": "51425-55932",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1800846,
+            "range": "1798118-1813766",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
