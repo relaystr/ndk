@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
-import 'package:ndk/ndk.dart' show ContactList, Metadata, Nip01Event;
+import 'package:ndk/ndk.dart'
+    show ContactList, EventCacheStateRecord, Metadata, Nip01Event;
 import 'package:path_provider/path_provider.dart';
 
+import 'event_index.dart';
 import 'tables.dart';
 
 part 'database.g.dart';
@@ -13,6 +15,8 @@ part 'database.g.dart';
 @DriftDatabase(
   tables: [
     Events,
+    EventTags,
+    DeletionTargets,
     UserRelayLists,
     RelaySets,
     Nip05s,
@@ -41,7 +45,7 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
   NdkCacheDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration {
@@ -96,8 +100,69 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
           await m.deleteTable('nip05s');
           await m.createTable(nip05s);
         }
+        if (from < 10) {
+          await transaction(() async {
+            await m.addColumn(events, events.conflictKey);
+            await m.addColumn(events, events.expiration);
+            await m.createTable(eventTags);
+            await m.createTable(deletionTargets);
+            for (final index in [
+              eventsCreatedAt,
+              eventsConflictKey,
+              eventsExpiration,
+              eventTagsNameValue,
+              eventTagsEventId,
+              deletionTargetsEventId,
+              deletionTargetsConflictKey,
+              deletionTargetsDeletionId,
+            ]) {
+              await m.createIndex(index);
+            }
+            await _backfillEventIndex();
+          });
+        }
+      },
+      // event_tags and deletion_targets follow their event through ON DELETE
+      // CASCADE
+      beforeOpen: (details) async {
+        await customStatement('PRAGMA foreign_keys = ON');
       },
     );
+  }
+
+  /// Derives the visibility state of the events stored before v10.
+  Future<void> _backfillEventIndex() async {
+    var after = '';
+    while (true) {
+      final rows = await customSelect(
+        'SELECT id, pub_key, kind, created_at, tags_json FROM events '
+        'WHERE id > ? ORDER BY id LIMIT 500',
+        variables: [Variable.withString(after)],
+      ).get();
+      if (rows.isEmpty) return;
+      await batch((batch) {
+        for (final row in rows) {
+          final event = Nip01Event(
+            id: row.read<String>('id'),
+            pubKey: row.read<String>('pub_key'),
+            kind: row.read<int>('kind'),
+            createdAt: row.read<int>('created_at'),
+            tags: _decodeTagList(row.read<String>('tags_json')),
+            content: '',
+          );
+          batch.update(
+            events,
+            EventsCompanion(
+              conflictKey: Value(EventCacheStateRecord.conflictKeyFor(event)),
+              expiration: Value(eventExpiration(event)),
+            ),
+            where: (t) => t.id.equals(event.id),
+          );
+          insertEventIndex(batch, this, event);
+        }
+      });
+      after = rows.last.read<String>('id');
+    }
   }
 
   /// Copies rows of the pre-v6 `metadatas` table into the events table as
