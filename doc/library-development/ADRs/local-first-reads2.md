@@ -1,12 +1,12 @@
 # Architecture Decision Record: Local-first reads
 
-Title: Local-first reads - return format for reads that render without waiting on the network
+Title: Local-first reads - reworks apis with stream API
 
 ## status
 
 proposed
 
-Updated on 2026-09-30
+Updated on 2026-11-04
 
 ## contributors
 
@@ -18,30 +18,25 @@ Updated on 2026-09-30
 
 ## Context and Problem Statement
 
-Reads must render immediately from what is known locally, and refine when relays answer. The
-current reads do neither: `getSingleNip51List(kind, forceRefresh:)` returns the cache and never
-refreshes it, or skips the cache and blocks on the network.
 
-A read must also never let one state degrade into another. "not known yet" and "cannot be read"
-must not look like "does not exist", because that is what an app acts on to create the missing
-data, and for a replaceable event that overwrites what was already there.
+A lot of ndk apis are a future, not a stream (e.g. Lists) with the cache logic hidden away (with forceRefresh control flag). 
+These apis hide if a request is trusted (from network) or cache.
+
 
 ## Scope
 
-This is the return format of typed high-level reads: one read, one value, refined until it is
-relay-confirmed. It does not redefine `requestNostrEvent` and `NdkResponse`, and it is not a
-lifecycle for long-lived subscriptions.
-
-Per-relay provenance stays out of it: which relays hold an event is a cache concern, already
-answered by `CacheManager.addEventSource(s)` and `loadEventSources()`. Read-specific metadata
-belongs in `T`, so a read that needs more than the origin declares a `T` that carries it.
+Touching on all apis that only offer futures, starting with lists usecase
 
 ## Main Proposal
 
-The idea is to return a stream of all dedublicated events from the request, combined with limited metadata like the origin/source of the event (cache, relay x). However only the first event with the metadata available at the time is emitted, no updates its fire once (per event).
-The proposal includes a second api to get the full metadata at any given time for an event.
+### (new) Streams 
+Return a stream of all dedublicated events from the request, 
+combined with limited metadata like the origin/source of the event (cache, relay x). 
+However only the first event with the metadata available at the time is emitted, no updates its fire once (per event).
+(optional) The proposal includes a second api to get the full metadata at any given time for an event.
 
-
+### Futures
+leave futures as they are for compatability and api simplicity
 
 
 current dm
@@ -133,11 +128,7 @@ abstract class ResultOrigin {
 ```
 
 ## Consequences
-Is a breaking change as the query API changes. 
-Could be mitigated with the help of https://github.com/flutter/flutter/blob/master/docs/contributing/Data-driven-Fixes.md (preferred)
-or https://pub.dev/packages/codemod 
-Especially important for external projects depending on NDK
-Other usecases needed to be refactored to the new pattern
+Because futures stay untouched no breaking changes
 
 ## Alternative proposals
 
