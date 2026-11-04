@@ -96,7 +96,7 @@ Generally we use examples in our docs if you do, please add them to `/packages/n
 - use common sense, if it touches architecture discuss in chat/devCall
 - new code must be tested! (meaningfull tests)
 - If tests green, go merge
-- issues need to be raised by failing tests 
+- reproducible code defects need to be raised by failing tests
 - use common sense + tests for performance critical code (anything with sha256)
 - inform others of your work
 
