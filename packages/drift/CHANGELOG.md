@@ -1,3 +1,12 @@
+## 0.2.1-dev.2
+
+> Note: This release has breaking changes.
+
+ - **PERF**(drift): evict in SQL instead of loading every event.
+ - **PERF**(drift): decide event visibility in SQL (fixes #934).
+ - **FEAT**: add CacheManager.loadEventIdsWithCreatedAt for the NIP-77 local set (fixes #885).
+ - **BREAKING** **FEAT**(nip05): key the NIP-05 cache by identifier and persist not found (fixes #838, fixes #936).
+
 ## 0.2.1-dev.1
 
  - Update a dependency to the latest release.

@@ -1,6 +1,6 @@
 name: ndk_sqlite3
 description: A SQLite cache manager for NDK (Nostr Development Kit) that runs in pure Dart, without Flutter, and queries the database instead of loading it in memory.
-version: 0.1.1-dev.0
+version: 0.1.1-dev.1
 homepage: https://github.com/relaystr/ndk
 repository: https://github.com/relaystr/ndk
 
@@ -15,7 +15,7 @@ environment:
 resolution: workspace
 
 dependencies:
-  ndk: ^0.11.0-dev.2
+  ndk: ^0.11.0-dev.3
   sqlite3: ^3.5.2
 
 dev_dependencies:
