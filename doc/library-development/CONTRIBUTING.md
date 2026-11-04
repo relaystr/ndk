@@ -45,7 +45,7 @@ If you want to work on it yourself, assign it to yourself and start working on i
 Feel free to reach out to us via the following channels:
 
 - [GitHub Issues](https://github.com/relaystr/ndk/issues)
-- weekly dev calls (every Wednesday at 11:00 CEST) [link](https://call.element.io/room/#/ndk-47014?password=ywCMPkavHoMfbtwWdzknXg&roomId=%21ntFcnshzkrZDCYXOEF%3Acall.ems.host). Let us know beforehand if you want to discuss something specific so we can add it to the agenda.
+- weekly dev calls (every Wednesday at 11:00 CEST) [link](https://armada.buzz/invite/naddr1qvzqqqyzz5pzpmqzphskx2fp2n2nl9eauuqdfksxwu0qxzhtfe0uphw39esf7k2sqqqqyuec5p#BAHnxJNpZQ-DEl4e8G_1l_an). Let us know beforehand if you want to discuss something specific so we can add it to the agenda.
 - Nostr: [fmar](https://njump.me/fmar.dev) [leo](https://njump.me/leo@camelus.app)
 - Email: leo: contact(a t)camelus.app [pgp](https://camelus.app/pgp-key.txt)
 
@@ -91,6 +91,14 @@ Every public-facing API should be documented. <br>
 Types of documentation we use are inline docs and retype deployed on [dart-nostr.com](https://dart-nostr.com/).
 When you add a new use case or edit a feature, make sure to create/edit a corresponding markdown file in `/doc`.
 Generally we use examples in our docs if you do, please add them to `/packages/ndk/example` as a test so we can ensure everything continues to work.
+
+## Speed to Production (for maintainers)
+- use common sense, if it touches architecture discuss in chat/devCall
+- new code must be tested! (meaningfull tests)
+- If tests green, go merge
+- issues need to be raised by failing tests 
+- use common sense + tests for performance critical code (anything with sha256)
+- inform others of your work
 
 
 
