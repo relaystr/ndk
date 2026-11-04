@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793612772122,
+  "lastUpdate": 1793781564134,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2848,6 +2848,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1393444,
             "range": "1388594-1406586",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "68782063+nogringo@users.noreply.github.com",
+            "name": "Nogringo",
+            "username": "nogringo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0fef14f19bc68b01584ed570c78bc268be3295dd",
+          "message": "Merge pull request #931 from relaystr/feat/nip11-full-relay-info\n\nfeat(connectivity)!: read the full NIP-11 document in RelayInfo",
+          "timestamp": "2026-11-04T09:36:43+01:00",
+          "tree_id": "1140c1c87b35fc8570d1fd43b2c5edc3d3fe656b",
+          "url": "https://github.com/relaystr/ndk/commit/0fef14f19bc68b01584ed570c78bc268be3295dd"
+        },
+        "date": 1793781562032,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 46053.6,
+            "range": "45886-48604",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1605584,
+            "range": "1589670-1659744",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
