@@ -62,6 +62,15 @@ void main() {
       // Should return a valid r value
       expect(r, isNotNull);
       expect(r, greaterThan(BigInt.zero));
+      expect(
+        r,
+        lessThan(
+          BigInt.parse(
+            'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141',
+            radix: 16,
+          ),
+        ),
+      );
     });
 
     test('blindMessage produces consistent results with same inputs', () {
