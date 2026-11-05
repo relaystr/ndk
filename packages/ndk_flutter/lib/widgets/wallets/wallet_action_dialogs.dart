@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
-import 'package:pretty_qr_code/pretty_qr_code.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../qr_code_view.dart';
 
 enum _WalletSendAction { token, invoice, transfer }
 
@@ -198,18 +198,7 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
             const SizedBox(height: 12),
             SizedBox(
               width: 220,
-              child: PrettyQrView.data(
-                data: wallet.offer.toUpperCase(),
-                errorCorrectLevel: QrErrorCorrectLevel.M,
-                decoration: const PrettyQrDecoration(
-                  quietZone: PrettyQrQuietZone.standard,
-                  background: Colors.white,
-                  shape: PrettyQrSmoothSymbol(
-                    color: Colors.black,
-                    roundFactor: 0.3,
-                  ),
-                ),
-              ),
+              child: QrCodeView(data: wallet.offer.toUpperCase()),
             ),
             const SizedBox(height: 12),
             Container(
@@ -1176,18 +1165,7 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
               const SizedBox(height: 12),
               SizedBox(
                 width: 200,
-                child: PrettyQrView.data(
-                  data: invoice.toUpperCase(),
-                  errorCorrectLevel: QrErrorCorrectLevel.M,
-                  decoration: const PrettyQrDecoration(
-                    quietZone: PrettyQrQuietZone.standard,
-                    background: Colors.white,
-                    shape: PrettyQrSmoothSymbol(
-                      color: Colors.black,
-                      roundFactor: 0.3,
-                    ),
-                  ),
-                ),
+                child: QrCodeView(data: invoice.toUpperCase()),
               ),
               const SizedBox(height: 12),
               Container(
@@ -1293,18 +1271,7 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
               const SizedBox(height: 12),
               SizedBox(
                 width: 200,
-                child: PrettyQrView.data(
-                  data: invoice.toUpperCase(),
-                  errorCorrectLevel: QrErrorCorrectLevel.M,
-                  decoration: const PrettyQrDecoration(
-                    quietZone: PrettyQrQuietZone.standard,
-                    background: Colors.white,
-                    shape: PrettyQrSmoothSymbol(
-                      color: Colors.black,
-                      roundFactor: 0.3,
-                    ),
-                  ),
-                ),
+                child: QrCodeView(data: invoice.toUpperCase()),
               ),
               const SizedBox(height: 12),
               Container(

@@ -13,7 +13,7 @@ import 'package:ndk/domain_layer/usecases/nwc/responses/nwc_response.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'main.dart';
@@ -700,11 +700,12 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
                   print('Could not launch $launchUri');
                 }
               },
-              child: QrImageView(
-                data: makeInvoice!.invoice.toUpperCase(),
-                version: QrVersions.auto,
-                size: 200.0,
-                backgroundColor: Colors.white,
+              child: SizedBox.square(
+                dimension: 200,
+                child: QrCodeView(
+                  data: makeInvoice!.invoice.toUpperCase(),
+                  backgroundColor: Colors.white,
+                ),
               ),
             ),
           ),
