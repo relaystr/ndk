@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793805721415,
+  "lastUpdate": 1794995201799,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -2962,6 +2962,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1707314,
             "range": "1695284-1719006",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "58687994+1-leo@users.noreply.github.com",
+            "name": "Leo",
+            "username": "1-leo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e3423fa9252faaaa6134baf9fb88e16dd88dfc33",
+          "message": "Merge pull request #948 from relaystr/deps/replace-pretty-qr\n\nchore: replace pretty_qr_code with qr, dependency issues",
+          "timestamp": "2026-11-18T10:44:23+01:00",
+          "tree_id": "396ceb2dd266fa7d9b7ae1fe6e67e97b4eb94053",
+          "url": "https://github.com/relaystr/ndk/commit/e3423fa9252faaaa6134baf9fb88e16dd88dfc33"
+        },
+        "date": 1794995199888,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 48605,
+            "range": "48402-51181",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1531010,
+            "range": "1520404-1549500",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
