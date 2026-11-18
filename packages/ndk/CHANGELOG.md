@@ -1,3 +1,16 @@
+## 0.11.0-dev.3
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: move the CLI into a new ndk_cli package.
+ - **FIX**(nwc): raise default request timeout from 5s to 10s.
+ - **FIX**(nwc): treat preimage and fees_paid as optional in notifications.
+ - **FIX**(nwc): recognize lookup payment and BOLT12 extensions.
+ - **FEAT**: add CacheManager.loadEventIdsWithCreatedAt for the NIP-77 local set (fixes #885).
+ - **BREAKING** **REFACTOR**: move Sembast out of ndk into ndk_sembast.
+ - **BREAKING** **FEAT**(nip05): key the NIP-05 cache by identifier and persist not found (fixes #838, fixes #936).
+ - **BREAKING** **FEAT**(connectivity): read the full NIP-11 document in RelayInfo.
+
 ## 0.11.0-dev.2
 
 > Note: This release has breaking changes.
