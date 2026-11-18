@@ -20,6 +20,20 @@ void main() {
           db.execute(
             "INSERT INTO nip05s VALUES ('pubkey', 'alice@a.com', 0, 1, '[]');",
           );
+          // later migrations alter it
+          db.execute('''
+            CREATE TABLE events (
+              id TEXT NOT NULL PRIMARY KEY,
+              pub_key TEXT NOT NULL,
+              kind INTEGER NOT NULL,
+              created_at INTEGER NOT NULL,
+              content TEXT NOT NULL,
+              sig TEXT,
+              valid_sig INTEGER,
+              tags_json TEXT NOT NULL,
+              sources_json TEXT NOT NULL
+            );
+          ''');
           // DriftCacheManager touches them on construction
           db.execute('''
             CREATE TABLE wallets (

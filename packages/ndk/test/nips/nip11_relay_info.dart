@@ -32,7 +32,7 @@ void main() {
       data['privacy_policy'] = "https://my-relay/privacy_policy";
       data['terms_of_service'] = "https://my-relay/terms_of_service";
 
-      RelayInfo info = RelayInfo.fromJson(data, "wss://bla.com");
+      RelayInfo info = RelayInfo.fromJson(data);
 
       expect(data['name'], info.name);
       expect(data['description'], info.description);

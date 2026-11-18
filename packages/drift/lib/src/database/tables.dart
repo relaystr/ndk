@@ -6,6 +6,15 @@ import 'package:drift/drift.dart';
   columns: {#pubKey, #kind, #createdAt},
 )
 @TableIndex(name: 'events_kind_created_at', columns: {#kind, #createdAt})
+@TableIndex(name: 'events_created_at', columns: {#createdAt})
+@TableIndex.sql(
+  'CREATE INDEX events_conflict_key ON events (conflict_key, created_at) '
+  'WHERE conflict_key IS NOT NULL',
+)
+@TableIndex.sql(
+  'CREATE INDEX events_expiration ON events (expiration) '
+  'WHERE expiration IS NOT NULL',
+)
 @DataClassName('DbEvent')
 class Events extends Table {
   TextColumn get id => text()();
@@ -17,9 +26,43 @@ class Events extends Table {
   BoolColumn get validSig => boolean().nullable()();
   TextColumn get tagsJson => text()(); // JSON encoded tags
   TextColumn get sourcesJson => text()(); // JSON encoded sources
+  // derived at insert time so that visibility runs in SQL
+  TextColumn get conflictKey => text().nullable()();
+  IntColumn get expiration => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
+}
+
+/// Table for storing event tags, values trimmed and lowercased
+@TableIndex(name: 'event_tags_name_value', columns: {#name, #value, #eventId})
+@TableIndex(name: 'event_tags_event_id', columns: {#eventId})
+@DataClassName('DbEventTag')
+class EventTags extends Table {
+  TextColumn get eventId =>
+      text().references(Events, #id, onDelete: KeyAction.cascade)();
+  TextColumn get name => text()();
+  TextColumn get value => text().nullable()();
+}
+
+/// Table for storing what each NIP-09 deletion targets
+@TableIndex.sql(
+  'CREATE INDEX deletion_targets_event_id ON deletion_targets '
+  '(event_id, pub_key) WHERE event_id IS NOT NULL',
+)
+@TableIndex.sql(
+  'CREATE INDEX deletion_targets_conflict_key ON deletion_targets '
+  '(conflict_key, pub_key, created_at) WHERE conflict_key IS NOT NULL',
+)
+@TableIndex(name: 'deletion_targets_deletion_id', columns: {#deletionId})
+@DataClassName('DbDeletionTarget')
+class DeletionTargets extends Table {
+  TextColumn get deletionId =>
+      text().references(Events, #id, onDelete: KeyAction.cascade)();
+  TextColumn get pubKey => text()();
+  IntColumn get createdAt => integer()();
+  TextColumn get eventId => text().nullable()();
+  TextColumn get conflictKey => text().nullable()();
 }
 
 /// Table for storing user relay lists (NIP-65)

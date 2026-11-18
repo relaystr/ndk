@@ -25,10 +25,7 @@ class RelayInfoHttpRepoImpl implements RelayInfoRepo {
         timeout: timeout,
         headers: const {'Accept': 'application/nostr+json'},
       );
-      return RelayInfo.fromJson(
-        json,
-        Uri.parse(url).replace(scheme: 'https').toString(),
-      );
+      return RelayInfo.fromJson(json);
     } catch (e) {
       Logger.log.d(() => e);
       return null;

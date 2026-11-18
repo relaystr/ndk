@@ -50,7 +50,7 @@ jobs:
         working-directory: ./packages/sample-app
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.deploy_ref || github.ref }}
 
