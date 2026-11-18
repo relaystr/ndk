@@ -14,10 +14,10 @@ import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
-import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../qr_code_view.dart';
 
 const String _defaultMintUrl = 'https://mint.minibits.cash/Bitcoin';
 const String _dialogBackResult = '__back__';
@@ -1466,12 +1466,8 @@ class _NwcWalletAuthDiscoveryDialogState
                     padding: const EdgeInsets.all(12),
                     child: SizedBox.square(
                       dimension: 300,
-                      child: PrettyQrView.data(
+                      child: QrCodeView(
                         data: widget.authorizationUri.toString(),
-                        decoration: const PrettyQrDecoration(
-                          quietZone: PrettyQrQuietZone.standard,
-                          shape: PrettyQrSmoothSymbol(roundFactor: 0),
-                        ),
                       ),
                     ),
                   ),
