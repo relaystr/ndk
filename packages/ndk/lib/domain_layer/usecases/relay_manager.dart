@@ -217,12 +217,12 @@ class RelayManager<T> {
   Future<bool> _waitForTransportOpen(
     NostrTransport transport, {
     required int timeoutSeconds,
-    bool Function()? stillOwned,
+    bool Function()? keepWaiting,
   }) async {
     final deadline = DateTime.now().add(Duration(seconds: timeoutSeconds));
 
     while (DateTime.now().isBefore(deadline)) {
-      if (stillOwned?.call() == false) return false;
+      if (keepWaiting?.call() == false) return false;
       if (transport.isOpen()) {
         return true;
       }
@@ -233,7 +233,7 @@ class RelayManager<T> {
         // keep polling isOpen() until the overall timeout expires
       }
 
-      if (stillOwned?.call() == false) return false;
+      if (keepWaiting?.call() == false) return false;
       if (transport.isOpen()) {
         return true;
       }
@@ -354,7 +354,8 @@ class RelayManager<T> {
       final opened = await _waitForTransportOpen(
         transport,
         timeoutSeconds: connectTimeout,
-        stillOwned: ownsTransport,
+        // a refused connect will not open by retrying within the timeout
+        keepWaiting: () => ownsTransport() && transportError == null,
       );
       if (!opened || !ownsTransport()) {
         throw TimeoutException(
