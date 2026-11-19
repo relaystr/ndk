@@ -4,7 +4,8 @@ version: 0.3.1-dev.1
 homepage: https://github.com/relaystr/ndk
 
 environment:
-  sdk: ">=3.9.0 <4.0.0"
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.44.0"
 
 resolution: workspace
 
@@ -17,8 +18,8 @@ platforms:
   windows:
 
 dependencies:
-  objectbox: ^5.3.1
-  objectbox_flutter_libs: ^5.3.1
+  objectbox: ^6.0.0-preview.6
+  objectbox_flutter_libs: ^6.0.0-preview.6
   ndk: ^0.11.0-dev.2
   flat_buffers: ^25.9.23
   path_provider: ^2.1.6
@@ -31,7 +32,7 @@ dev_dependencies:
   ndk_core: ^0.1.0
   build_runner: ">=2.11.0 <3.0.0"
   mockito: ">=5.6.3 <6.0.0"
-  objectbox_generator: ^5.3.1
+  objectbox_generator: ^6.0.0-preview.6
   test: any
   flutter_test:
     sdk: flutter

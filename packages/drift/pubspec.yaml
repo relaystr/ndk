@@ -27,7 +27,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  drift_dev: ">=2.32.1 <2.34.1"
+  drift_dev: ^2.35.3
   ndk_cache_manager_test_suite: ^1.0.1-dev.14
   build_runner: ">=2.11.0 <3.0.0"
 
