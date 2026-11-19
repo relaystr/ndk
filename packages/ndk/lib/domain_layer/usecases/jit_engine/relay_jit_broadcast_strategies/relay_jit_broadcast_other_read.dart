@@ -1,13 +1,17 @@
 import 'dart:math';
 
 import '../../../../config/broadcast_defaults.dart';
+
 import 'package:ndk_core/shared/nips/nip01/client_msg.dart';
 import 'package:ndk_core/domain_layer/entities/connection_source.dart';
 import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk_core/domain_layer/entities/broadcast_state.dart';
 import 'package:ndk_core/domain_layer/entities/relay_connectivity.dart';
+
 import '../../../repositories/cache_manager.dart';
+
 import 'package:ndk_core/domain_layer/usecases/relay_manager.dart';
+
 import '../../user_relay_lists/user_relay_lists.dart';
 
 /// broadcast to other read relays
@@ -24,7 +28,7 @@ class RelayJitBroadcastOtherReadStrategy {
   }) async {
     final nip65Data = await UserRelayLists.getUserRelayListCacheLatest(
       pubkeys: pubkeysOfInbox,
-      cacheManager: cacheManager,
+      userRelayListStore: cacheManager,
     );
 
     List<String> myWriteRelayUrls = [];

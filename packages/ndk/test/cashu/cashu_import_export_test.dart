@@ -12,7 +12,7 @@ CashuStateExportImport _export(
   CashuSeed seed,
 ) {
   return CashuStateExportImport(
-    cacheManagerCashu: CashuCacheDecorator(cacheManager: cache),
+    cacheManagerCashu: CashuCacheDecorator(cashuStore: cache),
     walletsRepo: wallets,
     cashuSeed: seed,
   );

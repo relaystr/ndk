@@ -24,18 +24,16 @@ void main() {
           throw StateError('not called');
         }),
       );
-      final created =
-          provider.createWallet(
-                id: 'local-id',
-                name: 'My LNbits',
-                supportedUnits: const {'sat'},
-                metadata: const {
-                  LnBitsWallet.urlMetadataKey: '$url/',
-                  LnBitsWallet.adminKeyMetadataKey: ' $key ',
-                  LnBitsWallet.remoteWalletIdMetadataKey: 'remote-id',
-                },
-              )
-              as LnBitsWallet;
+      final created = provider.createWallet(
+        id: 'local-id',
+        name: 'My LNbits',
+        supportedUnits: const {'sat'},
+        metadata: const {
+          LnBitsWallet.urlMetadataKey: '$url/',
+          LnBitsWallet.adminKeyMetadataKey: ' $key ',
+          LnBitsWallet.remoteWalletIdMetadataKey: 'remote-id',
+        },
+      ) as LnBitsWallet;
 
       expect(created.lnbitsUrl, url);
       expect(created.adminKey, key);

@@ -114,11 +114,11 @@ class Nip77 {
   Nip77({
     required GlobalState globalState,
     required RelayManager relayManager,
-    required CacheManager cacheManager,
+    required EventStore eventStore,
   }) : _internal = _Nip77Internal(
          globalState: globalState,
          relayManager: relayManager,
-         cacheManager: cacheManager,
+         eventStore: eventStore,
        );
 
   /// How long a relay may take to answer NEG-OPEN by default

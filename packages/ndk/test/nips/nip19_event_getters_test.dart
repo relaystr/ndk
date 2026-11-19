@@ -7,8 +7,7 @@ void main() {
     group('nevent getter', () {
       test('should encode regular event as nevent', () {
         final event = Nip01Event(
-          pubKey:
-              '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29cafa',
+          pubKey: '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29cafa',
           kind: 1,
           tags: [],
           content: 'Hello Nostr!',
@@ -30,8 +29,7 @@ void main() {
 
       test('should use event sources as relay hints', () {
         final eventInit = Nip01Event(
-          pubKey:
-              '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29cafa',
+          pubKey: '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29cafa',
           kind: 1,
           tags: [],
           content: 'Hello Nostr!',
@@ -51,8 +49,7 @@ void main() {
 
       test('should not include relays if sources is empty', () {
         final event = Nip01Event(
-          pubKey:
-              '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29cafa',
+          pubKey: '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29cafa',
           kind: 1,
           tags: [],
           content: 'Hello Nostr!',
@@ -70,8 +67,7 @@ void main() {
     group('naddr getter', () {
       test('should encode parameterized replaceable event as naddr', () {
         final event = Nip01Event(
-          pubKey:
-              '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
+          pubKey: '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
           kind: 30023,
           tags: [
             ['d', 'my-article'],
@@ -95,8 +91,7 @@ void main() {
 
       test('should encode replaceable event (kind 0) as naddr', () {
         final event = Nip01Event(
-          pubKey:
-              '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
+          pubKey: '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
           kind: 30001,
           tags: [
             ['d', 'bla'],
@@ -116,8 +111,7 @@ void main() {
 
       test('should return null for non-addressable event', () {
         final event = Nip01Event(
-          pubKey:
-              '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
+          pubKey: '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
           kind: 1, // Regular text note, not addressable
           tags: [
             ['d', 'test'],
@@ -134,8 +128,7 @@ void main() {
 
       test('should return null for addressable event without d tag', () {
         final event = Nip01Event(
-          pubKey:
-              '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
+          pubKey: '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
           kind: 30023,
           tags: [], // No d tag
           content: 'Article content',
@@ -150,8 +143,7 @@ void main() {
 
       test('should use event sources as relay hints', () {
         final event = Nip01Event(
-          pubKey:
-              '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
+          pubKey: '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
           kind: 31990,
           tags: [
             ['d', '1685802317447'],

@@ -10,13 +10,18 @@ import 'package:ndk/domain_layer/usecases/jit_engine/jit_engine.dart';
 import 'package:ndk/domain_layer/usecases/jit_engine/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 
 import 'package:ndk_core/domain_layer/entities/global_state.dart';
+
 import '../../../entities/jit_engine_relay_connectivity_data.dart';
+
 import 'package:ndk_core/domain_layer/entities/relay_connection_key.dart';
 import 'package:ndk_core/domain_layer/entities/relay_connectivity.dart';
 import 'package:ndk_core/domain_layer/entities/request_state.dart';
 import 'package:ndk_core/domain_layer/entities/connection_source.dart';
+
 import '../../../entities/user_relay_list.dart';
+
 import 'package:ndk_core/domain_layer/usecases/relay_manager.dart';
+
 import '../../user_relay_lists/user_relay_lists.dart';
 
 /// Strategy Description:
@@ -170,7 +175,7 @@ class RelayJitPubkeyStrategy with Logger {
     try {
       nip65Data = await UserRelayLists.getUserRelayListCacheLatest(
         pubkeys: coveragePubkeys.map((e) => e.pubkey).toList(),
-        cacheManager: cacheManager,
+        userRelayListStore: cacheManager,
       );
     } catch (error, stackTrace) {
       Logger.log.w(

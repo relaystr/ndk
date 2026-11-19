@@ -41,8 +41,7 @@ void main() {
       connection = BunkerConnection(
         privateKey:
             "7a8317f947fff0526749e9fe53f79def8eb0afd378c01058f37140cc8732fecc",
-        remotePubkey: MockRelay
-            .remoteSignerPublicKey, // Use the mock relay's remote signer public key
+        remotePubkey: MockRelay.remoteSignerPublicKey, // Use the mock relay's remote signer public key
         relays: [mockRelay.url], // Use the mock relay
       );
 

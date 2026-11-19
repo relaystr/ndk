@@ -62,8 +62,7 @@ void main() {
       final cashu = CashuTestTools.mockHttpCashu(
         customCache: cache,
         seedPhrase: CashuUserSeedphrase(
-          seedPhrase:
-              "reduce invest lunch step couch traffic measure civil want steel trip jar",
+          seedPhrase: "reduce invest lunch step couch traffic measure civil want steel trip jar",
         ),
       );
 
@@ -94,8 +93,7 @@ void main() {
     test("spend - no unit for mint", () {
       final cashu = CashuTestTools.mockHttpCashu(
         seedPhrase: CashuUserSeedphrase(
-          seedPhrase:
-              "reduce invest lunch step couch traffic measure civil want steel trip jar",
+          seedPhrase: "reduce invest lunch step couch traffic measure civil want steel trip jar",
         ),
       );
 
@@ -142,8 +140,7 @@ void main() {
       final cashu = CashuTestTools.mockHttpCashu(
         customCache: cache,
         seedPhrase: CashuUserSeedphrase(
-          seedPhrase:
-              "reduce invest lunch step couch traffic measure civil want steel trip jar",
+          seedPhrase: "reduce invest lunch step couch traffic measure civil want steel trip jar",
         ),
       );
 
@@ -175,7 +172,7 @@ void main() {
       final cashu = Cashu(
         cashuRepo: cashuRepo,
         walletsRepo: MemWalletsRepo(),
-        cacheManager: cache,
+        cashuStore: cache,
         cashuKeyDerivation: derivation,
         cashuUserSeedphrase: CashuUserSeedphrase(seedPhrase: seedPhrase1),
       );
@@ -183,7 +180,7 @@ void main() {
       final cashu2 = Cashu(
         cashuRepo: cashuRepo2,
         walletsRepo: MemWalletsRepo(),
-        cacheManager: cache2,
+        cashuStore: cache2,
         cashuKeyDerivation: derivation,
         cashuUserSeedphrase: CashuUserSeedphrase(seedPhrase: seedPhrase2),
       );

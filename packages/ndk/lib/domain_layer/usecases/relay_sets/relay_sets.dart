@@ -5,27 +5,29 @@ import 'package:ndk_core/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk_core/domain_layer/entities/read_write.dart';
 import 'package:ndk_core/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk_core/domain_layer/entities/relay_set.dart';
+
 import '../../entities/user_relay_list.dart';
-import '../../repositories/cache_manager.dart';
+import '../../repositories/stores/user_relay_list_store.dart';
 
 import 'package:ndk_core/domain_layer/usecases/relay_manager.dart';
+
 import '../user_relay_lists/user_relay_lists.dart';
 
 class RelaySets {
-  final CacheManager _cacheManager;
+  final UserRelayListStore _userRelayListStore;
   final RelayManager _relayManager;
   final UserRelayLists _userRelayLists;
 
   final Set<String> _blockedRelays;
 
   RelaySets({
-    required CacheManager cacheManager,
+    required UserRelayListStore userRelayListStore,
     required RelayManager relayManager,
     required UserRelayLists userRelayLists,
     required Set<String> blockedRelays,
   }) : _userRelayLists = userRelayLists,
        _relayManager = relayManager,
-       _cacheManager = cacheManager,
+       _userRelayListStore = userRelayListStore,
        _blockedRelays = blockedRelays;
 
   /// relay -> list of pubKey mappings
@@ -187,9 +189,8 @@ class RelaySets {
     Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl = {};
     int foundCount = 0;
     for (String pubKey in pubKeys) {
-      UserRelayList? userRelayList = await _cacheManager.loadUserRelayList(
-        pubKey,
-      );
+      UserRelayList? userRelayList = await _userRelayListStore
+          .loadUserRelayList(pubKey);
       if (userRelayList != null) {
         if (userRelayList.relays.isNotEmpty) {
           foundCount++;
@@ -205,7 +206,7 @@ class RelaySets {
         }
       } else {
         int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        await _cacheManager.saveUserRelayList(
+        await _userRelayListStore.saveUserRelayList(
           UserRelayList(
             pubKey: pubKey,
             relays: {},
@@ -221,22 +222,22 @@ class RelaySets {
     );
 
     /// sort by pubKeys count for each relay descending
-    List<MapEntry<String, Set<PubkeyMapping>>>
-    sortedEntries = pubKeysByRelayUrl.entries.toList()
-      /// todo: use more stuff to improve sorting
-      ..sort((a, b) {
-        int rr = b.value.length.compareTo(a.value.length);
-        if (rr == 0) {
-          // if amount of pubKeys is equal check for webSocket connected, and prioritize connected
-          bool aC = _relayManager.isRelayConnected(a.key);
-          bool bC = _relayManager.isRelayConnected(b.key);
-          if (aC != bC) {
-            return aC ? -1 : 1;
-          }
-          return 0;
-        }
-        return rr;
-      });
+    List<MapEntry<String, Set<PubkeyMapping>>> sortedEntries =
+        pubKeysByRelayUrl.entries.toList()
+          /// todo: use more stuff to improve sorting
+          ..sort((a, b) {
+            int rr = b.value.length.compareTo(a.value.length);
+            if (rr == 0) {
+              // if amount of pubKeys is equal check for webSocket connected, and prioritize connected
+              bool aC = _relayManager.isRelayConnected(a.key);
+              bool bC = _relayManager.isRelayConnected(b.key);
+              if (aC != bC) {
+                return aC ? -1 : 1;
+              }
+              return 0;
+            }
+            return rr;
+          });
 
     return Map<String, Set<PubkeyMapping>>.fromEntries(sortedEntries);
   }

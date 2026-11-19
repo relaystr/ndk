@@ -133,9 +133,8 @@ void main() {
               .broadcastDoneFuture;
 
           expect(
-            (await receivedByFirst.future.timeout(
-              const Duration(seconds: 2),
-            )).id,
+            (await receivedByFirst.future.timeout(const Duration(seconds: 2)))
+                .id,
             event.id,
           );
         } finally {

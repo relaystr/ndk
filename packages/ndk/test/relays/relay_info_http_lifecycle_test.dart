@@ -105,9 +105,8 @@ void main() {
       client.close();
       await server.close(force: true);
     });
-    final info = await RelayInfoHttpRepoImpl(
-      httpDS: HttpRequestDS(client),
-    ).getRelayInfo('wss://127.0.0.1:${server.port}');
+    final info = await RelayInfoHttpRepoImpl(httpDS: HttpRequestDS(client))
+        .getRelayInfo('wss://127.0.0.1:${server.port}');
     expect(info?.name, 'Test relay ⚡');
     expect(info?.supportsNip('11'), isTrue);
     expect(client.aborted, isFalse);
@@ -124,9 +123,8 @@ void main() {
       client.close();
       await server.close(force: true);
     });
-    final info = await RelayInfoHttpRepoImpl(
-      httpDS: HttpRequestDS(client),
-    ).getRelayInfo('wss://127.0.0.1:${server.port}');
+    final info = await RelayInfoHttpRepoImpl(httpDS: HttpRequestDS(client))
+        .getRelayInfo('wss://127.0.0.1:${server.port}');
     expect(info, isNull);
   });
 

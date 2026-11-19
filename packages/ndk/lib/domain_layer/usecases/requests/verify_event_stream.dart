@@ -1,6 +1,7 @@
 import 'package:rxdart/rxdart.dart';
 
 import 'verified_event_cache.dart';
+
 import 'package:ndk_core/shared/logger/logger.dart';
 import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk_core/domain_layer/entities/nip_01_utils.dart';

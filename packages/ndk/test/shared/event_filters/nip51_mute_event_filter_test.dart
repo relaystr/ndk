@@ -241,17 +241,14 @@ void main() {
       expect(trie.check("world"), isTrue);
     });
 
-    test(
-      'TrieTree: should find a word that is a prefix of another word if marked as done',
-      () {
-        final trie = filter.buildTrieTree([
-          "hell".codeUnits,
-          "hello".codeUnits,
-        ], null);
-        expect(trie.check("hell"), isTrue);
-        expect(trie.check("hello"), isTrue);
-      },
-    );
+    test('TrieTree: should find a word that is a prefix of another word if marked as done', () {
+      final trie = filter.buildTrieTree([
+        "hell".codeUnits,
+        "hello".codeUnits,
+      ], null);
+      expect(trie.check("hell"), isTrue);
+      expect(trie.check("hello"), isTrue);
+    });
 
     test('TrieTree: should handle empty string check', () {
       final trie = filter.buildTrieTree(["hello".codeUnits], null);

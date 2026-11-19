@@ -7,7 +7,7 @@ void main() {
 
   setUp(() {
     cacheManager = MemCacheManager();
-    fetchedRanges = FetchedRanges(cacheManager: cacheManager);
+    fetchedRanges = FetchedRanges(filterFetchedRangeStore: cacheManager);
   });
 
   group('FetchedRanges.addRange', () {

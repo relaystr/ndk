@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ndk_core/shared/logger/logger.dart';
+
 import '../../../data_layer/models/wallet_transaction_model.dart';
 import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_mint_info.dart';
@@ -132,8 +133,7 @@ class CashuStateExportImport {
         export['seedPhrase'] = _cashuSeed.getSeedPhrase().sentence;
       } catch (_) {
         Logger.log.w(
-          () =>
-              'Cashu export: no seed phrase set, exporting without it. The export will not be restorable on a new device.',
+          () => 'Cashu export: no seed phrase set, exporting without it. The export will not be restorable on a new device.',
         );
       }
     }

@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:ffi/ffi.dart';
 
 import '../../../src/rust_lib.dart' as rust_lib;
+
 import 'package:ndk_core/shared/nips/nip44/nip44.dart';
 
 /// An ML-KEM-1024 keypair derived from a BIP-39 seed.

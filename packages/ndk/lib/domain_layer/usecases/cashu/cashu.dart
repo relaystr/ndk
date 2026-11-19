@@ -4,8 +4,10 @@ import 'dart:typed_data';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../config/cashu_config.dart';
+
 import 'package:ndk_core/shared/logger/logger.dart';
 import 'package:ndk_core/shared/nips/nip01/helpers.dart';
+
 import '../../entities/cashu/cashu_blinded_message.dart';
 import '../../entities/cashu/cashu_blinded_signature.dart';
 import '../../entities/cashu/cashu_keyset.dart';
@@ -21,7 +23,7 @@ import '../../entities/cashu/cashu_token.dart';
 import '../../entities/cashu/cashu_user_seedphrase.dart';
 import '../../entities/wallet/wallet_transaction.dart';
 import '../../entities/wallet/wallet_type.dart';
-import '../../repositories/cache_manager.dart';
+import '../../repositories/stores/cashu_store.dart';
 import '../../repositories/cashu_key_derivation.dart';
 import '../../repositories/cashu_repo.dart';
 import '../../repositories/wallets_repo.dart';
@@ -40,7 +42,7 @@ import 'cashu_tools.dart';
 class Cashu {
   final CashuRepo _cashuRepo;
   final WalletsRepo _walletsRepo;
-  final CacheManager _cacheManager;
+  final CashuStore _cashuStore;
   late final CashuCacheDecorator _cacheManagerCashu;
 
   late final CashuKeysets _cashuKeysets;
@@ -85,26 +87,26 @@ class Cashu {
   Cashu({
     required CashuRepo cashuRepo,
     required WalletsRepo walletsRepo,
-    required CacheManager cacheManager,
+    required CashuStore cashuStore,
     required CashuKeyDerivation cashuKeyDerivation,
     CashuMintRecommendations? mintRecommendations,
     CashuUserSeedphrase? cashuUserSeedphrase,
     bool autoVerifyMintCounters = false,
   }) : _cashuRepo = cashuRepo,
        _walletsRepo = walletsRepo,
-       _cacheManager = cacheManager,
+       _cashuStore = cashuStore,
        _cashuKeyDerivation = cashuKeyDerivation,
        _mintRecommendations = mintRecommendations,
        _autoVerifyMintCounters = autoVerifyMintCounters {
     _cashuKeysets = CashuKeysets(
       cashuRepo: _cashuRepo,
-      cacheManager: _cacheManager,
+      cashuStore: _cashuStore,
     );
     _cashuWalletProofSelect = CashuProofSelect(
       cashuRepo: _cashuRepo,
       cashuSeedSecretGenerator: _cashuKeyDerivation,
     );
-    _cacheManagerCashu = CashuCacheDecorator(cacheManager: _cacheManager);
+    _cacheManagerCashu = CashuCacheDecorator(cashuStore: _cashuStore);
 
     _cashuSeed = CashuSeed(userSeedPhrase: cashuUserSeedphrase);
     _cashuExportImport = CashuStateExportImport(
@@ -120,8 +122,7 @@ class Cashu {
     );
     if (cashuUserSeedphrase == null) {
       Logger.log.w(
-        () =>
-            'Cashu initialized without user seed phrase, cashu features will not work \nSet the seed phrase using NdkConfig or Cashu.setCashuSeedPhrase()',
+        () => 'Cashu initialized without user seed phrase, cashu features will not work \nSet the seed phrase using NdkConfig or Cashu.setCashuSeedPhrase()',
       );
     }
 
@@ -623,7 +624,7 @@ class Cashu {
   }
 
   Future<List<CashuMintInfo>> _getMintInfosDb() async {
-    final mintInfos = await _cacheManager.getMintInfos();
+    final mintInfos = await _cashuStore.getMintInfos();
     if (mintInfos == null) {
       return [];
     }
@@ -644,11 +645,11 @@ class Cashu {
     bool forceRefresh = false,
   }) async {
     if (!forceRefresh) {
-      final cached = await _cacheManager.getMintInfos(mintUrls: [mintUrl]);
+      final cached = await _cashuStore.getMintInfos(mintUrls: [mintUrl]);
       if (cached != null && cached.isNotEmpty) return cached.first;
     }
     final info = await _cashuRepo.getMintInfo(mintUrl: mintUrl);
-    await _cacheManager.saveMintInfo(mintInfo: info);
+    await _cashuStore.saveMintInfo(mintInfo: info);
     return info;
   }
 
@@ -692,13 +693,13 @@ class Cashu {
   /// if not, it will be added to the known mints \
   /// Returns true if mint is known, false otherwise
   Future<bool> _checkIfMintIsKnown(String mintUrl) async {
-    final mintInfos = await _cacheManager.getMintInfos(mintUrls: [mintUrl]);
+    final mintInfos = await _cashuStore.getMintInfos(mintUrls: [mintUrl]);
 
     if (mintInfos == null || mintInfos.isEmpty) {
       // fetch mint info from network
       final mintInfoNetwork = await _cashuRepo.getMintInfo(mintUrl: mintUrl);
 
-      await _cacheManager.saveMintInfo(mintInfo: mintInfoNetwork);
+      await _cashuStore.saveMintInfo(mintInfo: mintInfoNetwork);
       _knownMints.add(mintInfoNetwork);
       _knownMintsSubject?.add(_knownMints);
       return false;
@@ -714,7 +715,7 @@ class Cashu {
   }) async {
     await preflightChecks();
     // Remove from cache
-    await _cacheManager.removeMintInfo(mintUrl: mintUrl);
+    await _cashuStore.removeMintInfo(mintUrl: mintUrl);
 
     // Remove from in-memory set
     _knownMints.removeWhere((mint) => mint.urls.contains(mintUrl));
@@ -1630,7 +1631,7 @@ class Cashu {
     late final ProofSelectionResult selectionResult;
 
     await _cacheManagerCashu.runInTransaction(() async {
-      final proofsUnfiltered = await _cacheManager.getProofs(mintUrl: mintUrl);
+      final proofsUnfiltered = await _cashuStore.getProofs(mintUrl: mintUrl);
 
       final proofs = CashuTools.filterProofsByUnit(
         proofs: proofsUnfiltered,
@@ -1653,7 +1654,7 @@ class Cashu {
         state: CashuProofState.pending,
       );
 
-      await _cacheManager.saveProofs(
+      await _cashuStore.saveProofs(
         proofs: selectionResult.selectedProofs,
         mintUrl: mintUrl,
       );
@@ -1733,7 +1734,7 @@ class Cashu {
         proofs: selectionResult.selectedProofs,
         state: CashuProofState.spend,
       );
-      await _cacheManager.saveProofs(
+      await _cashuStore.saveProofs(
         proofs: selectionResult.selectedProofs,
         mintUrl: mintUrl,
       );
@@ -1861,7 +1862,7 @@ class Cashu {
 
     await _cacheManagerCashu.runInTransaction(() async {
       // fetch proofs for the mint
-      final allProofs = await _cacheManager.getProofs(mintUrl: mintUrl);
+      final allProofs = await _cashuStore.getProofs(mintUrl: mintUrl);
 
       final proofsForUnit = CashuTools.filterProofsByUnit(
         proofs: allProofs,
@@ -1894,7 +1895,7 @@ class Cashu {
         state: CashuProofState.pending,
       );
 
-      await _cacheManager.saveProofs(
+      await _cashuStore.saveProofs(
         proofs: selectionResult.selectedProofs,
         mintUrl: mintUrl,
       );
@@ -2195,7 +2196,7 @@ class Cashu {
     }
 
     // check if we recived our own proofs
-    // final ownTokens = await _cacheManager.getProofs(mintUrl: rcvToken.mintUrl);
+    // final ownTokens = await _cashuStore.getProofs(mintUrl: rcvToken.mintUrl);
 
     // final sameSendRcv = rcvToken.proofs
     //     .where((e) => ownTokens.any((ownToken) => ownToken.Y == e.Y))

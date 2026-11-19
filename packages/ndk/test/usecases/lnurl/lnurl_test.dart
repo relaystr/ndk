@@ -43,9 +43,8 @@ void main() {
       };
 
       // Mock the client.get method
-      when(
-        client.get(Uri.parse(link), headers: {"Accept": "application/json"}),
-      ).thenAnswer((_) async => http.Response(jsonEncode(response), 200));
+      when(client.get(Uri.parse(link), headers: {"Accept": "application/json"}))
+          .thenAnswer((_) async => http.Response(jsonEncode(response), 200));
 
       var lnurlResponse = await lnurl.getLnurlResponse(link);
       expect(lnurlResponse, isNotNull);
@@ -58,9 +57,8 @@ void main() {
       final Lnurl lnurl = Lnurl(transport: transport);
 
       final link = 'https://invalid.com';
-      when(
-        client.get(Uri.parse(link), headers: {"Accept": "application/json"}),
-      ).thenAnswer((_) async => http.Response('not found', 404));
+      when(client.get(Uri.parse(link), headers: {"Accept": "application/json"}))
+          .thenAnswer((_) async => http.Response('not found', 404));
 
       var lnurlResponse = await lnurl.getLnurlResponse(link);
       expect(lnurlResponse, isNull);
@@ -80,9 +78,8 @@ void main() {
 
       const identifier = 'name@domain.com';
       final link = Lnurl.getLud16LinkFromLud16(identifier)!;
-      when(
-        client.get(Uri.parse(link), headers: {'Accept': 'application/json'}),
-      ).thenAnswer((_) async => http.Response('not found', 404));
+      when(client.get(Uri.parse(link), headers: {'Accept': 'application/json'}))
+          .thenAnswer((_) async => http.Response('not found', 404));
 
       final wallet = wallets.createWallet(
         id: 'lnurl-wallet',
@@ -122,9 +119,8 @@ void main() {
       addTearDown(wallets.dispose);
       await wallets.getWallets();
 
-      when(
-        client.get(Uri.parse(link), headers: {'Accept': 'application/json'}),
-      ).thenAnswer((_) async => http.Response('unavailable', 503));
+      when(client.get(Uri.parse(link), headers: {'Accept': 'application/json'}))
+          .thenAnswer((_) async => http.Response('unavailable', 503));
 
       await expectLater(wallets.reconnectWallet(wallet.id), throwsException);
       verify(

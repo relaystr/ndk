@@ -42,9 +42,8 @@ void main() {
     'null heartbeat leaves idle socket silent and events available',
     () async {
       final peer = await _RawPeer.start();
-      final transport = WebSocketClientNostrTransportFactory(
-        pingInterval: null,
-      ).call(peer.url);
+      final transport = WebSocketClientNostrTransportFactory(pingInterval: null)
+          .call(peer.url);
       addTearDown(() async {
         await transport.close();
         await peer.close();

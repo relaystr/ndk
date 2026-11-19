@@ -1,4 +1,5 @@
 import 'event_cache_records.dart';
+
 import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 
 /// Why a cached event is not returned by visible cache reads.

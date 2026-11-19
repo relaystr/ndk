@@ -10,7 +10,7 @@ void main() {
     final cache = MemCacheManager();
     final sender = BroadcastSender(
       globalState: GlobalState(),
-      cacheManager: cache,
+      eventStore: cache,
       networkEngine: _UnreachableNetworkEngine(),
       accounts: Accounts(const Bip340EventSignerFactory()),
       considerDonePercent: 1,

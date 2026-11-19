@@ -54,9 +54,8 @@ void main() {
     final result = transport.listen(onData, onError: onError, onDone: onDone);
 
     expect(result, equals(mockSubscription));
-    verify(
-      mockWebsocketDS.listen(onData, onError: onError, onDone: onDone),
-    ).called(1);
+    verify(mockWebsocketDS.listen(onData, onError: onError, onDone: onDone))
+        .called(1);
   });
 
   test('send should delegate to WebsocketDS send', () {

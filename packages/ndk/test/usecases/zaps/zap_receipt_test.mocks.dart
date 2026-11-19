@@ -36,23 +36,16 @@ class MockNip01Event extends _i1.Mock implements _i2.Nip01Event {
   }
 
   @override
-  String get id =>
-      (super.noSuchMethod(
-            Invocation.getter(#id),
-            returnValue: _i3.dummyValue<String>(this, Invocation.getter(#id)),
-          )
-          as String);
+  String get id => (super.noSuchMethod(
+    Invocation.getter(#id),
+    returnValue: _i3.dummyValue<String>(this, Invocation.getter(#id)),
+  ) as String);
 
   @override
-  String get pubKey =>
-      (super.noSuchMethod(
-            Invocation.getter(#pubKey),
-            returnValue: _i3.dummyValue<String>(
-              this,
-              Invocation.getter(#pubKey),
-            ),
-          )
-          as String);
+  String get pubKey => (super.noSuchMethod(
+    Invocation.getter(#pubKey),
+    returnValue: _i3.dummyValue<String>(this, Invocation.getter(#pubKey)),
+  ) as String);
 
   @override
   int get createdAt =>
@@ -64,23 +57,16 @@ class MockNip01Event extends _i1.Mock implements _i2.Nip01Event {
       (super.noSuchMethod(Invocation.getter(#kind), returnValue: 0) as int);
 
   @override
-  List<List<String>> get tags =>
-      (super.noSuchMethod(
-            Invocation.getter(#tags),
-            returnValue: <List<String>>[],
-          )
-          as List<List<String>>);
+  List<List<String>> get tags => (super.noSuchMethod(
+    Invocation.getter(#tags),
+    returnValue: <List<String>>[],
+  ) as List<List<String>>);
 
   @override
-  String get content =>
-      (super.noSuchMethod(
-            Invocation.getter(#content),
-            returnValue: _i3.dummyValue<String>(
-              this,
-              Invocation.getter(#content),
-            ),
-          )
-          as String);
+  String get content => (super.noSuchMethod(
+    Invocation.getter(#content),
+    returnValue: _i3.dummyValue<String>(this, Invocation.getter(#content)),
+  ) as String);
 
   @override
   List<String> get sources =>
@@ -98,12 +84,10 @@ class MockNip01Event extends _i1.Mock implements _i2.Nip01Event {
           as List<String>);
 
   @override
-  List<String> get replyETags =>
-      (super.noSuchMethod(
-            Invocation.getter(#replyETags),
-            returnValue: <String>[],
-          )
-          as List<String>);
+  List<String> get replyETags => (super.noSuchMethod(
+    Invocation.getter(#replyETags),
+    returnValue: <String>[],
+  ) as List<String>);
 
   @override
   set id(String? value) => super.noSuchMethod(
@@ -128,43 +112,39 @@ class MockNip01Event extends _i1.Mock implements _i2.Nip01Event {
     String? sig,
     bool? validSig,
     List<String>? sources,
-  }) =>
-      (super.noSuchMethod(
-            Invocation.method(#copyWith, [], {
-              #id: id,
-              #pubKey: pubKey,
-              #createdAt: createdAt,
-              #kind: kind,
-              #tags: tags,
-              #content: content,
-              #sig: sig,
-              #validSig: validSig,
-              #sources: sources,
-            }),
-            returnValue: _FakeNip01Event_0(
-              this,
-              Invocation.method(#copyWith, [], {
-                #id: id,
-                #pubKey: pubKey,
-                #createdAt: createdAt,
-                #kind: kind,
-                #tags: tags,
-                #content: content,
-                #sig: sig,
-                #validSig: validSig,
-                #sources: sources,
-              }),
-            ),
-          )
-          as _i2.Nip01Event);
+  }) => (super.noSuchMethod(
+    Invocation.method(#copyWith, [], {
+      #id: id,
+      #pubKey: pubKey,
+      #createdAt: createdAt,
+      #kind: kind,
+      #tags: tags,
+      #content: content,
+      #sig: sig,
+      #validSig: validSig,
+      #sources: sources,
+    }),
+    returnValue: _FakeNip01Event_0(
+      this,
+      Invocation.method(#copyWith, [], {
+        #id: id,
+        #pubKey: pubKey,
+        #createdAt: createdAt,
+        #kind: kind,
+        #tags: tags,
+        #content: content,
+        #sig: sig,
+        #validSig: validSig,
+        #sources: sources,
+      }),
+    ),
+  ) as _i2.Nip01Event);
 
   @override
-  List<String> getTags(String? tag) =>
-      (super.noSuchMethod(
-            Invocation.method(#getTags, [tag]),
-            returnValue: <String>[],
-          )
-          as List<String>);
+  List<String> getTags(String? tag) => (super.noSuchMethod(
+    Invocation.method(#getTags, [tag]),
+    returnValue: <String>[],
+  ) as List<String>);
 
   @override
   String? getFirstTag(String? name) =>

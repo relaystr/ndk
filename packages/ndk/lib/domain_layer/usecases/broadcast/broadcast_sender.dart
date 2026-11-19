@@ -12,7 +12,7 @@ import 'package:ndk_core/domain_layer/usecases/engines/network_engine.dart';
 class BroadcastSender {
   final NetworkEngine _engine;
   final Accounts _accounts;
-  final CacheManager _cacheManager;
+  final EventStore _eventStore;
   final GlobalState _globalState;
   final double _considerDonePercent;
   final Duration _timeout;
@@ -20,14 +20,14 @@ class BroadcastSender {
 
   BroadcastSender({
     required GlobalState globalState,
-    required CacheManager cacheManager,
+    required EventStore eventStore,
     required NetworkEngine networkEngine,
     required Accounts accounts,
     required double considerDonePercent,
     required Duration timeout,
     required bool saveToCache,
   }) : _accounts = accounts,
-       _cacheManager = cacheManager,
+       _eventStore = eventStore,
        _engine = networkEngine,
        _globalState = globalState,
        _considerDonePercent = considerDonePercent,
@@ -99,7 +99,7 @@ class BroadcastSender {
     );
 
     if (mySaveToCache) {
-      _cacheManager.saveEvent(nostrEvent);
+      _eventStore.saveEvent(nostrEvent);
     }
 
     final cleanedSpecificRelays = specificRelays != null

@@ -57,7 +57,7 @@ void main() {
       final cashu = Cashu(
         cashuRepo: cashuRepo,
         walletsRepo: walletsRepo,
-        cacheManager: cache,
+        cashuStore: cache,
         cashuKeyDerivation: derivation,
         cashuUserSeedphrase: CashuUserSeedphrase(
           seedPhrase: CashuSeed.generateSeedPhrase(),
@@ -68,7 +68,7 @@ void main() {
       final cashu2 = Cashu(
         cashuRepo: cashuRepo2,
         walletsRepo: walletsRepo2,
-        cacheManager: cache2,
+        cashuStore: cache2,
         cashuKeyDerivation: derivation,
         cashuUserSeedphrase: CashuUserSeedphrase(
           seedPhrase: CashuSeed.generateSeedPhrase(),

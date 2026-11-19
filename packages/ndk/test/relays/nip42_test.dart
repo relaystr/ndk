@@ -1169,61 +1169,58 @@ void nip42Tests(NdkEngine engine) {
       await relayB.stopServer();
     });
 
-    test(
-      'an auth retry keeps the request open while its connection opens',
-      () async {
-        final relayAuth = MockRelay(
-          name: "relay auth",
-          explicitPort: portBase + 22,
-          requireAuthForRequests: true,
-          signEvents: false,
-        );
-        final relayPlain = MockRelay(
-          name: "relay plain",
-          explicitPort: portBase + 23,
-          signEvents: false,
-        );
-        await relayAuth.startServer(
-          textNotes: {key1: textNote(key1, "note on auth")},
-          // the retry opens a second connection, and this is the window the plain
-          // relay's EOSE has to land in
-          delayConnection: Duration(milliseconds: 200),
-        );
-        await relayPlain.startServer(
-          textNotes: {key1: textNote(key1, "note on plain")},
-          delayResponse: Duration(milliseconds: 300),
-        );
+    test('an auth retry keeps the request open while its connection opens', () async {
+      final relayAuth = MockRelay(
+        name: "relay auth",
+        explicitPort: portBase + 22,
+        requireAuthForRequests: true,
+        signEvents: false,
+      );
+      final relayPlain = MockRelay(
+        name: "relay plain",
+        explicitPort: portBase + 23,
+        signEvents: false,
+      );
+      await relayAuth.startServer(
+        textNotes: {key1: textNote(key1, "note on auth")},
+        // the retry opens a second connection, and this is the window the plain
+        // relay's EOSE has to land in
+        delayConnection: Duration(milliseconds: 200),
+      );
+      await relayPlain.startServer(
+        textNotes: {key1: textNote(key1, "note on plain")},
+        delayResponse: Duration(milliseconds: 300),
+      );
 
-        final ndk = Ndk(
-          NdkConfig(
-            eventVerifier: Bip340EventVerifier(),
-            cache: MemCacheManager(),
-            bootstrapRelays: [],
-            engine: engine,
-          ),
-        );
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: [],
+          engine: engine,
+        ),
+      );
 
-        final events = await ndk.requests
-            .query(
-              filter: notesOf(key1),
-              explicitRelays: [relayAuth.url, relayPlain.url],
-              auth: AuthPolicy.allow(signableAccount(key1)),
-              cacheRead: false,
-              cacheWrite: false,
-            )
-            .future;
+      final events = await ndk.requests
+          .query(
+            filter: notesOf(key1),
+            explicitRelays: [relayAuth.url, relayPlain.url],
+            auth: AuthPolicy.allow(signableAccount(key1)),
+            cacheRead: false,
+            cacheWrite: false,
+          )
+          .future;
 
-        expect(
-          events.map((event) => event.content),
-          containsAll(['note on auth', 'note on plain']),
-          reason: 'the stream must not close on the connection the retry opens',
-        );
+      expect(
+        events.map((event) => event.content),
+        containsAll(['note on auth', 'note on plain']),
+        reason: 'the stream must not close on the connection the retry opens',
+      );
 
-        await ndk.destroy();
-        await relayAuth.stopServer();
-        await relayPlain.stopServer();
-      },
-    );
+      await ndk.destroy();
+      await relayAuth.stopServer();
+      await relayPlain.stopServer();
+    });
 
     test('require with an account that cannot sign sends nothing', () async {
       final relay1 = MockRelay(

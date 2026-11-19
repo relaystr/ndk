@@ -120,8 +120,7 @@ void main() {
         relayUrl: url,
         eventToPublish: Nip01Event(
           id: id,
-          pubKey:
-              'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          pubKey: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           kind: 1,
           tags: [],
           content: '',
@@ -349,27 +348,24 @@ void main() {
     expect(state.relays.keys, unorderedEquals([anonymous, authenticated]));
   });
 
-  test(
-    'authentication waiting for challenge keeps its bound connection',
-    () async {
-      connect(anonymous);
-      connect(authenticated);
-      await manager.openConnectionAs(
-        anonymous.url,
-        Account(
-          type: AccountType.privateKey,
-          pubkey:
-              'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-          signer: _Signer(),
-        ),
-      );
-      final attempt = manager.authenticateConnection(authenticated);
-      await manager.closeIdleConnections();
-      expect(state.relays.keys, [authenticated]);
-      await manager.closeConnection(authenticated);
-      expect(await attempt, isFalse);
-    },
-  );
+  test('authentication waiting for challenge keeps its bound connection', () async {
+    connect(anonymous);
+    connect(authenticated);
+    await manager.openConnectionAs(
+      anonymous.url,
+      Account(
+        type: AccountType.privateKey,
+        pubkey:
+            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        signer: _Signer(),
+      ),
+    );
+    final attempt = manager.authenticateConnection(authenticated);
+    await manager.closeIdleConnections();
+    expect(state.relays.keys, [authenticated]);
+    await manager.closeConnection(authenticated);
+    expect(await attempt, isFalse);
+  });
 
   test('NIP77 negotiation keeps only its current connection', () async {
     connect(anonymous);

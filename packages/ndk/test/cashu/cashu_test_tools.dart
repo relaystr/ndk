@@ -30,7 +30,7 @@ class CashuTestTools {
       cashuUserSeedphrase: seedPhrase,
       walletsRepo: MemWalletsRepo(),
       cashuRepo: cashuRepo,
-      cacheManager: cache,
+      cashuStore: cache,
       cashuKeyDerivation: derivation,
     );
     return cashu;

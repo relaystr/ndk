@@ -1,9 +1,13 @@
 import 'package:ndk_core/config/request_defaults.dart';
 import 'package:ndk_core/shared/logger/logger.dart';
 import 'package:ndk_core/shared/nips/nip01/helpers.dart';
+
 import '../../entities/contact_list.dart';
+
 import 'package:ndk_core/domain_layer/entities/filter.dart';
-import '../../repositories/cache_manager.dart';
+
+import '../../repositories/stores/event_store.dart';
+import '../../repositories/stores/contact_list_store.dart';
 import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
@@ -12,15 +16,18 @@ import '../requests/requests.dart';
 class Follows {
   final Requests _requests;
   final Broadcast _broadcast;
-  final CacheManager _cacheManager;
+  final EventStore _eventStore;
+  final ContactListStore _contactListStore;
   final Accounts _accounts;
 
   Follows({
     required Requests requests,
     required Broadcast broadcast,
-    required CacheManager cacheManager,
+    required EventStore eventStore,
+    required ContactListStore contactListStore,
     required Accounts accounts,
-  }) : _cacheManager = cacheManager,
+  }) : _eventStore = eventStore,
+       _contactListStore = contactListStore,
        _requests = requests,
        _accounts = accounts,
        _broadcast = broadcast;
@@ -39,7 +46,7 @@ class Follows {
     bool forceRefresh = false,
     Duration idleTimeout = RequestDefaults.DEFAULT_QUERY_TIMEOUT,
   }) async {
-    ContactList? contactList = await _cacheManager.loadContactList(pubKey);
+    ContactList? contactList = await _contactListStore.loadContactList(pubKey);
     if (contactList != null) {
       contactList.loadedTimestamp = Helpers.now;
     }
@@ -77,7 +84,7 @@ class Follows {
             contactList.createdAt < loadedContactList.createdAt)) {
       loadedContactList.loadedTimestamp =
           DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      await _cacheManager.saveEvent(loadedContactList.toEvent());
+      await _eventStore.saveEvent(loadedContactList.toEvent());
       contactList = loadedContactList;
     }
 
@@ -88,7 +95,7 @@ class Follows {
   // otherwise we risk adding/removing contacts to a list that is out of date and thus loosing contacts other client has added/removed since.
   static const kRefreshContactListDuration = Duration(minutes: 10);
   Future<ContactList> _ensureUpToDateContactListOrEmpty(String pubkey) async {
-    ContactList? contactList = await _cacheManager.loadContactList(pubkey);
+    ContactList? contactList = await _contactListStore.loadContactList(pubkey);
     if (contactList != null) {
       contactList.loadedTimestamp = Helpers.now;
     }
@@ -125,7 +132,7 @@ class Follows {
         specificRelays: customRelays,
       );
       await bResult.broadcastDoneFuture;
-      await _cacheManager.saveEvent(contactList.toEvent());
+      await _eventStore.saveEvent(contactList.toEvent());
     }
     return contactList;
   }
@@ -140,7 +147,7 @@ class Follows {
     final bResult = _broadcast.broadcast(nostrEvent: contactList.toEvent());
     await bResult.broadcastDoneFuture;
 
-    await _cacheManager.saveEvent(contactList.toEvent());
+    await _eventStore.saveEvent(contactList.toEvent());
     return contactList;
   }
 
@@ -212,7 +219,7 @@ class Follows {
         specificRelays: customRelays,
       );
       await bResult.broadcastDoneFuture;
-      await _cacheManager.saveEvent(contactList.toEvent());
+      await _eventStore.saveEvent(contactList.toEvent());
     }
     return contactList;
   }

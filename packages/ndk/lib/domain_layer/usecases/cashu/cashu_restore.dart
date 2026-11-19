@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:ndk_core/shared/logger/logger.dart';
+
 import '../../entities/cashu/cashu_blinded_message.dart';
 import '../../entities/cashu/cashu_blinded_signature.dart';
 import '../../entities/cashu/cashu_keyset.dart';
@@ -271,8 +272,7 @@ class CashuRestore {
     } else {
       // Fallback: try to match by attempting unblinding with each blinded message
       Logger.log.w(
-        () =>
-            'No outputs in restore response or length mismatch, using fallback matching',
+        () => 'No outputs in restore response or length mismatch, using fallback matching',
       );
 
       final Set<String> usedBlindedMessages = {};

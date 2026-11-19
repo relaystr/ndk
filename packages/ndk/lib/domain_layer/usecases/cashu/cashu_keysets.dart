@@ -1,16 +1,14 @@
 import '../../entities/cashu/cashu_keyset.dart';
-import '../../repositories/cache_manager.dart';
+import '../../repositories/stores/cashu_store.dart';
 import '../../repositories/cashu_repo.dart';
 
 class CashuKeysets {
   final CashuRepo _cashuRepo;
-  final CacheManager _cacheManager;
+  final CashuStore _cashuStore;
 
-  CashuKeysets({
-    required CashuRepo cashuRepo,
-    required CacheManager cacheManager,
-  }) : _cashuRepo = cashuRepo,
-       _cacheManager = cacheManager;
+  CashuKeysets({required CashuRepo cashuRepo, required CashuStore cashuStore})
+    : _cashuRepo = cashuRepo,
+      _cashuStore = cashuStore;
 
   /// Fetches keysets from the cache or network. \
   /// If the cache is stale or empty, it fetches from the network. \
@@ -69,12 +67,12 @@ class CashuKeysets {
   }
 
   Future<void> saveKeyset(CahsuKeyset keyset) async {
-    await _cacheManager.saveKeyset(keyset);
+    await _cashuStore.saveKeyset(keyset);
   }
 
   Future<List<CahsuKeyset>?> getKeysetFromCache(String mintUrl) async {
     try {
-      return await _cacheManager.getKeysets(mintUrl: mintUrl);
+      return await _cashuStore.getKeysets(mintUrl: mintUrl);
     } catch (e) {
       return null;
     }

@@ -11,8 +11,7 @@ void main() {
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
         kind: ContactList.kKind,
-        content:
-            "{\"wss://nos.lol\":{\"read\":true,\"write\":true},\"wss://relay.damus.io\":{\"read\":true,\"write\":true}}",
+        content: "{\"wss://nos.lol\":{\"read\":true,\"write\":true},\"wss://relay.damus.io\":{\"read\":true,\"write\":true}}",
         tags: [
           ['p', 'contact1'],
           ['p', 'contact2'],

@@ -145,9 +145,8 @@ void main() {
     late String sha256;
 
     setUp(() async {
-      final seeded = await clientWith(
-        handler: false,
-      ).uploadBlob(data: bytes('private blob ' * 300), serverUrls: [urlA]);
+      final seeded = await clientWith(handler: false)
+          .uploadBlob(data: bytes('private blob ' * 300), serverUrls: [urlA]);
       sha256 = seeded.single.descriptor!.sha256;
       serverA.requireAuthForReads = true;
       serverA.clearRequests();

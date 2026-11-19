@@ -1,29 +1,28 @@
 import 'package:ndk_core/domain_layer/entities/filter.dart';
+
 import '../../entities/filter_fetched_ranges.dart';
-import '../../repositories/cache_manager.dart';
+import '../../repositories/stores/filter_fetched_range_store.dart';
 
 /// Usecase to track and query fetched ranges per relay
 class FetchedRanges {
-  final CacheManager _cacheManager;
+  final FilterFetchedRangeStore _filterFetchedRangeStore;
 
-  FetchedRanges({required CacheManager cacheManager})
-    : _cacheManager = cacheManager;
+  FetchedRanges({required FilterFetchedRangeStore filterFetchedRangeStore})
+    : _filterFetchedRangeStore = filterFetchedRangeStore;
 
   /// Get fetched ranges for a filter across all relays
   Future<Map<String, RelayFetchedRanges>> getForFilter(Filter filter) async {
     final filterHash = await FilterFingerprint.generateAsync(filter);
-    final records = await _cacheManager.loadFilterFetchedRangeRecords(
-      filterHash,
-    );
+    final records = await _filterFetchedRangeStore
+        .loadFilterFetchedRangeRecords(filterHash);
 
     return _buildFetchedRangesMap(filter, records);
   }
 
   /// Get all fetched ranges for a relay (all filters)
   Future<List<RelayFetchedRanges>> getForRelay(String relayUrl) async {
-    final records = await _cacheManager.loadFilterFetchedRangeRecordsByRelayUrl(
-      relayUrl,
-    );
+    final records = await _filterFetchedRangeStore
+        .loadFilterFetchedRangeRecordsByRelayUrl(relayUrl);
 
     // Group by filterHash
     final grouped = <String, List<FilterFetchedRangeRecord>>{};
@@ -123,7 +122,7 @@ class FetchedRanges {
     final filterHash = await FilterFingerprint.generateAsync(filter);
 
     // Load existing records for this filter/relay
-    final existingRecords = await _cacheManager
+    final existingRecords = await _filterFetchedRangeStore
         .loadFilterFetchedRangeRecordsByRelay(filterHash, relayUrl);
 
     // Convert to TimeRanges for merging
@@ -138,10 +137,8 @@ class FetchedRanges {
     final mergedRanges = _mergeRanges(ranges);
 
     // Delete old records for this filter/relay and save merged ones
-    await _cacheManager.removeFilterFetchedRangeRecordsByFilterAndRelay(
-      filterHash,
-      relayUrl,
-    );
+    await _filterFetchedRangeStore
+        .removeFilterFetchedRangeRecordsByFilterAndRelay(filterHash, relayUrl);
 
     final newRecords = mergedRanges.map((range) {
       return FilterFetchedRangeRecord(
@@ -152,23 +149,25 @@ class FetchedRanges {
       );
     }).toList();
 
-    await _cacheManager.saveFilterFetchedRangeRecords(newRecords);
+    await _filterFetchedRangeStore.saveFilterFetchedRangeRecords(newRecords);
   }
 
   /// Clear fetched ranges for a specific filter
   Future<void> clearForFilter(Filter filter) async {
     final filterHash = await FilterFingerprint.generateAsync(filter);
-    await _cacheManager.removeFilterFetchedRangeRecords(filterHash);
+    await _filterFetchedRangeStore.removeFilterFetchedRangeRecords(filterHash);
   }
 
   /// Clear all fetched range records for a relay
   Future<void> clearForRelay(String relayUrl) async {
-    await _cacheManager.removeFilterFetchedRangeRecordsByRelay(relayUrl);
+    await _filterFetchedRangeStore.removeFilterFetchedRangeRecordsByRelay(
+      relayUrl,
+    );
   }
 
   /// Clear all fetched range records
   Future<void> clearAll() async {
-    await _cacheManager.removeAllFilterFetchedRangeRecords();
+    await _filterFetchedRangeStore.removeAllFilterFetchedRangeRecords();
   }
 
   // =====================

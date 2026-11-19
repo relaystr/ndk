@@ -4,6 +4,7 @@ import 'dart:core';
 import 'dart:math';
 
 import '../../config/broadcast_defaults.dart';
+
 import 'package:ndk_core/shared/logger/logger.dart';
 import 'package:ndk_core/shared/nips/nip01/event_kind_classification.dart';
 import 'package:ndk_core/shared/nips/nip01/helpers.dart';
@@ -12,23 +13,32 @@ import 'package:ndk_core/domain_layer/entities/filter.dart';
 import 'package:ndk_core/domain_layer/entities/ndk_request.dart';
 import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk_core/domain_layer/entities/relay_set.dart';
+
 import '../entities/request_response.dart';
+
 import 'package:ndk_core/domain_layer/entities/request_state.dart';
-import '../repositories/cache_manager.dart';
+
+import '../repositories/stores/event_store.dart';
+import '../repositories/stores/user_relay_list_store.dart';
+
 import 'package:ndk_core/domain_layer/usecases/engines/explicit_relays_engine.dart';
+
 import 'user_relay_lists/user_relay_lists.dart';
 
 class RelaySetsEngine extends ExplicitRelaysEngine {
   static const Duration kDefaultStreamIdleTimeout = Duration(seconds: 5);
 
-  final CacheManager _cacheManager;
+  final EventStore _eventStore;
+  final UserRelayListStore _userRelayListStore;
 
   /// engine that pre-calculates relay sets for gossip
   RelaySetsEngine({
     required super.relayManager,
-    required CacheManager cacheManager,
+    required EventStore eventStore,
+    required UserRelayListStore userRelayListStore,
     super.bootstrapRelays,
-  }) : _cacheManager = cacheManager;
+  }) : _eventStore = eventStore,
+       _userRelayListStore = userRelayListStore;
 
   @override
   Future<String?> broadcastSkipReason(Nip01Event event) async {
@@ -46,7 +56,7 @@ class RelaySetsEngine extends ExplicitRelaysEngine {
     }
 
     final dTag = event.getDtag();
-    final visibleEvents = await _cacheManager.loadEvents(
+    final visibleEvents = await _eventStore.loadEvents(
       pubKeys: [event.pubKey],
       kinds: [event.kind],
       tags:
@@ -165,7 +175,7 @@ class RelaySetsEngine extends ExplicitRelaysEngine {
     // TODO should not only depend on cached, but go fetch it if not present in cache
     final nip65List = (await UserRelayLists.getUserRelayListCacheLatest(
       pubkeys: [workingEvent.pubKey],
-      cacheManager: _cacheManager,
+      userRelayListStore: _userRelayListStore,
     ));
     // make a copy of the keys since connectRelay may mutate the underlying map
     // several connections can share a url, and broadcasting twice to the
@@ -181,8 +191,7 @@ class RelaySetsEngine extends ExplicitRelaysEngine {
           .toList();
     } else {
       Logger.log.w(
-        () =>
-            "could not find user relay list from nip65, using default bootstrap relays",
+        () => "could not find user relay list from nip65, using default bootstrap relays",
       );
     }
 
@@ -198,7 +207,7 @@ class RelaySetsEngine extends ExplicitRelaysEngine {
     if (workingEvent.pTags.isNotEmpty) {
       final nip65Data = await UserRelayLists.getUserRelayListCacheLatest(
         pubkeys: workingEvent.pTags,
-        cacheManager: _cacheManager,
+        userRelayListStore: _userRelayListStore,
       );
 
       List<String> myWriteRelayUrlsOthers = [];

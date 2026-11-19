@@ -295,45 +295,42 @@ void broadcastAuthTests(NdkEngine engine) {
       );
     });
 
-    test(
-      'without auth a delayed refusal authenticates as the author once asked',
-      () async {
-        final relay = await authRelay(
-          delayResponse: const Duration(milliseconds: 600),
-        );
-        final asked = <String>[];
-        final ndk = ndkFor(
-          relay,
-          authHandler: (url, pubkey) async {
-            asked.add(pubkey);
-            return true;
-          },
-        );
-        ndk.accounts.loginPrivateKey(
-          pubkey: key.publicKey,
-          privkey: key.privateKey!,
-        );
+    test('without auth a delayed refusal authenticates as the author once asked', () async {
+      final relay = await authRelay(
+        delayResponse: const Duration(milliseconds: 600),
+      );
+      final asked = <String>[];
+      final ndk = ndkFor(
+        relay,
+        authHandler: (url, pubkey) async {
+          asked.add(pubkey);
+          return true;
+        },
+      );
+      ndk.accounts.loginPrivateKey(
+        pubkey: key.publicKey,
+        privkey: key.privateKey!,
+      );
 
-        final elapsed = Stopwatch()..start();
-        final result = await ndk.broadcast
-            .broadcast(
-              nostrEvent: noteFrom(key, "default"),
-              specificRelays: [relay.url],
-            )
-            .broadcastDoneFuture;
+      final elapsed = Stopwatch()..start();
+      final result = await ndk.broadcast
+          .broadcast(
+            nostrEvent: noteFrom(key, "default"),
+            specificRelays: [relay.url],
+          )
+          .broadcastDoneFuture;
 
-        expect(
-          result.any((r) => r.broadcastSuccessful),
-          isTrue,
-          reason:
-              'elapsed=${elapsed.elapsed}; AUTH received=${relay.receivedAuths}; '
-              'accepted=${relay.acceptedAuths}; responses='
-              '${result.map((r) => '${r.okReceived}/${r.broadcastSuccessful}/${r.msg}').toList()}',
-        );
-        expect(asked, [key.publicKey]);
-        expect(relay.connectionsAuthenticatedAs(key.publicKey), greaterThan(0));
-      },
-    );
+      expect(
+        result.any((r) => r.broadcastSuccessful),
+        isTrue,
+        reason:
+            'elapsed=${elapsed.elapsed}; AUTH received=${relay.receivedAuths}; '
+            'accepted=${relay.acceptedAuths}; responses='
+            '${result.map((r) => '${r.okReceived}/${r.broadcastSuccessful}/${r.msg}').toList()}',
+      );
+      expect(asked, [key.publicKey]);
+      expect(relay.connectionsAuthenticatedAs(key.publicKey), greaterThan(0));
+    });
 
     test('without auth or handler a refusal reveals nobody', () async {
       final relay = await authRelay();

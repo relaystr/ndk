@@ -10,6 +10,7 @@ import 'package:ndk_core/shared/isolates/isolate_manager.dart';
 import 'package:ndk_core/shared/nips/nip19/hrps.dart';
 import 'package:ndk_core/shared/nips/nip19/nip19_utils.dart';
 import 'package:ndk_core/shared/nips/nip44/utils.dart';
+
 import 'scrypt.dart';
 
 /// How the private key was handled before being encrypted.

@@ -208,9 +208,8 @@ class ExplicitRelaysEngine implements NetworkEngine {
     Nip01Event event,
     BroadcastState broadcastState,
   ) => Future.wait(
-    cleanRelayUrls(
-      bootstrapRelays,
-    ).map((relayUrl) => doRelayBroadcast(relayUrl, event, broadcastState)),
+    cleanRelayUrls(bootstrapRelays)
+        .map((relayUrl) => doRelayBroadcast(relayUrl, event, broadcastState)),
   );
 
   /// Why [event] must not be sent after all, asked once a connection for it is

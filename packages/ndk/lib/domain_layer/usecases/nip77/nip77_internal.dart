@@ -6,15 +6,15 @@ part of 'nip77.dart';
 class _Nip77Internal {
   final GlobalState _globalState;
   final RelayManager _relayManager;
-  final CacheManager _cacheManager;
+  final EventStore _eventStore;
 
   _Nip77Internal({
     required GlobalState globalState,
     required RelayManager relayManager,
-    required CacheManager cacheManager,
+    required EventStore eventStore,
   }) : _globalState = globalState,
        _relayManager = relayManager,
-       _cacheManager = cacheManager;
+       _eventStore = eventStore;
 
   Nip77Response reconcile({
     required String relayUrl,
@@ -174,7 +174,7 @@ class _Nip77Internal {
     final items = <neg.NegentropyItem>[];
 
     for (final id in ids) {
-      final event = await _cacheManager.loadEvent(id);
+      final event = await _eventStore.loadEvent(id);
       if (event != null) {
         items.add(
           neg.NegentropyItem.fromHex(timestamp: event.createdAt, idHex: id),
@@ -188,7 +188,7 @@ class _Nip77Internal {
   }
 
   Future<List<neg.NegentropyItem>> _buildItemsFromFilter(Filter filter) async {
-    final events = await _cacheManager.loadEventIdsWithCreatedAt(filter);
+    final events = await _eventStore.loadEventIdsWithCreatedAt(filter);
     return [
       for (final e in events)
         neg.NegentropyItem.fromHex(timestamp: e.createdAt, idHex: e.id),
