@@ -1,5 +1,5 @@
 import 'package:bip39_mnemonic/bip39_mnemonic.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:ndk_cashu/ndk_cashu.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 import 'package:ndk_nip82/ndk_nip82.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart';

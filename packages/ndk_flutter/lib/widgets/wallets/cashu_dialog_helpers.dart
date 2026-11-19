@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Strips exception prefixes and noisy JSON bodies from error messages so they
 /// read cleanly in the UI.

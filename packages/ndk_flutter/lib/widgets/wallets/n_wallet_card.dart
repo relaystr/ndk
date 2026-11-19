@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 import 'package:ndk_cashu/ndk_cashu.dart';
 import 'package:ndk_nwc/ndk_nwc.dart';

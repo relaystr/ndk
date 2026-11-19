@@ -2,8 +2,7 @@ import 'dart:async';
 
 import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:media_kit/media_kit.dart';
@@ -145,9 +144,7 @@ class _MyAppState extends State<MyApp> {
         localizationsDelegates: const [
           SampleAppLocalizations.delegate,
           ndk_flutter.AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
         ],
         // Use ndk_flutter's locale list — it's the superset that includes the
         // extra locales (fi, pt, pt_BR) translated in that package. The sample

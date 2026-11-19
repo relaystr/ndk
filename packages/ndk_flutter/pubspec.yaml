@@ -17,7 +17,7 @@ platforms:
 
 environment:
   sdk: ">=3.9.0 <4.0.0"
-  flutter: ">=3.40.0"
+  flutter: ">=3.47.0"
 
 resolution: workspace
 
@@ -49,6 +49,7 @@ dependencies:
   ndk_cashu: ^0.1.0
   ndk_nwc: ^0.1.0
   ndk_wallets: ^0.1.0
+  material_ui: ^1.11.1
 
 dev_dependencies:
   flutter_test:
