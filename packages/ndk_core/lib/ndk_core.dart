@@ -47,6 +47,7 @@ export 'domain_layer/repositories/event_verifier.dart';
 export 'domain_layer/repositories/nostr_transport.dart';
 export 'domain_layer/repositories/relay_info_repo.dart';
 
+export 'domain_layer/usecases/engines/explicit_relays_engine.dart';
 export 'domain_layer/usecases/engines/network_engine.dart';
 export 'domain_layer/usecases/nip42/auth_event.dart';
 export 'domain_layer/usecases/relay_manager.dart';
