@@ -41,6 +41,7 @@ dependencies:
   flutter_secure_storage: ^10.0.0
 
   ndk: 0.7.0
+  ndk_core: ^0.1.0
   ndk_flutter: ^0.0.2-dev.2
   ndk_drift: ^0.0.2-dev.0+1
 
@@ -68,6 +69,8 @@ dev_dependencies:
 dependency_overrides:
   ndk:
     path: ../ndk
+  ndk_core:
+    path: ../ndk_core
   ndk_flutter:
     path: ../ndk_flutter
   ndk_drift:

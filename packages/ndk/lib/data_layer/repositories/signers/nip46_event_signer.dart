@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
-import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip01/helpers.dart';
+import 'package:ndk_core/shared/nips/nip01/key_pair.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../domain_layer/usecases/bunkers/models/bunker_request.dart';

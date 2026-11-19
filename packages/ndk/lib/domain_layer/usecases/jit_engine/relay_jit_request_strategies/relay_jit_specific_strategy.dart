@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import '../../../../shared/nips/nip01/client_msg.dart';
-import '../../../entities/connection_source.dart';
-import '../../../entities/filter.dart';
-import '../../../entities/relay_connection_key.dart';
-import '../../../entities/relay_connectivity.dart';
-import '../../../entities/request_state.dart';
-import '../../../entities/tuple.dart';
-import '../../relay_manager.dart';
+import 'package:ndk_core/shared/nips/nip01/client_msg.dart';
+import 'package:ndk_core/domain_layer/entities/connection_source.dart';
+import 'package:ndk_core/domain_layer/entities/filter.dart';
+import 'package:ndk_core/domain_layer/entities/relay_connection_key.dart';
+import 'package:ndk_core/domain_layer/entities/relay_connectivity.dart';
+import 'package:ndk_core/domain_layer/entities/request_state.dart';
+import 'package:ndk_core/domain_layer/entities/tuple.dart';
+import 'package:ndk_core/domain_layer/usecases/relay_manager.dart';
 
 /// Strategy Description:
 ///

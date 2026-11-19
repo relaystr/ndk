@@ -1,10 +1,10 @@
-import '../../../../shared/nips/nip01/client_msg.dart';
-import '../../../../shared/nips/nip01/event_kind_classification.dart';
+import 'package:ndk_core/shared/nips/nip01/client_msg.dart';
+import 'package:ndk_core/shared/nips/nip01/event_kind_classification.dart';
 import '../../../repositories/cache_manager.dart';
-import '../../../entities/nip_01_event.dart';
-import '../../../entities/broadcast_state.dart';
-import '../../../entities/relay_connectivity.dart';
-import '../../relay_manager.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/broadcast_state.dart';
+import 'package:ndk_core/domain_layer/entities/relay_connectivity.dart';
+import 'package:ndk_core/domain_layer/usecases/relay_manager.dart';
 
 /// broadcast to specific relays
 class RelayJitBroadcastSpecificRelaysStrategy {

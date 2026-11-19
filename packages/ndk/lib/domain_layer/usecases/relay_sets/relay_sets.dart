@@ -1,14 +1,14 @@
-import '../../../shared/helpers/relay_helper.dart';
-import '../../../shared/logger/logger.dart';
-import '../../entities/connection_source.dart';
-import '../../entities/pubkey_mapping.dart';
-import '../../entities/read_write.dart';
-import '../../entities/read_write_marker.dart';
-import '../../entities/relay_set.dart';
+import 'package:ndk_core/shared/helpers/relay_helper.dart';
+import 'package:ndk_core/shared/logger/logger.dart';
+import 'package:ndk_core/domain_layer/entities/connection_source.dart';
+import 'package:ndk_core/domain_layer/entities/pubkey_mapping.dart';
+import 'package:ndk_core/domain_layer/entities/read_write.dart';
+import 'package:ndk_core/domain_layer/entities/read_write_marker.dart';
+import 'package:ndk_core/domain_layer/entities/relay_set.dart';
 import '../../entities/user_relay_list.dart';
 import '../../repositories/cache_manager.dart';
 
-import '../relay_manager.dart';
+import 'package:ndk_core/domain_layer/usecases/relay_manager.dart';
 import '../user_relay_lists/user_relay_lists.dart';
 
 class RelaySets {

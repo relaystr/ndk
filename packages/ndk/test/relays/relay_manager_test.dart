@@ -3,10 +3,10 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:ndk/data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
-import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
-import 'package:ndk/domain_layer/entities/ndk_request.dart';
-import 'package:ndk/domain_layer/usecases/relay_manager.dart';
+import 'package:ndk_core/data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
+import 'package:ndk_core/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
+import 'package:ndk_core/domain_layer/entities/ndk_request.dart';
+import 'package:ndk_core/domain_layer/usecases/relay_manager.dart';
 import 'package:ndk/entities.dart';
 import 'package:test/test.dart';
 

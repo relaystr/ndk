@@ -1,4 +1,4 @@
-import '../../../shared/logger/logger.dart';
+import 'package:ndk_core/shared/logger/logger.dart';
 
 class CashuMintInfo {
   final String? name;

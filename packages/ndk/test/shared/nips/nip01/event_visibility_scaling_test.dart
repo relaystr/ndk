@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:ndk/domain_layer/entities/hidden_event.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/shared/nips/nip01/event_visibility_resolver.dart';
 
 const _offerKind = 38383;

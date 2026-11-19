@@ -1,5 +1,5 @@
-import 'nip_01_event.dart';
-import '../../shared/nips/nip01/event_kind_classification.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/shared/nips/nip01/event_kind_classification.dart';
 
 const _noChange = Object();
 

@@ -1,5 +1,5 @@
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/repositories/event_verifier.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/repositories/event_verifier.dart';
 
 /// A mock implementation of [EventVerifier] for testing purposes.
 ///

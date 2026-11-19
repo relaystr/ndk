@@ -1,23 +1,23 @@
 import 'dart:async';
 
 import 'package:test/test.dart';
-import 'package:ndk/domain_layer/entities/account.dart';
-import 'package:ndk/domain_layer/entities/broadcast_state.dart';
-import 'package:ndk/domain_layer/entities/connection_source.dart';
-import 'package:ndk/domain_layer/entities/filter.dart';
-import 'package:ndk/domain_layer/entities/global_state.dart';
-import 'package:ndk/domain_layer/entities/ndk_request.dart';
-import 'package:ndk/domain_layer/entities/nip77_state.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/entities/relay.dart';
-import 'package:ndk/domain_layer/entities/relay_connection_key.dart';
-import 'package:ndk/domain_layer/entities/relay_connectivity.dart';
-import 'package:ndk/domain_layer/entities/request_state.dart';
-import 'package:ndk/domain_layer/repositories/event_signer.dart';
-import 'package:ndk/domain_layer/repositories/nostr_transport.dart';
-import 'package:ndk/domain_layer/usecases/relay_manager.dart';
+import 'package:ndk_core/domain_layer/entities/account.dart';
+import 'package:ndk_core/domain_layer/entities/broadcast_state.dart';
+import 'package:ndk_core/domain_layer/entities/connection_source.dart';
+import 'package:ndk_core/domain_layer/entities/filter.dart';
+import 'package:ndk_core/domain_layer/entities/global_state.dart';
+import 'package:ndk_core/domain_layer/entities/ndk_request.dart';
+import 'package:ndk_core/domain_layer/entities/nip77_state.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/relay.dart';
+import 'package:ndk_core/domain_layer/entities/relay_connection_key.dart';
+import 'package:ndk_core/domain_layer/entities/relay_connectivity.dart';
+import 'package:ndk_core/domain_layer/entities/request_state.dart';
+import 'package:ndk_core/domain_layer/repositories/event_signer.dart';
+import 'package:ndk_core/domain_layer/repositories/nostr_transport.dart';
+import 'package:ndk_core/domain_layer/usecases/relay_manager.dart';
 import 'package:ndk/ndk.dart' show Ndk, Nip77;
-import 'package:ndk/shared/nips/nip01/client_msg.dart';
+import 'package:ndk_core/shared/nips/nip01/client_msg.dart';
 
 class _Transport implements NostrTransport {
   bool closed = false;

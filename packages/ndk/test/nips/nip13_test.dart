@@ -1,7 +1,7 @@
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
 import 'package:test/test.dart';
-import 'package:ndk/shared/nips/nip13/nip13.dart';
+import 'package:ndk_core/shared/nips/nip13/nip13.dart';
 
 void main() {
   final ndk = Ndk.emptyBootstrapRelaysConfig();

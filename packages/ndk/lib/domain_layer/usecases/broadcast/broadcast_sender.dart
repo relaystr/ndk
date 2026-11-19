@@ -1,9 +1,9 @@
 import 'package:ndk/ndk.dart';
 
-import '../../../shared/helpers/relay_helper.dart';
-import '../../entities/broadcast_state.dart';
-import '../../entities/global_state.dart';
-import '../engines/network_engine.dart';
+import 'package:ndk_core/shared/helpers/relay_helper.dart';
+import 'package:ndk_core/domain_layer/entities/broadcast_state.dart';
+import 'package:ndk_core/domain_layer/entities/global_state.dart';
+import 'package:ndk_core/domain_layer/usecases/engines/network_engine.dart';
 
 /// Low-level broadcaster that sends events to relays immediately. \
 /// Has no queue, retry, or persistence logic. \

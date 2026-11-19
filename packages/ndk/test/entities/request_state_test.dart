@@ -1,4 +1,4 @@
-import 'package:ndk/domain_layer/entities/request_state.dart';
+import 'package:ndk_core/domain_layer/entities/request_state.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 

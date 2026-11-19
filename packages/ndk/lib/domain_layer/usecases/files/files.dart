@@ -1,4 +1,4 @@
-import '../../entities/auth_policy.dart';
+import 'package:ndk_core/domain_layer/entities/auth_policy.dart';
 import '../../entities/blob_upload_progress.dart';
 import '../../entities/blossom_blobs.dart';
 import '../../entities/blossom_strategies.dart';

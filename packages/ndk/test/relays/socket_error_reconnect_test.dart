@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
-import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
-import 'package:ndk/domain_layer/repositories/nostr_transport.dart';
+import 'package:ndk_core/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
+import 'package:ndk_core/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:ndk_core/domain_layer/repositories/nostr_transport.dart';
 import 'package:ndk/domain_layer/usecases/accounts/accounts.dart';
-import 'package:ndk/domain_layer/usecases/relay_manager.dart';
+import 'package:ndk_core/domain_layer/usecases/relay_manager.dart';
 import 'package:ndk/entities.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
 import 'package:test/test.dart';
 
 import '../mocks/mock_relay.dart';

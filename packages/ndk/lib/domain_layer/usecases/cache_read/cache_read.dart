@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import '../../../shared/logger/logger.dart';
-import '../../entities/nip_01_event.dart';
-import '../../entities/request_state.dart';
+import 'package:ndk_core/shared/logger/logger.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/request_state.dart';
 import '../../repositories/cache_manager.dart';
 
 /// Cache-first helper for request resolution.

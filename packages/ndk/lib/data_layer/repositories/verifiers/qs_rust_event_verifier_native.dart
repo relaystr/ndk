@@ -3,8 +3,8 @@ import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
 
-import '../../../domain_layer/entities/nip_01_event.dart';
-import '../../../domain_layer/repositories/event_verifier.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/repositories/event_verifier.dart';
 import '../../../src/rust_lib.dart' as rust_lib;
 
 /// An implementation of [EventVerifier] that uses quantum-secure

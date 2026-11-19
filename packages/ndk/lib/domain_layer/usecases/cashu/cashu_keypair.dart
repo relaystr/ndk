@@ -1,7 +1,7 @@
 import 'package:convert/convert.dart';
 import 'package:pointycastle/export.dart';
 
-import '../../../shared/nips/nip01/helpers.dart';
+import 'package:ndk_core/shared/nips/nip01/helpers.dart';
 import 'cashu_tools.dart';
 
 class CashuKeypair {

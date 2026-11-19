@@ -19,6 +19,7 @@ on:
         type: choice
         options:
           - ndk
+          - ndk_core
           - ndk_drift
           - ndk_objectbox
           - ndk_sembast

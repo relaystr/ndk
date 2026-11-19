@@ -1,5 +1,5 @@
-import '../usecases/engines/network_engine.dart';
-import 'read_write_marker.dart';
+import 'package:ndk_core/domain_layer/usecases/engines/network_engine.dart';
+import 'package:ndk_core/domain_layer/entities/read_write_marker.dart';
 
 /// additional data for the JIT engine
 class JitEngineRelayConnectivityData {

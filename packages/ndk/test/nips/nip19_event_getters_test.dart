@@ -1,6 +1,6 @@
 import 'package:ndk/entities.dart';
 import 'package:test/test.dart';
-import 'package:ndk/shared/nips/nip19/nip19.dart';
+import 'package:ndk_core/shared/nips/nip19/nip19.dart';
 
 void main() {
   group('Nip01Event NIP-19 getters', () {

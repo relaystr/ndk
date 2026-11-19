@@ -9,12 +9,12 @@ import '../../../domain_layer/entities/blossom_authorization.dart';
 import '../../../domain_layer/entities/blossom_blobs.dart';
 import '../../../domain_layer/entities/blossom_strategies.dart';
 import '../../../domain_layer/entities/file_hash_progress.dart';
-import '../../../domain_layer/entities/nip_01_event.dart';
-import '../../../domain_layer/entities/tuple.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/tuple.dart';
 import '../../../domain_layer/repositories/blossom.dart';
-import '../../data_sources/http_request.dart';
+import 'package:ndk_core/data_layer/data_sources/http_request.dart';
 import '../../io/file_io.dart';
-import '../../models/nip_01_event_model.dart';
+import 'package:ndk_core/data_layer/models/nip_01_event_model.dart';
 
 bool _isSuccessStatus(int statusCode) => statusCode >= 200 && statusCode < 300;
 

@@ -1,14 +1,14 @@
-import 'package:ndk/data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
-import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
+import 'package:ndk_core/data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
+import 'package:ndk_core/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import 'package:ndk/domain_layer/entities/jit_engine_relay_connectivity_data.dart';
-import 'package:ndk/domain_layer/repositories/nostr_transport.dart';
+import 'package:ndk_core/domain_layer/repositories/nostr_transport.dart';
 import 'package:ndk/domain_layer/usecases/jit_engine/relay_jit_request_strategies/relay_jit_specific_strategy.dart';
-import 'package:ndk/domain_layer/usecases/relay_manager.dart';
+import 'package:ndk_core/domain_layer/usecases/relay_manager.dart';
 import 'package:ndk/entities.dart' as ndk_entities;
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
-import 'package:ndk/shared/nips/nip01/client_msg.dart';
-import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip01/client_msg.dart';
+import 'package:ndk_core/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
 
 import '../mocks/mock_event_verifier.dart';

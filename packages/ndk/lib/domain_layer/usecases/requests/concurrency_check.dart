@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 
-import '../../entities/filter.dart';
-import '../../entities/global_state.dart';
-import '../../entities/ndk_request.dart';
-import '../../entities/request_state.dart';
+import 'package:ndk_core/domain_layer/entities/filter.dart';
+import 'package:ndk_core/domain_layer/entities/global_state.dart';
+import 'package:ndk_core/domain_layer/entities/ndk_request.dart';
+import 'package:ndk_core/domain_layer/entities/request_state.dart';
 
 class ConcurrencyCheck {
   final GlobalState _globalState;

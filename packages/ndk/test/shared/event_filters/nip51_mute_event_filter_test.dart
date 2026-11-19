@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/nip_51_list.dart';
 import 'package:ndk/shared/event_filters/nip51_mute_event_filter.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';

@@ -6,10 +6,10 @@ import 'package:convert/convert.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:unorm_dart/unorm_dart.dart' as unorm;
 
-import '../../isolates/isolate_manager.dart';
-import '../nip19/hrps.dart';
-import '../nip19/nip19_utils.dart';
-import '../nip44/utils.dart';
+import 'package:ndk_core/shared/isolates/isolate_manager.dart';
+import 'package:ndk_core/shared/nips/nip19/hrps.dart';
+import 'package:ndk_core/shared/nips/nip19/nip19_utils.dart';
+import 'package:ndk_core/shared/nips/nip44/utils.dart';
 import 'scrypt.dart';
 
 /// How the private key was handled before being encrypted.

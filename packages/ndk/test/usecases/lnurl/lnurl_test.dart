@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:ndk/data_layer/data_sources/http_request.dart';
+import 'package:ndk_core/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/lnurl_http_impl.dart';
 import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
 import 'package:ndk/domain_layer/entities/wallet/providers/lnurl/lnurl_wallet_provider.dart';

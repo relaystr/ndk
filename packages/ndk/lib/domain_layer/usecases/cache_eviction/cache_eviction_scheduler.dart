@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import '../../../shared/logger/logger.dart';
+import 'package:ndk_core/shared/logger/logger.dart';
 import '../../entities/cache_eviction.dart';
 import '../../repositories/cache_manager.dart';
 

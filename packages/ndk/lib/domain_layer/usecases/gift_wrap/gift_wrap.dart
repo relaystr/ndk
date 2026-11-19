@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:math';
 
-import '../../../data_layer/models/nip_01_event_model.dart';
+import 'package:ndk_core/data_layer/models/nip_01_event_model.dart';
 import '../../entities/event_cache_records.dart';
 import '../../entities/gift_wrap_unwrap_result.dart';
-import '../../entities/nip_01_event.dart';
-import '../../repositories/event_signer.dart';
-import '../../repositories/event_verifier.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/repositories/event_signer.dart';
+import 'package:ndk_core/domain_layer/repositories/event_verifier.dart';
 import '../accounts/accounts.dart';
 import '../decrypted_event_payloads/decrypted_event_payloads.dart';
 

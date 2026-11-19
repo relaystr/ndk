@@ -1,4 +1,4 @@
-import 'nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import 'nip_17_file_message.dart';
 
 /// Parsed direct-message item produced by the NIP-17 DM usecase.

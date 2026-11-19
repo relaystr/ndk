@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:ndk_flutter/widgets/login/login_controller.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart';

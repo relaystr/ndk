@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import '../../../domain_layer/entities/cashu/cashu_spending_history_event.dart';
 import '../../../domain_layer/entities/cashu/cashu_spending_history_event_content.dart';
-import '../../../domain_layer/entities/nip_01_event.dart';
-import '../../../domain_layer/repositories/event_signer.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/repositories/event_signer.dart';
 
 class CashuSpendingHistoryEventModel extends CashuSpendingHistoryEvent {
   CashuSpendingHistoryEventModel({

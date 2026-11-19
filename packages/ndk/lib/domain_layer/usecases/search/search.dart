@@ -1,6 +1,6 @@
-import '../../entities/filter.dart';
+import 'package:ndk_core/domain_layer/entities/filter.dart';
 import '../../entities/metadata.dart';
-import '../../entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import '../../repositories/cache_manager.dart';
 import '../requests/requests.dart';
 

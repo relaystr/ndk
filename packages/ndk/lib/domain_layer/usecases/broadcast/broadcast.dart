@@ -1,6 +1,6 @@
 import 'package:ndk/ndk.dart';
 
-import '../../../shared/helpers/relay_helper.dart';
+import 'package:ndk_core/shared/helpers/relay_helper.dart';
 import '../../../shared/nips/nip09/deletion.dart';
 import '../../../shared/nips/nip25/reactions.dart';
 import 'broadcast_sender.dart';

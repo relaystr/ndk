@@ -28,6 +28,7 @@ dependencies:
 
 dev_dependencies:
   ndk_cache_manager_test_suite: ^1.0.1-dev.14
+  ndk_core: ^0.1.0
   build_runner: ">=2.11.0 <3.0.0"
   mockito: ">=5.6.3 <6.0.0"
   objectbox_generator: ^5.3.1

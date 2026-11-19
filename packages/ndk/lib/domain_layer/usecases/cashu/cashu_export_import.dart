@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import '../../../shared/logger/logger.dart';
+import 'package:ndk_core/shared/logger/logger.dart';
 import '../../../data_layer/models/wallet_transaction_model.dart';
 import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_mint_info.dart';

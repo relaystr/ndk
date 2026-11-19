@@ -7,7 +7,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ndk/domain_layer/entities/hidden_event.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk_objectbox/ndk_objectbox.dart';
 
 const _kind = 38383;

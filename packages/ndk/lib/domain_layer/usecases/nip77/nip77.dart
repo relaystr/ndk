@@ -3,13 +3,13 @@ import 'dart:convert';
 
 import 'package:ndk/ndk.dart';
 
-import '../../../shared/helpers/relay_helper.dart';
-import '../../../shared/nips/nip77/negentropy.dart' as neg;
-import '../../entities/connection_source.dart';
-import '../../entities/global_state.dart';
-import '../../entities/nip77_state.dart';
-import '../../entities/relay_connectivity.dart';
-import '../relay_manager.dart';
+import 'package:ndk_core/shared/helpers/relay_helper.dart';
+import 'package:ndk_core/shared/nips/nip77/negentropy.dart' as neg;
+import 'package:ndk_core/domain_layer/entities/connection_source.dart';
+import 'package:ndk_core/domain_layer/entities/global_state.dart';
+import 'package:ndk_core/domain_layer/entities/nip77_state.dart';
+import 'package:ndk_core/domain_layer/entities/relay_connectivity.dart';
+import 'package:ndk_core/domain_layer/usecases/relay_manager.dart';
 
 part 'nip77_internal.dart';
 

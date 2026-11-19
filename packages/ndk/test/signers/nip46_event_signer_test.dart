@@ -1,6 +1,6 @@
 import 'package:ndk/data_layer/repositories/signers/nip46_event_signer.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
 import 'package:test/test.dart';
 
 import '../mocks/mock_relay.dart';

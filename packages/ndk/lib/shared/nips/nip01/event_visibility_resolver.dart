@@ -1,8 +1,8 @@
 import '../../../domain_layer/entities/event_cache_records.dart';
 import '../../../domain_layer/entities/hidden_event.dart';
-import '../../../domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import '../nip09/deletion.dart';
-import 'event_kind_classification.dart';
+import 'package:ndk_core/shared/nips/nip01/event_kind_classification.dart';
 
 /// Raw cache read used by [EventVisibilityResolver].
 ///

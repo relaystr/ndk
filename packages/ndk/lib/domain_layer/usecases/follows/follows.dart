@@ -1,8 +1,8 @@
-import '../../../config/request_defaults.dart';
-import '../../../shared/logger/logger.dart';
-import '../../../shared/nips/nip01/helpers.dart';
+import 'package:ndk_core/config/request_defaults.dart';
+import 'package:ndk_core/shared/logger/logger.dart';
+import 'package:ndk_core/shared/nips/nip01/helpers.dart';
 import '../../entities/contact_list.dart';
-import '../../entities/filter.dart';
+import 'package:ndk_core/domain_layer/entities/filter.dart';
 import '../../repositories/cache_manager.dart';
 import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';

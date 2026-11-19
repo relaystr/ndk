@@ -1,8 +1,8 @@
 // ignore_for_file: avoid_print
 import 'dart:async';
 
-import '../../entities/filter.dart';
-import '../../entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/filter.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import '../../entities/nip_85.dart';
 import '../requests/requests.dart';
 

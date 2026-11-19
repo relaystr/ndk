@@ -2,7 +2,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:ndk/data_layer/repositories/nostr_transport/websocket_client_nostr_transport.dart';
+import 'package:ndk_core/data_layer/repositories/nostr_transport/websocket_client_nostr_transport.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk_demo/l10n/app_localizations_context.dart';
 

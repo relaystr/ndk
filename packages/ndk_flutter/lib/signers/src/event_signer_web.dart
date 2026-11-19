@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:js_interop';
 
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
+import 'package:ndk_core/shared/nips/nip01/helpers.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:web/web.dart' as web;
 

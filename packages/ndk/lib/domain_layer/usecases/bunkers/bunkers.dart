@@ -4,12 +4,12 @@ import 'dart:convert';
 import 'package:ndk/domain_layer/usecases/bunkers/models/nostr_connect.dart';
 
 import '../../../data_layer/repositories/signers/nip46_event_signer.dart';
-import '../../../domain_layer/repositories/event_signer.dart';
+import 'package:ndk_core/domain_layer/repositories/event_signer.dart';
 import 'models/bunker_request.dart';
 import 'models/bunker_connection.dart';
 import '../../entities/nip46_client_metadata.dart';
-import '../../entities/filter.dart';
-import '../../entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/filter.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
 

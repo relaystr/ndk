@@ -2,7 +2,7 @@ import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/event_eviction_planner.dart';
 import 'package:ndk/shared/nips/nip01/event_visibility_resolver.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
+import 'package:ndk_core/shared/nips/nip01/helpers.dart';
 import 'package:sembast/sembast.dart' as sembast;
 
 import 'ndk_extensions.dart';

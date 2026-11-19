@@ -1,4 +1,4 @@
-import 'nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import 'signer_request_cancelled_exception.dart';
 
 /// Signs the kind 24242 event an operation authorises itself with.

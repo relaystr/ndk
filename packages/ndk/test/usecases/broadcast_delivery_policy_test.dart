@@ -1,7 +1,7 @@
-import 'package:ndk/domain_layer/entities/broadcast_state.dart';
+import 'package:ndk_core/domain_layer/entities/broadcast_state.dart';
 import 'package:ndk/domain_layer/entities/event_cache_records.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/entities/auth_policy.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/auth_policy.dart';
 import 'package:ndk/domain_layer/usecases/broadcast/delivery_policy.dart';
 import 'package:test/test.dart';
 

@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 import 'package:http/testing.dart';
 import 'package:mockito/annotations.dart';
 import 'package:ndk/config/nip_05_defaults.dart';
-import 'package:ndk/data_layer/data_sources/http_request.dart';
+import 'package:ndk_core/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/nip_05_http_impl.dart';
 import 'package:ndk/domain_layer/entities/nip_05.dart';
 import 'package:ndk/domain_layer/entities/nip_05_resolve_result.dart';

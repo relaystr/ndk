@@ -7,16 +7,16 @@
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i7;
 import 'package:ndk/domain_layer/entities/contact_list.dart' as _i14;
-import 'package:ndk/domain_layer/entities/filter.dart' as _i12;
+import 'package:ndk_core/domain_layer/entities/filter.dart' as _i12;
 import 'package:ndk/domain_layer/entities/metadata.dart' as _i4;
-import 'package:ndk/domain_layer/entities/nip_01_event.dart' as _i3;
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart' as _i3;
 import 'package:ndk/domain_layer/entities/nip_05.dart' as _i5;
 import 'package:ndk/domain_layer/entities/nip_65.dart' as _i2;
-import 'package:ndk/domain_layer/entities/pubkey_mapping.dart' as _i11;
-import 'package:ndk/domain_layer/entities/read_write.dart' as _i10;
-import 'package:ndk/domain_layer/entities/read_write_marker.dart' as _i8;
-import 'package:ndk/domain_layer/entities/relay_set.dart' as _i9;
-import 'package:ndk/domain_layer/entities/request_state.dart' as _i13;
+import 'package:ndk_core/domain_layer/entities/pubkey_mapping.dart' as _i11;
+import 'package:ndk_core/domain_layer/entities/read_write.dart' as _i10;
+import 'package:ndk_core/domain_layer/entities/read_write_marker.dart' as _i8;
+import 'package:ndk_core/domain_layer/entities/relay_set.dart' as _i9;
+import 'package:ndk_core/domain_layer/entities/request_state.dart' as _i13;
 import 'package:ndk/domain_layer/entities/user_relay_list.dart' as _i6;
 
 // ignore_for_file: type=lint

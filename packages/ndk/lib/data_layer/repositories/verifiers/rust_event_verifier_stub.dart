@@ -1,5 +1,5 @@
-import '../../../domain_layer/entities/nip_01_event.dart';
-import '../../../domain_layer/repositories/event_verifier.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/repositories/event_verifier.dart';
 
 /// Stub implementation of [RustEventVerifier] for platforms that don't support FFI (e.g., web).
 ///

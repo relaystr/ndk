@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import '../../entities/filter.dart';
-import '../../entities/relay_request_outcome.dart';
+import 'package:ndk_core/domain_layer/entities/filter.dart';
+import 'package:ndk_core/domain_layer/entities/relay_request_outcome.dart';
 import '../../entities/software.dart';
 import '../requests/requests.dart';
 

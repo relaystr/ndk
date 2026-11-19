@@ -1,24 +1,24 @@
 import 'dart:async';
 
-import 'package:ndk/data_layer/models/nip_01_event_model.dart';
+import 'package:ndk_core/data_layer/models/nip_01_event_model.dart';
 import 'package:ndk/data_layer/repositories/cache_manager/mem_cache_manager.dart';
-import 'package:ndk/domain_layer/entities/broadcast_response.dart';
-import 'package:ndk/domain_layer/entities/broadcast_state.dart';
+import 'package:ndk_core/domain_layer/entities/broadcast_response.dart';
+import 'package:ndk_core/domain_layer/entities/broadcast_state.dart';
 import 'package:ndk/domain_layer/entities/event_cache_records.dart';
-import 'package:ndk/domain_layer/entities/global_state.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/entities/pending_signer_request.dart';
-import 'package:ndk/domain_layer/entities/account.dart';
-import 'package:ndk/domain_layer/entities/auth_policy.dart';
-import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
-import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk_core/domain_layer/entities/global_state.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/pending_signer_request.dart';
+import 'package:ndk_core/domain_layer/entities/account.dart';
+import 'package:ndk_core/domain_layer/entities/auth_policy.dart';
+import 'package:ndk_core/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/domain_layer/entities/signer_request_rejected_exception.dart';
-import 'package:ndk/domain_layer/repositories/event_signer.dart';
+import 'package:ndk_core/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/domain_layer/usecases/accounts/accounts.dart';
 import 'package:ndk/domain_layer/usecases/broadcast/broadcast_sender.dart';
 import 'package:ndk/domain_layer/usecases/broadcast/pending_broadcast_delivery.dart';
-import 'package:ndk/domain_layer/usecases/engines/network_engine.dart';
+import 'package:ndk_core/domain_layer/usecases/engines/network_engine.dart';
 import 'package:test/test.dart';
 
 void main() {

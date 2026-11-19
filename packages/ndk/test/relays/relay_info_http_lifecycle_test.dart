@@ -4,9 +4,9 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
-import 'package:ndk/data_layer/data_sources/http_request.dart';
-import 'package:ndk/data_layer/repositories/relay_info_http_impl.dart';
-import 'package:ndk/domain_layer/entities/relay_info.dart';
+import 'package:ndk_core/data_layer/data_sources/http_request.dart';
+import 'package:ndk_core/data_layer/repositories/relay_info_http_impl.dart';
+import 'package:ndk_core/domain_layer/entities/relay_info.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 

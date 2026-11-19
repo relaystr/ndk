@@ -1,7 +1,7 @@
 import 'contact_list.dart';
-import 'nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import 'nip_65.dart';
-import 'read_write_marker.dart';
+import 'package:ndk_core/domain_layer/entities/read_write_marker.dart';
 
 class UserRelayList {
   String pubKey;

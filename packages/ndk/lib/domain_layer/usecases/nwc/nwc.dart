@@ -3,8 +3,8 @@ import 'dart:convert';
 
 import 'package:ndk/domain_layer/usecases/nwc/requests/get_budget.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip04/nip04.dart';
-import 'package:ndk/shared/nips/nip44/nip44.dart';
+import 'package:ndk_core/shared/nips/nip04/nip04.dart';
+import 'package:ndk_core/shared/nips/nip44/nip44.dart';
 
 import 'consts/nwc_kind.dart';
 import 'consts/transaction_type.dart';

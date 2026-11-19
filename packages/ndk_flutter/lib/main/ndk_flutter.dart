@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ndk/data_layer/repositories/signers/nip46_event_signer.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
 import 'package:ndk_flutter/main/config.dart';
 import 'package:ndk_flutter/models/accounts.dart';
 import 'package:ndk_flutter/models/nip_05_result.dart';

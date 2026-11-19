@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../../../shared/logger/logger.dart';
+import 'package:ndk_core/shared/logger/logger.dart';
 import '../../entities/cashu/cashu_blinded_message.dart';
 import '../../entities/cashu/cashu_blinded_signature.dart';
 import '../../entities/cashu/cashu_keyset.dart';

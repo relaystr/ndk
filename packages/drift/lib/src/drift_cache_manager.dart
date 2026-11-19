@@ -7,13 +7,13 @@ import 'package:ndk/domain_layer/entities/cashu/cashu_mint_info.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_proof.dart';
 import 'package:ndk/domain_layer/entities/nip_05.dart';
 import 'package:ndk/domain_layer/entities/nip_65.dart';
-import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
-import 'package:ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:ndk_core/domain_layer/entities/pubkey_mapping.dart';
+import 'package:ndk_core/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/domain_layer/entities/wallet/wallet_factory.dart';
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/event_kind_classification.dart';
+import 'package:ndk_core/shared/nips/nip01/event_kind_classification.dart';
 import 'package:ndk/shared/nips/nip01/event_visibility_resolver.dart';
 
 import 'database/database.dart';

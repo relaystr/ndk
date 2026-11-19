@@ -25,7 +25,7 @@ import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 
 import 'package:ndk/entities.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
 
 part 'cache_manager_test_suite_clear_all.dart';
 part 'cache_manager_test_suite_contact_list.dart';

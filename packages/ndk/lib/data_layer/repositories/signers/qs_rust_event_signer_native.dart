@@ -4,9 +4,9 @@ import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
 
-import '../../../domain_layer/entities/nip_01_event.dart';
-import '../../../domain_layer/entities/pending_signer_request.dart';
-import '../../../domain_layer/repositories/event_signer.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/pending_signer_request.dart';
+import 'package:ndk_core/domain_layer/repositories/event_signer.dart';
 import '../../../src/rust_lib.dart' as rust_lib;
 
 /// Holds an ML-DSA keypair (public key + full keypair bytes for signing).

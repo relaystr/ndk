@@ -1,4 +1,4 @@
-import '../../entities/filter.dart';
+import 'package:ndk_core/domain_layer/entities/filter.dart';
 import '../../entities/filter_fetched_ranges.dart';
 import '../../repositories/cache_manager.dart';
 

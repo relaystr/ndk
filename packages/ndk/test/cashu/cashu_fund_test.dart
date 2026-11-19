@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
-import 'package:ndk/data_layer/data_sources/http_request.dart';
+import 'package:ndk_core/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_quote.dart';

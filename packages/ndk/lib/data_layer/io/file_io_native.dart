@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 
 import '../../domain_layer/entities/file_hash_progress.dart';
-import '../../shared/isolates/isolate_manager.dart';
+import 'package:ndk_core/shared/isolates/isolate_manager.dart';
 import 'file_io.dart';
 
 /// Native platform implementation using dart:io

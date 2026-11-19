@@ -1,4 +1,4 @@
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 
 /// A class that filters events \
 /// Used to clean event streams based on the event

@@ -6,7 +6,7 @@ import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../entities/cache_eviction.dart';
 import '../../entities/event_cache_records.dart';
-import '../../entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import '../../repositories/cache_manager.dart';
 
 class CashuCacheDecorator implements CacheManager {

@@ -1,4 +1,4 @@
-import 'package:ndk/shared/nips/nip01/event_kind_classification.dart';
+import 'package:ndk_core/shared/nips/nip01/event_kind_classification.dart';
 import 'package:ndk/shared/nips/nip28/channel_metadata.dart';
 import 'package:ndk/domain_layer/entities/contact_list.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';

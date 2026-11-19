@@ -1,5 +1,5 @@
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/logger/log_event.dart';
+import 'package:ndk_core/shared/logger/log_event.dart';
 import 'package:test/test.dart';
 
 void main() {

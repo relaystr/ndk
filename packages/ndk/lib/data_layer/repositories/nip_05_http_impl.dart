@@ -1,7 +1,7 @@
 import '../../config/nip_05_defaults.dart';
 import '../../domain_layer/entities/nip_05.dart';
 import '../../domain_layer/repositories/nip_05_repo.dart';
-import '../data_sources/http_request.dart';
+import 'package:ndk_core/data_layer/data_sources/http_request.dart';
 import '../models/nip_05_model.dart';
 
 /// implementation of the [Nip05Repository] interface with http
