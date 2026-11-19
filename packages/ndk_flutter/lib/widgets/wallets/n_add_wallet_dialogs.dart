@@ -10,9 +10,9 @@ import 'package:http/http.dart' as http;
 import 'package:ndk/entities.dart';
 import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_kind.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
-import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip01/helpers.dart';
+import 'package:ndk_core/shared/nips/nip01/key_pair.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 

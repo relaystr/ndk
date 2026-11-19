@@ -7,7 +7,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ndk/domain_layer/entities/hidden_event.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk_objectbox/ndk_objectbox.dart';
 
 const _kind = 38383;
@@ -191,43 +191,40 @@ void main() {
         },
       );
 
-      test(
-        'first d-tag and empty or missing coordinate semantics survive native index',
-        () async {
-          await db.saveEvents([
-            _event('old-mixed', d: ' MiXeD:offer ', time: now - 200),
-            _event('current-mixed', d: ' MiXeD:offer ', time: now - 100),
-            _event('normalized-other', d: 'mixed:offer', time: now - 50),
-            _event(
-              'second-d-only',
-              d: 'another',
-              time: now - 40,
-              tags: [
-                ['d', ' MiXeD:offer '],
-              ],
-            ),
-            _event('missing', d: null, time: now - 200),
-            _event('empty', d: '', time: now - 100),
-            _event('old-space', d: ' ', time: now - 200),
-            _event('current-space', d: ' ', time: now - 100),
-          ]);
-          expect(
-            await db.loadEvents(ids: ['old-mixed', 'missing', 'old-space']),
-            isEmpty,
-          );
-          expect(_ids(await db.loadEvents(ids: ['current-mixed'])), [
-            'current-mixed',
-          ]);
-          expect(_ids(await db.loadEvents(ids: ['empty'])), ['empty']);
-          expect(_ids(await db.loadEvents(ids: ['current-space'])), [
-            'current-space',
-          ]);
-          final hidden = await db.loadHiddenEvents(
-            coordinates: ['38383:$_author: MiXeD:offer '],
-          );
-          expect(hidden.map((e) => e.event.id), ['old-mixed']);
-        },
-      );
+      test('first d-tag and empty or missing coordinate semantics survive native index', () async {
+        await db.saveEvents([
+          _event('old-mixed', d: ' MiXeD:offer ', time: now - 200),
+          _event('current-mixed', d: ' MiXeD:offer ', time: now - 100),
+          _event('normalized-other', d: 'mixed:offer', time: now - 50),
+          _event(
+            'second-d-only',
+            d: 'another',
+            time: now - 40,
+            tags: [
+              ['d', ' MiXeD:offer '],
+            ],
+          ),
+          _event('missing', d: null, time: now - 200),
+          _event('empty', d: '', time: now - 100),
+          _event('old-space', d: ' ', time: now - 200),
+          _event('current-space', d: ' ', time: now - 100),
+        ]);
+        expect(
+          await db.loadEvents(ids: ['old-mixed', 'missing', 'old-space']),
+          isEmpty,
+        );
+        expect(_ids(await db.loadEvents(ids: ['current-mixed'])), [
+          'current-mixed',
+        ]);
+        expect(_ids(await db.loadEvents(ids: ['empty'])), ['empty']);
+        expect(_ids(await db.loadEvents(ids: ['current-space'])), [
+          'current-space',
+        ]);
+        final hidden = await db.loadHiddenEvents(
+          coordinates: ['38383:$_author: MiXeD:offer '],
+        );
+        expect(hidden.map((e) => e.event.id), ['old-mixed']);
+      });
 
       test(
         'deleted and expired successors cannot replace visible predecessor',

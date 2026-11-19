@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
-import 'package:ndk/data_layer/data_sources/http_request.dart';
+import 'package:ndk_core/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/cashu/cashu_repo_impl.dart';
 import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
@@ -61,7 +61,7 @@ Cashu _cashu({
   return Cashu(
     cashuRepo: repo,
     walletsRepo: wallets,
-    cacheManager: cache,
+    cashuStore: cache,
     cashuKeyDerivation: DartCashuKeyDerivation(),
     cashuUserSeedphrase: seedPhrase,
     autoVerifyMintCounters: autoVerifyMintCounters,
@@ -83,7 +83,7 @@ Cashu _realCashu({
   return Cashu(
     cashuRepo: CashuRepoImpl(client: HttpRequestDS(client)),
     walletsRepo: wallets,
-    cacheManager: cache,
+    cashuStore: cache,
     cashuKeyDerivation: DartCashuKeyDerivation(),
     cashuUserSeedphrase: seedPhrase,
   );
@@ -877,90 +877,83 @@ void main() {
       },
     );
 
-    test(
-      'initiate fund, recover',
-      timeout: const Timeout(Duration(minutes: 3)),
-      () async {
-        final seedPhrase = CashuUserSeedphrase(
-          seedPhrase: CashuSeed.generateSeedPhrase(),
-        );
+    test('initiate fund, recover', timeout: const Timeout(Duration(minutes: 3)), () async {
+      final seedPhrase = CashuUserSeedphrase(
+        seedPhrase: CashuSeed.generateSeedPhrase(),
+      );
 
-        // a restored wallet shares the pending transaction records (wallets
-        // repo) with the original wallet while its cache is fresh. It is built
-        // before any quote exists so its startup refresh is a no-op.
-        final wallets = MemWalletsRepo();
-        final ndk = Ndk(
-          NdkConfig(
-            eventVerifier: MockEventVerifier(),
-            cache: MemCacheManager(),
-            cashuUserSeedphrase: seedPhrase,
-            walletsRepo: wallets,
-          ),
-        );
-
-        // wallet1: create a quote locked to a seed-derived key
-        final client1 = http.Client();
-        final wallet1 = _realCashu(
-          client: client1,
+      // a restored wallet shares the pending transaction records (wallets
+      // repo) with the original wallet while its cache is fresh. It is built
+      // before any quote exists so its startup refresh is a no-op.
+      final wallets = MemWalletsRepo();
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: MockEventVerifier(),
           cache: MemCacheManager(),
-          wallets: MemWalletsRepo(),
-          seedPhrase: seedPhrase,
-        );
+          cashuUserSeedphrase: seedPhrase,
+          walletsRepo: wallets,
+        ),
+      );
 
-        final draft = await wallet1.initiateFund(
-          mintUrl: devMintUrl,
-          amount: fundAmount,
-          unit: 'sat',
-          method: 'bolt11',
-        );
-        expect(draft.qoute, isNotNull);
+      // wallet1: create a quote locked to a seed-derived key
+      final client1 = http.Client();
+      final wallet1 = _realCashu(
+        client: client1,
+        cache: MemCacheManager(),
+        wallets: MemWalletsRepo(),
+        seedPhrase: seedPhrase,
+      );
 
-        // local data loss: the pending record survives, but the private lock key
-        // is gone and the public key is garbage too - the recovery must work off
-        // the recorded derivation counter, not the locked pubkey
-        await wallets.saveTransactions([
-          draft.copyWith(
-            state: WalletTransactionState.pending,
-            qoute: draft.qoute!.copyWith(
-              quoteKey: CashuKeypair(
-                privateKey: '00' * 32,
-                publicKey: 'garbage',
-              ),
-            ),
+      final draft = await wallet1.initiateFund(
+        mintUrl: devMintUrl,
+        amount: fundAmount,
+        unit: 'sat',
+        method: 'bolt11',
+      );
+      expect(draft.qoute, isNotNull);
+
+      // local data loss: the pending record survives, but the private lock key
+      // is gone and the public key is garbage too - the recovery must work off
+      // the recorded derivation counter, not the locked pubkey
+      await wallets.saveTransactions([
+        draft.copyWith(
+          state: WalletTransactionState.pending,
+          qoute: draft.qoute!.copyWith(
+            quoteKey: CashuKeypair(privateKey: '00' * 32, publicKey: 'garbage'),
           ),
-        ]);
+        ),
+      ]);
 
-        // recover: re-derives the quote key from the counter (no locked pubkey
-        // needed) and completes the auto-paid quote, minting the proofs
-        await ndk.cashu
-            .restore(mintUrl: devMintUrl)
-            .toList()
-            .timeout(const Duration(minutes: 3));
+      // recover: re-derives the quote key from the counter (no locked pubkey
+      // needed) and completes the auto-paid quote, minting the proofs
+      await ndk.cashu
+          .restore(mintUrl: devMintUrl)
+          .toList()
+          .timeout(const Duration(minutes: 3));
 
-        // the recovered key matches the seed derivation at the recorded counter
-        final stored = await _storedTx(wallets);
-        final seed = CashuSeed();
-        await seed.setSeedPhrase(seedPhrase: seedPhrase.seedPhrase);
-        final derived = await DartCashuKeyDerivation().deriveQuoteKey(
-          seedBytes: Uint8List.fromList(seed.getSeedBytes()),
-          counter: stored.qoute!.quoteKeyCounter,
-        );
-        expect(
-          stored.qoute!.quoteKey.privateKey,
-          equals(derived.privateKey),
-          reason: 'the quote key must be recovered from the seed derivation',
-        );
+      // the recovered key matches the seed derivation at the recorded counter
+      final stored = await _storedTx(wallets);
+      final seed = CashuSeed();
+      await seed.setSeedPhrase(seedPhrase: seedPhrase.seedPhrase);
+      final derived = await DartCashuKeyDerivation().deriveQuoteKey(
+        seedBytes: Uint8List.fromList(seed.getSeedBytes()),
+        counter: stored.qoute!.quoteKeyCounter,
+      );
+      expect(
+        stored.qoute!.quoteKey.privateKey,
+        equals(derived.privateKey),
+        reason: 'the quote key must be recovered from the seed derivation',
+      );
 
-        // the recovered pending funds became spendable proofs again
-        final balance2 = (await ndk.cashu.getBalances())
-            .where((e) => e.mintUrl == devMintUrl)
-            .first
-            .balances['sat'];
-        expect(balance2, equals(fundAmount));
+      // the recovered pending funds became spendable proofs again
+      final balance2 = (await ndk.cashu.getBalances())
+          .where((e) => e.mintUrl == devMintUrl)
+          .first
+          .balances['sat'];
+      expect(balance2, equals(fundAmount));
 
-        client1.close();
-      },
-    );
+      client1.close();
+    });
 
     test(
       'recoverAndCompleteQuote completes a quote that is not in the '

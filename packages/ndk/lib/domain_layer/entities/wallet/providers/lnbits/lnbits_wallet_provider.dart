@@ -194,9 +194,8 @@ class LnBitsWalletProvider implements WalletProvider {
   Stream<List<WalletTransaction>> getRecentTransactions(Wallet wallet) {
     final lnbitsWallet = _asLnBitsWallet(wallet);
     return Stream.fromFuture(
-      _getPayments(
-        lnbitsWallet,
-      ).then((items) => items.where((item) => item.state.isDone).toList()),
+      _getPayments(lnbitsWallet)
+          .then((items) => items.where((item) => item.state.isDone).toList()),
     );
   }
 

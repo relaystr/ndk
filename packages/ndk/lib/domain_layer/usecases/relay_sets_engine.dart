@@ -3,216 +3,51 @@
 import 'dart:core';
 import 'dart:math';
 
-import '../../config/bootstrap_relays.dart';
 import '../../config/broadcast_defaults.dart';
-import '../../shared/logger/logger.dart';
-import '../../shared/nips/nip01/event_kind_classification.dart';
-import '../../shared/nips/nip01/client_msg.dart';
-import '../../shared/nips/nip01/helpers.dart';
-import '../../shared/helpers/relay_helper.dart';
-import '../entities/broadcast_response.dart';
-import '../entities/broadcast_state.dart';
-import '../entities/connection_source.dart';
-import '../entities/filter.dart';
-import '../entities/global_state.dart';
-import '../entities/ndk_request.dart';
-import '../entities/nip_01_event.dart';
-import '../entities/auth_policy.dart';
-import '../entities/relay_connectivity.dart';
-import '../entities/relay_set.dart';
+
+import 'package:ndk_core/shared/logger/logger.dart';
+import 'package:ndk_core/shared/nips/nip01/event_kind_classification.dart';
+import 'package:ndk_core/shared/nips/nip01/helpers.dart';
+import 'package:ndk_core/domain_layer/entities/broadcast_state.dart';
+import 'package:ndk_core/domain_layer/entities/filter.dart';
+import 'package:ndk_core/domain_layer/entities/ndk_request.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/relay_set.dart';
+
 import '../entities/request_response.dart';
-import '../entities/request_state.dart';
-import '../repositories/cache_manager.dart';
-import '../repositories/event_signer.dart';
-import 'engines/network_engine.dart';
-import 'relay_manager.dart';
+
+import 'package:ndk_core/domain_layer/entities/request_state.dart';
+
+import '../repositories/stores/event_store.dart';
+import '../repositories/stores/user_relay_list_store.dart';
+
+import 'package:ndk_core/domain_layer/usecases/engines/explicit_relays_engine.dart';
+
 import 'user_relay_lists/user_relay_lists.dart';
 
-class RelaySetsEngine implements NetworkEngine {
+class RelaySetsEngine extends ExplicitRelaysEngine {
   static const Duration kDefaultStreamIdleTimeout = Duration(seconds: 5);
 
-  late GlobalState _globalState;
-
-  final RelayManager _relayManager;
-
-  final CacheManager _cacheManager;
-
-  final List<String> _bootstrapRelays;
+  final EventStore _eventStore;
+  final UserRelayListStore _userRelayListStore;
 
   /// engine that pre-calculates relay sets for gossip
   RelaySetsEngine({
-    required RelayManager relayManager,
-    required CacheManager cacheManager,
-    required List<String>? bootstrapRelays,
-    GlobalState? globalState,
-  }) : _cacheManager = cacheManager,
-       _relayManager = relayManager,
-       _bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS {
-    _globalState = globalState ?? GlobalState();
-  }
+    required super.relayManager,
+    required EventStore eventStore,
+    required UserRelayListStore userRelayListStore,
+    super.bootstrapRelays,
+  }) : _eventStore = eventStore,
+       _userRelayListStore = userRelayListStore;
 
-  // ====================================================================================================================
-
-  /// Sends [request] to its relay. One it cannot be sent to is reported as
-  /// notSent before the send path ends, so the request never closes on that
-  /// relay as merely disconnected.
-  Future<bool> doRelayRequest(String id, RelayRequestState request) async {
-    // a connection that is still opening is not one that is gone, and
-    // _checkNetworkClose cannot tell them apart on its own
-    final state = _globalState.inFlightRequests[id];
-    if (state != null) {
-      _relayManager.beginPendingConnection(state);
+  @override
+  Future<String?> broadcastSkipReason(Nip01Event event) async {
+    // checked once the connection is there: a newer version may have been
+    // persisted while it was opening, and that one supersedes this send
+    if (await _shouldSkipObsoleteReplaceableBroadcast(event)) {
+      return 'obsolete replaceable event skipped';
     }
-    try {
-      final notSentReason = await _sendRelayRequest(id, request, state);
-      if (notSentReason != null && state != null) {
-        _relayManager.failRelayRequest(
-          state,
-          request.key,
-          request.filters,
-          notSentReason,
-        );
-      }
-      return notSentReason == null;
-    } finally {
-      if (state != null) {
-        _relayManager.endPendingConnection(state);
-      }
-    }
-  }
-
-  /// Null once sent, otherwise what kept [request] from being sent.
-  Future<String?> _sendRelayRequest(
-    String id,
-    RelayRequestState request,
-    RequestState? state,
-  ) async {
-    if (_globalState.blockedRelays.contains(request.url)) {
-      Logger.log.w(
-        () => "COULD NOT SEND REQUEST TO ${request.url} since relay is blocked",
-      );
-      return "relay is blocked";
-    }
-
-    final connected = await _relayManager.reconnectConnection(
-      request.key,
-      connectionSource:
-          ConnectionSource.explicit, // TODO improve this connection source
-      force: false,
-      as: state?.request.auth?.account,
-      pausing: state,
-    );
-    // a timeout or a closeSubscription may have ended the request while the
-    // connection was opening: nothing tracks it anymore, so nothing would ever
-    // CLOSE what we would send here
-    if (state != null && !_relayManager.isStillInFlight(state)) {
-      return "request ended while connecting";
-    }
-    if (connected) {
-      RelayConnectivity? relay = _globalState.relays[request.key];
-      if (relay == null) {
-        // the connection was closed between opening it and looking it up
-        Logger.log.w(
-          () =>
-              "COULD NOT SEND REQUEST TO ${request.url}, ${request.key} "
-              "is gone",
-        );
-        return "connection closed before sending";
-      }
-      try {
-        await _relayManager.sendOrThrow(
-          relay,
-          ClientMsg(ClientMsgType.kReq, id: id, filters: request.filters),
-        );
-      } catch (e) {
-        Logger.log.e(
-          () => "COULD NOT SEND REQUEST TO ${request.url}:",
-          error: e,
-        );
-        return "$e";
-      }
-      return null;
-    } else {
-      Logger.log.e(
-        () =>
-            "COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open",
-      );
-      return "could not connect";
-    }
-  }
-
-  /// =====================================================================================
-  /// The flow:
-  /// 1) register broadcast in relay manager's global state,
-  ///     so that even failed to connect relays will be taken into account for broadcast done logic
-  /// 2) make sure the relay is connected by calling reconnect
-  /// 3) if connected was successfull send the event
-  /// 4) otherwise call failBroadcast in order to publish a RelayBroadcastResponse
-  ///   for that specific relay with an error message
-  Future<void> doRelayBroadcast(
-    String relayUrl,
-    Nip01Event nostrEvent,
-    BroadcastState broadcastState,
-  ) async {
-    final auth = broadcastState.auth;
-    _relayManager.registerRelayBroadcast(
-      broadcastState: broadcastState,
-      eventToPublish: nostrEvent,
-      relayUrl: relayUrl,
-    );
-
-    RelayConnectivity? relayConnectivity;
-    Object? error;
-    try {
-      relayConnectivity = await _relayManager.connectionForBroadcast(
-        relayUrl,
-        auth,
-        connectTimeout: 1,
-        pausing: broadcastState,
-      );
-    } catch (e) {
-      Logger.log.w(
-        () => "Error during quick connect for $relayUrl in doRelayBroadcast",
-        error: e,
-      );
-      error = e;
-    }
-
-    if (relayConnectivity != null) {
-      // checked once the connection is there: a newer version may have been
-      // persisted while it was opening, and that one supersedes this send
-      if (await _shouldSkipObsoleteReplaceableBroadcast(nostrEvent)) {
-        Logger.log.d(
-          () =>
-              'skip obsolete specific-relay broadcast ${nostrEvent.id} for $relayUrl',
-        );
-        _relayManager.failBroadcast(
-          broadcastState,
-          relayUrl,
-          'obsolete replaceable event skipped',
-        );
-        return;
-      }
-
-      await _relayManager.sendOrThrow(
-        relayConnectivity,
-        ClientMsg(ClientMsgType.kEvent, event: nostrEvent),
-      );
-      return;
-    }
-    if (auth is AuthPolicyRequire) {
-      _relayManager.failBroadcast(
-        broadcastState,
-        relayUrl,
-        "no connection bound to ${auth.account.pubkey} could be opened",
-      );
-      return;
-    }
-    _relayManager.failBroadcast(
-      broadcastState,
-      relayUrl,
-      "Could not connect to relay $relayUrl $error",
-    );
+    return null;
   }
 
   Future<bool> _shouldSkipObsoleteReplaceableBroadcast(Nip01Event event) async {
@@ -221,7 +56,7 @@ class RelaySetsEngine implements NetworkEngine {
     }
 
     final dTag = event.getDtag();
-    final visibleEvents = await _cacheManager.loadEvents(
+    final visibleEvents = await _eventStore.loadEvents(
       pubKeys: [event.pubKey],
       kinds: [event.kind],
       tags:
@@ -257,9 +92,9 @@ class RelaySetsEngine implements NetworkEngine {
 
         if (state.requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
           print(
-            "making fallback requests to ${_bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}",
+            "making fallback requests to ${bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}",
           );
-          for (final url in _bootstrapRelays) {
+          for (final url in bootstrapRelays) {
             state.addRequestForRelay(url, RelaySet.sliceFilterAuthors(filter));
           }
         }
@@ -269,7 +104,7 @@ class RelaySetsEngine implements NetworkEngine {
         }
       }
     }
-    _globalState.inFlightRequests[state.id] = state;
+    relayManager.globalState.inFlightRequests[state.id] = state;
 
     state.closeIfNoRelays();
 
@@ -280,40 +115,14 @@ class RelaySetsEngine implements NetworkEngine {
 
   @override
   Future<void> handleRequest(RequestState state) async {
+    if (state.request.relaySet == null) {
+      return super.handleRequest(state);
+    }
     if (state.request.explicitRelays == null ||
         state.request.explicitRelays!.isEmpty) {
-      await _relayManager.seedRelaysConnected;
+      await relayManager.seedRelaysConnected;
     }
-
-    if (state.request.relaySet != null) {
-      return await doNostrRequestWithRelaySet(state);
-    }
-    Iterable<String>? relaysForRequest;
-
-    if (state.request.explicitRelays != null &&
-        state.request.explicitRelays!.isNotEmpty) {
-      relaysForRequest = state.request.explicitRelays;
-    } else {
-      relaysForRequest = _bootstrapRelays;
-    }
-    relaysForRequest = cleanRelayUrls(relaysForRequest!.toList());
-    for (final url in relaysForRequest) {
-      if (state.request.filters.isEmpty) {
-        throw Exception("cannot do request with empty filters");
-      }
-      final List<Filter> filters = [];
-      for (final filter in state.request.filters) {
-        filters.addAll(RelaySet.sliceFilterAuthors(filter));
-      }
-      state.addRequestForRelay(url, filters);
-    }
-    _globalState.inFlightRequests[state.id] = state;
-
-    state.closeIfNoRelays();
-
-    for (final request in state.requests.values.toList()) {
-      doRelayRequest(state.id, request);
-    }
+    return await doNostrRequestWithRelaySet(state);
   }
 
   //! dead code
@@ -339,7 +148,7 @@ class RelaySetsEngine implements NetworkEngine {
     for (final url in urls) {
       state.addRequestForRelay(url, RelaySet.sliceFilterAuthors(filter));
     }
-    _globalState.inFlightRequests[state.id] = state;
+    relayManager.globalState.inFlightRequests[state.id] = state;
 
     for (final request in state.requests.values.toList()) {
       doRelayRequest(state.id, request);
@@ -354,126 +163,79 @@ class RelaySetsEngine implements NetworkEngine {
     );
   }
 
+  /// Own outbox, then the inbox of every p-tagged pubkey.
   @override
-  NdkBroadcastResponse handleEventBroadcast({
-    required Nip01Event nostrEvent,
-    required EventSigner? signer,
-    required BroadcastState broadcastState,
-    Iterable<String>? specificRelays,
-  }) {
-    Future<void> asyncStuff() async {
-      final Nip01Event workingEvent;
-
-      try {
-        if (signer != null) {
-          workingEvent = await signer.sign(nostrEvent);
-        } else {
-          workingEvent = nostrEvent;
-        }
-      } catch (e, stackTrace) {
-        broadcastState.addError(e, stackTrace);
-        return;
-      }
-      broadcastState.startTimeout();
-
-      // =====================================================================================
-      // specific relays
-      // =====================================================================================
-      if (specificRelays != null) {
-        if (specificRelays.isNotEmpty) {
-          await Future.wait(
-            specificRelays.map(
-              (relayUrl) =>
-                  // broadcast async
-                  doRelayBroadcast(relayUrl, workingEvent, broadcastState),
-            ),
-          );
-        }
-      } else {
-        // =====================================================================================
-        // own outbox
-        // =====================================================================================
-        // TODO should not only depend on cached, but go fetch it if not present in cache
-        final nip65List = (await UserRelayLists.getUserRelayListCacheLatest(
-          pubkeys: [workingEvent.pubKey],
-          cacheManager: _cacheManager,
-        ));
-        // make a copy of the keys since connectRelay may mutate the underlying map
-        // several connections can share a url, and broadcasting twice to the
-        // same relay would duplicate the event
-        List<String> writeRelaysUrls = _relayManager.globalState.relays.keys
-            .map((key) => key.url)
-            .toSet()
-            .toList();
-        if (nip65List.isNotEmpty) {
-          writeRelaysUrls = nip65List.first.relays.entries
-              .where((element) => element.value.isWrite)
-              .map((e) => e.key)
-              .toList();
-        } else {
-          Logger.log.w(
-            () =>
-                "could not find user relay list from nip65, using default bootstrap relays",
-          );
-        }
-
-        await Future.wait(
-          writeRelaysUrls.map(
-            (relayUrl) =>
-                doRelayBroadcast(relayUrl, workingEvent, broadcastState),
-          ),
-        );
-
-        // =====================================================================================
-        // other inbox
-        // =====================================================================================
-        if (workingEvent.pTags.isNotEmpty) {
-          final nip65Data = await UserRelayLists.getUserRelayListCacheLatest(
-            pubkeys: workingEvent.pTags,
-            cacheManager: _cacheManager,
-          );
-
-          List<String> myWriteRelayUrlsOthers = [];
-
-          /// filter read relays
-          for (final userNip65 in nip65Data) {
-            final completeList = userNip65.relays.entries
-                .where((element) => element.value.isRead)
-                .map((e) => e.key)
-                .toList();
-
-            // cut list of at a certain threshold
-            final maxList = completeList.sublist(
-              0,
-              min(
-                completeList.length,
-                BroadcastDefaults.MAX_INBOX_RELAYS_TO_BROADCAST,
-              ),
-            );
-            myWriteRelayUrlsOthers.addAll(maxList);
-          }
-
-          await Future.wait(
-            myWriteRelayUrlsOthers.map(
-              (relayUrl) =>
-                  doRelayBroadcast(relayUrl, workingEvent, broadcastState),
-            ),
-          );
-        }
-      }
-      broadcastState.closeIfNoRelays();
+  Future<void> broadcastToDefaultRelays(
+    Nip01Event workingEvent,
+    BroadcastState broadcastState,
+  ) async {
+    // =====================================================================================
+    // own outbox
+    // =====================================================================================
+    // TODO should not only depend on cached, but go fetch it if not present in cache
+    final nip65List = (await UserRelayLists.getUserRelayListCacheLatest(
+      pubkeys: [workingEvent.pubKey],
+      userRelayListStore: _userRelayListStore,
+    ));
+    // make a copy of the keys since connectRelay may mutate the underlying map
+    // several connections can share a url, and broadcasting twice to the
+    // same relay would duplicate the event
+    List<String> writeRelaysUrls = relayManager.globalState.relays.keys
+        .map((key) => key.url)
+        .toSet()
+        .toList();
+    if (nip65List.isNotEmpty) {
+      writeRelaysUrls = nip65List.first.relays.entries
+          .where((element) => element.value.isWrite)
+          .map((e) => e.key)
+          .toList();
+    } else {
+      Logger.log.w(
+        () => "could not find user relay list from nip65, using default bootstrap relays",
+      );
     }
 
-    asyncStuff();
-
-    return NdkBroadcastResponse(
-      publishEvent: nostrEvent,
-      broadcastDoneStream: broadcastState.stateUpdates.map(
-        (state) => state.broadcasts.values.toList(),
-      ),
-      broadcastDoneFuture: broadcastState.publishDoneFuture.then(
-        (state) => state.broadcasts.values.toList(),
+    await Future.wait(
+      writeRelaysUrls.map(
+        (relayUrl) => doRelayBroadcast(relayUrl, workingEvent, broadcastState),
       ),
     );
+
+    // =====================================================================================
+    // other inbox
+    // =====================================================================================
+    if (workingEvent.pTags.isNotEmpty) {
+      final nip65Data = await UserRelayLists.getUserRelayListCacheLatest(
+        pubkeys: workingEvent.pTags,
+        userRelayListStore: _userRelayListStore,
+      );
+
+      List<String> myWriteRelayUrlsOthers = [];
+
+      /// filter read relays
+      for (final userNip65 in nip65Data) {
+        final completeList = userNip65.relays.entries
+            .where((element) => element.value.isRead)
+            .map((e) => e.key)
+            .toList();
+
+        // cut list of at a certain threshold
+        final maxList = completeList.sublist(
+          0,
+          min(
+            completeList.length,
+            BroadcastDefaults.MAX_INBOX_RELAYS_TO_BROADCAST,
+          ),
+        );
+        myWriteRelayUrlsOthers.addAll(maxList);
+      }
+
+      await Future.wait(
+        myWriteRelayUrlsOthers.map(
+          (relayUrl) =>
+              doRelayBroadcast(relayUrl, workingEvent, broadcastState),
+        ),
+      );
+    }
   }
 }

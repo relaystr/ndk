@@ -1,6 +1,6 @@
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/contact_list.dart';
-import 'package:ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:ndk_core/domain_layer/entities/read_write_marker.dart';
 
 import 'package:test/test.dart';
 
@@ -11,8 +11,7 @@ void main() {
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
         kind: ContactList.kKind,
-        content:
-            "{\"wss://nos.lol\":{\"read\":true,\"write\":true},\"wss://relay.damus.io\":{\"read\":true,\"write\":true}}",
+        content: "{\"wss://nos.lol\":{\"read\":true,\"write\":true},\"wss://relay.damus.io\":{\"read\":true,\"write\":true}}",
         tags: [
           ['p', 'contact1'],
           ['p', 'contact2'],

@@ -1,21 +1,30 @@
-import '../../entities/filter.dart';
+import 'package:ndk_core/domain_layer/entities/filter.dart';
+
 import '../../entities/metadata.dart';
-import '../../entities/nip_01_event.dart';
-import '../../repositories/cache_manager.dart';
+
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+
+import '../../repositories/stores/event_store.dart';
+import '../../repositories/stores/metadata_store.dart';
 import '../requests/requests.dart';
 
 class Search {
-  final CacheManager _cacheManager;
+  final EventStore _eventStore;
+  final MetadataStore _metadataStore;
   final Requests _requests;
 
-  Search({required CacheManager cacheManager, required Requests requests})
-    : _cacheManager = cacheManager,
-      _requests = requests;
+  Search({
+    required EventStore eventStore,
+    required MetadataStore metadataStore,
+    required Requests requests,
+  }) : _eventStore = eventStore,
+       _metadataStore = metadataStore,
+       _requests = requests;
 
   /// Search for metadata \
   /// [query] can be pubkey, name, nip05
   Future<List<Metadata>> metadataSearch(String query, {int limit = 10}) async {
-    final result = await _cacheManager.searchMetadatas(query, limit);
+    final result = await _metadataStore.searchMetadatas(query, limit);
     return result.toList();
   }
 
@@ -42,7 +51,7 @@ class Search {
     /// cache only is much faster but does not fetch from the network
     bool cacheOnly = false,
   }) async {
-    final localEvents = _cacheManager.searchEvents(
+    final localEvents = _eventStore.searchEvents(
       ids: ids,
       authors: authors,
       kinds: kinds,

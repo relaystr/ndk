@@ -1,6 +1,6 @@
 // ignore_for_file: avoid_print
 import 'package:http/http.dart' as http;
-import 'package:ndk/data_layer/data_sources/http_request.dart';
+import 'package:ndk_core/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/cashu/cashu_repo_impl.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';

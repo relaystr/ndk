@@ -3,13 +3,13 @@
 import 'dart:async';
 
 import 'package:test/test.dart';
-import 'package:ndk/domain_layer/entities/global_state.dart';
-import 'package:ndk/domain_layer/entities/request_state.dart';
+import 'package:ndk_core/domain_layer/entities/global_state.dart';
+import 'package:ndk_core/domain_layer/entities/request_state.dart';
 import 'package:ndk/domain_layer/usecases/cache_read/cache_read.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/presentation_layer/init.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
-import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip01/key_pair.dart';
 
 import '../mocks/mock_event_verifier.dart';
 import '../mocks/mock_relay.dart';
@@ -288,58 +288,54 @@ void main() async {
       }
     });
 
-    test(
-      'Subscription processes events immediately without stream closing',
-      () async {
-        // This test would FAIL with the previous VerifyEventStream implementation
-        // because events would remain stuck in buffer until stream closes
-        MockRelay relay1 = MockRelay(name: "relay 1");
-        await relay1.startServer(textNotes: textNotes);
+    test('Subscription processes events immediately without stream closing', () async {
+      // This test would FAIL with the previous VerifyEventStream implementation
+      // because events would remain stuck in buffer until stream closes
+      MockRelay relay1 = MockRelay(name: "relay 1");
+      await relay1.startServer(textNotes: textNotes);
 
-        final ndk = Ndk(
-          NdkConfig(
-            eventVerifier: MockEventVerifier(),
-            cache: MemCacheManager(),
-            engine: NdkEngine.RELAY_SETS,
-            bootstrapRelays: [relay1.url],
-          ),
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: MockEventVerifier(),
+          cache: MemCacheManager(),
+          engine: NdkEngine.RELAY_SETS,
+          bootstrapRelays: [relay1.url],
+        ),
+      );
+      ndk.accounts.loginPrivateKey(
+        pubkey: key1.publicKey,
+        privkey: key1.privateKey!,
+      );
+
+      final filter = Filter(
+        kinds: [Nip01Event.kTextNodeKind],
+        authors: [key1.publicKey],
+      );
+
+      // Use subscription instead of query - this creates a long-lived stream
+      final subscription = ndk.requests.subscription(filters: [filter]);
+
+      final receivedEvents = <Nip01Event>[];
+      final streamSubscription = subscription.stream.listen((event) {
+        receivedEvents.add(event);
+      });
+      try {
+        await waitForEventCount(receivedEvents, 1);
+
+        expect(
+          receivedEvents.length,
+          equals(1),
+          reason: 'Subscription should process events immediately without waiting for stream to close',
         );
-        ndk.accounts.loginPrivateKey(
-          pubkey: key1.publicKey,
-          privkey: key1.privateKey!,
-        );
-
-        final filter = Filter(
-          kinds: [Nip01Event.kTextNodeKind],
-          authors: [key1.publicKey],
-        );
-
-        // Use subscription instead of query - this creates a long-lived stream
-        final subscription = ndk.requests.subscription(filters: [filter]);
-
-        final receivedEvents = <Nip01Event>[];
-        final streamSubscription = subscription.stream.listen((event) {
-          receivedEvents.add(event);
-        });
-        try {
-          await waitForEventCount(receivedEvents, 1);
-
-          expect(
-            receivedEvents.length,
-            equals(1),
-            reason:
-                'Subscription should process events immediately without waiting for stream to close',
-          );
-          expect(receivedEvents[0].content, contains('key1'));
-        } finally {
-          await streamSubscription.cancel();
-          await ndk.requests.closeSubscription(subscription.requestId);
-          await ndk.destroy();
-          expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
-          await relay1.stopServer();
-        }
-      },
-    );
+        expect(receivedEvents[0].content, contains('key1'));
+      } finally {
+        await streamSubscription.cancel();
+        await ndk.requests.closeSubscription(subscription.requestId);
+        await ndk.destroy();
+        expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
+        await relay1.stopServer();
+      }
+    });
 
     test(
       'Subscription handles continuous events from non-closing stream',
@@ -434,7 +430,7 @@ void main() async {
         defaultQueryTimeout: Duration(seconds: 10),
         globalState: globalState,
         cacheRead: MockCacheRead(cache),
-        cacheManager: cache,
+        eventStore: cache,
         networkEngine: init.engine,
         relayManager: init.relayManager,
         eventVerifier: eventVerifier,

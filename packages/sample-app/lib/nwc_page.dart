@@ -11,8 +11,8 @@ import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_kind.dart';
 import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/nwc_response.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
-import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip01/key_pair.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 

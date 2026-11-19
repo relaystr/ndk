@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:pointycastle/export.dart';
 
-import '../../../shared/logger/logger.dart';
+import 'package:ndk_core/shared/logger/logger.dart';
 
 import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_blinded_message.dart';

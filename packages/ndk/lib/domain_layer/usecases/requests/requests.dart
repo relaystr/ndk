@@ -2,30 +2,41 @@ import 'dart:async';
 
 import 'package:rxdart/rxdart.dart';
 
-import '../../../config/request_defaults.dart';
+import 'package:ndk_core/config/request_defaults.dart';
+
 import '../../../shared/helpers/bounded_lru_set.dart';
-import '../../../shared/logger/logger.dart';
-import '../../../shared/nips/nip01/event_kind_classification.dart';
-import '../../../shared/nips/nip01/helpers.dart';
-import '../../entities/account.dart';
+
+import 'package:ndk_core/shared/logger/logger.dart';
+import 'package:ndk_core/shared/nips/nip01/event_kind_classification.dart';
+import 'package:ndk_core/shared/nips/nip01/helpers.dart';
+import 'package:ndk_core/domain_layer/entities/account.dart';
+
 import '../../entities/event_filter.dart';
-import '../../entities/filter.dart';
-import '../../entities/global_state.dart';
-import '../../entities/ndk_request.dart';
-import '../../entities/nip_01_event.dart';
-import '../../entities/auth_policy.dart';
-import '../../entities/relay_connectivity.dart';
-import '../../entities/relay_set.dart';
-import '../../entities/relay_request_outcome.dart';
+
+import 'package:ndk_core/domain_layer/entities/filter.dart';
+import 'package:ndk_core/domain_layer/entities/global_state.dart';
+import 'package:ndk_core/domain_layer/entities/ndk_request.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/auth_policy.dart';
+import 'package:ndk_core/domain_layer/entities/relay_connectivity.dart';
+import 'package:ndk_core/domain_layer/entities/relay_set.dart';
+import 'package:ndk_core/domain_layer/entities/relay_request_outcome.dart';
+
 import '../../entities/request_response.dart';
-import '../../entities/request_state.dart';
-import '../../repositories/cache_manager.dart';
-import '../../repositories/event_verifier.dart';
+
+import 'package:ndk_core/domain_layer/entities/request_state.dart';
+
+import '../../repositories/stores/event_store.dart';
+
+import 'package:ndk_core/domain_layer/repositories/event_verifier.dart';
+
 import 'verified_event_cache.dart';
 import '../cache_read/cache_read.dart';
 import '../fetched_ranges/fetched_ranges.dart';
-import '../engines/network_engine.dart';
-import '../relay_manager.dart';
+
+import 'package:ndk_core/domain_layer/usecases/engines/network_engine.dart';
+import 'package:ndk_core/domain_layer/usecases/relay_manager.dart';
+
 import '../stream_response_cleaner/stream_response_cleaner.dart';
 import 'concurrency_check.dart';
 import 'verify_event_stream.dart';
@@ -57,7 +68,7 @@ class Requests {
 
   final GlobalState _globalState;
   final CacheRead _cacheRead;
-  final CacheManager _cacheManager;
+  final EventStore _eventStore;
   final NetworkEngine _engine;
   final RelayManager _relayManager;
   final EventVerifier _eventVerifier;
@@ -74,13 +85,13 @@ class Requests {
   ///
   /// [globalState] The global state of the application \
   /// [cacheRead] The cache reader for retrieving cached events \
-  /// [cacheManager] The cache used to persist network-delivered events \
+  /// [eventStore] The store used to persist network-delivered events \
   /// [networkEngine] The engine for handling network requests \
   /// [eventVerifier] The verifier for validating Nostr events
   Requests({
     required GlobalState globalState,
     required CacheRead cacheRead,
-    required CacheManager cacheManager,
+    required EventStore eventStore,
     required NetworkEngine networkEngine,
     required RelayManager relayManager,
     required EventVerifier eventVerifier,
@@ -89,7 +100,7 @@ class Requests {
     bool debugMode = false,
   }) : _engine = networkEngine,
        _relayManager = relayManager,
-       _cacheManager = cacheManager,
+       _eventStore = eventStore,
        _cacheRead = cacheRead,
        _globalState = globalState,
        _eventVerifier = eventVerifier,
@@ -147,7 +158,7 @@ class Requests {
       await existingPersistence;
     } else if (persistedEventIds.add(event.id)) {
       final persistence = Future<void>.sync(() async {
-        await _cacheManager.saveEventIfAbsent(event);
+        await _eventStore.saveEventIfAbsent(event);
       });
       persistenceInFlight[event.id] = persistence;
       try {
@@ -162,7 +173,7 @@ class Requests {
       }
     }
     if (event.sources.isNotEmpty) {
-      await _cacheManager.addEventSources(
+      await _eventStore.addEventSources(
         eventId: event.id,
         relayUrls: event.sources.toSet(),
       );
@@ -172,7 +183,7 @@ class Requests {
       return event;
     }
 
-    final visible = await _cacheManager.loadEvents(ids: [event.id], limit: 1);
+    final visible = await _eventStore.loadEvents(ids: [event.id], limit: 1);
 
     return visible.any((candidate) => candidate.id == event.id) ? event : null;
   }

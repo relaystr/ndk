@@ -1,5 +1,5 @@
-import 'package:ndk/domain_layer/entities/global_state.dart';
-import 'package:ndk/domain_layer/entities/request_state.dart';
+import 'package:ndk_core/domain_layer/entities/global_state.dart';
+import 'package:ndk_core/domain_layer/entities/request_state.dart';
 import 'package:ndk/domain_layer/usecases/requests/concurrency_check.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';

@@ -1,4 +1,4 @@
-import 'package:ndk/domain_layer/entities/relay_info.dart';
+import 'package:ndk_core/domain_layer/entities/relay_info.dart';
 import 'package:test/test.dart';
 
 void main() {

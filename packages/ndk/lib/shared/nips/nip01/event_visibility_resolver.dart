@@ -1,24 +1,26 @@
 import '../../../domain_layer/entities/event_cache_records.dart';
 import '../../../domain_layer/entities/hidden_event.dart';
-import '../../../domain_layer/entities/nip_01_event.dart';
+
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+
 import '../nip09/deletion.dart';
-import 'event_kind_classification.dart';
+
+import 'package:ndk_core/shared/nips/nip01/event_kind_classification.dart';
 
 /// Raw cache read used by [EventVisibilityResolver].
 ///
 /// Implementations must apply the given filters and nothing else: no visibility
 /// rules, no implicit limit.
-typedef RawEventLoader =
-    Future<List<Nip01Event>> Function({
-      List<String>? ids,
-      List<String>? pubKeys,
-      List<int>? kinds,
-      Map<String, List<String>>? tags,
-      int? since,
-      int? until,
-      String? search,
-      int? limit,
-    });
+typedef RawEventLoader = Future<List<Nip01Event>> Function({
+  List<String>? ids,
+  List<String>? pubKeys,
+  List<int>? kinds,
+  Map<String, List<String>>? tags,
+  int? since,
+  int? until,
+  String? search,
+  int? limit,
+});
 
 /// Decides which cached events are visible, and why the others are not.
 ///
@@ -58,7 +60,7 @@ class EventVisibilityResolver {
     return visible;
   }
 
-  /// Implements `CacheManager.loadHiddenEvents` on top of a raw loader.
+  /// Implements `EventStore.loadHiddenEvents` on top of a raw loader.
   Future<List<HiddenEvent>> loadHiddenEvents({
     List<String>? ids,
     List<String>? pubKeys,

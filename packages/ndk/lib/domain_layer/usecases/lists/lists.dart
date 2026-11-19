@@ -2,13 +2,18 @@ import 'package:rxdart/rxdart.dart';
 
 import 'dart:convert';
 
-import '../../../shared/nips/nip01/helpers.dart';
+import 'package:ndk_core/shared/nips/nip01/helpers.dart';
+
 import '../../entities/event_cache_records.dart';
-import '../../entities/filter.dart';
-import '../../entities/nip_01_event.dart';
+
+import 'package:ndk_core/domain_layer/entities/filter.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+
 import '../../entities/nip_51_list.dart';
-import '../../repositories/cache_manager.dart';
-import '../../repositories/event_signer.dart';
+import '../../repositories/stores/event_store.dart';
+
+import 'package:ndk_core/domain_layer/repositories/event_signer.dart';
+
 import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../decrypted_event_payloads/decrypted_event_payloads.dart';
@@ -20,7 +25,7 @@ import '../requests/requests.dart';
 /// including creating, reading, updating, and deleting list elements and sets.
 class Lists {
   final Requests _requests;
-  final CacheManager _cacheManager;
+  final EventStore _eventStore;
   final Broadcast _broadcast;
   final Accounts _accounts;
   final LocalEventSignerFactory _eventSignerFactory;
@@ -29,12 +34,12 @@ class Lists {
   /// Creates a Lists usecase instance.
   Lists({
     required Requests requests,
-    required CacheManager cacheManager,
+    required EventStore eventStore,
     required Broadcast broadcast,
     required Accounts accounts,
     required LocalEventSignerFactory eventSignerFactory,
     required DecryptedEventPayloads decryptedEventPayloads,
-  }) : _cacheManager = cacheManager,
+  }) : _eventStore = eventStore,
        _requests = requests,
        _broadcast = broadcast,
        _accounts = accounts,
@@ -109,7 +114,7 @@ class Lists {
   ///* lists *///
 
   Future<Nip51List?> _getCachedNip51List(int kind, EventSigner signer) async {
-    List<Nip01Event>? events = await _cacheManager.loadEvents(
+    List<Nip01Event>? events = await _eventStore.loadEvents(
       pubKeys: [signer.getPublicKey()],
       kinds: [kind],
     );
@@ -159,7 +164,7 @@ class Lists {
           //   Nip51List? decryptedList = await Nip51List.fromEvent(event, signer);
           //   refreshedList = decryptedList;
           // }
-          await _cacheManager.saveEvent(event);
+          await _eventStore.saveEvent(event);
         }
       }
       return refreshedList;
@@ -209,7 +214,7 @@ class Lists {
 
     events.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-    await _cacheManager.saveEvent(events.last);
+    await _eventStore.saveEvent(events.last);
     return await _parseListEvent(events.last, signer);
   }
 
@@ -256,14 +261,14 @@ class Lists {
     );
     await broadcastResponse.broadcastDoneFuture;
 
-    List<Nip01Event>? events = await _cacheManager.loadEvents(
+    List<Nip01Event>? events = await _eventStore.loadEvents(
       pubKeys: [_eventSigner!.getPublicKey()],
       kinds: [kind],
     );
     for (var event in events) {
-      _cacheManager.removeEvent(event.id);
+      _eventStore.removeEvent(event.id);
     }
-    await _cacheManager.saveEvent(event);
+    await _eventStore.saveEvent(event);
     return list;
   }
 
@@ -311,14 +316,14 @@ class Lists {
       );
       await broadcastResponse.broadcastDoneFuture;
 
-      List<Nip01Event>? events = await _cacheManager.loadEvents(
+      List<Nip01Event>? events = await _eventStore.loadEvents(
         pubKeys: [_eventSigner!.getPublicKey()],
         kinds: [kind],
       );
       for (var event in events) {
-        _cacheManager.removeEvent(event.id);
+        _eventStore.removeEvent(event.id);
       }
-      await _cacheManager.saveEvent(event);
+      await _eventStore.saveEvent(event);
     }
     return list;
   }
@@ -331,7 +336,7 @@ class Lists {
     EventSigner signer,
     int kind,
   ) async {
-    List<Nip01Event>? events = await _cacheManager.loadEvents(
+    List<Nip01Event>? events = await _eventStore.loadEvents(
       pubKeys: [signer.getPublicKey()],
       kinds: [kind],
     );
@@ -371,7 +376,7 @@ class Lists {
           if (existingSet == null || existingSet.createdAt < event.createdAt) {
             final newSet = await _parseSetEvent(event, signer);
             if (newSet != null) {
-              await _cacheManager.saveEvent(event);
+              await _eventStore.saveEvent(event);
               relaySets[newSet.name] = newSet;
               return relaySets.values;
             }
@@ -428,12 +433,12 @@ class Lists {
         if (newRelaySet == null || newRelaySet.createdAt < event.createdAt) {
           if (event.getDtag() != null && event.getDtag() == name) {
             newRelaySet = await _parseSetEvent(event, signer);
-            await _cacheManager.saveEvent(event);
+            await _eventStore.saveEvent(event);
           } else if (Helpers.isNotBlank(event.content)) {
             Nip51Set? decryptedRelaySet = await _parseSetEvent(event, signer);
             if (decryptedRelaySet != null && decryptedRelaySet.name == name) {
               newRelaySet = decryptedRelaySet;
-              await _cacheManager.saveEvent(event);
+              await _eventStore.saveEvent(event);
             }
           }
         }
@@ -518,7 +523,7 @@ class Lists {
     );
     await broadcastResponse.broadcastDoneFuture;
 
-    List<Nip01Event>? events = await _cacheManager.loadEvents(
+    List<Nip01Event>? events = await _eventStore.loadEvents(
       pubKeys: [_eventSigner!.getPublicKey()],
       kinds: [kind],
     );
@@ -529,10 +534,10 @@ class Lists {
       return false;
     }).toList();
     for (final event in events) {
-      _cacheManager.removeEvent(event.id);
+      _eventStore.removeEvent(event.id);
     }
 
-    await _cacheManager.saveEvent(event);
+    await _eventStore.saveEvent(event);
     return set;
   }
 
@@ -589,7 +594,7 @@ class Lists {
     );
     await broadcastResponse.broadcastDoneFuture;
 
-    List<Nip01Event>? events = await _cacheManager.loadEvents(
+    List<Nip01Event>? events = await _eventStore.loadEvents(
       pubKeys: [_eventSigner!.getPublicKey()],
       kinds: [Nip51List.kRelaySet],
     );
@@ -600,9 +605,9 @@ class Lists {
       return false;
     }).toList();
     for (var event in events) {
-      _cacheManager.removeEvent(event.id);
+      _eventStore.removeEvent(event.id);
     }
-    await _cacheManager.saveEvent(event);
+    await _eventStore.saveEvent(event);
 
     return mySet;
   }
@@ -632,7 +637,7 @@ class Lists {
     await broadcastResponse.broadcastDoneFuture;
 
     /// update cache, remove old set and set the new one
-    List<Nip01Event>? events = await _cacheManager.loadEvents(
+    List<Nip01Event>? events = await _eventStore.loadEvents(
       pubKeys: [_eventSigner!.getPublicKey()],
       kinds: [kind],
     );
@@ -643,10 +648,10 @@ class Lists {
       return false;
     }).toList();
     for (final event in events) {
-      _cacheManager.removeEvent(event.id);
+      _eventStore.removeEvent(event.id);
     }
 
-    await _cacheManager.saveEvent(event);
+    await _eventStore.saveEvent(event);
     return set;
   }
 
@@ -672,7 +677,7 @@ class Lists {
     }
 
     /// remove all from cache
-    List<Nip01Event>? eventsInCache = await _cacheManager.loadEvents(
+    List<Nip01Event>? eventsInCache = await _eventStore.loadEvents(
       pubKeys: [_eventSigner!.getPublicKey()],
       kinds: [kind],
     );
@@ -692,7 +697,7 @@ class Lists {
       await broadcastResponse.broadcastDoneFuture;
 
       for (final event in eventsInCache) {
-        await _cacheManager.removeEvent(event.id);
+        await _eventStore.removeEvent(event.id);
       }
     }
   }
@@ -734,7 +739,7 @@ class Lists {
             newRelaySet = await _parseSetEvent(event, signer);
           }
           if (newRelaySet != null) {
-            await _cacheManager.saveEvent(event);
+            await _eventStore.saveEvent(event);
             newRelaySets[newRelaySet.name] = newRelaySet;
           }
         }
@@ -787,7 +792,7 @@ class Lists {
     );
     await broadcastResponse.broadcastDoneFuture;
 
-    List<Nip01Event>? events = await _cacheManager.loadEvents(
+    List<Nip01Event>? events = await _eventStore.loadEvents(
       pubKeys: [_eventSigner!.getPublicKey()],
       kinds: [Nip51List.kRelaySet],
     );
@@ -798,10 +803,10 @@ class Lists {
       return false;
     }).toList();
     for (var event in events) {
-      _cacheManager.removeEvent(event.id);
+      _eventStore.removeEvent(event.id);
     }
 
-    await _cacheManager.saveEvent(event);
+    await _eventStore.saveEvent(event);
     return list;
   }
 
@@ -844,7 +849,7 @@ class Lists {
       );
       await broadcastResponse.broadcastDoneFuture;
 
-      List<Nip01Event>? events = await _cacheManager.loadEvents(
+      List<Nip01Event>? events = await _eventStore.loadEvents(
         pubKeys: [_eventSigner!.getPublicKey()],
         kinds: [Nip51List.kRelaySet],
       );
@@ -855,9 +860,9 @@ class Lists {
         return false;
       }).toList();
       for (var event in events) {
-        _cacheManager.removeEvent(event.id);
+        _eventStore.removeEvent(event.id);
       }
-      await _cacheManager.saveEvent(event);
+      await _eventStore.saveEvent(event);
     }
     return relaySet;
   }
@@ -894,14 +899,14 @@ class Lists {
 
     await broadcastResponse.broadcastDoneFuture;
 
-    List<Nip01Event>? events = await _cacheManager.loadEvents(
+    List<Nip01Event>? events = await _eventStore.loadEvents(
       pubKeys: [_eventSigner!.getPublicKey()],
       kinds: [kind],
     );
     for (var event in events) {
-      _cacheManager.removeEvent(event.id);
+      _eventStore.removeEvent(event.id);
     }
-    await _cacheManager.saveEvent(event);
+    await _eventStore.saveEvent(event);
     return list;
   }
 
@@ -943,14 +948,14 @@ class Lists {
 
       await broadcastResponse.broadcastDoneFuture;
 
-      List<Nip01Event>? events = await _cacheManager.loadEvents(
+      List<Nip01Event>? events = await _eventStore.loadEvents(
         pubKeys: [_eventSigner!.getPublicKey()],
         kinds: [kind],
       );
       for (var event in events) {
-        _cacheManager.removeEvent(event.id);
+        _eventStore.removeEvent(event.id);
       }
-      await _cacheManager.saveEvent(event);
+      await _eventStore.saveEvent(event);
     }
     return list;
   }

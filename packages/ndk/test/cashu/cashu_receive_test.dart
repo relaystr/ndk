@@ -1,5 +1,5 @@
 import 'package:http/http.dart' as http;
-import 'package:ndk/data_layer/data_sources/http_request.dart';
+import 'package:ndk_core/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/cashu/cashu_repo_impl.dart';
 import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
@@ -57,7 +57,7 @@ void main() {
       final cashu = Cashu(
         cashuRepo: cashuRepo,
         walletsRepo: walletsRepo,
-        cacheManager: cache,
+        cashuStore: cache,
         cashuKeyDerivation: derivation,
         cashuUserSeedphrase: CashuUserSeedphrase(
           seedPhrase: CashuSeed.generateSeedPhrase(),
@@ -68,7 +68,7 @@ void main() {
       final cashu2 = Cashu(
         cashuRepo: cashuRepo2,
         walletsRepo: walletsRepo2,
-        cacheManager: cache2,
+        cashuStore: cache2,
         cashuKeyDerivation: derivation,
         cashuUserSeedphrase: CashuUserSeedphrase(
           seedPhrase: CashuSeed.generateSeedPhrase(),

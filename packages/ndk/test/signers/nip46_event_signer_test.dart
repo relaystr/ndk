@@ -1,6 +1,6 @@
 import 'package:ndk/data_layer/repositories/signers/nip46_event_signer.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
 import 'package:test/test.dart';
 
 import '../mocks/mock_relay.dart';
@@ -41,8 +41,7 @@ void main() {
       connection = BunkerConnection(
         privateKey:
             "7a8317f947fff0526749e9fe53f79def8eb0afd378c01058f37140cc8732fecc",
-        remotePubkey: MockRelay
-            .remoteSignerPublicKey, // Use the mock relay's remote signer public key
+        remotePubkey: MockRelay.remoteSignerPublicKey, // Use the mock relay's remote signer public key
         relays: [mockRelay.url], // Use the mock relay
       );
 

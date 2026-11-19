@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:ndk/domain_layer/entities/hidden_event.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/shared/nips/nip01/event_visibility_resolver.dart';
 
 const _offerKind = 38383;
@@ -92,9 +92,8 @@ void main() {
       ];
       final cache = _RawCache(candidates);
       expect(
-        await EventVisibilityResolver(
-          cache.load,
-        ).filterVisible(candidates, now: 300),
+        await EventVisibilityResolver(cache.load)
+            .filterVisible(candidates, now: 300),
         candidates,
       );
       expect(cache.loaded, 250);
@@ -183,9 +182,8 @@ void main() {
         _event('other-kind', kind: 38384, d: ' MiXeD:offer ', time: 200),
       ]);
       expect(
-        await EventVisibilityResolver(
-          cache.load,
-        ).filterVisible([current], now: 300),
+        await EventVisibilityResolver(cache.load)
+            .filterVisible([current], now: 300),
         [current],
       );
       expect(cache.loaded, 3);
@@ -223,9 +221,8 @@ void main() {
         _event('other-kind', kind: 3, time: 400),
       ]);
       expect(
-        await EventVisibilityResolver(
-          cache.load,
-        ).filterVisible([old], now: 500),
+        await EventVisibilityResolver(cache.load)
+            .filterVisible([old], now: 500),
         isEmpty,
       );
       expect(cache.loaded, 2);

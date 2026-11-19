@@ -1,11 +1,15 @@
 import '../../../shared/helpers/mutex_simple.dart';
 import '../../entities/event_cache_records.dart';
-import '../../entities/nip_01_event.dart';
-import '../../repositories/cache_manager.dart';
+
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+
+import '../../repositories/stores/decrypted_event_payload_store.dart';
 
 typedef EventPayloadDecryptor = Future<String?> Function();
-typedef DecryptedPayloadFailureClassifier =
-    DecryptedPayloadStatus? Function(Object error, StackTrace stackTrace);
+typedef DecryptedPayloadFailureClassifier = DecryptedPayloadStatus? Function(
+  Object error,
+  StackTrace stackTrace,
+);
 
 /// Read-through cache for decrypted payload sidecars.
 ///
@@ -23,21 +27,23 @@ typedef DecryptedPayloadFailureClassifier =
 /// A per-record mutex prevents the same event/viewer pair from being decrypted
 /// multiple times concurrently.
 class DecryptedEventPayloads {
-  final CacheManager _cacheManager;
+  final DecryptedEventPayloadStore _decryptedEventPayloadStore;
   final Map<String, MutexSimple> _recordMutexes = {};
 
-  DecryptedEventPayloads({required CacheManager cacheManager})
-    : _cacheManager = cacheManager;
+  DecryptedEventPayloads({
+    required DecryptedEventPayloadStore decryptedEventPayloadStore,
+  }) : _decryptedEventPayloadStore = decryptedEventPayloadStore;
 
   /// Returns cached plaintext if a ready sidecar already exists.
   Future<String?> loadCachedPlaintext({
     required String eventId,
     required String viewerPubKey,
   }) async {
-    final record = await _cacheManager.loadDecryptedEventPayloadRecord(
-      eventId: eventId,
-      viewerPubKey: viewerPubKey,
-    );
+    final record = await _decryptedEventPayloadStore
+        .loadDecryptedEventPayloadRecord(
+          eventId: eventId,
+          viewerPubKey: viewerPubKey,
+        );
     if (record == null ||
         record.status != DecryptedPayloadStatus.ready ||
         record.plaintextContent == null) {
@@ -74,10 +80,11 @@ class DecryptedEventPayloads {
         return cached;
       }
 
-      final existing = await _cacheManager.loadDecryptedEventPayloadRecord(
-        eventId: event.id,
-        viewerPubKey: viewerPubKey,
-      );
+      final existing = await _decryptedEventPayloadStore
+          .loadDecryptedEventPayloadRecord(
+            eventId: event.id,
+            viewerPubKey: viewerPubKey,
+          );
       final now = _now();
 
       try {
@@ -86,7 +93,7 @@ class DecryptedEventPayloads {
           return null;
         }
 
-        await _cacheManager.saveDecryptedEventPayloadRecord(
+        await _decryptedEventPayloadStore.saveDecryptedEventPayloadRecord(
           DecryptedEventPayloadRecord(
             eventId: event.id,
             viewerPubKey: viewerPubKey,
@@ -105,7 +112,7 @@ class DecryptedEventPayloads {
       } catch (error, stackTrace) {
         final status = classifyFailure?.call(error, stackTrace);
         if (status != null) {
-          await _cacheManager.saveDecryptedEventPayloadRecord(
+          await _decryptedEventPayloadStore.saveDecryptedEventPayloadRecord(
             DecryptedEventPayloadRecord(
               eventId: event.id,
               viewerPubKey: viewerPubKey,

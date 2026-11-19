@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import '../../shared/helpers/list_casting.dart';
-import '../../shared/logger/logger.dart';
-import '../../shared/nips/nip01/helpers.dart';
-import '../repositories/event_signer.dart';
-import 'nip_01_event.dart';
+import 'package:ndk_core/shared/helpers/list_casting.dart';
+import 'package:ndk_core/shared/logger/logger.dart';
+import 'package:ndk_core/shared/nips/nip01/helpers.dart';
+import 'package:ndk_core/domain_layer/repositories/event_signer.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 
 class Nip51List {
   static const int kMute = 10000;

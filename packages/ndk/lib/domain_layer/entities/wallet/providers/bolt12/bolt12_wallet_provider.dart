@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:ndk/domain_layer/usecases/nwc/responses/pay_invoice_response.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/pay_response.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/receive_response.dart';
+
 import '../../wallet.dart';
 import '../../wallet_balance.dart';
 import '../../wallet_provider.dart';

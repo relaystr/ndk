@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:cryptography/cryptography.dart';
 
-import 'nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 
 /// AES-GCM encrypted bytes and the private metadata required by a NIP-17
 /// kind-15 rumor.

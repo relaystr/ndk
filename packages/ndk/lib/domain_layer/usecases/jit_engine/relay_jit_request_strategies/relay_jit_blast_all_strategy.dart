@@ -1,11 +1,13 @@
 import 'dart:async';
 
-import '../../../../shared/nips/nip01/client_msg.dart';
-import '../../../entities/filter.dart';
+import 'package:ndk_core/shared/nips/nip01/client_msg.dart';
+import 'package:ndk_core/domain_layer/entities/filter.dart';
+
 import '../../../entities/jit_engine_relay_connectivity_data.dart';
-import '../../../entities/relay_connectivity.dart';
-import '../../../entities/request_state.dart';
-import '../../relay_manager.dart';
+
+import 'package:ndk_core/domain_layer/entities/relay_connectivity.dart';
+import 'package:ndk_core/domain_layer/entities/request_state.dart';
+import 'package:ndk_core/domain_layer/usecases/relay_manager.dart';
 
 /// Strategy Description:
 ///

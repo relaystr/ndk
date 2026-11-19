@@ -1,15 +1,22 @@
-import '../../../shared/helpers/relay_helper.dart';
-import '../../entities/broadcast_state.dart';
-import '../../entities/filter.dart';
+import 'package:ndk_core/shared/helpers/relay_helper.dart';
+import 'package:ndk_core/domain_layer/entities/broadcast_state.dart';
+import 'package:ndk_core/domain_layer/entities/filter.dart';
+
 import '../../entities/nip_51_list.dart';
 import '../../entities/nip_17_conversation.dart';
 import '../../entities/nip_17_file_message.dart';
-import '../../entities/nip_01_event.dart';
-import '../../entities/nip_01_utils.dart';
+
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_utils.dart';
+
 import '../../entities/nip_17_message.dart';
-import '../../entities/auth_policy.dart';
-import '../../repositories/cache_manager.dart';
-import '../../repositories/event_verifier.dart';
+
+import 'package:ndk_core/domain_layer/entities/auth_policy.dart';
+
+import '../../repositories/stores/event_store.dart';
+
+import 'package:ndk_core/domain_layer/repositories/event_verifier.dart';
+
 import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../gift_wrap/gift_wrap.dart';
@@ -45,7 +52,7 @@ class Dms {
   final Broadcast _broadcast;
   final GiftWrap _giftWrap;
   final UserRelayLists _userRelayLists;
-  final CacheManager _cacheManager;
+  final EventStore _eventStore;
   final EventVerifier _eventVerifier;
 
   /// Creates the direct-messages usecase.
@@ -55,14 +62,14 @@ class Dms {
     required Broadcast broadcast,
     required GiftWrap giftWrap,
     required UserRelayLists userRelayLists,
-    required CacheManager cacheManager,
+    required EventStore eventStore,
     required EventVerifier eventVerifier,
   }) : _accounts = accounts,
        _requests = requests,
        _broadcast = broadcast,
        _giftWrap = giftWrap,
        _userRelayLists = userRelayLists,
-       _cacheManager = cacheManager,
+       _eventStore = eventStore,
        _eventVerifier = eventVerifier;
 
   /// Sends a direct message to [recipientPubKey].
@@ -471,7 +478,7 @@ class Dms {
   Future<List<Nip01Event>> _loadWrappedEventsFromCache({
     required String myPubKey,
   }) {
-    return _cacheManager.loadEvents(
+    return _eventStore.loadEvents(
       kinds: const [GiftWrap.kGiftWrapEventkind],
       tags: {
         'p': [myPubKey],

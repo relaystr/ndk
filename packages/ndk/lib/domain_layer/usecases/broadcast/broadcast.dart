@@ -1,6 +1,7 @@
 import 'package:ndk/ndk.dart';
 
-import '../../../shared/helpers/relay_helper.dart';
+import 'package:ndk_core/shared/helpers/relay_helper.dart';
+
 import '../../../shared/nips/nip09/deletion.dart';
 import '../../../shared/nips/nip25/reactions.dart';
 import 'broadcast_sender.dart';
@@ -14,7 +15,8 @@ import 'pending_broadcast_delivery.dart';
 class Broadcast {
   final BroadcastSender _sender;
   final Accounts _accounts;
-  final CacheManager _cacheManager;
+  final EventStore _eventStore;
+  final EventDeliveryStore _eventDeliveryStore;
   final PendingBroadcastDelivery? _pendingDelivery;
 
   /// creates a new [Broadcast] facade instance
@@ -22,11 +24,13 @@ class Broadcast {
   Broadcast({
     required BroadcastSender broadcastSender,
     required Accounts accounts,
-    required CacheManager cacheManager,
+    required EventStore eventStore,
+    required EventDeliveryStore eventDeliveryStore,
     required PendingBroadcastDelivery pendingDelivery,
   }) : _sender = broadcastSender,
        _accounts = accounts,
-       _cacheManager = cacheManager,
+       _eventStore = eventStore,
+       _eventDeliveryStore = eventDeliveryStore,
        _pendingDelivery = pendingDelivery;
 
   /// [throws] if the default signer and the custom signer are null \
@@ -126,7 +130,7 @@ class Broadcast {
   /// This lets apps inspect events that may still exist only locally after a
   /// restart, including the last persisted per-relay outcome.
   Future<EventDeliverySnapshot?> loadEventDelivery(String eventId) async {
-    final record = await _cacheManager.loadEventDeliveryRecord(eventId);
+    final record = await _eventDeliveryStore.loadEventDeliveryRecord(eventId);
     if (record == null) {
       return null;
     }
@@ -142,7 +146,7 @@ class Broadcast {
     EventDeliveryStatus? status,
     int? limit,
   }) async {
-    final records = await _cacheManager.loadEventDeliveryRecords(
+    final records = await _eventDeliveryStore.loadEventDeliveryRecords(
       status: status,
       limit: limit,
     );
@@ -167,8 +171,8 @@ class Broadcast {
   Future<EventDeliverySnapshot> _loadSnapshotForRecord(
     EventDeliveryRecord record,
   ) async {
-    final event = await _cacheManager.loadEvent(record.eventId);
-    final relayTargets = await _cacheManager.loadRelayDeliveryTargets(
+    final event = await _eventStore.loadEvent(record.eventId);
+    final relayTargets = await _eventDeliveryStore.loadRelayDeliveryTargets(
       eventId: record.eventId,
     );
     relayTargets.sort((a, b) => a.relayUrl.compareTo(b.relayUrl));
@@ -329,13 +333,13 @@ class Broadcast {
 
     // Remove events from cache
     if (idsToRemoveFromCache.isNotEmpty) {
-      _cacheManager.removeEvents(ids: idsToRemoveFromCache.toList());
+      _eventStore.removeEvents(ids: idsToRemoveFromCache.toList());
     }
 
     // Remove all versions from cache for eventAndAllVersions
     for (final e in allEventsAndAllVersions) {
       final dTag = e.getDtag();
-      _cacheManager.removeEvents(
+      _eventStore.removeEvents(
         pubKeys: [e.pubKey],
         kinds: [e.kind],
         tags: dTag != null

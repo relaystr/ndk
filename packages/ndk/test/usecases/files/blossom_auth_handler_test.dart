@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
-import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
 
 import '../../mocks/mock_blossom_server.dart';
@@ -145,9 +145,8 @@ void main() {
     late String sha256;
 
     setUp(() async {
-      final seeded = await clientWith(
-        handler: false,
-      ).uploadBlob(data: bytes('private blob ' * 300), serverUrls: [urlA]);
+      final seeded = await clientWith(handler: false)
+          .uploadBlob(data: bytes('private blob ' * 300), serverUrls: [urlA]);
       sha256 = seeded.single.descriptor!.sha256;
       serverA.requireAuthForReads = true;
       serverA.clearRequests();

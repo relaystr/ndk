@@ -1,4 +1,4 @@
-import 'nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 
 /// Result of unwrapping a gift wrap with signature verification
 class GiftWrapUnwrapResult {

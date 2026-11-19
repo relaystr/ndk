@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/helpers/relay_helper.dart';
+import 'package:ndk_core/shared/helpers/relay_helper.dart';
 
 import 'cli_accounts_store.dart';
 import 'cli_command.dart';

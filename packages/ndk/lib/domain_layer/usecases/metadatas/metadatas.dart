@@ -1,14 +1,21 @@
 import 'dart:convert';
 
 import '../../../config/metadata_defaults.dart';
-import '../../../shared/logger/logger.dart';
-import '../../../shared/nips/nip01/helpers.dart';
-import '../../entities/filter.dart';
+
+import 'package:ndk_core/shared/logger/logger.dart';
+import 'package:ndk_core/shared/nips/nip01/helpers.dart';
+import 'package:ndk_core/domain_layer/entities/filter.dart';
+
 import '../../entities/metadata.dart';
-import '../../entities/nip_01_event.dart';
-import '../../entities/relay_set.dart';
-import '../../repositories/cache_manager.dart';
-import '../../repositories/event_signer.dart';
+
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/relay_set.dart';
+
+import '../../repositories/stores/event_store.dart';
+import '../../repositories/stores/metadata_store.dart';
+
+import 'package:ndk_core/domain_layer/repositories/event_signer.dart';
+
 import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
@@ -16,17 +23,20 @@ import '../requests/requests.dart';
 /// nostr metadata usecase
 class Metadatas {
   final Requests _requests;
-  final CacheManager _cacheManager;
+  final EventStore _eventStore;
+  final MetadataStore _metadataStore;
   final Broadcast _broadcast;
   final Accounts _accounts;
 
   /// create a new instance of Metadatas
   Metadatas({
     required Requests requests,
-    required CacheManager cacheManager,
+    required EventStore eventStore,
+    required MetadataStore metadataStore,
     required Broadcast broadcast,
     required Accounts accounts,
-  }) : _cacheManager = cacheManager,
+  }) : _eventStore = eventStore,
+       _metadataStore = metadataStore,
        _requests = requests,
        _accounts = accounts,
        _broadcast = broadcast;
@@ -49,7 +59,7 @@ class Metadatas {
     Duration idleTimeout = METADATA_IDLE_TIMEOUT,
   }) async {
     Metadata? metadata = !forceRefresh
-        ? await _cacheManager.loadMetadata(pubKey)
+        ? await _metadataStore.loadMetadata(pubKey)
         : null;
     if (metadata == null || forceRefresh) {
       Metadata? loadedMetadata;
@@ -85,7 +95,7 @@ class Metadatas {
               loadedMetadata.updatedAt! > metadata.updatedAt! ||
               forceRefresh)) {
         loadedMetadata.refreshedTimestamp = Helpers.now;
-        await _cacheManager.saveEvent(loadedMetadata.toEvent());
+        await _eventStore.saveEvent(loadedMetadata.toEvent());
         metadata = loadedMetadata;
       }
     }
@@ -101,7 +111,7 @@ class Metadatas {
     List<String> missingPubKeys = [];
     Map<String, Metadata> metadatas = {};
     for (var pubKey in pubKeys) {
-      Metadata? userMetadata = await _cacheManager.loadMetadata(pubKey);
+      Metadata? userMetadata = await _metadataStore.loadMetadata(pubKey);
       if (userMetadata == null) {
         // TODO check if not too old (time passed since last refreshed timestamp)
         missingPubKeys.add(pubKey);
@@ -134,7 +144,7 @@ class Metadatas {
               metadatas[event.pubKey]!.updatedAt! < event.createdAt) {
             metadatas[event.pubKey] = Metadata.fromEvent(event);
             metadatas[event.pubKey]!.refreshedTimestamp = Helpers.now;
-            await _cacheManager.saveEvent(event);
+            await _eventStore.saveEvent(event);
             if (onLoad != null) {
               onLoad(metadatas[event.pubKey]!);
             }
@@ -202,7 +212,7 @@ class Metadatas {
 
     // caching anything but the published event leaves two kind:0 competing for
     // the same replaceable slot, where the id tie-break can hide the published one
-    await _cacheManager.saveEvent(event);
+    await _eventStore.saveEvent(event);
 
     final broadcasted = Metadata.fromEvent(event);
     broadcasted.refreshedTimestamp = Helpers.now;

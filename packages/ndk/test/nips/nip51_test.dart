@@ -1,11 +1,11 @@
-import 'package:ndk/shared/nips/nip01/bip340.dart';
-import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
-import 'package:ndk/data_layer/repositories/verifiers/bip340_event_verifier.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/entities/nip_01_utils.dart';
-import 'package:ndk/domain_layer/repositories/event_signer.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
-import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:ndk_core/data_layer/repositories/verifiers/bip340_event_verifier.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_utils.dart';
+import 'package:ndk_core/domain_layer/repositories/event_signer.dart';
+import 'package:ndk_core/shared/nips/nip01/helpers.dart';
+import 'package:ndk_core/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/domain_layer/entities/nip_51_list.dart';
 import 'package:test/test.dart';
 

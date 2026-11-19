@@ -1,7 +1,7 @@
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
 import 'package:test/test.dart';
-import 'package:ndk/shared/nips/nip13/nip13.dart';
+import 'package:ndk_core/shared/nips/nip13/nip13.dart';
 
 void main() {
   final ndk = Ndk.emptyBootstrapRelaysConfig();
@@ -137,8 +137,7 @@ void main() {
         expect(
           actualDifficulty,
           equals(21),
-          reason:
-              'NIP-13 spec example should have 21 leading zero bits (000006 = 20 + 1 from "6")',
+          reason: 'NIP-13 spec example should have 21 leading zero bits (000006 = 20 + 1 from "6")',
         );
       });
 

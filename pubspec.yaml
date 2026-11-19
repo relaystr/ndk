@@ -10,6 +10,7 @@ dev_dependencies:
 
 workspace:
   - packages/ndk
+  - packages/ndk_core
   - packages/ndk_cache_manager_test_suite
   - packages/objectbox
   - packages/sembast

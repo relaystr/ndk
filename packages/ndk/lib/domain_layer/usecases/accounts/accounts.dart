@@ -3,16 +3,18 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:rxdart/rxdart.dart';
 
-import '../../entities/account.dart';
-import '../../entities/nip_01_event.dart';
-import '../../repositories/event_signer.dart';
+import 'package:ndk_core/domain_layer/entities/account.dart';
+import 'package:ndk_core/domain_layer/entities/auth_accounts.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/repositories/event_signer.dart';
+
 import '../bunkers/bunkers.dart';
 import '../bunkers/models/bunker_connection.dart';
 import '../../entities/nip46_client_metadata.dart';
 import '../bunkers/models/nostr_connect.dart';
 
 /// A usecase that handles accounts
-class Accounts {
+class Accounts implements AuthAccounts {
   /// Factory for creating EventSigner instances
   final LocalEventSignerFactory eventSignerFactory;
 
@@ -35,6 +37,7 @@ class Accounts {
   /// pubKey -> Account, read-only view, listen to [accountsStream] for changes
   /// Same instance until the accounts actually change, so every mutation of
   /// [_accounts] has to go through [_notifyAccountsChange]
+  @override
   Map<String, Account> get accounts => _accountsController.value;
 
   /// Stream of authentication state changes
@@ -196,6 +199,7 @@ class Accounts {
   }
 
   /// returns currently logged in account
+  @override
   Account? getLoggedAccount() {
     return _loggedPubkey != null ? _accounts[_loggedPubkey] : null;
   }

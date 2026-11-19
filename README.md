@@ -21,6 +21,10 @@ NDK ships as a small monorepo with focused packages for core, Flutter, and stora
 
 Core package of the NDK. Go here for instructions on how to use the NDK. 📜
 
+### [🔗 NDK core](./packages/ndk_core/)
+
+Relay connections, NIP-42 authentication, and REQ and EVENT on the relays you pick. `ndk` is built on it.
+
 ### [🔗 ObjectBox](./packages/objectbox/)
 
 ObjectBox database implementation.

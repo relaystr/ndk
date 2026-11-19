@@ -1,7 +1,7 @@
-import 'package:ndk/domain_layer/entities/broadcast_state.dart';
-import 'package:ndk/domain_layer/entities/global_state.dart';
+import 'package:ndk_core/domain_layer/entities/broadcast_state.dart';
+import 'package:ndk_core/domain_layer/entities/global_state.dart';
 import 'package:ndk/domain_layer/usecases/broadcast/broadcast_sender.dart';
-import 'package:ndk/domain_layer/usecases/engines/network_engine.dart';
+import 'package:ndk_core/domain_layer/usecases/engines/network_engine.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 
@@ -10,7 +10,7 @@ void main() {
     final cache = MemCacheManager();
     final sender = BroadcastSender(
       globalState: GlobalState(),
-      cacheManager: cache,
+      eventStore: cache,
       networkEngine: _UnreachableNetworkEngine(),
       accounts: Accounts(const Bip340EventSignerFactory()),
       considerDonePercent: 1,

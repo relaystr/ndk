@@ -8,9 +8,12 @@ library;
 export 'presentation_layer/ndk.dart';
 export 'presentation_layer/ndk_config.dart';
 export 'src/version.dart';
-export 'domain_layer/entities/ndk_request.dart';
+
+export 'package:ndk_core/domain_layer/entities/ndk_request.dart';
+
 export 'domain_layer/entities/request_response.dart';
-export 'domain_layer/entities/broadcast_response.dart';
+
+export 'package:ndk_core/domain_layer/entities/broadcast_response.dart';
 
 /**
  * common entities
@@ -19,18 +22,21 @@ export 'domain_layer/entities/broadcast_response.dart';
  * import 'package:ndk/entities.dart' as ndk_entities;
  * 
  */
-export 'domain_layer/entities/nip_01_event.dart';
-export 'data_layer/models/nip_01_event_model.dart';
-export 'domain_layer/entities/filter.dart';
+export 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+export 'package:ndk_core/data_layer/models/nip_01_event_model.dart';
+export 'package:ndk_core/domain_layer/entities/filter.dart';
+
 export 'domain_layer/entities/nip_51_list.dart';
 export 'domain_layer/entities/contact_list.dart';
-export 'domain_layer/entities/read_write.dart';
-export 'domain_layer/entities/relay.dart';
-export 'domain_layer/entities/auth_handler.dart';
-export 'domain_layer/entities/auth_policy.dart';
-export 'domain_layer/entities/relay_connection_key.dart';
-export 'domain_layer/entities/relay_request_outcome.dart';
-export 'domain_layer/entities/relay_set.dart';
+
+export 'package:ndk_core/domain_layer/entities/read_write.dart';
+export 'package:ndk_core/domain_layer/entities/relay.dart';
+export 'package:ndk_core/domain_layer/entities/auth_handler.dart';
+export 'package:ndk_core/domain_layer/entities/auth_policy.dart';
+export 'package:ndk_core/domain_layer/entities/relay_connection_key.dart';
+export 'package:ndk_core/domain_layer/entities/relay_request_outcome.dart';
+export 'package:ndk_core/domain_layer/entities/relay_set.dart';
+
 export 'domain_layer/entities/metadata.dart';
 export 'domain_layer/entities/event_filter.dart';
 export 'domain_layer/entities/software.dart';
@@ -64,7 +70,7 @@ export 'domain_layer/entities/nip_17_message.dart';
 export 'domain_layer/entities/nip_17_file_message.dart';
 export '';
 
-export 'domain_layer/entities/account.dart';
+export 'package:ndk_core/domain_layer/entities/account.dart';
 
 /**
  *  export classes that need to be injected
@@ -72,18 +78,33 @@ export 'domain_layer/entities/account.dart';
  */
 
 /// signers / verifiers
-export 'domain_layer/repositories/event_verifier.dart';
-export 'domain_layer/repositories/event_signer.dart';
-export 'data_layer/repositories/verifiers/bip340_event_verifier.dart';
+export 'package:ndk_core/domain_layer/repositories/event_verifier.dart';
+export 'package:ndk_core/domain_layer/repositories/event_signer.dart';
+export 'package:ndk_core/data_layer/repositories/verifiers/bip340_event_verifier.dart';
+
 export 'data_layer/repositories/verifiers/rust_event_verifier.dart';
-export 'data_layer/repositories/signers/bip340_event_signer.dart';
+
+export 'package:ndk_core/data_layer/repositories/signers/bip340_event_signer.dart';
+
 export 'shared/helpers/concurrency_limiter_mixin.dart';
-export 'domain_layer/entities/pending_signer_request.dart';
+
+export 'package:ndk_core/domain_layer/entities/pending_signer_request.dart';
+
 export 'domain_layer/entities/signer_request_cancelled_exception.dart';
 export 'domain_layer/entities/signer_request_rejected_exception.dart';
 
 /// cache
 export 'domain_layer/repositories/cache_manager.dart';
+export 'domain_layer/repositories/stores/cashu_store.dart';
+export 'domain_layer/repositories/stores/contact_list_store.dart';
+export 'domain_layer/repositories/stores/decrypted_event_payload_store.dart';
+export 'domain_layer/repositories/stores/event_delivery_store.dart';
+export 'domain_layer/repositories/stores/event_store.dart';
+export 'domain_layer/repositories/stores/filter_fetched_range_store.dart';
+export 'domain_layer/repositories/stores/metadata_store.dart';
+export 'domain_layer/repositories/stores/nip05_store.dart';
+export 'domain_layer/repositories/stores/relay_set_store.dart';
+export 'domain_layer/repositories/stores/user_relay_list_store.dart';
 export 'data_layer/repositories/cache_manager/mem_cache_manager.dart';
 
 /**
@@ -132,7 +153,9 @@ export 'domain_layer/usecases/bunkers/models/nostr_connect.dart';
 export 'domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 export 'domain_layer/entities/filter_fetched_ranges.dart';
 export 'domain_layer/usecases/proof_of_work/proof_of_work.dart';
-export 'domain_layer/entities/nip_01_utils.dart';
+
+export 'package:ndk_core/domain_layer/entities/nip_01_utils.dart';
+
 export 'domain_layer/usecases/nip77/nip77.dart'
     show
         Nip77,
@@ -141,7 +164,10 @@ export 'domain_layer/usecases/nip77/nip77.dart'
         Nip77TimeoutException,
         Nip77AuthUnavailableException,
         Nip77AuthRequiredException;
-export 'domain_layer/entities/nip77_state.dart' show Nip77Result;
+
+export 'package:ndk_core/domain_layer/entities/nip77_state.dart'
+    show Nip77Result;
+
 export 'domain_layer/usecases/ta/trusted_assertions.dart';
 export 'domain_layer/entities/nip_85.dart';
 export 'config/nip85_defaults.dart';
@@ -151,11 +177,11 @@ export 'config/nip85_defaults.dart';
  * 
  */
 
-export 'shared/logger/logger.dart';
-export 'shared/logger/log_level.dart';
-export 'shared/logger/log_output.dart';
-export 'shared/logger/ndk_logger.dart';
-export 'shared/logger/console_output.dart';
+export 'package:ndk_core/shared/logger/logger.dart';
+export 'package:ndk_core/shared/logger/log_level.dart';
+export 'package:ndk_core/shared/logger/log_output.dart';
+export 'package:ndk_core/shared/logger/ndk_logger.dart';
+export 'package:ndk_core/shared/logger/console_output.dart';
 
 /**
  * event filters
@@ -169,7 +195,7 @@ export 'shared/event_filters/tag_count_event_filter.dart';
  * 
  */
 
-export 'shared/nips/nip19/nip19.dart';
+export 'package:ndk_core/shared/nips/nip19/nip19.dart';
 
 /**
  * Nip 49

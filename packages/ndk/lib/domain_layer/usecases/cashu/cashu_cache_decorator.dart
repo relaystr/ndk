@@ -4,23 +4,15 @@ import '../../../shared/helpers/mutex_simple.dart';
 import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
-import '../../entities/cache_eviction.dart';
-import '../../entities/event_cache_records.dart';
-import '../../entities/nip_01_event.dart';
-import '../../repositories/cache_manager.dart';
+import '../../repositories/stores/cashu_store.dart';
 
-class CashuCacheDecorator implements CacheManager {
+class CashuCacheDecorator implements CashuStore {
   final MutexSimple _mutex;
-  final CacheManager _delegate;
+  final CashuStore _delegate;
 
-  CashuCacheDecorator({required CacheManager cacheManager, MutexSimple? mutex})
-    : _delegate = cacheManager,
+  CashuCacheDecorator({required CashuStore cashuStore, MutexSimple? mutex})
+    : _delegate = cashuStore,
       _mutex = mutex ?? MutexSimple();
-
-  @override
-  Future<bool> saveEventIfAbsent(Nip01Event event) {
-    return _mutex.synchronized(() => _delegate.saveEventIfAbsent(event));
-  }
 
   @override
   Future<List<CashuMintInfo>?> getMintInfos({List<String>? mintUrls}) async {
@@ -118,95 +110,6 @@ class CashuCacheDecorator implements CacheManager {
         counter: counter,
       );
     });
-  }
-
-  @override
-  Future<void> saveDecryptedEventPayloadRecord(
-    DecryptedEventPayloadRecord record,
-  ) async {
-    await _mutex.synchronized(() async {
-      await _delegate.saveDecryptedEventPayloadRecord(record);
-    });
-  }
-
-  @override
-  Future<void> saveDecryptedEventPayloadRecords(
-    List<DecryptedEventPayloadRecord> records,
-  ) async {
-    await _mutex.synchronized(() async {
-      await _delegate.saveDecryptedEventPayloadRecords(records);
-    });
-  }
-
-  @override
-  Future<DecryptedEventPayloadRecord?> loadDecryptedEventPayloadRecord({
-    required String eventId,
-    required String viewerPubKey,
-  }) async {
-    return _mutex.synchronized(() async {
-      return _delegate.loadDecryptedEventPayloadRecord(
-        eventId: eventId,
-        viewerPubKey: viewerPubKey,
-      );
-    });
-  }
-
-  @override
-  Future<List<DecryptedEventPayloadRecord>> loadDecryptedEventPayloadRecords({
-    String? eventId,
-    String? viewerPubKey,
-    DecryptedPayloadStatus? status,
-    int? limit,
-  }) async {
-    return _mutex.synchronized(() async {
-      return _delegate.loadDecryptedEventPayloadRecords(
-        eventId: eventId,
-        viewerPubKey: viewerPubKey,
-        status: status,
-        limit: limit,
-      );
-    });
-  }
-
-  @override
-  Future<void> removeDecryptedEventPayloadRecord({
-    required String eventId,
-    required String viewerPubKey,
-  }) async {
-    await _mutex.synchronized(() async {
-      await _delegate.removeDecryptedEventPayloadRecord(
-        eventId: eventId,
-        viewerPubKey: viewerPubKey,
-      );
-    });
-  }
-
-  @override
-  Future<void> removeDecryptedEventPayloadRecords(String eventId) async {
-    await _mutex.synchronized(() async {
-      await _delegate.removeDecryptedEventPayloadRecords(eventId);
-    });
-  }
-
-  @override
-  Future<void> removeAllDecryptedEventPayloadRecords() async {
-    await _mutex.synchronized(() async {
-      await _delegate.removeAllDecryptedEventPayloadRecords();
-    });
-  }
-
-  @override
-  Future<EvictionResult> evict(EvictionPolicy policy) async {
-    return _mutex.synchronized(() async {
-      return _delegate.evict(policy);
-    });
-  }
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) {
-    throw UnimplementedError(
-      'CashuCacheDecorator does not implement ${invocation.memberName}. Add an explicit delegate method.',
-    );
   }
 
   Future<T> runInTransaction<T>(Future<T> Function() action) async {

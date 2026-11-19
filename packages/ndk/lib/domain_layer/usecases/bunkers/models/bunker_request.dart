@@ -1,7 +1,7 @@
-import 'package:ndk/shared/nips/nip01/helpers.dart';
+import 'package:ndk_core/shared/nips/nip01/helpers.dart';
 
-import '../../../../domain_layer/entities/pending_signer_request.dart';
-export '../../../../domain_layer/entities/pending_signer_request.dart'
+import 'package:ndk_core/domain_layer/entities/pending_signer_request.dart';
+export 'package:ndk_core/domain_layer/entities/pending_signer_request.dart'
     show SignerMethod;
 
 class BunkerRequest {

@@ -2,7 +2,8 @@ import 'dart:convert';
 
 import 'package:cbor/cbor.dart';
 
-import '../../../shared/logger/logger.dart';
+import 'package:ndk_core/shared/logger/logger.dart';
+
 import '../../entities/cashu/cashu_token.dart';
 
 class CashuTokenEncoder {

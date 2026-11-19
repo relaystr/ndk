@@ -1,16 +1,25 @@
 import '../../../config/user_relay_list_defaults.dart';
-import '../../../shared/helpers/relay_helper.dart';
-import '../../../shared/logger/logger.dart';
-import '../../../shared/nips/nip01/helpers.dart';
+
+import 'package:ndk_core/shared/helpers/relay_helper.dart';
+import 'package:ndk_core/shared/logger/logger.dart';
+import 'package:ndk_core/shared/nips/nip01/helpers.dart';
+
 import '../../entities/contact_list.dart';
-import '../../entities/filter.dart';
-import '../../entities/nip_01_event.dart';
+
+import 'package:ndk_core/domain_layer/entities/filter.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+
 import '../../entities/nip_51_list.dart';
 import '../../entities/nip_65.dart';
-import '../../entities/read_write_marker.dart';
+
+import 'package:ndk_core/domain_layer/entities/read_write_marker.dart';
+
 import '../../entities/user_relay_list.dart';
-import '../../repositories/cache_manager.dart';
-import '../../repositories/event_signer.dart';
+import '../../repositories/stores/event_store.dart';
+import '../../repositories/stores/user_relay_list_store.dart';
+
+import 'package:ndk_core/domain_layer/repositories/event_signer.dart';
+
 import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
@@ -21,17 +30,20 @@ import '../requests/requests.dart';
 /// [UserRelayLists] is a usecase for managing [UserRelayList]s
 class UserRelayLists {
   final Requests _requests;
-  final CacheManager _cacheManager;
+  final EventStore _eventStore;
+  final UserRelayListStore _userRelayListStore;
   final Broadcast _broadcast;
   final Accounts _accounts;
 
   /// user relay lists usecase
   UserRelayLists({
     required Requests requests,
-    required CacheManager cacheManager,
+    required EventStore eventStore,
+    required UserRelayListStore userRelayListStore,
     required Broadcast broadcast,
     required Accounts accounts,
-  }) : _cacheManager = cacheManager,
+  }) : _eventStore = eventStore,
+       _userRelayListStore = userRelayListStore,
        _requests = requests,
        _broadcast = broadcast,
        _accounts = accounts;
@@ -52,9 +64,8 @@ class UserRelayLists {
   }) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
-      UserRelayList? userRelayList = await _cacheManager.loadUserRelayList(
-        pubKey,
-      );
+      UserRelayList? userRelayList = await _userRelayListStore
+          .loadUserRelayList(pubKey);
       if (userRelayList == null || forceRefresh) {
         // TODO check if not too old (time passed since last refreshed timestamp)
         missingPubKeys.add(pubKey);
@@ -142,7 +153,7 @@ class UserRelayLists {
         }
       }
       if (eventsToSave.isNotEmpty) {
-        await _cacheManager.saveEvents(eventsToSave);
+        await _eventStore.saveEvents(eventsToSave);
       }
 
       if (onProgress != null) {
@@ -161,7 +172,7 @@ class UserRelayLists {
     String pubKey, {
     bool forceRefresh = false,
   }) async {
-    UserRelayList? userRelayList = await _cacheManager.loadUserRelayList(
+    UserRelayList? userRelayList = await _userRelayListStore.loadUserRelayList(
       pubKey,
     );
 
@@ -169,7 +180,7 @@ class UserRelayLists {
       await loadMissingRelayListsFromNip65OrNip02([
         pubKey,
       ], forceRefresh: forceRefresh);
-      userRelayList = await _cacheManager.loadUserRelayList(pubKey);
+      userRelayList = await _userRelayListStore.loadUserRelayList(pubKey);
     }
     return userRelayList;
   }
@@ -189,7 +200,7 @@ class UserRelayLists {
     Iterable<String>? discoveryRelays,
   }) async {
     if (!forceRefresh) {
-      final cached = await _cacheManager.loadEvents(
+      final cached = await _eventStore.loadEvents(
         pubKeys: [pubKey],
         kinds: [Nip51List.kDmRelays],
       );
@@ -213,7 +224,7 @@ class UserRelayLists {
 
     events.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     final latest = events.first;
-    await _cacheManager.saveEvent(latest);
+    await _eventStore.saveEvent(latest);
     return _extractDmRelayUrls(latest);
   }
 
@@ -227,7 +238,7 @@ class UserRelayLists {
   /// *************************************************************************************************
 
   Future<UserRelayList?> _ensureUpToDateUserRelayList() async {
-    UserRelayList? userRelayList = await _cacheManager.loadUserRelayList(
+    UserRelayList? userRelayList = await _userRelayListStore.loadUserRelayList(
       _signer.getPublicKey(),
     );
 
@@ -288,7 +299,7 @@ class UserRelayLists {
     await Future.wait([
       broadcastResponse.broadcastDoneFuture,
       Future.delayed(Duration(seconds: 1)),
-      _cacheManager.saveEvent(userRelayList.toNip65().toEvent()),
+      _eventStore.saveEvent(userRelayList.toNip65().toEvent()),
     ]);
     return userRelayList;
   }
@@ -317,7 +328,7 @@ class UserRelayLists {
 
     await broadcastResponse.broadcastDoneFuture;
 
-    await _cacheManager.saveEvent(newUserRelayList.toNip65().toEvent());
+    await _eventStore.saveEvent(newUserRelayList.toNip65().toEvent());
     return newUserRelayList;
   }
 
@@ -347,7 +358,7 @@ class UserRelayLists {
       await Future.wait([
         broadcastResponse.broadcastDoneFuture,
         Future.delayed(Duration(seconds: 1)),
-        _cacheManager.saveEvent(userRelayList.toNip65().toEvent()),
+        _eventStore.saveEvent(userRelayList.toNip65().toEvent()),
       ]);
     }
     return userRelayList;
@@ -391,7 +402,7 @@ class UserRelayLists {
       await broadcastResponse.broadcastDoneFuture;
       await Future.delayed(Duration(seconds: 1));
 
-      await _cacheManager.saveEvent(userRelayList.toNip65().toEvent());
+      await _eventStore.saveEvent(userRelayList.toNip65().toEvent());
     }
     return userRelayList;
   }
@@ -400,7 +411,7 @@ class UserRelayLists {
     required String pubKey,
     required int kind,
   }) async {
-    final events = await _cacheManager.loadEvents(
+    final events = await _eventStore.loadEvents(
       pubKeys: [pubKey],
       kinds: [kind],
       limit: 1,
@@ -410,7 +421,7 @@ class UserRelayLists {
   }
 
   Future<Nip01Event?> _loadCachedUserRelaySourceEvent(String pubKey) async {
-    final events = await _cacheManager.loadEvents(
+    final events = await _eventStore.loadEvents(
       pubKeys: [pubKey],
       kinds: [Nip65.kKind, ContactList.kKind],
       limit: 10,
@@ -441,14 +452,14 @@ class UserRelayLists {
 
   /// reads the latest nip65 data from cache \
   /// [pubkeys] pubkeys you want nip65 data for \
-  /// [cacheManger] the cache manager you want to use
+  /// [userRelayListStore] the store you want to use
   static Future<List<UserRelayList>> getUserRelayListCacheLatest({
     required List<String> pubkeys,
-    required CacheManager cacheManager,
+    required UserRelayListStore userRelayListStore,
   }) async {
     // get the data from cache
     final List<UserRelayList> events = await Future.wait(
-      pubkeys.map((pubkey) => cacheManager.loadUserRelayList(pubkey)),
+      pubkeys.map((pubkey) => userRelayListStore.loadUserRelayList(pubkey)),
     ).then((results) => results.whereType<UserRelayList>().toList());
 
     List<UserRelayList> nip65Data = _filterLatest(events);
@@ -458,14 +469,14 @@ class UserRelayLists {
 
   /// reads the latest nip65 data from cache \
   /// [pubkeys] pubkeys you want nip65 data for \
-  /// [cacheManger] the cache manager you want to use
+  /// [userRelayListStore] the store you want to use
   static Future<UserRelayList?> getUserRelayListCacheLatestSingle({
     required String pubkey,
-    required CacheManager cacheManager,
+    required UserRelayListStore userRelayListStore,
   }) async {
     final data = await getUserRelayListCacheLatest(
       pubkeys: [pubkey],
-      cacheManager: cacheManager,
+      userRelayListStore: userRelayListStore,
     );
     if (data.isEmpty) {
       return null;

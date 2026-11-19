@@ -11,7 +11,9 @@ void main() {
 
     setUp(() {
       cacheManager = MemCacheManager();
-      usecase = DecryptedEventPayloads(cacheManager: cacheManager);
+      usecase = DecryptedEventPayloads(
+        decryptedEventPayloadStore: cacheManager,
+      );
       event = Nip01Event(
         pubKey: 'author-pubkey',
         kind: 4,

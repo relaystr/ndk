@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import '../../../shared/logger/logger.dart';
-import '../../entities/nip_01_event.dart';
-import '../../entities/request_state.dart';
-import '../../repositories/cache_manager.dart';
+import 'package:ndk_core/shared/logger/logger.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk_core/domain_layer/entities/request_state.dart';
+
+import '../../repositories/stores/event_store.dart';
 
 /// Cache-first helper for request resolution.
 ///
@@ -11,9 +12,9 @@ import '../../repositories/cache_manager.dart';
 /// events matching unresolved filters and forwards them into the request
 /// response stream before or alongside network results.
 class CacheRead {
-  final CacheManager cacheManager;
+  final EventStore eventStore;
 
-  CacheRead(this.cacheManager);
+  CacheRead(this.eventStore);
 
   /// Finds matching visible events in cache and forwards them to
   /// [outController].
@@ -30,7 +31,7 @@ class CacheRead {
 
       // authors
       if (filter.authors != null) {
-        final cached = await cacheManager.loadEvents(
+        final cached = await eventStore.loadEvents(
           pubKeys: filter.authors!,
           kinds: filter.kinds ?? [],
           since: filter.since,
@@ -72,7 +73,7 @@ class CacheRead {
       }
 
       if (filter.ids != null) {
-        final foundIdEvents = await cacheManager.loadEvents(
+        final foundIdEvents = await eventStore.loadEvents(
           ids: filter.ids!,
           limit: filter.ids!.length,
         );

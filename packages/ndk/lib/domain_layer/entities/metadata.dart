@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import '../../shared/nips/nip01/helpers.dart';
-import 'nip_01_event.dart';
+import 'package:ndk_core/shared/nips/nip01/helpers.dart';
+import 'package:ndk_core/domain_layer/entities/nip_01_event.dart';
 
 /// basic nostr metadata
 class Metadata {

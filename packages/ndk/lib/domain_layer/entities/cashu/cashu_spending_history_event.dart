@@ -1,4 +1,4 @@
-import '../tuple.dart';
+import 'package:ndk_core/domain_layer/entities/tuple.dart';
 
 enum CashuSpendDirection {
   sent('out'),

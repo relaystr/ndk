@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:ndk/ndk.dart';
-import 'package:ndk/domain_layer/entities/broadcast_state.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
-import 'package:ndk/shared/nips/nip04/nip04.dart';
+import 'package:ndk_core/domain_layer/entities/broadcast_state.dart';
+import 'package:ndk_core/shared/nips/nip01/bip340.dart';
+import 'package:ndk_core/shared/nips/nip04/nip04.dart';
 import 'package:test/test.dart';
 
 const _walletSecret =
@@ -106,15 +106,13 @@ class _Broadcast implements Broadcast {
   }
 
   void reply(Nip01Event event) {
-    final request =
-        jsonDecode(
-              Nip04.decrypt(
-                _walletSecret,
-                Bip340.getPublicKey(_clientSecret),
-                event.content,
-              ),
-            )
-            as Map;
+    final request = jsonDecode(
+      Nip04.decrypt(
+        _walletSecret,
+        Bip340.getPublicKey(_clientSecret),
+        event.content,
+      ),
+    ) as Map;
     final method = request['method'];
     final result = switch (method) {
       'get_balance' => {'balance': 12000},
@@ -231,13 +229,12 @@ void main() {
       broadcast.sent.firstWhere(
         (event) =>
             (jsonDecode(
-                  Nip04.decrypt(
-                    _walletSecret,
-                    Bip340.getPublicKey(_clientSecret),
-                    event.content,
-                  ),
-                )
-                as Map)['method'] ==
+              Nip04.decrypt(
+                _walletSecret,
+                Bip340.getPublicKey(_clientSecret),
+                event.content,
+              ),
+            ) as Map)['method'] ==
             'get_balance',
       ),
     );
@@ -247,13 +244,12 @@ void main() {
       broadcast.sent.firstWhere(
         (event) =>
             (jsonDecode(
-                  Nip04.decrypt(
-                    _walletSecret,
-                    Bip340.getPublicKey(_clientSecret),
-                    event.content,
-                  ),
-                )
-                as Map)['method'] ==
+              Nip04.decrypt(
+                _walletSecret,
+                Bip340.getPublicKey(_clientSecret),
+                event.content,
+              ),
+            ) as Map)['method'] ==
             'pay_invoice',
       ),
     );

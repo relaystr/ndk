@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
-import 'package:ndk/data_layer/data_sources/http_request.dart';
+import 'package:ndk_core/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_quote.dart';
@@ -211,8 +211,7 @@ void main() {
         http.Response(
           jsonEncode({
             "quote": "d00e6cbc-04c9-4661-8909-e47c19612bf0",
-            "request":
-                "lnbc50p1p5tctmqdqqpp5y7jyyyq3ezyu3p4c9dh6qpnjj6znuzrz35ernjjpkmw6lz7y2mxqsp59g4z52329g4z52329g4z52329g4z52329g4z52329g4z52329g4q9qrsgqcqzysl62hzvm9s5nf53gk22v5nqwf9nuy2uh32wn9rfx6grkjh6vr5jmy09mra5cna504azyhkd2ehdel9sm7fm72ns6ws2fk4m8cwc99hdgptq8hv4",
+            "request": "lnbc50p1p5tctmqdqqpp5y7jyyyq3ezyu3p4c9dh6qpnjj6znuzrz35ernjjpkmw6lz7y2mxqsp59g4z52329g4z52329g4z52329g4z52329g4z52329g4z52329g4q9qrsgqcqzysl62hzvm9s5nf53gk22v5nqwf9nuy2uh32wn9rfx6grkjh6vr5jmy09mra5cna504azyhkd2ehdel9sm7fm72ns6ws2fk4m8cwc99hdgptq8hv4",
             "amount": 5,
             "unit": "sat",
             "state": "UNPAID",
@@ -229,8 +228,7 @@ void main() {
         http.Response(
           jsonEncode({
             "quote": "d00e6cbc-04c9-4661-8909-e47c19612bf0",
-            "request":
-                "lnbc50p1p5tctmqdqqpp5y7jyyyq3ezyu3p4c9dh6qpnjj6znuzrz35ernjjpkmw6lz7y2mxqsp59g4z52329g4z52329g4z52329g4z52329g4z52329g4z52329g4q9qrsgqcqzysl62hzvm9s5nf53gk22v5nqwf9nuy2uh32wn9rfx6grkjh6vr5jmy09mra5cna504azyhkd2ehdel9sm7fm72ns6ws2fk4m8cwc99hdgptq8hv4",
+            "request": "lnbc50p1p5tctmqdqqpp5y7jyyyq3ezyu3p4c9dh6qpnjj6znuzrz35ernjjpkmw6lz7y2mxqsp59g4z52329g4z52329g4z52329g4z52329g4z52329g4z52329g4q9qrsgqcqzysl62hzvm9s5nf53gk22v5nqwf9nuy2uh32wn9rfx6grkjh6vr5jmy09mra5cna504azyhkd2ehdel9sm7fm72ns6ws2fk4m8cwc99hdgptq8hv4",
             "amount": 5,
             "unit": "sat",
             "state": "UNPAID",
@@ -244,8 +242,7 @@ void main() {
       final cashu = CashuTestTools.mockHttpCashu(
         customMockClient: myHttpMock,
         seedPhrase: CashuUserSeedphrase(
-          seedPhrase:
-              "reduce invest lunch step couch traffic measure civil want steel trip jar",
+          seedPhrase: "reduce invest lunch step couch traffic measure civil want steel trip jar",
         ),
       );
 
@@ -296,8 +293,7 @@ void main() {
       final cashu = CashuTestTools.mockHttpCashu(
         customMockClient: myHttpMock,
         seedPhrase: CashuUserSeedphrase(
-          seedPhrase:
-              "reduce invest lunch step couch traffic measure civil want steel trip jar",
+          seedPhrase: "reduce invest lunch step couch traffic measure civil want steel trip jar",
         ),
       );
 
@@ -486,7 +482,7 @@ void main() {
       final cashu = Cashu(
         cashuRepo: cashuRepo,
         walletsRepo: walletsRepo,
-        cacheManager: cache,
+        cashuStore: cache,
         cashuKeyDerivation: derivation,
       );
 

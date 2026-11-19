@@ -1,5 +1,5 @@
 import 'package:http/http.dart' as http;
-import 'package:ndk/data_layer/data_sources/http_request.dart';
+import 'package:ndk_core/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/cashu/cashu_repo_impl.dart';
 import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
@@ -113,11 +113,10 @@ void main() {
         final cashu = Cashu(
           cashuRepo: CashuRepoImpl(client: HttpRequestDS(http.Client())),
           walletsRepo: walletsRepo,
-          cacheManager: cache,
+          cashuStore: cache,
           cashuKeyDerivation: DartCashuKeyDerivation(),
           cashuUserSeedphrase: CashuUserSeedphrase(
-            seedPhrase:
-                "reduce invest lunch step couch traffic measure civil want steel trip jar",
+            seedPhrase: "reduce invest lunch step couch traffic measure civil want steel trip jar",
           ),
         );
 
@@ -264,8 +263,7 @@ void main() {
 
       final cashu = CashuTestTools.mockHttpCashu(
         seedPhrase: CashuUserSeedphrase(
-          seedPhrase:
-              "reduce invest lunch step couch traffic measure civil want steel trip jar",
+          seedPhrase: "reduce invest lunch step couch traffic measure civil want steel trip jar",
         ),
         customMockClient: myHttpMock,
         customCache: cache,
@@ -323,117 +321,118 @@ void main() {
       );
     });
 
-    test("redeem fails after proofs spent on mint - proofs marked as spent", () async {
-      // This test verifies the fix for the broken proofs issue:
-      // When meltTokens() fails AFTER the mint has already spent the proofs,
-      // the proofs should be marked as spent locally (not released back to the wallet).
-      // Without this fix, proofs would be marked as unspent and become "broken" -
-      // appearing available in the wallet but actually already burned on the mint.
+    test(
+      "redeem fails after proofs spent on mint - proofs marked as spent",
+      () async {
+        // This test verifies the fix for the broken proofs issue:
+        // When meltTokens() fails AFTER the mint has already spent the proofs,
+        // the proofs should be marked as spent locally (not released back to the wallet).
+        // Without this fix, proofs would be marked as unspent and become "broken" -
+        // appearing available in the wallet but actually already burned on the mint.
 
-      final cache = MemCacheManager();
-      final myHttpMock = MockCashuHttpClient();
+        final cache = MemCacheManager();
+        final myHttpMock = MockCashuHttpClient();
 
-      // Use the mock repo that simulates melt failure after proofs are spent
-      final mockRepo = CashuRepoMeltFailAfterSpendMock(
-        client: HttpRequestDS(myHttpMock),
-      );
+        // Use the mock repo that simulates melt failure after proofs are spent
+        final mockRepo = CashuRepoMeltFailAfterSpendMock(
+          client: HttpRequestDS(myHttpMock),
+        );
 
-      final cashu = CashuTestTools.mockHttpCashu(
-        seedPhrase: CashuUserSeedphrase(
-          seedPhrase:
-              "reduce invest lunch step couch traffic measure civil want steel trip jar",
-        ),
-        customMockClient: myHttpMock,
-        customCache: cache,
-        customRepo: mockRepo,
-      );
+        final cashu = CashuTestTools.mockHttpCashu(
+          seedPhrase: CashuUserSeedphrase(
+            seedPhrase: "reduce invest lunch step couch traffic measure civil want steel trip jar",
+          ),
+          customMockClient: myHttpMock,
+          customCache: cache,
+          customRepo: mockRepo,
+        );
 
-      // Add test proofs to cache
-      final testProofs = [
-        CashuProof(
-          keysetId: '00c726786980c4d9',
-          amount: 1,
-          secret: 'proof-s-1',
-          unblindedSig: 'sig1',
-        ),
-        CashuProof(
-          keysetId: '00c726786980c4d9',
-          amount: 2,
-          secret: 'proof-s-2',
-          unblindedSig: 'sig2',
-        ),
-        CashuProof(
-          keysetId: '00c726786980c4d9',
-          amount: 4,
-          secret: 'proof-s-4',
-          unblindedSig: 'sig4',
-        ),
-      ];
+        // Add test proofs to cache
+        final testProofs = [
+          CashuProof(
+            keysetId: '00c726786980c4d9',
+            amount: 1,
+            secret: 'proof-s-1',
+            unblindedSig: 'sig1',
+          ),
+          CashuProof(
+            keysetId: '00c726786980c4d9',
+            amount: 2,
+            secret: 'proof-s-2',
+            unblindedSig: 'sig2',
+          ),
+          CashuProof(
+            keysetId: '00c726786980c4d9',
+            amount: 4,
+            secret: 'proof-s-4',
+            unblindedSig: 'sig4',
+          ),
+        ];
 
-      await cache.saveProofs(proofs: testProofs, mintUrl: mockMintUrl);
+        await cache.saveProofs(proofs: testProofs, mintUrl: mockMintUrl);
 
-      // Verify proofs are initially in unspent state
-      final initialProofs = await cache.getProofs(mintUrl: mockMintUrl);
-      expect(
-        initialProofs.every((p) => p.state == CashuProofState.unspend),
-        isTrue,
-        reason: "All proofs should initially be unspent",
-      );
+        // Verify proofs are initially in unspent state
+        final initialProofs = await cache.getProofs(mintUrl: mockMintUrl);
+        expect(
+          initialProofs.every((p) => p.state == CashuProofState.unspend),
+          isTrue,
+          reason: "All proofs should initially be unspent",
+        );
 
-      final meltQuoteTransaction = await cashu.initiateRedeem(
-        mintUrl: mockMintUrl,
-        request: "lnbc1...",
-        unit: "sat",
-        method: "bolt11",
-      );
+        final meltQuoteTransaction = await cashu.initiateRedeem(
+          mintUrl: mockMintUrl,
+          request: "lnbc1...",
+          unit: "sat",
+          method: "bolt11",
+        );
 
-      final redeemStream = cashu.redeem(
-        draftRedeemTransaction: meltQuoteTransaction,
-      );
+        final redeemStream = cashu.redeem(
+          draftRedeemTransaction: meltQuoteTransaction,
+        );
 
-      // Collect all events from the stream
-      final events = await redeemStream.toList();
+        // Collect all events from the stream
+        final events = await redeemStream.toList();
 
-      // Should emit pending then failed
-      expect(events.length, equals(2));
-      expect(events[0].state, equals(WalletTransactionState.pending));
-      expect(events[1].state, equals(WalletTransactionState.failed));
-      expect(
-        events[1].completionMsg,
-        contains("Proofs were spent but melt failed"),
-      );
+        // Should emit pending then failed
+        expect(events.length, equals(2));
+        expect(events[0].state, equals(WalletTransactionState.pending));
+        expect(events[1].state, equals(WalletTransactionState.failed));
+        expect(
+          events[1].completionMsg,
+          contains("Proofs were spent but melt failed"),
+        );
 
-      // CRITICAL ASSERTION: Verify selected proofs are marked as spent (not unspent/broken)
-      // This is the key behavior that prevents broken proofs
-      final spentProofs = await cache.getProofs(
-        mintUrl: mockMintUrl,
-        state: CashuProofState.spend,
-      );
+        // CRITICAL ASSERTION: Verify selected proofs are marked as spent (not unspent/broken)
+        // This is the key behavior that prevents broken proofs
+        final spentProofs = await cache.getProofs(
+          mintUrl: mockMintUrl,
+          state: CashuProofState.spend,
+        );
 
-      // The melt quote has amount=1 + fee_reserve=2 = 3 sats total
-      // With proofs [1, 2, 4], selection should pick 1+2=3, so 2 proofs
-      expect(
-        spentProofs.length,
-        equals(2),
-        reason:
-            "Selected proofs should be marked as spent since they were burned on the mint",
-      );
-      expect(
-        spentProofs.every((p) => p.state == CashuProofState.spend),
-        isTrue,
-        reason: "All selected proofs should be in spent state",
-      );
+        // The melt quote has amount=1 + fee_reserve=2 = 3 sats total
+        // With proofs [1, 2, 4], selection should pick 1+2=3, so 2 proofs
+        expect(
+          spentProofs.length,
+          equals(2),
+          reason: "Selected proofs should be marked as spent since they were burned on the mint",
+        );
+        expect(
+          spentProofs.every((p) => p.state == CashuProofState.spend),
+          isTrue,
+          reason: "All selected proofs should be in spent state",
+        );
 
-      // Verify unselected proofs remain unspent
-      final unspentProofs = await cache.getProofs(
-        mintUrl: mockMintUrl,
-        state: CashuProofState.unspend,
-      );
-      expect(
-        unspentProofs.length,
-        equals(1),
-        reason: "Unselected proofs should remain unspent",
-      );
-    });
+        // Verify unselected proofs remain unspent
+        final unspentProofs = await cache.getProofs(
+          mintUrl: mockMintUrl,
+          state: CashuProofState.unspend,
+        );
+        expect(
+          unspentProofs.length,
+          equals(1),
+          reason: "Unselected proofs should remain unspent",
+        );
+      },
+    );
   });
 }
