@@ -124,7 +124,10 @@ _DialogController _controller({bool notifyOnCheck = false}) {
 }
 
 Widget _app(_DialogController controller) => MaterialApp(
-  localizationsDelegates: [AppLocalizations.delegate, ...GlobalMaterialLocalizations.delegates],
+  localizationsDelegates: [
+    AppLocalizations.delegate,
+    ...GlobalMaterialLocalizations.delegates,
+  ],
   supportedLocales: AppLocalizations.supportedLocales,
   locale: const Locale('de'),
   home: NAppUpdateDialog(controller: controller),

@@ -83,7 +83,10 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(brightness: brightness),
-            localizationsDelegates: [AppLocalizations.delegate, ...GlobalMaterialLocalizations.delegates],
+            localizationsDelegates: [
+              AppLocalizations.delegate,
+              ...GlobalMaterialLocalizations.delegates,
+            ],
             supportedLocales: AppLocalizations.supportedLocales,
             locale: const Locale('en'),
             home: Scaffold(body: NAppVersion(controller: controller)),

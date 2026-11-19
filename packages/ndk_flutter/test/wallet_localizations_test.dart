@@ -106,7 +106,10 @@ void main() {
         MaterialApp(
           locale: const Locale('pl'),
           supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: [AppLocalizations.delegate, ...GlobalMaterialLocalizations.delegates],
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            ...GlobalMaterialLocalizations.delegates,
+          ],
           home: Scaffold(
             body: Builder(
               builder: (context) {

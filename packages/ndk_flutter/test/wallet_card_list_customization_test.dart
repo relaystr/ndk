@@ -32,7 +32,10 @@ Widget _buildList({
 }) {
   return MaterialApp(
     theme: theme,
-    localizationsDelegates: [AppLocalizations.delegate, ...GlobalMaterialLocalizations.delegates],
+    localizationsDelegates: [
+      AppLocalizations.delegate,
+      ...GlobalMaterialLocalizations.delegates,
+    ],
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: SizedBox(
