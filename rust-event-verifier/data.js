@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794995201799,
+  "lastUpdate": 1795169383223,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -3000,6 +3000,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1531010,
             "range": "1520404-1549500",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "58687994+1-leo@users.noreply.github.com",
+            "name": "Leo",
+            "username": "1-leo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bacd53bb4a493013f15b68cce11e3e7c7ac98628",
+          "message": "Merge pull request #957 from relaystr/feat/Ephemeral-Gift-Wrap-Event\n\nfeat: EphemeralGiftWrapEventKind",
+          "timestamp": "2026-11-20T11:07:16+01:00",
+          "tree_id": "d43170048d6620f7166a45f6da8c67b6a5cfc4ea",
+          "url": "https://github.com/relaystr/ndk/commit/bacd53bb4a493013f15b68cce11e3e7c7ac98628"
+        },
+        "date": 1795169380854,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 33407.2,
+            "range": "31249-38147",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1019034,
+            "range": "935850-1169202",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
