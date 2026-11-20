@@ -176,6 +176,26 @@ void main() {
     });
 
     test(
+      'toGiftWrap uses the explicit createdAt for the gift wrap event',
+      () async {
+        const createdAt = 1700000000;
+        final rumor = await giftWrapService.createRumor(
+          content: 'Gift wrap with explicit timestamp',
+          kind: 1,
+          tags: [],
+        );
+
+        final giftWrap = await giftWrapService.toGiftWrap(
+          rumor: rumor,
+          recipientPubkey: key2.publicKey,
+          createdAt: createdAt,
+        );
+
+        expect(giftWrap.createdAt, equals(createdAt));
+      },
+    );
+
+    test(
       'Can use custom signer instead of logged-in account for wrap and unwrap',
       () async {
         // Create a custom signer with key3 (different from logged-in key1)
