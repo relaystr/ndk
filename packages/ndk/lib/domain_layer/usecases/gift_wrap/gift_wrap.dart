@@ -13,8 +13,23 @@ import '../decrypted_event_payloads/decrypted_event_payloads.dart';
 class GiftWrap {
   static const int kSealEventKind = 13;
   static const int kGiftWrapEventkind = 1059;
+
+  /// Ephemeral gift wrap (NIP-59). Same structure as [kGiftWrapEventkind], but
+  /// relays MUST NOT store it, so it is suited to real-time delivery only.
+  static const int kEphemeralGiftWrapEventKind = 21059;
+
+  /// Alias matching the casing of [kGiftWrapEventkind] for consistency.
+  static const int kEphemeralGiftWrapEventkind = kEphemeralGiftWrapEventKind;
+
   static const int _createdAtRandomizationWindowSeconds = 172800;
   static final Random _random = Random.secure();
+
+  /// Whether [kind] is a gift wrap kind: regular (1059) or ephemeral (21059).
+  static bool isGiftWrapKind(int kind) =>
+      kind == kGiftWrapEventkind || kind == kEphemeralGiftWrapEventKind;
+
+  static int _resolveWrapKind({required bool ephemeral, int? kind}) =>
+      kind ?? (ephemeral ? kEphemeralGiftWrapEventKind : kGiftWrapEventkind);
 
   final Accounts accounts;
   final EventVerifier eventVerifier;
@@ -45,11 +60,16 @@ class GiftWrap {
   /// [rumor] the event you want to wrap \
   /// [recipientPubkey] the reciever of the rumor \
   /// [customSigner] optional signer to use instead of the logged-in account's signer \
+  /// [ephemeral] when true, creates a kind:21059 ephemeral gift wrap instead of
+  /// a regular kind:1059 one \
+  /// [kind] optional explicit gift wrap kind; overrides [ephemeral] \
   /// [returns] the wrapped event
   Future<Nip01Event> toGiftWrap({
     required Nip01Event rumor,
     required String recipientPubkey,
     EventSigner? customSigner,
+    bool ephemeral = false,
+    int? kind,
   }) async {
     final sealCreatedAt = _randomCreatedAtBefore(rumor.createdAt);
 
@@ -65,6 +85,8 @@ class GiftWrap {
       sealEvent: sealedRumor,
       eventSignerFactory: eventSignerFactory,
       randomizeCreatedAtBefore: rumor.createdAt,
+      ephemeral: ephemeral,
+      kind: kind,
     );
     return giftWrap;
   }
@@ -79,8 +101,10 @@ class GiftWrap {
     EventSigner? customSigner,
     bool verifySignature = true,
   }) async {
-    if (giftWrap.kind != kGiftWrapEventkind) {
-      throw Exception("Event is not a gift wrap (kind:1059)");
+    if (!isGiftWrapKind(giftWrap.kind)) {
+      throw Exception(
+        "Event is not a gift wrap (kind:${GiftWrap.kGiftWrapEventkind} or ${GiftWrap.kEphemeralGiftWrapEventKind})",
+      );
     }
 
     final sealEvent = await unwrapEvent(
@@ -105,8 +129,10 @@ class GiftWrap {
     EventSigner? customSigner,
     bool verifySignature = true,
   }) async {
-    if (giftWrap.kind != kGiftWrapEventkind) {
-      throw Exception("Event is not a gift wrap (kind:1059)");
+    if (!isGiftWrapKind(giftWrap.kind)) {
+      throw Exception(
+        "Event is not a gift wrap (kind:${GiftWrap.kGiftWrapEventkind} or ${GiftWrap.kEphemeralGiftWrapEventKind})",
+      );
     }
 
     final signer = _getSigner(customSigner: customSigner);
@@ -156,8 +182,10 @@ class GiftWrap {
     required Nip01Event giftWrap,
     EventSigner? customSigner,
   }) async {
-    if (giftWrap.kind != kGiftWrapEventkind) {
-      throw Exception("Event is not a gift wrap (kind:1059)");
+    if (!isGiftWrapKind(giftWrap.kind)) {
+      throw Exception(
+        "Event is not a gift wrap (kind:${GiftWrap.kGiftWrapEventkind} or ${GiftWrap.kEphemeralGiftWrapEventKind})",
+      );
     }
 
     final isGiftWrapSignatureValid = await eventVerifier.verify(giftWrap);
@@ -295,6 +323,9 @@ class GiftWrap {
   /// [eventSignerFactory] factory to create event signers \
   /// [createdAt] exact created_at timestamp to use for the gift wrap \
   /// [randomizeCreatedAtBefore] randomizes created_at in the 2 days before this timestamp \
+  /// [ephemeral] when true, creates a kind:21059 ephemeral gift wrap instead of
+  /// a regular kind:1059 one \
+  /// [kind] optional explicit gift wrap kind; overrides [ephemeral] \
   /// [returns] giftWrapEvent
   static Future<Nip01Event> wrapEvent({
     required String recipientPublicKey,
@@ -303,7 +334,11 @@ class GiftWrap {
     required LocalEventSignerFactory eventSignerFactory,
     int? createdAt,
     int? randomizeCreatedAtBefore,
+    bool ephemeral = false,
+    int? kind,
   }) async {
+    final wrapKind = _resolveWrapKind(ephemeral: ephemeral, kind: kind);
+
     // Generate a random one-time-use keypair
     final ephemeralSigner = eventSignerFactory.createWithNewKeyPair();
 
@@ -333,7 +368,7 @@ class GiftWrap {
 
     // Create the gift wrap event with ephemeral keys
     final giftWrapEvent = Nip01Event(
-      kind: kGiftWrapEventkind,
+      kind: wrapKind,
       content: encryptedSeal,
       tags: tags,
       createdAt: giftWrapCreatedAt,
