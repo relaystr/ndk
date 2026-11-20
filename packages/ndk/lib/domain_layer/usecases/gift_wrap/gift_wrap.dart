@@ -63,6 +63,8 @@ class GiftWrap {
   /// [ephemeral] when true, creates a kind:21059 ephemeral gift wrap instead of
   /// a regular kind:1059 one \
   /// [kind] optional explicit gift wrap kind; overrides [ephemeral] \
+  /// [createdAt] optional explicit created_at timestamp for the gift wrap event otherwise  \
+  /// randomizes created_at in the 2 days before the rumor's created_at \
   /// [returns] the wrapped event
   Future<Nip01Event> toGiftWrap({
     required Nip01Event rumor,
@@ -70,8 +72,9 @@ class GiftWrap {
     EventSigner? customSigner,
     bool ephemeral = false,
     int? kind,
+    int? createdAt,
   }) async {
-    final sealCreatedAt = _randomCreatedAtBefore(rumor.createdAt);
+    final sealCreatedAt = createdAt ?? _randomCreatedAtBefore(rumor.createdAt);
 
     final sealedRumor = await sealRumor(
       rumor: rumor,
