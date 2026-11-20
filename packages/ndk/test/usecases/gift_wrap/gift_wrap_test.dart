@@ -131,52 +131,49 @@ void main() {
       );
     });
 
-    test(
-      'NIP-17 DM gift wrap and seal timestamps should be randomized in the 2 days before the rumor createdAt',
-      () async {
-        const twoDaysInSeconds = 172800;
+    test('NIP-17 DM gift wrap and seal timestamps should be randomized in the 2 days before the rumor createdAt', () async {
+      const twoDaysInSeconds = 172800;
 
-        final rumor = Nip01Event(
-          pubKey: key1.publicKey,
-          content: 'Test NIP-17 direct message',
-          kind: 14,
-          tags: [
-            ['p', key2.publicKey],
-          ],
-        );
-        final baseCreatedAt = rumor.createdAt;
+      final rumor = Nip01Event(
+        pubKey: key1.publicKey,
+        content: 'Test NIP-17 direct message',
+        kind: 14,
+        tags: [
+          ['p', key2.publicKey],
+        ],
+      );
+      final baseCreatedAt = rumor.createdAt;
 
-        final giftWrap = await giftWrapService.toGiftWrap(
-          rumor: rumor,
-          recipientPubkey: key2.publicKey,
-        );
+      final giftWrap = await giftWrapService.toGiftWrap(
+        rumor: rumor,
+        recipientPubkey: key2.publicKey,
+      );
 
-        expect(
-          giftWrap.createdAt,
-          greaterThanOrEqualTo(baseCreatedAt - twoDaysInSeconds),
-        );
-        expect(giftWrap.createdAt, lessThan(baseCreatedAt));
+      expect(
+        giftWrap.createdAt,
+        greaterThanOrEqualTo(baseCreatedAt - twoDaysInSeconds),
+      );
+      expect(giftWrap.createdAt, lessThan(baseCreatedAt));
 
-        ndk.accounts.loginPrivateKey(
-          pubkey: key2.publicKey,
-          privkey: key2.privateKey!,
-        );
+      ndk.accounts.loginPrivateKey(
+        pubkey: key2.publicKey,
+        privkey: key2.privateKey!,
+      );
 
-        final seal = await giftWrapService.unwrapEvent(wrappedEvent: giftWrap);
+      final seal = await giftWrapService.unwrapEvent(wrappedEvent: giftWrap);
 
-        expect(
-          seal.createdAt,
-          greaterThanOrEqualTo(baseCreatedAt - twoDaysInSeconds),
-        );
-        expect(seal.createdAt, lessThan(baseCreatedAt));
-        expect(seal.createdAt, isNot(equals(giftWrap.createdAt)));
+      expect(
+        seal.createdAt,
+        greaterThanOrEqualTo(baseCreatedAt - twoDaysInSeconds),
+      );
+      expect(seal.createdAt, lessThan(baseCreatedAt));
+      expect(seal.createdAt, isNot(equals(giftWrap.createdAt)));
 
-        final unwrappedRumor = await giftWrapService.fromGiftWrap(
-          giftWrap: giftWrap,
-        );
-        expect(unwrappedRumor.createdAt, equals(rumor.createdAt));
-      },
-    );
+      final unwrappedRumor = await giftWrapService.fromGiftWrap(
+        giftWrap: giftWrap,
+      );
+      expect(unwrappedRumor.createdAt, equals(rumor.createdAt));
+    });
 
     test(
       'Can use custom signer instead of logged-in account for wrap and unwrap',
@@ -278,6 +275,132 @@ void main() {
         isTrue,
         reason: 'NIP-59 requires seal events (kind 13) to be signed',
       );
+    });
+  });
+
+  group('Ephemeral gift wrap (kind:21059)', () {
+    test(
+      'toGiftWrap creates and fromGiftWrap unwraps an ephemeral wrap',
+      () async {
+        final rumor = await giftWrapService.createRumor(
+          content: 'Real-time message',
+          kind: 1,
+          tags: [],
+        );
+
+        final wrap = await giftWrapService.toGiftWrap(
+          rumor: rumor,
+          recipientPubkey: key2.publicKey,
+          ephemeral: true,
+        );
+
+        expect(wrap.kind, equals(21059));
+        expect(wrap.kind, equals(GiftWrap.kEphemeralGiftWrapEventKind));
+        expect(GiftWrap.isGiftWrapKind(wrap.kind), isTrue);
+        expect(
+          wrap.tags.any((tag) => tag[0] == 'p' && tag[1] == key2.publicKey),
+          isTrue,
+        );
+        expect(wrap.pubKey, isNot(equals(key1.publicKey)));
+        expect(wrap.sig, isNotNull);
+
+        ndk.accounts.loginPrivateKey(
+          pubkey: key2.publicKey,
+          privkey: key2.privateKey!,
+        );
+
+        final unwrapped = await giftWrapService.fromGiftWrap(giftWrap: wrap);
+        expect(unwrapped.content, equals(rumor.content));
+        expect(unwrapped.kind, equals(rumor.kind));
+        expect(unwrapped.pubKey, equals(rumor.pubKey));
+      },
+    );
+
+    test(
+      'wrapEvent supports the ephemeral flag and an explicit kind',
+      () async {
+        final rumor = await giftWrapService.createRumor(
+          content: 'Wrapped by static helper',
+          kind: 1,
+          tags: [],
+        );
+        final seal = await giftWrapService.sealRumor(
+          rumor: rumor,
+          recipientPubkey: key2.publicKey,
+        );
+
+        final flaggedWrap = await GiftWrap.wrapEvent(
+          recipientPublicKey: key2.publicKey,
+          sealEvent: seal,
+          eventSignerFactory: ndk.config.eventSignerFactory,
+          ephemeral: true,
+        );
+        final explicitWrap = await GiftWrap.wrapEvent(
+          recipientPublicKey: key2.publicKey,
+          sealEvent: seal,
+          eventSignerFactory: ndk.config.eventSignerFactory,
+          kind: GiftWrap.kEphemeralGiftWrapEventkind,
+        );
+
+        expect(flaggedWrap.kind, equals(21059));
+        expect(explicitWrap.kind, equals(21059));
+
+        final defaultWrap = await GiftWrap.wrapEvent(
+          recipientPublicKey: key2.publicKey,
+          sealEvent: seal,
+          eventSignerFactory: ndk.config.eventSignerFactory,
+        );
+        expect(defaultWrap.kind, equals(GiftWrap.kGiftWrapEventkind));
+      },
+    );
+
+    test(
+      'fromGiftWrapWithInfo and cached unwrap accept ephemeral wraps',
+      () async {
+        final rumor = await giftWrapService.createRumor(
+          content: 'Cached ephemeral message',
+          kind: 1,
+          tags: [],
+        );
+        final wrap = await giftWrapService.toGiftWrap(
+          rumor: rumor,
+          recipientPubkey: key2.publicKey,
+          ephemeral: true,
+        );
+
+        ndk.accounts.loginPrivateKey(
+          pubkey: key2.publicKey,
+          privkey: key2.privateKey!,
+        );
+
+        final result = await giftWrapService.fromGiftWrapWithInfo(
+          giftWrap: wrap,
+        );
+        expect(result.rumor.content, equals(rumor.content));
+        expect(result.giftWrap.kind, equals(21059));
+        expect(result.isCryptographicallyValid, isTrue);
+
+        final fromCache = await giftWrapService.tryFromGiftWrapFromCache(
+          giftWrap: wrap,
+        );
+        expect(fromCache, isNotNull);
+        expect(fromCache!.content, equals(rumor.content));
+      },
+    );
+
+    test('non gift wrap kinds are still rejected', () async {
+      final notAWrap = Nip01Event(
+        pubKey: key1.publicKey,
+        kind: 1,
+        content: 'plain note',
+        tags: [],
+      );
+
+      expect(
+        () => giftWrapService.fromGiftWrap(giftWrap: notAWrap),
+        throwsA(isA<Exception>()),
+      );
+      expect(GiftWrap.isGiftWrapKind(notAWrap.kind), isFalse);
     });
   });
 }

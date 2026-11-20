@@ -8,7 +8,7 @@ class GiftWrapUnwrapResult {
   /// Whether the seal event has a valid signature
   final bool isSealSignatureValid;
 
-  /// The outer gift-wrap event (kind:1059).
+  /// The outer gift-wrap event (kind:1059 or ephemeral kind:21059).
   final Nip01Event giftWrap;
 
   /// The seal event (kind:13) extracted from the gift wrap
