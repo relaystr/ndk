@@ -87,6 +87,7 @@ class GiftWrap {
       recipientPublicKey: recipientPubkey,
       sealEvent: sealedRumor,
       eventSignerFactory: eventSignerFactory,
+      createdAt: createdAt,
       randomizeCreatedAtBefore: rumor.createdAt,
       ephemeral: ephemeral,
       kind: kind,
