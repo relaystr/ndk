@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1795171524504,
+  "lastUpdate": 1795172223989,
   "repoUrl": "https://github.com/relaystr/ndk",
   "entries": {
     "Rust event verifier": [
@@ -3076,6 +3076,44 @@ window.BENCHMARK_DATA = {
             "name": "RustEventVerifier.verify.large_event",
             "value": 1342394,
             "range": "1326678-1345422",
+            "unit": "ns/op",
+            "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "58687994+1-leo@users.noreply.github.com",
+            "name": "Leo",
+            "username": "1-leo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "091bd38574d90148afc1170d05cfb8fbaab16f37",
+          "message": "Merge pull request #961 from relaystr/feat/Ephemeral-Gift-Wrap-Event\n\nfix: propagete explicit createdAt for the gift wrap event",
+          "timestamp": "2026-11-20T11:54:59+01:00",
+          "tree_id": "4a23ca452739b03a203ddd358240279bfd173ff5",
+          "url": "https://github.com/relaystr/ndk/commit/091bd38574d90148afc1170d05cfb8fbaab16f37"
+        },
+        "date": 1795172221808,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "RustEventVerifier.verify",
+            "value": 48637.4,
+            "range": "48390-51290",
+            "unit": "ns/op",
+            "extra": "9 samples x 5000 operations after 1000 warmup operations"
+          },
+          {
+            "name": "RustEventVerifier.verify.large_event",
+            "value": 1556464,
+            "range": "1553048-1567714",
             "unit": "ns/op",
             "extra": "9 samples x 500 operations after 100 warmup operations; 200 tags with 1 KiB values, 64 KiB content"
           }
