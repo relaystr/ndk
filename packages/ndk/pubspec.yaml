@@ -1,6 +1,6 @@
 name: ndk
 description: Nostr Development Kit - the most performant lib for all your nostr usecases
-version: 0.11.0-dev.2
+version: 0.11.0-dev.3
 homepage: https://github.com/relaystr/ndk
 repository: https://github.com/relaystr/ndk
 
@@ -48,7 +48,7 @@ dev_dependencies:
   fake_async: ^1.3.3
   ndk_cache_manager_test_suite: ^1.0.1-dev.14
   # persistent cache for the local_first restart tests
-  ndk_sembast: ^0.1.0
+  ndk_sembast: ^0.2.0-dev.0
   build_runner: ">=2.11.0 <3.0.0"
   build_version: ^2.1.3
   flutter_lints: ^6.0.0
